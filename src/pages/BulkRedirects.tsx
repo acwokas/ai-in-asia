@@ -97,10 +97,11 @@ export default function BulkRedirects() {
       const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
       
       if (values.length >= 2) {
+        const parsedStatusCode = values[2] ? parseInt(values[2]) : NaN;
         redirects.push({
           from_path: values[0],
           to_path: values[1],
-          status_code: values[2] ? parseInt(values[2]) : 301,
+          status_code: !isNaN(parsedStatusCode) ? parsedStatusCode : 301,
         });
       }
     }
