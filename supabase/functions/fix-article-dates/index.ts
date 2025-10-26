@@ -39,24 +39,28 @@ Deno.serve(async (req) => {
       throw new Error('Admin access required')
     }
 
-    console.log('Fetching CSV file...')
+    console.log('Reading CSV data from request...')
     
-    // Fetch the CSV file
-    const csvResponse = await fetch('https://207800f6-04ea-4303-a3ba-b1b386c6515d.lovableproject.com/import-data/ai-in-asia-export2-updated.csv')
-    const csvText = await csvResponse.text()
+    const { csvData } = await req.json()
+    
+    if (!csvData) {
+      throw new Error('No CSV data provided in request')
+    }
+    
+    const csvText = csvData
     
     console.log('Parsing CSV...')
     const lines = csvText.split('\n')
     
     // Parse the header row properly
     const headerLine = lines[0]
-    const headers = headerLine.split(',').map(h => h.trim())
+    const headers = headerLine.split(',').map((h: string) => h.trim())
     
     console.log('CSV Headers:', headers)
     
     // Find the indices of slug and published_at columns
-    const slugIndex = headers.findIndex(h => h === 'slug')
-    const publishedAtIndex = headers.findIndex(h => h === 'published_at')
+    const slugIndex = headers.findIndex((h: string) => h === 'slug')
+    const publishedAtIndex = headers.findIndex((h: string) => h === 'published_at')
     
     console.log(`Found slug at index ${slugIndex}, published_at at index ${publishedAtIndex}`)
     

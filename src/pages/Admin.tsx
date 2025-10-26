@@ -495,7 +495,13 @@ const Admin = () => {
     try {
       setFixingDates(true);
       
-      const { data, error } = await supabase.functions.invoke('fix-article-dates');
+      // Fetch the CSV file from public folder
+      const csvResponse = await fetch('/import-data/ai-in-asia-export2-updated.csv');
+      const csvData = await csvResponse.text();
+      
+      const { data, error } = await supabase.functions.invoke('fix-article-dates', {
+        body: { csvData }
+      });
       
       if (error) throw error;
 
