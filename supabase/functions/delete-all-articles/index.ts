@@ -24,6 +24,18 @@ Deno.serve(async (req) => {
 
     console.log('Starting to delete all articles...')
 
+    // Delete ALL URL mappings first (unconditionally, since we're doing a full reset)
+    console.log('Deleting ALL URL mappings...')
+    const { error: allMappingsError } = await supabaseAdmin
+      .from('url_mappings')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+    
+    if (allMappingsError) {
+      console.error('Error deleting url_mappings:', allMappingsError)
+      throw allMappingsError
+    }
+
     // Get all article IDs
     const { data: articlesData, error: fetchError } = await supabaseAdmin
       .from('articles')
@@ -35,13 +47,6 @@ Deno.serve(async (req) => {
     console.log(`Found ${articleIds.length} articles to delete`)
 
     if (articleIds.length > 0) {
-      // Delete URL mappings FIRST (has foreign key to articles)
-      console.log('Deleting URL mappings...')
-      await supabaseAdmin
-        .from('url_mappings')
-        .delete()
-        .in('article_id', articleIds)
-
       // Delete all other related records
       console.log('Deleting related records...')
       
