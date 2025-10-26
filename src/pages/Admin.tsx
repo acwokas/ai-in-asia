@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings } from "lucide-react";
+import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 
@@ -26,6 +26,7 @@ const Admin = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [googleAdsDialogOpen, setGoogleAdsDialogOpen] = useState(false);
   const [newsletterDialogOpen, setNewsletterDialogOpen] = useState(false);
+  const [scrapingEvents, setScrapingEvents] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -462,6 +463,33 @@ const Admin = () => {
     }
   };
 
+  const handleScrapeEvents = async () => {
+    try {
+      setScrapingEvents(true);
+      
+      const { data, error } = await supabase.functions.invoke('scrape-ai-events');
+      
+      if (error) throw error;
+
+      const results = data?.results;
+      toast({
+        title: "Events scraped successfully!",
+        description: `${results?.inserted || 0} new events added, ${results?.skipped || 0} duplicates skipped`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["upcoming-events"] });
+      queryClient.invalidateQueries({ queryKey: ["upcoming-events-widget"] });
+    } catch (error: any) {
+      toast({
+        title: "Error scraping events",
+        description: error.message || "Failed to scrape events",
+        variant: "destructive",
+      });
+    } finally {
+      setScrapingEvents(false);
+    }
+  };
+
   if (isAdmin === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -677,6 +705,24 @@ const Admin = () => {
                 </Button>
                 <Button onClick={() => navigate("/admin/bulk-operations")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   Bulk Operations
+                </Button>
+                <Button 
+                  onClick={handleScrapeEvents} 
+                  variant="outline" 
+                  className="justify-start"
+                  disabled={scrapingEvents}
+                >
+                  {scrapingEvents ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Scraping Events...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Scrape AI Events
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
