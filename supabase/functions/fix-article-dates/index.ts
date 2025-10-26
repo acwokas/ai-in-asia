@@ -68,23 +68,55 @@ Deno.serve(async (req) => {
     let skipped = 0
     const errors: string[] = []
     
+    // Helper function to parse CSV line with proper quote handling
+    function parseCSVLine(line: string): string[] {
+      const result: string[] = []
+      let current = ''
+      let inQuotes = false
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        const nextChar = line[i + 1]
+        
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            // Escaped quote
+            current += '"'
+            i++ // Skip next quote
+          } else {
+            // Toggle quote state
+            inQuotes = !inQuotes
+          }
+        } else if (char === ',' && !inQuotes) {
+          // End of field
+          result.push(current)
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      
+      // Add last field
+      result.push(current)
+      
+      return result
+    }
+    
     // Process each line (skip header)
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i]
       if (!line.trim()) continue
       
       try {
-        // Simple CSV parsing - just split by comma for the first few columns
-        // Since slug is the 2nd column and published_at is the 13th column
-        const parts = line.split(',')
+        const fields = parseCSVLine(line)
         
-        if (parts.length < 14) {
+        if (fields.length < Math.max(slugIndex, publishedAtIndex) + 1) {
           skipped++
           continue
         }
         
-        const slug = parts[slugIndex]?.trim().replace(/^"|"$/g, '')
-        const publishedAt = parts[publishedAtIndex]?.trim().replace(/^"|"$/g, '')
+        const slug = fields[slugIndex]?.trim().replace(/^"|"$/g, '')
+        const publishedAt = fields[publishedAtIndex]?.trim().replace(/^"|"$/g, '')
         
         if (!slug || !publishedAt) {
           skipped++
