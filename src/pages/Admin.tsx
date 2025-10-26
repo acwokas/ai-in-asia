@@ -80,7 +80,7 @@ const Admin = () => {
     setIsAdmin(true);
   };
 
-  const { data: stats } = useQuery({
+  const { data: stats, refetch: refetchStats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-stats"],
     enabled: isAdmin === true,
     queryFn: async () => {
@@ -491,10 +491,29 @@ const Admin = () => {
               <h1 className="headline text-4xl mb-2">Admin Dashboard</h1>
               <p className="text-muted-foreground">Welcome back, {getFirstName(user?.email)}</p>
             </div>
-            <Button onClick={() => navigate("/editor")} size="lg">
-              <FileText className="h-4 w-4 mr-2" />
-              Create New Article
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  refetchStats();
+                  toast({ title: "Stats Refreshed" });
+                }}
+                variant="outline"
+                disabled={statsLoading}
+              >
+                {statsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <BarChart className="h-4 w-4 mr-2" />
+                    Refresh Stats
+                  </>
+                )}
+              </Button>
+              <Button onClick={() => navigate("/editor")} size="lg">
+                <FileText className="h-4 w-4 mr-2" />
+                Create New Article
+              </Button>
+            </div>
           </div>
         </div>
 
