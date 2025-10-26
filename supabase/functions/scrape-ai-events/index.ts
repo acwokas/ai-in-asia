@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { DOMParser } from 'https://deno.land/x/deno_dom/deno-dom-wasm.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,41 +49,54 @@ function mapLocationToRegion(country: string): string {
 }
 
 async function scrapeOnlineMarketing(): Promise<ScrapedEvent[]> {
-  console.log('Scraping online.marketing...')
+  console.log('Scraping online.marketing/artificial-intelligence...')
   try {
-    const response = await fetch('https://online.marketing/ai-events')
+    const response = await fetch('https://online.marketing/artificial-intelligence/')
     const html = await response.text()
-    const doc = new DOMParser().parseFromString(html, 'text/html')
     
     const events: ScrapedEvent[] = []
     
-    // Look for event cards or JSON-LD structured data
-    const scripts = doc?.querySelectorAll('script[type="application/ld+json"]')
-    scripts?.forEach((script) => {
+    // Regex to find <article> tags with event data
+    const articleRegex = /<article[^>]*>([\s\S]*?)<\/article>/gi
+    const articles = html.match(articleRegex) || []
+    
+    for (const article of articles) {
       try {
-        const data = JSON.parse(script.textContent || '{}')
-        if (data['@type'] === 'Event') {
+        // Extract title from <h2>
+        const titleMatch = article.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : null
+        
+        // Extract date from <time>
+        const timeMatch = article.match(/<time[^>]*datetime="([^"]+)"[^>]*>([\s\S]*?)<\/time>/i)
+        const dateStr = timeMatch ? timeMatch[1] : null
+        
+        // Extract link
+        const linkMatch = article.match(/<a[^>]*href="([^"]+)"[^>]*>/i)
+        const link = linkMatch ? linkMatch[1] : null
+        
+        // Extract location if available
+        const locationMatch = article.match(/location[^>]*>([\s\S]*?)<\/[^>]+>/i)
+        const locationText = locationMatch ? locationMatch[1].replace(/<[^>]+>/g, '').trim() : 'Online'
+        
+        if (title && dateStr) {
+          const [city, country] = locationText.split(',').map(s => s.trim())
           events.push({
-            title: data.name,
-            description: data.description,
-            start_date: data.startDate,
-            end_date: data.endDate,
-            location: data.location?.address?.addressLocality || 'Unknown',
-            city: data.location?.address?.addressLocality || 'Unknown',
-            country: data.location?.address?.addressCountry || 'Unknown',
-            region: mapLocationToRegion(data.location?.address?.addressCountry || 'Unknown'),
-            venue: data.location?.name,
+            title,
+            start_date: new Date(dateStr).toISOString(),
+            location: locationText,
+            city: city || 'Online',
+            country: country || 'Global',
+            region: mapLocationToRegion(country || 'Global'),
             event_type: 'conference',
-            website_url: data.url,
-            image_url: data.image,
-            organizer: data.organizer?.name,
+            website_url: link?.startsWith('http') ? link : `https://online.marketing${link}`,
           })
         }
       } catch (e) {
-        console.error('Error parsing JSON-LD:', e)
+        console.error('Error parsing article:', e)
       }
-    })
+    }
     
+    console.log(`online.marketing: Found ${events.length} events`)
     return events
   } catch (error) {
     console.error('Error scraping online.marketing:', error)
@@ -93,41 +105,54 @@ async function scrapeOnlineMarketing(): Promise<ScrapedEvent[]> {
 }
 
 async function scrapeAINewsHub(): Promise<ScrapedEvent[]> {
-  console.log('Scraping ainewshub.org...')
+  console.log('Scraping ainewshub.org/global-ai-events...')
   try {
-    const response = await fetch('https://ainewshub.org/events')
+    const response = await fetch('https://www.ainewshub.org/global-ai-events')
     const html = await response.text()
-    const doc = new DOMParser().parseFromString(html, 'text/html')
     
     const events: ScrapedEvent[] = []
     
-    // Parse event listings
-    const eventElements = doc?.querySelectorAll('.event-item, article, .event-card')
-    eventElements?.forEach((element) => {
+    // Regex to find event divs with h2/h3 titles and date strings
+    const eventDivRegex = /<div[^>]*class="[^"]*event[^"]*"[^>]*>([\s\S]*?)<\/div>/gi
+    const eventDivs = html.match(eventDivRegex) || []
+    
+    for (const eventDiv of eventDivs) {
       try {
-        const title = element.querySelector('h2, h3, .event-title')?.textContent?.trim()
-        const dateText = element.querySelector('.event-date, time')?.textContent?.trim()
-        const location = element.querySelector('.event-location, .location')?.textContent?.trim()
-        const link = element.querySelector('a')?.getAttribute('href')
+        // Extract title from h2 or h3
+        const titleMatch = eventDiv.match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/i)
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : null
         
-        if (title && dateText && location) {
-          const [city, country] = location.split(',').map(s => s.trim())
+        // Extract date string (look for common date patterns)
+        const dateMatch = eventDiv.match(/(\d{1,2}[\s\-\/]\w+[\s\-\/]\d{2,4}|\d{4}-\d{2}-\d{2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})/i)
+        const dateStr = dateMatch ? dateMatch[1] : null
+        
+        // Extract location
+        const locationMatch = eventDiv.match(/location[^>]*>([\s\S]*?)<\/[^>]+>|<span[^>]*>([\s\S]*?(?:Singapore|USA|UK|China|India|Australia)[^<]*)<\/span>/i)
+        const locationText = locationMatch ? (locationMatch[1] || locationMatch[2]).replace(/<[^>]+>/g, '').trim() : 'Online'
+        
+        // Extract link
+        const linkMatch = eventDiv.match(/<a[^>]*href="([^"]+)"[^>]*>/i)
+        const link = linkMatch ? linkMatch[1] : null
+        
+        if (title && dateStr) {
+          const [city, country] = locationText.split(',').map(s => s.trim())
           events.push({
             title,
-            start_date: new Date(dateText).toISOString(),
-            location,
-            city: city || 'Unknown',
-            country: country || 'Unknown',
-            region: mapLocationToRegion(country || 'Unknown'),
+            start_date: new Date(dateStr).toISOString(),
+            location: locationText,
+            city: city || 'Online',
+            country: country || 'Global',
+            region: mapLocationToRegion(country || 'Global'),
             event_type: 'conference',
-            website_url: link ? `https://ainewshub.org${link}` : undefined,
+            website_url: link?.startsWith('http') ? link : link ? `https://www.ainewshub.org${link}` : undefined,
           })
         }
       } catch (e) {
-        console.error('Error parsing event element:', e)
+        console.error('Error parsing event div:', e)
       }
-    })
+    }
     
+    console.log(`ainewshub.org: Found ${events.length} events`)
     return events
   } catch (error) {
     console.error('Error scraping ainewshub.org:', error)
@@ -136,39 +161,54 @@ async function scrapeAINewsHub(): Promise<ScrapedEvent[]> {
 }
 
 async function scrapeTimesOfAI(): Promise<ScrapedEvent[]> {
-  console.log('Scraping timesofai.com...')
+  console.log('Scraping timesofai.com/events...')
   try {
-    const response = await fetch('https://timesofai.com/events')
+    const response = await fetch('https://www.timesofai.com/events/')
     const html = await response.text()
-    const doc = new DOMParser().parseFromString(html, 'text/html')
     
     const events: ScrapedEvent[] = []
     
-    // Parse calendar events
-    const eventElements = doc?.querySelectorAll('.event, .calendar-event')
-    eventElements?.forEach((element) => {
+    // Regex to find <article> tags with h2/h3 titles and time datetime attributes
+    const articleRegex = /<article[^>]*>([\s\S]*?)<\/article>/gi
+    const articles = html.match(articleRegex) || []
+    
+    for (const article of articles) {
       try {
-        const title = element.querySelector('.event-name, h3')?.textContent?.trim()
-        const dateText = element.querySelector('.event-date')?.textContent?.trim()
-        const location = element.querySelector('.event-venue')?.textContent?.trim()
+        // Extract title from h2 or h3
+        const titleMatch = article.match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/i)
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : null
         
-        if (title && dateText) {
-          const [city, country] = (location || '').split(',').map(s => s.trim())
+        // Extract datetime from <time> tag
+        const timeMatch = article.match(/<time[^>]*datetime="([^"]+)"[^>]*>/i)
+        const dateStr = timeMatch ? timeMatch[1] : null
+        
+        // Extract location
+        const locationMatch = article.match(/venue[^>]*>([\s\S]*?)<\/[^>]+>|location[^>]*>([\s\S]*?)<\/[^>]+>/i)
+        const locationText = locationMatch ? (locationMatch[1] || locationMatch[2]).replace(/<[^>]+>/g, '').trim() : 'Online'
+        
+        // Extract link
+        const linkMatch = article.match(/<a[^>]*href="([^"]+)"[^>]*>/i)
+        const link = linkMatch ? linkMatch[1] : null
+        
+        if (title && dateStr) {
+          const [city, country] = locationText.split(',').map(s => s.trim())
           events.push({
             title,
-            start_date: new Date(dateText).toISOString(),
-            location: location || 'Online',
+            start_date: new Date(dateStr).toISOString(),
+            location: locationText,
             city: city || 'Online',
             country: country || 'Global',
             region: mapLocationToRegion(country || 'Global'),
             event_type: 'conference',
+            website_url: link?.startsWith('http') ? link : link ? `https://www.timesofai.com${link}` : undefined,
           })
         }
       } catch (e) {
-        console.error('Error parsing event:', e)
+        console.error('Error parsing article:', e)
       }
-    })
+    }
     
+    console.log(`timesofai.com: Found ${events.length} events`)
     return events
   } catch (error) {
     console.error('Error scraping timesofai.com:', error)
@@ -177,50 +217,56 @@ async function scrapeTimesOfAI(): Promise<ScrapedEvent[]> {
 }
 
 async function scrapeLumaSingapore(): Promise<ScrapedEvent[]> {
-  console.log('Scraping lu.ma/singapore...')
+  console.log('Scraping lu.ma/sg-ai...')
   try {
-    const response = await fetch('https://lu.ma/singapore')
+    const response = await fetch('https://lu.ma/sg-ai')
     const html = await response.text()
-    const doc = new DOMParser().parseFromString(html, 'text/html')
     
     const events: ScrapedEvent[] = []
     
-    // Luma uses JSON-LD
-    const scripts = doc?.querySelectorAll('script[type="application/ld+json"]')
-    scripts?.forEach((script) => {
+    // Extract JSON-LD structured data from <script type="application/ld+json"> tags
+    const jsonLdRegex = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi
+    const scripts = html.match(jsonLdRegex) || []
+    
+    for (const script of scripts) {
       try {
-        const data = JSON.parse(script.textContent || '{}')
-        if (data['@type'] === 'Event' || Array.isArray(data)) {
-          const eventData = Array.isArray(data) ? data : [data]
-          eventData.forEach((event: any) => {
-            if (event['@type'] === 'Event') {
-              events.push({
-                title: event.name,
-                description: event.description,
-                start_date: event.startDate,
-                end_date: event.endDate,
-                location: 'Singapore',
-                city: 'Singapore',
-                country: 'Singapore',
-                region: 'APAC',
-                venue: event.location?.name,
-                event_type: 'meetup',
-                website_url: event.url,
-                registration_url: event.offers?.url,
-                image_url: event.image,
-                organizer: event.organizer?.name,
-              })
-            }
-          })
+        const jsonMatch = script.match(/<script[^>]*>([\s\S]*?)<\/script>/)
+        if (!jsonMatch) continue
+        
+        const data = JSON.parse(jsonMatch[1])
+        
+        // Handle both single event and array of events
+        const eventData = Array.isArray(data) ? data : [data]
+        
+        for (const event of eventData) {
+          if (event['@type'] === 'Event') {
+            events.push({
+              title: event.name,
+              description: event.description,
+              start_date: event.startDate,
+              end_date: event.endDate,
+              location: 'Singapore',
+              city: 'Singapore',
+              country: 'Singapore',
+              region: 'APAC',
+              venue: event.location?.name,
+              event_type: 'meetup',
+              website_url: event.url,
+              registration_url: event.offers?.url,
+              image_url: event.image,
+              organizer: event.organizer?.name,
+            })
+          }
         }
       } catch (e) {
         console.error('Error parsing Luma JSON-LD:', e)
       }
-    })
+    }
     
+    console.log(`lu.ma/sg-ai: Found ${events.length} events`)
     return events
   } catch (error) {
-    console.error('Error scraping lu.ma/singapore:', error)
+    console.error('Error scraping lu.ma/sg-ai:', error)
     return []
   }
 }
