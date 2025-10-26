@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.fetch-stock-data]
 verify_jwt = false
+
+[functions.fix-article-dates]
+verify_jwt = true
