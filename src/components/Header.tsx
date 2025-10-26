@@ -1,6 +1,14 @@
-import { Search, Menu, Moon, Sun, User } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +19,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -70,11 +78,26 @@ const Header = () => {
             </Button>
 
             {user ? (
-              <Button variant="ghost" size="icon" asChild className="h-12 w-12 md:h-16 md:w-16">
-                <Link to="/profile">
-                  <User className="h-6 w-6 md:h-8 md:w-8" />
-                </Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16">
+                    <User className="h-6 w-6 md:h-8 md:w-8" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button variant="default" className="hidden md:inline-flex" asChild>
                 <Link to="/auth">Sign In</Link>
@@ -111,11 +134,19 @@ const Header = () => {
                 </div>
               )}
               {user && (
-                <div className="pt-2">
-                  <Button variant="default" className="w-full" asChild>
-                    <Link to="/profile">Profile</Link>
-                  </Button>
-                </div>
+                <>
+                  <div className="pt-2">
+                    <Button variant="default" className="w-full" asChild>
+                      <Link to="/profile">Profile</Link>
+                    </Button>
+                  </div>
+                  <div>
+                    <Button variant="outline" className="w-full" onClick={signOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </>
               )}
               <div className="pt-2">
                 <Input
