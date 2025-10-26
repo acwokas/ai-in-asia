@@ -275,17 +275,21 @@ export default function ImageMigration() {
 
               {!migrating && results.length > 0 && (
                 <>
-                  <Alert className="border-green-500">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <AlertDescription>
-                      Successfully migrated {successCount} of {totalImages} images
-                    </AlertDescription>
-                  </Alert>
+                  {successCount > 0 && (
+                    <Alert className="border-green-500">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <AlertDescription>
+                        Successfully migrated {successCount} of {totalImages} images
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                  <Button onClick={downloadResults} variant="outline">
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Results CSV
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={downloadResults} variant="default" className="flex-1">
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Results CSV
+                    </Button>
+                  </div>
                 </>
               )}
 
