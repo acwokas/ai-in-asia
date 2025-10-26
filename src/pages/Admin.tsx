@@ -495,29 +495,50 @@ const Admin = () => {
     try {
       setFixingDates(true);
       
+      toast({
+        title: "Processing dates...",
+        description: "This will take 2-3 minutes. Please wait.",
+      });
+      
       // Fetch the CSV file from public folder
       const csvResponse = await fetch('/import-data/ai-in-asia-export2-updated.csv');
       const csvData = await csvResponse.text();
       
-      const { data, error } = await supabase.functions.invoke('fix-article-dates', {
+      // Use a longer timeout since this operation takes ~3 minutes
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 300000) // 5 minute timeout
+      );
+      
+      const requestPromise = supabase.functions.invoke('fix-article-dates', {
         body: { csvData }
       });
+      
+      const { data, error } = await Promise.race([requestPromise, timeoutPromise]) as any;
       
       if (error) throw error;
 
       const results = data?.results;
       toast({
         title: "Article dates fixed!",
-        description: `${results?.updated || 0} articles updated with original dates`,
+        description: `${results?.updated || 0} articles updated, ${results?.skipped || 0} skipped`,
       });
 
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     } catch (error: any) {
-      toast({
-        title: "Error fixing dates",
-        description: error.message || "Failed to fix article dates",
-        variant: "destructive",
-      });
+      // Even if timeout occurs, the function might still succeed in the background
+      if (error.message === 'timeout' || error.message?.includes('fetch')) {
+        toast({
+          title: "Processing may still be running",
+          description: "The operation is taking longer than expected. Check the logs or refresh the page in a minute.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error fixing dates",
+          description: error.message || "Failed to fix article dates",
+          variant: "destructive",
+        });
+      }
     } finally {
       setFixingDates(false);
     }
