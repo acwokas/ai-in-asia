@@ -65,6 +65,7 @@ const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
 const NewsletterView = lazy(() => import("./pages/NewsletterView"));
+const UploadAuthorAvatars = lazy(() => import("./pages/UploadAuthorAvatars"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -139,6 +140,7 @@ const App = () => (
               <Route path="/admin/seo-tools" element={<SEOTools />} />
               <Route path="/admin/author-management" element={<AuthorManagement />} />
               <Route path="/admin/editors-picks" element={<EditorsPickManager />} />
+              <Route path="/admin/upload-avatars" element={<UploadAuthorAvatars />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
