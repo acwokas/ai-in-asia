@@ -123,9 +123,6 @@ Deno.serve(async (req) => {
           continue
         }
         
-        // Decode URL-encoded slug
-        const decodedSlug = decodeURIComponent(slug)
-        
         // Try to parse the date
         const parsedDate = new Date(publishedAt)
         if (isNaN(parsedDate.getTime())) {
@@ -134,15 +131,22 @@ Deno.serve(async (req) => {
           continue
         }
         
-        // Update the article
-        const { error } = await supabase
+        // Update the article  
+        const { data, error } = await supabase
           .from('articles')
           .update({ published_at: parsedDate.toISOString() })
-          .eq('slug', decodedSlug)
+          .eq('slug', slug)
           .eq('status', 'published')
+          .select('id')
         
         if (error) {
-          errors.push(`Error updating "${decodedSlug}": ${error.message}`)
+          errors.push(`Error updating "${slug}": ${error.message}`)
+          skipped++
+        } else if (!data || data.length === 0) {
+          // No article found with this slug
+          if (updated < 5) {
+            console.log(`No match found for slug: "${slug}"`)
+          }
           skipped++
         } else {
           updated++
