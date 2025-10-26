@@ -1086,6 +1086,53 @@ Special characters are fine as long as the file is UTF-8 encoded.","Guide to for
                         <p className="text-xs">...and {errors.length - 10} more errors</p>
                       )}
                     </div>
+                    {errors.some(e => e.message.includes('already exists')) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={async () => {
+                          // Extract slugs from error messages
+                          const slugs = errors
+                            .filter(e => e.message.includes('already exists'))
+                            .map(e => {
+                              const match = e.message.match(/slug "([^"]+)"/);
+                              return match ? match[1] : null;
+                            })
+                            .filter(Boolean);
+                          
+                          if (slugs.length === 0) return;
+                          
+                          if (!confirm(`This will delete ${slugs.length} existing articles with conflicting slugs. Continue?`)) {
+                            return;
+                          }
+                          
+                          try {
+                            const { data, error } = await supabase.functions.invoke('delete-articles-by-slug', {
+                              body: { slugs }
+                            });
+                            
+                            if (error) throw error;
+                            
+                            toast({
+                              title: "Articles Deleted",
+                              description: `Successfully deleted ${data.deletedCount} conflicting articles. You can now retry the import.`,
+                            });
+                            
+                            setErrors([]);
+                          } catch (error: any) {
+                            toast({
+                              title: "Delete Failed",
+                              description: error.message,
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 mr-2" />
+                        Delete Conflicting Articles
+                      </Button>
+                    )}
                   </AlertDescription>
                 </Alert>
               )}
