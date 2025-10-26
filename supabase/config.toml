@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.scrape-ai-events]
 verify_jwt = true
+
+[functions.fetch-stock-data]
+verify_jwt = false

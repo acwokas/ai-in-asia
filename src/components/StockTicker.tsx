@@ -2,70 +2,130 @@ import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface Stock {
+interface StockPrice {
+  id: string;
   symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
+  company_name: string;
+  current_price: number;
+  change_amount: number;
+  change_percent: number;
+  last_updated: string;
 }
 
 const StockTicker = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ['stock-data'],
+  const { data: stocks, isLoading } = useQuery({
+    queryKey: ['stock-prices'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('fetch-stock-data');
-      
+      // First try to get from database
+      const { data, error } = await supabase
+        .from('stock_prices')
+        .select('*')
+        .order('symbol', { ascending: true });
+
       if (error) throw error;
-      return data as { stocks: Stock[] };
+
+      // If no data, trigger a fetch
+      if (!data || data.length === 0) {
+        await supabase.functions.invoke('fetch-stock-data');
+        
+        // Wait a moment and try again
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const { data: newData, error: newError } = await supabase
+          .from('stock_prices')
+          .select('*')
+          .order('symbol', { ascending: true });
+        
+        if (newError) throw newError;
+        return newData as StockPrice[];
+      }
+
+      return data as StockPrice[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes cache
-    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes
-    retry: 1, // Only retry once on failure
+    refetchInterval: 60000, // Refresh every minute
+    staleTime: 30000, // Consider data stale after 30 seconds
   });
 
-  if (isLoading || !data?.stocks) return null;
-
-  return (
-    <div className="bg-emerald-50 border-y border-emerald-200 overflow-hidden">
-      <div className="ticker-wrapper">
-        <div className="ticker-content">
-          {/* Duplicate the stocks array to create seamless loop */}
-          {[...data.stocks, ...data.stocks].map((stock, index) => (
-            <div
-              key={`${stock.symbol}-${index}`}
-              className="ticker-item inline-flex items-center gap-2 px-6 py-2"
-            >
-              <span className="font-semibold text-sm text-emerald-900">{stock.name}</span>
-              <span className="text-emerald-700 text-xs">{stock.symbol}</span>
-              <span className="font-mono text-sm text-emerald-900">${stock.price.toFixed(2)}</span>
-              <span
-                className={`flex items-center gap-1 text-xs font-medium ${
-                  stock.change >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {stock.change >= 0 ? (
-                  <TrendingUp className="w-3 h-3" />
-                ) : (
-                  <TrendingDown className="w-3 h-3" />
-                )}
-                {stock.changePercent.toFixed(2)}%
-              </span>
-            </div>
-          ))}
+  if (isLoading) {
+    return (
+      <div className="bg-muted/30 border-y border-border overflow-hidden">
+        <div className="container py-2">
+          <div className="flex items-center gap-4 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-2 min-w-[200px]">
+                <div className="h-4 bg-muted rounded w-12"></div>
+                <div className="h-4 bg-muted rounded w-16"></div>
+                <div className="h-4 bg-muted rounded w-12"></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+    );
+  }
+
+  if (!stocks || stocks.length === 0) {
+    return null;
+  }
+
+  // Duplicate stocks for seamless infinite scroll
+  const displayStocks = [...stocks, ...stocks];
+
+  return (
+    <div className="bg-muted/30 border-y border-border overflow-hidden group">
+      <div className="relative">
+        <div className="ticker-wrapper">
+          <div className="ticker-content">
+            {displayStocks.map((stock, index) => (
+              <div
+                key={`${stock.symbol}-${index}`}
+                className="ticker-item inline-flex items-center gap-3 px-6 py-2 whitespace-nowrap"
+              >
+                <span className="font-semibold text-sm">{stock.symbol}</span>
+                <span className="text-sm font-medium">
+                  ${stock.current_price.toFixed(2)}
+                </span>
+                <div
+                  className={cn(
+                    "flex items-center gap-1 text-xs font-medium",
+                    stock.change_amount >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  )}
+                >
+                  {stock.change_amount >= 0 ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  <span>
+                    {stock.change_amount >= 0 ? "+" : ""}
+                    {stock.change_amount.toFixed(2)} (
+                    {stock.change_percent >= 0 ? "+" : ""}
+                    {stock.change_percent.toFixed(2)}%)
+                  </span>
+                </div>
+                <span className="text-muted-foreground text-xs mx-2">|</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
       <style>{`
         .ticker-wrapper {
-          position: relative;
-          width: 100%;
+          overflow: hidden;
+          white-space: nowrap;
         }
         
         .ticker-content {
-          display: flex;
-          animation: scroll 60s linear infinite;
-          white-space: nowrap;
+          display: inline-block;
+          animation: scroll 45s linear infinite;
+        }
+        
+        .group:hover .ticker-content {
+          animation-play-state: paused;
         }
         
         @keyframes scroll {
@@ -77,8 +137,10 @@ const StockTicker = () => {
           }
         }
         
-        .ticker-wrapper:hover .ticker-content {
-          animation-play-state: paused;
+        @media (max-width: 768px) {
+          .ticker-content {
+            animation-duration: 30s;
+          }
         }
       `}</style>
     </div>

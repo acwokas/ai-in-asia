@@ -1381,6 +1381,39 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_prices: {
+        Row: {
+          change_amount: number
+          change_percent: number
+          company_name: string
+          created_at: string
+          current_price: number
+          id: string
+          last_updated: string
+          symbol: string
+        }
+        Insert: {
+          change_amount: number
+          change_percent: number
+          company_name: string
+          created_at?: string
+          current_price: number
+          id?: string
+          last_updated?: string
+          symbol: string
+        }
+        Update: {
+          change_amount?: number
+          change_percent?: number
+          company_name?: string
+          created_at?: string
+          current_price?: number
+          id?: string
+          last_updated?: string
+          symbol?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
