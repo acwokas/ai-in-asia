@@ -261,6 +261,36 @@ const Articles = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={async () => {
+                if (!confirm("⚠️ WARNING: This will delete ALL articles and related data. This cannot be undone. Are you absolutely sure?")) {
+                  return;
+                }
+                
+                try {
+                  const { data, error } = await supabase.functions.invoke('delete-all-articles');
+                  
+                  if (error) throw error;
+                  
+                  toast({
+                    title: "All Articles Deleted",
+                    description: data.message || "Successfully deleted all articles.",
+                  });
+                  
+                  refetch();
+                } catch (error: any) {
+                  toast({
+                    title: "Delete Failed",
+                    description: error.message,
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete All Articles
+            </Button>
             <Button variant="outline" onClick={() => navigate("/admin/publish-all")}>
               <Globe className="h-4 w-4 mr-2" />
               Publish All Drafts
