@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { parse } from 'https://deno.land/std@0.224.0/csv/parse.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,74 +50,26 @@ Deno.serve(async (req) => {
     
     const csvText = csvData
     
-    console.log('Parsing CSV...')
-    const lines = csvText.split('\n')
+    console.log('Parsing CSV with proper parser...')
     
-    // Parse the header row properly
-    const headerLine = lines[0]
-    const headers = headerLine.split(',').map((h: string) => h.trim())
+    const records = parse(csvText, {
+      skipFirstRow: true,
+      columns: ['title', 'slug', 'old_slug', 'content', 'excerpt', 'author', 'categories', 'tags', 'meta_title', 'meta_description', 'featured_image_url', 'featured_image_alt', 'published_at', 'article_type']
+    })
     
-    console.log('CSV Headers:', headers)
-    
-    // Find the indices of slug and published_at columns
-    const slugIndex = headers.findIndex((h: string) => h === 'slug')
-    const publishedAtIndex = headers.findIndex((h: string) => h === 'published_at')
-    
-    console.log(`Found slug at index ${slugIndex}, published_at at index ${publishedAtIndex}`)
+    console.log(`Total records in CSV: ${records.length}`)
     
     let updated = 0
     let skipped = 0
     const errors: string[] = []
     
-    // Helper function to parse CSV line with proper quote handling
-    function parseCSVLine(line: string): string[] {
-      const result: string[] = []
-      let current = ''
-      let inQuotes = false
-      
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i]
-        const nextChar = line[i + 1]
-        
-        if (char === '"') {
-          if (inQuotes && nextChar === '"') {
-            // Escaped quote
-            current += '"'
-            i++ // Skip next quote
-          } else {
-            // Toggle quote state
-            inQuotes = !inQuotes
-          }
-        } else if (char === ',' && !inQuotes) {
-          // End of field
-          result.push(current)
-          current = ''
-        } else {
-          current += char
-        }
-      }
-      
-      // Add last field
-      result.push(current)
-      
-      return result
-    }
-    
-    // Process each line (skip header)
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i]
-      if (!line.trim()) continue
+    // Process each record
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i]
       
       try {
-        const fields = parseCSVLine(line)
-        
-        if (fields.length < Math.max(slugIndex, publishedAtIndex) + 1) {
-          skipped++
-          continue
-        }
-        
-        const slug = fields[slugIndex]?.trim().replace(/^"|"$/g, '')
-        const publishedAt = fields[publishedAtIndex]?.trim().replace(/^"|"$/g, '')
+        const slug = record.slug?.trim()
+        const publishedAt = record.published_at?.trim()
         
         if (!slug || !publishedAt) {
           skipped++
