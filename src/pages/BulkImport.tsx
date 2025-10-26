@@ -105,101 +105,15 @@ export default function BulkImport() {
     setRollingBack(batchId);
 
     try {
-      // First, get all article IDs for this batch
-      const { data: articlesData, error: fetchError } = await supabase
-        .from("articles")
-        .select("id")
-        .eq("batch_id", batchId);
+      const { data, error } = await supabase.functions.invoke('rollback-import', {
+        body: { batchId }
+      });
 
-      if (fetchError) throw fetchError;
-      
-      const articleIds = articlesData?.map(a => a.id) || [];
-
-      if (articleIds.length > 0) {
-        // Delete all related records first (to handle foreign key constraints)
-        
-        // Delete article_categories
-        const { error: categoriesError } = await supabase
-          .from("article_categories")
-          .delete()
-          .in("article_id", articleIds);
-        if (categoriesError) console.warn("Error deleting article_categories:", categoriesError);
-
-        // Delete article_tags
-        const { error: tagsError } = await supabase
-          .from("article_tags")
-          .delete()
-          .in("article_id", articleIds);
-        if (tagsError) console.warn("Error deleting article_tags:", tagsError);
-
-        // Delete comments
-        const { error: commentsError } = await supabase
-          .from("comments")
-          .delete()
-          .in("article_id", articleIds);
-        if (commentsError) console.warn("Error deleting comments:", commentsError);
-
-        // Delete reading_history
-        const { error: readingError } = await supabase
-          .from("reading_history")
-          .delete()
-          .in("article_id", articleIds);
-        if (readingError) console.warn("Error deleting reading_history:", readingError);
-
-        // Delete bookmarks
-        const { error: bookmarksError } = await supabase
-          .from("bookmarks")
-          .delete()
-          .in("article_id", articleIds);
-        if (bookmarksError) console.warn("Error deleting bookmarks:", bookmarksError);
-
-        // Delete editors_picks
-        const { error: editorPicksError } = await supabase
-          .from("editors_picks")
-          .delete()
-          .in("article_id", articleIds);
-        if (editorPicksError) console.warn("Error deleting editors_picks:", editorPicksError);
-
-        // Delete newsletter_top_stories
-        const { error: topStoriesError } = await supabase
-          .from("newsletter_top_stories")
-          .delete()
-          .in("article_id", articleIds);
-        if (topStoriesError) console.warn("Error deleting newsletter_top_stories:", topStoriesError);
-
-        // Delete article_recommendations
-        const { error: recommendationsError } = await supabase
-          .from("article_recommendations")
-          .delete()
-          .in("article_id", articleIds);
-        if (recommendationsError) console.warn("Error deleting article_recommendations:", recommendationsError);
-
-        // Now delete the articles
-        const { error: articlesError } = await supabase
-          .from("articles")
-          .delete()
-          .eq("batch_id", batchId);
-
-        if (articlesError) throw articlesError;
-      }
-
-      // Delete all url_mappings with this batch_id
-      const { error: mappingsError } = await supabase
-        .from("url_mappings")
-        .delete()
-        .eq("batch_id", batchId);
-
-      if (mappingsError) throw mappingsError;
-
-      // Update migration log status
-      await supabase
-        .from("migration_logs")
-        .update({ status: "rolled_back" })
-        .eq("batch_id", batchId);
+      if (error) throw error;
 
       toast({
         title: "Rollback Complete",
-        description: `Successfully deleted ${articleIds.length} articles and all related data.`,
+        description: data.message || "All articles from this import have been deleted.",
       });
 
       // Refresh the imports list
