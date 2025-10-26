@@ -738,22 +738,36 @@ export default function BulkImport() {
               break;
             }
 
-            // Handle categories
+            // Handle categories with legacy mapping
             if (row.categories && article) {
+              // Legacy category mapping
+              const categoryMapping: Record<string, string> = {
+                'News': 'news',
+                'Business': 'business',
+                'Life': 'Life',
+                'Opinion': 'Voices',
+                'Tools': 'Create',
+                'Prompts': 'Create',
+                'AI Academy': 'Learn',
+                'AI Glossary': 'Learn'
+              };
+              
               const categoryNames = row.categories.split(',').map((c: string) => c.trim()).filter(Boolean);
               let firstCategoryId = null;
               let firstCategorySlug = 'uncategorized';
               
               for (let idx = 0; idx < categoryNames.length; idx++) {
-                const catName = categoryNames[idx];
-                // Try matching by name (case-insensitive) first, then by slug
+                const legacyCatName = categoryNames[idx];
+                // Map legacy category to new category slug
+                const mappedSlug = categoryMapping[legacyCatName] || 'uncategorized';
+                
+                // Get category by mapped slug
                 const { data: categories } = await supabase
                   .from("categories")
                   .select("id, name, slug");
                 
                 const category = categories?.find(cat => 
-                  cat.name.toLowerCase() === catName.toLowerCase() ||
-                  cat.slug.toLowerCase() === catName.toLowerCase()
+                  cat.slug.toLowerCase() === mappedSlug.toLowerCase()
                 );
                 
                 if (category) {
