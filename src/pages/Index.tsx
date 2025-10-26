@@ -303,7 +303,8 @@ const Index = () => {
       <OrganizationStructuredData />
       
       <Header />
-      <StockTicker />
+      {/* StockTicker temporarily disabled until content is imported */}
+      {/* <StockTicker /> */}
       
       <main className="flex-1">
         {/* Hero Grid Section */}
@@ -682,8 +683,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Recommended Articles */}
-        <RecommendedArticles />
+        {/* Recommended Articles - temporarily disabled until content is imported */}
+        {/* <RecommendedArticles /> */}
 
         {/* Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
