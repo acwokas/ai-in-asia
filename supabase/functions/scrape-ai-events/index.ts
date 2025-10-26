@@ -270,8 +270,22 @@ Deno.serve(async (req) => {
       scrapeLumaSingapore(),
     ])
 
+    console.log('Scraping results:')
+    console.log(`- online.marketing: ${onlineMarketing.length} events`)
+    console.log(`- ainewshub.org: ${aiNewsHub.length} events`)
+    console.log(`- timesofai.com: ${timesOfAI.length} events`)
+    console.log(`- lu.ma/singapore: ${luma.length} events`)
+
     const allEvents = [...onlineMarketing, ...aiNewsHub, ...timesOfAI, ...luma]
     console.log(`Scraped ${allEvents.length} events total`)
+    
+    // If no events found, provide debugging info
+    if (allEvents.length === 0) {
+      console.log('WARNING: No events found from any source. This could mean:')
+      console.log('1. The websites have changed their HTML structure')
+      console.log('2. The websites are blocking automated access')
+      console.log('3. The websites require JavaScript to load content')
+    }
 
     let inserted = 0
     let skipped = 0
