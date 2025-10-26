@@ -95,36 +95,15 @@ const Index = () => {
     queryKey: ["featured-authors"],
     staleTime: 10 * 60 * 1000, // 10 minutes
     queryFn: async () => {
-      // Fetch both Intelligence Desk and top authors in parallel using public view
-      const [intelligenceDeskResult, topAuthorsResult] = await Promise.all([
-        supabase
-          .from("authors_public")
-          .select("*")
-          .eq("slug", "intelligence-desk")
-          .maybeSingle(),
-        supabase
-          .from("authors_public")
-          .select("*")
-          .neq("slug", "intelligence-desk")
-          .order("article_count", { ascending: false })
-          .limit(5)
-      ]);
+      const { data, error } = await supabase
+        .from("authors_public")
+        .select("*")
+        .eq("is_featured", true)
+        .order("article_count", { ascending: false })
+        .limit(6);
       
-      if (topAuthorsResult.error) throw topAuthorsResult.error;
-      
-      const intelligenceDesk = intelligenceDeskResult.data;
-      const otherAuthors = topAuthorsResult.data || [];
-      
-      // Arrange authors: first 3 from top authors, Intelligence Desk as 4th
-      const result = otherAuthors.slice(0, 3);
-      
-      if (intelligenceDesk) {
-        result.push(intelligenceDesk);
-      } else if (otherAuthors[3]) {
-        result.push(otherAuthors[3]);
-      }
-      
-      return result;
+      if (error) throw error;
+      return data || [];
     },
   });
 
@@ -562,43 +541,53 @@ const Index = () => {
         )}
 
         {/* Featured Voices Section */}
-        <section className="bg-muted/30 py-12">
+        <section className="bg-muted/30 py-16">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="headline text-3xl flex items-center gap-2">
-                <Users className="h-8 w-8 text-secondary" />
+            <div className="text-center mb-12">
+              <h2 className="headline text-4xl font-bold mb-3">
                 Featured Voices
               </h2>
-              <Button variant="outline">All Contributors</Button>
+              <p className="text-muted-foreground text-lg">
+                Meet the experts shaping AI discourse in Asia
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredAuthors?.map((author) => (
                 <Link 
                   key={author.id} 
                   to={`/voices/${author.slug}`}
-                  className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-lg transition-shadow"
+                  className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   {author.avatar_url ? (
                     <img 
                       src={getOptimizedAvatar(author.avatar_url, 160)} 
                       srcSet={author.avatar_url.includes('supabase.co/storage') ? generateResponsiveSrcSet(author.avatar_url, [80, 160, 240]) : undefined}
-                      sizes="(max-width: 768px) 80px, 160px"
+                      sizes="(max-width: 768px) 96px, 160px"
                       alt={author.name}
-                      className="w-20 h-20 rounded-full object-cover mx-auto mb-4 ring-2 ring-primary"
+                      className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
                       loading="lazy"
-                      width={80}
-                      height={80}
+                      width={96}
+                      height={96}
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4" />
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-primary-foreground">
+                      {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
                   )}
-                  <h3 className="font-semibold mb-1">{author.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{author.job_title || "Contributor"}</p>
+                  <h3 className="font-semibold text-xl mb-1">{author.name}</h3>
+                  {author.job_title && (
+                    <p className="text-sm text-muted-foreground mb-3">{author.job_title}</p>
+                  )}
                   {author.bio && (
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-3">{author.bio}</p>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{author.bio}</p>
                   )}
-                  <p className="text-xs text-muted-foreground">{author.article_count || 0} articles</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                    {author.article_count || 0} Articles
+                  </div>
+                  {author.twitter_handle && (
+                    <p className="text-xs text-muted-foreground mt-2">@{author.twitter_handle}</p>
+                  )}
                 </Link>
               ))}
             </div>

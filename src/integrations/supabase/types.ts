@@ -372,6 +372,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_featured: boolean | null
           job_title: string | null
           linkedin_url: string | null
           name: string
@@ -388,6 +389,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_featured?: boolean | null
           job_title?: string | null
           linkedin_url?: string | null
           name: string
@@ -404,6 +406,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_featured?: boolean | null
           job_title?: string | null
           linkedin_url?: string | null
           name?: string
@@ -1580,6 +1583,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string | null
+          is_featured: boolean | null
           job_title: string | null
           name: string | null
           slug: string | null
@@ -1592,6 +1596,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string | null
+          is_featured?: boolean | null
           job_title?: string | null
           name?: string | null
           slug?: string | null
@@ -1604,6 +1609,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string | null
+          is_featured?: boolean | null
           job_title?: string | null
           name?: string | null
           slug?: string | null
