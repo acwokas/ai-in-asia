@@ -1,0 +1,851 @@
+import { useEffect, useRef, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface RichTextEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSelect?: (selectedText: string) => void;
+  placeholder?: string;
+  label?: string;
+  className?: string;
+}
+
+const RichTextEditor = ({
+  value,
+  onChange,
+  onSelect,
+  placeholder = "Start writing...",
+  label,
+  className,
+}: RichTextEditorProps) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const savedSelectionRef = useRef<Range | null>(null);
+  const [isEmpty, setIsEmpty] = useState(!value);
+  const [showImageDialog, setShowImageDialog] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [showTableDialog, setShowTableDialog] = useState(false);
+  const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '' });
+  const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
+  const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
+  const [isEditingLink, setIsEditingLink] = useState(false);
+  const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
+
+  useEffect(() => {
+    if (editorRef.current && !editorRef.current.innerHTML && value) {
+      editorRef.current.innerHTML = convertMarkdownToHtml(value);
+    }
+  }, []);
+
+  const convertMarkdownToHtml = (markdown: string): string => {
+    if (!markdown) return '';
+    
+    return markdown
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      // Handle links with new tab marker (^)
+      .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      // Handle regular links
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>')
+      .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*?<\/li>\s*)+/gs, (match) => {
+        if (match.includes('<ul>')) return match;
+        return '<ol>' + match + '</ol>';
+      })
+      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+  };
+
+  const convertHtmlToMarkdown = (html: string): string => {
+    if (!html) return '';
+    
+    // First, normalize block elements to ensure they're properly separated
+    let normalized = html
+      // Ensure block elements have line breaks before them if they don't already
+      .replace(/([^\n>])(<h[123])/g, '$1\n\n$2')
+      .replace(/([^\n>])(<blockquote)/g, '$1\n\n$2')
+      .replace(/([^\n>])(<p[^>]*>)/g, '$1\n\n$2')
+      .replace(/([^\n>])(<ul)/g, '$1\n\n$2')
+      .replace(/([^\n>])(<ol)/g, '$1\n\n$2')
+      // Ensure block closing tags have line breaks after them
+      .replace(/(<\/h[123]>)([^\n])/g, '$1\n\n$2')
+      .replace(/(<\/blockquote>)([^\n])/g, '$1\n\n$2')
+      .replace(/(<\/p>)([^\n])/g, '$1\n\n$2')
+      .replace(/(<\/ul>)([^\n])/g, '$1\n\n$2')
+      .replace(/(<\/ol>)([^\n])/g, '$1\n\n$2');
+    
+    let markdown = normalized
+      // Convert inline formatting first
+      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+      .replace(/<b>(.*?)<\/b>/g, '**$1**')
+      .replace(/<em>(.*?)<\/em>/g, '*$1*')
+      .replace(/<i>(.*?)<\/i>/g, '*$1*')
+      // Convert headings (must be done before paragraphs)
+      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1')
+      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1')
+      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1')
+      // Convert links - preserve target="_blank" with ^ marker
+      .replace(/<a[^>]*href="([^"]*)"[^>]*target="_blank"[^>]*>(.*?)<\/a>/g, '[$2]($1)^')
+      .replace(/<a[^>]*target="_blank"[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, '[$2]($1)^')
+      // Convert regular links
+      .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, '[$2]($1)')
+      // Convert ordered lists first
+      .replace(/<ol[^>]*>(.*?)<\/ol>/gs, (match, content) => {
+        let counter = 1;
+        return content.replace(/<li[^>]*>(.*?)<\/li>/gs, (_: string, item: string) => {
+          return `${counter++}. ${item}\n`;
+        });
+      })
+      // Convert unordered lists
+      .replace(/<li[^>]*>(.*?)<\/li>/gs, '- $1\n')
+      .replace(/<ul[^>]*>(.*?)<\/ul>/gs, '$1')
+      // Convert blockquotes
+      .replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gs, '> $1')
+      // Convert paragraphs
+      .replace(/<p[^>]*>(.*?)<\/p>/gs, '$1')
+      // Convert breaks
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<div[^>]*>(.*?)<\/div>/gs, '$1\n')
+      // Remove remaining HTML tags
+      .replace(/<[^>]+>/g, '')
+      // Decode HTML entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      // Clean up excessive line breaks
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    
+    return markdown;
+  };
+
+  const execCommand = (command: string, value: string | undefined = undefined) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+  };
+
+  const handleFormat = (format: string) => {
+    switch (format) {
+      case 'bold':
+        execCommand('bold');
+        break;
+      case 'italic':
+        execCommand('italic');
+        break;
+      case 'h1':
+        execCommand('formatBlock', '<h1>');
+        break;
+      case 'h2':
+        execCommand('formatBlock', '<h2>');
+        break;
+      case 'h3':
+        execCommand('formatBlock', '<h3>');
+        break;
+      case 'paragraph':
+        execCommand('formatBlock', '<p>');
+        break;
+      case 'list':
+        execCommand('insertUnorderedList');
+        break;
+      case 'orderedList':
+        execCommand('insertOrderedList');
+        break;
+      case 'quote':
+        execCommand('formatBlock', '<blockquote>');
+        break;
+      case 'hr':
+        execCommand('insertHorizontalRule');
+        break;
+      case 'table':
+        // Save the current selection before opening dialog
+        const tableSel = window.getSelection();
+        if (tableSel && tableSel.rangeCount > 0) {
+          savedSelectionRef.current = tableSel.getRangeAt(0);
+        }
+        setShowTableDialog(true);
+        break;
+      case 'image':
+        // Save the current selection before opening dialog
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          savedSelectionRef.current = sel.getRangeAt(0);
+        }
+        imageInputRef.current?.click();
+        break;
+      case 'link':
+        // Save the current selection before opening dialog
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          savedSelectionRef.current = selection.getRangeAt(0);
+          
+          // Check if the selection is inside an existing link
+          let linkElement: HTMLAnchorElement | null = null;
+          let node = selection.anchorNode;
+          
+          if (node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+              node = node.parentElement;
+            }
+            
+            while (node && node !== editorRef.current) {
+              if ((node as HTMLElement).tagName === 'A') {
+                linkElement = node as HTMLAnchorElement;
+                break;
+              }
+              node = (node as HTMLElement).parentElement;
+            }
+          }
+          
+          // If we found a link, pre-populate the dialog for editing
+          if (linkElement) {
+            setSelectedLinkElement(linkElement);
+            setIsEditingLink(true);
+            setLinkData({
+              url: linkElement.href,
+              text: linkElement.textContent || '',
+              openInNewTab: linkElement.target === '_blank'
+            });
+          } else {
+            setIsEditingLink(false);
+            setSelectedLinkElement(null);
+            setLinkData({ url: '', text: selection.toString(), openInNewTab: false });
+          }
+        }
+        setShowLinkDialog(true);
+        break;
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setImageData({ url: imageUrl, caption: '', alt: '', description: '' });
+      setShowImageDialog(true);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so the same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleInsertImage = () => {
+    if (!imageData.url) return;
+    
+    // Restore the saved selection
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedSelectionRef.current);
+      }
+    }
+    
+    // Focus the editor before inserting
+    editorRef.current?.focus();
+    
+    execCommand('insertImage', imageData.url);
+    
+    // Add alt text and other attributes after insertion
+    setTimeout(() => {
+      const imgs = editorRef.current?.querySelectorAll('img');
+      if (imgs && imgs.length > 0) {
+        // Get the last inserted image
+        const imgElement = imgs[imgs.length - 1] as HTMLImageElement;
+        
+        if (imageData.alt) imgElement.setAttribute('alt', imageData.alt);
+        if (imageData.description) imgElement.setAttribute('title', imageData.description);
+        
+        // Add caption as a wrapper
+        if (imageData.caption) {
+          const figure = document.createElement('figure');
+          const figcaption = document.createElement('figcaption');
+          figcaption.textContent = imageData.caption;
+          figcaption.className = 'text-sm text-muted-foreground mt-2 text-center italic';
+          
+          imgElement.parentNode?.insertBefore(figure, imgElement);
+          figure.appendChild(imgElement);
+          figure.appendChild(figcaption);
+        }
+      }
+      
+      // Trigger input event to update the markdown
+      handleInput();
+    }, 100);
+    
+    setShowImageDialog(false);
+    setImageData({ url: '', caption: '', alt: '', description: '' });
+    savedSelectionRef.current = null;
+  };
+
+  const handleInsertLink = () => {
+    if (!linkData.url) return;
+    
+    // If editing existing link
+    if (isEditingLink && selectedLinkElement) {
+      selectedLinkElement.href = linkData.url;
+      selectedLinkElement.textContent = linkData.text;
+      
+      if (linkData.openInNewTab) {
+        selectedLinkElement.setAttribute('target', '_blank');
+        selectedLinkElement.setAttribute('rel', 'noopener noreferrer');
+      } else {
+        selectedLinkElement.removeAttribute('target');
+        selectedLinkElement.removeAttribute('rel');
+      }
+      
+      handleInput();
+    } else {
+      // Inserting new link
+      // Restore the saved selection
+      if (savedSelectionRef.current) {
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(savedSelectionRef.current);
+        }
+      }
+      
+      execCommand('createLink', linkData.url);
+      
+      // Add target="_blank" if user wants to open in new tab
+      setTimeout(() => {
+        const links = editorRef.current?.querySelectorAll('a');
+        if (links && links.length > 0) {
+          // Get the last inserted link
+          const linkElement = links[links.length - 1] as HTMLAnchorElement;
+          
+          if (linkData.openInNewTab) {
+            linkElement.setAttribute('target', '_blank');
+            linkElement.setAttribute('rel', 'noopener noreferrer');
+          }
+        }
+        
+        // Trigger input event to update the markdown
+        handleInput();
+      }, 100);
+    }
+    
+    setShowLinkDialog(false);
+    setLinkData({ url: '', text: '', openInNewTab: false });
+    setIsEditingLink(false);
+    setSelectedLinkElement(null);
+    savedSelectionRef.current = null;
+    editorRef.current?.focus();
+  };
+
+  const handleRemoveLink = () => {
+    if (selectedLinkElement) {
+      // Replace the link with just its text content
+      const textNode = document.createTextNode(selectedLinkElement.textContent || '');
+      selectedLinkElement.parentNode?.replaceChild(textNode, selectedLinkElement);
+      handleInput();
+    }
+    
+    setShowLinkDialog(false);
+    setLinkData({ url: '', text: '', openInNewTab: false });
+    setIsEditingLink(false);
+    setSelectedLinkElement(null);
+    editorRef.current?.focus();
+  };
+
+  const handleInsertTable = () => {
+    if (!tableData.rows || !tableData.columns) return;
+    
+    // Restore the saved selection
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedSelectionRef.current);
+      }
+    }
+    
+    // Focus the editor before inserting
+    editorRef.current?.focus();
+    
+    // Create table HTML
+    let tableHtml = '<table class="editor-table"><tbody>';
+    
+    for (let i = 0; i < tableData.rows; i++) {
+      tableHtml += '<tr>';
+      for (let j = 0; j < tableData.columns; j++) {
+        if (i === 0 && tableData.hasHeader) {
+          tableHtml += '<th>Header</th>';
+        } else {
+          tableHtml += '<td>Cell</td>';
+        }
+      }
+      tableHtml += '</tr>';
+    }
+    
+    tableHtml += '</tbody></table><p><br></p>';
+    
+    // Insert the table
+    execCommand('insertHTML', tableHtml);
+    
+    // Trigger input event to update the markdown
+    setTimeout(() => {
+      handleInput();
+    }, 100);
+    
+    setShowTableDialog(false);
+    setTableData({ rows: 3, columns: 3, hasHeader: true });
+    savedSelectionRef.current = null;
+  };
+
+  const handleInput = () => {
+    if (!editorRef.current) return;
+    
+    const content = editorRef.current.innerHTML;
+    const text = editorRef.current.innerText || '';
+    
+    setIsEmpty(text.trim().length === 0);
+    
+    const markdown = convertHtmlToMarkdown(content);
+    onChange(markdown);
+  };
+
+  const handleSelection = () => {
+    if (!onSelect) return;
+    
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      onSelect(selection.toString());
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+    // Handle Enter key after image/figure
+    if (e.key === 'Enter' && !modKey) {
+      const selection = window.getSelection();
+      if (selection && selection.anchorNode) {
+        let node = selection.anchorNode;
+        if (node.nodeType === Node.TEXT_NODE) {
+          node = node.parentElement;
+        }
+        
+        // Check if we're inside a figure or figcaption
+        let currentElement = node as HTMLElement;
+        while (currentElement && currentElement !== editorRef.current) {
+          if (currentElement.tagName === 'FIGURE' || currentElement.tagName === 'FIGCAPTION') {
+            e.preventDefault();
+            
+            // Create a new paragraph after the figure
+            const figure = currentElement.tagName === 'FIGURE' ? currentElement : currentElement.closest('figure');
+            if (figure) {
+              const newParagraph = document.createElement('p');
+              newParagraph.innerHTML = '<br>'; // Empty paragraph with line break
+              figure.parentNode?.insertBefore(newParagraph, figure.nextSibling);
+              
+              // Move cursor to the new paragraph
+              const range = document.createRange();
+              range.setStart(newParagraph, 0);
+              range.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+            return;
+          }
+          currentElement = currentElement.parentElement as HTMLElement;
+        }
+      }
+    }
+
+    if (modKey) {
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          handleFormat('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          handleFormat('italic');
+          break;
+        case 'k':
+          e.preventDefault();
+          // Save the current selection before opening dialog
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            savedSelectionRef.current = sel.getRangeAt(0);
+          }
+          setShowLinkDialog(true);
+          break;
+      }
+    }
+  };
+
+  return (
+    <div className={cn("space-y-2", className)}>
+      {label && <Label>{label}</Label>}
+      
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+      
+      {/* Sticky toolbar that follows viewport scroll */}
+      <div className="sticky top-20 z-[100] flex items-center gap-1 p-2 border border-input rounded-t-md bg-background flex-wrap shadow-sm">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('bold')}
+          title="Bold"
+        >
+          <Bold className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('italic')}
+          title="Italic"
+        >
+          <Italic className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-border mx-1" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('h1')}
+          title="Heading 1"
+        >
+          <Heading1 className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('h2')}
+          title="Heading 2"
+        >
+          <Heading2 className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('h3')}
+          title="Heading 3"
+        >
+          <Heading3 className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('paragraph')}
+          title="Paragraph"
+        >
+          <Type className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-border mx-1" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('list')}
+          title="Bulleted List"
+        >
+          <List className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('orderedList')}
+          title="Numbered List"
+        >
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('quote')}
+          title="Quote"
+        >
+          <Quote className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('link')}
+          title="Link"
+        >
+          <LinkIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-border mx-1" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('hr')}
+          title="Horizontal Line"
+        >
+          <Minus className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('image')}
+          title="Insert Image"
+        >
+          <Image className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('table')}
+          title="Insert Table"
+        >
+          <TableIcon className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Scrollable editor content */}
+      <div className="border border-t-0 border-input rounded-b-md overflow-hidden">
+        <div className="max-h-[700px] overflow-y-auto">
+          <div className="relative">
+          {isEmpty && (
+            <div className="absolute top-3 left-4 text-muted-foreground pointer-events-none z-10">
+              {placeholder}
+            </div>
+          )}
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            onSelect={handleSelection}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+            className={cn(
+              "min-h-[500px] w-full bg-background px-4 py-3",
+              "focus-visible:outline-none",
+              "prose prose-slate max-w-none",
+              "[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4",
+              "[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3",
+              "[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2",
+              "[&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-4",
+              "[&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-4",
+              "[&_li]:my-1",
+              "[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4",
+              "[&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline",
+              "[&_strong]:font-bold",
+              "[&_em]:italic",
+              "[&_hr]:border-t [&_hr]:border-border [&_hr]:my-4",
+              "[&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-4",
+              "[&_table]:w-full [&_table]:border-collapse [&_table]:my-4",
+              "[&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold",
+              "[&_td]:border [&_td]:border-border [&_td]:px-4 [&_td]:py-2"
+            )}
+            suppressContentEditableWarning
+          />
+          </div>
+        </div>
+      </div>
+
+      {/* Image Dialog */}
+      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+            <DialogDescription>
+              Add optional details for your image
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="image-caption">Caption (optional)</Label>
+              <Input
+                id="image-caption"
+                placeholder="Image caption"
+                value={imageData.caption}
+                onChange={(e) => setImageData({ ...imageData, caption: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="image-alt">Alt Text</Label>
+              <Input
+                id="image-alt"
+                placeholder="Describe the image"
+                value={imageData.alt}
+                onChange={(e) => setImageData({ ...imageData, alt: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="image-description">Description (for accessibility)</Label>
+              <Textarea
+                id="image-description"
+                placeholder="Detailed description for screen readers"
+                value={imageData.description}
+                onChange={(e) => setImageData({ ...imageData, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowImageDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertImage}>Insert Image</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Table Dialog */}
+      <Dialog open={showTableDialog} onOpenChange={setShowTableDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Table</DialogTitle>
+            <DialogDescription>
+              Configure your table dimensions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="table-rows">Number of Rows</Label>
+              <Input
+                id="table-rows"
+                type="number"
+                min="1"
+                max="20"
+                placeholder="3"
+                value={tableData.rows}
+                onChange={(e) => setTableData({ ...tableData, rows: parseInt(e.target.value) || 3 })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="table-columns">Number of Columns</Label>
+              <Input
+                id="table-columns"
+                type="number"
+                min="1"
+                max="10"
+                placeholder="3"
+                value={tableData.columns}
+                onChange={(e) => setTableData({ ...tableData, columns: parseInt(e.target.value) || 3 })}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="table-header"
+                checked={tableData.hasHeader}
+                onCheckedChange={(checked) => 
+                  setTableData({ ...tableData, hasHeader: checked as boolean })
+                }
+              />
+              <Label htmlFor="table-header" className="cursor-pointer">
+                Include header row
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTableDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertTable}>Insert Table</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Dialog */}
+      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{isEditingLink ? 'Edit Link' : 'Insert Link'}</DialogTitle>
+            <DialogDescription>
+              {isEditingLink ? 'Update or remove your link' : 'Add a link to your content'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="link-text">Link Text</Label>
+              <Input
+                id="link-text"
+                placeholder="Click here"
+                value={linkData.text}
+                onChange={(e) => setLinkData({ ...linkData, text: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="link-url">URL</Label>
+              <Input
+                id="link-url"
+                placeholder="https://example.com"
+                value={linkData.url}
+                onChange={(e) => setLinkData({ ...linkData, url: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleInsertLink();
+                  }
+                }}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="link-newtab"
+                checked={linkData.openInNewTab}
+                onCheckedChange={(checked) => 
+                  setLinkData({ ...linkData, openInNewTab: checked as boolean })
+                }
+              />
+              <Label htmlFor="link-newtab" className="cursor-pointer">
+                Open in new tab
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            {isEditingLink && (
+              <Button variant="destructive" onClick={handleRemoveLink}>
+                Remove Link
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertLink}>
+              {isEditingLink ? 'Update Link' : 'Insert Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default RichTextEditor;
