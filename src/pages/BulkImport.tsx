@@ -666,7 +666,7 @@ export default function BulkImport() {
               continue;
             }
 
-            // Get or create author by name
+            // Get author by name (case-insensitive)
             let authorId = null;
             if (row.author) {
               // Map AIinASIA (and variations) to Intelligence Desk
@@ -681,29 +681,7 @@ export default function BulkImport() {
                 .select("id, name");
               
               const author = authors?.find(a => a.name.toLowerCase() === authorName.toLowerCase());
-              
-              if (author) {
-                authorId = author.id;
-              } else {
-                // Create new author if not found
-                const authorSlug = authorName.toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/(^-|-$)/g, '');
-                
-                const { data: newAuthor, error: authorError } = await supabase
-                  .from("authors")
-                  .insert({
-                    name: authorName,
-                    slug: authorSlug,
-                  })
-                  .select()
-                  .single();
-                
-                if (!authorError && newAuthor) {
-                  authorId = newAuthor.id;
-                  console.log(`Created new author: ${authorName}`);
-                }
-              }
+              authorId = author?.id;
             }
 
             // Parse content from WordPress blocks
@@ -760,7 +738,7 @@ export default function BulkImport() {
               break;
             }
 
-            // Handle categories - create if they don't exist
+            // Handle categories
             if (row.categories && article) {
               const categoryNames = row.categories.split(',').map((c: string) => c.trim()).filter(Boolean);
               let firstCategoryId = null;
@@ -773,31 +751,10 @@ export default function BulkImport() {
                   .from("categories")
                   .select("id, name, slug");
                 
-                let category = categories?.find(cat => 
+                const category = categories?.find(cat => 
                   cat.name.toLowerCase() === catName.toLowerCase() ||
                   cat.slug.toLowerCase() === catName.toLowerCase()
                 );
-                
-                // Create category if not found
-                if (!category) {
-                  const categorySlug = catName.toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/(^-|-$)/g, '');
-                  
-                  const { data: newCategory, error: catError } = await supabase
-                    .from("categories")
-                    .insert({
-                      name: catName,
-                      slug: categorySlug,
-                    })
-                    .select()
-                    .single();
-                  
-                  if (!catError && newCategory) {
-                    category = newCategory;
-                    console.log(`Created new category: ${catName}`);
-                  }
-                }
                 
                 if (category) {
                   // Save first category as primary
