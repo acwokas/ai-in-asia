@@ -98,11 +98,11 @@ const Articles = () => {
       }
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as "draft" | "published" | "review" | "archived");
+        query = query.eq("status", statusFilter as any);
       }
 
       if (typeFilter !== "all") {
-        query = query.eq("article_type", typeFilter as "article" | "voice" | "guide" | "tool" | "video" | "site_furniture" | "event" | "interview" | "review" | "explainer" | "podcast");
+        query = query.eq("article_type", typeFilter as any);
       }
 
       if (categoryFilter === "no-category") {
