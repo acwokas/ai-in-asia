@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, XCircle, Home } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,24 +26,15 @@ const CleanArticles = () => {
     setResults(null);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clean-article-formatting`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('clean-article-formatting');
 
-      const data = await response.json();
+      if (error) throw error;
 
       if (data.success) {
         setResults(data);
         toast({
           title: "Success!",
-          description: `Cleaned ${data.message}`,
+          description: data.message,
         });
       } else {
         throw new Error(data.error || "Failed to clean articles");
