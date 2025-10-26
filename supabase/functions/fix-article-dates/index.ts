@@ -47,11 +47,16 @@ Deno.serve(async (req) => {
     
     console.log('Parsing CSV...')
     const lines = csvText.split('\n')
-    const headers = lines[0].split(',')
+    
+    // Parse the header row properly
+    const headerLine = lines[0]
+    const headers = headerLine.split(',').map(h => h.trim())
+    
+    console.log('CSV Headers:', headers)
     
     // Find the indices of slug and published_at columns
-    const slugIndex = headers.findIndex(h => h.trim() === 'slug')
-    const publishedAtIndex = headers.findIndex(h => h.trim() === 'published_at')
+    const slugIndex = headers.findIndex(h => h === 'slug')
+    const publishedAtIndex = headers.findIndex(h => h === 'published_at')
     
     console.log(`Found slug at index ${slugIndex}, published_at at index ${publishedAtIndex}`)
     
@@ -65,32 +70,17 @@ Deno.serve(async (req) => {
       if (!line.trim()) continue
       
       try {
-        // Parse CSV line (basic parsing, may need improvement for complex cases)
-        const values: string[] = []
-        let currentValue = ''
-        let insideQuotes = false
+        // Simple CSV parsing - just split by comma for the first few columns
+        // Since slug is the 2nd column and published_at is the 13th column
+        const parts = line.split(',')
         
-        for (let j = 0; j < line.length; j++) {
-          const char = line[j]
-          
-          if (char === '"') {
-            insideQuotes = !insideQuotes
-          } else if (char === ',' && !insideQuotes) {
-            values.push(currentValue)
-            currentValue = ''
-          } else {
-            currentValue += char
-          }
-        }
-        values.push(currentValue) // Add the last value
-        
-        if (values.length < Math.max(slugIndex, publishedAtIndex) + 1) {
+        if (parts.length < 14) {
           skipped++
           continue
         }
         
-        const slug = values[slugIndex]?.trim()
-        const publishedAt = values[publishedAtIndex]?.trim()
+        const slug = parts[slugIndex]?.trim().replace(/^"|"$/g, '')
+        const publishedAt = parts[publishedAtIndex]?.trim().replace(/^"|"$/g, '')
         
         if (!slug || !publishedAt) {
           skipped++
