@@ -1,14 +1,14 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# AI in ASIA - robots.txt
 User-agent: *
 Allow: /
+
+# Sitemap
+Sitemap: https://aiinasia.com/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin
+Disallow: /editor
+Disallow: /auth
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
