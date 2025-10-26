@@ -27,6 +27,7 @@ const Admin = () => {
   const [googleAdsDialogOpen, setGoogleAdsDialogOpen] = useState(false);
   const [newsletterDialogOpen, setNewsletterDialogOpen] = useState(false);
   const [scrapingEvents, setScrapingEvents] = useState(false);
+  const [fixingDates, setFixingDates] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -490,6 +491,32 @@ const Admin = () => {
     }
   };
 
+  const handleFixArticleDates = async () => {
+    try {
+      setFixingDates(true);
+      
+      const { data, error } = await supabase.functions.invoke('fix-article-dates');
+      
+      if (error) throw error;
+
+      const results = data?.results;
+      toast({
+        title: "Article dates fixed!",
+        description: `${results?.updated || 0} articles updated with original dates`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+    } catch (error: any) {
+      toast({
+        title: "Error fixing dates",
+        description: error.message || "Failed to fix article dates",
+        variant: "destructive",
+      });
+    } finally {
+      setFixingDates(false);
+    }
+  };
+
   if (isAdmin === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -721,6 +748,24 @@ const Admin = () => {
                     <>
                       <Calendar className="h-4 w-4 mr-2" />
                       Scrape AI Events
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  onClick={handleFixArticleDates} 
+                  variant="outline" 
+                  className="justify-start bg-amber-500/10 border-amber-500 text-amber-700 hover:bg-amber-500/20"
+                  disabled={fixingDates}
+                >
+                  {fixingDates ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Fixing Dates...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Fix Article Dates from CSV
                     </>
                   )}
                 </Button>
