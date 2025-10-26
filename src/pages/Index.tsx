@@ -17,6 +17,7 @@ import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
 import RecommendedArticles from "@/components/RecommendedArticles";
 import { EditorsPick } from "@/components/EditorsPick";
+import { UpcomingEvents } from "@/components/UpcomingEvents";
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 
@@ -683,8 +684,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Recommended Articles - temporarily disabled until content is imported */}
-        {/* <RecommendedArticles /> */}
+        {/* Recommended Articles */}
+        <UpcomingEvents />
 
         {/* Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">

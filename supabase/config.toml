@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.rollback-import]
 verify_jwt = true
+
+[functions.scrape-ai-events]
+verify_jwt = true
