@@ -54,5 +54,8 @@ verify_jwt = true
 [functions.clean-article-formatting]
 verify_jwt = true
 
+[functions.process-pending-comments]
+verify_jwt = false
+
 [functions.publish-scheduled-articles]
 verify_jwt = true

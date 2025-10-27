@@ -98,143 +98,83 @@ serve(async (req) => {
 
     // Generate random number of comments (3-6)
     const numComments = Math.floor(Math.random() * 4) + 3;
-
-    // Realistic names pool
-    const names = [
-      "Sarah Chen", "Mike Johnson", "Priya Patel", "James Liu", "Emma Brown",
-      "Alex Kim", "Rachel Wong", "David Singh", "Lisa Nguyen", "Tom Zhang",
-      "Maya Sharma", "Chris Park", "Anna Lee", "Ben Taylor", "Nina Gupta",
-      "sam_tech", "AIEnthusiast", "TechWatcher99", "FutureNow", "InnovateDaily",
-      "DataDriven", "CodeMaster", "TechGuru", "AIObserver", "DigitalAge",
-      "JB007", "TechSavvy", "ML_Enthusiast", "DevOps_Pro", "CloudNative"
-    ];
-
-    // Shuffle names
-    const shuffledNames = names.sort(() => Math.random() - 0.5).slice(0, numComments);
-
-    // Generate comments using AI
-    const systemPrompt = `You are generating realistic blog comments for an AI/tech article. 
-CRITICAL RULES:
-- NEVER use em dashes (—)
-- AVOID AI phrases like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift", "disruptive", "innovative", "transformative"
-- Write naturally like real humans commenting
-- Keep comments 1-3 sentences
-- Be specific to the article content
-- Mix different tones: thoughtful, curious, critical, enthusiastic
-- Some comments can disagree or raise questions
-- Use casual language and varied perspectives
-- Return ONLY a JSON array of comment strings, nothing else
-
-Article: "${article.title}"
-${article.excerpt || ""}`;
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${numComments} diverse, realistic comments.` }
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "generate_comments",
-            description: "Generate realistic blog comments",
-            parameters: {
-              type: "object",
-              properties: {
-                comments: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Array of comment texts"
-                }
-              },
-              required: ["comments"],
-              additionalProperties: false
-            }
-          }
-        }],
-        tool_choice: { type: "function", function: { name: "generate_comments" } }
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", aiResponse.status, errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
-    }
-
-    const aiData = await aiResponse.json();
-    const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
     
-    if (!toolCall) {
-      throw new Error("No tool call in AI response");
-    }
-
-    const parsedArgs = JSON.parse(toolCall.function.arguments);
-    const comments = parsedArgs.comments;
-
-    // Calculate realistic comment timestamps based on article publication date
-    const publishedAt = new Date(article.published_at || Date.now());
     const now = new Date();
-    const daysSincePublished = Math.floor((now.getTime() - publishedAt.getTime()) / (1000 * 60 * 60 * 24));
+    const publishedAt = new Date(article.published_at);
+    const daysSincePublished = Math.max(0, (now.getTime() - publishedAt.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Insert comments
-    const commentsToInsert = comments.map((content: string, index: number) => {
-      // Spread comments over time: 
-      // - First few days: 40% of comments
-      // - First month: 30% of comments  
-      // - Rest spread over remaining time: 30% of comments
-      let daysAfterPublish: number;
+    // Create pending comment generation jobs with scheduled times
+    const pendingComments = [];
+    
+    for (let i = 0; i < numComments; i++) {
+      // Distribute comments over time relative to publish date
+      // 40% within first 3 days, 30% between 3-30 days, 30% after 30 days
       const rand = Math.random();
+      let daysAfterPublish;
       
       if (rand < 0.4) {
-        // 40% in first 3 days
-        daysAfterPublish = Math.random() * Math.min(3, daysSincePublished);
+        // Within first 3 days
+        daysAfterPublish = Math.random() * 3;
       } else if (rand < 0.7) {
-        // 30% in first 30 days
-        daysAfterPublish = 3 + (Math.random() * Math.min(27, Math.max(0, daysSincePublished - 3)));
+        // Between 3-30 days
+        daysAfterPublish = 3 + (Math.random() * 27);
       } else {
-        // 30% spread over remaining time
-        daysAfterPublish = 30 + (Math.random() * Math.max(0, daysSincePublished - 30));
+        // After 30 days
+        daysAfterPublish = 30 + (Math.random() * 30);
       }
       
-      let commentDate = new Date(publishedAt.getTime() + daysAfterPublish * 24 * 60 * 60 * 1000);
+      let scheduledFor = new Date(publishedAt.getTime() + daysAfterPublish * 24 * 60 * 60 * 1000);
       
-      // Ensure comment date doesn't exceed current time
-      if (commentDate > now) {
-        commentDate = now;
+      // For articles published recently, schedule future comments
+      // For older articles where the scheduled time is in the past, process immediately
+      if (scheduledFor < now && daysSincePublished < 3) {
+        // Recent article - push to future (within next 7-30 days)
+        scheduledFor = new Date(now.getTime() + (7 + Math.random() * 23) * 24 * 60 * 60 * 1000);
+      } else if (scheduledFor > now) {
+        // Future date - keep as is
+      } else {
+        // Past date for old article - process soon (within next hour)
+        scheduledFor = new Date(now.getTime() + Math.random() * 60 * 60 * 1000);
       }
       
-      return {
+      pendingComments.push({
         article_id: articleId,
-        content: content,
-        author_name: shuffledNames[index],
-        approved: true, // Auto-approve
-        created_at: commentDate.toISOString()
-      };
-    });
+        scheduled_for: scheduledFor.toISOString(),
+        comment_prompt: `Generate a realistic, insightful comment for this article titled "${article.title}". 
+The article is about: ${article.excerpt || article.title}
 
+CRITICAL RULES:
+- NEVER use em dashes (—)
+- AVOID AI clichés like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift"
+- Write naturally like a real person commenting
+- Keep it 1-3 sentences
+- Be specific to the topic
+- Show genuine personality (curious, critical, enthusiastic, or thoughtful)
+
+Format your response as:
+Name: [realistic name]
+Comment: [your comment]`
+      });
+    }
+    
+    // Insert pending comment jobs
     const { error: insertError } = await supabase
-      .from("comments")
-      .insert(commentsToInsert);
-
+      .from('pending_comments')
+      .insert(pendingComments);
+    
     if (insertError) {
+      console.error('Error creating pending comments:', insertError);
       throw insertError;
     }
-
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
-        commentsAdded: comments.length,
+        pendingComments: pendingComments.length,
+        message: `${pendingComments.length} comments scheduled for generation`,
         articleId: articleId
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {

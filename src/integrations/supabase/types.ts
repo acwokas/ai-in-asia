@@ -1205,6 +1205,38 @@ export type Database = {
           },
         ]
       }
+      pending_comments: {
+        Row: {
+          article_id: string
+          comment_prompt: string
+          created_at: string | null
+          id: string
+          scheduled_for: string
+        }
+        Insert: {
+          article_id: string
+          comment_prompt: string
+          created_at?: string | null
+          id?: string
+          scheduled_for: string
+        }
+        Update: {
+          article_id?: string
+          comment_prompt?: string
+          created_at?: string | null
+          id?: string
+          scheduled_for?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       popup_settings: {
         Row: {
           active_popup: string
