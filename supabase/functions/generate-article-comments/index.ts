@@ -72,16 +72,21 @@ serve(async (req) => {
 
     const { articleId, batchMode } = validationResult.data;
 
-    // Get article details
+    // Get article details with full content
     const { data: article, error: articleError } = await supabase
       .from("articles")
       .select("id, title, excerpt, content, published_at")
       .eq("id", articleId)
       .single();
-
+    
     if (articleError || !article) {
       throw new Error("Article not found");
     }
+    
+    // Extract meaningful content snippet (first 500 chars of content for context)
+    const contentPreview = article.content 
+      ? article.content.replace(/<[^>]*>/g, '').substring(0, 500)
+      : article.excerpt || article.title;
 
     // Check if article already has comments
     const { data: existingComments } = await supabase
@@ -143,41 +148,64 @@ serve(async (req) => {
       pendingComments.push({
         article_id: articleId,
         scheduled_for: scheduledFor.toISOString(),
-        comment_date: historicalDate.toISOString(), // When comment appears to be posted
-        comment_prompt: `Generate a realistic, casual comment for this article titled "${article.title}". 
-The article is about: ${article.excerpt || article.title}
+        comment_date: historicalDate.toISOString(),
+        comment_prompt: `You're writing a realistic comment on a newspaper article. Read the article and react naturally.
 
-YOU MUST FOLLOW THESE RULES OR YOUR RESPONSE WILL BE REJECTED:
+ARTICLE: "${article.title}"
+CONTENT: ${contentPreview}
 
-LENGTH REQUIREMENTS (THIS IS CRITICAL):
-- Roll a dice: 30% chance = SHORT (5-15 words ONLY), 50% = MEDIUM (15-40 words), 20% = LONG (40-70 words)
-- SHORT examples: "wow this is cool", "interesting tbh", "didnt know this was a thing lol", "makes sense i guess"
-- Do NOT write 2-3 well-formed sentences for EVERY comment - that's fake!
+CRITICAL RULES - YOUR RESPONSE WILL BE REJECTED IF YOU BREAK THESE:
 
-WRITING STYLE (MUST SOUND REAL):
-- NEVER EVER use em dashes (—) or fancy punctuation
-- NEVER use: "This piece really", "fascinating", "intricate", "tightrope", "enhancing", "cultural heritage"
-- AVOID: perfect grammar, formal tone, sophisticated vocabulary
-- DO USE: casual tone, lowercase starts, actual typos (teh, recieve, etc), abbreviations (tbh, imo, ngl, btw, lol, lmao, omg), slang
-- Examples of GOOD casual writing: "ngl this is pretty cool", "interesting read but idk if it'll work", "lmao who comes up with this stuff"
-- Examples of BAD formal writing: "This article presents a fascinating perspective", "It's intriguing to consider", "This piece highlights"
+LENGTH (MUST VARY):
+- 30% SHORT: 5-15 words ("wow", "interesting take", "didnt expect that tbh", "makes sense")
+- 50% MEDIUM: 15-40 words (1-2 casual sentences)
+- 20% LONG: 40-70 words (thoughtful but still conversational)
 
-VARIETY IN TONE (NOT ALL POSITIVE):
-- Some excited: "omg yes!", "this is so cool tbh"
-- Some skeptical: "seems overhyped to me", "idk about this", "meh"
-- Some critical: "not sure i agree", "sounds expensive lol"
-- Some questions: "wait how does this even work?", "is this for real?"
-- Some brief: "interesting", "cool stuff", "nice"
+REFERENCE THE ARTICLE:
+- Pick ONE specific detail from the content above and react to it
+- Don't summarize - react like a real reader who caught something interesting
+- Examples: "the part about X really surprised me", "wait so Y is happening now?", "didnt know about Z"
 
-NAMES TO USE (DIVERSE):
-- Southeast Asia: Wei, Mei, Siti, Arjun, Priya
-- North Asia: Li, Chen, Park, Kim, Hiroshi, Yuki, Tanaka
-- India: Raj, Anjali, Vikram, Neha
-- Western: Mike, Sarah, Alex, Emma, Tom, Lisa
+TONE VARIETY (CRITICAL - NOT ALL POSITIVE):
+- Enthusiastic: "omg this is huge", "finally someone talking about this"
+- Analytical: "makes sense when you think about it", "interesting point about X"
+- Skeptical: "idk seems a bit much", "not convinced tbh", "feels overhyped"
+- Critical: "but what about Y tho", "seems like they missed X", "not sure i agree"
+- Questioning: "wait how does this work?", "is this actually happening?", "source?"
+- Casual positive: "cool stuff", "good read", "interesting"
+- Indifferent: "meh", "ok i guess", "nothing new really"
+- Surprised: "wait what", "didnt see that coming", "thats wild"
+- Personal: "i work in this field and...", "my friend mentioned this", "reminds me of when..."
+- Practical: "wonder how much this costs", "would this work for X", "curious about implementation"
 
-Format your response EXACTLY as:
-Name: [pick one diverse name]
-Comment: [your realistic casual comment - remember to vary the length!]`
+ABSOLUTELY FORBIDDEN WORDS/PHRASES:
+- NO: "fascinating", "intriguing", "delves into", "sheds light", "explores", "highlights", "underscores"
+- NO: "This article", "This piece", "The author", "It's interesting to note"
+- NO: "compelling", "thought-provoking", "insightful", "comprehensive", "nuanced"
+- NO: em dashes (—), semicolons overuse, formal punctuation
+- NO: swearing or offensive language
+- NO: generic praise without specifics
+
+WRITING STYLE:
+- Sound like actual people on the internet
+- Mix of grammar levels (some good, some lazy)
+- Real typos occasionally (teh, recieve, your/youre, its/it's)
+- Abbreviations: tbh, imo, ngl, btw, tho, bc, idk
+- Lowercase starts common
+- Fragments ok ("Interesting.", "Pretty cool.")
+- Real speech patterns ("i mean", "like", "basically", "honestly")
+
+DIVERSE NAMES:
+- Southeast Asia: Wei, Mei, Siti, Arjun, Priya, Boon, Lakshmi
+- North Asia: Li, Chen, Park, Kim, Hiroshi, Yuki, Tanaka, Zhang
+- South Asia: Raj, Anjali, Vikram, Neha, Ravi, Priya
+- Western: Mike, Sarah, Alex, Emma, Tom, Lisa, James, Kate
+- Middle East: Omar, Fatima, Yusuf, Layla
+- Africa: Kwame, Amara, Oluwaseun, Nia
+
+Format EXACTLY as:
+Name: [pick diverse name]
+Comment: [your realistic comment referencing article specifics]`
       });
     }
     
