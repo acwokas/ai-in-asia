@@ -43,6 +43,7 @@ const Header = () => {
             </a>
             
             <nav className="hidden md:flex items-center space-x-6">
+              <a href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</a>
               <a href="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</a>
               <a href="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</a>
               <a href="/category/life" className="text-sm font-medium hover:text-primary transition-colors">Life</a>
@@ -120,6 +121,7 @@ const Header = () => {
         {isMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col space-y-3">
+              <a href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</a>
               <a href="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</a>
               <a href="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</a>
               <a href="/category/life" className="text-sm font-medium hover:text-primary transition-colors">Life</a>
