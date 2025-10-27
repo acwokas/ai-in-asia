@@ -483,11 +483,14 @@ const Article = () => {
           case 'paragraph':
             if (!block.content) return null;
             
-            // Check if this is an image caption (standalone text that looks like a caption)
-            const isLikelyImageCaption = block.content.length < 200 && 
-              !block.content.includes('.') && 
-              !block.content.includes('?') &&
-              !block.content.includes('[');
+            // Check if this is an image caption - only if previous block was an image
+            const prevBlock = index > 0 ? blocks[index - 1] : null;
+            const isLikelyImageCaption = prevBlock?.type === 'image' && 
+              block.content.length < 150 && 
+              (block.content.toLowerCase().includes('source') || 
+               block.content.toLowerCase().includes('credit') ||
+               block.content.toLowerCase().includes('photo') ||
+               block.content.toLowerCase().includes('image'));
             
             // Check if paragraph is a quote (italic text in quotes)
             const isQuote = block.content.startsWith('*"') && block.content.endsWith('"*');
