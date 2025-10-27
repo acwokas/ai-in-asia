@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       .from('pending_comments')
       .select('*')
       .lte('scheduled_for', now)
-      .limit(10); // Process up to 10 comments per run
+      .limit(50); // Process up to 50 comments per run
 
     if (fetchError) {
       console.error('Error fetching pending comments:', fetchError);

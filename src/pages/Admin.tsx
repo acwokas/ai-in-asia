@@ -829,7 +829,10 @@ const Admin = () => {
                 <Button onClick={() => navigate("/admin/bulk-comments")} variant="outline" className="justify-start">
                   Generate Comments (Bulk)
                 </Button>
-                <Button 
+                <Button onClick={() => navigate("/admin/process-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
+                  Process Pending Comments
+                </Button>
+                <Button
                   onClick={handleAutoScheduleComments} 
                   variant="outline" 
                   className="justify-start bg-primary/5"
