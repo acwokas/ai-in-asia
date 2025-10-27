@@ -28,6 +28,7 @@ const Admin = () => {
   const [newsletterDialogOpen, setNewsletterDialogOpen] = useState(false);
   const [scrapingEvents, setScrapingEvents] = useState(false);
   const [fixingDates, setFixingDates] = useState(false);
+  const [autoScheduling, setAutoScheduling] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -245,6 +246,31 @@ const Admin = () => {
     if (!email) return "User";
     const username = email.split("@")[0];
     return username.charAt(0).toUpperCase() + username.slice(1);
+  };
+
+  const handleAutoScheduleComments = async () => {
+    setAutoScheduling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("auto-schedule-comments");
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: data.message || `Scheduled comments for ${data.articlesScheduled} articles`,
+      });
+
+      refetchStats();
+    } catch (error) {
+      console.error("Error auto-scheduling comments:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to auto-schedule comments",
+        variant: "destructive",
+      });
+    } finally {
+      setAutoScheduling(false);
+    }
   };
 
   const handleOpenAuthorsDialog = () => {
@@ -746,6 +772,21 @@ const Admin = () => {
                 </Button>
                 <Button onClick={() => navigate("/admin/bulk-comments")} variant="outline" className="justify-start">
                   Generate Comments (Bulk)
+                </Button>
+                <Button 
+                  onClick={handleAutoScheduleComments} 
+                  variant="outline" 
+                  className="justify-start bg-primary/5"
+                  disabled={autoScheduling}
+                >
+                  {autoScheduling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Auto-Scheduling...
+                    </>
+                  ) : (
+                    "Auto-Schedule Missing Comments"
+                  )}
                 </Button>
               </div>
             </div>
