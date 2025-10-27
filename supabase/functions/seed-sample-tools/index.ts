@@ -38,6 +38,132 @@ const SAMPLE_TOOLS = [
     url: "https://ai.baidu.com/",
     category: "AI Platform",
   },
+  {
+    name: "Tencent AI Lab",
+    description: "Advanced AI research and development platform from Tencent, covering computer vision, NLP, speech recognition, and machine learning.",
+    url: "https://ai.tencent.com/",
+    category: "AI Research",
+  },
+  {
+    name: "LINE CLOVA",
+    description: "AI platform from LINE Corporation providing voice recognition, natural language processing, and computer vision services.",
+    url: "https://clova.line.me/",
+    category: "AI Platform",
+  },
+  {
+    name: "Naver Papago",
+    description: "AI-powered translation service supporting multiple Asian languages with neural machine translation technology.",
+    url: "https://papago.naver.com/",
+    category: "Translation",
+  },
+  {
+    name: "Samsung Bixby",
+    description: "Samsung's AI assistant platform integrating voice control, vision recognition, and contextual awareness.",
+    url: "https://www.samsung.com/us/explore/bixby/",
+    category: "AI Assistant",
+  },
+  {
+    name: "Sony Neural Network Libraries",
+    description: "Deep learning framework from Sony for research and development of AI applications.",
+    url: "https://nnabla.org/",
+    category: "Deep Learning",
+  },
+  {
+    name: "Huawei ModelArts",
+    description: "AI development platform providing one-stop AI development services from data preparation to model deployment.",
+    url: "https://www.huaweicloud.com/intl/en-us/product/modelarts.html",
+    category: "AI Development",
+  },
+  {
+    name: "SenseTime",
+    description: "Leading AI company specializing in computer vision and deep learning, providing face recognition and image analysis.",
+    url: "https://www.sensetime.com/",
+    category: "Computer Vision",
+  },
+  {
+    name: "iFLYTEK",
+    description: "Chinese AI company specializing in speech recognition, natural language processing, and voice synthesis.",
+    url: "https://www.iflytek.com/en/",
+    category: "Speech AI",
+  },
+  {
+    name: "Megvii Face++",
+    description: "Computer vision platform providing facial recognition, image recognition, and intelligent video analysis.",
+    url: "https://www.faceplusplus.com/",
+    category: "Computer Vision",
+  },
+  {
+    name: "Kakao i",
+    description: "Kakao's AI platform offering speech recognition, natural language processing, and recommendation systems.",
+    url: "https://kakao.ai/",
+    category: "AI Platform",
+  },
+  {
+    name: "ABEJA Platform",
+    description: "Japanese AI platform for developing and deploying deep learning models in enterprise environments.",
+    url: "https://www.abejainc.com/",
+    category: "Enterprise AI",
+  },
+  {
+    name: "Preferred Networks",
+    description: "Japanese AI company developing deep learning technologies for robotics, manufacturing, and healthcare.",
+    url: "https://www.preferred.jp/en/",
+    category: "Deep Learning",
+  },
+  {
+    name: "NTT AI",
+    description: "NTT's comprehensive AI solutions including natural language processing, image recognition, and data analytics.",
+    url: "https://www.global.ntt/en/services/ai.html",
+    category: "AI Solutions",
+  },
+  {
+    name: "Rakuten AI",
+    description: "AI platform from Rakuten providing personalization, recommendation, and customer analytics solutions.",
+    url: "https://rakuten.ai/",
+    category: "AI Platform",
+  },
+  {
+    name: "Grab AI",
+    description: "Southeast Asia's superapp using AI for ride-hailing optimization, delivery routing, and financial services.",
+    url: "https://www.grab.com/sg/",
+    category: "Applied AI",
+  },
+  {
+    name: "Grab AI",
+    description: "Southeast Asia's superapp using AI for ride-hailing optimization, delivery routing, and financial services.",
+    url: "https://www.grab.com/sg/",
+    category: "Applied AI",
+  },
+  {
+    name: "Sea AI Lab",
+    description: "AI research division of Sea Group focusing on recommendation systems, NLP, and computer vision.",
+    url: "https://www.sea.com/",
+    category: "AI Research",
+  },
+  {
+    name: "Gojek AI",
+    description: "Indonesian superapp leveraging AI for transportation, food delivery, and digital payment optimization.",
+    url: "https://www.gojek.com/",
+    category: "Applied AI",
+  },
+  {
+    name: "ByteDance AI Lab",
+    description: "AI research and development from ByteDance, covering recommendation algorithms, NLP, and computer vision.",
+    url: "https://www.bytedance.com/en/",
+    category: "AI Research",
+  },
+  {
+    name: "Xiaomi AI",
+    description: "Xiaomi's AI platform powering smart home devices, voice assistants, and IoT ecosystem.",
+    url: "https://www.mi.com/global/",
+    category: "IoT AI",
+  },
+  {
+    name: "Pinduoduo AI",
+    description: "E-commerce AI platform using machine learning for product recommendations and agricultural technology.",
+    url: "https://www.pinduoduo.com/",
+    category: "E-commerce AI",
+  }
 ];
 
 Deno.serve(async (req) => {

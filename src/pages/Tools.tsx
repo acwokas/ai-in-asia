@@ -228,7 +228,7 @@ const Tools = () => {
                       <div>
                         <h3 className="font-bold text-xl mb-2">{tool.name}</h3>
                         {tool.category && (
-                          <Badge variant="secondary" className="mb-2">
+                          <Badge className="mb-2 bg-green-600 text-white hover:bg-green-700">
                             {tool.category}
                           </Badge>
                         )}
