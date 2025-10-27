@@ -16,6 +16,7 @@ import { loadGoogleAdsScript } from "./components/GoogleAds";
 import ConsentBanner from "./components/ConsentBanner";
 import { CollectiveFooter } from "./components/CollectiveFooter";
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
@@ -86,6 +87,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <GoogleAnalytics />
             <ConsentBanner />
             <WelcomePopup />
