@@ -96,7 +96,7 @@ const App = () => (
               <Route path="/:category/:slug" element={<Article />} />
               <Route path="/category/:slug" element={<Category />} />
               <Route path="/tag/:slug" element={<Tag />} />
-              <Route path="/voices/:slug" element={<AuthorProfile />} />
+              <Route path="/author/:slug" element={<AuthorProfile />} />
               <Route path="/sitemap.xml" element={<SitemapRedirect />} />
               <Route path="/search" element={<Search />} />
               <Route path="/connection-test" element={<ConnectionTest />} />

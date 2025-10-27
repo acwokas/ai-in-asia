@@ -76,10 +76,10 @@ const AuthorProfile = () => {
       <Helmet>
         <title>{author?.name || 'Author'} - Author Profile | AI in ASIA</title>
         <meta name="description" content={author?.bio || `Read articles by ${author?.name}. ${articles?.length || 0} articles published.`} />
-        <link rel="canonical" href={`https://aiinasia.com/voices/${author?.slug}`} />
+        <link rel="canonical" href={`https://aiinasia.com/author/${author?.slug}`} />
         <meta property="og:title" content={`${author?.name} - Author Profile`} />
         <meta property="og:description" content={author?.bio || `Read articles by ${author?.name}`} />
-        <meta property="og:url" content={`https://aiinasia.com/voices/${author?.slug}`} />
+        <meta property="og:url" content={`https://aiinasia.com/author/${author?.slug}`} />
         {author?.avatar_url && <meta property="og:image" content={author.avatar_url} />}
         <meta property="og:type" content="profile" />
         <meta name="twitter:card" content="summary" />
@@ -91,7 +91,7 @@ const AuthorProfile = () => {
         name={author?.name || ''}
         bio={author?.bio}
         imageUrl={author?.avatar_url}
-        url={`/voices/${author?.slug}`}
+        url={`/author/${author?.slug}`}
       />
       <Header />
       

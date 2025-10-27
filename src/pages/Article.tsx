@@ -755,7 +755,7 @@ const Article = () => {
               <div className="flex items-center justify-between gap-4 pb-6 border-b border-border">
                 <div className="flex items-center gap-4 flex-1">
                   {article.authors?.slug ? (
-                    <Link to={`/voices/${article.authors.slug}`}>
+                    <Link to={`/author/${article.authors.slug}`}>
                       {article.authors.avatar_url ? (
                         <img 
                           src={article.authors.avatar_url} 
@@ -781,7 +781,7 @@ const Article = () => {
                     <div className="flex items-center gap-2 font-semibold">
                       <User className="h-4 w-4" />
                       {article.authors?.slug ? (
-                        <Link to={`/voices/${article.authors.slug}`} className="hover:text-primary transition-colors">
+                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors">
                           {article.authors.name}
                         </Link>
                       ) : (
@@ -888,7 +888,7 @@ const Article = () => {
             {article.authors && (
               <div className="bg-muted/50 rounded-lg p-8 flex flex-col md:flex-row items-center md:items-start gap-6 mt-8">
                 {article.authors.slug ? (
-                  <Link to={`/voices/${article.authors.slug}`} className="flex-shrink-0">
+                  <Link to={`/author/${article.authors.slug}`} className="flex-shrink-0">
                     {article.authors.avatar_url ? (
                       <img 
                         src={article.authors.avatar_url} 
@@ -913,7 +913,7 @@ const Article = () => {
                 <div className="flex-1 text-center md:text-left">
                   <h4 className="font-semibold text-xl mb-2">
                     {article.authors.slug ? (
-                      <Link to={`/voices/${article.authors.slug}`} className="hover:text-primary transition-colors">
+                      <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors">
                         {article.authors.name}
                       </Link>
                     ) : (
