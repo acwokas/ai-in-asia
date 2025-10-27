@@ -51,8 +51,12 @@ export const UpcomingEvents = () => {
 
       if (westernError) throw westernError;
 
-      // Combine: 2 APAC + 1 Western
-      return [...(apacEvents || []), ...(westernEvents || [])] as Event[];
+      // Combine: 2 APAC + 1 Western, and filter out any past events
+      const allEvents = [...(apacEvents || []), ...(westernEvents || [])];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      return allEvents.filter(event => new Date(event.start_date) >= today) as Event[];
     },
   });
 
