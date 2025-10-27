@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       .from('pending_comments')
       .select('*')
       .lte('scheduled_for', now)
-      .limit(50); // Process up to 50 comments per run
+      .limit(5); // Process 5 comments per run to avoid timeout
 
     if (fetchError) {
       console.error('Error fetching pending comments:', fetchError);
@@ -52,9 +52,13 @@ Deno.serve(async (req) => {
 
     for (const pending of pendingComments) {
       try {
-        // Generate comment using AI
+        // Generate comment using AI with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout per comment
+        
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
+          signal: controller.signal,
           headers: {
             'Authorization': `Bearer ${lovableApiKey}`,
             'Content-Type': 'application/json',
@@ -64,7 +68,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: 'You are generating realistic user comments for articles. Create engaging, thoughtful comments that sound authentic.'
+                content: 'You are generating realistic user comments for articles. Create engaging, thoughtful comments that sound authentic. Respond with: Name: [name]\nComment: [comment]'
               },
               {
                 role: 'user',
@@ -74,8 +78,19 @@ Deno.serve(async (req) => {
             temperature: 0.8,
           })
         });
+        
+        clearTimeout(timeoutId);
 
         if (!aiResponse.ok) {
+          const errorText = await aiResponse.text();
+          console.error(`AI API error ${aiResponse.status}:`, errorText);
+          
+          if (aiResponse.status === 429) {
+            throw new Error('Rate limit exceeded. Please wait a moment before retrying.');
+          }
+          if (aiResponse.status === 402) {
+            throw new Error('Payment required. Please add credits to your Lovable AI workspace.');
+          }
           throw new Error(`AI API error: ${aiResponse.status}`);
         }
 

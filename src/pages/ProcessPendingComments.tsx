@@ -196,13 +196,14 @@ const ProcessPendingComments = () => {
                 )}
               </Button>
 
-              <div className="bg-muted p-4 rounded-lg text-sm">
+               <div className="bg-muted p-4 rounded-lg text-sm">
                 <h3 className="font-semibold mb-2">How it works:</h3>
                 <ul className="space-y-1 list-disc list-inside">
-                  <li>Processes pending comments in batches of 50</li>
+                  <li>Processes pending comments in batches of 5</li>
                   <li>Uses AI to generate realistic comments</li>
                   <li>Posts comments with their original scheduled times</li>
-                  <li>May take several minutes for large queues</li>
+                  <li>Will process {pendingCount ? Math.ceil(pendingCount / 5) : 0} batches total</li>
+                  <li>Keep clicking until counter reaches 0</li>
                 </ul>
               </div>
             </div>
