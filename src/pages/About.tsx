@@ -28,7 +28,8 @@ import {
   Brain,
   Rocket,
   CheckCircle2,
-  GraduationCap
+  GraduationCap,
+  ExternalLink
 } from "lucide-react";
 
 const About = () => {
@@ -74,9 +75,12 @@ const About = () => {
             <p className="text-xl md:text-2xl text-muted-foreground mb-6">
               The leading platform for artificial intelligence news, insights, and education across Asia
             </p>
-            <Badge variant="secondary" className="text-base py-2 px-4">
-              Powered by you.withthepowerof.ai
-            </Badge>
+            <a href="https://you.withthepowerof.ai" target="_blank" rel="noopener noreferrer" className="inline-block">
+              <Badge variant="secondary" className="text-base py-2 px-4 hover:bg-secondary/80 transition-colors cursor-pointer flex items-center gap-2">
+                Powered by you.withthepowerof.ai
+                <ExternalLink className="h-4 w-4" />
+              </Badge>
+            </a>
           </div>
         </div>
       </section>
