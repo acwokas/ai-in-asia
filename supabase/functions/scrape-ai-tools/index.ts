@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
 
         // Use AI to extract tool data from HTML
         if (lovableApiKey) {
+          console.log(`Calling AI to extract tools from ${source.name}...`);
+          
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -75,42 +77,70 @@ Deno.serve(async (req) => {
               'x-api-key': lovableApiKey,
             },
             body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
+              model: 'google/gemini-2.5-pro',
               messages: [
                 {
                   role: 'system',
-                  content: 'You are an AI that extracts structured data from HTML. Extract AI tools information from the provided HTML and return ONLY a valid JSON array of tools. Each tool should have: name (string, required), description (string), url (string, required), category (string, optional), logo_url (string, optional). Return ONLY the JSON array, no other text.'
+                  content: 'You are an expert at extracting structured data from HTML. Your task is to find AI tools/products listed on the page and extract their information. Return ONLY a valid JSON array with NO markdown formatting, NO code blocks, NO explanations - just the raw JSON array. Each tool must have: name (string, required), description (string, required), url (string, required), category (string, optional). Example: [{"name":"Tool Name","description":"Tool description","url":"https://example.com","category":"AI"}]'
                 },
                 {
                   role: 'user',
-                  content: `Extract AI tools from this HTML:\n\n${html.substring(0, 50000)}`
+                  content: `Extract ALL AI tools from this HTML page. Look for product listings, tool cards, software entries. Extract their names, descriptions, URLs, and categories if available. Return as JSON array:\n\n${html.substring(0, 100000)}`
                 }
               ],
-              max_tokens: 4000,
+              max_tokens: 8000,
             }),
           });
 
           if (!aiResponse.ok) {
-            console.error(`AI extraction failed for ${source.name}`);
+            const errorText = await aiResponse.text();
+            console.error(`AI API error for ${source.name}: ${aiResponse.status} - ${errorText}`);
             failedScrapes++;
             continue;
           }
 
           const aiData = await aiResponse.json();
+          console.log(`AI response for ${source.name}:`, JSON.stringify(aiData).substring(0, 500));
+          
           const content = aiData.choices?.[0]?.message?.content;
           
           if (content) {
             try {
-              // Extract JSON from potential markdown code blocks
-              const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\[[\s\S]*\]/);
-              const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content;
+              console.log(`Raw content from ${source.name} (first 1000 chars):`, content.substring(0, 1000));
+              
+              // Try to extract JSON from various formats
+              let jsonStr = content.trim();
+              
+              // Remove markdown code blocks
+              if (jsonStr.includes('```')) {
+                const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                if (codeBlockMatch) {
+                  jsonStr = codeBlockMatch[1];
+                }
+              }
+              
+              // Find JSON array in the text
+              const arrayMatch = jsonStr.match(/\[[\s\S]*\]/);
+              if (arrayMatch) {
+                jsonStr = arrayMatch[0];
+              }
+              
+              console.log(`Attempting to parse JSON for ${source.name} (first 500 chars):`, jsonStr.substring(0, 500));
+              
               const tools: ScrapedTool[] = JSON.parse(jsonStr);
               
-              console.log(`Extracted ${tools.length} tools from ${source.name}`);
+              if (!Array.isArray(tools)) {
+                console.error(`AI returned non-array for ${source.name}`);
+                failedScrapes++;
+                continue;
+              }
               
-              // Deduplicate by name (case insensitive)
+              console.log(`Successfully extracted ${tools.length} tools from ${source.name}`);
+              
+              // Deduplicate by name (case insensitive) and validate
+              let validCount = 0;
               tools.forEach(tool => {
-                if (tool.name && tool.url) {
+                if (tool.name && tool.url && tool.description) {
                   const key = tool.name.toLowerCase().trim();
                   if (allTools.has(key)) {
                     // Add source URL to existing tool
@@ -124,15 +154,23 @@ Deno.serve(async (req) => {
                       ...tool,
                       source_urls: [source.url]
                     });
+                    validCount++;
                   }
+                } else {
+                  console.log(`Skipping invalid tool:`, tool);
                 }
               });
               
+              console.log(`Added ${validCount} valid tools from ${source.name}`);
               successfulScrapes++;
             } catch (parseError) {
               console.error(`Failed to parse AI response for ${source.name}:`, parseError);
+              console.error(`Content that failed to parse:`, content.substring(0, 2000));
               failedScrapes++;
             }
+          } else {
+            console.error(`No content in AI response for ${source.name}`);
+            failedScrapes++;
           }
         } else {
           console.error('LOVABLE_API_KEY not configured');
