@@ -60,6 +60,8 @@ Deno.serve(async (req) => {
 
     console.log('Starting AI tools scraping from multiple sources...');
     
+    const startTime = Date.now();
+    const TIMEOUT_MS = 20000; // 20 second timeout to leave buffer for response
     const allTools: Map<string, ScrapedTool & { source_urls: string[] }> = new Map();
     let successfulScrapes = 0;
     let failedScrapes = 0;
@@ -67,6 +69,13 @@ Deno.serve(async (req) => {
     // Scrape each source
     for (const source of SOURCES) {
       try {
+        // Check if we're approaching timeout
+        const elapsed = Date.now() - startTime;
+        if (elapsed > TIMEOUT_MS) {
+          console.log(`Timeout approaching after ${elapsed}ms, stopping scraping`);
+          break;
+        }
+        
         console.log(`Fetching tools from ${source.name}...`);
         
         const response = await fetch(source.url);
@@ -82,7 +91,6 @@ Deno.serve(async (req) => {
         // Use AI to extract tool data from HTML
         if (lovableApiKey) {
           console.log(`Calling AI to extract tools from ${source.name}...`);
-          console.log(`Using Authorization header with key length: ${lovableApiKey.length}`);
           
           // Clean HTML to focus on content
           let cleanedHtml = html;
@@ -93,8 +101,16 @@ Deno.serve(async (req) => {
           cleanedHtml = cleanedHtml.replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '');
           cleanedHtml = cleanedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '');
           cleanedHtml = cleanedHtml.replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '');
+          cleanedHtml = cleanedHtml.replace(/<!--[\s\S]*?-->/g, '');
+          cleanedHtml = cleanedHtml.replace(/\s+/g, ' ').trim();
           
-          console.log(`Cleaned HTML to ${cleanedHtml.length} characters`);
+          // Aggressively limit HTML size to avoid timeouts (50k max)
+          if (cleanedHtml.length > 50000) {
+            cleanedHtml = cleanedHtml.substring(0, 50000);
+            console.log(`Truncated HTML to 50000 characters for ${source.name}`);
+          } else {
+            console.log(`Cleaned HTML to ${cleanedHtml.length} characters`);
+          }
           
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
@@ -126,7 +142,7 @@ Example format:
                   content: `Extract AI tools from this ${source.name} page. Focus on the main content area where tools are listed. Look for tool names, descriptions, company names, and links. Ignore navigation, ads, and unrelated content.
 
 HTML content (cleaned):
-${cleanedHtml.substring(0, 120000)}`
+${cleanedHtml}`
                 }
               ],
               max_tokens: 12000,
@@ -137,7 +153,6 @@ ${cleanedHtml.substring(0, 120000)}`
           if (!aiResponse.ok) {
             const errorText = await aiResponse.text();
             console.error(`AI API error for ${source.name}: ${aiResponse.status} - ${errorText}`);
-            console.error(`Request headers used: Authorization: Bearer ${lovableApiKey.substring(0, 10)}...`);
             failedScrapes++;
             continue;
           }
