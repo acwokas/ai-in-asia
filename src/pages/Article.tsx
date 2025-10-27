@@ -8,6 +8,7 @@ import Comments from "@/components/Comments";
 import ArticleCard from "@/components/ArticleCard";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
+import GoogleAd, { InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -850,10 +851,16 @@ const Article = () => {
               />
             )}
 
+            {/* First Ad - After Intro */}
+            <InArticleAd />
+
             {/* Article Content */}
             <div className="prose prose-lg max-w-none">
               {renderContent(article.content)}
             </div>
+
+            {/* Second Ad - After Content, Before Comments */}
+            <InArticleAd />
 
             {/* Comments Section */}
             <Comments articleId={article.id} />

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { TrendingUp, Users, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
-import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
+import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load below-the-fold components for faster initial page load
@@ -462,9 +462,10 @@ const Index = () => {
 
             {/* Latest Articles - Right */}
             <div className="lg:col-span-3 order-3">
-              {/* Advertisement Slot */}
+              {/* Advertisement Slot - Google Ad MPU */}
               <div className="mb-6">
-                <BusinessInAByteAd />
+                <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
+                <MPUAd />
               </div>
 
               <div className="bg-secondary text-secondary-foreground px-3 py-1.5 mb-6">
