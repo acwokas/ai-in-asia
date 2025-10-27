@@ -49,6 +49,21 @@ const BulkCommentGeneration = () => {
     },
   });
 
+  // Get all categories
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ["categories"],
+    enabled: isAdmin === true,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Get all published articles without comments
   const { data: eligibleArticles, isLoading: loadingArticles } = useQuery({
     queryKey: ["eligible-articles"],
@@ -56,7 +71,7 @@ const BulkCommentGeneration = () => {
     queryFn: async () => {
       const { data: articles, error } = await supabase
         .from("articles")
-        .select("id, title, published_at")
+        .select("id, title, published_at, primary_category_id, categories(name)")
         .eq("status", "published")
         .order("published_at", { ascending: false });
 
@@ -176,6 +191,91 @@ const BulkCommentGeneration = () => {
     }
   };
 
+  const generateCommentsByCategory = async (categoryId: string, categoryName: string) => {
+    // Get all published articles in this category
+    const { data: categoryArticles, error } = await supabase
+      .from("articles")
+      .select("id, title")
+      .eq("status", "published")
+      .eq("primary_category_id", categoryId);
+
+    if (error || !categoryArticles || categoryArticles.length === 0) {
+      toast({
+        title: "No articles found",
+        description: `No published articles found in ${categoryName}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    setProgress(0);
+    setProcessedCount(0);
+    setTotalCount(categoryArticles.length);
+    setResults([]);
+
+    const newResults = [];
+
+    for (let i = 0; i < categoryArticles.length; i++) {
+      const article = categoryArticles[i];
+      
+      try {
+        // Delete existing comments for this article
+        await supabase
+          .from("comments")
+          .delete()
+          .eq("article_id", article.id);
+
+        // Delete pending comments
+        await supabase
+          .from("pending_comments")
+          .delete()
+          .eq("article_id", article.id);
+
+        // Generate new comments
+        const { data, error } = await supabase.functions.invoke("generate-article-comments", {
+          body: { articleId: article.id, batchMode: true },
+        });
+
+        if (error) throw error;
+
+        newResults.push({
+          articleId: article.id,
+          title: article.title,
+          success: true,
+          commentsAdded: data.pendingComments,
+        });
+
+        toast({
+          title: `Comments scheduled: ${article.title}`,
+          description: `${data.pendingComments} comments scheduled`,
+        });
+
+      } catch (error) {
+        console.error("Error generating comments:", error);
+        newResults.push({
+          articleId: article.id,
+          title: article.title,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+
+      setProcessedCount(i + 1);
+      setProgress(((i + 1) / categoryArticles.length) * 100);
+      setResults(newResults);
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    setIsGenerating(false);
+    toast({
+      title: `${categoryName} complete`,
+      description: `Processed ${categoryArticles.length} articles`,
+    });
+  };
+
   const regenerateAllComments = async () => {
     setShowRegenerateDialog(false);
 
@@ -256,7 +356,7 @@ const BulkCommentGeneration = () => {
     });
   };
 
-  if (checkingAdmin || loadingArticles) {
+  if (checkingAdmin || loadingArticles || loadingCategories) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -291,6 +391,34 @@ const BulkCommentGeneration = () => {
             Generate AI-powered comments for all published articles
           </p>
         </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Generate Comments by Category
+            </CardTitle>
+            <CardDescription>
+              Generate comments for all articles in a specific category (deletes existing comments first)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {categories?.map((category) => (
+                <Button
+                  key={category.id}
+                  onClick={() => generateCommentsByCategory(category.id, category.name)}
+                  disabled={isGenerating || isDeleting}
+                  variant="outline"
+                  className="h-auto py-4"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mb-8">
           <CardHeader>
