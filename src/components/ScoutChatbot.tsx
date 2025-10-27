@@ -99,6 +99,8 @@ const ScoutChatbot = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      console.log("Sending Scout message to:", `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`);
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`,
         {
@@ -111,14 +113,20 @@ const ScoutChatbot = () => {
         }
       );
 
+      console.log("Scout response status:", response.status, "Content-Type:", response.headers.get('Content-Type'));
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Failed to get response" }));
         console.error("Scout chat error:", response.status, errorData);
         throw new Error(errorData.error || `Failed to get response (${response.status})`);
       }
 
-      if (!response.body) throw new Error("No response body");
+      if (!response.body) {
+        console.error("No response body received");
+        throw new Error("No response body");
+      }
 
+      console.log("Starting to read stream...");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
@@ -131,7 +139,10 @@ const ScoutChatbot = () => {
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log("Stream reading completed");
+          break;
+        }
 
         textBuffer += decoder.decode(value, { stream: true });
         let newlineIndex: number;
@@ -145,7 +156,10 @@ const ScoutChatbot = () => {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          if (jsonStr === "[DONE]") {
+            console.log("Received [DONE] signal");
+            break;
+          }
 
             try {
               const parsed = JSON.parse(jsonStr);
@@ -229,17 +243,25 @@ const ScoutChatbot = () => {
         }
       }
 
+      console.log("Scout message completed successfully");
       setIsLoading(false);
       fetchQueryLimit(); // Refresh query count after successful message
     } catch (error) {
       console.error("Scout chat error:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
         variant: "destructive",
       });
-      // Remove the empty assistant message
-      setMessages((prev) => prev.slice(0, -1));
+      // Remove the empty assistant message if it exists
+      setMessages((prev) => {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg?.role === "assistant" && !lastMsg.content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
       setIsLoading(false);
     }
   };
