@@ -76,7 +76,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     initialData?.featured_on_homepage ?? true
   );
   const [sticky, setSticky] = useState(initialData?.sticky ?? false);
-  const [authorId, setAuthorId] = useState(initialData?.author_id || "dc6a0958-a872-48ab-ae1a-76eb4e1ea4a4");
+  const [authorId, setAuthorId] = useState(initialData?.author_id || "");
   const [primaryCategoryId, setPrimaryCategoryId] = useState(initialData?.primary_category_id || "");
   const [scheduledFor, setScheduledFor] = useState<Date | undefined>(
     initialData?.scheduled_for ? new Date(initialData.scheduled_for) : undefined
@@ -388,12 +388,18 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
     setIsGeneratingTldr(true);
     try {
+      const requestBody: any = {
+        content: content,
+        title: title,
+      };
+      
+      // Only include articleId if it exists (not for new articles)
+      if (initialData?.id) {
+        requestBody.articleId = initialData.id;
+      }
+      
       const { data, error } = await supabase.functions.invoke("generate-tldr-snapshot", {
-        body: {
-          articleId: initialData?.id || null,
-          content: content,
-          title: title,
-        },
+        body: requestBody,
       });
 
       if (error) throw error;

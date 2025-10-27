@@ -53,7 +53,8 @@ serve(async (req) => {
       );
     }
 
-    const { articleId, content, title } = await req.json();
+    const requestData = await req.json();
+    const { articleId, content, title } = requestData;
 
     // Convert content to text for AI processing
     let contentText = "";
@@ -173,17 +174,19 @@ Content: ${contentText.substring(0, 3000)}`;
       });
     }
 
-    // Update article with TL;DR and cleaned content
-    const { error: updateError } = await supabase
-      .from("articles")
-      .update({
-        tldr_snapshot: tldrBullets,
-        content: cleanedContent
-      })
-      .eq("id", articleId);
+    // Update article with TL;DR and cleaned content only if articleId exists
+    if (articleId) {
+      const { error: updateError } = await supabase
+        .from("articles")
+        .update({
+          tldr_snapshot: tldrBullets,
+          content: cleanedContent
+        })
+        .eq("id", articleId);
 
-    if (updateError) {
-      throw updateError;
+      if (updateError) {
+        throw updateError;
+      }
     }
 
     return new Response(
