@@ -42,7 +42,7 @@ export const YouMayAlsoLike = () => {
               .eq("status", "published")
               .in("primary_category_id", categoryIds)
               .order("view_count", { ascending: false })
-              .limit(12);
+              .limit(13);
 
             if (interestedArticles && interestedArticles.length > 0) {
               selectedArticles = interestedArticles;
@@ -125,8 +125,8 @@ export const YouMayAlsoLike = () => {
         }
       }
 
-      // Return max 12 articles
-      return selectedArticles.slice(0, 12);
+      // Return max 13 articles
+      return selectedArticles.slice(0, 13);
     },
   });
 
