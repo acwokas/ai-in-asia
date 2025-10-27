@@ -120,7 +120,7 @@ const GenerateTldrBulk = () => {
             Home
           </Link>
           <span className="mx-2">›</span>
-          <Link to="/admin/migration" className="hover:text-primary">
+          <Link to="/admin/migration-dashboard" className="hover:text-primary">
             Migration Dashboard
           </Link>
           <span className="mx-2">›</span>
@@ -130,7 +130,7 @@ const GenerateTldrBulk = () => {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate("/admin/migration")}
+            onClick={() => navigate("/admin/migration-dashboard")}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

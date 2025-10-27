@@ -213,7 +213,7 @@ export default function AssignCategories() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/admin/migration">Migration</Link>
+                <Link to="/admin/migration-dashboard">Migration</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
