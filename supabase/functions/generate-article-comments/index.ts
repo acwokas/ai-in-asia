@@ -204,7 +204,12 @@ ${article.excerpt || ""}`;
         daysAfterPublish = 30 + (Math.random() * Math.max(0, daysSincePublished - 30));
       }
       
-      const commentDate = new Date(publishedAt.getTime() + daysAfterPublish * 24 * 60 * 60 * 1000);
+      let commentDate = new Date(publishedAt.getTime() + daysAfterPublish * 24 * 60 * 60 * 1000);
+      
+      // Ensure comment date doesn't exceed current time
+      if (commentDate > now) {
+        commentDate = now;
+      }
       
       return {
         article_id: articleId,
