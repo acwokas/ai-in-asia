@@ -49,7 +49,21 @@ const RichTextEditor = ({
   const convertMarkdownToHtml = (markdown: string): string => {
     if (!markdown) return '';
     
-    return markdown
+    // First, preserve any existing iframe HTML by converting to placeholders
+    const iframeMatches: string[] = [];
+    let processed = markdown.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = iframeMatches.length;
+      iframeMatches.push(match);
+      return `__IFRAME_${index}__`;
+    });
+    
+    processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
+      const index = iframeMatches.length;
+      iframeMatches.push(match);
+      return `__IFRAME_${index}__`;
+    });
+    
+    let html = processed
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -69,13 +83,35 @@ const RichTextEditor = ({
       .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>');
+    
+    // Restore iframes
+    iframeMatches.forEach((iframe, index) => {
+      html = html.replace(`__IFRAME_${index}__`, iframe);
+    });
+    
+    return html;
   };
 
   const convertHtmlToMarkdown = (html: string): string => {
     if (!html) return '';
     
+    // First, preserve YouTube embeds and iframes by converting them to placeholder markers
+    const iframeMatches: string[] = [];
+    let processed = html.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = iframeMatches.length;
+      iframeMatches.push(match);
+      return `__IFRAME_${index}__`;
+    });
+    
+    // Also preserve standalone iframes
+    processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
+      const index = iframeMatches.length;
+      iframeMatches.push(match);
+      return `__IFRAME_${index}__`;
+    });
+    
     // First, normalize block elements to ensure they're properly separated
-    let normalized = html
+    let normalized = processed
       // Ensure block elements have line breaks before them if they don't already
       .replace(/([^\n>])(<h[123])/g, '$1\n\n$2')
       .replace(/([^\n>])(<blockquote)/g, '$1\n\n$2')
@@ -131,6 +167,11 @@ const RichTextEditor = ({
       // Clean up excessive line breaks
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+    
+    // Restore iframe placeholders back to actual HTML
+    iframeMatches.forEach((iframe, index) => {
+      markdown = markdown.replace(`__IFRAME_${index}__`, iframe);
+    });
     
     return markdown;
   };
