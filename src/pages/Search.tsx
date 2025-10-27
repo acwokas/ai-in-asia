@@ -76,8 +76,7 @@ const Search = () => {
         .from("articles")
         .select(`
           *,
-          authors (name, slug),
-          categories:primary_category_id (name, slug)
+          authors (name, slug)
         `)
         .eq("status", "published")
         .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`)
@@ -137,6 +136,24 @@ const Search = () => {
 
       const { data, error } = await query;
       if (error) throw error;
+      
+      // Fetch categories separately for each article
+      if (data && data.length > 0) {
+        const categoryIds = data.map(article => article.primary_category_id).filter(Boolean);
+        if (categoryIds.length > 0) {
+          const { data: categoriesData } = await supabase
+            .from("categories")
+            .select("id, name, slug")
+            .in("id", categoryIds);
+          
+          // Map categories to articles
+          return data.map(article => ({
+            ...article,
+            category: categoriesData?.find(cat => cat.id === article.primary_category_id)
+          }));
+        }
+      }
+      
       return data;
     },
   });
@@ -350,8 +367,8 @@ const Search = () => {
                 key={article.id}
                 title={article.title}
                 excerpt={article.excerpt || ""}
-                category={article.categories?.name || ""}
-                categorySlug={article.categories?.slug || "uncategorized"}
+                category={article.category?.name || ""}
+                categorySlug={article.category?.slug || "uncategorized"}
                 author={article.authors?.name || ""}
                 readTime={`${article.reading_time_minutes || 5} min read`}
                 image={article.featured_image_url || ""}
