@@ -19,9 +19,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load below-the-fold components for faster initial page load
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
-const EditorsPick = lazy(() => import("@/components/EditorsPick").then(module => ({ default: module.EditorsPick })));
-const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents").then(module => ({ default: module.UpcomingEvents })));
-const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike").then(module => ({ default: module.YouMayAlsoLike })));
+const EditorsPick = lazy(() => import("@/components/EditorsPick"));
+const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
+const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 

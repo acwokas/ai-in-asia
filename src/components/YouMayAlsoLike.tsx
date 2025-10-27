@@ -168,5 +168,7 @@ const YouMayAlsoLikeComponent = () => {
   );
 };
 
-// Memoized export
-export const YouMayAlsoLike = memo(YouMayAlsoLikeComponent);
+// Memoized and exported as default
+const YouMayAlsoLike = memo(YouMayAlsoLikeComponent);
+
+export default YouMayAlsoLike;

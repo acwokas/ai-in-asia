@@ -198,5 +198,7 @@ const UpcomingEventsComponent = () => {
   );
 };
 
-// Memoized export
-export const UpcomingEvents = memo(UpcomingEventsComponent);
+// Memoized and exported as default
+const UpcomingEvents = memo(UpcomingEventsComponent);
+
+export default UpcomingEvents;

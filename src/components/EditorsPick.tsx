@@ -75,7 +75,9 @@ const EditorsPickComponent = ({ article }: EditorsPickProps) => {
   );
 };
 
-// Memoized and exported as EditorsPick
-export const EditorsPick = memo(EditorsPickComponent, (prevProps, nextProps) => {
+// Memoized and exported as default
+const EditorsPick = memo(EditorsPickComponent, (prevProps, nextProps) => {
   return prevProps.article?.id === nextProps.article?.id;
 });
+
+export default EditorsPick;
