@@ -155,9 +155,10 @@ LENGTH REQUIREMENTS (THIS IS CRITICAL):
 - Do NOT write 2-3 well-formed sentences for EVERY comment - that's fake!
 
 WRITING STYLE (MUST SOUND REAL):
+- NEVER EVER use em dashes (—) or fancy punctuation
 - NEVER use: "This piece really", "fascinating", "intricate", "tightrope", "enhancing", "cultural heritage"
 - AVOID: perfect grammar, formal tone, sophisticated vocabulary
-- DO USE: casual tone, some lowercase, typos occasionally, internet slang
+- DO USE: casual tone, lowercase starts, actual typos (teh, recieve, etc), abbreviations (tbh, imo, ngl, btw, lol, lmao, omg), slang
 - Examples of GOOD casual writing: "ngl this is pretty cool", "interesting read but idk if it'll work", "lmao who comes up with this stuff"
 - Examples of BAD formal writing: "This article presents a fascinating perspective", "It's intriguing to consider", "This piece highlights"
 
