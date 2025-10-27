@@ -85,13 +85,24 @@ const Events = () => {
     };
   }, []);
 
-  // Featured events should be APAC-specific and large
-  let featuredEvents = events?.filter(event => event.is_featured && event.region === 'APAC') || [];
+  // Featured events should be APAC-specific with complete data
+  let featuredEvents = events?.filter(event => 
+    event.is_featured && 
+    event.region === 'APAC' && 
+    event.description && 
+    event.website_url
+  ) || [];
+  
   let upcomingEvents = events?.filter(event => !event.is_featured || event.region !== 'APAC') || [];
   
-  // If we have fewer than 2 APAC featured events and there are more APAC events available
+  // If we have fewer than 2 APAC featured events, find more with complete data
   if (featuredEvents.length < 2 && events) {
-    const apacEvents = events.filter(event => event.region === 'APAC' && !event.is_featured);
+    const apacEvents = events.filter(event => 
+      event.region === 'APAC' && 
+      !event.is_featured && 
+      event.description && 
+      event.website_url
+    );
     const needed = 2 - featuredEvents.length;
     const additionalFeatured = apacEvents.slice(0, needed);
     featuredEvents = [...featuredEvents, ...additionalFeatured];
