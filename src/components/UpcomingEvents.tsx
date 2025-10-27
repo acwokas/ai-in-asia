@@ -76,7 +76,10 @@ export const UpcomingEvents = () => {
       <section className="py-16 bg-muted/30">
         <div className="container">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Upcoming AI Events</h2>
+            <h2 className="text-3xl font-bold flex items-center gap-2">
+              <Calendar className="h-7 w-7 text-primary" />
+              Upcoming AI Events
+            </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
@@ -101,7 +104,10 @@ export const UpcomingEvents = () => {
       <div className="container">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold mb-2">Upcoming AI Events</h2>
+            <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
+              <Calendar className="h-7 w-7 text-primary" />
+              Upcoming AI Events
+            </h2>
             <p className="text-muted-foreground">
               Join the latest AI conferences, workshops, and meetups across the globe
             </p>

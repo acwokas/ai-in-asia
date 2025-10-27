@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -11,7 +11,7 @@ import StockTicker from "@/components/StockTicker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TrendingUp, Users, Calendar, Loader2, ExternalLink } from "lucide-react";
+import { TrendingUp, Users, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
@@ -33,7 +33,6 @@ const Index = () => {
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
   const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
@@ -108,21 +107,6 @@ const Index = () => {
     },
   });
 
-  const { data: upcomingEvents } = useQuery({
-    queryKey: ["upcoming-events"],
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", "upcoming")
-        .order("start_date", { ascending: true })
-        .limit(3);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const { data: editorsPick } = useQuery({
     queryKey: ["editors-pick-homepage"],
@@ -146,28 +130,6 @@ const Index = () => {
     },
   });
 
-  // Subscribe to realtime event updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('homepage-events')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'events'
-        },
-        () => {
-          // Refetch events when there's a change
-          queryClient.invalidateQueries({ queryKey: ["upcoming-events"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -595,50 +557,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Upcoming Events */}
-        <section className="container mx-auto px-4 py-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="headline text-3xl flex items-center gap-2">
-              <Calendar className="h-8 w-8 text-primary" />
-              Upcoming Events
-            </h2>
-            <Button variant="outline" asChild>
-              <Link to="/events">Full Calendar</Link>
-            </Button>
-          </div>
-          
-          <div className="space-y-4">
-            {upcomingEvents && upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
-                <div key={event.id} className="article-card p-6 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">{event.title}</h3>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>{format(new Date(event.start_date), 'dd MMM yyyy')}</span>
-                      <span>•</span>
-                      <span>{event.city}, {event.country}</span>
-                    </div>
-                  </div>
-                  {event.website_url ? (
-                    <Button variant="outline" asChild>
-                      <a href={event.website_url} target="_blank" rel="noopener noreferrer">
-                        Learn More
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button variant="outline" asChild>
-                      <Link to="/events">View Details</Link>
-                    </Button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="article-card p-6 text-center text-muted-foreground">
-                No upcoming events at the moment. Check back soon!
-              </div>
-            )}
-          </div>
-        </section>
 
         {/* Trending Tools Section */}
         <section className="container mx-auto px-4 py-12">
