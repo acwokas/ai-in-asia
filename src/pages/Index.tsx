@@ -99,6 +99,7 @@ const Index = () => {
         .from("authors_public")
         .select("*")
         .eq("is_featured", true)
+        .neq("name", "Intelligence Desk")
         .order("article_count", { ascending: false })
         .limit(6);
       
