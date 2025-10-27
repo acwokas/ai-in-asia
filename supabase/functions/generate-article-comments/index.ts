@@ -84,9 +84,11 @@ serve(async (req) => {
     }
     
     // Extract meaningful content snippet (first 500 chars of content for context)
-    const contentPreview = article.content 
-      ? article.content.replace(/<[^>]*>/g, '').substring(0, 500)
-      : article.excerpt || article.title;
+    // Ensure content is a string before processing
+    let contentPreview = article.excerpt || article.title;
+    if (article.content && typeof article.content === 'string') {
+      contentPreview = article.content.replace(/<[^>]*>/g, '').substring(0, 500);
+    }
 
     // Check if article already has comments
     const { data: existingComments } = await supabase
