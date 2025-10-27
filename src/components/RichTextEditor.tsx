@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon } from "lucide-react";
+import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -32,9 +32,11 @@ const RichTextEditor = ({
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [showTableDialog, setShowTableDialog] = useState(false);
+  const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
   const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '' });
   const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
 
@@ -177,6 +179,14 @@ const RichTextEditor = ({
           savedSelectionRef.current = tableSel.getRangeAt(0);
         }
         setShowTableDialog(true);
+        break;
+      case 'youtube':
+        // Save the current selection before opening dialog
+        const youtubeSel = window.getSelection();
+        if (youtubeSel && youtubeSel.rangeCount > 0) {
+          savedSelectionRef.current = youtubeSel.getRangeAt(0);
+        }
+        setShowYoutubeDialog(true);
         break;
       case 'image':
         // Save the current selection before opening dialog
@@ -411,6 +421,57 @@ const RichTextEditor = ({
     savedSelectionRef.current = null;
   };
 
+  const handleInsertYoutube = () => {
+    if (!youtubeUrl) return;
+    
+    // Extract video ID from YouTube URL
+    let videoId = '';
+    const urlPatterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+      /youtube\.com\/embed\/([^&\s]+)/
+    ];
+    
+    for (const pattern of urlPatterns) {
+      const match = youtubeUrl.match(pattern);
+      if (match) {
+        videoId = match[1];
+        break;
+      }
+    }
+    
+    if (!videoId) {
+      alert('Invalid YouTube URL. Please enter a valid YouTube video URL.');
+      return;
+    }
+    
+    // Restore the saved selection
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedSelectionRef.current);
+      }
+    }
+    
+    // Focus the editor before inserting
+    editorRef.current?.focus();
+    
+    // Create YouTube embed HTML
+    const embedHtml = `<div class="youtube-embed" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`;
+    
+    // Insert the embed
+    execCommand('insertHTML', embedHtml);
+    
+    // Trigger input event to update the markdown
+    setTimeout(() => {
+      handleInput();
+    }, 100);
+    
+    setShowYoutubeDialog(false);
+    setYoutubeUrl('');
+    savedSelectionRef.current = null;
+  };
+
   const handleInput = () => {
     if (!editorRef.current) return;
     
@@ -635,6 +696,15 @@ const RichTextEditor = ({
         >
           <TableIcon className="h-4 w-4" />
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('youtube')}
+          title="Insert YouTube Video"
+        >
+          <Video className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Scrollable editor content */}
@@ -671,7 +741,8 @@ const RichTextEditor = ({
               "[&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-4",
               "[&_table]:w-full [&_table]:border-collapse [&_table]:my-4",
               "[&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold",
-              "[&_td]:border [&_td]:border-border [&_td]:px-4 [&_td]:py-2"
+              "[&_td]:border [&_td]:border-border [&_td]:px-4 [&_td]:py-2",
+              "[&_.youtube-embed]:my-8"
             )}
             suppressContentEditableWarning
           />
@@ -841,6 +912,41 @@ const RichTextEditor = ({
             <Button onClick={handleInsertLink}>
               {isEditingLink ? 'Update Link' : 'Insert Link'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* YouTube Dialog */}
+      <Dialog open={showYoutubeDialog} onOpenChange={setShowYoutubeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Embed YouTube Video</DialogTitle>
+            <DialogDescription>
+              Paste a YouTube video URL to embed it in your article
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="youtube-url">YouTube URL</Label>
+              <Input
+                id="youtube-url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleInsertYoutube();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowYoutubeDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertYoutube}>Embed Video</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
