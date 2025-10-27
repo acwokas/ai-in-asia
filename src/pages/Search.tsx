@@ -69,14 +69,22 @@ const Search = () => {
     queryKey: ["search", searchQuery, categoryFilter, authorFilter, tagFilter, dateFilter, sortBy],
     enabled: searchQuery.length > 0,
     queryFn: async () => {
-      // Build search pattern - simpler approach without content search initially
       const searchPattern = `%${searchQuery}%`;
       
       let query = supabase
         .from("articles")
         .select(`
-          *,
-          authors (name, slug)
+          id,
+          title,
+          excerpt,
+          slug,
+          featured_image_url,
+          reading_time_minutes,
+          primary_category_id,
+          author_id,
+          published_at,
+          view_count,
+          is_trending
         `)
         .eq("status", "published")
         .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`)
@@ -134,27 +142,31 @@ const Search = () => {
           break;
       }
 
-      const { data, error } = await query;
+      const { data: articles, error } = await query;
       if (error) throw error;
+      if (!articles || articles.length === 0) return [];
       
-      // Fetch categories separately for each article
-      if (data && data.length > 0) {
-        const categoryIds = data.map(article => article.primary_category_id).filter(Boolean);
-        if (categoryIds.length > 0) {
-          const { data: categoriesData } = await supabase
-            .from("categories")
-            .select("id, name, slug")
-            .in("id", categoryIds);
-          
-          // Map categories to articles
-          return data.map(article => ({
-            ...article,
-            category: categoriesData?.find(cat => cat.id === article.primary_category_id)
-          }));
-        }
-      }
+      // Fetch all related data in parallel
+      const categoryIds = [...new Set(articles.map(a => a.primary_category_id).filter(Boolean))];
+      const authorIds = [...new Set(articles.map(a => a.author_id).filter(Boolean))];
       
-      return data;
+      const [categoriesResult, authorsResult] = await Promise.all([
+        categoryIds.length > 0 
+          ? supabase.from("categories").select("id, name, slug").in("id", categoryIds)
+          : Promise.resolve({ data: [] }),
+        authorIds.length > 0
+          ? supabase.from("authors").select("id, name, slug").in("id", authorIds)
+          : Promise.resolve({ data: [] })
+      ]);
+      
+      const categoriesMap = new Map((categoriesResult.data || []).map(c => [c.id, c] as const));
+      const authorsMap = new Map((authorsResult.data || []).map(a => [a.id, a] as const));
+      
+      return articles.map(article => ({
+        ...article,
+        category: categoriesMap.get(article.primary_category_id) || { name: "Uncategorized", slug: "uncategorized" },
+        author: authorsMap.get(article.author_id) || { name: "Unknown", slug: "" }
+      }));
     },
   });
 
@@ -367,9 +379,9 @@ const Search = () => {
                 key={article.id}
                 title={article.title}
                 excerpt={article.excerpt || ""}
-                category={article.category?.name || ""}
-                categorySlug={article.category?.slug || "uncategorized"}
-                author={article.authors?.name || ""}
+                category={article.category.name}
+                categorySlug={article.category.slug}
+                author={article.author.name}
                 readTime={`${article.reading_time_minutes || 5} min read`}
                 image={article.featured_image_url || ""}
                 slug={article.slug}
