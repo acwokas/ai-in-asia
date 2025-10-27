@@ -21,22 +21,17 @@ const GenerateTldrBulk = () => {
     setProgress(0);
     
     try {
-      // Get all published articles from past 24 months without TL;DR
-      const twentyFourMonthsAgo = new Date();
-      twentyFourMonthsAgo.setMonth(twentyFourMonthsAgo.getMonth() - 24);
-
+      // Get ALL articles without TL;DR (regardless of status or date)
       const { data: articles, error: fetchError } = await supabase
         .from("articles")
-        .select("id, title, content, tldr_snapshot")
-        .eq("status", "published")
-        .gte("published_at", twentyFourMonthsAgo.toISOString())
+        .select("id, title, content, tldr_snapshot, status")
         .or("tldr_snapshot.is.null,tldr_snapshot.eq.[]");
 
       if (fetchError) throw fetchError;
       if (!articles || articles.length === 0) {
         toast({
           title: "No articles to process",
-          description: "All recent articles already have TL;DR Snapshots.",
+          description: "All articles already have TL;DR Snapshots.",
         });
         setIsProcessing(false);
         return;
@@ -144,7 +139,7 @@ const GenerateTldrBulk = () => {
           
           <h1 className="headline text-4xl mb-2">Generate TL;DR Snapshots</h1>
           <p className="text-muted-foreground">
-            Automatically generate TL;DR Snapshots for all published articles from the past 24 months
+            Automatically generate TL;DR Snapshots for all articles in the platform
           </p>
         </div>
 
@@ -155,7 +150,7 @@ const GenerateTldrBulk = () => {
               Bulk TL;DR Generation
             </CardTitle>
             <CardDescription>
-              This will generate 3-bullet TL;DR Snapshots for all published articles and remove any existing TL;DR sections from article bodies.
+              This will generate 3-bullet TL;DR Snapshots for all articles (published or draft) and remove any existing TL;DR sections from article bodies.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
