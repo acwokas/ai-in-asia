@@ -49,6 +49,7 @@ const Events = () => {
         .from('events')
         .select('*')
         .eq('status', 'upcoming')
+        .gte('start_date', new Date().toISOString())
         .order('start_date', { ascending: true });
       
       if (selectedRegion !== 'all') {
