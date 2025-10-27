@@ -844,6 +844,21 @@ const Admin = () => {
                     "Auto-Schedule Missing Comments"
                   )}
                 </Button>
+                <Button 
+                  onClick={handleCleanWordPressMarkup} 
+                  variant="outline" 
+                  className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
+                  disabled={cleaningMarkup}
+                >
+                  {cleaningMarkup ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Cleaning Markup...
+                    </>
+                  ) : (
+                    "Clean WordPress Markup"
+                  )}
+                </Button>
               </div>
             </div>
 
