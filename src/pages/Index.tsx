@@ -90,6 +90,52 @@ const Index = () => {
   const latestArticles = homepageData?.latest;
   const trendingArticles = homepageData?.trending;
 
+  // Get today's date as cache key for daily refresh
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+
+  const { data: trendingTools } = useQuery({
+    queryKey: ["trending-tools", todayKey],
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    queryFn: async () => {
+      // Fetch all active tools
+      const { data: tools, error } = await supabase
+        .from("ai_tools")
+        .select("*")
+        .order("rating_avg", { ascending: false, nullsFirst: false });
+      
+      if (error || !tools || tools.length === 0) {
+        return [];
+      }
+
+      // Find our promoted tools
+      const promotedToolNames = ["Prompt and Go", "Business in a Byte"];
+      const promotedTools = tools.filter(tool => 
+        promotedToolNames.some(name => tool.name.toLowerCase().includes(name.toLowerCase()))
+      );
+      
+      // Get other tools
+      const otherTools = tools.filter(tool => 
+        !promotedToolNames.some(name => tool.name.toLowerCase().includes(name.toLowerCase()))
+      );
+
+      // Shuffle and select tools
+      const shuffledOther = otherTools.sort(() => Math.random() - 0.5);
+      
+      let selectedTools = [];
+      
+      // Always include one promoted tool if available
+      if (promotedTools.length > 0) {
+        const randomPromoted = promotedTools[Math.floor(Math.random() * promotedTools.length)];
+        selectedTools.push(randomPromoted);
+        selectedTools.push(...shuffledOther.slice(0, 2));
+      } else {
+        selectedTools = shuffledOther.slice(0, 3);
+      }
+
+      return selectedTools;
+    },
+  });
+
   const { data: featuredAuthors } = useQuery({
     queryKey: ["featured-authors"],
     staleTime: 10 * 60 * 1000, // 10 minutes
@@ -571,25 +617,44 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: "Prompt with the power of AI.", desc: "Advanced prompt engineering platform", url: "https://www.promptandgo.ai", category: "Productivity" },
-              { name: "Startup with the power of AI.", desc: "AI prompts and templates to supercharge your business", url: "https://www.businessinabyte.com", category: "Business" },
-              { name: "Shop with the power of AI.", desc: "AI-curated deals from around the web", url: "https://www.myofferclub.com", category: "Retail" },
-            ].map((tool, i) => (
-              <div key={i} className="article-card p-6 relative">
-                <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
-                  {tool.category}
-                </Badge>
-                <h3 className="font-semibold text-lg mb-3 pr-20">{tool.name}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{tool.desc}</p>
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                    Learn More
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </Button>
-              </div>
-            ))}
+            {trendingTools && trendingTools.length > 0 ? (
+              trendingTools.map((tool) => (
+                <div key={tool.id} className="article-card p-6 relative">
+                  <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
+                    {tool.category || 'AI Tool'}
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-3 pr-20">{tool.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{tool.description}</p>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                      Learn More
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </Button>
+                </div>
+              ))
+            ) : (
+              // Fallback if no tools in database
+              [
+                { name: "Prompt with the power of AI.", desc: "Advanced prompt engineering platform", url: "https://www.promptandgo.ai", category: "Productivity" },
+                { name: "Startup with the power of AI.", desc: "AI prompts and templates to supercharge your business", url: "https://www.businessinabyte.com", category: "Business" },
+                { name: "Shop with the power of AI.", desc: "AI-curated deals from around the web", url: "https://www.myofferclub.com", category: "Retail" },
+              ].map((tool, i) => (
+                <div key={i} className="article-card p-6 relative">
+                  <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
+                    {tool.category}
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-3 pr-20">{tool.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{tool.desc}</p>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                      Learn More
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
