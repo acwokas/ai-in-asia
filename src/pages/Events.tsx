@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, ExternalLink, Globe, Users } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet";
 import {
   Breadcrumb,
@@ -39,29 +39,36 @@ interface Event {
   status: string;
 }
 
+const EVENTS_PER_PAGE = 20;
+
 const Events = () => {
   const queryClient = useQueryClient();
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
+  const [page, setPage] = useState(1);
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ['events', selectedRegion],
+    queryKey: ['events', selectedRegion, page],
     staleTime: 5 * 60 * 1000, // 5 minutes - events don't change frequently
     queryFn: async () => {
+      const from = 0;
+      const to = page * EVENTS_PER_PAGE - 1;
+      
       let query = supabase
         .from('events')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('status', 'upcoming')
         .gte('start_date', new Date().toISOString())
-        .order('start_date', { ascending: true });
+        .order('start_date', { ascending: true })
+        .range(from, to);
       
       if (selectedRegion !== 'all') {
         query = query.eq('region', selectedRegion);
       }
       
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       
       if (error) throw error;
-      return data as Event[];
+      return { events: data as Event[], total: count || 0 };
     },
   });
 
@@ -88,29 +95,41 @@ const Events = () => {
     };
   }, []);
 
-  // Featured events should be APAC-specific with complete data
-  let featuredEvents = events?.filter(event => 
-    event.is_featured && 
-    event.region === 'APAC' && 
-    event.description && 
-    event.website_url
-  ) || [];
-  
-  let upcomingEvents = events?.filter(event => !event.is_featured || event.region !== 'APAC') || [];
-  
-  // If we have fewer than 2 APAC featured events, find more with complete data
-  if (featuredEvents.length < 2 && events) {
-    const apacEvents = events.filter(event => 
+  // Reset page when region changes
+  useEffect(() => {
+    setPage(1);
+  }, [selectedRegion]);
+
+  // Memoize filtered events to avoid recalculating on every render
+  const { featuredEvents, upcomingEvents } = useMemo(() => {
+    if (!events?.events) return { featuredEvents: [], upcomingEvents: [] };
+
+    // Featured events should be APAC-specific with complete data
+    let featured = events.events.filter(event => 
+      event.is_featured && 
       event.region === 'APAC' && 
-      !event.is_featured && 
       event.description && 
       event.website_url
     );
-    const needed = 2 - featuredEvents.length;
-    const additionalFeatured = apacEvents.slice(0, needed);
-    featuredEvents = [...featuredEvents, ...additionalFeatured];
-    upcomingEvents = upcomingEvents.filter(e => !additionalFeatured.some(f => f.id === e.id));
-  }
+    
+    let upcoming = events.events.filter(event => !event.is_featured || event.region !== 'APAC');
+    
+    // If we have fewer than 2 APAC featured events, find more with complete data
+    if (featured.length < 2) {
+      const apacEvents = events.events.filter(event => 
+        event.region === 'APAC' && 
+        !event.is_featured && 
+        event.description && 
+        event.website_url
+      );
+      const needed = 2 - featured.length;
+      const additionalFeatured = apacEvents.slice(0, needed);
+      featured = [...featured, ...additionalFeatured];
+      upcoming = upcoming.filter(e => !additionalFeatured.some(f => f.id === e.id));
+    }
+
+    return { featuredEvents: featured, upcomingEvents: upcoming };
+  }, [events?.events]);
 
   const formatEventDate = (startDate: string, endDate: string | null) => {
     const start = new Date(startDate);
@@ -255,46 +274,74 @@ const Events = () => {
                 <h2 className="text-2xl font-bold mb-6">All Upcoming Events</h2>
                 <div className="space-y-4">
                   {upcomingEvents && upcomingEvents.length > 0 ? (
-                    upcomingEvents.map((event) => (
-                      <Card key={event.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">{event.event_type}</Badge>
-                                <Badge variant="secondary">{event.region}</Badge>
+                    <>
+                      {upcomingEvents.map((event) => (
+                        <Card key={event.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline">{event.event_type}</Badge>
+                                  <Badge variant="secondary">{event.region}</Badge>
+                                </div>
+                                <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    {formatEventDate(event.start_date, event.end_date)}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />
+                                    {event.city}, {event.country}
+                                  </span>
+                                </div>
+                                {event.description && (
+                                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                                    {event.description}
+                                  </p>
+                                )}
                               </div>
-                              <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-                              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="w-4 h-4" />
-                                  {formatEventDate(event.start_date, event.end_date)}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {event.city}, {event.country}
-                                </span>
+                              <div className="flex gap-2">
+                                {event.website_url && (
+                                  <Button variant="outline" size="sm" asChild>
+                                    <a href={event.website_url} target="_blank" rel="noopener noreferrer">
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Learn More
+                                    </a>
+                                  </Button>
+                                )}
                               </div>
-                              {event.description && (
-                                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                                  {event.description}
-                                </p>
-                              )}
                             </div>
-                            <div className="flex gap-2">
-                              {event.website_url && (
-                                <Button variant="outline" size="sm" asChild>
-                                  <a href={event.website_url} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="w-4 h-4 mr-2" />
-                                    Learn More
-                                  </a>
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                          </CardContent>
+                        </Card>
+                      ))}
+                      
+                      {/* Load More Button */}
+                      {events && events.total > page * EVENTS_PER_PAGE && (
+                        <div className="text-center mt-8">
+                          <Button 
+                            onClick={() => setPage(p => p + 1)}
+                            variant="outline"
+                            size="lg"
+                            disabled={isLoading}
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                Load More Events
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                  ({page * EVENTS_PER_PAGE} of {events.total})
+                                </span>
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <Card>
                       <CardContent className="p-12 text-center">
