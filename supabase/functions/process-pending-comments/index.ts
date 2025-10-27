@@ -97,12 +97,19 @@ Deno.serve(async (req) => {
         const aiData = await aiResponse.json();
         const generatedText = aiData.choices[0].message.content;
 
-        // Parse the generated comment
-        const nameMatch = generatedText.match(/Name:\s*(.+)/);
-        const commentMatch = generatedText.match(/Comment:\s*(.+)/s);
+        // Parse the generated comment - extract ONLY the first Name/Comment pair
+        const firstCommentMatch = generatedText.match(/Name:\s*([^\n]+)\s*Comment:\s*([^N]+?)(?=\s*Name:|$)/s);
 
-        const authorName = nameMatch ? nameMatch[1].trim() : 'Anonymous Reader';
-        const content = commentMatch ? commentMatch[1].trim().replace(/\s+/g, ' ') : generatedText;
+        if (!firstCommentMatch) {
+          console.error('Failed to parse comment format:', generatedText);
+          throw new Error('Invalid comment format');
+        }
+
+        const authorName = firstCommentMatch[1].trim();
+        const content = firstCommentMatch[2].trim()
+          .replace(/\s+/g, ' ')
+          .replace(/Name:\s*\w+\s*Comment:.*$/g, '') // Remove any trailing Name: Comment: pairs
+          .trim();
 
         // Insert the comment
         const { error: insertError } = await supabase
