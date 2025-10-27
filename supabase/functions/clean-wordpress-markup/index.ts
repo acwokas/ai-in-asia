@@ -11,50 +11,48 @@ interface ContentBlock {
   attrs?: any;
 }
 
-function cleanWordPressMarkup(content: ContentBlock[]): ContentBlock[] {
-  return content.map(block => {
-    if (block.type === 'paragraph' && typeof block.content === 'string') {
-      let cleaned = block.content;
+function cleanWordPressMarkup(content: ContentBlock[]): { cleaned: ContentBlock[], changed: boolean } {
+  let hasChanges = false;
+  const blocksToKeep: ContentBlock[] = [];
+  
+  for (const block of content) {
+    if (typeof block.content === 'string') {
+      let originalContent = block.content;
+      let cleanedContent = originalContent;
       
-      // Remove WordPress HTML comments
-      cleaned = cleaned.replace(/<!--\s*wp:[^>]+-->/g, '');
+      // Remove WordPress HTML comments (<!-- wp:... -->)
+      cleanedContent = cleanedContent.replace(/<!--\s*wp:[^>]+-->/g, '');
       
-      // Extract quote text from WordPress blockquote HTML
-      const blockquoteMatch = cleaned.match(/<div class="uagb-blockquote__content">"?([^<]+)"?<\/div>/);
-      if (blockquoteMatch && cleaned.includes('wp-block-uagb-blockquote')) {
-        // This is a quote, convert to quote block
-        return {
-          type: 'quote',
-          content: blockquoteMatch[1].trim()
-        };
-      }
+      // Remove WordPress block wrapper divs and classes
+      cleanedContent = cleanedContent.replace(/<div[^>]*class="[^"]*wp-block-[^"]*"[^>]*>/g, '');
+      cleanedContent = cleanedContent.replace(/<div[^>]*class="[^"]*uagb-[^"]*"[^>]*>/g, '');
+      cleanedContent = cleanedContent.replace(/<\/div>/g, '');
       
-      // Remove all HTML tags if they're WordPress-specific
-      if (cleaned.includes('wp-block-') || cleaned.includes('uagb-')) {
-        // Extract any text content before removing tags
-        cleaned = cleaned
-          .replace(/<div[^>]*uagb-blockquote__content[^>]*>"?([^<]+)"?<\/div>/g, '$1')
-          .replace(/<[^>]+>/g, '') // Remove all HTML tags
-          .replace(/\s+/g, ' ') // Normalize whitespace
-          .trim();
+      // Remove classMigrate attributes
+      cleanedContent = cleanedContent.replace(/classMigrate="[^"]*"/g, '');
+      
+      // Clean up excessive whitespace
+      cleanedContent = cleanedContent.replace(/\s+/g, ' ').trim();
+      
+      // Remove empty HTML tags
+      cleanedContent = cleanedContent.replace(/<([a-z]+)[^>]*>\s*<\/\1>/gi, '');
+      
+      if (cleanedContent !== originalContent) {
+        hasChanges = true;
         
-        // If nothing meaningful left, return null to filter out later
-        if (!cleaned || cleaned.length < 5) {
-          return { type: 'paragraph', content: '' };
+        // Skip if content is now empty or too short
+        if (cleanedContent && cleanedContent.length >= 3) {
+          blocksToKeep.push({ ...block, content: cleanedContent });
         }
+      } else {
+        blocksToKeep.push(block);
       }
-      
-      return { ...block, content: cleaned };
+    } else {
+      blocksToKeep.push(block);
     }
-    
-    return block;
-  }).filter(block => {
-    // Filter out empty paragraphs
-    if (block.type === 'paragraph' && (!block.content || block.content === '')) {
-      return false;
-    }
-    return true;
-  });
+  }
+  
+  return { cleaned: blocksToKeep, changed: hasChanges };
 }
 
 Deno.serve(async (req) => {
@@ -90,7 +88,7 @@ Deno.serve(async (req) => {
       throw new Error('Admin access required');
     }
 
-    // Fetch all articles to check for WordPress markup
+    // Fetch all published articles
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, slug, content')
@@ -105,8 +103,9 @@ Deno.serve(async (req) => {
     // Filter articles that contain WordPress markup
     const articlesWithMarkup = articles?.filter(article => {
       const contentStr = JSON.stringify(article.content);
-      return contentStr.includes('wp:uagb') || 
+      return contentStr.includes('wp:') || 
              contentStr.includes('wp-block-') || 
+             contentStr.includes('uagb-') ||
              contentStr.includes('classMigrate');
     }) || [];
     
@@ -115,6 +114,7 @@ Deno.serve(async (req) => {
     const results = {
       processed: 0,
       cleaned: 0,
+      skipped: 0,
       errors: [] as any[]
     };
 
@@ -124,19 +124,24 @@ Deno.serve(async (req) => {
           ? JSON.parse(article.content) 
           : article.content;
 
-        const cleanedContent = cleanWordPressMarkup(content);
+        if (!Array.isArray(content)) {
+          console.log(`Skipping ${article.slug}: content is not an array`);
+          results.skipped++;
+          continue;
+        }
+
+        const { cleaned, changed } = cleanWordPressMarkup(content);
         
-        // Only update if content changed
-        const contentStr = JSON.stringify(content);
-        const cleanedStr = JSON.stringify(cleanedContent);
-        
-        if (contentStr !== cleanedStr) {
+        if (changed) {
+          console.log(`Cleaning article: ${article.slug}`);
+          
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ content: cleanedContent })
+            .update({ content: cleaned })
             .eq('id', article.id);
 
           if (updateError) {
+            console.error(`Failed to update ${article.slug}:`, updateError);
             results.errors.push({
               id: article.id,
               slug: article.slug,
@@ -145,6 +150,8 @@ Deno.serve(async (req) => {
           } else {
             results.cleaned++;
           }
+        } else {
+          results.skipped++;
         }
         
         results.processed++;
@@ -157,6 +164,8 @@ Deno.serve(async (req) => {
         });
       }
     }
+
+    console.log(`Results: processed=${results.processed}, cleaned=${results.cleaned}, skipped=${results.skipped}, errors=${results.errors.length}`);
 
     return new Response(
       JSON.stringify({
