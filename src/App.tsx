@@ -7,16 +7,17 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-// Eager load critical components for first paint
+// Eager load only truly critical components
 import Index from "./pages/Index";
-import WelcomePopup from "./components/WelcomePopup";
-import ScoutChatbot from "./components/ScoutChatbot";
 import GoogleAnalytics from "./components/GoogleAnalytics";
-import { loadGoogleAdsScript } from "./components/GoogleAds";
-import ConsentBanner from "./components/ConsentBanner";
 import { CollectiveFooter } from "./components/CollectiveFooter";
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
+
+// Lazy load non-critical components
+const WelcomePopup = lazy(() => import("./components/WelcomePopup"));
+const ScoutChatbot = lazy(() => import("./components/ScoutChatbot"));
+const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
@@ -79,7 +80,16 @@ const PageLoader = () => (
   </div>
 );
 
-loadGoogleAdsScript();
+// Defer Google Ads script loading until after initial render
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4181437297386228";
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }, 2000);
+}
 
 const queryClient = new QueryClient();
 
@@ -93,9 +103,11 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <GoogleAnalytics />
-            <ConsentBanner />
-            <WelcomePopup />
-            <ScoutChatbot />
+            <Suspense fallback={null}>
+              <ConsentBanner />
+              <WelcomePopup />
+              <ScoutChatbot />
+            </Suspense>
             <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
