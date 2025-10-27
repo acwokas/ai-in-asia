@@ -506,6 +506,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       if (error) throw error;
 
       if (data?.data) {
+        setMetaTitle(data.data.meta_title);
         setSeoTitle(data.data.seo_title);
         setFocusKeyphrase(data.data.focus_keyphrase);
         setKeyphraseSynonyms(data.data.keyphrase_synonyms);

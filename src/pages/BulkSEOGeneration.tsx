@@ -54,8 +54,9 @@ const BulkSEOGeneration = () => {
           <CardContent className="space-y-6">
             <div className="bg-muted p-4 rounded-lg">
               <h3 className="font-semibold mb-2">What this does:</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                 <li>Scans all published articles for missing SEO data</li>
+                <li>Generates Meta Title (HTML title tag)</li>
                 <li>Generates SEO Title (optimized for search engines)</li>
                 <li>Creates Focus Keyphrase (main target keyword)</li>
                 <li>Adds Keyphrase Synonyms (related keywords)</li>

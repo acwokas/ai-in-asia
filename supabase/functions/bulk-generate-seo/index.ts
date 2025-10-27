@@ -25,9 +25,9 @@ serve(async (req) => {
     // Get all published articles with missing SEO data
     const { data: articles, error: fetchError } = await supabase
       .from("articles")
-      .select("id, title, content, excerpt, seo_title, focus_keyphrase, keyphrase_synonyms")
+      .select("id, title, content, excerpt, meta_title, seo_title, focus_keyphrase, keyphrase_synonyms")
       .eq("status", "published")
-      .or("seo_title.is.null,focus_keyphrase.is.null,keyphrase_synonyms.is.null,seo_title.eq.,focus_keyphrase.eq.,keyphrase_synonyms.eq.")
+      .or("meta_title.is.null,seo_title.is.null,focus_keyphrase.is.null,keyphrase_synonyms.is.null,meta_title.eq.,seo_title.eq.,focus_keyphrase.eq.,keyphrase_synonyms.eq.")
       .limit(100);
 
     if (fetchError) throw fetchError;
@@ -68,6 +68,7 @@ serve(async (req) => {
                 role: "system",
                 content: `You are an expert SEO specialist. Generate SEO metadata for articles about AI, technology, and innovation in Asia-Pacific. Return ONLY valid JSON with these exact fields:
 {
+  "meta_title": "60 character HTML title tag with main keyword",
   "seo_title": "60 character optimized title with main keyword",
   "focus_keyphrase": "main keyword phrase (2-4 words)",
   "keyphrase_synonyms": "synonym1, synonym2, synonym3",
@@ -111,6 +112,7 @@ serve(async (req) => {
         const { error: updateError } = await supabase
           .from("articles")
           .update({
+            meta_title: seoData.meta_title,
             seo_title: seoData.seo_title,
             focus_keyphrase: seoData.focus_keyphrase,
             keyphrase_synonyms: seoData.keyphrase_synonyms,
