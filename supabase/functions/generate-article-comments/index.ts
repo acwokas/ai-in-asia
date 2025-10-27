@@ -148,14 +148,14 @@ CRITICAL RULES:
 - AVOID AI clichés like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift", "truly exciting", "promising"
 - Write naturally like a real person commenting online - casual, sometimes skeptical, sometimes enthusiastic
 - Include occasional typos, abbreviations (tbh, imo, ngl, btw, lol, lmao), slang, lowercase starts
+- VARY LENGTH DRAMATICALLY: 30% should be super short (5-15 words), 50% medium (15-40 words), 20% longer (40-70 words)
 - Vary the tone dramatically: some excited, some critical, some questioning, some brief reactions
-- Keep it 1-3 sentences, but some can be just one quick reaction
 - Be specific to the topic when possible
-- Use diverse names from: Southeast Asia (Wei, Mei, Siti, Arjun, Priya, Hiroshi, Yuki, Nguyen, Anh), North Asia (Li, Chen, Park, Kim, Tanaka, Sato), India (Raj, Anjali, Vikram, Neha), and Western (Mike, Sarah, Alex, Emma)
+- Use diverse names from: Southeast Asia (Wei, Mei, Siti, Arjun, Priya, Hiroshi, Yuki, Nguyen, Anh), North Asia (Li, Chen, Park, Kim, Tanaka, Sato), India (Raj, Anjali, Vikram, Neha), and Western (Mike, Sarah, Alex, Emma, Tom, Lisa)
 
 Format your response as:
 Name: [realistic diverse name]
-Comment: [your casual comment with natural imperfections]`
+Comment: [your casual comment with natural imperfections and varied length]`
       });
     }
     

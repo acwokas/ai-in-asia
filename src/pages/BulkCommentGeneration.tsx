@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Home, MessageSquare, CheckCircle, RotateCcw } from "lucide-react";
+import { Loader2, Home, MessageSquare, CheckCircle, RotateCcw, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
@@ -28,6 +28,8 @@ const BulkCommentGeneration = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check admin access
   const { data: isAdmin, isLoading: checkingAdmin } = useQuery({
@@ -138,6 +140,40 @@ const BulkCommentGeneration = () => {
       title: "Bulk generation complete",
       description: `Processed ${eligibleArticles.length} articles`,
     });
+  };
+
+  const deleteAllComments = async () => {
+    setShowDeleteAllDialog(false);
+    setIsDeleting(true);
+
+    try {
+      const { error } = await supabase
+        .from("comments")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all records
+
+      if (error) throw error;
+
+      // Also delete all pending comments
+      await supabase
+        .from("pending_comments")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000");
+
+      toast({
+        title: "All comments deleted",
+        description: "Successfully deleted all comments from the site",
+      });
+    } catch (error) {
+      console.error("Error deleting comments:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete comments",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const regenerateAllComments = async () => {
@@ -281,7 +317,7 @@ const BulkCommentGeneration = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
                   onClick={generateComments}
-                  disabled={isGenerating || !eligibleArticles || eligibleArticles.length === 0}
+                  disabled={isGenerating || isDeleting || !eligibleArticles || eligibleArticles.length === 0}
                   size="lg"
                 >
                   {isGenerating ? (
@@ -299,12 +335,32 @@ const BulkCommentGeneration = () => {
 
                 <Button 
                   onClick={() => setShowRegenerateDialog(true)}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isDeleting}
                   size="lg"
                   variant="destructive"
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Regenerate ALL Comments
+                </Button>
+
+                <Button 
+                  onClick={() => setShowDeleteAllDialog(true)}
+                  disabled={isGenerating || isDeleting}
+                  size="lg"
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete ALL Comments
+                    </>
+                  )}
                 </Button>
               </div>
 
@@ -361,6 +417,24 @@ const BulkCommentGeneration = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={regenerateAllComments} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Yes, Regenerate All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete ALL Comments from Site?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete ALL comments from the entire site, including both approved and pending comments. 
+              This action cannot be undone. Are you absolutely sure you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteAllComments} className="bg-red-600 text-white hover:bg-red-700">
+              Yes, Delete Everything
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
