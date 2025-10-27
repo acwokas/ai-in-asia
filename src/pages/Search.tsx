@@ -162,11 +162,20 @@ const Search = () => {
       const categoriesMap = new Map((categoriesResult.data || []).map(c => [c.id, c] as const));
       const authorsMap = new Map((authorsResult.data || []).map(a => [a.id, a] as const));
       
-      return articles.map(article => ({
-        ...article,
-        category: categoriesMap.get(article.primary_category_id) || { name: "Uncategorized", slug: "uncategorized" },
-        author: authorsMap.get(article.author_id) || { name: "Unknown", slug: "" }
-      }));
+      return articles.map(article => {
+        const category = article.primary_category_id 
+          ? categoriesMap.get(article.primary_category_id) 
+          : null;
+        const author = article.author_id 
+          ? authorsMap.get(article.author_id) 
+          : null;
+          
+        return {
+          ...article,
+          category: category || { id: 'uncategorized', name: "Uncategorized", slug: "uncategorized" },
+          author: author || { id: 'unknown', name: "Unknown", slug: "" }
+        };
+      });
     },
   });
 
