@@ -107,12 +107,12 @@ const BulkCommentGeneration = () => {
           articleId: article.id,
           title: article.title,
           success: true,
-          commentsAdded: data.commentsAdded,
+          commentsAdded: data.pendingComments,
         });
 
         toast({
-          title: `Comments added to: ${article.title}`,
-          description: `${data.commentsAdded} comments generated`,
+          title: `Comments scheduled for: ${article.title}`,
+          description: `${data.pendingComments} comments scheduled for generation`,
         });
 
       } catch (error) {
@@ -187,12 +187,12 @@ const BulkCommentGeneration = () => {
           articleId: article.id,
           title: article.title,
           success: true,
-          commentsAdded: data.commentsAdded,
+          commentsAdded: data.pendingComments,
         });
 
         toast({
-          title: `Regenerated comments: ${article.title}`,
-          description: `${data.commentsAdded} comments generated`,
+          title: `Comments scheduled for: ${article.title}`,
+          description: `${data.pendingComments} comments scheduled for generation`,
         });
 
       } catch (error) {
@@ -331,7 +331,7 @@ const BulkCommentGeneration = () => {
                             <p className="font-medium text-sm">{result.title}</p>
                             {result.success ? (
                               <p className="text-xs text-muted-foreground">
-                                {result.commentsAdded} comments added
+                                {result.commentsAdded} comments scheduled
                               </p>
                             ) : (
                               <p className="text-xs text-red-600">{result.error}</p>
