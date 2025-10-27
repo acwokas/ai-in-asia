@@ -49,14 +49,14 @@ const StockTicker = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-muted/30 border-y border-border overflow-hidden">
+      <div className="bg-[#E6F4F1] border-y border-[#D0E8E2] overflow-hidden">
         <div className="container py-2">
           <div className="flex items-center gap-4 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-2 min-w-[200px]">
-                <div className="h-4 bg-muted rounded w-12"></div>
-                <div className="h-4 bg-muted rounded w-16"></div>
-                <div className="h-4 bg-muted rounded w-12"></div>
+                <div className="h-4 bg-[#D0E8E2] rounded w-12"></div>
+                <div className="h-4 bg-[#D0E8E2] rounded w-16"></div>
+                <div className="h-4 bg-[#D0E8E2] rounded w-12"></div>
               </div>
             ))}
           </div>
@@ -73,7 +73,7 @@ const StockTicker = () => {
   const displayStocks = [...stocks, ...stocks];
 
   return (
-    <div className="bg-muted/30 border-y border-border overflow-hidden group">
+    <div className="bg-[#E6F4F1] border-y border-[#D0E8E2] overflow-hidden group">
       <div className="relative">
         <div className="ticker-wrapper">
           <div className="ticker-content">
@@ -82,16 +82,16 @@ const StockTicker = () => {
                 key={`${stock.symbol}-${index}`}
                 className="ticker-item inline-flex items-center gap-3 px-6 py-2 whitespace-nowrap"
               >
-                <span className="font-semibold text-sm">{stock.symbol}</span>
-                <span className="text-sm font-medium">
+                <span className="font-semibold text-sm text-[#1a1a1a]">{stock.symbol}</span>
+                <span className="text-sm font-medium text-[#1a1a1a]">
                   ${stock.current_price.toFixed(2)}
                 </span>
                 <div
                   className={cn(
                     "flex items-center gap-1 text-xs font-medium",
                     stock.change_amount >= 0
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-red-600 dark:text-red-400"
+                      ? "text-[#10b981]"
+                      : "text-[#ef4444]"
                   )}
                 >
                   {stock.change_amount >= 0 ? (
@@ -106,7 +106,7 @@ const StockTicker = () => {
                     {stock.change_percent.toFixed(2)}%)
                   </span>
                 </div>
-                <span className="text-muted-foreground text-xs mx-2">|</span>
+                <span className="text-[#6b7280] text-xs mx-2">|</span>
               </div>
             ))}
           </div>
