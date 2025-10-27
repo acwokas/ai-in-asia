@@ -19,7 +19,7 @@ interface EditorsPickProps {
 }
 
 export const EditorsPick = ({ article }: EditorsPickProps) => {
-  const categorySlug = article.categories?.slug || 'uncategorized';
+  const categorySlug = article.categories?.slug || 'news';
   
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">

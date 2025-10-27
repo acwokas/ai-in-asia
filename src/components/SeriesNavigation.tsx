@@ -62,7 +62,7 @@ const SeriesNavigation = ({ seriesId, currentPart, currentArticleId }: SeriesNav
       <div className="flex justify-between items-center gap-4 mt-4">
         {prevArticle ? (
           <Button variant="outline" size="sm" asChild className="flex-1">
-            <Link to={`/${prevArticle.categories?.slug || 'uncategorized'}/${prevArticle.slug}`}>
+            <Link to={`/${prevArticle.categories?.slug || 'news'}/${prevArticle.slug}`}>
               <ChevronLeft className="h-4 w-4 mr-2" />
               <div className="text-left overflow-hidden">
                 <p className="text-xs text-muted-foreground">Previous</p>
@@ -80,7 +80,7 @@ const SeriesNavigation = ({ seriesId, currentPart, currentArticleId }: SeriesNav
 
         {nextArticle ? (
           <Button variant="default" size="sm" asChild className="flex-1">
-            <Link to={`/${nextArticle.categories?.slug || 'uncategorized'}/${nextArticle.slug}`}>
+            <Link to={`/${nextArticle.categories?.slug || 'news'}/${nextArticle.slug}`}>
               <div className="text-right overflow-hidden">
                 <p className="text-xs">Next</p>
                 <p className="truncate">{nextArticle.title}</p>
@@ -102,7 +102,7 @@ const SeriesNavigation = ({ seriesId, currentPart, currentArticleId }: SeriesNav
           {articles.map((article) => (
             <li key={article.id}>
               <Link
-                to={`/${article.categories?.slug || 'uncategorized'}/${article.slug}`}
+                to={`/${article.categories?.slug || 'news'}/${article.slug}`}
                 className={`text-sm hover:text-primary transition-colors ${
                   article.id === currentArticleId ? 'font-bold text-primary' : ''
                 }`}

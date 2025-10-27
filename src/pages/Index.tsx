@@ -301,7 +301,7 @@ const Index = () => {
                 const leftColumnCount = Math.min(5, filteredTrending.length);
                 
                 return filteredTrending.slice(0, leftColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || 'uncategorized';
+                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
                   return (
                 <Link 
                   key={article.id}
@@ -348,7 +348,7 @@ const Index = () => {
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
               {/* Large Featured Article */}
               {featuredArticle && featuredArticle.slug ? (
-                <Link to={`/${featuredArticle.categories?.slug || 'uncategorized'}/${featuredArticle.slug}`} className="block group">
+                <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
                   <div className="relative h-[600px] overflow-hidden rounded-lg">
                     <img 
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)} 
@@ -377,7 +377,7 @@ const Index = () => {
                 </Link>
               ) : (
                 trendingArticles?.[0]?.slug && (
-                  <Link to={`/${trendingArticles[0].categories?.slug || 'uncategorized'}/${trendingArticles[0].slug}`} className="block group">
+                  <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
                     <div className="relative h-[600px] overflow-hidden rounded-lg">
                       <img 
                         src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)} 
@@ -411,7 +411,7 @@ const Index = () => {
                 {latestArticles?.filter((article: any) => 
                   article.slug && article.id !== featuredArticle?.id
                 ).slice(0, 2).map((article: any) => {
-                  const categorySlug = article.categories?.slug || 'uncategorized';
+                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
                   return (
                   <Link 
                     key={article.id}
@@ -471,7 +471,7 @@ const Index = () => {
                 const rightColumnCount = Math.min(8, filteredLatest.length);
                 
                 return filteredLatest.slice(0, rightColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || 'uncategorized';
+                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
                   return (
                   <Link 
                     key={article.id}

@@ -541,7 +541,7 @@ const Articles = () => {
                           title="View published article"
                           asChild
                         >
-                          <Link to={`/${(article.categories as any)?.slug || 'uncategorized'}/${article.slug}`} target="_blank">
+                          <Link to={`/${(article.categories as any)?.slug || 'news'}/${article.slug}`} target="_blank">
                             <ExternalLink className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -552,7 +552,7 @@ const Articles = () => {
                           title="Preview draft/scheduled article"
                           asChild
                         >
-                          <Link to={`/${(article.categories as any)?.slug || 'uncategorized'}/${article.slug}?preview=${article.preview_code}`} target="_blank">
+                          <Link to={`/${(article.categories as any)?.slug || 'news'}/${article.slug}?preview=${article.preview_code}`} target="_blank">
                             <Eye className="h-4 w-4 text-muted-foreground" />
                           </Link>
                         </Button>
