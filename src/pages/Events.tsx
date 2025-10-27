@@ -171,12 +171,11 @@ const Events = () => {
 
           {/* Region Filter */}
           <Tabs defaultValue="all" className="mb-8" onValueChange={setSelectedRegion}>
-            <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto">
               <TabsTrigger value="all">All Regions</TabsTrigger>
               <TabsTrigger value="APAC">APAC</TabsTrigger>
-              <TabsTrigger value="North America">Americas</TabsTrigger>
-              <TabsTrigger value="Europe">Europe</TabsTrigger>
-              <TabsTrigger value="Global">Virtual</TabsTrigger>
+              <TabsTrigger value="Americas">Americas</TabsTrigger>
+              <TabsTrigger value="EMEA">EMEA</TabsTrigger>
             </TabsList>
           </Tabs>
 
