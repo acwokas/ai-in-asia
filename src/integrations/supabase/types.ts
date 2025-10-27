@@ -1208,6 +1208,7 @@ export type Database = {
       pending_comments: {
         Row: {
           article_id: string
+          comment_date: string | null
           comment_prompt: string
           created_at: string | null
           id: string
@@ -1215,6 +1216,7 @@ export type Database = {
         }
         Insert: {
           article_id: string
+          comment_date?: string | null
           comment_prompt: string
           created_at?: string | null
           id?: string
@@ -1222,6 +1224,7 @@ export type Database = {
         }
         Update: {
           article_id?: string
+          comment_date?: string | null
           comment_prompt?: string
           created_at?: string | null
           id?: string

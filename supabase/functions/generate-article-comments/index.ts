@@ -137,25 +137,46 @@ serve(async (req) => {
         scheduledFor = new Date(now.getTime() + Math.random() * 60 * 60 * 1000);
       }
       
+      // Calculate the historical "posted" date (when comment should appear to be from)
+      const historicalDate = new Date(publishedAt.getTime() + daysAfterPublish * 24 * 60 * 60 * 1000);
+      
       pendingComments.push({
         article_id: articleId,
         scheduled_for: scheduledFor.toISOString(),
+        comment_date: historicalDate.toISOString(), // When comment appears to be posted
         comment_prompt: `Generate a realistic, casual comment for this article titled "${article.title}". 
 The article is about: ${article.excerpt || article.title}
 
-CRITICAL RULES:
-- NEVER use em dashes (—) or hyphens for emphasis
-- AVOID AI clichés like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift", "truly exciting", "promising"
-- Write naturally like a real person commenting online - casual, sometimes skeptical, sometimes enthusiastic
-- Include occasional typos, abbreviations (tbh, imo, ngl, btw, lol, lmao), slang, lowercase starts
-- VARY LENGTH DRAMATICALLY: 30% should be super short (5-15 words), 50% medium (15-40 words), 20% longer (40-70 words)
-- Vary the tone dramatically: some excited, some critical, some questioning, some brief reactions
-- Be specific to the topic when possible
-- Use diverse names from: Southeast Asia (Wei, Mei, Siti, Arjun, Priya, Hiroshi, Yuki, Nguyen, Anh), North Asia (Li, Chen, Park, Kim, Tanaka, Sato), India (Raj, Anjali, Vikram, Neha), and Western (Mike, Sarah, Alex, Emma, Tom, Lisa)
+YOU MUST FOLLOW THESE RULES OR YOUR RESPONSE WILL BE REJECTED:
 
-Format your response as:
-Name: [realistic diverse name]
-Comment: [your casual comment with natural imperfections and varied length]`
+LENGTH REQUIREMENTS (THIS IS CRITICAL):
+- Roll a dice: 30% chance = SHORT (5-15 words ONLY), 50% = MEDIUM (15-40 words), 20% = LONG (40-70 words)
+- SHORT examples: "wow this is cool", "interesting tbh", "didnt know this was a thing lol", "makes sense i guess"
+- Do NOT write 2-3 well-formed sentences for EVERY comment - that's fake!
+
+WRITING STYLE (MUST SOUND REAL):
+- NEVER use: "This piece really", "fascinating", "intricate", "tightrope", "enhancing", "cultural heritage"
+- AVOID: perfect grammar, formal tone, sophisticated vocabulary
+- DO USE: casual tone, some lowercase, typos occasionally, internet slang
+- Examples of GOOD casual writing: "ngl this is pretty cool", "interesting read but idk if it'll work", "lmao who comes up with this stuff"
+- Examples of BAD formal writing: "This article presents a fascinating perspective", "It's intriguing to consider", "This piece highlights"
+
+VARIETY IN TONE (NOT ALL POSITIVE):
+- Some excited: "omg yes!", "this is so cool tbh"
+- Some skeptical: "seems overhyped to me", "idk about this", "meh"
+- Some critical: "not sure i agree", "sounds expensive lol"
+- Some questions: "wait how does this even work?", "is this for real?"
+- Some brief: "interesting", "cool stuff", "nice"
+
+NAMES TO USE (DIVERSE):
+- Southeast Asia: Wei, Mei, Siti, Arjun, Priya
+- North Asia: Li, Chen, Park, Kim, Hiroshi, Yuki, Tanaka
+- India: Raj, Anjali, Vikram, Neha
+- Western: Mike, Sarah, Alex, Emma, Tom, Lisa
+
+Format your response EXACTLY as:
+Name: [pick one diverse name]
+Comment: [your realistic casual comment - remember to vary the length!]`
       });
     }
     

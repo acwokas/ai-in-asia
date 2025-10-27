@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
             author_name: authorName,
             content: content,
             approved: true,
-            created_at: pending.scheduled_for // Use the scheduled time as created_at
+            created_at: pending.comment_date || pending.scheduled_for // Use historical date if available
           });
 
         if (insertError) {
