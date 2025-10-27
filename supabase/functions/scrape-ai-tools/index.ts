@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-api-key': lovableApiKey,
+              'Authorization': `Bearer ${lovableApiKey}`,
             },
             body: JSON.stringify({
               model: 'google/gemini-2.5-pro',
