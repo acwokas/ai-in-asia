@@ -375,6 +375,8 @@ const Article = () => {
         .replace(/\[Tweet\]\([^)]*\)/gi, '')
         // Remove any standalone "Tweet" text that looks like a link remnant
         .replace(/^\s*Tweet\s*$/gm, '')
+        // Convert markdown images ![alt](url) to HTML
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /></div>')
         // Convert actual bold text first
         .replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>')
         // Convert italic text (single asterisks only, not part of **)
