@@ -65,3 +65,9 @@ verify_jwt = true
 
 [functions.clean-wordpress-markup]
 verify_jwt = true
+
+[functions.generate-article-seo]
+verify_jwt = true
+
+[functions.bulk-generate-seo]
+verify_jwt = true

@@ -105,6 +105,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isGeneratingHeadline, setIsGeneratingHeadline] = useState(false);
+  const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -480,6 +481,52 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
   };
 
+  const handleGenerateSEO = async () => {
+    if (!initialData?.id) {
+      toast({
+        title: "Save Required",
+        description: "Please save the article first before generating SEO",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSEO(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-article-seo", {
+        body: {
+          articleId: initialData.id,
+          title,
+          content,
+          excerpt,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.data) {
+        setSeoTitle(data.data.seo_title);
+        setFocusKeyphrase(data.data.focus_keyphrase);
+        setKeyphraseSynonyms(data.data.keyphrase_synonyms);
+        setMetaDescription(data.data.meta_description);
+        
+        toast({
+          title: "SEO Generated!",
+          description: "All SEO fields have been populated with AI-optimized content",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate SEO metadata",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSEO(false);
+    }
+  };
+
   const handleSave = () => {
     let scheduledDateTime = null;
     let finalStatus = status;
@@ -739,8 +786,30 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         <TabsContent value="seo" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>SEO Settings</CardTitle>
-              <CardDescription>Optimise your article for search engines</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>SEO Settings</CardTitle>
+                  <CardDescription>Optimise your article for search engines</CardDescription>
+                </div>
+                <Button
+                  onClick={handleGenerateSEO}
+                  disabled={isGeneratingSEO || !title || !content}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isGeneratingSEO ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Auto-Generate SEO
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
