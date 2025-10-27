@@ -29,6 +29,7 @@ const Admin = () => {
   const [scrapingEvents, setScrapingEvents] = useState(false);
   const [fixingDates, setFixingDates] = useState(false);
   const [autoScheduling, setAutoScheduling] = useState(false);
+  const [cleaningMarkup, setCleaningMarkup] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -249,27 +250,82 @@ const Admin = () => {
   };
 
   const handleAutoScheduleComments = async () => {
-    setAutoScheduling(true);
     try {
-      const { data, error } = await supabase.functions.invoke("auto-schedule-comments");
+      setAutoScheduling(true);
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (error) throw error;
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      toast({
-        title: "Success!",
-        description: data.message || `Scheduled comments for ${data.articlesScheduled} articles`,
+      const response = await supabase.functions.invoke('auto-schedule-comments', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
-      refetchStats();
-    } catch (error) {
-      console.error("Error auto-scheduling comments:", error);
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Success",
+        description: `Comment generation scheduled for ${response.data.articlesScheduled} articles`,
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to auto-schedule comments",
+        description: error.message || "Failed to schedule comments",
         variant: "destructive",
       });
     } finally {
       setAutoScheduling(false);
+    }
+  };
+
+  const handleCleanWordPressMarkup = async () => {
+    try {
+      setCleaningMarkup(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('clean-wordpress-markup', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Success",
+        description: `Cleaned ${response.data.cleaned} of ${response.data.processed} articles`,
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to clean markup",
+        variant: "destructive",
+      });
+    } finally {
+      setCleaningMarkup(false);
     }
   };
 

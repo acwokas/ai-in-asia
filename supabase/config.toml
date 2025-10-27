@@ -62,3 +62,6 @@ verify_jwt = true
 
 [functions.auto-schedule-comments]
 verify_jwt = true
+
+[functions.clean-wordpress-markup]
+verify_jwt = true

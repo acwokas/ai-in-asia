@@ -70,7 +70,7 @@ serve(async (req) => {
     // Schedule comments for articles that need them (in batches to avoid timeouts)
     const batchSize = 10;
     let scheduled = 0;
-    const errors = [];
+    const errors: Array<{ id: string; slug: string; error: string }> = [];
 
     for (let i = 0; i < articlesNeedingComments.length; i += batchSize) {
       const batch = articlesNeedingComments.slice(i, i + batchSize);
@@ -89,7 +89,8 @@ serve(async (req) => {
           console.log(`Scheduled comments for: ${batch[idx].title}`);
         } else {
           errors.push({
-            article: batch[idx].title,
+            id: batch[idx].id,
+            slug: batch[idx].title,
             error: result.reason
           });
           console.error(`Failed to schedule for ${batch[idx].title}:`, result.reason);
