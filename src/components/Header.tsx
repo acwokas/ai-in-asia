@@ -49,6 +49,8 @@ const Header = () => {
               <a href="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</a>
               <a href="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</a>
               <a href="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</a>
+              <a href="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</a>
+              <a href="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</a>
               <a href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
             </nav>
           </div>
@@ -124,6 +126,8 @@ const Header = () => {
               <a href="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</a>
               <a href="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</a>
               <a href="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</a>
+              <a href="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</a>
+              <a href="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</a>
               <a href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
               <a href="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</a>
               {!user && (
