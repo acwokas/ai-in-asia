@@ -15,8 +15,8 @@ interface ScrapedTool {
 }
 
 const SOURCES = [
-  { url: 'https://slashdot.org/software/ai-tools/in-asia/', name: 'Slashdot' },
-  { url: 'https://sourceforge.net/software/ai-tools/asia/', name: 'SourceForge' }
+  { url: 'https://slashdot.org/software/ai-tools/in-asia/', name: 'Slashdot', maxTools: 30 },
+  { url: 'https://sourceforge.net/software/ai-tools/asia/', name: 'SourceForge', maxTools: 20 }
 ];
 
 Deno.serve(async (req) => {
@@ -70,6 +70,18 @@ Deno.serve(async (req) => {
         if (lovableApiKey) {
           console.log(`Calling AI to extract tools from ${source.name}...`);
           
+          // Clean HTML to focus on content
+          let cleanedHtml = html;
+          
+          // Remove scripts, styles, and navigation
+          cleanedHtml = cleanedHtml.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+          cleanedHtml = cleanedHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+          cleanedHtml = cleanedHtml.replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '');
+          cleanedHtml = cleanedHtml.replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '');
+          cleanedHtml = cleanedHtml.replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '');
+          
+          console.log(`Cleaned HTML to ${cleanedHtml.length} characters`);
+          
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -81,14 +93,30 @@ Deno.serve(async (req) => {
               messages: [
                 {
                   role: 'system',
-                  content: 'You are an expert at extracting structured data from HTML. Your task is to find AI tools/products listed on the page and extract their information. Return ONLY a valid JSON array with NO markdown formatting, NO code blocks, NO explanations - just the raw JSON array. Each tool must have: name (string, required), description (string, required), url (string, required), category (string, optional). Example: [{"name":"Tool Name","description":"Tool description","url":"https://example.com","category":"AI"}]'
+                  content: `You are an expert at extracting AI tool listings from web pages. 
+                  
+CRITICAL INSTRUCTIONS:
+1. Extract ONLY tools that are CLEARLY AI tools (machine learning, neural networks, natural language processing, computer vision, etc.)
+2. Look for software products, platforms, APIs, or services - NOT articles, news, or blog posts
+3. Each tool MUST have a name, description, and valid URL
+4. Return ONLY a JSON array - NO markdown, NO code blocks, NO explanations
+5. Extract up to ${source.maxTools} tools maximum
+6. For descriptions: summarize what the tool does in 1-2 sentences, focusing on AI capabilities
+7. For categories: use terms like "Machine Learning", "Computer Vision", "NLP", "AI Platform", "Deep Learning", etc.
+
+Example format:
+[{"name":"TensorFlow","description":"Open-source machine learning framework for building and training neural networks.","url":"https://tensorflow.org","category":"Machine Learning"}]`
                 },
                 {
                   role: 'user',
-                  content: `Extract ALL AI tools from this HTML page. Look for product listings, tool cards, software entries. Extract their names, descriptions, URLs, and categories if available. Return as JSON array:\n\n${html.substring(0, 100000)}`
+                  content: `Extract AI tools from this ${source.name} page. Focus on the main content area where tools are listed. Look for tool names, descriptions, company names, and links. Ignore navigation, ads, and unrelated content.
+
+HTML content (cleaned):
+${cleanedHtml.substring(0, 120000)}`
                 }
               ],
-              max_tokens: 8000,
+              max_tokens: 12000,
+              temperature: 0.3,
             }),
           });
 
@@ -187,12 +215,15 @@ Deno.serve(async (req) => {
 
     console.log(`Scraping complete. Total unique tools found: ${allTools.size}`);
 
-    // Insert or update tools in database (limit to 50)
+    // Insert or update tools in database
     let insertedCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
 
-    const toolsArray = Array.from(allTools.values()).slice(0, 50);
+    // Sort alphabetically and take up to 50
+    const toolsArray = Array.from(allTools.values())
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, 50);
 
     for (const tool of toolsArray) {
       try {
