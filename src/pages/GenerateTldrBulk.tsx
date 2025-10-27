@@ -56,7 +56,15 @@ const GenerateTldrBulk = () => {
             },
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error(`TL;DR generation error for article ${article.id}:`, error);
+            throw error;
+          }
+
+          if (!data || !data.success) {
+            console.error(`TL;DR generation failed for article ${article.id}:`, data);
+            throw new Error(data?.error || "Failed to generate TL;DR");
+          }
 
           setStats(prev => ({
             ...prev,
@@ -65,6 +73,16 @@ const GenerateTldrBulk = () => {
           }));
         } catch (error) {
           console.error(`Failed to generate TL;DR for article ${article.id}:`, error);
+          
+          // Show first error to user
+          if (i === 0) {
+            toast({
+              title: "Error generating TL;DR",
+              description: error instanceof Error ? error.message : "Unknown error occurred",
+              variant: "destructive",
+            });
+          }
+          
           setStats(prev => ({
             ...prev,
             processed: i + 1,
@@ -82,7 +100,7 @@ const GenerateTldrBulk = () => {
 
       toast({
         title: "Bulk TL;DR Generation Complete!",
-        description: `Successfully generated TL;DR for ${stats.success} articles.`,
+        description: `Successfully generated: ${stats.success}, Failed: ${stats.failed}`,
       });
     } catch (error: any) {
       toast({
