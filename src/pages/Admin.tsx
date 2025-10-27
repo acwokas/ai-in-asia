@@ -557,11 +557,12 @@ const Admin = () => {
       const results = data?.results;
       toast({
         title: "Events scraped successfully!",
-        description: `${results?.inserted || 0} new events added, ${results?.skipped || 0} duplicates skipped`,
+        description: `Inserted: ${results?.inserted || 0}, Updated: ${results?.updated || 0}, Skipped: ${results?.skipped || 0} (${results?.unique_events || 0} unique from ${results?.total_extracted || 0} extracted)`,
       });
 
       queryClient.invalidateQueries({ queryKey: ["upcoming-events"] });
       queryClient.invalidateQueries({ queryKey: ["upcoming-events-widget"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error: any) {
       toast({
         title: "Error scraping events",
