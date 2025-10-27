@@ -29,6 +29,19 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
+    if (!lovableApiKey) {
+      console.error('LOVABLE_API_KEY is not set in environment variables');
+      return new Response(
+        JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }), 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    console.log('LOVABLE_API_KEY is configured:', lovableApiKey ? 'yes' : 'no');
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Authenticate user
@@ -69,6 +82,7 @@ Deno.serve(async (req) => {
         // Use AI to extract tool data from HTML
         if (lovableApiKey) {
           console.log(`Calling AI to extract tools from ${source.name}...`);
+          console.log(`Using Authorization header with key length: ${lovableApiKey.length}`);
           
           // Clean HTML to focus on content
           let cleanedHtml = html;
@@ -123,6 +137,7 @@ ${cleanedHtml.substring(0, 120000)}`
           if (!aiResponse.ok) {
             const errorText = await aiResponse.text();
             console.error(`AI API error for ${source.name}: ${aiResponse.status} - ${errorText}`);
+            console.error(`Request headers used: Authorization: Bearer ${lovableApiKey.substring(0, 10)}...`);
             failedScrapes++;
             continue;
           }
