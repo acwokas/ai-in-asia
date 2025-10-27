@@ -32,26 +32,27 @@ serve(async (req) => {
 
     console.log(`Found ${articles.length} published articles`);
 
-    // Check which articles need comments scheduled
-    const articlesNeedingComments = [];
+    // Get all article IDs with existing comments or pending comments
+    const articleIds = articles.map(a => a.id);
     
-    for (const article of articles) {
-      // Check if article has any comments
-      const { count: commentCount } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("article_id", article.id);
-
-      // Check if article has any pending comments
-      const { count: pendingCount } = await supabase
-        .from("pending_comments")
-        .select("*", { count: "exact", head: true })
-        .eq("article_id", article.id);
-
-      if (commentCount === 0 && pendingCount === 0) {
-        articlesNeedingComments.push(article);
-      }
-    }
+    const { data: existingComments } = await supabase
+      .from("comments")
+      .select("article_id")
+      .in("article_id", articleIds);
+    
+    const { data: pendingComments } = await supabase
+      .from("pending_comments")
+      .select("article_id")
+      .in("article_id", articleIds);
+    
+    const articlesWithComments = new Set([
+      ...(existingComments?.map(c => c.article_id) || []),
+      ...(pendingComments?.map(c => c.article_id) || [])
+    ]);
+    
+    const articlesNeedingComments = articles.filter(
+      article => !articlesWithComments.has(article.id)
+    );
 
     console.log(`Found ${articlesNeedingComments.length} articles needing comments`);
 
