@@ -565,7 +565,9 @@ const Index = () => {
               <TrendingUp className="h-8 w-8 text-primary" />
               Trending AI Tools
             </h2>
-            <Button variant="outline">View All Tools</Button>
+            <Button variant="outline" asChild>
+              <Link to="/tools">View All Tools</Link>
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -62,6 +62,7 @@ const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
 const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
+const Tools = lazy(() => import("./pages/Tools"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
@@ -113,6 +114,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/tools" element={<Tools />} />
               <Route path="/newsletter" element={<Newsletter />} />
               <Route path="/newsletter-manager" element={<NewsletterManager />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />
