@@ -477,7 +477,7 @@ const Index = () => {
                   article.id !== featuredArticle?.id &&
                   !trendingIds.includes(article.id)
                 ) || [];
-                const rightColumnCount = Math.min(8, filteredLatest.length);
+                const rightColumnCount = Math.min(6, filteredLatest.length);
                 
                 return filteredLatest.slice(0, rightColumnCount).map((article: any, index: number) => {
                   const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
