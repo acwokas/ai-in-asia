@@ -11,9 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar } from "lucide-react";
+import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
+import AIToolsManager from "./AIToolsManager";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -947,6 +948,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="articles">Recent Articles</TabsTrigger>
             <TabsTrigger value="comments">Pending Comments</TabsTrigger>
+            <TabsTrigger value="tools">AI Tools</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -1036,6 +1038,14 @@ const Admin = () => {
                     </p>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tools" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <AIToolsManager />
               </CardContent>
             </Card>
           </TabsContent>

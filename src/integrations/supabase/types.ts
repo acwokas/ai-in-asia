@@ -44,6 +44,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tools: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_featured: boolean | null
+          logo_url: string | null
+          name: string
+          rating_avg: number | null
+          rating_count: number | null
+          source_urls: string[] | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          logo_url?: string | null
+          name: string
+          rating_avg?: number | null
+          rating_count?: number | null
+          source_urls?: string[] | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          logo_url?: string | null
+          name?: string
+          rating_avg?: number | null
+          rating_count?: number | null
+          source_urls?: string[] | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       article_categories: {
         Row: {
           article_id: string
@@ -1475,6 +1520,38 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      tool_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          tool_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          tool_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          tool_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_ratings_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       url_mappings: {
         Row: {

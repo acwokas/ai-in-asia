@@ -4,35 +4,146 @@ import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ExternalLink, Sparkles, Building2, ShoppingCart, Zap, Code, Brain } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ExternalLink, Sparkles, Building2, ShoppingCart, Zap, Code, Brain, Star, Search } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Tools = () => {
-  const tools = [
-    {
-      name: "Prompt with the power of AI.",
-      description: "Advanced prompt engineering platform to supercharge your AI interactions. Create, test, and optimize prompts for any AI model.",
-      url: "https://www.promptandgo.ai",
-      category: "Productivity",
-      icon: Sparkles,
-      features: ["Template Library", "Prompt Testing", "Version Control"]
-    },
-    {
-      name: "Startup with the power of AI.",
-      description: "AI prompts and templates to supercharge your business. From marketing copy to business plans, accelerate every aspect of your startup.",
-      url: "https://www.businessinabyte.com",
-      category: "Business",
-      icon: Building2,
-      features: ["Business Templates", "Marketing Automation", "Strategy Tools"]
-    },
-    {
-      name: "Shop with the power of AI.",
-      description: "AI-curated deals from around the web. Discover personalized product recommendations and exclusive offers powered by machine learning.",
-      url: "https://www.myofferclub.com",
-      category: "Retail",
-      icon: ShoppingCart,
-      features: ["Smart Recommendations", "Price Tracking", "Deal Alerts"]
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [session, setSession] = useState<any>(null);
+
+  // Get current user session
+  useState(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  });
+
+  // Fetch tools from database
+  const { data: tools = [], isLoading } = useQuery({
+    queryKey: ['ai-tools'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ai_tools')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
     }
-  ];
+  });
+
+  // Fetch user's ratings
+  const { data: userRatings = [] } = useQuery({
+    queryKey: ['tool-ratings', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('tool_ratings')
+        .select('*')
+        .eq('user_id', session.user.id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!session?.user?.id
+  });
+
+  // Rate tool mutation
+  const rateMutation = useMutation({
+    mutationFn: async ({ toolId, rating }: { toolId: string; rating: number }) => {
+      if (!session?.user?.id) {
+        throw new Error('Please sign in to rate tools');
+      }
+
+      const { error } = await supabase
+        .from('tool_ratings')
+        .upsert({
+          tool_id: toolId,
+          user_id: session.user.id,
+          rating
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-tools'] });
+      queryClient.invalidateQueries({ queryKey: ['tool-ratings'] });
+      toast({
+        title: "Rating submitted",
+        description: "Thank you for rating this tool! (+5 points)"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Filter tools
+  const filteredTools = tools
+    .filter(tool => {
+      const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           tool.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    })
+    .slice(0, 50);
+
+  const categories = Array.from(new Set(tools.map(t => t.category).filter(Boolean)));
+
+  const getUserRating = (toolId: string) => {
+    return userRatings.find(r => r.tool_id === toolId)?.rating || 0;
+  };
+
+  const renderStars = (toolId: string, avgRating: number, ratingCount: number) => {
+    const userRating = getUserRating(toolId);
+    
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              onClick={() => rateMutation.mutate({ toolId, rating: star })}
+              disabled={!session?.user?.id || rateMutation.isPending}
+              className="disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform"
+            >
+              <Star
+                className={`h-5 w-5 ${
+                  star <= (userRating || avgRating)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-gray-300'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+        <span className="text-sm text-muted-foreground">
+          {avgRating > 0 ? `${avgRating.toFixed(1)} (${ratingCount})` : 'No ratings yet'}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -67,54 +178,80 @@ const Tools = () => {
           </div>
         </section>
 
-        {/* Featured Tools Section */}
+        {/* Tools Section */}
         <section className="container mx-auto px-4 py-16">
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-3">Featured Tools</h2>
-            <p className="text-muted-foreground text-lg">
-              Handpicked AI solutions from the you.withthepowerof.ai collective
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-3">Top AI Tools in Asia</h2>
+            <p className="text-muted-foreground text-lg mb-6">
+              Discover and rate the best AI tools across the Asia-Pacific region
             </p>
+            
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tools..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {tools.map((tool, index) => {
-              const Icon = tool.icon;
-              return (
-                <Card key={index} className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <div className="space-y-6">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading tools...</p>
+            </div>
+          ) : filteredTools.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No tools found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTools.map((tool) => (
+                <Card key={tool.id} className="p-6 hover:shadow-lg transition-all duration-300">
+                  <div className="space-y-4">
                     <div className="flex items-start justify-between">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <Icon className="h-8 w-8 text-primary" />
+                      <div>
+                        <h3 className="font-bold text-xl mb-2">{tool.name}</h3>
+                        {tool.category && (
+                          <Badge variant="secondary" className="mb-2">
+                            {tool.category}
+                          </Badge>
+                        )}
                       </div>
-                      <Badge className="bg-accent text-accent-foreground">
-                        {tool.category}
-                      </Badge>
                     </div>
 
-                    <div>
-                      <h3 className="font-bold text-2xl mb-3">
-                        {tool.name}
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
+                    {tool.description && (
+                      <p className="text-muted-foreground text-sm line-clamp-3">
                         {tool.description}
                       </p>
+                    )}
+
+                    {/* Star Rating */}
+                    <div className="pt-2">
+                      {renderStars(tool.id, Number(tool.rating_avg), tool.rating_count)}
+                      {!session?.user?.id && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Sign in to rate this tool
+                        </p>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                        Key Features
-                      </p>
-                      <ul className="space-y-2">
-                        {tool.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2 text-sm">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <Button className="w-full gap-2" size="lg" asChild>
+                    <Button className="w-full gap-2" variant="outline" asChild>
                       <a href={tool.url} target="_blank" rel="noopener noreferrer">
                         Visit Tool
                         <ExternalLink className="h-4 w-4" />
@@ -122,9 +259,9 @@ const Tools = () => {
                     </Button>
                   </div>
                 </Card>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Coming Soon Section */}
