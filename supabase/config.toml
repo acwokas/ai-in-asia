@@ -64,7 +64,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.publish-scheduled-articles]
-verify_jwt = true
+verify_jwt = false
 
 [functions.auto-schedule-comments]
 verify_jwt = true
