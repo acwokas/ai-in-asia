@@ -6,11 +6,13 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AddToolDialog } from "@/components/AddToolDialog";
 
 const AIToolsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isScrapingDialogOpen, setIsScrapingDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   // Fetch tools
   const { data: tools = [], isLoading } = useQuery({
@@ -94,7 +96,44 @@ const AIToolsManager = () => {
           </p>
         </div>
         
-        <AlertDialog open={isScrapingDialogOpen} onOpenChange={setIsScrapingDialogOpen}>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
+            Add Tool Manually
+          </Button>
+
+          <Button 
+            variant="outline"
+            onClick={async () => {
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error('Not authenticated');
+
+                const { error } = await supabase.functions.invoke('seed-sample-tools', {
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`
+                  }
+                });
+
+                if (error) throw error;
+                
+                queryClient.invalidateQueries({ queryKey: ['ai-tools-admin'] });
+                toast({
+                  title: "Sample tools seeded",
+                  description: "Sample AI tools have been added to the database"
+                });
+              } catch (error: any) {
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  variant: "destructive"
+                });
+              }
+            }}
+          >
+            Seed Sample Tools
+          </Button>
+          
+          <AlertDialog open={isScrapingDialogOpen} onOpenChange={setIsScrapingDialogOpen}>
           <AlertDialogTrigger asChild>
             <Button disabled={scrapeMutation.isPending}>
               {scrapeMutation.isPending ? (
@@ -125,7 +164,10 @@ const AIToolsManager = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </div>
       </div>
+
+      <AddToolDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       {isLoading ? (
         <div className="text-center py-12">

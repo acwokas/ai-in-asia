@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.scrape-ai-tools]
 verify_jwt = true
 
+[functions.seed-sample-tools]
+verify_jwt = true
+
 [functions.generate-sitemap]
 verify_jwt = false
 
