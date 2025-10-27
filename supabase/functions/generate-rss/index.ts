@@ -53,11 +53,6 @@ serve(async (req) => {
     rss += "    <language>en-us</language>\n";
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
     rss += `    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
-    rss += "    <image>\n";
-    rss += `      <url>${baseUrl}/logo.png</url>\n`;
-    rss += "      <title>AI in ASIA</title>\n";
-    rss += `      <link>${baseUrl}</link>\n`;
-    rss += "    </image>\n";
 
     // Add articles
     articles?.forEach((article: any) => {
@@ -91,7 +86,7 @@ serve(async (req) => {
       }
       
       if (article.featured_image_url) {
-        rss += `      <enclosure url="${article.featured_image_url}" type="image/jpeg" />\n`;
+        rss += `      <enclosure url="${escapeXml(article.featured_image_url)}" type="image/jpeg" length="0" />\n`;
       }
       
       rss += "    </item>\n";
