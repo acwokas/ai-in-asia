@@ -140,20 +140,22 @@ serve(async (req) => {
       pendingComments.push({
         article_id: articleId,
         scheduled_for: scheduledFor.toISOString(),
-        comment_prompt: `Generate a realistic, insightful comment for this article titled "${article.title}". 
+        comment_prompt: `Generate a realistic, casual comment for this article titled "${article.title}". 
 The article is about: ${article.excerpt || article.title}
 
 CRITICAL RULES:
-- NEVER use em dashes (—)
-- AVOID AI clichés like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift"
-- Write naturally like a real person commenting
-- Keep it 1-3 sentences
-- Be specific to the topic
-- Show genuine personality (curious, critical, enthusiastic, or thoughtful)
+- NEVER use em dashes (—) or hyphens for emphasis
+- AVOID AI clichés like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift", "truly exciting", "promising"
+- Write naturally like a real person commenting online - casual, sometimes skeptical, sometimes enthusiastic
+- Include occasional typos, abbreviations (tbh, imo, ngl, btw, lol, lmao), slang, lowercase starts
+- Vary the tone dramatically: some excited, some critical, some questioning, some brief reactions
+- Keep it 1-3 sentences, but some can be just one quick reaction
+- Be specific to the topic when possible
+- Use diverse names from: Southeast Asia (Wei, Mei, Siti, Arjun, Priya, Hiroshi, Yuki, Nguyen, Anh), North Asia (Li, Chen, Park, Kim, Tanaka, Sato), India (Raj, Anjali, Vikram, Neha), and Western (Mike, Sarah, Alex, Emma)
 
 Format your response as:
-Name: [realistic name]
-Comment: [your comment]`
+Name: [realistic diverse name]
+Comment: [your casual comment with natural imperfections]`
       });
     }
     
