@@ -464,7 +464,6 @@ const Index = () => {
             <div className="lg:col-span-3 order-3">
               {/* Advertisement Slot - Google Ad MPU */}
               <div className="mb-6">
-                <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
                 <MPUAd />
               </div>
 
