@@ -85,16 +85,17 @@ const Events = () => {
     };
   }, []);
 
-  // Ensure at least 2 featured events (unless there aren't 2 published events total)
-  let featuredEvents = events?.filter(event => event.is_featured) || [];
-  let upcomingEvents = events?.filter(event => !event.is_featured) || [];
+  // Featured events should be APAC-specific and large
+  let featuredEvents = events?.filter(event => event.is_featured && event.region === 'APAC') || [];
+  let upcomingEvents = events?.filter(event => !event.is_featured || event.region !== 'APAC') || [];
   
-  // If we have fewer than 2 featured events and there are more events available
-  if (featuredEvents.length < 2 && events && events.length >= 2) {
+  // If we have fewer than 2 APAC featured events and there are more APAC events available
+  if (featuredEvents.length < 2 && events) {
+    const apacEvents = events.filter(event => event.region === 'APAC' && !event.is_featured);
     const needed = 2 - featuredEvents.length;
-    const additionalFeatured = upcomingEvents.slice(0, needed);
+    const additionalFeatured = apacEvents.slice(0, needed);
     featuredEvents = [...featuredEvents, ...additionalFeatured];
-    upcomingEvents = upcomingEvents.slice(needed);
+    upcomingEvents = upcomingEvents.filter(e => !additionalFeatured.some(f => f.id === e.id));
   }
 
   const formatEventDate = (startDate: string, endDate: string | null) => {

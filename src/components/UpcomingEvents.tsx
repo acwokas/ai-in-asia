@@ -27,16 +27,32 @@ export const UpcomingEvents = () => {
   const { data: events, isLoading } = useQuery({
     queryKey: ['upcoming-events-widget'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch APAC events first
+      const { data: apacEvents, error: apacError } = await supabase
         .from('events')
         .select('*')
         .eq('status', 'upcoming')
+        .eq('region', 'APAC')
         .gte('start_date', new Date().toISOString())
         .order('start_date', { ascending: true })
-        .limit(3);
+        .limit(2);
 
-      if (error) throw error;
-      return data as Event[];
+      if (apacError) throw apacError;
+
+      // Fetch 1 non-APAC event
+      const { data: westernEvents, error: westernError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('status', 'upcoming')
+        .neq('region', 'APAC')
+        .gte('start_date', new Date().toISOString())
+        .order('start_date', { ascending: true })
+        .limit(1);
+
+      if (westernError) throw westernError;
+
+      // Combine: 2 APAC + 1 Western
+      return [...(apacEvents || []), ...(westernEvents || [])] as Event[];
     },
   });
 
