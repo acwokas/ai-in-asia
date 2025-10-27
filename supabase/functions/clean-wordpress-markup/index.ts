@@ -90,17 +90,27 @@ Deno.serve(async (req) => {
       throw new Error('Admin access required');
     }
 
-    // Find articles with WordPress markup
+    // Fetch all articles to check for WordPress markup
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, slug, content')
-      .or('content::text.like.%wp:uagb%,content::text.like.%wp-block-%,content::text.like.%classMigrate%');
+      .eq('status', 'published');
 
     if (fetchError) {
       throw fetchError;
     }
 
-    console.log(`Found ${articles?.length || 0} articles with WordPress markup`);
+    console.log(`Checking ${articles?.length || 0} articles for WordPress markup`);
+    
+    // Filter articles that contain WordPress markup
+    const articlesWithMarkup = articles?.filter(article => {
+      const contentStr = JSON.stringify(article.content);
+      return contentStr.includes('wp:uagb') || 
+             contentStr.includes('wp-block-') || 
+             contentStr.includes('classMigrate');
+    }) || [];
+    
+    console.log(`Found ${articlesWithMarkup.length} articles with WordPress markup`);
 
     const results = {
       processed: 0,
@@ -108,7 +118,7 @@ Deno.serve(async (req) => {
       errors: [] as any[]
     };
 
-    for (const article of articles || []) {
+    for (const article of articlesWithMarkup) {
       try {
         const content = typeof article.content === 'string' 
           ? JSON.parse(article.content) 
