@@ -12,7 +12,7 @@ const RecommendedArticles = () => {
   const { data: recommendations, isLoading: isLoadingRecommendations } = useQuery({
     queryKey: ["recommendations", user?.id],
     enabled: !!user,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - recommendations relatively static
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-recommendations", {
         headers: {
@@ -29,7 +29,7 @@ const RecommendedArticles = () => {
   const { data: popularArticles, isLoading: isLoadingPopular } = useQuery({
     queryKey: ["popular-articles"],
     enabled: !user,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // 15 minutes - popular articles are stable
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -15,10 +15,13 @@ import { TrendingUp, Users, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
-import RecommendedArticles from "@/components/RecommendedArticles";
-import { EditorsPick } from "@/components/EditorsPick";
-import { UpcomingEvents } from "@/components/UpcomingEvents";
-import { YouMayAlsoLike } from "@/components/YouMayAlsoLike";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load below-the-fold components for faster initial page load
+const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
+const EditorsPick = lazy(() => import("@/components/EditorsPick").then(module => ({ default: module.EditorsPick })));
+const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents").then(module => ({ default: module.UpcomingEvents })));
+const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike").then(module => ({ default: module.YouMayAlsoLike })));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 
@@ -139,7 +142,7 @@ const Index = () => {
 
   const { data: featuredAuthors } = useQuery({
     queryKey: ["featured-authors"],
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes - authors rarely change
     queryFn: async () => {
       const { data, error } = await supabase
         .from("authors_public")
@@ -157,7 +160,7 @@ const Index = () => {
 
   const { data: editorsPick } = useQuery({
     queryKey: ["editors-pick-homepage"],
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes - editor picks are relatively static
     queryFn: async () => {
       const { data, error } = await supabase
         .from("editors_picks")
@@ -660,10 +663,73 @@ const Index = () => {
         </section>
 
         {/* Recommended Articles */}
-        <UpcomingEvents />
+        <Suspense fallback={
+          <div className="container mx-auto px-4 py-12">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <RecommendedArticles />
+        </Suspense>
+
+        {/* Editor's Pick */}
+        {editorsPick && (
+          <section className="container mx-auto px-4 py-12">
+            <Suspense fallback={
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-64 w-full" />
+              </div>
+            }>
+              <EditorsPick article={editorsPick} />
+            </Suspense>
+          </section>
+        )}
+
+        {/* Upcoming Events */}
+        <Suspense fallback={
+          <div className="container mx-auto px-4 py-12">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-40 w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <UpcomingEvents />
+        </Suspense>
 
         {/* You May Also Like */}
-        <YouMayAlsoLike />
+        <Suspense fallback={
+          <div className="container mx-auto px-4 py-12">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <YouMayAlsoLike />
+        </Suspense>
 
         {/* Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">

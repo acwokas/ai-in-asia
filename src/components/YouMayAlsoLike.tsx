@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
+import { memo } from "react";
 
-export const YouMayAlsoLike = () => {
+const YouMayAlsoLikeComponent = () => {
   const { user } = useAuth();
 
   const { data: articles, isLoading } = useQuery({
     queryKey: ["you-may-also-like", user?.id],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - "you may also like" relatively stable
     queryFn: async () => {
       let selectedArticles: any[] = [];
 
@@ -166,3 +167,6 @@ export const YouMayAlsoLike = () => {
     </section>
   );
 };
+
+// Memoized export
+export const YouMayAlsoLike = memo(YouMayAlsoLikeComponent);

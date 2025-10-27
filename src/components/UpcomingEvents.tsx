@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, ExternalLink, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import { memo } from "react";
 
 interface Event {
   id: string;
@@ -23,9 +24,10 @@ interface Event {
   is_featured: boolean;
 }
 
-export const UpcomingEvents = () => {
+const UpcomingEventsComponent = () => {
   const { data: events, isLoading } = useQuery({
     queryKey: ['upcoming-events-widget'],
+    staleTime: 10 * 60 * 1000, // 10 minutes - events relatively stable
     queryFn: async () => {
       // Fetch APAC events first
       const { data: apacEvents, error: apacError } = await supabase
@@ -195,3 +197,6 @@ export const UpcomingEvents = () => {
     </section>
   );
 };
+
+// Memoized export
+export const UpcomingEvents = memo(UpcomingEventsComponent);

@@ -10,7 +10,8 @@ import { ExternalLink, Sparkles, Building2, ShoppingCart, Zap, Code, Brain, Star
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Tools = () => {
   const { toast } = useToast();
@@ -18,9 +19,14 @@ const Tools = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [session, setSession] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-  // Get current user session
-  useState(() => {
+  // Debounce search query for better performance
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Get current user session - fix: use useEffect instead of useState
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
@@ -32,25 +38,27 @@ const Tools = () => {
     });
 
     return () => subscription.unsubscribe();
-  });
+  }, []);
 
-  // Fetch tools from database
+  // Fetch tools from database with better caching
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['ai-tools'],
+    staleTime: 10 * 60 * 1000, // 10 minutes - tools don't change frequently
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ai_tools')
         .select('*')
-        .order('name');
+        .order('rating_avg', { ascending: false, nullsFirst: false });
       
       if (error) throw error;
       return data || [];
     }
   });
 
-  // Fetch user's ratings
+  // Fetch user's ratings with better caching
   const { data: userRatings = [] } = useQuery({
     queryKey: ['tool-ratings', session?.user?.id],
+    staleTime: 2 * 60 * 1000, // 2 minutes
     queryFn: async () => {
       if (!session?.user?.id) return [];
       
@@ -99,17 +107,40 @@ const Tools = () => {
     }
   });
 
-  // Filter tools
-  const filteredTools = tools
-    .filter(tool => {
-      const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           tool.description?.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filter and paginate tools - memoized for performance
+  const filteredTools = useMemo(() => {
+    const filtered = tools.filter(tool => {
+      const matchesSearch = tool.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                           tool.description?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
       return matchesSearch && matchesCategory;
-    })
-    .slice(0, 50);
+    });
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  }, [tools, debouncedSearchQuery, categoryFilter, currentPage, itemsPerPage]);
 
-  const categories = Array.from(new Set(tools.map(t => t.category).filter(Boolean)));
+  const totalFilteredTools = useMemo(() => {
+    return tools.filter(tool => {
+      const matchesSearch = tool.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                           tool.description?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    }).length;
+  }, [tools, debouncedSearchQuery, categoryFilter]);
+
+  const totalPages = Math.ceil(totalFilteredTools / itemsPerPage);
+
+  const categories = useMemo(() => 
+    Array.from(new Set(tools.map(t => t.category).filter(Boolean))),
+    [tools]
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, categoryFilter]);
 
   const getUserRating = (toolId: string) => {
     return userRatings.find(r => r.tool_id === toolId)?.rating || 0;
@@ -212,16 +243,29 @@ const Tools = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading tools...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="space-y-4 animate-pulse">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted rounded" />
+                      <div className="h-3 bg-muted rounded w-5/6" />
+                    </div>
+                    <div className="h-10 bg-muted rounded" />
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : filteredTools.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No tools found</p>
+              <p className="text-muted-foreground">No tools found matching your criteria</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTools.map((tool) => (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredTools.map((tool) => (
                 <Card key={tool.id} className="p-6 hover:shadow-lg transition-all duration-300">
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
@@ -261,6 +305,30 @@ const Tools = () => {
                 </Card>
               ))}
             </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
           )}
         </section>
 

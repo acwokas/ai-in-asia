@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import Header from "@/components/Header";
@@ -40,10 +40,12 @@ interface Event {
 }
 
 const Events = () => {
+  const queryClient = useQueryClient();
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['events', selectedRegion],
+    staleTime: 5 * 60 * 1000, // 5 minutes - events don't change frequently
     queryFn: async () => {
       let query = supabase
         .from('events')
@@ -63,7 +65,7 @@ const Events = () => {
     },
   });
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates - use query invalidation instead of reload
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')
@@ -75,8 +77,8 @@ const Events = () => {
           table: 'events'
         },
         () => {
-          // Refetch events when there's a change
-          window.location.reload();
+          // Efficiently refetch only events data without full page reload
+          queryClient.invalidateQueries({ queryKey: ['events'] });
         }
       )
       .subscribe();

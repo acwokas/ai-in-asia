@@ -18,7 +18,7 @@ interface EditorsPickProps {
   };
 }
 
-export const EditorsPick = ({ article }: EditorsPickProps) => {
+const EditorsPickComponent = ({ article }: EditorsPickProps) => {
   const categorySlug = article.categories?.slug || 'news';
   
   return (
@@ -75,4 +75,7 @@ export const EditorsPick = ({ article }: EditorsPickProps) => {
   );
 };
 
-export const MemoizedEditorsPick = memo(EditorsPick);
+// Memoized and exported as EditorsPick
+export const EditorsPick = memo(EditorsPickComponent, (prevProps, nextProps) => {
+  return prevProps.article?.id === nextProps.article?.id;
+});
