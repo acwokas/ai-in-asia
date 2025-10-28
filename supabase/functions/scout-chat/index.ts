@@ -174,7 +174,7 @@ Guidelines:
           ...messages
         ],
         tools,
-        stream: true,
+        stream: false, // Disable streaming to handle tool calls
       }),
     });
 
@@ -198,9 +198,82 @@ Guidelines:
       throw new Error('AI gateway error');
     }
 
-    console.log('Returning stream to client');
+    const aiResponse = await response.json();
+    console.log('AI response:', JSON.stringify(aiResponse));
     
-    return new Response(response.body, {
+    // Check if AI wants to call a tool
+    const message = aiResponse.choices[0]?.message;
+    if (message?.tool_calls && message.tool_calls.length > 0) {
+      const toolCall = message.tool_calls[0];
+      console.log('Tool call detected:', toolCall.function.name);
+      
+      if (toolCall.function.name === 'search_articles') {
+        const args = JSON.parse(toolCall.function.arguments);
+        console.log('Searching for:', args.query);
+        
+        // Search articles in database
+        const { data: articles } = await supabase
+          .from('articles')
+          .select('id, title, slug, excerpt')
+          .eq('status', 'published')
+          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%`)
+          .limit(5);
+        
+        console.log('Found articles:', articles?.length || 0);
+        
+        // Format articles for AI
+        const articlesText = articles && articles.length > 0
+          ? articles.map(a => `- ${a.title}\n  ${a.excerpt || ''}\n  Link: /article/${a.slug}`).join('\n\n')
+          : 'No articles found matching that query.';
+        
+        // Send tool result back to AI
+        const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages,
+              message,
+              {
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: articlesText
+              }
+            ],
+            stream: true,
+          }),
+        });
+        
+        console.log('Returning final stream to client');
+        return new Response(finalResponse.body, {
+          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
+        });
+      }
+    }
+    
+    // No tool calls, stream the response directly
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        const content = message?.content || '';
+        const chunk = {
+          choices: [{
+            delta: { content },
+            finish_reason: 'stop'
+          }]
+        };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      }
+    });
+    
+    return new Response(stream, {
       headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
     });
   } catch (error) {
