@@ -65,7 +65,7 @@ const Search = () => {
     },
   });
 
-  const { data: results, isLoading } = useQuery({
+  const { data: results, isFetching } = useQuery({
     queryKey: ["search", searchQuery, categoryFilter, authorFilter, tagFilter, dateFilter, sortBy],
     enabled: searchQuery.length > 0,
     queryFn: async () => {
@@ -466,16 +466,24 @@ const Search = () => {
         </section>
 
         <section className="container mx-auto px-4 py-12">
-          {isLoading && (
+          {isFetching && searchQuery && (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
 
-          {!isLoading && searchQuery && (
+          {!isFetching && searchQuery && (
             <div className="mb-6">
               <p className="text-muted-foreground">
                 Found {results?.length || 0} results for "{searchQuery}"
+              </p>
+            </div>
+          )}
+
+          {!searchQuery && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Enter a search term and click Search to find articles.
               </p>
             </div>
           )}
@@ -496,7 +504,7 @@ const Search = () => {
             ))}
           </div>
 
-          {!isLoading && searchQuery && results?.length === 0 && (
+          {!isFetching && searchQuery && results?.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 No articles found matching your search.
