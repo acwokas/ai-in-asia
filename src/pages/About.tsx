@@ -73,7 +73,7 @@ const About = () => {
               <h1 className="headline text-4xl md:text-6xl">About AI in ASIA</h1>
             </div>
             <p className="text-xl md:text-2xl text-muted-foreground mb-6">
-              The leading platform for artificial intelligence news, insights, and education across Asia
+              Connect with the fastest-growing technology story on the planet. We are your trusted, independent source for essential news, expert insights, and diverse perspectives focused entirely on Asia's dynamic AI ecosystem.
             </p>
             <a href="https://you.withthepowerof.ai" target="_blank" rel="noopener noreferrer" className="inline-block">
               <Badge variant="secondary" className="text-base py-2 px-4 hover:bg-secondary/80 transition-colors cursor-pointer flex items-center gap-2">
