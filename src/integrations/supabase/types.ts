@@ -533,6 +533,50 @@ export type Database = {
           },
         ]
       }
+      category_sponsors: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          sponsor_logo_url: string
+          sponsor_name: string
+          sponsor_tagline: string | null
+          sponsor_website_url: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          sponsor_logo_url: string
+          sponsor_name: string
+          sponsor_tagline?: string | null
+          sponsor_website_url: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          sponsor_logo_url?: string
+          sponsor_name?: string
+          sponsor_tagline?: string | null
+          sponsor_website_url?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_sponsors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: true
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           approved: boolean | null

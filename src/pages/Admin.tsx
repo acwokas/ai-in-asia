@@ -939,6 +939,9 @@ const Admin = () => {
                 <Button onClick={() => navigate("/admin/editors-picks")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   Editor's Picks
                 </Button>
+                <Button onClick={() => navigate("/admin/category-sponsors")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  Category Sponsors
+                </Button>
               </div>
             </div>
           </CardContent>

@@ -46,7 +46,7 @@ const Article = () => {
         .select(`
           *,
           authors (name, slug, bio, avatar_url, job_title),
-          categories:primary_category_id (name, slug)
+          categories:primary_category_id (name, slug, id)
         `)
         .eq("slug", cleanSlug);
       
@@ -63,6 +63,25 @@ const Article = () => {
       const { data, error } = await query.maybeSingle();
       
       console.log('Article query result:', { data, error });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch sponsor for article's category
+  const { data: sponsor } = useQuery({
+    queryKey: ["category-sponsor", article?.categories?.id],
+    enabled: !!article?.categories?.id,
+    queryFn: async () => {
+      if (!article?.categories?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("category_sponsors")
+        .select("*")
+        .eq("category_id", article.categories.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
       if (error) throw error;
       return data;
     },
@@ -746,6 +765,32 @@ const Article = () => {
               <Badge className="mb-4 bg-primary text-primary-foreground">
                 {article.categories?.name || 'Article'}
               </Badge>
+              
+              {/* Category Sponsor */}
+              {sponsor && (
+                <div className="mb-6 pb-4 border-b border-border/40">
+                  <a
+                    href={sponsor.sponsor_website_url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">
+                      In partnership with
+                    </span>
+                    <img
+                      src={sponsor.sponsor_logo_url}
+                      alt={sponsor.sponsor_name}
+                      className="h-6 object-contain group-hover:scale-105 transition-transform"
+                    />
+                    {sponsor.sponsor_tagline && (
+                      <span className="text-xs text-muted-foreground italic hidden sm:inline">
+                        {sponsor.sponsor_tagline}
+                      </span>
+                    )}
+                  </a>
+                </div>
+              )}
               
               <h1 className="headline text-4xl md:text-5xl mb-4">
                 {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}

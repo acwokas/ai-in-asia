@@ -72,6 +72,7 @@ const NewsletterView = lazy(() => import("./pages/NewsletterView"));
 const UploadAuthorAvatars = lazy(() => import("./pages/UploadAuthorAvatars"));
 const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments"));
 const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
+const CategorySponsorsManager = lazy(() => import("./pages/CategorySponsorsManager"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -163,6 +164,7 @@ const App = () => (
               <Route path="/admin/upload-avatars" element={<UploadAuthorAvatars />} />
               <Route path="/admin/process-comments" element={<ProcessPendingComments />} />
               <Route path="/admin/bulk-seo" element={<BulkSEOGeneration />} />
+              <Route path="/admin/category-sponsors" element={<CategorySponsorsManager />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

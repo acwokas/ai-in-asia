@@ -71,6 +71,25 @@ const Category = () => {
     },
   });
 
+  // Fetch sponsor for this category
+  const { data: sponsor } = useQuery({
+    queryKey: ["category-sponsor", category?.id],
+    enabled: !!category?.id,
+    queryFn: async () => {
+      if (!category?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("category_sponsors")
+        .select("*")
+        .eq("category_id", category.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: articles, isLoading: articlesLoading } = useQuery({
     queryKey: ["category-articles", slug],
     enabled: !!category?.id,
@@ -564,6 +583,32 @@ const Category = () => {
                 <p className="text-lg text-muted-foreground">
                   {category.description}
                 </p>
+              )}
+              
+              {/* Category Sponsor */}
+              {sponsor && (
+                <div className="mt-6 pt-4 border-t border-border/40">
+                  <a
+                    href={sponsor.sponsor_website_url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="flex items-center gap-4 group"
+                  >
+                    <span className="text-sm text-muted-foreground font-medium">
+                      In partnership with
+                    </span>
+                    <img
+                      src={sponsor.sponsor_logo_url}
+                      alt={sponsor.sponsor_name}
+                      className="h-8 object-contain group-hover:scale-105 transition-transform"
+                    />
+                    {sponsor.sponsor_tagline && (
+                      <span className="text-sm text-muted-foreground italic hidden md:inline">
+                        {sponsor.sponsor_tagline}
+                      </span>
+                    )}
+                  </a>
+                </div>
               )}
             </div>
           </div>
