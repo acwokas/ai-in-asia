@@ -647,10 +647,38 @@ const Admin = () => {
     }
   };
 
+  // Show header immediately while checking admin status
   if (isAdmin === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <nav className="text-sm text-muted-foreground mb-6">
+            <Link to="/" className="hover:text-primary inline-flex items-center gap-1">
+              <Home className="h-3 w-3" />
+              Home
+            </Link>
+            <span className="mx-2">›</span>
+            <span>Admin Dashboard</span>
+          </nav>
+          <div className="mb-8">
+            <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -702,7 +730,23 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Show skeleton cards while stats are loading */}
+        {statsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card 
             className="cursor-pointer hover:bg-accent/50 transition-colors"
             onClick={() => navigate("/admin/articles")}
@@ -771,6 +815,7 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
+        )}
 
         <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
           <CardHeader>
