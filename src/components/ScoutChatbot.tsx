@@ -244,6 +244,18 @@ const ScoutChatbot = () => {
       }
 
 
+      // If no text content but articles were found, add a default message
+      if (!assistantContent && searchQuery) {
+        assistantContent = `Here's what I found about ${searchQuery}:`;
+        setMessages((prev) =>
+          prev.map((msg, i) =>
+            i === prev.length - 1
+              ? { ...msg, content: assistantContent }
+              : msg
+          )
+        );
+      }
+
       console.log("Scout message completed successfully");
       setIsLoading(false);
       fetchQueryLimit(); // Refresh query count after successful message
