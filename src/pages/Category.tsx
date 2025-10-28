@@ -12,7 +12,8 @@ import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
+import { Skeleton } from "@/components/ui/skeleton";
+import {
   Loader2, 
   TrendingUp, 
   Clock, 
@@ -527,14 +528,6 @@ const Category = () => {
     },
   });
 
-  if (categoryLoading || articlesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const featuredArticle = articles?.[0];
   const latestArticles = category?.slug === 'voices' ? articles?.slice(1, 5) || [] : articles?.slice(2, 10) || [];
   const moreArticles = category?.slug === 'voices' ? articles?.slice(5) || [] : articles?.slice(10) || [];
@@ -554,12 +547,14 @@ const Category = () => {
         <meta name="twitter:description" content={category?.description || `Explore the latest ${category?.name} articles.`} />
       </Helmet>
 
-      <BreadcrumbStructuredData
-        items={[
-          { name: 'Home', url: 'https://aiinasia.com' },
-          { name: category?.name || '', url: `https://aiinasia.com/category/${category?.slug}` }
-        ]}
-      />
+      {category && (
+        <BreadcrumbStructuredData
+          items={[
+            { name: 'Home', url: 'https://aiinasia.com' },
+            { name: category.name, url: `https://aiinasia.com/category/${category.slug}` }
+          ]}
+        />
+      )}
 
       <Header />
       
@@ -584,19 +579,29 @@ const Category = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left side - Category Info */}
               <div className="lg:col-span-8">
-                <h1 className="headline text-4xl md:text-5xl mb-2 flex items-center gap-4">
-                  {category?.slug && categoryIcons[category.slug] && 
-                    (() => {
-                      const Icon = categoryIcons[category.slug];
-                      return <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />;
-                    })()
-                  }
-                  {category?.name}
-                </h1>
-                {category?.description && (
-                  <p className="text-base text-muted-foreground leading-relaxed">
-                    {category.description}
-                  </p>
+                {categoryLoading ? (
+                  <>
+                    <Skeleton className="h-12 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </>
+                ) : (
+                  <>
+                    <h1 className="headline text-4xl md:text-5xl mb-2 flex items-center gap-4">
+                      {category?.slug && categoryIcons[category.slug] && 
+                        (() => {
+                          const Icon = categoryIcons[category.slug];
+                          return <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />;
+                        })()
+                      }
+                      {category?.name}
+                    </h1>
+                    {category?.description && (
+                      <p className="text-base text-muted-foreground leading-relaxed">
+                        {category.description}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -638,6 +643,37 @@ const Category = () => {
         </section>
 
         <div className="container mx-auto px-4 py-8">
+          {articlesLoading ? (
+            /* Loading skeletons for category content */
+            <div className="space-y-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8">
+                  <Skeleton className="aspect-video rounded-lg" />
+                </div>
+                <div className="lg:col-span-4 space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <Skeleton className="w-20 h-20 rounded" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-full mb-2" />
+                        <Skeleton className="h-3 w-2/3" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i}>
+                    <Skeleton className="aspect-video rounded-lg mb-3" />
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
           {/* Voices Category - Featured Authors Section */}
           {category?.slug === "voices" && featuredVoices && featuredVoices.length > 0 && (
             <section className="mb-12">
@@ -1070,6 +1106,8 @@ const Category = () => {
             <div className="text-center py-12">
               <p className="text-muted-foreground">No articles found in this category.</p>
             </div>
+          )}
+            </>
           )}
         </div>
       </main>

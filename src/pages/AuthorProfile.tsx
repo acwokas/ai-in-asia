@@ -9,6 +9,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { PersonStructuredData } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Loader2, Twitter, Linkedin, Globe, ChevronDown, ChevronUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -59,14 +60,6 @@ const AuthorProfile = () => {
     },
   });
 
-  if (authorLoading || articlesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -83,12 +76,14 @@ const AuthorProfile = () => {
         <meta name="twitter:description" content={author?.bio || `Read articles by ${author?.name}`} />
       </Helmet>
 
-      <PersonStructuredData
-        name={author?.name || ''}
-        bio={author?.bio}
-        imageUrl={author?.avatar_url}
-        url={`/author/${author?.slug}`}
-      />
+      {author && (
+        <PersonStructuredData
+          name={author.name}
+          bio={author.bio}
+          imageUrl={author.avatar_url}
+          url={`/author/${author.slug}`}
+        />
+      )}
       <Header />
       
       <main className="flex-1">
@@ -114,6 +109,18 @@ const AuthorProfile = () => {
               </BreadcrumbList>
             </Breadcrumb>
             
+            {authorLoading ? (
+              /* Loading skeleton for author info */
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                <Skeleton className="w-32 h-32 rounded-full flex-shrink-0" />
+                <div className="flex-1">
+                  <Skeleton className="h-12 w-64 mb-3" />
+                  <Skeleton className="h-6 w-48 mb-4" />
+                  <Skeleton className="h-4 w-full max-w-2xl mb-2" />
+                  <Skeleton className="h-4 w-3/4 mb-4" />
+                </div>
+              </div>
+            ) : (
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {author?.avatar_url ? (
                 <img 
@@ -193,12 +200,26 @@ const AuthorProfile = () => {
                 </div>
               </div>
             </div>
+            )}
           </div>
         </section>
 
         <section className="container mx-auto px-4 py-12">
           <h2 className="headline text-3xl mb-8">Articles by {author?.name}</h2>
           
+          {articlesLoading ? (
+            /* Loading skeletons for articles */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="aspect-video rounded-lg mb-3" />
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-1" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles?.map((article: any) => (
               <ArticleCard
@@ -214,6 +235,7 @@ const AuthorProfile = () => {
               />
             ))}
           </div>
+          )}
 
           {!articles || articles.length === 0 && (
             <div className="text-center py-12">
