@@ -219,12 +219,11 @@ Guidelines:
           .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%`)
           .limit(5);
         
-        // Then get all published articles to search content
+        // Then get ALL published articles to search content (no limit)
         const { data: allArticles } = await supabase
           .from('articles')
           .select('id, title, slug, excerpt, content')
-          .eq('status', 'published')
-          .limit(100);
+          .eq('status', 'published');
         
         // Filter articles by searching through content text
         const contentMatches = allArticles?.filter(article => {
