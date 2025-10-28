@@ -188,13 +188,17 @@ const Index = () => {
     },
   });
 
-  const editorsPick = editorsPicks?.homepage;
-  const trendingFeatured = editorsPicks?.trendingFeatured;
+  const editorsPick = editorsPicks?.homepage || null;
+  const trendingFeatured = editorsPicks?.trendingFeatured || null;
 
-  // Combine trending featured pick with trending articles
-  const trendingArticles = trendingFeatured && baseTrendingArticles
-    ? [trendingFeatured, ...baseTrendingArticles.filter((a: any) => a.id !== trendingFeatured.id)]
-    : (baseTrendingArticles || []);
+  // Combine trending featured pick with trending articles - ensure we have arrays
+  const trendingArticles = (() => {
+    if (!baseTrendingArticles || baseTrendingArticles.length === 0) return [];
+    if (trendingFeatured) {
+      return [trendingFeatured, ...baseTrendingArticles.filter((a: any) => a.id !== trendingFeatured.id)];
+    }
+    return baseTrendingArticles;
+  })();
 
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -404,7 +408,7 @@ const Index = () => {
                   </div>
                 </Link>
               ) : (
-                trendingArticles?.[0]?.slug && (
+                trendingArticles.length > 0 && trendingArticles[0]?.slug && (
                   <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
                     <div className="relative h-[600px] overflow-hidden rounded-lg">
                       <img 
