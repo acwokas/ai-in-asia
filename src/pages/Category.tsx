@@ -8,7 +8,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import { MPUAd } from "@/components/GoogleAds";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -29,6 +29,7 @@ import {
   Lightbulb,
   Building2,
   Rocket,
+  ExternalLink,
   type LucideIcon
 } from "lucide-react";
 import {
@@ -569,45 +570,58 @@ const Category = () => {
               </BreadcrumbList>
             </Breadcrumb>
             
-            <div className="max-w-4xl">
-              <h1 className="headline text-4xl md:text-5xl mb-3 flex items-center gap-4">
-                {category?.slug && categoryIcons[category.slug] && 
-                  (() => {
-                    const Icon = categoryIcons[category.slug];
-                    return <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />;
-                  })()
-                }
-                {category?.name}
-              </h1>
-              {category?.description && (
-                <p className="text-lg text-muted-foreground">
-                  {category.description}
-                </p>
-              )}
-              
-              {/* Category Sponsor */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left side - Category Info */}
+              <div className="lg:col-span-8">
+                <h1 className="headline text-4xl md:text-5xl mb-3 flex items-center gap-4">
+                  {category?.slug && categoryIcons[category.slug] && 
+                    (() => {
+                      const Icon = categoryIcons[category.slug];
+                      return <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />;
+                    })()
+                  }
+                  {category?.name}
+                </h1>
+                {category?.description && (
+                  <p className="text-lg text-muted-foreground">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Right side - Sponsor Card */}
               {sponsor && (
-                <div className="mt-6 pt-4 border-t border-border/40">
-                  <a
-                    href={sponsor.sponsor_website_url}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored"
-                    className="flex items-center gap-4 group"
-                  >
-                    <span className="text-sm text-muted-foreground font-medium">
-                      In partnership with
-                    </span>
-                    <img
-                      src={sponsor.sponsor_logo_url}
-                      alt={sponsor.sponsor_name}
-                      className="h-8 object-contain group-hover:scale-105 transition-transform"
-                    />
-                    {sponsor.sponsor_tagline && (
-                      <span className="text-sm text-muted-foreground italic hidden md:inline">
-                        {sponsor.sponsor_tagline}
-                      </span>
-                    )}
-                  </a>
+                <div className="lg:col-span-4">
+                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all">
+                    <CardContent className="p-6">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+                        In partnership with
+                      </p>
+                      <a
+                        href={sponsor.sponsor_website_url}
+                        target="_blank"
+                        rel="noopener noreferrer sponsored"
+                        className="block group"
+                      >
+                        <div className="flex flex-col items-center gap-4 text-center">
+                          <img
+                            src={sponsor.sponsor_logo_url}
+                            alt={sponsor.sponsor_name}
+                            className="h-16 w-auto object-contain group-hover:scale-105 transition-transform"
+                          />
+                          {sponsor.sponsor_tagline && (
+                            <p className="text-sm text-muted-foreground italic leading-relaxed">
+                              {sponsor.sponsor_tagline}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1 text-primary text-sm font-medium group-hover:gap-2 transition-all">
+                            Visit {sponsor.sponsor_name}
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                      </a>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </div>
