@@ -124,6 +124,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   // Fetch authors
   const { data: authors } = useQuery({
     queryKey: ['authors'],
+    staleTime: 5 * 60 * 1000, // 5 minutes - authors don't change often
     queryFn: async () => {
       const { data, error } = await supabase
         .from('authors')
@@ -138,6 +139,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   // Fetch categories
   const { data: categories } = useQuery({
     queryKey: ['categories'],
+    staleTime: 5 * 60 * 1000, // 5 minutes - categories don't change often
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')

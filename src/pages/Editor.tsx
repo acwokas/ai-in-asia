@@ -182,14 +182,6 @@ const Editor = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -218,7 +210,19 @@ const Editor = () => {
           </p>
         </div>
 
-        <CMSEditor initialData={article} onSave={handleSave} />
+        {isLoading ? (
+          <div className="space-y-6">
+            <div className="h-10 w-full bg-muted animate-pulse rounded" />
+            <div className="h-10 w-full bg-muted animate-pulse rounded" />
+            <div className="h-64 w-full bg-muted animate-pulse rounded" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-10 bg-muted animate-pulse rounded" />
+              <div className="h-10 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        ) : (
+          <CMSEditor initialData={article} onSave={handleSave} />
+        )}
       </main>
     </div>
   );
