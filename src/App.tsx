@@ -1,32 +1,20 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense, useState, useEffect } from "react";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-// Eager load only absolute minimum
+// Eager load critical components
+import GoogleAnalytics from "./components/GoogleAnalytics";
 import { CollectiveFooter } from "./components/CollectiveFooter";
+import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { Skeleton } from "./components/ui/skeleton";
 
-// Lazy load heavy providers to speed up initial render
-const QueryClientProvider = lazy(() => 
-  import("@tanstack/react-query").then(m => ({ default: m.QueryClientProvider }))
-);
-const AuthProvider = lazy(() => 
-  import("@/contexts/AuthContext").then(m => ({ default: m.AuthProvider }))
-);
-const TooltipProvider = lazy(() => 
-  import("@/components/ui/tooltip").then(m => ({ default: m.TooltipProvider }))
-);
-const DatabaseErrorBoundary = lazy(() => 
-  import("./components/DatabaseErrorBoundary").then(m => ({ default: m.DatabaseErrorBoundary }))
-);
-const GoogleAnalytics = lazy(() => import("./components/GoogleAnalytics"));
-const ScrollToTop = lazy(() => 
-  import("./components/ScrollToTop").then(m => ({ default: m.ScrollToTop }))
-);
-const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
-const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
-
-// Lazy load ALL pages including Index for optimal initial load
+// Lazy load Index page to reduce initial bundle
 const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load non-critical components
@@ -131,49 +119,32 @@ if (typeof window !== 'undefined') {
   }, 2000);
 }
 
-const App = () => {
-  const [queryClient] = useState(() => {
-    // Import React Query dynamically
-    const ReactQuery = require("@tanstack/react-query");
-    return new ReactQuery.QueryClient({
-      defaultOptions: {
-        queries: {
-          staleTime: 5 * 60 * 1000, // 5 minutes default
-          retry: 1,
-        },
-      },
-    });
-  });
-  
-  const [isHydrated, setIsHydrated] = useState(false);
-  
-  useEffect(() => {
-    // Mark as hydrated after initial render
-    setIsHydrated(true);
-  }, []);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
-  return (
-    <BrowserRouter>
-      {!isHydrated ? (
-        // Show instant skeleton while heavy scripts load
-        <HomepageSkeleton />
-      ) : (
-        <Suspense fallback={<HomepageSkeleton />}>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <TooltipProvider>
-                <DatabaseErrorBoundary>
-                  <Toaster />
-                  <Sonner />
-                  <ScrollToTop />
-                  <GoogleAnalytics />
-                  <Suspense fallback={null}>
-                    <ConsentBanner />
-                    <WelcomePopup />
-                    <ScoutChatbot />
-                  </Suspense>
-                  <Suspense fallback={<HomepageSkeleton />}>
-                    <Routes>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <DatabaseErrorBoundary>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <GoogleAnalytics />
+            <Suspense fallback={null}>
+              <ConsentBanner />
+              <WelcomePopup />
+              <ScoutChatbot />
+            </Suspense>
+            <Suspense fallback={<HomepageSkeleton />}>
+            <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/:category/:slug" element={<Article />} />
               <Route path="/category/:slug" element={<Category />} />
@@ -229,17 +200,14 @@ const App = () => {
               <Route path="/admin/bulk-seo" element={<BulkSEOGeneration />} />
               <Route path="/admin/category-sponsors" element={<CategorySponsorsManager />} />
               <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                  <CollectiveFooter />
-                </DatabaseErrorBoundary>
-              </TooltipProvider>
-            </AuthProvider>
-          </QueryClientProvider>
-        </Suspense>
-      )}
-    </BrowserRouter>
-  );
-};
+            </Routes>
+          </Suspense>
+          <CollectiveFooter />
+        </BrowserRouter>
+        </DatabaseErrorBoundary>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+);
 
 export default App;
