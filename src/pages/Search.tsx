@@ -70,8 +70,10 @@ const Search = () => {
     enabled: searchQuery.length > 0,
     queryFn: async () => {
       const searchPattern = `%${searchQuery}%`;
+      const lowerQuery = searchQuery.toLowerCase();
       
-      let query = supabase
+      // First search by title and excerpt
+      let titleExcerptQuery = supabase
         .from("articles")
         .select(`
           id,
@@ -84,22 +86,19 @@ const Search = () => {
           author_id,
           published_at,
           view_count,
-          is_trending
+          is_trending,
+          content
         `)
         .eq("status", "published")
-        .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern},content::text.ilike.${searchPattern}`)
+        .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`)
         .limit(50);
 
       if (categoryFilter !== "all") {
-        query = query.eq("primary_category_id", categoryFilter);
+        titleExcerptQuery = titleExcerptQuery.eq("primary_category_id", categoryFilter);
       }
 
       if (authorFilter !== "all") {
-        query = query.eq("author_id", authorFilter);
-      }
-
-      if (tagFilter !== "all") {
-        query = query.eq("article_tags.tag_id", tagFilter);
+        titleExcerptQuery = titleExcerptQuery.eq("author_id", authorFilter);
       }
 
       if (dateFilter !== "all") {
@@ -122,28 +121,127 @@ const Search = () => {
         }
         
         if (dateFilter !== "all") {
-          query = query.gte("published_at", startDate.toISOString());
+          titleExcerptQuery = titleExcerptQuery.gte("published_at", startDate.toISOString());
         }
       }
 
       // Apply sorting
       switch (sortBy) {
         case "recent":
-          query = query.order("published_at", { ascending: false });
+          titleExcerptQuery = titleExcerptQuery.order("published_at", { ascending: false });
           break;
         case "oldest":
-          query = query.order("published_at", { ascending: true });
+          titleExcerptQuery = titleExcerptQuery.order("published_at", { ascending: true });
           break;
         case "popular":
-          query = query.order("view_count", { ascending: false });
+          titleExcerptQuery = titleExcerptQuery.order("view_count", { ascending: false });
           break;
         case "trending":
-          query = query.eq("is_trending", true).order("published_at", { ascending: false });
+          titleExcerptQuery = titleExcerptQuery.eq("is_trending", true).order("published_at", { ascending: false });
           break;
       }
 
-      const { data: articles, error } = await query;
-      if (error) throw error;
+      const { data: titleExcerptResults, error: titleError } = await titleExcerptQuery;
+      if (titleError) throw titleError;
+      
+      // Then get ALL published articles to search content
+      let allArticlesQuery = supabase
+        .from("articles")
+        .select(`
+          id,
+          title,
+          excerpt,
+          slug,
+          featured_image_url,
+          reading_time_minutes,
+          primary_category_id,
+          author_id,
+          published_at,
+          view_count,
+          is_trending,
+          content
+        `)
+        .eq("status", "published");
+      
+      if (categoryFilter !== "all") {
+        allArticlesQuery = allArticlesQuery.eq("primary_category_id", categoryFilter);
+      }
+
+      if (authorFilter !== "all") {
+        allArticlesQuery = allArticlesQuery.eq("author_id", authorFilter);
+      }
+
+      if (dateFilter !== "all") {
+        const now = new Date();
+        let startDate = new Date();
+        
+        switch (dateFilter) {
+          case "today":
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case "week":
+            startDate.setDate(now.getDate() - 7);
+            break;
+          case "month":
+            startDate.setMonth(now.getMonth() - 1);
+            break;
+          case "year":
+            startDate.setFullYear(now.getFullYear() - 1);
+            break;
+        }
+        
+        if (dateFilter !== "all") {
+          allArticlesQuery = allArticlesQuery.gte("published_at", startDate.toISOString());
+        }
+      }
+      
+      const { data: allArticles } = await allArticlesQuery;
+      
+      // Filter articles by searching through content text
+      const contentMatches = allArticles?.filter(article => {
+        if (!article.content || !Array.isArray(article.content)) return false;
+        
+        const contentText = article.content
+          .map((block: any) => {
+            if (block.type === 'paragraph' && block.content) {
+              return block.content
+                .filter((item: any) => item.type === 'text')
+                .map((item: any) => item.text)
+                .join('');
+            }
+            return '';
+          })
+          .join(' ')
+          .toLowerCase();
+        
+        return contentText.includes(lowerQuery);
+      }) || [];
+      
+      // Combine and deduplicate results
+      const articleIds = new Set(titleExcerptResults?.map(a => a.id) || []);
+      const uniqueContentMatches = contentMatches.filter(a => !articleIds.has(a.id));
+      let articles = [...(titleExcerptResults || []), ...uniqueContentMatches];
+      
+      // Apply sorting to combined results
+      switch (sortBy) {
+        case "recent":
+          articles.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+          break;
+        case "oldest":
+          articles.sort((a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime());
+          break;
+        case "popular":
+          articles.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+          break;
+        case "trending":
+          articles = articles.filter(a => a.is_trending);
+          articles.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+          break;
+      }
+      
+      // Limit final results
+      articles = articles.slice(0, 50);
+      
       if (!articles || articles.length === 0) return [];
       
       // Fetch all related data in parallel
