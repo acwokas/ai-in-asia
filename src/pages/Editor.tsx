@@ -45,9 +45,11 @@ const Editor = () => {
     }
   };
 
+  // Article edit query - already optimized (only runs when editing)
   const { data: article, isLoading } = useQuery({
     queryKey: ["article-edit", articleId],
     enabled: !!articleId && !!user,
+    staleTime: 60 * 1000, // 1 minute cache - article data while editing
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")

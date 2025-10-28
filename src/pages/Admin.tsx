@@ -51,10 +51,19 @@ const Admin = () => {
     linkedin_url: "",
     website_url: "",
   });
+  const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
   }, []);
+
+  // Enable secondary queries after main stats load
+  useEffect(() => {
+    if (isAdmin === true) {
+      const timer = setTimeout(() => setEnableSecondaryQueries(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isAdmin]);
 
   const checkAdminStatus = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -85,9 +94,11 @@ const Admin = () => {
     setIsAdmin(true);
   };
 
+  // Optimized stats query - already batched with Promise.all
   const { data: stats, refetch: refetchStats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-stats"],
     enabled: isAdmin === true,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache - stats don't change frequently
     queryFn: async () => {
       const [articles, authors, categories, tags, comments, subscribers] = await Promise.all([
         supabase.from("articles").select("id", { count: "exact", head: true }),
@@ -109,9 +120,11 @@ const Admin = () => {
     },
   });
 
+  // Defer: Recent articles - load after stats
   const { data: recentArticles } = useQuery({
     queryKey: ["recent-articles"],
-    enabled: isAdmin === true,
+    enabled: enableSecondaryQueries && isAdmin === true,
+    staleTime: 60 * 1000, // 1 minute cache
     queryFn: async () => {
       const { data } = await supabase
         .from("articles")
@@ -128,9 +141,11 @@ const Admin = () => {
     },
   });
 
+  // Defer: Pending comments - load after stats
   const { data: pendingComments } = useQuery({
     queryKey: ["pending-comments"],
-    enabled: isAdmin === true,
+    enabled: enableSecondaryQueries && isAdmin === true,
+    staleTime: 30 * 1000, // 30 seconds cache - comments update frequently
     queryFn: async () => {
       const { data } = await supabase
         .from("comments")
@@ -148,9 +163,11 @@ const Admin = () => {
     },
   });
 
+  // Authors query - already optimized (only loads when dialog opens)
   const { data: authors, refetch: refetchAuthors } = useQuery({
     queryKey: ["all-authors"],
     enabled: isAdmin === true && authorsDialogOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes - authors don't change often
     queryFn: async () => {
       const { data } = await supabase
         .from("authors")
@@ -160,9 +177,11 @@ const Admin = () => {
     },
   });
 
+  // Settings query
   const { data: settings } = useQuery({
     queryKey: ["site-settings"],
     enabled: isAdmin === true,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
     queryFn: async () => {
       const { data } = await supabase
         .from("site_settings")
