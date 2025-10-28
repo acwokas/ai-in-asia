@@ -12,6 +12,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('Scout chat request received');
+
   try {
     // Validate input
     const requestSchema = z.object({
@@ -22,6 +24,7 @@ serve(async (req) => {
     });
 
     const body = await req.json();
+    console.log('Request body received, messages count:', body.messages?.length);
     const validationResult = requestSchema.safeParse(body);
     
     if (!validationResult.success) {
@@ -109,13 +112,15 @@ serve(async (req) => {
           query_count: 1 
         });
     }
+    console.log('Query count updated, proceeding to AI gateway');
+    
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `You are Scout, the AI assistant for AIinASIA.com, a leading platform for AI news and insights across Asia. 
+    const systemPrompt = `You are Scout, the AI assistant for AIinASIA.com, a leading platform for AI news and insights across Asia.
 
 Your role:
 - Answer questions about AI developments, trends, and news in Asia
@@ -154,6 +159,8 @@ Guidelines:
       }
     ];
 
+    console.log('Calling AI gateway with', messages.length, 'messages');
+    
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -170,6 +177,8 @@ Guidelines:
         stream: true,
       }),
     });
+
+    console.log('AI gateway response status:', response.status);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -189,11 +198,14 @@ Guidelines:
       throw new Error('AI gateway error');
     }
 
+    console.log('Returning stream to client');
+    
     return new Response(response.body, {
       headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
     });
   } catch (error) {
     console.error('Error in scout-chat function:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
