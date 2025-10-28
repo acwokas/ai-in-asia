@@ -7,12 +7,15 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-// Eager load only truly critical components
-import Index from "./pages/Index";
+// Eager load only critical infrastructure components
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import { CollectiveFooter } from "./components/CollectiveFooter";
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { Skeleton } from "./components/ui/skeleton";
+
+// Lazy load ALL pages including Index for optimal initial load
+const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load non-critical components
 const WelcomePopup = lazy(() => import("./components/WelcomePopup"));
@@ -74,10 +77,34 @@ const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments
 const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
 const CategorySponsorsManager = lazy(() => import("./pages/CategorySponsorsManager"));
 
-// Loading fallback component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+// Lightweight skeleton loader for instant display
+const HomepageSkeleton = () => (
+  <div className="min-h-screen flex flex-col">
+    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-4">
+        <Skeleton className="h-12 w-48" />
+      </div>
+    </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-3">
+          <Skeleton className="h-6 w-24 mb-6" />
+          <Skeleton className="aspect-video rounded-lg mb-4" />
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="aspect-[16/9] rounded-lg mb-4" />
+          ))}
+        </div>
+        <div className="lg:col-span-6">
+          <Skeleton className="h-[600px] rounded-lg" />
+        </div>
+        <div className="lg:col-span-3">
+          <Skeleton className="h-6 w-32 mb-6" />
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg mb-4" />
+          ))}
+        </div>
+      </div>
+    </div>
   </div>
 );
 
@@ -109,7 +136,7 @@ const App = () => (
               <WelcomePopup />
               <ScoutChatbot />
             </Suspense>
-            <Suspense fallback={null}>
+            <Suspense fallback={<HomepageSkeleton />}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/:category/:slug" element={<Article />} />
