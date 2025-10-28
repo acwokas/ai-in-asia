@@ -88,6 +88,8 @@ const ScoutChatbot = () => {
   }, [messages]);
 
   const sendMessage = async () => {
+    console.log("sendMessage called, input:", input, "isLoading:", isLoading);
+    
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input };
