@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Loader2, Sparkles, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -287,59 +288,61 @@ const ScoutChatbot = () => {
         </div>
 
       {/* Messages */}
-      <div className="relative flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
-            style={{ animationDelay: `${i * 0.05}s` }}
-          >
-            {msg.role === "assistant" && (
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
+              style={{ animationDelay: `${i * 0.05}s` }}
+            >
+              {msg.role === "assistant" && (
+                <div className="mr-2 mt-1">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-accent/30 blur-md rounded-full" />
+                    <div className="relative bg-gradient-to-br from-accent to-primary p-1.5 rounded-full">
+                      <Bot className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div
+                className={`max-w-[80%] rounded-2xl p-3 relative group ${
+                  msg.role === "user"
+                    ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_0_20px_rgba(0,188,212,0.3)] border border-primary/20"
+                    : "bg-card border border-border shadow-sm"
+                }`}
+              >
+                {msg.role === "user" && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
+                )}
+                <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">{msg.content}</p>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start animate-fade-in">
               <div className="mr-2 mt-1">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-accent/30 blur-md rounded-full" />
+                  <div className="absolute inset-0 bg-accent/30 blur-md rounded-full animate-pulse" />
                   <div className="relative bg-gradient-to-br from-accent to-primary p-1.5 rounded-full">
                     <Bot className="h-4 w-4 text-primary-foreground" />
                   </div>
                 </div>
               </div>
-            )}
-            <div
-              className={`max-w-[80%] rounded-2xl p-3 relative group ${
-                msg.role === "user"
-                  ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_0_20px_rgba(0,188,212,0.3)] border border-primary/20"
-                  : "bg-card border border-border shadow-sm"
-              }`}
-            >
-              {msg.role === "user" && (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
-              )}
-              <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">{msg.content}</p>
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start animate-fade-in">
-            <div className="mr-2 mt-1">
-              <div className="relative">
-                <div className="absolute inset-0 bg-accent/30 blur-md rounded-full animate-pulse" />
-                <div className="relative bg-gradient-to-br from-accent to-primary p-1.5 rounded-full">
-                  <Bot className="h-4 w-4 text-primary-foreground" />
+              <div className="bg-card border border-border rounded-2xl p-3 flex items-center gap-2 shadow-sm">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
                 </div>
               </div>
             </div>
-            <div className="bg-card border border-border rounded-2xl p-3 flex items-center gap-2 shadow-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
       {/* Input */}
       <div className="relative p-4 border-t border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
