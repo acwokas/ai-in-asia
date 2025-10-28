@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video } from "lucide-react";
+import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -33,10 +33,12 @@ const RichTextEditor = ({
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [showTableDialog, setShowTableDialog] = useState(false);
   const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
+  const [showPromptDialog, setShowPromptDialog] = useState(false);
   const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '' });
   const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [promptData, setPromptData] = useState({ title: '', content: '' });
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
 
@@ -49,18 +51,28 @@ const RichTextEditor = ({
   const convertMarkdownToHtml = (markdown: string): string => {
     if (!markdown) return '';
     
-    // First, preserve any existing iframe HTML by converting to placeholders
-    const iframeMatches: string[] = [];
-    let processed = markdown.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
-      const index = iframeMatches.length;
-      iframeMatches.push(match);
-      return `__IFRAME_${index}__`;
+    // First, preserve any existing HTML (prompt boxes, YouTube embeds, iframes) by converting to placeholders
+    const preservedMatches: string[] = [];
+    
+    // Preserve prompt boxes
+    let processed = markdown.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
     });
     
+    // Preserve YouTube embeds
+    processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    });
+    
+    // Preserve standalone iframes
     processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
-      const index = iframeMatches.length;
-      iframeMatches.push(match);
-      return `__IFRAME_${index}__`;
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
     });
     
     let html = processed
@@ -84,9 +96,9 @@ const RichTextEditor = ({
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>');
     
-    // Restore iframes
-    iframeMatches.forEach((iframe, index) => {
-      html = html.replace(`__IFRAME_${index}__`, iframe);
+    // Restore preserved elements
+    preservedMatches.forEach((preserved, index) => {
+      html = html.replace(`__PRESERVED_${index}__`, preserved);
     });
     
     return html;
@@ -95,19 +107,28 @@ const RichTextEditor = ({
   const convertHtmlToMarkdown = (html: string): string => {
     if (!html) return '';
     
-    // First, preserve YouTube embeds and iframes by converting them to placeholder markers
-    const iframeMatches: string[] = [];
-    let processed = html.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
-      const index = iframeMatches.length;
-      iframeMatches.push(match);
-      return `__IFRAME_${index}__`;
+    // First, preserve YouTube embeds, iframes, and prompt boxes by converting them to placeholder markers
+    const preservedMatches: string[] = [];
+    
+    // Preserve prompt boxes
+    let processed = html.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    });
+    
+    // Preserve YouTube embeds
+    processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
     });
     
     // Also preserve standalone iframes
     processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
-      const index = iframeMatches.length;
-      iframeMatches.push(match);
-      return `__IFRAME_${index}__`;
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
     });
     
     // First, normalize block elements to ensure they're properly separated
@@ -168,9 +189,9 @@ const RichTextEditor = ({
       .replace(/\n{3,}/g, '\n\n')
       .trim();
     
-    // Restore iframe placeholders back to actual HTML
-    iframeMatches.forEach((iframe, index) => {
-      markdown = markdown.replace(`__IFRAME_${index}__`, iframe);
+    // Restore preserved elements (prompt boxes, iframes, YouTube embeds) back to actual HTML
+    preservedMatches.forEach((preserved, index) => {
+      markdown = markdown.replace(`__PRESERVED_${index}__`, preserved);
     });
     
     return markdown;
@@ -228,6 +249,14 @@ const RichTextEditor = ({
           savedSelectionRef.current = youtubeSel.getRangeAt(0);
         }
         setShowYoutubeDialog(true);
+        break;
+      case 'prompt':
+        // Save the current selection before opening dialog
+        const promptSel = window.getSelection();
+        if (promptSel && promptSel.rangeCount > 0) {
+          savedSelectionRef.current = promptSel.getRangeAt(0);
+        }
+        setShowPromptDialog(true);
         break;
       case 'image':
         // Save the current selection before opening dialog
@@ -513,6 +542,45 @@ const RichTextEditor = ({
     savedSelectionRef.current = null;
   };
 
+  const handleInsertPrompt = () => {
+    if (!promptData.content) return;
+    
+    // Restore the saved selection
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedSelectionRef.current);
+      }
+    }
+    
+    // Focus the editor before inserting
+    editorRef.current?.focus();
+    
+    // Create prompt box HTML
+    const promptTitle = promptData.title || 'Prompt';
+    const promptHtml = `<div class="prompt-box" data-prompt-title="${promptTitle}" data-prompt-content="${promptData.content.replace(/"/g, '&quot;')}">
+      <div class="prompt-box-header">
+        <span class="prompt-box-icon">✨</span>
+        <span class="prompt-box-title">${promptTitle}</span>
+        <button class="prompt-box-copy" onclick="navigator.clipboard.writeText(this.closest('.prompt-box').dataset.promptContent); this.innerHTML = '✓ Copied!'; setTimeout(() => this.innerHTML = 'Copy', 2000);" type="button">Copy</button>
+      </div>
+      <div class="prompt-box-content">${promptData.content.replace(/\n/g, '<br>')}</div>
+    </div><p><br></p>`;
+    
+    // Insert the prompt box
+    execCommand('insertHTML', promptHtml);
+    
+    // Trigger input event to update the markdown
+    setTimeout(() => {
+      handleInput();
+    }, 100);
+    
+    setShowPromptDialog(false);
+    setPromptData({ title: '', content: '' });
+    savedSelectionRef.current = null;
+  };
+
   const handleInput = () => {
     if (!editorRef.current) return;
     
@@ -745,6 +813,16 @@ const RichTextEditor = ({
           title="Insert YouTube Video"
         >
           <Video className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('prompt')}
+          title="Insert Prompt Box"
+          className="text-primary hover:text-primary"
+        >
+          <Sparkles className="h-4 w-4" />
         </Button>
       </div>
 
@@ -988,6 +1066,52 @@ const RichTextEditor = ({
               Cancel
             </Button>
             <Button onClick={handleInsertYoutube}>Embed Video</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prompt Box Dialog */}
+      <Dialog open={showPromptDialog} onOpenChange={setShowPromptDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Insert Prompt Box
+            </DialogTitle>
+            <DialogDescription>
+              Create a beautiful, copyable prompt box for your readers
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="prompt-title">Title (Optional)</Label>
+              <Input
+                id="prompt-title"
+                placeholder="e.g., ChatGPT Prompt, AI Instruction..."
+                value={promptData.title}
+                onChange={(e) => setPromptData({ ...promptData, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="prompt-content">Prompt Content</Label>
+              <Textarea
+                id="prompt-content"
+                placeholder="Enter your prompt here..."
+                value={promptData.content}
+                onChange={(e) => setPromptData({ ...promptData, content: e.target.value })}
+                rows={6}
+                className="font-mono text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPromptDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertPrompt} disabled={!promptData.content}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Insert Prompt
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

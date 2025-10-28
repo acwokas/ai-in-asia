@@ -152,4 +152,67 @@ All colors MUST be HSL.
     height: 100%;
     border: 0;
   }
+  
+  /* Beautiful Prompt Box Styles */
+  .prompt-box {
+    @apply my-8 rounded-xl overflow-hidden border-2;
+    border-color: hsl(var(--primary) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.03) 0%, hsl(var(--accent) / 0.05) 100%);
+    box-shadow: 0 4px 20px hsl(var(--primary) / 0.1), 0 0 0 1px hsl(var(--primary) / 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .prompt-box:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 8px 30px hsl(var(--primary) / 0.15), 0 0 0 1px hsl(var(--primary) / 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .prompt-box-header {
+    @apply flex items-center justify-between px-6 py-4;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  .prompt-box-icon {
+    @apply text-2xl mr-3;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+  
+  .prompt-box-title {
+    @apply flex-1 font-bold text-lg text-primary-foreground;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .prompt-box-copy {
+    @apply px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .prompt-box-copy:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .prompt-box-copy:active {
+    transform: scale(0.98);
+  }
+  
+  .prompt-box-content {
+    @apply px-6 py-5 font-mono text-sm leading-relaxed;
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+  }
+  
+  .dark .prompt-box {
+    border-color: hsl(var(--primary) / 0.4);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.1) 100%);
+  }
+  
+  .dark .prompt-box:hover {
+    border-color: hsl(var(--primary) / 0.6);
+  }
 }
