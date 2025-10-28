@@ -19,7 +19,6 @@ const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load non-critical components
 const WelcomePopup = lazy(() => import("./components/WelcomePopup"));
-const ScoutChatbot = lazy(() => import("./components/ScoutChatbot"));
 const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
 
 // Lazy load all other pages for better performance
@@ -68,6 +67,7 @@ const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
 const Tools = lazy(() => import("./pages/Tools"));
+const AskScout = lazy(() => import("./pages/AskScout"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
@@ -141,7 +141,6 @@ const App = () => (
             <Suspense fallback={null}>
               <ConsentBanner />
               <WelcomePopup />
-              <ScoutChatbot />
             </Suspense>
             <Suspense fallback={<HomepageSkeleton />}>
             <Routes>
@@ -164,6 +163,7 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
               <Route path="/tools" element={<Tools />} />
+              <Route path="/ask-scout" element={<AskScout />} />
               <Route path="/newsletter" element={<Newsletter />} />
               <Route path="/newsletter-manager" element={<NewsletterManager />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />

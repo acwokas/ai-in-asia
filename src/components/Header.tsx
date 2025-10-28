@@ -54,6 +54,7 @@ const Header = memo(() => {
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
+              <Link to="/ask-scout" className="text-sm font-medium hover:text-primary transition-colors">Ask Scout</Link>
               <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
             </nav>
           </div>
@@ -140,6 +141,7 @@ const Header = memo(() => {
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
+              <Link to="/ask-scout" className="text-sm font-medium hover:text-primary transition-colors">Ask Scout</Link>
               <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
               {!user && (
