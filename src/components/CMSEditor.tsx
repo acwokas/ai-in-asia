@@ -86,6 +86,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       ? format(new Date(initialData.scheduled_for), "HH:mm")
       : "09:00"
   );
+  const [publishedAt, setPublishedAt] = useState<Date | undefined>(
+    initialData?.published_at ? new Date(initialData.published_at) : undefined
+  );
+  const [publishedTime, setPublishedTime] = useState(
+    initialData?.published_at 
+      ? format(new Date(initialData.published_at), "HH:mm")
+      : "09:00"
+  );
   const [selectedText, setSelectedText] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showAuthorDialog, setShowAuthorDialog] = useState(false);
@@ -544,6 +552,15 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       }
     }
 
+    // Handle custom published date
+    let publishedDateTime = null;
+    if (publishedAt && publishedTime) {
+      const [hours, minutes] = publishedTime.split(':').map(Number);
+      const dateTime = new Date(publishedAt);
+      dateTime.setHours(hours, minutes, 0, 0);
+      publishedDateTime = dateTime.toISOString();
+    }
+
     // Generate preview code if article is not published and doesn't have one
     let previewCode = initialData?.preview_code;
     if (finalStatus !== 'published' && !previewCode) {
@@ -573,6 +590,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       author_id: authorId || null,
       primary_category_id: primaryCategoryId || null,
       scheduled_for: scheduledDateTime,
+      published_at: publishedDateTime,
       preview_code: previewCode,
     };
     onSave?.(data);
@@ -1027,6 +1045,58 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                         onClick={() => {
                           setScheduledFor(undefined);
                           setScheduledTime("09:00");
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Custom Published Date</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Set a custom past date for when this article was published
+                  </p>
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            !publishedAt && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {publishedAt ? format(publishedAt, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={publishedAt}
+                          onSelect={setPublishedAt}
+                          initialFocus
+                          disabled={(date) => date > new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <div className="w-32">
+                      <Input
+                        type="time"
+                        value={publishedTime}
+                        onChange={(e) => setPublishedTime(e.target.value)}
+                        disabled={!publishedAt}
+                      />
+                    </div>
+                    {publishedAt && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPublishedAt(undefined);
+                          setPublishedTime("09:00");
                         }}
                       >
                         Clear
