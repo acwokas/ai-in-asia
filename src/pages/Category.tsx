@@ -703,10 +703,8 @@ const Category = () => {
                     </Card>
                 </div>
 
-                {/* Right Column: Ad + Latest Mini */}
+                {/* Right Column: Latest + Ad */}
                 <div className="lg:col-span-4 space-y-6">
-                  <MPUAd />
-
                   <div>
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                       <Clock className="h-5 w-5 text-primary" />
@@ -736,6 +734,8 @@ const Category = () => {
                       ))}
                     </div>
                   </div>
+                  
+                  <MPUAd />
                 </div>
               </div>
             </section>
@@ -780,10 +780,8 @@ const Category = () => {
                   </div>
                 )}
 
-                {/* Right Column: Ad + Latest Mini */}
+                {/* Right Column: Latest + Ad */}
                 <div className="lg:col-span-4 space-y-6">
-                  <MPUAd />
-
                   <div>
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                       <Clock className="h-5 w-5 text-primary" />
@@ -813,6 +811,8 @@ const Category = () => {
                       ))}
                     </div>
                   </div>
+                  
+                  <MPUAd />
                 </div>
               </div>
             </section>
