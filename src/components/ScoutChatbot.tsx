@@ -130,39 +130,45 @@ const ScoutChatbot = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
-      let textBuffer = "";
       let toolCallBuffer = "";
       let searchQuery = "";
 
       // Add empty assistant message that we'll update
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          console.log("Stream reading completed");
-          break;
-        }
-
-        textBuffer += decoder.decode(value, { stream: true });
-        let newlineIndex: number;
-
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            console.log("Received [DONE] signal");
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            console.log("Stream reading completed");
             break;
           }
 
+          const chunk = decoder.decode(value, { stream: true });
+          console.log("Received chunk:", chunk.substring(0, 100)); // Log first 100 chars
+          
+          // Split by newlines and process each line
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            
+            // Skip empty lines and comments
+            if (!trimmedLine || trimmedLine.startsWith(':')) continue;
+            
+            // Check for data: prefix
+            if (!trimmedLine.startsWith('data: ')) continue;
+            
+            const data = trimmedLine.slice(6);
+            
+            // Check for [DONE] signal
+            if (data === '[DONE]') {
+              console.log("Received [DONE] signal");
+              break;
+            }
+
             try {
-              const parsed = JSON.parse(jsonStr);
+              const parsed = JSON.parse(data);
               const delta = parsed.choices?.[0]?.delta;
               
               // Handle tool calls
@@ -214,34 +220,15 @@ const ScoutChatbot = () => {
                 }
               }
             } catch (e) {
-              textBuffer = line + "\n" + textBuffer;
-              break;
+              console.error("Error parsing JSON:", e, "Data:", data);
             }
-        }
-      }
-
-      // Flush any remaining buffer content
-      if (textBuffer.trim() && !textBuffer.startsWith("data: [DONE]")) {
-        const lines = textBuffer.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("data: ") && line.slice(6).trim() !== "[DONE]") {
-            try {
-              const parsed = JSON.parse(line.slice(6));
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                assistantContent += content;
-                setMessages((prev) =>
-                  prev.map((msg, i) =>
-                    i === prev.length - 1
-                      ? { ...msg, content: assistantContent }
-                      : msg
-                  )
-                );
-              }
-            } catch {}
           }
         }
+      } catch (streamError) {
+        console.error("Stream reading error:", streamError);
+        throw streamError;
       }
+
 
       console.log("Scout message completed successfully");
       setIsLoading(false);
