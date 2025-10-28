@@ -38,13 +38,13 @@ export const PromptAndGoBanner = () => {
           </div>
 
           {/* Logo on white background */}
-          <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 md:px-8 md:py-4 flex items-center justify-center h-[70px] md:h-[110px] transition-all duration-300 group-hover:scale-105">
+          <div className="flex-shrink-0 bg-white rounded-lg px-2 py-1.5 md:px-6 md:py-3 flex items-center justify-center h-[80px] md:h-[120px] transition-all duration-300 group-hover:scale-105">
             <img
               src={promptAndGoLogo}
               alt="Prompt and Go AI"
-              className="h-full w-auto object-contain max-h-[60px] max-w-[150px] md:max-h-[100px] md:max-w-[350px]"
-              width={350}
-              height={100}
+              className="h-full w-auto object-contain max-h-[72px] max-w-[180px] md:max-h-[112px] md:max-w-[400px]"
+              width={400}
+              height={112}
             />
           </div>
 
