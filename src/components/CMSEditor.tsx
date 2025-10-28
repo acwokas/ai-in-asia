@@ -94,6 +94,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       ? format(new Date(initialData.published_at), "HH:mm")
       : "09:00"
   );
+  const [isTrending, setIsTrending] = useState(initialData?.is_trending ?? false);
   const [selectedText, setSelectedText] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showAuthorDialog, setShowAuthorDialog] = useState(false);
@@ -587,6 +588,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       keyphrase_synonyms: keyphraseSynonyms,
       featured_on_homepage: featuredOnHomepage,
       sticky,
+      is_trending: isTrending,
       author_id: authorId || null,
       primary_category_id: primaryCategoryId || null,
       scheduled_for: scheduledDateTime,
@@ -1001,9 +1003,24 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <Label>Schedule for Publishing</Label>
+                  <Label htmlFor="trending">Add to Trending</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Show this article in the trending section on homepage
+                  </p>
+                </div>
+                <Switch
+                  id="trending"
+                  checked={isTrending}
+                  onCheckedChange={setIsTrending}
+                />
+              </div>
+
+              {status === 'scheduled' && (
+                <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/50">
+                  <div>
+                    <Label>Schedule for Publishing</Label>
                   <p className="text-xs text-muted-foreground mb-2">
                     Set a date and time to automatically publish this article
                   </p>
@@ -1049,10 +1066,13 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                       >
                         Clear
                       </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
+              )}
 
+              <div className="space-y-4">
                 <div>
                   <Label>Custom Published Date</Label>
                   <p className="text-xs text-muted-foreground mb-2">
