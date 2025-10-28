@@ -130,6 +130,7 @@ const ScoutChatbot = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
+      let textBuffer = "";
       let toolCallBuffer = "";
       let searchQuery = "";
 
@@ -144,22 +145,23 @@ const ScoutChatbot = () => {
             break;
           }
 
-          const chunk = decoder.decode(value, { stream: true });
-          console.log("Received chunk:", chunk.substring(0, 100)); // Log first 100 chars
-          
-          // Split by newlines and process each line
-          const lines = chunk.split('\n');
-          
-          for (const line of lines) {
-            const trimmedLine = line.trim();
-            
+          // Decode the chunk and add to buffer
+          textBuffer += decoder.decode(value, { stream: true });
+          console.log("Buffer length:", textBuffer.length, "First 50 chars:", textBuffer.substring(0, 50));
+
+          // Process complete lines
+          let newlineIndex;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            const line = textBuffer.slice(0, newlineIndex).trim();
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
             // Skip empty lines and comments
-            if (!trimmedLine || trimmedLine.startsWith(':')) continue;
+            if (!line || line.startsWith(':')) continue;
             
-            // Check for data: prefix
-            if (!trimmedLine.startsWith('data: ')) continue;
+            // Must start with "data: "
+            if (!line.startsWith('data: ')) continue;
             
-            const data = trimmedLine.slice(6);
+            const data = line.slice(6);
             
             // Check for [DONE] signal
             if (data === '[DONE]') {
@@ -169,6 +171,7 @@ const ScoutChatbot = () => {
 
             try {
               const parsed = JSON.parse(data);
+              console.log("Parsed chunk:", parsed);
               const delta = parsed.choices?.[0]?.delta;
               
               // Handle tool calls
@@ -220,7 +223,7 @@ const ScoutChatbot = () => {
                 }
               }
             } catch (e) {
-              console.error("Error parsing JSON:", e, "Data:", data);
+              console.error("Error parsing JSON line:", line, "Error:", e);
             }
           }
         }
