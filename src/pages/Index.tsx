@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -37,7 +37,14 @@ const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
   const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(false);
+  const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
   const { toast } = useToast();
+
+  // Enable secondary queries after main content loads
+  useEffect(() => {
+    const timer = setTimeout(() => setEnableSecondaryQueries(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
@@ -98,51 +105,45 @@ const Index = () => {
   // Get today's date as cache key for daily refresh
   const todayKey = format(new Date(), 'yyyy-MM-dd');
 
+  // Defer trending tools - load after main content
   const { data: trendingTools } = useQuery({
     queryKey: ["trending-tools", todayKey],
+    enabled: enableSecondaryQueries,
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
     queryFn: async () => {
-      // Fetch all active tools
-      const { data: tools, error } = await supabase
+      // Optimized: Fetch only 5 top-rated tools in single query
+      const { data: topTools, error: topError } = await supabase
         .from("ai_tools")
         .select("*")
-        .order("rating_avg", { ascending: false, nullsFirst: false });
+        .order("rating_avg", { ascending: false, nullsFirst: false })
+        .limit(5);
       
-      if (error || !tools || tools.length === 0) {
+      if (topError || !topTools || topTools.length === 0) {
         return [];
       }
 
-      // Find our promoted tools
+      // Find promoted tools in the results
       const promotedToolNames = ["Prompt and Go", "Business in a Byte"];
-      const promotedTools = tools.filter(tool => 
+      const promoted = topTools.find(tool => 
         promotedToolNames.some(name => tool.name.toLowerCase().includes(name.toLowerCase()))
       );
       
-      // Get other tools
-      const otherTools = tools.filter(tool => 
-        !promotedToolNames.some(name => tool.name.toLowerCase().includes(name.toLowerCase()))
-      );
-
-      // Shuffle and select tools
-      const shuffledOther = otherTools.sort(() => Math.random() - 0.5);
-      
-      let selectedTools = [];
-      
-      // Always include one promoted tool if available
-      if (promotedTools.length > 0) {
-        const randomPromoted = promotedTools[Math.floor(Math.random() * promotedTools.length)];
-        selectedTools.push(randomPromoted);
-        selectedTools.push(...shuffledOther.slice(0, 2));
-      } else {
-        selectedTools = shuffledOther.slice(0, 3);
+      // If we have a promoted tool, show it + one random other tool
+      if (promoted) {
+        const others = topTools.filter(t => t.id !== promoted.id);
+        const randomOther = others[Math.floor(Math.random() * others.length)];
+        return [promoted, randomOther];
       }
-
-      return selectedTools;
+      
+      // Otherwise just show 2 random from top 5
+      return topTools.slice(0, 2);
     },
   });
 
+  // Defer featured authors - load after main content
   const { data: featuredAuthors } = useQuery({
     queryKey: ["featured-authors"],
+    enabled: enableSecondaryQueries,
     staleTime: 30 * 60 * 1000, // 30 minutes - authors rarely change
     queryFn: async () => {
       const { data, error } = await supabase
@@ -159,13 +160,15 @@ const Index = () => {
   });
 
 
-  const { data: editorsPick } = useQuery({
-    queryKey: ["editors-pick-homepage"],
+  // Optimized: Combine both editor's picks into single query
+  const { data: editorsPicks } = useQuery({
+    queryKey: ["editors-picks-combined"],
     staleTime: 15 * 60 * 1000, // 15 minutes - editor picks are relatively static
     queryFn: async () => {
       const { data, error } = await supabase
         .from("editors_picks")
         .select(`
+          location,
           article_id,
           articles (
             *,
@@ -173,35 +176,19 @@ const Index = () => {
             categories:primary_category_id (name, slug)
           )
         `)
-        .eq("location", "homepage")
-        .maybeSingle();
+        .in("location", ["homepage", "trending-featured"]);
       
       if (error) throw error;
-      return data?.articles;
+      
+      return {
+        homepage: data?.find(p => p.location === "homepage")?.articles,
+        trendingFeatured: data?.find(p => p.location === "trending-featured")?.articles
+      };
     },
   });
 
-  const { data: trendingFeatured } = useQuery({
-    queryKey: ["trending-featured"],
-    staleTime: 15 * 60 * 1000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("editors_picks")
-        .select(`
-          article_id,
-          articles (
-            *,
-            authors (name, slug),
-            categories:primary_category_id (name, slug)
-          )
-        `)
-        .eq("location", "trending-featured")
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data?.articles;
-    },
-  });
+  const editorsPick = editorsPicks?.homepage;
+  const trendingFeatured = editorsPicks?.trendingFeatured;
 
   // Combine trending featured pick with trending articles
   const trendingArticles = trendingFeatured 
@@ -582,6 +569,7 @@ const Index = () => {
         )}
 
         {/* Featured Voices Section */}
+        {(featuredAuthors && featuredAuthors.length > 0) && (
         <section className="bg-muted/30 py-16">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -634,6 +622,7 @@ const Index = () => {
             </div>
           </div>
         </section>
+        )}
 
 
         {/* Trending Tools Section */}
@@ -652,8 +641,18 @@ const Index = () => {
             {/* Perplexity Comet Promo - Always First */}
             <PerplexityCometPromo variant="homepage" />
             
-            {trendingTools && trendingTools.length > 0 ? (
-              trendingTools.slice(0, 2).map((tool) => (
+            {!enableSecondaryQueries ? (
+              // Loading skeletons while tools load
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="article-card p-6">
+                  <Skeleton className="h-6 w-3/4 mb-3" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))
+            ) : trendingTools && trendingTools.length > 0 ? (
+              trendingTools.map((tool) => (
                 <div key={tool.id} className="article-card p-6 relative">
                   <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
                     {tool.category || 'AI Tool'}
@@ -673,7 +672,6 @@ const Index = () => {
               [
                 { name: "Prompt with the power of AI.", desc: "Advanced prompt engineering platform", url: "https://www.promptandgo.ai", category: "Productivity" },
                 { name: "Startup with the power of AI.", desc: "AI prompts and templates to supercharge your business", url: "https://www.businessinabyte.com", category: "Business" },
-                { name: "Shop with the power of AI.", desc: "AI-curated deals from around the web", url: "https://www.myofferclub.com", category: "Retail" },
               ].map((tool, i) => (
                 <div key={i} className="article-card p-6 relative">
                   <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
