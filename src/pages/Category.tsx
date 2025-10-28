@@ -592,9 +592,9 @@ const Category = () => {
               {/* Right side - Sponsor Card */}
               {sponsor && (
                 <div className="lg:col-span-4">
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all">
+                  <Card className="!bg-white dark:!bg-white border-primary/20 hover:border-primary/40 transition-all shadow-md">
                     <CardContent className="p-6">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">
                         In partnership with
                       </p>
                       <a
@@ -604,13 +604,15 @@ const Category = () => {
                         className="block group"
                       >
                         <div className="flex flex-col items-center gap-4 text-center">
-                          <img
-                            src={sponsor.sponsor_logo_url}
-                            alt={sponsor.sponsor_name}
-                            className="h-16 w-auto object-contain group-hover:scale-105 transition-transform"
-                          />
+                          <div className="w-full flex items-center justify-center py-2">
+                            <img
+                              src={sponsor.sponsor_logo_url}
+                              alt={sponsor.sponsor_name}
+                              className="h-24 w-auto max-w-full object-contain group-hover:scale-105 transition-transform"
+                            />
+                          </div>
                           {sponsor.sponsor_tagline && (
-                            <p className="text-sm text-muted-foreground italic leading-relaxed">
+                            <p className="text-sm text-gray-600 italic leading-relaxed">
                               {sponsor.sponsor_tagline}
                             </p>
                           )}
