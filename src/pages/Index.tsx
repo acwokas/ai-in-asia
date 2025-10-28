@@ -54,11 +54,19 @@ const Index = () => {
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
       
-      // Single batched query for all homepage articles
+      // Single batched query for all homepage articles - only needed fields
       const { data: articles, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image_url,
+          reading_time_minutes,
+          published_at,
+          sticky,
+          primary_category_id,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -75,11 +83,19 @@ const Index = () => {
       const featured = articles[0];
       const latest = articles.slice(1, 13); // Take up to 12 for latest
       
-      // Get trending articles from recent high-engagement content
+      // Get trending articles from recent high-engagement content - only needed fields
       const { data: trendingData, error: trendingError } = await supabase
         .from("articles")
         .select(`
-          *,
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image_url,
+          reading_time_minutes,
+          published_at,
+          view_count,
+          primary_category_id,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)

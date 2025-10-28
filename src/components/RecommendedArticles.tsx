@@ -34,7 +34,12 @@ const RecommendedArticles = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image_url,
+          reading_time_minutes,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)

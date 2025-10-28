@@ -32,11 +32,17 @@ const YouMayAlsoLikeComponent = () => {
           if (categories && categories.length > 0) {
             const categoryIds = categories.map((c) => c.id);
             
-            // Get articles from user's interested categories
+            // Get articles from user's interested categories - only needed fields
             const { data: interestedArticles } = await supabase
               .from("articles")
               .select(`
-                *,
+                id,
+                title,
+                slug,
+                excerpt,
+                featured_image_url,
+                reading_time_minutes,
+                primary_category_id,
                 authors (name, slug),
                 categories:primary_category_id (name, slug)
               `)
@@ -66,7 +72,7 @@ const YouMayAlsoLikeComponent = () => {
 
         const categoryMap = new Map(categories.map((c) => [c.slug, c.id]));
         
-        // Get 2 popular articles from each category
+        // Get 2 popular articles from each category - optimized to only fetch needed fields
         const articlePromises = mainCategories.map(async (slug) => {
           const categoryId = categoryMap.get(slug);
           if (!categoryId) return [];
@@ -74,7 +80,13 @@ const YouMayAlsoLikeComponent = () => {
           const { data } = await supabase
             .from("articles")
             .select(`
-              *,
+              id,
+              title,
+              slug,
+              excerpt,
+              featured_image_url,
+              reading_time_minutes,
+              primary_category_id,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
@@ -107,7 +119,13 @@ const YouMayAlsoLikeComponent = () => {
           const { data: additionalVoices } = await supabase
             .from("articles")
             .select(`
-              *,
+              id,
+              title,
+              slug,
+              excerpt,
+              featured_image_url,
+              reading_time_minutes,
+              primary_category_id,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
