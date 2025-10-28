@@ -87,7 +87,7 @@ const Search = () => {
           is_trending
         `)
         .eq("status", "published")
-        .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`)
+        .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern},content::text.ilike.${searchPattern}`)
         .limit(50);
 
       if (categoryFilter !== "all") {
