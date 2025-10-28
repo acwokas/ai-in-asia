@@ -144,7 +144,7 @@ Guidelines:
         type: "function",
         function: {
           name: "search_articles",
-          description: "Search for articles in the AIinASIA database by keywords. Use this when users ask about specific topics, companies, people, or events.",
+          description: "Search for articles, events, and AI tools in the AIinASIA database by keywords. Use this when users ask about specific topics, companies, people, events, or tools.",
           parameters: {
             type: "object",
             properties: {
@@ -211,20 +211,52 @@ Guidelines:
         const args = JSON.parse(toolCall.function.arguments);
         console.log('Searching for:', args.query);
         
-        // Search articles in database
+        // Search articles (including content)
         const { data: articles } = await supabase
           .from('articles')
-          .select('id, title, slug, excerpt')
+          .select('id, title, slug, excerpt, content')
           .eq('status', 'published')
-          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%`)
+          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%,content::text.ilike.%${args.query}%`)
           .limit(5);
         
-        console.log('Found articles:', articles?.length || 0);
+        // Search events
+        const { data: events } = await supabase
+          .from('events')
+          .select('id, title, slug, description, start_date, location')
+          .or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%,location.ilike.%${args.query}%`)
+          .limit(5);
         
-        // Format articles for AI
-        const articlesText = articles && articles.length > 0
-          ? articles.map(a => `- ${a.title}\n  ${a.excerpt || ''}\n  Link: /article/${a.slug}`).join('\n\n')
-          : 'No articles found matching that query.';
+        // Search AI tools
+        const { data: tools } = await supabase
+          .from('ai_tools')
+          .select('id, name, description, url, category')
+          .or(`name.ilike.%${args.query}%,description.ilike.%${args.query}%,category.ilike.%${args.query}%`)
+          .limit(5);
+        
+        console.log('Found articles:', articles?.length || 0, 'events:', events?.length || 0, 'tools:', tools?.length || 0);
+        
+        // Format results for AI
+        let resultsText = '';
+        
+        if (articles && articles.length > 0) {
+          resultsText += '📰 **Articles:**\n\n' + articles.map(a => 
+            `- ${a.title}\n  ${a.excerpt || ''}\n  Link: /article/${a.slug}`
+          ).join('\n\n') + '\n\n';
+        }
+        
+        if (events && events.length > 0) {
+          resultsText += '📅 **Events:**\n\n' + events.map(e => 
+            `- ${e.title}\n  ${e.description || ''}\n  ${e.location} - ${new Date(e.start_date).toLocaleDateString()}\n  Link: /events/${e.slug || e.id}`
+          ).join('\n\n') + '\n\n';
+        }
+        
+        if (tools && tools.length > 0) {
+          resultsText += '🔧 **AI Tools:**\n\n' + tools.map(t => 
+            `- ${t.name}${t.category ? ` (${t.category})` : ''}\n  ${t.description || ''}\n  Link: ${t.url}`
+          ).join('\n\n') + '\n\n';
+        }
+        
+        const articlesText = resultsText || 'No articles, events, or tools found matching that query.';
         
         // Send tool result back to AI
         const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
