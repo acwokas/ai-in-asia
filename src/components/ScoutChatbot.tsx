@@ -109,6 +109,9 @@ const ScoutChatbot = () => {
       
       console.log("Sending Scout message to:", `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`);
       
+      // Strip articles property from messages before sending to edge function
+      const messagesToSend = newMessages.map(({ role, content }) => ({ role, content }));
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`,
         {
@@ -117,7 +120,7 @@ const ScoutChatbot = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: newMessages }),
+          body: JSON.stringify({ messages: messagesToSend }),
         }
       );
 
