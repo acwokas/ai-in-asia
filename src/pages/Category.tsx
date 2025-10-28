@@ -554,9 +554,9 @@ const Category = () => {
       
       <main className="flex-1">
         {/* Compact Hero Section */}
-        <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-8 border-b">
+        <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-6 border-b">
           <div className="container mx-auto px-4">
-            <Breadcrumb className="mb-4">
+            <Breadcrumb className="mb-3">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
@@ -570,10 +570,10 @@ const Category = () => {
               </BreadcrumbList>
             </Breadcrumb>
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left side - Category Info */}
               <div className="lg:col-span-8">
-                <h1 className="headline text-4xl md:text-5xl mb-3 flex items-center gap-4">
+                <h1 className="headline text-4xl md:text-5xl mb-2 flex items-center gap-4">
                   {category?.slug && categoryIcons[category.slug] && 
                     (() => {
                       const Icon = categoryIcons[category.slug];
@@ -583,7 +583,7 @@ const Category = () => {
                   {category?.name}
                 </h1>
                 {category?.description && (
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-base text-muted-foreground leading-relaxed">
                     {category.description}
                   </p>
                 )}
@@ -593,8 +593,8 @@ const Category = () => {
               {sponsor && (
                 <div className="lg:col-span-4">
                   <Card className="!bg-white dark:!bg-white border-primary/20 hover:border-primary/40 transition-all shadow-md">
-                    <CardContent className="p-6">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 text-center">
                         In partnership with
                       </p>
                       <a
@@ -603,23 +603,19 @@ const Category = () => {
                         rel="noopener noreferrer sponsored"
                         className="block group"
                       >
-                        <div className="flex flex-col items-center gap-4 text-center">
-                          <div className="w-full flex items-center justify-center py-2">
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="w-full flex items-center justify-center">
                             <img
                               src={sponsor.sponsor_logo_url}
                               alt={sponsor.sponsor_name}
-                              className="h-24 w-auto max-w-full object-contain group-hover:scale-105 transition-transform"
+                              className="h-20 w-auto max-w-full object-contain group-hover:scale-105 transition-transform"
                             />
                           </div>
                           {sponsor.sponsor_tagline && (
-                            <p className="text-sm text-gray-600 italic leading-relaxed">
+                            <p className="text-xs text-gray-600 italic leading-relaxed">
                               {sponsor.sponsor_tagline}
                             </p>
                           )}
-                          <div className="flex items-center gap-1 text-primary text-sm font-medium group-hover:gap-2 transition-all">
-                            Visit {sponsor.sponsor_name}
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </div>
                         </div>
                       </a>
                     </CardContent>
