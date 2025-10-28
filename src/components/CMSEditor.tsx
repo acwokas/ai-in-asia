@@ -977,48 +977,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="featured">Feature on Homepage</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Display this article prominently on the homepage
-                  </p>
-                </div>
-                <Switch
-                  id="featured"
-                  checked={featuredOnHomepage}
-                  onCheckedChange={setFeaturedOnHomepage}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="sticky">Make Sticky</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Pin this article in the top 3 positions of homepage featured section
-                  </p>
-                </div>
-                <Switch
-                  id="sticky"
-                  checked={sticky}
-                  onCheckedChange={setSticky}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="trending">Add to Trending</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Show this article in the trending section on homepage
-                  </p>
-                </div>
-                <Switch
-                  id="trending"
-                  checked={isTrending}
-                  onCheckedChange={setIsTrending}
-                />
-              </div>
-
               {status === 'scheduled' && (
                 <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/50">
                   <div>
@@ -1073,6 +1031,48 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   </div>
                 </div>
               )}
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="featured">Feature on Homepage</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display this article prominently on the homepage
+                  </p>
+                </div>
+                <Switch
+                  id="featured"
+                  checked={featuredOnHomepage}
+                  onCheckedChange={setFeaturedOnHomepage}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="sticky">Make Sticky</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Pin this article in the top 3 positions of homepage featured section
+                  </p>
+                </div>
+                <Switch
+                  id="sticky"
+                  checked={sticky}
+                  onCheckedChange={setSticky}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="trending">Add to Trending</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Show this article in the trending section on homepage
+                  </p>
+                </div>
+                <Switch
+                  id="trending"
+                  checked={isTrending}
+                  onCheckedChange={setIsTrending}
+                />
+              </div>
 
               <div className="space-y-4">
                 <div>
