@@ -201,8 +201,8 @@ const App = () => (
               <Route path="/admin/category-sponsors" element={<CategorySponsorsManager />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CollectiveFooter />
           </Suspense>
-          <CollectiveFooter />
         </BrowserRouter>
         </DatabaseErrorBoundary>
       </TooltipProvider>
