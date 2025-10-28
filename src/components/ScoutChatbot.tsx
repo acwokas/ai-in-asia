@@ -68,12 +68,18 @@ const ScoutChatbot = () => {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const { data: queryData } = await supabase
+    let query = supabase
       .from('scout_queries')
       .select('query_count')
-      .eq('query_date', today)
-      .eq('user_id', user?.id || null)
-      .maybeSingle();
+      .eq('query_date', today);
+    
+    if (user?.id) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+    
+    const { data: queryData } = await query.maybeSingle();
 
     const currentCount = queryData?.query_count || 0;
     setQueriesRemaining(queryLimit - currentCount);
