@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -7,7 +7,6 @@ import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { OrganizationStructuredData } from "@/components/StructuredData";
-import StockTicker from "@/components/StockTicker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -16,9 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
-import PerplexityCometPromo from "@/components/PerplexityCometPromo";
 
 // Lazy load below-the-fold components for faster initial page load
+const StockTicker = lazy(() => import("@/components/StockTicker"));
+const PerplexityCometPromo = lazy(() => import("@/components/PerplexityCometPromo"));
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
@@ -324,7 +324,9 @@ const Index = () => {
       <OrganizationStructuredData />
       
       <Header />
-      <StockTicker />
+      <Suspense fallback={null}>
+        <StockTicker />
+      </Suspense>
       
       <main className="flex-1">
         {/* Hero Grid Section */}
@@ -699,7 +701,9 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Perplexity Comet Promo - Always First */}
-            <PerplexityCometPromo variant="homepage" />
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <PerplexityCometPromo variant="homepage" />
+            </Suspense>
             
             {!enableSecondaryQueries ? (
               // Loading skeletons while tools load

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ const emailSchema = z.string()
   .email({ message: "Invalid email address" })
   .max(255, { message: "Email must be less than 255 characters" });
 
-const Footer = () => {
+const Footer = memo(() => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
@@ -131,22 +131,22 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Content</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/category/news" className="hover:text-primary transition-colors">News</a></li>
-              <li><a href="/category/business" className="hover:text-primary transition-colors">Business</a></li>
-              <li><a href="/category/life" className="hover:text-primary transition-colors">Life</a></li>
-              <li><a href="/category/learn" className="hover:text-primary transition-colors">Learn</a></li>
-              <li><a href="/category/create" className="hover:text-primary transition-colors">Create</a></li>
-              <li><a href="/category/voices" className="hover:text-primary transition-colors">Voices</a></li>
+              <li><Link to="/category/news" className="hover:text-primary transition-colors">News</Link></li>
+              <li><Link to="/category/business" className="hover:text-primary transition-colors">Business</Link></li>
+              <li><Link to="/category/life" className="hover:text-primary transition-colors">Life</Link></li>
+              <li><Link to="/category/learn" className="hover:text-primary transition-colors">Learn</Link></li>
+              <li><Link to="/category/create" className="hover:text-primary transition-colors">Create</Link></li>
+              <li><Link to="/category/voices" className="hover:text-primary transition-colors">Voices</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
-              <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li>
-              <li><a href="/contact" className="hover:text-primary transition-colors">Advertise</a></li>
-              <li><a href="https://ppvifagplcdjpdpqknzt.supabase.co/functions/v1/generate-rss" className="hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">RSS Feed</a></li>
+              <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Advertise</Link></li>
+              <li><a href="https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-rss" className="hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">RSS Feed</a></li>
             </ul>
           </div>
 
@@ -175,14 +175,16 @@ const Footer = () => {
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© 2025 AI in ASIA. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-primary transition-colors">Terms of Service</a>
-            <a href="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</a>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+            <Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer;
