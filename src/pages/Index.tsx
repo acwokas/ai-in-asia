@@ -163,6 +163,7 @@ const Index = () => {
   // Optimized: Combine both editor's picks into single query
   const { data: editorsPicks } = useQuery({
     queryKey: ["editors-picks-combined"],
+    enabled: enableSecondaryQueries,
     staleTime: 15 * 60 * 1000, // 15 minutes - editor picks are relatively static
     queryFn: async () => {
       const { data, error } = await supabase
@@ -191,9 +192,9 @@ const Index = () => {
   const trendingFeatured = editorsPicks?.trendingFeatured;
 
   // Combine trending featured pick with trending articles
-  const trendingArticles = trendingFeatured 
-    ? [trendingFeatured, ...(baseTrendingArticles?.filter((a: any) => a.id !== trendingFeatured.id) || [])]
-    : baseTrendingArticles;
+  const trendingArticles = trendingFeatured && baseTrendingArticles
+    ? [trendingFeatured, ...baseTrendingArticles.filter((a: any) => a.id !== trendingFeatured.id)]
+    : (baseTrendingArticles || []);
 
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {
