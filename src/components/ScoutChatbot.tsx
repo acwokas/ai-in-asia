@@ -200,12 +200,12 @@ const ScoutChatbot = () => {
                   searchQuery = toolArgs.query;
                   console.log("Scout searching for:", searchQuery);
                   
-                  // Search for articles
+                  // Search for articles (only title and excerpt since content is JSONB)
                   const { data: articles, error: searchError } = await supabase
                     .from("articles")
                     .select("id, title, slug, excerpt")
                     .eq("status", "published")
-                    .or(`title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`)
+                    .or(`title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`)
                     .limit(5);
 
                   if (searchError) {
