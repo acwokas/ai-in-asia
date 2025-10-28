@@ -248,7 +248,7 @@ Guidelines:
         // Combine and deduplicate results
         const articleIds = new Set(titleExcerptResults?.map(a => a.id) || []);
         const uniqueContentMatches = contentMatches.filter(a => !articleIds.has(a.id));
-        const articles = [...(titleExcerptResults || []), ...uniqueContentMatches].slice(0, 5);
+        const articles = [...(titleExcerptResults || []), ...uniqueContentMatches].slice(0, 10);
         
         // Search events
         const { data: events } = await supabase
