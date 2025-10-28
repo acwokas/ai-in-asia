@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
+import PerplexityCometPromo from "@/components/PerplexityCometPromo";
 
 const Tools = () => {
   const { toast } = useToast();
@@ -265,6 +266,9 @@ const Tools = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Perplexity Comet Promo - Always First */}
+                <PerplexityCometPromo variant="tools" />
+                
                 {filteredTools.map((tool) => (
                 <Card key={tool.id} className="p-6 hover:shadow-lg transition-all duration-300">
                   <div className="space-y-4">

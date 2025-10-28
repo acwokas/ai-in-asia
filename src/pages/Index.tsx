@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
+import PerplexityCometPromo from "@/components/PerplexityCometPromo";
 
 // Lazy load below-the-fold components for faster initial page load
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
@@ -648,8 +649,11 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Perplexity Comet Promo - Always First */}
+            <PerplexityCometPromo variant="homepage" />
+            
             {trendingTools && trendingTools.length > 0 ? (
-              trendingTools.map((tool) => (
+              trendingTools.slice(0, 2).map((tool) => (
                 <div key={tool.id} className="article-card p-6 relative">
                   <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
                     {tool.category || 'AI Tool'}
