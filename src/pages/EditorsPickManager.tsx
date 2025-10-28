@@ -192,6 +192,7 @@ const EditorsPickManager = () => {
 
   const locations = [
     { key: "homepage", label: "Homepage" },
+    { key: "trending-featured", label: "Trending #1 (Pinned)" },
     ...(categories?.map(cat => ({ key: cat.slug, label: cat.name })) || [])
   ];
 

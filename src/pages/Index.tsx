@@ -92,7 +92,7 @@ const Index = () => {
 
   const featuredArticle = homepageData?.featured;
   const latestArticles = homepageData?.latest;
-  const trendingArticles = homepageData?.trending;
+  const baseTrendingArticles = homepageData?.trending;
 
   // Get today's date as cache key for daily refresh
   const todayKey = format(new Date(), 'yyyy-MM-dd');
@@ -179,6 +179,33 @@ const Index = () => {
       return data?.articles;
     },
   });
+
+  const { data: trendingFeatured } = useQuery({
+    queryKey: ["trending-featured"],
+    staleTime: 15 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("editors_picks")
+        .select(`
+          article_id,
+          articles (
+            *,
+            authors (name, slug),
+            categories:primary_category_id (name, slug)
+          )
+        `)
+        .eq("location", "trending-featured")
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data?.articles;
+    },
+  });
+
+  // Combine trending featured pick with trending articles
+  const trendingArticles = trendingFeatured 
+    ? [trendingFeatured, ...(baseTrendingArticles?.filter((a: any) => a.id !== trendingFeatured.id) || [])]
+    : baseTrendingArticles;
 
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {
