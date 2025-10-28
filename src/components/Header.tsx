@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import logo from "@/assets/aiinasia-logo.png";
 
 const Header = () => {
@@ -20,6 +21,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminRole();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -95,6 +97,14 @@ const Header = () => {
                       Profile
                     </Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer text-destructive">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={signOut} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
