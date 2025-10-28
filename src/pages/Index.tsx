@@ -371,6 +371,8 @@ const Index = () => {
                       src={article.featured_image_url || "/placeholder.svg"} 
                       alt={article.title}
                       loading="lazy"
+                      decoding="async"
+                      fetchPriority={index === 0 ? "high" : "low"}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
@@ -419,10 +421,11 @@ const Index = () => {
                       sizes="(max-width: 768px) 100vw, 640px"
                       alt={featuredArticle.title}
                       loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       width={640}
                       height={600}
-                      fetchPriority="high"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-8">
