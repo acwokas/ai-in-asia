@@ -30,16 +30,7 @@ const PerplexityCometPromo = ({ variant = 'homepage' }: PerplexityCometPromoProp
           Experience Perplexity's brilliant AI-powered Comet web browser (desktop only) and get 1 month of Pro for free!
         </p>
 
-        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-          <p className="text-xs font-semibold text-foreground/80 mb-2">How to claim:</p>
-          <ol className="text-xs text-foreground/70 space-y-1.5 list-decimal list-inside">
-            <li>Download Comet and create or sign into your account</li>
-            <li>Ask at least one question using Comet</li>
-            <li>Get 1 month of Perplexity Pro for free</li>
-          </ol>
-        </div>
-
-        <Button 
+        <Button
           className="w-full gap-2 font-semibold" 
           asChild
         >
