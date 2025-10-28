@@ -263,14 +263,6 @@ const Index = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -328,7 +320,23 @@ const Index = () => {
                 Trending
               </div>
               <div className="space-y-4">
-              {(() => {
+              {isLoading ? (
+                // Loading skeletons for trending section
+                <>
+                  <div>
+                    <Skeleton className="aspect-video rounded-lg mb-2" />
+                    <Skeleton className="h-4 w-3/4 mb-1" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="aspect-[16/9] rounded-lg mb-2" />
+                      <Skeleton className="h-3 w-2/3 mb-1" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  ))}
+                </>
+              ) : (() => {
                 const filteredTrending = trendingArticles?.filter((article: any) => article.slug) || [];
                 const leftColumnCount = Math.min(5, filteredTrending.length);
                 
@@ -379,7 +387,12 @@ const Index = () => {
             {/* Featured Article - Center */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
               {/* Large Featured Article */}
-              {featuredArticle && featuredArticle.slug ? (
+              {isLoading ? (
+                // Loading skeleton for featured article
+                <div>
+                  <Skeleton className="h-[600px] rounded-lg" />
+                </div>
+              ) : featuredArticle && featuredArticle.slug ? (
                 <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
                   <div className="relative h-[600px] overflow-hidden rounded-lg">
                     <img 
@@ -440,7 +453,13 @@ const Index = () => {
 
               {/* Two Medium Articles Stacked */}
               <div className="space-y-6">
-                {latestArticles?.filter((article: any) => 
+                {isLoading ? (
+                  // Loading skeletons for medium articles
+                  <>
+                    <Skeleton className="h-[280px] rounded-lg" />
+                    <Skeleton className="h-[280px] rounded-lg" />
+                  </>
+                ) : latestArticles?.filter((article: any) => 
                   article.slug && article.id !== featuredArticle?.id
                 ).slice(0, 2).map((article: any) => {
                   const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
@@ -493,7 +512,27 @@ const Index = () => {
                 </div>
               </div>
               <div className="space-y-4">
-              {(() => {
+              {isLoading ? (
+                // Loading skeletons for latest articles
+                <>
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="aspect-video rounded-lg mb-2" />
+                      <Skeleton className="h-3 w-2/3 mb-1" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  ))}
+                  {[...Array(4)].map((_, i) => (
+                    <div key={`small-${i}`} className="flex gap-3">
+                      <Skeleton className="w-20 h-20 rounded" />
+                      <div className="flex-1">
+                        <Skeleton className="h-3 w-1/2 mb-1" />
+                        <Skeleton className="h-3 w-full" />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (() => {
                 const trendingIds = trendingArticles?.map((a: any) => a.id) || [];
                 const filteredLatest = latestArticles?.filter((article: any) => 
                   article.slug && 
