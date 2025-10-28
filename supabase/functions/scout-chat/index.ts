@@ -211,13 +211,45 @@ Guidelines:
         const args = JSON.parse(toolCall.function.arguments);
         console.log('Searching for:', args.query);
         
-        // Search articles (including content)
-        const { data: articles } = await supabase
+        // First search by title and excerpt
+        const { data: titleExcerptResults } = await supabase
           .from('articles')
           .select('id, title, slug, excerpt, content')
           .eq('status', 'published')
-          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%,content::text.ilike.%${args.query}%`)
+          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%`)
           .limit(5);
+        
+        // Then get all published articles to search content
+        const { data: allArticles } = await supabase
+          .from('articles')
+          .select('id, title, slug, excerpt, content')
+          .eq('status', 'published')
+          .limit(100);
+        
+        // Filter articles by searching through content text
+        const contentMatches = allArticles?.filter(article => {
+          if (!article.content || !Array.isArray(article.content)) return false;
+          
+          const contentText = article.content
+            .map((block: any) => {
+              if (block.type === 'paragraph' && block.content) {
+                return block.content
+                  .filter((item: any) => item.type === 'text')
+                  .map((item: any) => item.text)
+                  .join('');
+              }
+              return '';
+            })
+            .join(' ')
+            .toLowerCase();
+          
+          return contentText.includes(args.query.toLowerCase());
+        }) || [];
+        
+        // Combine and deduplicate results
+        const articleIds = new Set(titleExcerptResults?.map(a => a.id) || []);
+        const uniqueContentMatches = contentMatches.filter(a => !articleIds.has(a.id));
+        const articles = [...(titleExcerptResults || []), ...uniqueContentMatches].slice(0, 5);
         
         // Search events
         const { data: events } = await supabase
