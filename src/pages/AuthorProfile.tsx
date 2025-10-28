@@ -37,15 +37,11 @@ const AuthorProfile = () => {
   });
 
   const { data: articles, isLoading: articlesLoading } = useQuery({
-    queryKey: ["author-articles", slug],
+    queryKey: ["author-articles", author?.id],
+    enabled: !!author?.id, // Only run when we have author data
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
     queryFn: async () => {
-      const { data: authorData } = await supabase
-        .from("authors")
-        .select("id")
-        .eq("slug", slug)
-        .single();
-
-      if (!authorData) return [];
+      if (!author?.id) return [];
 
       const { data, error } = await supabase
         .from("articles")
@@ -53,7 +49,7 @@ const AuthorProfile = () => {
           *,
           categories:primary_category_id (name, slug)
         `)
-        .eq("author_id", authorData.id)
+        .eq("author_id", author.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
         .limit(20);

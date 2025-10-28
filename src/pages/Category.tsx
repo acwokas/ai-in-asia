@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
@@ -57,6 +58,13 @@ const categoryIcons: Record<string, LucideIcon> = {
 
 const Category = () => {
   const { slug } = useParams();
+  const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
+
+  // Enable secondary queries after main content loads
+  useEffect(() => {
+    const timer = setTimeout(() => setEnableSecondaryQueries(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const { data: category, isLoading: categoryLoading } = useQuery({
     queryKey: ["category", slug],
@@ -170,10 +178,10 @@ const Category = () => {
     },
   });
 
-  // Fetch Koo Ping Shung's articles for "The View From Koo" section
+  // Defer: Fetch Koo Ping Shung's articles for "The View From Koo" section
   const { data: kooArticles } = useQuery({
     queryKey: ["koo-articles", category?.id],
-    enabled: category?.slug === "voices" && !!category?.id,
+    enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -202,10 +210,10 @@ const Category = () => {
     },
   });
 
-  // Fetch Adrian Watkins's articles for "Adrian's Angle" section
+  // Defer: Fetch Adrian Watkins's articles for "Adrian's Angle" section
   const { data: adrianArticles } = useQuery({
     queryKey: ["adrian-articles", category?.id],
-    enabled: category?.slug === "voices" && !!category?.id,
+    enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -319,9 +327,10 @@ const Category = () => {
     },
   });
 
+  // Defer: Most read articles
   const { data: mostReadArticles } = useQuery({
     queryKey: ["category-most-read", slug],
-    enabled: !!category?.id,
+    enabled: enableSecondaryQueries && !!category?.id,
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -368,9 +377,10 @@ const Category = () => {
     },
   });
 
+  // Defer: Trending articles
   const { data: trendingArticles } = useQuery({
     queryKey: ["category-trending", slug],
-    enabled: !!category?.id,
+    enabled: enableSecondaryQueries && !!category?.id,
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -392,9 +402,10 @@ const Category = () => {
     },
   });
 
+  // Defer: Popular tags
   const { data: popularTags } = useQuery({
     queryKey: ["category-popular-tags", slug],
-    enabled: !!category?.id,
+    enabled: enableSecondaryQueries && !!category?.id,
     queryFn: async () => {
       if (!category?.id) return [];
 

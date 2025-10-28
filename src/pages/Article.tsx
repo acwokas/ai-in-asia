@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, Bookmark, Twitter, Linkedin, Facebook, Instagram, Loader2, ExternalLink, Edit, Eye, EyeOff, Send, Mail, MessageCircle } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import DOMPurify from "dompurify";
 
@@ -28,6 +28,7 @@ const Article = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [enableRelatedArticles, setEnableRelatedArticles] = useState(false);
   const cleanSlug = slug?.replace(/\/+$/g, '');
   
   // Check for preview code in URL
@@ -93,6 +94,14 @@ const Article = () => {
       trackReadingHistory();
     }
   }, [user, article?.id]);
+
+  // Defer related articles query
+  useEffect(() => {
+    if (article?.id) {
+      const timer = setTimeout(() => setEnableRelatedArticles(true), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [article?.id]);
 
   const trackReadingHistory = async () => {
     if (!user || !article?.id) return;
@@ -283,9 +292,11 @@ const Article = () => {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  // Defer: Related articles load after main content
   const { data: relatedArticles } = useQuery({
     queryKey: ["related-articles", article?.primary_category_id, article?.id],
-    enabled: !!article?.id,
+    enabled: enableRelatedArticles && !!article?.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
     queryFn: async () => {
       // If article has a category, prioritize same category
       if (article?.primary_category_id) {
