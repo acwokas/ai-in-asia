@@ -72,7 +72,7 @@ const Search = () => {
       const searchPattern = `%${searchQuery}%`;
       
       // Search by title and excerpt
-      let query = supabase
+      let titleExcerptQuery = supabase
         .from("articles")
         .select(`
           id,
@@ -91,11 +91,11 @@ const Search = () => {
         .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`);
 
       if (categoryFilter !== "all") {
-        query = query.eq("primary_category_id", categoryFilter);
+        titleExcerptQuery = titleExcerptQuery.eq("primary_category_id", categoryFilter);
       }
 
       if (authorFilter !== "all") {
-        query = query.eq("author_id", authorFilter);
+        titleExcerptQuery = titleExcerptQuery.eq("author_id", authorFilter);
       }
 
       if (dateFilter !== "all") {
@@ -117,35 +117,118 @@ const Search = () => {
             break;
         }
         
-        query = query.gte("published_at", startDate.toISOString());
+        titleExcerptQuery = titleExcerptQuery.gte("published_at", startDate.toISOString());
+      }
+
+      titleExcerptQuery = titleExcerptQuery.limit(50);
+
+      // Search tags in parallel
+      const [titleExcerptResult, matchingTagsResult] = await Promise.all([
+        titleExcerptQuery,
+        supabase
+          .from("tags")
+          .select("id")
+          .ilike("name", searchPattern)
+      ]);
+
+      if (titleExcerptResult.error) throw titleExcerptResult.error;
+
+      let allArticles = titleExcerptResult.data || [];
+      const articleIds = new Set(allArticles.map(a => a.id));
+
+      // If we found matching tags, get articles with those tags
+      if (matchingTagsResult.data && matchingTagsResult.data.length > 0) {
+        const tagIds = matchingTagsResult.data.map(t => t.id);
+        
+        const { data: articleTags } = await supabase
+          .from("article_tags")
+          .select("article_id")
+          .in("tag_id", tagIds);
+
+        if (articleTags && articleTags.length > 0) {
+          const tagArticleIds = articleTags.map(at => at.article_id).filter(id => !articleIds.has(id));
+          
+          if (tagArticleIds.length > 0) {
+            let tagArticlesQuery = supabase
+              .from("articles")
+              .select(`
+                id,
+                title,
+                excerpt,
+                slug,
+                featured_image_url,
+                reading_time_minutes,
+                primary_category_id,
+                author_id,
+                published_at,
+                view_count,
+                is_trending
+              `)
+              .eq("status", "published")
+              .in("id", tagArticleIds);
+
+            if (categoryFilter !== "all") {
+              tagArticlesQuery = tagArticlesQuery.eq("primary_category_id", categoryFilter);
+            }
+
+            if (authorFilter !== "all") {
+              tagArticlesQuery = tagArticlesQuery.eq("author_id", authorFilter);
+            }
+
+            if (dateFilter !== "all") {
+              const now = new Date();
+              let startDate = new Date();
+              
+              switch (dateFilter) {
+                case "today":
+                  startDate.setHours(0, 0, 0, 0);
+                  break;
+                case "week":
+                  startDate.setDate(now.getDate() - 7);
+                  break;
+                case "month":
+                  startDate.setMonth(now.getMonth() - 1);
+                  break;
+                case "year":
+                  startDate.setFullYear(now.getFullYear() - 1);
+                  break;
+              }
+              
+              tagArticlesQuery = tagArticlesQuery.gte("published_at", startDate.toISOString());
+            }
+
+            const { data: tagArticles } = await tagArticlesQuery;
+            if (tagArticles) {
+              allArticles = [...allArticles, ...tagArticles];
+            }
+          }
+        }
       }
 
       // Apply sorting
       switch (sortBy) {
         case "recent":
-          query = query.order("published_at", { ascending: false });
+          allArticles.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
           break;
         case "oldest":
-          query = query.order("published_at", { ascending: true });
+          allArticles.sort((a, b) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime());
           break;
         case "popular":
-          query = query.order("view_count", { ascending: false });
+          allArticles.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
           break;
         case "trending":
-          query = query.eq("is_trending", true).order("published_at", { ascending: false });
+          allArticles = allArticles.filter(a => a.is_trending);
+          allArticles.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
           break;
       }
 
-      query = query.limit(50);
-
-      const { data: articles, error } = await query;
-      if (error) throw error;
+      allArticles = allArticles.slice(0, 50);
       
-      if (!articles || articles.length === 0) return [];
+      if (!allArticles || allArticles.length === 0) return [];
       
       // Fetch all related data in parallel
-      const categoryIds = [...new Set(articles.map(a => a.primary_category_id).filter(Boolean))];
-      const authorIds = [...new Set(articles.map(a => a.author_id).filter(Boolean))];
+      const categoryIds = [...new Set(allArticles.map(a => a.primary_category_id).filter(Boolean))];
+      const authorIds = [...new Set(allArticles.map(a => a.author_id).filter(Boolean))];
       
       const [categoriesResult, authorsResult] = await Promise.all([
         categoryIds.length > 0 
@@ -159,7 +242,7 @@ const Search = () => {
       const categoriesMap = new Map((categoriesResult.data || []).map(c => [c.id, c] as const));
       const authorsMap = new Map((authorsResult.data || []).map(a => [a.id, a] as const));
       
-      return articles.map(article => {
+      return allArticles.map(article => {
         const category = article.primary_category_id 
           ? categoriesMap.get(article.primary_category_id) 
           : null;
