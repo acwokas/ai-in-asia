@@ -239,9 +239,24 @@ Guidelines:
         let resultsText = '';
         
         if (articles && articles.length > 0) {
-          resultsText += '📰 **Articles:**\n\n' + articles.map(a => 
-            `- ${a.title}\n  ${a.excerpt || ''}\n  Link: /article/${a.slug}`
-          ).join('\n\n') + '\n\n';
+          resultsText += '📰 **Articles:**\n\n' + articles.map(a => {
+            // Extract text content from jsonb content field
+            let contentText = '';
+            if (a.content && Array.isArray(a.content)) {
+              contentText = a.content
+                .filter((block: any) => block.type === 'paragraph' && block.content)
+                .map((block: any) => 
+                  block.content
+                    .filter((item: any) => item.type === 'text')
+                    .map((item: any) => item.text)
+                    .join('')
+                )
+                .join(' ')
+                .slice(0, 500); // First 500 chars of content
+            }
+            
+            return `- ${a.title}\n  ${a.excerpt || ''}\n  Content: ${contentText}\n  Link: /article/${a.slug}`;
+          }).join('\n\n') + '\n\n';
         }
         
         if (events && events.length > 0) {
