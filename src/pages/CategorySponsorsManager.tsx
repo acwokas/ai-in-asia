@@ -296,59 +296,83 @@ export default function CategorySponsorsManager() {
 
       <div className="grid gap-4">
         {sponsors?.map((sponsor) => (
-          <Card key={sponsor.id} className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4 flex-1">
-                <img
-                  src={sponsor.sponsor_logo_url}
-                  alt={sponsor.sponsor_name}
-                  className="w-16 h-16 object-contain"
-                />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{sponsor.sponsor_name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Category: {sponsor.categories?.name || "Unknown"}
-                  </p>
-                  {sponsor.sponsor_tagline && (
-                    <p className="text-sm text-muted-foreground italic mt-1">
-                      {sponsor.sponsor_tagline}
+          <Card key={sponsor.id} className="overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6">
+              {/* Main Info */}
+              <div className="lg:col-span-8 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">{sponsor.sponsor_name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Category: {sponsor.categories?.name || "Unknown"}
                     </p>
-                  )}
-                  <a
-                    href={sponsor.sponsor_website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline mt-1 inline-block"
-                  >
-                    {sponsor.sponsor_website_url}
-                  </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={sponsor.is_active}
+                      onCheckedChange={(checked) =>
+                        toggleActiveMutation.mutate({ id: sponsor.id, is_active: checked })
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(sponsor)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this sponsor?")) {
+                          deleteMutation.mutate(sponsor.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
+                {sponsor.sponsor_tagline && (
+                  <p className="text-sm text-muted-foreground italic">
+                    {sponsor.sponsor_tagline}
+                  </p>
+                )}
+                <a
+                  href={sponsor.sponsor_website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline inline-block"
+                >
+                  {sponsor.sponsor_website_url}
+                </a>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={sponsor.is_active}
-                  onCheckedChange={(checked) =>
-                    toggleActiveMutation.mutate({ id: sponsor.id, is_active: checked })
-                  }
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleEdit(sponsor)}
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this sponsor?")) {
-                      deleteMutation.mutate(sponsor.id);
-                    }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+
+              {/* Preview Card - Matches Hero Layout */}
+              <div className="lg:col-span-4">
+                <div className="bg-white dark:bg-white border border-primary/20 rounded-lg shadow-md p-6">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-6 text-center">
+                    In partnership with
+                  </p>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-full flex items-center justify-center py-2">
+                      <img
+                        src={sponsor.sponsor_logo_url}
+                        alt={sponsor.sponsor_name}
+                        className="h-24 w-auto max-w-full object-contain"
+                      />
+                    </div>
+                    {sponsor.sponsor_tagline && (
+                      <p className="text-sm text-gray-600 italic text-center leading-relaxed">
+                        {sponsor.sponsor_tagline}
+                      </p>
+                    )}
+                    <div className="text-sm font-medium text-primary text-center">
+                      Visit {sponsor.sponsor_name}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>
