@@ -109,7 +109,7 @@ const App = () => (
               <WelcomePopup />
               <ScoutChatbot />
             </Suspense>
-            <Suspense fallback={<PageLoader />}>
+            <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/:category/:slug" element={<Article />} />
