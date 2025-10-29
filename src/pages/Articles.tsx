@@ -12,6 +12,15 @@ import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, Ext
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -34,6 +43,8 @@ const Articles = () => {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [deleteArticle, setDeleteArticle] = useState<{ id: string; title: string } | null>(null);
+  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     checkAdminStatus();
@@ -66,8 +77,8 @@ const Articles = () => {
     setIsAdmin(true);
   };
 
-  const { data: articles, isLoading, refetch } = useQuery({
-    queryKey: ["articles-list", searchQuery, statusFilter, typeFilter, categoryFilter, authorFilter, sortBy, sortOrder],
+  const { data: articlesData, isLoading, refetch } = useQuery({
+    queryKey: ["articles-list", searchQuery, statusFilter, typeFilter, categoryFilter, authorFilter, sortBy, sortOrder, pageSize, currentPage],
     enabled: isAdmin === true,
     queryFn: async () => {
       let query = supabase
@@ -90,7 +101,7 @@ const Articles = () => {
           preview_code,
           authors (name, slug),
           categories:primary_category_id (name, slug)
-        `);
+        `, { count: 'exact' });
 
       // Apply filters
       if (searchQuery) {
@@ -118,12 +129,23 @@ const Articles = () => {
       // Apply sorting
       query = query.order(sortBy, { ascending: sortOrder === "asc" });
 
-      const { data, error } = await query;
+      // Apply pagination
+      if (pageSize !== "all") {
+        const from = (currentPage - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
       
       if (error) throw error;
-      return data;
+      return { data, count };
     },
   });
+
+  const articles = articlesData?.data;
+  const totalCount = articlesData?.count || 0;
+  const totalPages = pageSize === "all" ? 1 : Math.ceil(totalCount / pageSize);
 
   const { data: categories } = useQuery({
     queryKey: ["categories-filter"],
@@ -599,10 +621,131 @@ const Articles = () => {
           )}
         </div>
 
-        {/* Results count */}
+        {/* Pagination Controls */}
         {articles && articles.length > 0 && (
-          <div className="mt-4 text-sm text-muted-foreground text-center">
-            Showing {articles.length} article{articles.length !== 1 ? "s" : ""}
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing {pageSize === "all" ? totalCount : Math.min(((currentPage - 1) * (pageSize as number)) + 1, totalCount)} to {pageSize === "all" ? totalCount : Math.min(currentPage * (pageSize as number), totalCount)} of {totalCount} article{totalCount !== 1 ? "s" : ""}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show:</span>
+                <Select 
+                  value={pageSize.toString()} 
+                  onValueChange={(value) => {
+                    setPageSize(value === "all" ? "all" : parseInt(value));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Pagination */}
+            {pageSize !== "all" && totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                  
+                  {/* First page */}
+                  {currentPage > 3 && (
+                    <>
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(1);
+                          }}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                      {currentPage > 4 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                    </>
+                  )}
+
+                  {/* Pages around current */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      return page === currentPage || 
+                             page === currentPage - 1 || 
+                             page === currentPage + 1 ||
+                             page === currentPage - 2 ||
+                             page === currentPage + 2;
+                    })
+                    .filter(page => page > 0 && page <= totalPages)
+                    .map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+
+                  {/* Last page */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(totalPages);
+                          }}
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext 
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
           </div>
         )}
       </main>
