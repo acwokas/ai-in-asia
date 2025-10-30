@@ -154,13 +154,37 @@ All colors MUST be HSL.
   }
   
   /* Ensure ordered lists display properly with sequential numbers */
-  article ol {
-    list-style-type: decimal;
-    list-style-position: outside;
+  /* Override Tailwind's prose and preflight resets */
+  article ol,
+  .article-content ol,
+  .prose ol,
+  ol.list-decimal {
+    list-style-type: decimal !important;
+    list-style-position: outside !important;
+    padding-left: 2rem !important;
+    counter-reset: list-item !important;
   }
   
-  article ol li {
-    display: list-item;
+  article ol li,
+  .article-content ol li,
+  .prose ol li,
+  ol.list-decimal li {
+    display: list-item !important;
+    list-style-type: decimal !important;
+    list-style-position: outside !important;
+  }
+  
+  article ul,
+  .article-content ul,
+  .prose ul {
+    list-style-type: disc !important;
+    list-style-position: outside !important;
+  }
+  
+  article ul li,
+  .article-content ul li,
+  .prose ul li {
+    display: list-item !important;
   }
   
   /* Beautiful Prompt Box Styles */
