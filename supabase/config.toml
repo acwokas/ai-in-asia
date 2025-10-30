@@ -75,5 +75,8 @@ verify_jwt = true
 [functions.generate-article-seo]
 verify_jwt = true
 
+[functions.scout-rewrite-article]
+verify_jwt = true
+
 [functions.bulk-generate-seo]
 verify_jwt = true

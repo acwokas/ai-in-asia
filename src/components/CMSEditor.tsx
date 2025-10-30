@@ -133,6 +133,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isGeneratingHeadline, setIsGeneratingHeadline] = useState(false);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+  const [isRewritingArticle, setIsRewritingArticle] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -541,6 +542,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         setKeyphraseSynonyms(data.data.keyphrase_synonyms);
         setMetaDescription(data.data.meta_description);
         
+        // Auto-fill featured image alt text with focus keyphrase
+        if (data.data.focus_keyphrase && !featuredImageAlt) {
+          setFeaturedImageAlt(data.data.focus_keyphrase);
+        }
+        
         toast({
           title: "SEO Generated!",
           description: "All SEO fields have been populated with AI-optimized content",
@@ -554,6 +560,44 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       });
     } finally {
       setIsGeneratingSEO(false);
+    }
+  };
+
+  const handleScoutRewrite = async () => {
+    if (!content || content.trim().length === 0) {
+      toast({
+        title: "No Content",
+        description: "Please add content to the article before rewriting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRewritingArticle(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("scout-rewrite-article", {
+        body: { content },
+      });
+
+      if (error) throw error;
+
+      if (data?.rewrittenContent) {
+        setContent(data.rewrittenContent);
+        toast({
+          title: "Article Rewritten!",
+          description: "Scout has completely rewritten your article with a fresh perspective",
+        });
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "Failed to rewrite article";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsRewritingArticle(false);
     }
   };
 
@@ -802,6 +846,26 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <div className="flex items-center justify-between">
                   <Label>Article Content (Live Preview)</Label>
                   <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      onClick={handleScoutRewrite}
+                      disabled={isRewritingArticle || !content}
+                      title="Rewrite entire article with fresh perspective"
+                    >
+                      {isRewritingArticle ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Rewriting...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="h-4 w-4 mr-2" />
+                          Scout Assist
+                        </>
+                      )}
+                    </Button>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Info className="h-3 w-3" />
                       <span>Use markdown: **bold** *italic* # heading</span>
