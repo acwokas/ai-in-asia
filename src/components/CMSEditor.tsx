@@ -635,9 +635,20 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       previewCode = null;
     }
 
+    // Auto-generate slug from title if empty
+    let finalSlug = slug.replace(/\//g, '');
+    if (!finalSlug.trim() && title) {
+      finalSlug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    }
+
     const data = {
       title,
-      slug: slug.replace(/\//g, ''),
+      slug: finalSlug,
       excerpt,
       content,
       tldr_snapshot: tldrSnapshot,
