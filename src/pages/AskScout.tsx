@@ -199,10 +199,10 @@ const AskScout = () => {
       
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8 flex flex-col">
-        <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto w-full">
           {/* Header Section */}
-          <div className="text-center mb-8 flex-shrink-0">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center mb-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full animate-pulse" />
@@ -221,7 +221,7 @@ const AskScout = () => {
           </div>
 
           {/* Chat Container */}
-          <div className="relative flex-1 flex flex-col min-h-0">
+          <div className="relative">
             {/* Outer glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-2xl" />
             

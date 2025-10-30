@@ -231,7 +231,7 @@ Guidelines:
           
           const contentText = article.content
             .map((block: any) => {
-              if (block.type === 'paragraph' && block.content) {
+              if (block.type === 'paragraph' && block.content && Array.isArray(block.content)) {
                 return block.content
                   .filter((item: any) => item.type === 'text')
                   .map((item: any) => item.text)
@@ -275,7 +275,7 @@ Guidelines:
             let contentText = '';
             if (a.content && Array.isArray(a.content)) {
               contentText = a.content
-                .filter((block: any) => block.type === 'paragraph' && block.content)
+                .filter((block: any) => block.type === 'paragraph' && block.content && Array.isArray(block.content))
                 .map((block: any) => 
                   block.content
                     .filter((item: any) => item.type === 'text')
