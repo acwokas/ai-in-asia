@@ -81,7 +81,10 @@ const AskScout = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll to bottom if there's more than the initial message
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   const sendMessage = async () => {
