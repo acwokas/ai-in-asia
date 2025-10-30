@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2 } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Upload, X } from "lucide-react";
 
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
@@ -27,6 +27,8 @@ export default function NewsletterManager() {
     memeCaption: "",
     commentsOverride: "",
   });
+  const [isUploadingMeme, setIsUploadingMeme] = useState(false);
+  const [memeImageUrl, setMemeImageUrl] = useState<string | null>(null);
 
   const { data: latestEdition, refetch } = useQuery({
     queryKey: ["newsletter-latest-edition"],
@@ -122,8 +124,47 @@ export default function NewsletterManager() {
       editor_note: editData.editorNote || null,
       mini_case_study: editData.miniCaseStudy || null,
       meme_caption: editData.memeCaption || null,
+      meme_image_url: memeImageUrl || null,
       comments_count_override: editData.commentsOverride ? parseInt(editData.commentsOverride) : null,
     });
+  };
+
+  const handleMemeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!latestEdition) {
+      toast.error("Please generate a newsletter first");
+      return;
+    }
+
+    setIsUploadingMeme(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `meme-${latestEdition.id}-${Date.now()}.${fileExt}`;
+      const filePath = `newsletter-memes/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      setMemeImageUrl(publicUrl);
+      toast.success("Meme image uploaded successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setIsUploadingMeme(false);
+    }
+  };
+
+  const handleRemoveMeme = () => {
+    setMemeImageUrl(null);
   };
 
   return (
@@ -292,9 +333,57 @@ export default function NewsletterManager() {
                     onChange={(e) => setEditData({ ...editData, memeCaption: e.target.value })}
                     className="mt-2"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Upload meme image separately via file manager
-                  </p>
+                  
+                  <div className="mt-4">
+                    <Label>Meme Image</Label>
+                    {memeImageUrl ? (
+                      <div className="mt-2 space-y-2">
+                        <img 
+                          src={memeImageUrl} 
+                          alt="Newsletter meme" 
+                          className="max-w-xs rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveMeme}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Remove Image
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        <Input
+                          id="meme-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleMemeUpload}
+                          disabled={isUploadingMeme}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('meme-upload')?.click()}
+                          disabled={isUploadingMeme}
+                        >
+                          {isUploadingMeme ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload Meme Image
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
