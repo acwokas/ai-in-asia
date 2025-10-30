@@ -106,7 +106,7 @@ const Editor = () => {
           .single();
 
         // Fetch category separately to avoid relation issues
-        let categorySlug = 'uncategorized';
+        let categorySlug = 'news';
         if (savedArticle?.primary_category_id) {
           const { data: category } = await supabase
             .from("categories")
