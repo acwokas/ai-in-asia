@@ -153,6 +153,16 @@ All colors MUST be HSL.
     border: 0;
   }
   
+  /* Ensure ordered lists display properly with sequential numbers */
+  article ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+  }
+  
+  article ol li {
+    display: list-item;
+  }
+  
   /* Beautiful Prompt Box Styles */
   .prompt-box {
     @apply my-8 rounded-xl overflow-hidden border-2;

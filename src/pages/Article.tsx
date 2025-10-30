@@ -483,7 +483,7 @@ const Article = () => {
               return `<li class="leading-relaxed">${content}</li>`;
             })
             .join('');
-          return `<ol class="list-decimal ml-6 my-6">${items}</ol>`;
+          return `<ol class="list-decimal ml-6 my-6" style="list-style-type: decimal; padding-left: 1.5rem;">${items}</ol>`;
         }
         
         // Default to paragraph
