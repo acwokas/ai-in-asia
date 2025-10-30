@@ -460,8 +460,7 @@ const Article = () => {
         // Check for blockquotes
         if (block.startsWith('> ')) {
           const quoteContent = block.substring(2);
-          return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8 relative">
-            <span class="text-primary text-5xl absolute -left-2 top-2 opacity-50">"</span>
+          return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8">
             <p class="italic text-lg text-foreground/90 leading-relaxed">${quoteContent}</p>
           </blockquote>`;
         }
