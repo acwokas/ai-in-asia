@@ -103,6 +103,19 @@ All colors MUST be HSL.
     margin: revert;
     padding: revert;
   }
+  
+  /* Ensure ordered lists have proper incrementing numbers */
+  .prose ol,
+  article ol {
+    counter-reset: list-item;
+  }
+  
+  .prose ol li,
+  article ol li {
+    counter-increment: list-item;
+    display: list-item;
+    list-style-type: decimal;
+  }
 }
 
 @layer base {
