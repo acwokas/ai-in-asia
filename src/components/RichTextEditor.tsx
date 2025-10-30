@@ -41,12 +41,29 @@ const RichTextEditor = ({
   const [promptData, setPromptData] = useState({ title: '', content: '' });
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
+  const [lastExternalValue, setLastExternalValue] = useState(value);
 
+  // Initial content load
   useEffect(() => {
     if (editorRef.current && !editorRef.current.innerHTML && value) {
       editorRef.current.innerHTML = convertMarkdownToHtml(value);
     }
   }, []);
+
+  // Handle external content updates (like from Scout Assist)
+  useEffect(() => {
+    if (!editorRef.current) return;
+    
+    // Check if this is an external update (not from user typing)
+    const currentMarkdown = convertHtmlToMarkdown(editorRef.current.innerHTML);
+    const isExternalUpdate = value !== currentMarkdown && value !== lastExternalValue;
+    
+    if (isExternalUpdate) {
+      editorRef.current.innerHTML = convertMarkdownToHtml(value);
+      setLastExternalValue(value);
+      setIsEmpty(!value);
+    }
+  }, [value]);
 
   const convertMarkdownToHtml = (markdown: string): string => {
     if (!markdown) return '';
