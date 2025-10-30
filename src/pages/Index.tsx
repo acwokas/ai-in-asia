@@ -329,6 +329,9 @@ const Index = () => {
       </Suspense>
       
       <main className="flex-1">
+        {/* SEO H1 - Primary page heading */}
+        <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
+        
         {/* Hero Grid Section */}
         <section className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
