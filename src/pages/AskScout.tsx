@@ -196,10 +196,10 @@ const AskScout = () => {
       
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 container mx-auto px-4 py-8 flex flex-col">
+        <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
           {/* Header Section */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 flex-shrink-0">
             <div className="inline-flex items-center justify-center mb-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full animate-pulse" />
@@ -218,12 +218,12 @@ const AskScout = () => {
           </div>
 
           {/* Chat Container */}
-          <div className="relative">
+          <div className="relative flex-1 flex flex-col min-h-0">
             {/* Outer glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-2xl" />
             
             {/* Main container */}
-            <div className="relative bg-card/98 backdrop-blur-xl border-2 border-primary/50 rounded-2xl shadow-[0_8px_80px_rgba(0,188,212,0.6),0_0_0_1px_rgba(0,188,212,0.2)] overflow-hidden" style={{ height: 'calc(100vh - 400px)', minHeight: '500px' }}>
+            <div className="relative bg-card/98 backdrop-blur-xl border-2 border-primary/50 rounded-2xl shadow-[0_8px_80px_rgba(0,188,212,0.6),0_0_0_1px_rgba(0,188,212,0.2)] overflow-hidden flex flex-col h-[600px]">
               {/* Animated background grid */}
               <div className="absolute inset-0 opacity-[0.03]" style={{
                 backgroundImage: 'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
@@ -231,8 +231,8 @@ const AskScout = () => {
               }} />
 
               {/* Messages */}
-              <ScrollArea className="h-full p-6">
-                <div className="space-y-4 pb-4">
+              <ScrollArea className="flex-1 p-6">
+                <div className="space-y-4 pb-4 min-h-full">
                   {messages.map((msg, i) => (
                     <div
                       key={i}
@@ -288,7 +288,7 @@ const AskScout = () => {
               </ScrollArea>
 
               {/* Input Area */}
-              <div className="relative border-t border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 p-6">
+              <div className="relative border-t border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 p-6 flex-shrink-0">
                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                 
                 {queriesRemaining !== null && queriesRemaining <= 5 && (
