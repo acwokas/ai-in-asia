@@ -93,6 +93,16 @@ All colors MUST be HSL.
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
+  
+  /* Fix Tailwind preflight removing list styles */
+  article ol,
+  article ul,
+  .prose ol,
+  .prose ul {
+    list-style: revert;
+    margin: revert;
+    padding: revert;
+  }
 }
 
 @layer base {
@@ -151,40 +161,6 @@ All colors MUST be HSL.
     width: 100%;
     height: 100%;
     border: 0;
-  }
-  
-  /* Ensure ordered lists display properly with sequential numbers */
-  /* Override Tailwind's prose and preflight resets */
-  article ol,
-  .article-content ol,
-  .prose ol,
-  ol.list-decimal {
-    list-style-type: decimal !important;
-    list-style-position: outside !important;
-    padding-left: 2rem !important;
-    counter-reset: list-item !important;
-  }
-  
-  article ol li,
-  .article-content ol li,
-  .prose ol li,
-  ol.list-decimal li {
-    display: list-item !important;
-    list-style-type: decimal !important;
-    list-style-position: outside !important;
-  }
-  
-  article ul,
-  .article-content ul,
-  .prose ul {
-    list-style-type: disc !important;
-    list-style-position: outside !important;
-  }
-  
-  article ul li,
-  .article-content ul li,
-  .prose ul li {
-    display: list-item !important;
   }
   
   /* Beautiful Prompt Box Styles */
