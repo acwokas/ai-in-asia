@@ -362,7 +362,7 @@ const Index = () => {
                 const leftColumnCount = Math.min(5, filteredTrending.length);
                 
                 return filteredTrending.slice(0, leftColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
+                  const categorySlug = article.categories?.slug || 'news';
                   return (
                 <Link 
                   key={article.id}
@@ -486,7 +486,7 @@ const Index = () => {
                 ) : latestArticles?.filter((article: any) => 
                   article.slug && article.id !== featuredArticle?.id
                 ).slice(0, 2).map((article: any) => {
-                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
+                  const categorySlug = article.categories?.slug || 'news';
                   return (
                   <Link 
                     key={article.id}
@@ -566,7 +566,7 @@ const Index = () => {
                 const rightColumnCount = Math.min(6, filteredLatest.length);
                 
                 return filteredLatest.slice(0, rightColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || article.primary_category_id?.slug || 'news';
+                  const categorySlug = article.categories?.slug || 'news';
                   return (
                   <Link 
                     key={article.id}
