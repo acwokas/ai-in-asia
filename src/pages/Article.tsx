@@ -591,9 +591,10 @@ const Article = () => {
             const isOrdered = block.attrs?.listType === 'ordered';
             const ListTag = isOrdered ? 'ol' : 'ul';
             const listClass = isOrdered ? 'list-decimal ml-6 my-6' : 'list-disc ml-6 my-6';
+            const listStyle = isOrdered ? { listStyleType: 'decimal', paddingLeft: '1.5rem' } : undefined;
             
             return (
-              <ListTag key={index} className={listClass}>
+              <ListTag key={index} className={listClass} style={listStyle}>
                 {listItems.map((item: string, i: number) => {
                   const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
                     ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
