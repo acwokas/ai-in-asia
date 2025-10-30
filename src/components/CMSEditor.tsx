@@ -31,8 +31,17 @@ const convertJsonbToMarkdown = (jsonbContent: any): string => {
   if (typeof jsonbContent === "string") return jsonbContent;
   if (!Array.isArray(jsonbContent)) return "";
   
+  let listCounter = 0;
+  let currentListType = '';
+  
   return jsonbContent.map((block: any) => {
     if (!block || !block.type) return "";
+    
+    // Reset counter when switching list types
+    if (block.type !== currentListType) {
+      listCounter = 0;
+      currentListType = block.type;
+    }
     
     switch (block.type) {
       case "paragraph":
@@ -43,9 +52,18 @@ const convertJsonbToMarkdown = (jsonbContent: any): string => {
         return `${prefix} ${block.content || ""}`;
       case "bulletList":
       case "listItem":
+        // Handle both flat lists and nested content
+        if (Array.isArray(block.content)) {
+          return block.content.map((item: any) => `- ${item.content || item}`).join("\n");
+        }
         return `- ${block.content || ""}`;
       case "orderedList":
-        return `1. ${block.content || ""}`;
+        // Handle both flat lists and nested content  
+        if (Array.isArray(block.content)) {
+          return block.content.map((item: any, idx: number) => `${idx + 1}. ${item.content || item}`).join("\n");
+        }
+        listCounter++;
+        return `${listCounter}. ${block.content || ""}`;
       case "blockquote":
         return `> ${block.content || ""}`;
       default:
