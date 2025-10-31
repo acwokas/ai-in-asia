@@ -95,8 +95,12 @@ const Editor = () => {
           }).catch(err => console.error('Comment generation error:', err));
         }
 
-        // Refetch article data to get updated preview_code
+        // Refetch article data and invalidate all article-related queries
         await queryClient.invalidateQueries({ queryKey: ["article-edit", articleId] });
+        await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
+        await queryClient.invalidateQueries({ queryKey: ["you-may-also-like"] });
+        await queryClient.invalidateQueries({ queryKey: ["popular-articles"] });
+        await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
 
         // Get the article slug and preview code for the preview link
         const { data: savedArticle } = await supabase
@@ -160,6 +164,12 @@ const Editor = () => {
             body: { articleId: newArticle.id, batchMode: false }
           }).catch(err => console.error('Comment generation error:', err));
         }
+
+        // Invalidate article-related queries
+        await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
+        await queryClient.invalidateQueries({ queryKey: ["you-may-also-like"] });
+        await queryClient.invalidateQueries({ queryKey: ["popular-articles"] });
+        await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
 
         toast({
           title: "Success!",
