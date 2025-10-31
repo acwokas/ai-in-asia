@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { loadGoogleAdsScript } from "./components/GoogleAds";
 
 // Register service worker for image caching
 if ('serviceWorker' in navigator) {
@@ -10,5 +11,8 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// Load Google AdSense script
+loadGoogleAdsScript();
 
 createRoot(document.getElementById("root")!).render(<App />);
