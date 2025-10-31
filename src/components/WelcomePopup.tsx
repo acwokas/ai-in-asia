@@ -55,10 +55,10 @@ const WelcomePopup = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 z-10"
+          className="absolute top-4 right-4 z-10 h-10 w-10 hover:bg-destructive hover:text-destructive-foreground"
           onClick={handleClose}
         >
-          <X className="h-4 w-4" />
+          <X className="h-6 w-6" />
         </Button>
 
         {/* Desktop Version */}
@@ -83,7 +83,7 @@ const WelcomePopup = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Button 
               className="flex-1 h-12 text-base font-semibold" 
               size="lg"
@@ -100,6 +100,15 @@ const WelcomePopup = () => {
               Sign In
             </Button>
           </div>
+          
+          <Button 
+            className="w-full h-12 text-base font-semibold mb-4" 
+            variant="secondary"
+            size="lg"
+            onClick={handleClose}
+          >
+            Continue Reading Without Account
+          </Button>
 
           <div className="flex items-center justify-center gap-2 pt-4 border-t border-border">
             <Checkbox 
@@ -135,7 +144,7 @@ const WelcomePopup = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 mb-4">
+          <div className="flex flex-col gap-2 mb-3">
             <Button 
               className="w-full h-11 font-semibold" 
               onClick={handleSignUp}
@@ -150,6 +159,14 @@ const WelcomePopup = () => {
               Sign In
             </Button>
           </div>
+          
+          <Button 
+            className="w-full h-11 font-semibold mb-3" 
+            variant="secondary"
+            onClick={handleClose}
+          >
+            Continue Reading
+          </Button>
 
           <div className="flex items-center justify-center gap-2 pt-3 border-t border-border">
             <Checkbox 
