@@ -18,6 +18,7 @@ interface ArticleCardProps {
   seriesPart?: number;
   seriesTotal?: number;
   commentCount?: number;
+  publishedAt?: string;
 }
 
 const ArticleCard = ({ 
@@ -33,7 +34,8 @@ const ArticleCard = ({
   isTrending = false,
   seriesPart,
   seriesTotal,
-  commentCount = 0
+  commentCount = 0,
+  publishedAt
 }: ArticleCardProps) => {
   return (
     <article className={`article-card ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
@@ -87,6 +89,9 @@ const ArticleCard = ({
               <span>{author}</span>
             </div>
             <div className="flex items-center gap-3">
+              {publishedAt && (
+                <span>{new Date(publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+              )}
               {commentCount > 0 && (
                 <div className="flex items-center gap-1 text-primary">
                   <MessageCircle className="h-3 w-3" />

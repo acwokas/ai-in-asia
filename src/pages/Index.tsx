@@ -612,7 +612,7 @@ const Index = () => {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mb-1">
-                          {article.categories?.name || "Uncategorized"} | {article.reading_time_minutes || 5} min read
+                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
                         </p>
                         <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
@@ -629,14 +629,14 @@ const Index = () => {
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {article.categories?.name || "Uncategorized"}
-                          </p>
-                          <h3 className="font-bold text-sm line-clamp-3 group-hover:text-primary transition-colors">
-                            {article.title}
-                          </h3>
-                        </div>
+                         <div className="flex-1 min-w-0">
+                           <p className="text-xs text-muted-foreground mb-1">
+                             {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                           </p>
+                           <h3 className="font-bold text-sm line-clamp-3 group-hover:text-primary transition-colors">
+                             {article.title}
+                           </h3>
+                         </div>
                       </div>
                     )}
                   </Link>
