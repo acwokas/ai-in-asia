@@ -1018,6 +1018,11 @@ const Article = () => {
             )}
           </article>
 
+          {/* Comments Section */}
+          <section className="container mx-auto px-4 max-w-4xl mt-12">
+            <Comments articleId={article.id} />
+          </section>
+
           {/* Related Articles */}
           {relatedArticles && relatedArticles.length > 0 && (
             <section className="bg-muted/30 py-12 mt-12">
