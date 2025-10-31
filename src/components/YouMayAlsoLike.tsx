@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
-import { memo } from "react";
+import { memo, Fragment } from "react";
+import { MPUAd } from "./GoogleAds";
 
 const YouMayAlsoLikeComponent = () => {
   const { user } = useAuth();
@@ -168,18 +169,24 @@ const YouMayAlsoLikeComponent = () => {
     <section className="container mx-auto px-4 py-12">
       <h2 className="headline text-3xl mb-8">You May Also Like</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {articles.map((article) => (
-          <ArticleCard
-            key={article.id}
-            title={article.title}
-            excerpt={article.excerpt || ""}
-            category={article.categories?.name || "Uncategorized"}
-            categorySlug={article.categories?.slug || "news"}
-            author={article.authors?.name || "Unknown"}
-            readTime={`${article.reading_time_minutes || 5} min read`}
-            image={article.featured_image_url || "/placeholder.svg"}
-            slug={article.slug}
-          />
+        {articles.map((article, index) => (
+          <Fragment key={article.id}>
+            {index === 7 && (
+              <div className="flex items-center justify-center">
+                <MPUAd />
+              </div>
+            )}
+            <ArticleCard
+              title={article.title}
+              excerpt={article.excerpt || ""}
+              category={article.categories?.name || "Uncategorized"}
+              categorySlug={article.categories?.slug || "news"}
+              author={article.authors?.name || "Unknown"}
+              readTime={`${article.reading_time_minutes || 5} min read`}
+              image={article.featured_image_url || "/placeholder.svg"}
+              slug={article.slug}
+            />
+          </Fragment>
         ))}
       </div>
     </section>
