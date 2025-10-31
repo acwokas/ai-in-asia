@@ -468,9 +468,20 @@ const Index = () => {
                         <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">
                           {trendingArticles[0].title}
                         </h1>
-                        <p className="text-white/90 text-base line-clamp-3">
+                        <p className="text-white/90 text-base line-clamp-3 mb-3">
                           {trendingArticles[0].excerpt}
                         </p>
+                        <div className="flex items-center gap-3 text-white/80 text-sm">
+                          {trendingArticles[0].published_at && (
+                            <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          )}
+                          {trendingArticles[0].reading_time_minutes && (
+                            <>
+                              <span>•</span>
+                              <span>{trendingArticles[0].reading_time_minutes} min read</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -514,9 +525,20 @@ const Index = () => {
                         <h3 className="text-white font-bold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
-                        <p className="text-white/80 text-sm line-clamp-2">
+                        <p className="text-white/80 text-sm line-clamp-2 mb-2">
                           {article.excerpt}
                         </p>
+                        <div className="flex items-center gap-2 text-white/70 text-xs">
+                          {article.published_at && (
+                            <span>{new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          )}
+                          {article.reading_time_minutes && (
+                            <>
+                              <span>•</span>
+                              <span>{article.reading_time_minutes} min read</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>
