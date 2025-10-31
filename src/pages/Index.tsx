@@ -385,7 +385,9 @@ const Index = () => {
                     </Badge>
                     {index === 0 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                        <p className="text-white text-xs mb-1">{article.categories?.name || "Uncategorized"} | {article.reading_time_minutes || 5} min read</p>
+                        <p className="text-white text-xs mb-1">
+                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
+                        </p>
                         <h3 className="text-white font-bold text-base line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
@@ -395,7 +397,7 @@ const Index = () => {
                   {index > 0 && (
                     <>
                       <p className="text-xs text-muted-foreground mb-1">
-                        {article.categories?.name || "Uncategorized"} | {article.reading_time_minutes || 5} min read
+                        {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
                       </p>
                       <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
                         {article.title}
@@ -475,12 +477,8 @@ const Index = () => {
                           {trendingArticles[0].published_at && (
                             <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                           )}
-                          {trendingArticles[0].reading_time_minutes && (
-                            <>
-                              <span>•</span>
-                              <span>{trendingArticles[0].reading_time_minutes} min read</span>
-                            </>
-                          )}
+                          {(trendingArticles[0].published_at && (trendingArticles[0].reading_time_minutes || 5)) && <span>•</span>}
+                          <span>{trendingArticles[0].reading_time_minutes || 5} min read</span>
                         </div>
                       </div>
                     </div>
@@ -532,12 +530,8 @@ const Index = () => {
                           {article.published_at && (
                             <span>{new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                           )}
-                          {article.reading_time_minutes && (
-                            <>
-                              <span>•</span>
-                              <span>{article.reading_time_minutes} min read</span>
-                            </>
-                          )}
+                          {article.published_at && <span>•</span>}
+                          <span>{article.reading_time_minutes || 5} min read</span>
                         </div>
                       </div>
                     </div>
