@@ -442,9 +442,16 @@ const Index = () => {
                       <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">
                         {featuredArticle.title}
                       </h1>
-                      <p className="text-white/90 text-base line-clamp-3">
+                      <p className="text-white/90 text-base line-clamp-3 mb-3">
                         {featuredArticle.excerpt}
                       </p>
+                      <div className="flex items-center gap-3 text-white/80 text-sm">
+                        {featuredArticle.published_at && (
+                          <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        )}
+                        {featuredArticle.published_at && <span>•</span>}
+                        <span>{featuredArticle.reading_time_minutes || 5} min read</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
