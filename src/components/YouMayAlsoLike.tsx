@@ -171,11 +171,6 @@ const YouMayAlsoLikeComponent = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {articles.map((article, index) => (
           <Fragment key={article.id}>
-            {index === 7 && (
-              <div className="flex items-center justify-center">
-                <MPUAd />
-              </div>
-            )}
             <ArticleCard
               title={article.title}
               excerpt={article.excerpt || ""}
@@ -186,6 +181,11 @@ const YouMayAlsoLikeComponent = () => {
               image={article.featured_image_url || "/placeholder.svg"}
               slug={article.slug}
             />
+            {index === 6 && (
+              <div className="flex items-center justify-center">
+                <MPUAd />
+              </div>
+            )}
           </Fragment>
         ))}
       </div>
