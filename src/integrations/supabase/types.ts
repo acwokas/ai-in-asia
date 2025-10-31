@@ -1791,6 +1791,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_article_views: {
+        Args: { article_id: string }
+        Returns: undefined
+      }
       update_streak: { Args: { _user_id: string }; Returns: undefined }
       update_trending_articles: { Args: never; Returns: undefined }
     }

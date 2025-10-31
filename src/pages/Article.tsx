@@ -96,6 +96,13 @@ const Article = () => {
     }
   }, [user, article?.id]);
 
+  // Track article view
+  useEffect(() => {
+    if (article?.id && article.status === 'published') {
+      trackArticleView();
+    }
+  }, [article?.id]);
+
   // Defer related articles query
   useEffect(() => {
     if (article?.id) {
@@ -103,6 +110,28 @@ const Article = () => {
       return () => clearTimeout(timer);
     }
   }, [article?.id]);
+
+  const trackArticleView = async () => {
+    if (!article?.id) return;
+
+    // Check localStorage to avoid counting the same view multiple times
+    const viewKey = `article_view_${article.id}`;
+    const lastViewed = localStorage.getItem(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+
+    // Only count the view if more than 1 hour has passed since last view
+    if (!lastViewed || now - parseInt(lastViewed) > oneHour) {
+      try {
+        await supabase.rpc('increment_article_views', {
+          article_id: article.id
+        });
+        localStorage.setItem(viewKey, now.toString());
+      } catch (error) {
+        console.error('Error tracking view:', error);
+      }
+    }
+  };
 
   const trackReadingHistory = async () => {
     if (!user || !article?.id) return;
