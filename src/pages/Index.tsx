@@ -67,6 +67,7 @@ const Index = () => {
           published_at,
           sticky,
           primary_category_id,
+          comment_count,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -96,6 +97,7 @@ const Index = () => {
           published_at,
           view_count,
           primary_category_id,
+          comment_count,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)

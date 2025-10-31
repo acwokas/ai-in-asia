@@ -85,7 +85,8 @@ const Search = () => {
           author_id,
           published_at,
           view_count,
-          is_trending
+          is_trending,
+          comment_count
         `)
         .eq("status", "published")
         .or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern}`);
@@ -162,7 +163,8 @@ const Search = () => {
                 author_id,
                 published_at,
                 view_count,
-                is_trending
+                is_trending,
+                comment_count
               `)
               .eq("status", "published")
               .in("id", tagArticleIds);
@@ -482,6 +484,7 @@ const Search = () => {
                 readTime={`${article.reading_time_minutes || 5} min read`}
                 image={article.featured_image_url || ""}
                 slug={article.slug}
+                commentCount={article.comment_count || 0}
               />
             ))}
           </div>

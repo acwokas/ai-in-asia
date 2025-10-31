@@ -1040,6 +1040,7 @@ const Article = () => {
                       readTime={`${relatedArticle.reading_time_minutes || 5} min read`}
                       image={relatedArticle.featured_image_url || ""}
                       slug={relatedArticle.slug}
+                      commentCount={relatedArticle.comment_count || 0}
                     />
                   ))}
                   

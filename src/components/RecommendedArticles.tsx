@@ -40,6 +40,7 @@ const RecommendedArticles = () => {
           excerpt,
           featured_image_url,
           reading_time_minutes,
+          comment_count,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -95,6 +96,7 @@ const RecommendedArticles = () => {
             readTime={`${article.reading_time_minutes || 5} min read`}
             image={article.featured_image_url || ""}
             slug={article.slug}
+            commentCount={article.comment_count || 0}
           />
         ))}
       </div>

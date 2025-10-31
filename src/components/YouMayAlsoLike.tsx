@@ -44,6 +44,7 @@ const YouMayAlsoLikeComponent = () => {
                 featured_image_url,
                 reading_time_minutes,
                 primary_category_id,
+                comment_count,
                 authors (name, slug),
                 categories:primary_category_id (name, slug)
               `)
@@ -88,6 +89,7 @@ const YouMayAlsoLikeComponent = () => {
               featured_image_url,
               reading_time_minutes,
               primary_category_id,
+              comment_count,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
@@ -127,6 +129,7 @@ const YouMayAlsoLikeComponent = () => {
               featured_image_url,
               reading_time_minutes,
               primary_category_id,
+              comment_count,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
@@ -180,6 +183,7 @@ const YouMayAlsoLikeComponent = () => {
               readTime={`${article.reading_time_minutes || 5} min read`}
               image={article.featured_image_url || "/placeholder.svg"}
               slug={article.slug}
+              commentCount={article.comment_count || 0}
             />
             {index === 6 && (
               <div className="flex items-center justify-center">

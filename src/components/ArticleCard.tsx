@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Clock, User, TrendingUp, BookOpen } from "lucide-react";
+import { Clock, User, TrendingUp, BookOpen, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 
@@ -17,6 +17,7 @@ interface ArticleCardProps {
   isTrending?: boolean;
   seriesPart?: number;
   seriesTotal?: number;
+  commentCount?: number;
 }
 
 const ArticleCard = ({ 
@@ -31,7 +32,8 @@ const ArticleCard = ({
   featured = false,
   isTrending = false,
   seriesPart,
-  seriesTotal
+  seriesTotal,
+  commentCount = 0
 }: ArticleCardProps) => {
   return (
     <article className={`article-card ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
@@ -84,9 +86,17 @@ const ArticleCard = ({
               <User className="h-3 w-3" />
               <span>{author}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{readTime}</span>
+            <div className="flex items-center gap-3">
+              {commentCount > 0 && (
+                <div className="flex items-center gap-1 text-primary">
+                  <MessageCircle className="h-3 w-3" />
+                  <span>{commentCount}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{readTime}</span>
+              </div>
             </div>
           </div>
         </div>
