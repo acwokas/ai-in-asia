@@ -151,63 +151,93 @@ serve(async (req) => {
         article_id: articleId,
         scheduled_for: scheduledFor.toISOString(),
         comment_date: historicalDate.toISOString(),
-        comment_prompt: `You're writing a realistic comment on a newspaper article. Read the article and react naturally.
+        comment_prompt: `You're writing ONE authentic reader comment on this article. Be natural and AVOID repeating patterns other commenters might use.
 
 ARTICLE: "${article.title}"
 CONTENT: ${contentPreview}
 
-CRITICAL RULES - YOUR RESPONSE WILL BE REJECTED IF YOU BREAK THESE:
+CRITICAL - NO TWO COMMENTS SHOULD SOUND ALIKE:
 
-LENGTH (MUST VARY):
-- 30% SHORT: 5-15 words ("wow", "interesting take", "didnt expect that tbh", "makes sense")
-- 50% MEDIUM: 15-40 words (1-2 casual sentences)
-- 20% LONG: 40-70 words (thoughtful but still conversational)
+WHAT TO COMMENT ON (pick ONE randomly - BE SPECIFIC):
+1. A surprising statistic or number mentioned
+2. The main person/company featured
+3. The timeline or date mentioned
+4. A quote that stood out
+5. The implications or future impact
+6. Something missing or unexplained
+7. Personal connection ("my company does this", "i saw this happen")
+8. Regional angle ("how does this affect asia", "different in singapore vs us")
+9. A side detail most would miss
+10. Comparison to similar news/events
 
-REFERENCE THE ARTICLE:
-- Pick ONE specific detail from the content above and react to it
-- Don't summarize - react like a real reader who caught something interesting
-- Examples: "the part about X really surprised me", "wait so Y is happening now?", "didnt know about Z"
+START YOUR COMMENT DIFFERENTLY (never start with the same phrase twice):
+- "honestly..." / "tbh..." / "ngl..." / "wait..."
+- "so..." / "lol..." / "damn..." / "huh..."
+- Direct reaction: "this changes everything" / "finally" / "not surprised"
+- Question: "how is..." / "why would..." / "who's..."
+- Personal: "i work in this and..." / "my friend said..."
+- Opinion jump: "seems like..." / "feels like..." / "looks like..."
+- No start, just dive in: "big deal for..." / "interesting timing..."
 
-TONE VARIETY (CRITICAL - NOT ALL POSITIVE):
-- Enthusiastic: "omg this is huge", "finally someone talking about this"
-- Analytical: "makes sense when you think about it", "interesting point about X"
-- Skeptical: "idk seems a bit much", "not convinced tbh", "feels overhyped"
-- Critical: "but what about Y tho", "seems like they missed X", "not sure i agree"
-- Questioning: "wait how does this work?", "is this actually happening?", "source?"
-- Casual positive: "cool stuff", "good read", "interesting"
-- Indifferent: "meh", "ok i guess", "nothing new really"
-- Surprised: "wait what", "didnt see that coming", "thats wild"
-- Personal: "i work in this field and...", "my friend mentioned this", "reminds me of when..."
-- Practical: "wonder how much this costs", "would this work for X", "curious about implementation"
+LENGTH VARIETY (be random):
+- VERY SHORT (20%): 3-10 words only. "wild", "makes sense", "about time", "not buying it"
+- SHORT (30%): 10-20 words. Quick reaction.
+- MEDIUM (30%): 20-40 words. 1-2 sentences.
+- LONG (20%): 40-80 words. Multiple thoughts or explanation.
 
-ABSOLUTELY FORBIDDEN WORDS/PHRASES:
-- NO: "fascinating", "intriguing", "delves into", "sheds light", "explores", "highlights", "underscores"
-- NO: "This article", "This piece", "The author", "It's interesting to note"
-- NO: "compelling", "thought-provoking", "insightful", "comprehensive", "nuanced"
-- NO: em dashes (—), semicolons overuse, formal punctuation
-- NO: swearing or offensive language
-- NO: generic praise without specifics
+TONE MIX (pick ONE clearly):
+✓ Excited: "this is huge!", "omg finally"
+✓ Analytical: "makes sense bc...", "the key thing is..."
+✓ Skeptical: "feels overhyped", "idk about this", "seems sketchy"
+✓ Critical: "but what about...", "they're ignoring...", "wrong bc..."
+✓ Questioning: "how does this work?", "source?", "is this real?"
+✓ Casual: "cool", "interesting", "neat"
+✓ Unimpressed: "meh", "nothing new", "old news"
+✓ Surprised: "wait what", "didnt see coming", "no way"
+✓ Personal experience: "i tried this", "similar thing happened when..."
+✓ Practical concern: "what about the cost", "timeline seems off"
 
-WRITING STYLE:
-- Sound like actual people on the internet
-- Mix of grammar levels (some good, some lazy)
-- Real typos occasionally (teh, recieve, your/youre, its/it's)
-- Abbreviations: tbh, imo, ngl, btw, tho, bc, idk
-- Lowercase starts common
-- Fragments ok ("Interesting.", "Pretty cool.")
-- Real speech patterns ("i mean", "like", "basically", "honestly")
+FORBIDDEN (makes you sound like AI):
+- NEVER start multiple comments the same way
+- NO: "$X is a lot of money, wonder about..." / "$X is crazy, makes you wonder..."
+- NO: "fascinating", "intriguing", "compelling", "thought-provoking"
+- NO: "This article", "The piece", "The author"
+- NO: starting every sentence similarly
+- NO: using the same phrase structure as other comments
+- NO: generic reactions without specifics from article
 
-DIVERSE NAMES:
-- Southeast Asia: Wei, Mei, Siti, Arjun, Priya, Boon, Lakshmi
-- North Asia: Li, Chen, Park, Kim, Hiroshi, Yuki, Tanaka, Zhang
-- South Asia: Raj, Anjali, Vikram, Neha, Ravi, Priya
-- Western: Mike, Sarah, Alex, Emma, Tom, Lisa, James, Kate
-- Middle East: Omar, Fatima, Yusuf, Layla
-- Africa: Kwame, Amara, Oluwaseun, Nia
+WRITING LIKE REAL PEOPLE:
+- lowercase starts common
+- dropped letters: "gonna", "wanna", "kinda", "sorta"  
+- common abbreviations: tbh, imo, ngl, btw, tho, bc, idk, prob, def
+- real typos sometimes: "teh", "recieve", "your/youre", "its/it's"
+- fragments ok: "Wow.", "Interesting.", "Not bad."
+- casual speech: "i mean", "like", "literally", "basically", "honestly"
+- ellipses for trailing thought: "seems like..."
+- punctuation varies (some use it, some don't)
+
+EXAMPLES OF GOOD VARIETY:
+
+Example 1 (surprised, short): "wait the timeline on this seems crazy fast. 2 years?"
+Example 2 (skeptical, medium): "idk feels like we've heard these promises before. what makes this different from the last 5 attempts"
+Example 3 (personal, long): "work in this space and honestly the thing everyone's missing is the regulatory side. saw similar rollout in singapore and took 3x longer than announced bc of compliance issues nobody thought about"
+Example 4 (analytical, medium): "key thing is whether they can scale it. proof of concept is one thing but production is totally different"
+Example 5 (casual, very short): "about time"
+Example 6 (critical, medium): "but theyre not addressing the cost issue at all. who's paying for this lol"
+Example 7 (questioning, short): "source on those numbers? seem high"
+Example 8 (unimpressed, short): "old news. this was announced months ago"
+
+PICK DIVERSE NAMES (mix regions):
+- Southeast Asia: Wei, Siti, Boon, Devi, Khaled  
+- North Asia: Chen, Yuki, Park, Li, Tanaka
+- South Asia: Raj, Priya, Arjun, Neha, Ravi
+- Western: Alex, Jordan, Sam, Riley, Morgan
+- Middle East: Omar, Layla, Yusuf, Zara
+- Africa: Kofi, Amara, Tendai
 
 Format EXACTLY as:
-Name: [pick diverse name]
-Comment: [your realistic comment referencing article specifics]`
+Name: [pick name]
+Comment: [unique reaction - NO PATTERN REPETITION]`
       });
     }
     
