@@ -781,6 +781,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   <ScoutWritingAssistant
                     selectedText={selectedText}
                     onReplace={replaceSelectedText}
+                    fullFieldContent={excerpt}
                     context={{ title, fullContent: content }}
                   />
                 </div>

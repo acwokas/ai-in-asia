@@ -12,21 +12,24 @@ import { useToast } from "@/hooks/use-toast";
 interface ScoutWritingAssistantProps {
   selectedText: string;
   onReplace: (newText: string) => void;
+  fullFieldContent?: string;
   context?: {
     title?: string;
     fullContent?: string;
   };
 }
 
-const ScoutWritingAssistant = ({ selectedText, onReplace, context }: ScoutWritingAssistantProps) => {
+const ScoutWritingAssistant = ({ selectedText, onReplace, fullFieldContent, context }: ScoutWritingAssistantProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const callAI = async (action: string) => {
-    if (!selectedText.trim()) {
+    const textToProcess = selectedText.trim() || fullFieldContent?.trim() || "";
+    
+    if (!textToProcess) {
       toast({
-        title: "No text selected",
-        description: "Please select some text to use Scout.",
+        title: "No text available",
+        description: "Please add some text to use Scout.",
         variant: "destructive",
       });
       return;
@@ -45,7 +48,7 @@ const ScoutWritingAssistant = ({ selectedText, onReplace, context }: ScoutWritin
           },
           body: JSON.stringify({
             action,
-            content: selectedText,
+            content: textToProcess,
             context,
           }),
         }
@@ -83,7 +86,7 @@ const ScoutWritingAssistant = ({ selectedText, onReplace, context }: ScoutWritin
         <Button
           variant="outline"
           size="sm"
-          disabled={isLoading || !selectedText.trim()}
+          disabled={isLoading || (!selectedText.trim() && !fullFieldContent?.trim())}
           className="gap-2"
         >
           {isLoading ? (
