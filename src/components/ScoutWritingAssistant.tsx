@@ -104,6 +104,9 @@ const ScoutWritingAssistant = ({ selectedText, onReplace, context }: ScoutWritin
         <DropdownMenuItem onClick={() => callAI("expand")}>
           Expand
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => callAI("summarize")}>
+          Summarize
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
