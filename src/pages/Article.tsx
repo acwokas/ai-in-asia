@@ -498,9 +498,9 @@ const Article = () => {
         if (block.includes('\n- ') || block.startsWith('- ')) {
           const items = block.split('\n')
             .filter(line => line.trim().startsWith('- '))
-            .map(line => `<li class="leading-relaxed">${line.trim().substring(2)}</li>`)
+            .map(line => `<li class="leading-relaxed mb-2">${line.trim().substring(2)}</li>`)
             .join('');
-          return `<ul class="list-disc ml-6 my-6">${items}</ul>`;
+          return `<ul class="pl-6 my-6 space-y-1">${items}</ul>`;
         }
         
         // Check for ordered lists (multiple lines starting with number.)
@@ -509,10 +509,10 @@ const Article = () => {
             .filter(line => /^\d+\.\s/.test(line.trim()))
             .map(line => {
               const content = line.trim().replace(/^\d+\.\s/, '');
-              return `<li class="leading-relaxed">${content}</li>`;
+              return `<li class="leading-relaxed mb-2">${content}</li>`;
             })
             .join('');
-          return `<ol class="list-decimal ml-6 my-6" style="list-style-type: decimal; padding-left: 1.5rem;">${items}</ol>`;
+          return `<ol class="pl-6 my-6 space-y-1">${items}</ol>`;
         }
         
         // Default to paragraph
