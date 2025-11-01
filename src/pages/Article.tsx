@@ -509,10 +509,10 @@ const Article = () => {
             .filter(line => /^\d+\.\s/.test(line.trim()))
             .map(line => {
               const content = line.trim().replace(/^\d+\.\s/, '');
-              return `<li style="display: list-item; list-style-type: decimal; list-style-position: outside; margin-left: 1.5rem;" class="leading-relaxed mb-2">${content}</li>`;
+              return `<li class="leading-relaxed mb-2">${content}</li>`;
             })
             .join('');
-          return `<ol style="list-style-type: decimal; padding-left: 1rem;" class="my-6">${items}</ol>`;
+          return `<ol class="my-6 ml-6">${items}</ol>`;
         }
         
         // Default to paragraph

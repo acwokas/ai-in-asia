@@ -108,14 +108,12 @@ All colors MUST be HSL.
   .prose ol,
   article ol {
     list-style-type: decimal !important;
-    counter-reset: item;
   }
   
   .prose ol li,
   article ol li {
     display: list-item !important;
-    list-style-type: decimal !important;
-    list-style-position: outside;
+    list-style-position: outside !important;
   }
   
   .prose ul,
@@ -126,8 +124,7 @@ All colors MUST be HSL.
   .prose ul li,
   article ul li {
     display: list-item !important;
-    list-style-type: disc !important;
-    list-style-position: outside;
+    list-style-position: outside !important;
   }
 }
 
