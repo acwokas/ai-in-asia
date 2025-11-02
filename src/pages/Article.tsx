@@ -619,11 +619,9 @@ const Article = () => {
             const listItems = Array.isArray(block.content) ? block.content : [block.content];
             const isOrdered = block.attrs?.listType === 'ordered';
             const ListTag = isOrdered ? 'ol' : 'ul';
-            const listClass = isOrdered ? 'list-decimal ml-6 my-6' : 'list-disc ml-6 my-6';
-            const listStyle = isOrdered ? { listStyleType: 'decimal', paddingLeft: '1.5rem' } : undefined;
             
             return (
-              <ListTag key={index} className={listClass} style={listStyle}>
+              <ListTag key={index} className="ml-6 my-6">
                 {listItems.map((item: string, i: number) => {
                   const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
                     ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
@@ -632,7 +630,7 @@ const Article = () => {
                   return (
                     <li 
                       key={i} 
-                      className="leading-relaxed"
+                      className="leading-relaxed mb-2"
                       dangerouslySetInnerHTML={{ __html: sanitizedItem }}
                     />
                   );
