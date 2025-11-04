@@ -99,31 +99,39 @@ All colors MUST be HSL.
   article ul,
   .prose ol,
   .prose ul {
-    list-style: revert;
-    margin: revert;
-    padding: revert;
+    list-style: revert !important;
+    margin: revert !important;
+    padding: revert !important;
   }
   
-  /* Ensure ordered lists have proper incrementing numbers */
+  /* Ensure ordered lists have proper incrementing numbers with maximum specificity */
   .prose ol,
-  article ol {
+  article ol,
+  div.prose ol {
     list-style-type: decimal !important;
+    list-style-position: outside !important;
+    padding-left: 2rem !important;
   }
   
   .prose ol li,
-  article ol li {
+  article ol li,
+  div.prose ol li {
     display: list-item !important;
     list-style-type: decimal !important;
     list-style-position: outside !important;
   }
   
   .prose ul,
-  article ul {
+  article ul,
+  div.prose ul {
     list-style-type: disc !important;
+    list-style-position: outside !important;
+    padding-left: 2rem !important;
   }
   
   .prose ul li,
-  article ul li {
+  article ul li,
+  div.prose ul li {
     display: list-item !important;
     list-style-type: disc !important;
     list-style-position: outside !important;

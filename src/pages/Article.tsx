@@ -621,7 +621,14 @@ const Article = () => {
             const ListTag = isOrdered ? 'ol' : 'ul';
             
             return (
-              <ListTag key={index} className="ml-6 my-6">
+              <ListTag 
+                key={index} 
+                className="my-6 pl-8"
+                style={{
+                  listStyleType: isOrdered ? 'decimal' : 'disc',
+                  listStylePosition: 'outside'
+                }}
+              >
                 {listItems.map((item: string, i: number) => {
                   const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
                     ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
@@ -631,6 +638,11 @@ const Article = () => {
                     <li 
                       key={i} 
                       className="leading-relaxed mb-2"
+                      style={{
+                        display: 'list-item',
+                        listStyleType: isOrdered ? 'decimal' : 'disc',
+                        listStylePosition: 'outside'
+                      }}
                       dangerouslySetInnerHTML={{ __html: sanitizedItem }}
                     />
                   );
