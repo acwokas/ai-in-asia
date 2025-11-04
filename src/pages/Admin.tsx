@@ -699,12 +699,12 @@ const Admin = () => {
         </nav>
 
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="headline text-4xl mb-2">Admin Dashboard</h1>
               <p className="text-muted-foreground">Welcome back, {getFirstName(user?.email)}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full md:w-auto">
               <Button 
                 onClick={() => {
                   refetchStats();
@@ -712,6 +712,7 @@ const Admin = () => {
                 }}
                 variant="outline"
                 disabled={statsLoading}
+                className="flex-1 md:flex-initial"
               >
                 {statsLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -722,7 +723,7 @@ const Admin = () => {
                   </>
                 )}
               </Button>
-              <Button onClick={() => navigate("/editor")} size="lg">
+              <Button onClick={() => navigate("/editor")} size="lg" className="flex-1 md:flex-initial">
                 <FileText className="h-4 w-4 mr-2" />
                 Create New Article
               </Button>
