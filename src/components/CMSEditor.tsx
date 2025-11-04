@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2 } from "lucide-react";
+import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
@@ -134,6 +134,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [isGeneratingHeadline, setIsGeneratingHeadline] = useState(false);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isRewritingArticle, setIsRewritingArticle] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState<'ideogram' | 'midjourney' | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -896,6 +897,94 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   placeholder="Start writing your article... Use markdown for formatting."
                 />
               </div>
+
+              {title && (
+                <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/10">
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Wand2 className="h-4 w-4" />
+                      Suggested Image Generation Prompts
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Use these AI-generated prompts to create featured images for your article
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold">Ideogram Prompt</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            const prompt = `Create a modern, professional hero image for an article titled "${title}". High quality, editorial style, vibrant colors, no text`;
+                            await navigator.clipboard.writeText(prompt);
+                            setCopiedPrompt('ideogram');
+                            setTimeout(() => setCopiedPrompt(null), 2000);
+                            toast({
+                              title: "Copied!",
+                              description: "Ideogram prompt copied to clipboard",
+                            });
+                          }}
+                        >
+                          {copiedPrompt === 'ideogram' ? (
+                            <>
+                              <Check className="h-4 w-4 mr-2" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy Prompt
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div className="text-xs p-3 bg-background border border-border rounded-md">
+                        Create a modern, professional hero image for an article titled "{title}". High quality, editorial style, vibrant colors, no text
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold">Midjourney Prompt</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            const prompt = `${title}, professional editorial photography, ultra high quality, cinematic lighting, 8k resolution, no text --ar 16:9 --style raw --v 6`;
+                            await navigator.clipboard.writeText(prompt);
+                            setCopiedPrompt('midjourney');
+                            setTimeout(() => setCopiedPrompt(null), 2000);
+                            toast({
+                              title: "Copied!",
+                              description: "Midjourney prompt copied to clipboard",
+                            });
+                          }}
+                        >
+                          {copiedPrompt === 'midjourney' ? (
+                            <>
+                              <Check className="h-4 w-4 mr-2" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy Prompt
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div className="text-xs p-3 bg-background border border-border rounded-md">
+                        {title}, professional editorial photography, ultra high quality, cinematic lighting, 8k resolution, no text --ar 16:9 --style raw --v 6
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
