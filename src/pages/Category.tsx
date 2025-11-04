@@ -529,8 +529,8 @@ const Category = () => {
   });
 
   const featuredArticle = articles?.[0];
-  const latestArticles = category?.slug === 'voices' ? articles?.slice(1, 5) || [] : articles?.slice(2, 10) || [];
-  const moreArticles = category?.slug === 'voices' ? articles?.slice(5) || [] : articles?.slice(10) || [];
+  const latestArticles = category?.slug === 'voices' ? articles?.slice(1, 5) || [] : articles?.slice(1, 5) || [];
+  const moreArticles = category?.slug === 'voices' ? articles?.slice(5) || [] : articles?.slice(5) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
