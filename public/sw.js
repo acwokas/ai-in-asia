@@ -1,6 +1,11 @@
 const CACHE_NAME = 'aiinasia-v1';
 const IMAGE_CACHE = 'aiinasia-images-v1';
 
+// Install event - required for service worker
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
 // Detect crawlers and bots
 const isCrawler = (userAgent) => {
   const crawlers = [
@@ -23,12 +28,21 @@ const isCrawler = (userAgent) => {
 
 // Cache images aggressively and handle crawler requests
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-  const userAgent = request.headers.get('user-agent') || '';
+  try {
+    const { request } = event;
+    const url = new URL(request.url);
+    const userAgent = request.headers.get('user-agent') || '';
 
-  // Handle crawler requests for article pages
-  if (isCrawler(userAgent) && url.origin === self.location.origin && url.pathname.includes('/')) {
+    // Skip Google Ads and external resources
+    if (url.hostname.includes('google') || 
+        url.hostname.includes('doubleclick') || 
+        url.hostname.includes('googlesyndication') ||
+        url.hostname.includes('googletagmanager')) {
+      return;
+    }
+
+    // Handle crawler requests for article pages
+    if (isCrawler(userAgent) && url.origin === self.location.origin && url.pathname.includes('/')) {
     const pathParts = url.pathname.split('/').filter(p => p);
     // Check if it looks like an article URL (category/slug format)
     if (pathParts.length >= 2) {
@@ -67,20 +81,26 @@ self.addEventListener('fetch', (event) => {
         }
       })
     );
+    return;
+  }
+  } catch (error) {
+    console.error('Service worker fetch error:', error);
   }
 });
 
 // Clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    clients.claim().then(() => {
+      return caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      });
     })
   );
 });

@@ -1,6 +1,9 @@
 # AI in ASIA - robots.txt
 User-agent: *
 Allow: /
+Allow: /assets/
+Allow: /*.js
+Allow: /*.css
 
 # Sitemap
 Sitemap: https://aiinasia.com/sitemap.xml
@@ -9,6 +12,12 @@ Sitemap: https://aiinasia.com/sitemap.xml
 Disallow: /admin
 Disallow: /editor
 Disallow: /auth
+
+# Allow Google Ads and Analytics
+User-agent: Googlebot
+Allow: /
+Allow: *.js
+Allow: *.css
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
