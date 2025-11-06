@@ -219,8 +219,10 @@ export type Database = {
           batch_id: string | null
           canonical_url: string | null
           comment_count: number | null
+          comparison_tables: Json | null
           content: Json
           cornerstone: boolean | null
+          country: string | null
           created_at: string
           created_by: string | null
           event_date: string | null
@@ -236,19 +238,23 @@ export type Database = {
           featured_image_url: string | null
           featured_on_homepage: boolean | null
           focus_keyphrase: string | null
+          governance_maturity: string | null
           id: string
           is_launch_article: boolean | null
           is_trending: boolean | null
           keyphrase_synonyms: string | null
           like_count: number | null
+          local_resources: Json | null
           meta_description: string | null
           meta_title: string | null
           podcast_audio_url: string | null
           podcast_duration_minutes: number | null
+          policy_sections: Json | null
           preview_code: string | null
           primary_category_id: string | null
           published_at: string | null
           reading_time_minutes: number | null
+          region: string | null
           review_product_name: string | null
           review_rating: number | null
           scheduled_for: string | null
@@ -261,6 +267,7 @@ export type Database = {
           sticky: boolean | null
           title: string
           tldr_snapshot: Json | null
+          topic_tags: string[] | null
           updated_at: string
           updated_by: string | null
           version: number | null
@@ -275,8 +282,10 @@ export type Database = {
           batch_id?: string | null
           canonical_url?: string | null
           comment_count?: number | null
+          comparison_tables?: Json | null
           content?: Json
           cornerstone?: boolean | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           event_date?: string | null
@@ -292,19 +301,23 @@ export type Database = {
           featured_image_url?: string | null
           featured_on_homepage?: boolean | null
           focus_keyphrase?: string | null
+          governance_maturity?: string | null
           id?: string
           is_launch_article?: boolean | null
           is_trending?: boolean | null
           keyphrase_synonyms?: string | null
           like_count?: number | null
+          local_resources?: Json | null
           meta_description?: string | null
           meta_title?: string | null
           podcast_audio_url?: string | null
           podcast_duration_minutes?: number | null
+          policy_sections?: Json | null
           preview_code?: string | null
           primary_category_id?: string | null
           published_at?: string | null
           reading_time_minutes?: number | null
+          region?: string | null
           review_product_name?: string | null
           review_rating?: number | null
           scheduled_for?: string | null
@@ -317,6 +330,7 @@ export type Database = {
           sticky?: boolean | null
           title: string
           tldr_snapshot?: Json | null
+          topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
           version?: number | null
@@ -331,8 +345,10 @@ export type Database = {
           batch_id?: string | null
           canonical_url?: string | null
           comment_count?: number | null
+          comparison_tables?: Json | null
           content?: Json
           cornerstone?: boolean | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           event_date?: string | null
@@ -348,19 +364,23 @@ export type Database = {
           featured_image_url?: string | null
           featured_on_homepage?: boolean | null
           focus_keyphrase?: string | null
+          governance_maturity?: string | null
           id?: string
           is_launch_article?: boolean | null
           is_trending?: boolean | null
           keyphrase_synonyms?: string | null
           like_count?: number | null
+          local_resources?: Json | null
           meta_description?: string | null
           meta_title?: string | null
           podcast_audio_url?: string | null
           podcast_duration_minutes?: number | null
+          policy_sections?: Json | null
           preview_code?: string | null
           primary_category_id?: string | null
           published_at?: string | null
           reading_time_minutes?: number | null
+          region?: string | null
           review_product_name?: string | null
           review_rating?: number | null
           scheduled_for?: string | null
@@ -373,6 +393,7 @@ export type Database = {
           sticky?: boolean | null
           title?: string
           tldr_snapshot?: Json | null
+          topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
           version?: number | null
@@ -1809,6 +1830,7 @@ export type Database = {
         | "podcast"
         | "video"
         | "event"
+        | "policy_article"
       newsletter_status: "draft" | "scheduled" | "sending" | "sent" | "failed"
       tool_prompt_category: "tool" | "prompt"
     }
@@ -1948,6 +1970,7 @@ export const Constants = {
         "podcast",
         "video",
         "event",
+        "policy_article",
       ],
       newsletter_status: ["draft", "scheduled", "sending", "sent", "failed"],
       tool_prompt_category: ["tool", "prompt"],

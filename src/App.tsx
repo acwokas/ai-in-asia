@@ -39,6 +39,7 @@ const Editor = lazy(() => import("./pages/Editor"));
 const Profile = lazy(() => import("./pages/Profile"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
+const PolicyAtlas = lazy(() => import("./pages/PolicyAtlas"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
@@ -173,6 +174,9 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
               <Route path="/tools" element={<Tools />} />
+              <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
+              <Route path="/ai-policy-atlas/:region" element={<Category />} />
+              <Route path="/ai-policy-atlas/:region/:country" element={<Article />} />
               <Route path="/ask-scout" element={<AskScout />} />
               <Route path="/newsletter" element={<Newsletter />} />
               <Route path="/newsletter-manager" element={<NewsletterManager />} />

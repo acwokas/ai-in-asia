@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
 import RichTextEditor from "@/components/RichTextEditor";
+import { PolicyArticleEditor } from "@/components/PolicyArticleEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
@@ -135,6 +136,24 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isRewritingArticle, setIsRewritingArticle] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState<'ideogram' | 'midjourney' | null>(null);
+  
+  // Policy article specific state
+  const [region, setRegion] = useState(initialData?.region || "");
+  const [country, setCountry] = useState(initialData?.country || "");
+  const [governanceMaturity, setGovernanceMaturity] = useState(initialData?.governance_maturity || "");
+  const [policySections, setPolicySections] = useState(
+    Array.isArray(initialData?.policy_sections) ? initialData.policy_sections : []
+  );
+  const [comparisonTables, setComparisonTables] = useState(
+    Array.isArray(initialData?.comparison_tables) ? initialData.comparison_tables : []
+  );
+  const [localResources, setLocalResources] = useState(
+    Array.isArray(initialData?.local_resources) ? initialData.local_resources : []
+  );
+  const [topicTags, setTopicTags] = useState<string[]>(
+    Array.isArray(initialData?.topic_tags) ? initialData.topic_tags : []
+  );
+  
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,6 +187,42 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       
       if (error) throw error;
       return data;
+    }
+  });
+
+  // Fetch policy regions (for policy articles)
+  const { data: policyRegions } = useQuery({
+    queryKey: ['policy-regions'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('slug')
+        .in('slug', [
+          'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
+          'europe', 'mena', 'africa', 'latin-america', 'south-asia',
+          'pan-pacific', 'pan-asia', 'global-comparison'
+        ])
+        .order('display_order');
+      
+      if (error) throw error;
+      return data?.map(r => r.slug) || [];
+    }
+  });
+
+  // Fetch topic tags (for policy articles)
+  const { data: policyTopicTags } = useQuery({
+    queryKey: ['policy-topic-tags'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('name')
+        .in('slug', ['privacy', 'safety', 'accountability', 'fairness', 'transparency', 'risk', 'law', 'ethics', 'regulation'])
+        .order('name');
+      
+      if (error) throw error;
+      return data?.map(t => t.name) || [];
     }
   });
 
@@ -670,6 +725,16 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       scheduled_for: scheduledDateTime,
       published_at: publishedDateTime,
       preview_code: previewCode,
+      // Policy article fields
+      ...(articleType === 'policy_article' && {
+        region: region || null,
+        country: country || null,
+        governance_maturity: governanceMaturity || null,
+        policy_sections: policySections,
+        comparison_tables: comparisonTables,
+        local_resources: localResources,
+        topic_tags: topicTags,
+      }),
     };
     onSave?.(data);
   };
@@ -677,8 +742,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   return (
     <div className="max-w-6xl mx-auto">
       <Tabs defaultValue="content" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={cn("grid w-full", articleType === 'policy_article' ? "grid-cols-4" : "grid-cols-3")}>
           <TabsTrigger value="content">Content</TabsTrigger>
+          {articleType === 'policy_article' && (
+            <TabsTrigger value="policy">Policy Data</TabsTrigger>
+          )}
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -753,6 +821,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <SelectItem value="explainer">Explainer</SelectItem>
                     <SelectItem value="podcast">Podcast</SelectItem>
                     <SelectItem value="site_furniture">Site Furniture</SelectItem>
+                    <SelectItem value="policy_article">Policy Article</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -988,6 +1057,30 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Policy Article Tab */}
+        {articleType === 'policy_article' && (
+          <TabsContent value="policy" className="space-y-6">
+            <PolicyArticleEditor
+              region={region}
+              country={country}
+              governanceMaturity={governanceMaturity}
+              policySections={policySections}
+              comparisonTables={comparisonTables}
+              localResources={localResources}
+              topicTags={topicTags}
+              onRegionChange={setRegion}
+              onCountryChange={setCountry}
+              onGovernanceMaturityChange={setGovernanceMaturity}
+              onPolicySectionsChange={setPolicySections}
+              onComparisonTablesChange={setComparisonTables}
+              onLocalResourcesChange={setLocalResources}
+              onTopicTagsChange={setTopicTags}
+              availableRegions={policyRegions || []}
+              availableTopicTags={policyTopicTags || []}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="seo" className="space-y-6">
           <Card>
