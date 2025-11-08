@@ -503,16 +503,18 @@ const Article = () => {
           return `<ul class="pl-6 my-6 space-y-1">${items}</ul>`;
         }
         
-        // Check for ordered lists (multiple lines starting with number.)
+        // Check for ordered lists (multiple lines starting with number.) - FIXED VERSION
         if (/^\d+\.\s/.test(block) || /\n\d+\.\s/.test(block)) {
           const items = block.split('\n')
             .filter(line => /^\d+\.\s/.test(line.trim()))
             .map(line => {
+              // Remove the number prefix completely - let CSS handle numbering
               const content = line.trim().replace(/^\d+\.\s/, '');
-              return `<li class="leading-relaxed mb-2">${content}</li>`;
+              return `<li>${content}</li>`;
             })
             .join('');
-          return `<ol class="my-6 ml-6">${items}</ol>`;
+          // Use prose class to trigger CSS numbering, no inline styles
+          return `<ol class="prose-ol">${items}</ol>`;
         }
         
         // Default to paragraph
@@ -523,7 +525,7 @@ const Article = () => {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe'],
         ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style']
       });
-      return <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
     
     // Otherwise try to parse as JSON blocks (legacy format)
@@ -620,14 +622,11 @@ const Article = () => {
             const isOrdered = block.attrs?.listType === 'ordered';
             const ListTag = isOrdered ? 'ol' : 'ul';
             
+            // Use prose class for proper CSS-based numbering
             return (
               <ListTag 
                 key={index} 
-                className="my-6 pl-8"
-                style={{
-                  listStyleType: isOrdered ? 'decimal' : 'disc',
-                  listStylePosition: 'outside'
-                }}
+                className={isOrdered ? "prose-ol" : "prose-ul"}
               >
                 {listItems.map((item: string, i: number) => {
                   const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
@@ -636,13 +635,7 @@ const Article = () => {
                   });
                   return (
                     <li 
-                      key={i} 
-                      className="leading-relaxed mb-2"
-                      style={{
-                        display: 'list-item',
-                        listStyleType: isOrdered ? 'decimal' : 'disc',
-                        listStylePosition: 'outside'
-                      }}
+                      key={i}
                       dangerouslySetInnerHTML={{ __html: sanitizedItem }}
                     />
                   );

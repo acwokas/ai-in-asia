@@ -94,47 +94,67 @@ All colors MUST be HSL.
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
   
-  /* Fix Tailwind preflight removing list styles */
-  article ol,
-  article ul,
-  .prose ol,
-  .prose ul {
-    list-style: revert !important;
-    margin: revert !important;
-    padding: revert !important;
+  /* Reset list counter and ensure proper sequential numbering */
+  .prose,
+  article,
+  div[class*="prose"] {
+    counter-reset: list-item;
   }
   
-  /* Ensure ordered lists have proper incrementing numbers with maximum specificity */
+  /* Ordered lists - use browser native counter for proper sequential numbering */
+  .prose-ol,
   .prose ol,
   article ol,
-  div.prose ol {
-    list-style-type: decimal !important;
-    list-style-position: outside !important;
-    padding-left: 2rem !important;
+  ol.prose-ol {
+    list-style: none !important;
+    counter-reset: list-counter !important;
+    padding-left: 2.5rem !important;
+    margin: 1.5rem 0 !important;
   }
   
-  .prose ol li,
-  article ol li,
-  div.prose ol li {
-    display: list-item !important;
-    list-style-type: decimal !important;
-    list-style-position: outside !important;
+  .prose-ol > li,
+  .prose ol > li,
+  article ol > li,
+  ol.prose-ol > li {
+    counter-increment: list-counter !important;
+    position: relative !important;
+    display: block !important;
+    padding-left: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.75 !important;
   }
   
+  .prose-ol > li::before,
+  .prose ol > li::before,
+  article ol > li::before,
+  ol.prose-ol > li::before {
+    content: counter(list-counter) "." !important;
+    position: absolute !important;
+    left: -2rem !important;
+    font-weight: 600 !important;
+    color: hsl(var(--primary)) !important;
+  }
+  
+  /* Unordered lists */
+  .prose-ul,
   .prose ul,
   article ul,
-  div.prose ul {
+  ul.prose-ul {
     list-style-type: disc !important;
     list-style-position: outside !important;
     padding-left: 2rem !important;
+    margin: 1.5rem 0 !important;
   }
   
-  .prose ul li,
-  article ul li,
-  div.prose ul li {
+  .prose-ul > li,
+  .prose ul > li,
+  article ul > li,
+  ul.prose-ul > li {
     display: list-item !important;
     list-style-type: disc !important;
-    list-style-position: outside !important;
+    padding-left: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.75 !important;
   }
 }
 
