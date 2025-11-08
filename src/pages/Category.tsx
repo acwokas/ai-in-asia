@@ -122,43 +122,15 @@ const Category = () => {
         
         if (error) throw error;
         
-        // Extract articles from the nested structure and filter out Intelligence Desk
+        // Extract articles and sort by published_at (latest first)
         const voicesArticles = data
           ?.map(item => item.articles)
-          .filter(article => article && article.authors?.name !== 'Intelligence Desk') || [];
-        
-        
-        // Separate Adrian Watkins articles from others
-        const adrianArticles = voicesArticles
-          .filter((a: any) => a.authors?.name === 'Adrian Watkins')
+          .filter(article => article && article.authors?.name !== 'Intelligence Desk')
           .sort((a: any, b: any) => 
             new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
-          );
+          ) || [];
         
-        const otherArticles = voicesArticles
-          .filter((a: any) => a.authors?.name !== 'Adrian Watkins')
-          .sort((a: any, b: any) => 
-            new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
-          );
-        
-        // Mix articles with 50% Adrian, 50% others
-        // Pattern: Adrian, Other, Adrian, Other (repeat)
-        const mixedArticles: any[] = [];
-        let adrianIndex = 0;
-        let otherIndex = 0;
-        
-        while (adrianIndex < adrianArticles.length || otherIndex < otherArticles.length) {
-          // Add 1 Adrian article
-          if (adrianIndex < adrianArticles.length) {
-            mixedArticles.push(adrianArticles[adrianIndex++]);
-          }
-          // Add 1 other article
-          if (otherIndex < otherArticles.length) {
-            mixedArticles.push(otherArticles[otherIndex++]);
-          }
-        }
-        
-        return mixedArticles;
+        return voicesArticles;
       }
 
       // Regular categories - fetch by primary_category_id
