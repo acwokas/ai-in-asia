@@ -175,7 +175,7 @@ export const PolicyArticleEditor = ({
                 <SelectValue placeholder="Select region..." />
               </SelectTrigger>
               <SelectContent>
-                {availableRegions.map((r) => (
+                {availableRegions?.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                   </SelectItem>
@@ -215,7 +215,7 @@ export const PolicyArticleEditor = ({
           <div>
             <Label>Topic Tags</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {availableTopicTags.map((tag) => (
+              {availableTopicTags?.map((tag) => (
                 <Button
                   key={tag}
                   type="button"
