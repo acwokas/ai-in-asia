@@ -95,33 +95,34 @@ All colors MUST be HSL.
   }
   
   /* Ordered lists with proper sequential numbering */
-  article ol,
   .prose ol,
-  ol[style*="counter-reset"] {
-    list-style: none;
-    counter-reset: list-counter;
+  article ol {
+    list-style: none !important;
+    counter-reset: article-list;
     padding-left: 2.5rem;
     margin: 1.5rem 0;
   }
   
-  article ol > li,
   .prose ol > li,
-  ol[style*="counter-reset"] > li {
-    counter-increment: list-counter;
+  article ol > li {
+    counter-increment: article-list !important;
     position: relative;
+    display: block;
     padding-left: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     line-height: 1.75;
   }
   
-  article ol > li::before,
   .prose ol > li::before,
-  ol[style*="counter-reset"] > li::before {
-    content: counter(list-counter) ".";
+  article ol > li::before {
+    content: counter(article-list) "." !important;
     position: absolute;
     left: -2rem;
     font-weight: 600;
     color: hsl(var(--primary));
+    display: inline-block;
+    width: 1.5rem;
+    text-align: right;
   }
   
   /* Unordered lists */

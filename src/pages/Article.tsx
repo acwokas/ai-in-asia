@@ -503,7 +503,7 @@ const Article = () => {
           return `<ul class="pl-6 my-6 space-y-1">${items}</ul>`;
         }
         
-        // Check for ordered lists (multiple lines starting with number.) - FIXED VERSION
+        // Check for ordered lists (multiple lines starting with number.)
         if (/^\d+\.\s/.test(block) || /\n\d+\.\s/.test(block)) {
           const items = block.split('\n')
             .filter(line => /^\d+\.\s/.test(line.trim()))
@@ -513,8 +513,8 @@ const Article = () => {
               return `<li>${content}</li>`;
             })
             .join('');
-          // Use prose class to trigger CSS numbering, no inline styles
-          return `<ol class="prose-ol">${items}</ol>`;
+          // No class needed - CSS targets .prose ol directly
+          return `<ol>${items}</ol>`;
         }
         
         // Default to paragraph
