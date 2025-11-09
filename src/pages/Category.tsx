@@ -357,6 +357,33 @@ const Category = () => {
     queryFn: async () => {
       if (!category?.id) return [];
 
+      // Special handling for Voices - fetch from article_categories and exclude Intelligence Desk
+      if (slug === 'voices') {
+        const { data, error } = await supabase
+          .from("article_categories")
+          .select(`
+            articles (
+              *,
+              authors (name, slug),
+              categories:primary_category_id (name, slug)
+            )
+          `)
+          .eq("category_id", category.id)
+          .eq("articles.status", "published")
+          .eq("articles.is_trending", true);
+        
+        if (error) throw error;
+        
+        // Extract articles, filter out Intelligence Desk, and sort by view count in JavaScript
+        const articles = data
+          ?.map(item => item.articles)
+          .filter(article => article && article.authors?.name !== 'Intelligence Desk') || [];
+        
+        return articles
+          .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 5);
+      }
+
       const { data, error } = await supabase
         .from("articles")
         .select(`
