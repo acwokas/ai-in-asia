@@ -30,14 +30,14 @@ serve(async (req) => {
 
 CRITICAL REQUIREMENTS:
 - Write in British English spelling (colour, organisation, analyse, etc.)
-- Use a professional, informative tone - clear and direct without being overly casual
+- Use a chatty, engaging tone - think intelligent conversation over coffee, not academic paper
 - NEVER use em dashes (—) - use commas, full stops, or semicolons instead
 - Avoid AI writing tell-tales: no "delve", "tapestry", "realm", "unlock", "leverage", "dive into", "embark", or overly flowery language
-- Be conversational but professional, as if writing for a business publication
-- Use contractions sparingly and only where natural
-- Vary sentence structure and length naturally
+- Be conversational and personable - imagine you're explaining to a smart friend who's interested
+- Use contractions naturally (it's, that's, you'll, we're) - this is how people actually talk
+- Vary sentence structure - mix short punchy sentences with longer flowing ones
 - Include specific examples and concrete details
-- Keep it concise - avoid unnecessary elaboration
+- Keep it concise and punchy - get to the point without waffle
 
 FORMATTING REQUIREMENTS:
 - Use ## for H2 headings (main sections)
