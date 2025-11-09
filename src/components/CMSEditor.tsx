@@ -702,6 +702,15 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         .trim();
     }
 
+    // Auto-select Intelligence Desk if no author selected
+    let finalAuthorId = authorId;
+    if (!finalAuthorId) {
+      const intelligenceDeskAuthor = authors?.find(a => a.name === "Intelligence Desk");
+      if (intelligenceDeskAuthor) {
+        finalAuthorId = intelligenceDeskAuthor.id;
+      }
+    }
+
     const data = {
       title,
       slug: finalSlug,
@@ -720,7 +729,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       featured_on_homepage: featuredOnHomepage,
       sticky,
       is_trending: isTrending,
-      author_id: authorId || null,
+      author_id: finalAuthorId || null,
       primary_category_id: primaryCategoryId || null,
       scheduled_for: scheduledDateTime,
       published_at: publishedDateTime,
@@ -927,37 +936,26 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Article Content (Live Preview)</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="sm"
-                      onClick={handleScoutRewrite}
-                      disabled={isRewritingArticle || !content}
-                      title="Rewrite entire article with fresh perspective"
-                    >
-                      {isRewritingArticle ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Rewriting...
-                        </>
-                      ) : (
-                        <>
-                          <Wand2 className="h-4 w-4 mr-2" />
-                          Scout Assist
-                        </>
-                      )}
-                    </Button>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Info className="h-3 w-3" />
-                      <span>Use markdown: **bold** *italic* # heading</span>
-                    </div>
-                    <ScoutWritingAssistant
-                      selectedText={selectedText}
-                      onReplace={replaceSelectedText}
-                      context={{ title, fullContent: content }}
-                    />
-                  </div>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={handleScoutRewrite}
+                    disabled={isRewritingArticle || !content}
+                    title="Rewrite entire article with fresh perspective"
+                  >
+                    {isRewritingArticle ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Rewriting...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="h-4 w-4 mr-2" />
+                        Scout Assist
+                      </>
+                    )}
+                  </Button>
                 </div>
                 <RichTextEditor
                   value={content}

@@ -622,11 +622,11 @@ const Article = () => {
             const isOrdered = block.attrs?.listType === 'ordered';
             const ListTag = isOrdered ? 'ol' : 'ul';
             
-            // Use prose class for proper CSS-based numbering
             return (
               <ListTag 
                 key={index} 
-                className={isOrdered ? "prose-ol" : "prose-ul"}
+                className={isOrdered ? "list-none pl-10 my-6 space-y-2" : "list-disc pl-8 my-6 space-y-2"}
+                style={isOrdered ? { counterReset: 'list-counter' } : undefined}
               >
                 {listItems.map((item: string, i: number) => {
                   const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
@@ -636,6 +636,8 @@ const Article = () => {
                   return (
                     <li 
                       key={i}
+                      className={isOrdered ? "relative pl-2" : ""}
+                      style={isOrdered ? { counterIncrement: 'list-counter' } : undefined}
                       dangerouslySetInnerHTML={{ __html: sanitizedItem }}
                     />
                   );

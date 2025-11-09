@@ -30,13 +30,14 @@ serve(async (req) => {
 
 CRITICAL REQUIREMENTS:
 - Write in British English spelling (colour, organisation, analyse, etc.)
-- Use a chatty yet educational tone - informative but approachable
+- Use a professional, informative tone - clear and direct without being overly casual
 - NEVER use em dashes (—) - use commas, full stops, or semicolons instead
 - Avoid AI writing tell-tales: no "delve", "tapestry", "realm", "unlock", "leverage", "dive into", "embark", or overly flowery language
-- Be conversational and natural, as if explaining to a knowledgeable friend
-- Use contractions where appropriate (it's, we're, don't)
+- Be conversational but professional, as if writing for a business publication
+- Use contractions sparingly and only where natural
 - Vary sentence structure and length naturally
 - Include specific examples and concrete details
+- Keep it concise - avoid unnecessary elaboration
 
 FORMATTING REQUIREMENTS:
 - Use ## for H2 headings (main sections)
@@ -55,6 +56,7 @@ CONTENT APPROACH:
 - Use active voice predominantly
 - Be specific rather than generic
 - Include relevant context where helpful
+- Get to the point quickly - avoid unnecessary preamble
 
 Return ONLY the rewritten markdown content, nothing else.`;
 
