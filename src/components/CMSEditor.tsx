@@ -136,6 +136,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isRewritingArticle, setIsRewritingArticle] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState<'ideogram' | 'midjourney' | null>(null);
+  const [isGeneratingImagePrompts, setIsGeneratingImagePrompts] = useState(false);
+  const [imagePrompts, setImagePrompts] = useState<{ ideogram: string; midjourney: string } | null>(null);
   
   // Policy article specific state
   const [region, setRegion] = useState(initialData?.region || "");
@@ -660,6 +662,43 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
   };
 
+  const handleGenerateImagePrompts = async () => {
+    if (!title || !content) {
+      toast({
+        title: "Missing content",
+        description: "Please add a title and content to generate image prompts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingImagePrompts(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-image-prompts", {
+        body: { title, content },
+      });
+
+      if (error) throw error;
+
+      if (data?.ideogram && data?.midjourney) {
+        setImagePrompts(data);
+        toast({
+          title: "Prompts Generated!",
+          description: "Scout has analyzed your article and created custom image prompts",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingImagePrompts(false);
+    }
+  };
+
   const handleSave = () => {
     let scheduledDateTime = null;
     let finalStatus = status;
@@ -970,19 +1009,41 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 />
               </div>
 
-              {title && (
-                <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/10">
+              <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/10">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
                       <Wand2 className="h-4 w-4" />
-                      Suggested Image Generation Prompts
+                      Image Generation Prompts
                     </h3>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Use these AI-generated prompts to create featured images for your article
+                    <p className="text-xs text-muted-foreground">
+                      Generate AI prompts for featured images based on your article content
                     </p>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateImagePrompts}
+                    disabled={isGeneratingImagePrompts || !title || !content}
+                    className="bg-[#10b981] hover:bg-[#059669] text-white border-0"
+                  >
+                    {isGeneratingImagePrompts ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="h-4 w-4 mr-2" />
+                        Scout Assist
+                      </>
+                    )}
+                  </Button>
+                </div>
 
-                  <div className="space-y-3">
+                {imagePrompts && (
+                  <div className="space-y-3 mt-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-semibold">Ideogram Prompt</Label>
@@ -991,8 +1052,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={async () => {
-                            const prompt = `Create a modern, professional hero image for an article titled "${title}". High quality, editorial style, vibrant colors, no text`;
-                            await navigator.clipboard.writeText(prompt);
+                            await navigator.clipboard.writeText(imagePrompts.ideogram);
                             setCopiedPrompt('ideogram');
                             setTimeout(() => setCopiedPrompt(null), 2000);
                             toast({
@@ -1015,7 +1075,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                         </Button>
                       </div>
                       <div className="text-xs p-3 bg-background border border-border rounded-md">
-                        Create a modern, professional hero image for an article titled "{title}". High quality, editorial style, vibrant colors, no text
+                        {imagePrompts.ideogram}
                       </div>
                     </div>
 
@@ -1027,8 +1087,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={async () => {
-                            const prompt = `${title}, professional editorial photography, ultra high quality, cinematic lighting, 8k resolution, no text --ar 16:9 --style raw --v 6`;
-                            await navigator.clipboard.writeText(prompt);
+                            await navigator.clipboard.writeText(imagePrompts.midjourney);
                             setCopiedPrompt('midjourney');
                             setTimeout(() => setCopiedPrompt(null), 2000);
                             toast({
@@ -1051,12 +1110,12 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                         </Button>
                       </div>
                       <div className="text-xs p-3 bg-background border border-border rounded-md">
-                        {title}, professional editorial photography, ultra high quality, cinematic lighting, 8k resolution, no text --ar 16:9 --style raw --v 6
+                        {imagePrompts.midjourney}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
