@@ -546,7 +546,7 @@ const Articles = () => {
                     </TableCell>
                     <TableCell>
                       {article.status === "scheduled" && article.scheduled_for ? (
-                        <div className="text-sm">
+                        <div className="text-sm text-[#10b981]">
                           <div className="font-medium">
                             {new Date(article.scheduled_for).toLocaleDateString('en-GB', {
                               day: '2-digit',
@@ -554,7 +554,7 @@ const Articles = () => {
                               year: 'numeric'
                             })}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs">
                             {new Date(article.scheduled_for).toLocaleTimeString('en-GB', {
                               hour: '2-digit',
                               minute: '2-digit',
