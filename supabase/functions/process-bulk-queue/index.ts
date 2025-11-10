@@ -119,17 +119,27 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
     .update({ total_items: articleIds.length })
     .eq("id", job.id);
 
-  // Fetch all published articles for reference
+  // Fetch all published articles for reference with category slugs
   const { data: allArticles, error: allArticlesError } = await supabase
     .from("articles")
-    .select("id, title, slug, excerpt")
+    .select(`
+      id, 
+      title, 
+      slug, 
+      excerpt,
+      primary_category_id,
+      categories!articles_primary_category_id_fkey (slug)
+    `)
     .eq("status", "published")
     .order("published_at", { ascending: false })
     .limit(100);
 
   if (allArticlesError) throw allArticlesError;
 
-  const articlesList = allArticles?.map((a: any) => `- ${a.title} (/${a.slug})`).join("\n") || "";
+  const articlesList = allArticles?.map((a: any) => {
+    const categorySlug = a.categories?.slug || 'news';
+    return `- ${a.title} (/${categorySlug}/${a.slug})`;
+  }).join("\n") || "";
 
   const results: any[] = [];
   let processedCount = 0;
@@ -142,10 +152,18 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
     
     for (const articleId of batch) {
       try {
-        // Fetch the article
+        // Fetch the article with category
         const { data: article, error: articleError } = await supabase
           .from("articles")
-          .select("id, title, slug, content, excerpt")
+          .select(`
+            id, 
+            title, 
+            slug, 
+            content, 
+            excerpt,
+            primary_category_id,
+            categories!articles_primary_category_id_fkey (slug)
+          `)
           .eq("id", articleId)
           .single();
 
@@ -162,11 +180,12 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
           contentString = JSON.stringify(article.content);
         }
 
-        // Check if article already has links
-        const hasInternalLinks = /\[([^\]]+)\]\((\/[^\)]+)\)/.test(contentString);
+        // Check if article already has properly formatted links
+        const categorySlug = article.categories?.slug || 'news';
+        const hasInternalLinks = /\[([^\]]+)\]\((\/[a-z-]+\/[a-z0-9-]+)\)/.test(contentString);
         const hasExternalLinks = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/.test(contentString);
 
-        if (hasInternalLinks && hasExternalLinks) {
+        if (hasInternalLinks && hasExternalLinks && !options.retry) {
         results.push({
           articleId: article.id,
           title: article.title,
@@ -195,12 +214,13 @@ CRITICAL RULES:
 - Add 2-4 internal links from our article list using natural anchor text
 - Add at least 1 authoritative external link (research papers, official reports, major publications)
 - External links MUST use format: [text](url)^ to open in new tabs
-- Internal links use format: [text](/slug)
+- Internal links MUST use the FULL PATH format from the list: [text](/category-slug/article-slug)
+- NEVER use just /article-slug - always include the category: /category-slug/article-slug
 - Only modify the content to add links - preserve all existing text, formatting, headings, paragraphs
 - Make anchor text natural and contextual
 - Place links where they genuinely add value
 
-AVAILABLE ARTICLES:
+AVAILABLE ARTICLES (use the EXACT paths shown):
 ${articlesList}
 
 Return ONLY the updated content with links added. Do not change any other aspect of the article.`,

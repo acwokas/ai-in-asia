@@ -83,6 +83,7 @@ const InternalLinksManager = lazy(() => import("./pages/InternalLinksManager"));
 const LinkHealthMonitor = lazy(() => import("./pages/LinkHealthMonitor"));
 const BulkLinksUndo = lazy(() => import("./pages/BulkLinksUndo"));
 const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
+const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -205,6 +206,7 @@ const App = () => (
               <Route path="/admin/internal-links" element={<InternalLinksManager />} />
             <Route path="/admin/link-health" element={<LinkHealthMonitor />} />
             <Route path="/admin/bulk-links-undo" element={<BulkLinksUndo />} />
+            <Route path="/admin/fix-broken-links" element={<FixBrokenLinks />} />
             <Route path="/admin/content-freshness" element={<ContentFreshness />} />
               <Route path="/admin/remove-tweet-links" element={<RemoveTweetLinks />} />
               <Route path="/admin/publish-all" element={<PublishAllArticles />} />

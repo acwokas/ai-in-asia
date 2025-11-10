@@ -911,6 +911,10 @@ const Admin = () => {
                   <Link2 className="h-4 w-4 mr-2" />
                   Internal Links Manager
                 </Button>
+                <Button onClick={() => navigate("/admin/fix-broken-links")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Fix Broken Links
+                </Button>
                 <Button onClick={() => navigate("/admin/link-health")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   <Activity className="h-4 w-4 mr-2" />
                   Link Health Monitor
