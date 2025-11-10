@@ -212,6 +212,31 @@ Deno.serve(async (req) => {
         const articleAge = (new Date().getTime() - new Date(article.published_at).getTime()) / (1000 * 60 * 60 * 24 * 30);
         const isOldArticle = articleAge > 12;
 
+        // Add variety to comment angles
+        const commentAngles = [
+          'Share a personal experience or observation',
+          'Ask a thoughtful question about the topic',
+          'Add a contrarian or alternative perspective',
+          'Connect this to a broader trend or issue',
+          'Share how this relates to your region or industry',
+          'Question or expand on a specific point',
+          'Express agreement and add supporting context',
+          'Be mildly skeptical about one aspect',
+        ];
+        const selectedAngle = commentAngles[Math.floor(Math.random() * commentAngles.length)];
+
+        // Vary temporal handling for old articles
+        let temporalInstruction = '';
+        if (isOldArticle) {
+          const temporalVariations = [
+            'Subtly reference that some time has passed but avoid clichés like "still relevant" or "even after"',
+            'Don\'t mention the article age at all, just engage with the content naturally',
+            'Casually note that you\'re coming back to this topic or just discovered it',
+            '', // Sometimes no instruction at all
+          ];
+          temporalInstruction = temporalVariations[Math.floor(Math.random() * temporalVariations.length)];
+        }
+
         // Generate comment using Lovable AI
         const prompt = `You are ${selectedAuthor.name}, a reader from ${selectedAuthor.region.replace('_', ' ')}. Write a natural, authentic comment on this article.
 
@@ -220,16 +245,17 @@ Summary: "${article.excerpt || 'No summary available'}"
 
 Requirements:
 - Length: ${targetLength}
-- ${isOldArticle ? 'This article is over a year old. Acknowledge this but mention its continued relevance.' : 'This is a recent article.'}
+- Focus: ${selectedAngle}
+${temporalInstruction ? `- ${temporalInstruction}` : ''}
 - Be specific and relevant to the article topic
-- Add a thought, question, or personal perspective
 - Use ${selectedAuthor.region === 'west' ? 'British or American' : 'a mix of British and American'} English spelling
 - Sound natural and conversational
 - Include regional phrasing if appropriate (subtle, not stereotypical)
-- NO em rules, NO hyphens for emphasis
+- NO em rules, NO hyphens for emphasis, NO formulaic phrases
 - NO promotional content
 - NO contradicting the article's facts
 - Mix of constructive, neutral, or mildly critical tone
+- Make this comment distinctly different from others on the same article
 
 Write ONLY the comment text, no metadata.`;
 
