@@ -303,7 +303,18 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       console.log(`Image compressed: ${originalSizeMB}MB → ${compressedSizeMB}MB`);
 
       const fileExt = 'jpg'; // Always use jpg after compression
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      // Generate SEO-friendly filename from alt text, title, or timestamp
+      let baseFileName: string;
+      if (featuredImageAlt && featuredImageAlt.trim()) {
+        baseFileName = generateSlug(featuredImageAlt);
+      } else if (title && title.trim()) {
+        baseFileName = generateSlug(title);
+      } else {
+        baseFileName = `image-${Date.now()}`;
+      }
+      
+      const fileName = `${baseFileName}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
