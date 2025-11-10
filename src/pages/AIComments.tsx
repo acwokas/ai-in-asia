@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight, ListChecks } from "lucide-react";
+import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight, ListChecks, BarChart3, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ const AIComments = () => {
   const [editingAuthor, setEditingAuthor] = useState<any>(null);
   const [isManageAuthorsOpen, setIsManageAuthorsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("generate");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -133,6 +135,17 @@ const AIComments = () => {
       return data.filter(article => article.ai_generated_comments && article.ai_generated_comments.length > 0);
     },
     enabled: isAdmin,
+  });
+
+  // Quality analysis
+  const { data: qualityData, refetch: refetchQuality } = useQuery({
+    queryKey: ['comment-quality-analysis'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('analyze-comment-quality');
+      if (error) throw error;
+      return data;
+    },
+    enabled: false, // Only run when manually triggered
   });
 
   // Seed authors mutation
@@ -372,6 +385,26 @@ const AIComments = () => {
   });
 
   // Queue bulk operation for all articles without comments
+  // Handle quality analysis
+  const handleAnalyzeQuality = async () => {
+    setIsAnalyzing(true);
+    try {
+      await refetchQuality();
+      toast({
+        title: "Quality Analysis Complete",
+        description: `Analyzed ${qualityData?.totalArticles || 0} articles`,
+      });
+    } catch (error) {
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleQueueBulkOperation = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -506,6 +539,98 @@ const AIComments = () => {
           </TabsList>
 
           <TabsContent value="generate" className="space-y-6">
+
+      {/* Quality Analysis */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Comment Quality Analysis
+          </CardTitle>
+          <CardDescription>
+            Detect repetitive patterns and similarity issues in AI comments
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleAnalyzeQuality}
+            disabled={isAnalyzing}
+            className="w-full mb-4"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <BarChart3 className="mr-2 h-4 w-4" />
+            )}
+            Analyze Comment Quality
+          </Button>
+
+          {qualityData && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{qualityData.summary.excellent}</div>
+                  <div className="text-sm text-muted-foreground">Excellent (80+)</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">{qualityData.summary.good}</div>
+                  <div className="text-sm text-muted-foreground">Good (60-79)</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">{qualityData.summary.needsImprovement}</div>
+                  <div className="text-sm text-muted-foreground">Needs Work (&lt;60)</div>
+                </div>
+              </div>
+
+              {qualityData.flaggedArticles > 0 && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    {qualityData.flaggedArticles} article{qualityData.flaggedArticles > 1 ? 's' : ''} flagged for quality issues. 
+                    Consider regenerating comments for these articles.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <ScrollArea className="h-[300px] rounded-md border">
+                <div className="p-4 space-y-3">
+                  {qualityData.results.map((result: any) => (
+                    <div key={result.articleId} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm">{result.articleTitle}</h4>
+                          <p className="text-xs text-muted-foreground">{result.commentCount} comments</p>
+                        </div>
+                        <Badge 
+                          variant={result.qualityScore >= 80 ? "default" : result.qualityScore >= 60 ? "secondary" : "destructive"}
+                        >
+                          Score: {result.qualityScore}
+                        </Badge>
+                      </div>
+                      {result.issues.length > 0 && (
+                        <div className="space-y-1">
+                          {result.issues.map((issue: string, idx: number) => (
+                            <div key={idx} className="text-xs text-red-600 flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              {issue}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>Ending Similarity: {result.endingSimilarity}%</div>
+                        <div>Phrase Repetition: {result.phraseRepetition}%</div>
+                        <div>Structure Similarity: {result.structureSimilarity}%</div>
+                        <div>Length Variation: {result.lengthVariation}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Author Pool Stats */}
       <Card className="mb-6">

@@ -80,3 +80,36 @@ verify_jwt = true
 
 [functions.bulk-generate-seo]
 verify_jwt = true
+
+[functions.seed-ai-authors]
+verify_jwt = true
+
+[functions.generate-ai-comments]
+verify_jwt = true
+
+[functions.bulk-add-internal-links]
+verify_jwt = true
+
+[functions.process-bulk-queue]
+verify_jwt = false
+
+[functions.suggest-internal-links]
+verify_jwt = true
+
+[functions.suggest-trending-articles]
+verify_jwt = true
+
+[functions.fix-broken-internal-links]
+verify_jwt = true
+
+[functions.check-content-freshness]
+verify_jwt = true
+
+[functions.generate-image-prompts]
+verify_jwt = true
+
+[functions.render-meta-tags]
+verify_jwt = false
+
+[functions.analyze-comment-quality]
+verify_jwt = true
