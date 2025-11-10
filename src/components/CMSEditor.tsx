@@ -314,6 +314,16 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         baseFileName = `image-${Date.now()}`;
       }
       
+      // Ensure filename is valid and not empty after sanitization
+      if (!baseFileName || baseFileName.length === 0) {
+        baseFileName = `image-${Date.now()}`;
+      }
+      
+      // Limit filename length to 100 characters for safety
+      if (baseFileName.length > 100) {
+        baseFileName = baseFileName.substring(0, 100);
+      }
+      
       const fileName = `${baseFileName}.${fileExt}`;
       const filePath = `${fileName}`;
 
