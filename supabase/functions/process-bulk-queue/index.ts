@@ -24,11 +24,11 @@ serve(async (req) => {
 
     console.log("Checking for queued bulk operations...");
 
-    // Get the oldest queued job
+    // Get the oldest queued or in-progress job
     const { data: queuedJobs, error: queueError } = await supabase
       .from("bulk_operation_queue")
       .select("*")
-      .eq("status", "queued")
+      .in("status", ["queued", "processing"])
       .order("created_at", { ascending: true })
       .limit(1);
 
@@ -46,16 +46,18 @@ serve(async (req) => {
     }
 
     const job = queuedJobs[0];
-    console.log(`Processing job ${job.id}: ${job.operation_type}`);
+    console.log(`Processing job ${job.id}: ${job.operation_type}, status: ${job.status}, progress: ${job.processed_items || 0}/${job.total_items || '?'}`);
 
-    // Mark job as processing
-    await supabase
-      .from("bulk_operation_queue")
-      .update({ 
-        status: "processing", 
-        started_at: new Date().toISOString() 
-      })
-      .eq("id", job.id);
+    // Mark job as processing if it's queued
+    if (job.status === 'queued') {
+      await supabase
+        .from("bulk_operation_queue")
+        .update({ 
+          status: "processing", 
+          started_at: new Date().toISOString() 
+        })
+        .eq("id", job.id);
+    }
 
     try {
       // Process based on operation type
@@ -79,17 +81,23 @@ serve(async (req) => {
       console.log(`Job ${job.id} completed successfully`);
 
     } catch (jobError: any) {
-      console.error(`Job ${job.id} failed:`, jobError);
+      console.error(`Job ${job.id} error:`, jobError);
       
-      // Mark job as failed
-      await supabase
-        .from("bulk_operation_queue")
-        .update({ 
-          status: "failed",
-          error_message: jobError.message || "Unknown error",
-          completed_at: new Date().toISOString()
-        })
-        .eq("id", job.id);
+      // Special case: if it's a continue processing signal, leave job in processing state
+      if (jobError.message === 'CONTINUE_PROCESSING') {
+        console.log(`Job ${job.id} continues processing in next run`);
+        // Keep status as 'processing' - do nothing
+      } else {
+        // Mark job as failed for real errors
+        await supabase
+          .from("bulk_operation_queue")
+          .update({ 
+            status: "failed",
+            error_message: jobError.message || "Unknown error",
+            completed_at: new Date().toISOString()
+          })
+          .eq("id", job.id);
+      }
     }
 
     return new Response(
@@ -109,15 +117,18 @@ serve(async (req) => {
 async function processInternalLinks(supabase: any, job: any, lovableApiKey: string) {
   const articleIds = job.article_ids as string[];
   const options = job.options || {};
-  const MAX_BATCH_SIZE = 50;
+  const ARTICLES_PER_RUN = 15; // Process 15 articles per invocation to avoid timeout
+  const processedSoFar = job.processed_items || 0;
 
-  console.log(`Processing ${articleIds.length} articles for internal links...`);
+  console.log(`Processing internal links: ${processedSoFar}/${articleIds.length} articles completed`);
 
-  // Update total items
-  await supabase
-    .from("bulk_operation_queue")
-    .update({ total_items: articleIds.length })
-    .eq("id", job.id);
+  // Update total items on first run
+  if (processedSoFar === 0) {
+    await supabase
+      .from("bulk_operation_queue")
+      .update({ total_items: articleIds.length })
+      .eq("id", job.id);
+  }
 
   // Fetch all published articles for reference with category slugs
   const { data: allArticles, error: allArticlesError } = await supabase
@@ -141,16 +152,20 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
     return `- ${a.title} (/${categorySlug}/${a.slug})`;
   }).join("\n") || "";
 
-  const results: any[] = [];
-  let processedCount = 0;
-  let successCount = 0;
-  let failedCount = 0;
+  // Get existing results or initialize
+  const results: any[] = job.results || [];
+  let processedCount = processedSoFar;
+  let successCount = job.successful_items || 0;
+  let failedCount = job.failed_items || 0;
 
-  // Process in batches
-  for (let i = 0; i < articleIds.length; i += MAX_BATCH_SIZE) {
-    const batch = articleIds.slice(i, Math.min(i + MAX_BATCH_SIZE, articleIds.length));
-    
-    for (const articleId of batch) {
+  // Process only the next chunk of articles
+  const startIdx = processedSoFar;
+  const endIdx = Math.min(startIdx + ARTICLES_PER_RUN, articleIds.length);
+  const articlesToProcess = articleIds.slice(startIdx, endIdx);
+
+  console.log(`Processing articles ${startIdx + 1} to ${endIdx} of ${articleIds.length}`);
+
+  for (const articleId of articlesToProcess) {
       try {
         // Fetch the article with category
         const { data: article, error: articleError } = await supabase
@@ -321,25 +336,32 @@ Return ONLY the updated content with links added. Do not change any other aspect
       }
     }
 
-    // Small delay between batches
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  // Check if all articles have been processed
+  if (processedCount >= articleIds.length) {
+    console.log(`All articles processed: ${successCount} successful, ${failedCount} failed`);
+    // Job will be marked as completed by the main handler
+  } else {
+    console.log(`Chunk complete: ${processedCount}/${articleIds.length} articles processed`);
+    // Keep job in processing state - it will be picked up again
+    throw new Error('CONTINUE_PROCESSING'); // Special error to indicate job should continue
   }
-
-  console.log(`Completed processing: ${successCount} successful, ${failedCount} failed`);
 }
 
 async function processAIComments(supabase: any, job: any, lovableApiKey: string) {
   const articleIds = job.article_ids as string[];
   const options = job.options || {};
-  const MAX_BATCH_SIZE = 30;
+  const ARTICLES_PER_RUN = 20; // Process 20 articles per invocation to avoid timeout
+  const processedSoFar = job.processed_items || 0;
 
-  console.log(`Processing ${articleIds.length} articles for AI comments...`);
+  console.log(`Processing AI comments: ${processedSoFar}/${articleIds.length} articles completed`);
 
-  // Update total items
-  await supabase
-    .from("bulk_operation_queue")
-    .update({ total_items: articleIds.length })
-    .eq("id", job.id);
+  // Update total items on first run
+  if (processedSoFar === 0) {
+    await supabase
+      .from("bulk_operation_queue")
+      .update({ total_items: articleIds.length })
+      .eq("id", job.id);
+  }
 
   // Fetch all AI comment authors
   const { data: authors, error: authorsError } = await supabase
@@ -365,16 +387,20 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
                      ...authorsByRegion.philippines, ...authorsByRegion.china_hk, 
                      ...authorsByRegion.west];
 
-  const results: any[] = [];
-  let processedCount = 0;
-  let successCount = 0;
-  let failedCount = 0;
+  // Get existing results or initialize
+  const results: any[] = job.results || [];
+  let processedCount = processedSoFar;
+  let successCount = job.successful_items || 0;
+  let failedCount = job.failed_items || 0;
 
-  // Process in batches
-  for (let i = 0; i < articleIds.length; i += MAX_BATCH_SIZE) {
-    const batch = articleIds.slice(i, Math.min(i + MAX_BATCH_SIZE, articleIds.length));
-    
-    for (const articleId of batch) {
+  // Process only the next chunk of articles
+  const startIdx = processedSoFar;
+  const endIdx = Math.min(startIdx + ARTICLES_PER_RUN, articleIds.length);
+  const articlesToProcess = articleIds.slice(startIdx, endIdx);
+
+  console.log(`Processing articles ${startIdx + 1} to ${endIdx} of ${articleIds.length}`);
+
+  for (const articleId of articlesToProcess) {
       try {
         // Fetch the article
         const { data: article, error: articleError } = await supabase
@@ -616,8 +642,13 @@ Write ONLY the comment text, no metadata.`;
       }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  // Check if all articles have been processed
+  if (processedCount >= articleIds.length) {
+    console.log(`All articles processed: ${successCount} successful, ${failedCount} failed`);
+    // Job will be marked as completed by the main handler
+  } else {
+    console.log(`Chunk complete: ${processedCount}/${articleIds.length} articles processed`);
+    // Keep job in processing state - it will be picked up again
+    throw new Error('CONTINUE_PROCESSING'); // Special error to indicate job should continue
   }
-
-  console.log(`Completed processing: ${successCount} successful, ${failedCount} failed`);
 }
