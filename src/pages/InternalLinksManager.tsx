@@ -137,38 +137,124 @@ const InternalLinksManager = () => {
       return;
     }
 
+    const MAX_BATCH_SIZE = 50;
+    const articleIds = Array.from(selectedArticles);
+    const totalArticles = articleIds.length;
+    const batches: string[][] = [];
+    
+    // Split into batches of 50
+    for (let i = 0; i < totalArticles; i += MAX_BATCH_SIZE) {
+      batches.push(articleIds.slice(i, i + MAX_BATCH_SIZE));
+    }
+
     setIsBulkProcessing(true);
     setBulkProgress(0);
     setShowBulkResults(false);
 
+    const allResults: any = {
+      success: true,
+      summary: {
+        total: totalArticles,
+        processed: 0,
+        updated: 0,
+        failed: 0,
+        skipped: 0
+      },
+      results: [],
+      dryRun
+    };
+
     try {
-      const articleIds = Array.from(selectedArticles);
-      
       toast({
         title: dryRun ? "Previewing Changes..." : "Processing Articles...",
-        description: `Adding internal and external links to ${articleIds.length} articles`,
+        description: `Processing ${totalArticles} articles in ${batches.length} batch${batches.length > 1 ? 'es' : ''} of up to ${MAX_BATCH_SIZE} articles`,
       });
 
-      const { data, error } = await supabase.functions.invoke("bulk-add-internal-links", {
-        body: { 
-          articleIds,
-          dryRun
-        },
-      });
+      // Process each batch sequentially
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        const batchStart = i * MAX_BATCH_SIZE + 1;
+        const batchEnd = Math.min((i + 1) * MAX_BATCH_SIZE, totalArticles);
+        
+        console.log(`Processing batch ${i + 1}/${batches.length}: articles ${batchStart}-${batchEnd}`);
+        
+        try {
+          const { data, error } = await supabase.functions.invoke("bulk-add-internal-links", {
+            body: { 
+              articleIds: batch,
+              dryRun
+            },
+          });
 
-      if (error) throw error;
+          if (error) {
+            console.error(`Batch ${i + 1} error:`, error);
+            
+            // Add failed entries for this batch
+            batch.forEach(articleId => {
+              allResults.results.push({
+                articleId,
+                status: "failed",
+                error: error.message || "Batch processing failed"
+              });
+              allResults.summary.failed++;
+            });
+            
+            toast({
+              title: `Batch ${i + 1}/${batches.length} Failed`,
+              description: error.message || "Failed to process batch. Continuing with next batch...",
+              variant: "destructive",
+            });
+            
+            continue; // Continue with next batch
+          }
 
-      setBulkResults(data);
+          // Aggregate results from this batch
+          allResults.summary.processed += data.summary.processed;
+          allResults.summary.updated += data.summary.updated;
+          allResults.summary.failed += data.summary.failed;
+          allResults.summary.skipped += data.summary.skipped;
+          allResults.results.push(...data.results);
+          
+          // Update progress
+          const progressPercent = Math.round((allResults.summary.processed / totalArticles) * 100);
+          setBulkProgress(progressPercent);
+          
+          toast({
+            title: `Batch ${i + 1}/${batches.length} Complete`,
+            description: `Processed articles ${batchStart}-${batchEnd}. ${data.summary.updated} updated, ${data.summary.skipped} skipped, ${data.summary.failed} failed`,
+          });
+
+          // Small delay between batches to avoid overwhelming the system
+          if (i < batches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+
+        } catch (batchError: any) {
+          console.error(`Unexpected error in batch ${i + 1}:`, batchError);
+          
+          // Mark all articles in this batch as failed
+          batch.forEach(articleId => {
+            allResults.results.push({
+              articleId,
+              status: "failed",
+              error: batchError.message || "Unexpected error"
+            });
+            allResults.summary.failed++;
+          });
+        }
+      }
+
+      setBulkResults(allResults);
       setShowBulkResults(true);
 
-      if (!dryRun && data.summary.updated > 0) {
+      if (!dryRun && allResults.summary.updated > 0) {
         queryClient.invalidateQueries({ queryKey: ["articles-internal-links"] });
         setSelectedArticles(new Set());
       }
 
       toast({
-        title: dryRun ? "Preview Complete" : "Bulk Processing Complete",
-        description: `${data.summary.updated} articles updated, ${data.summary.skipped} skipped, ${data.summary.failed} failed`,
+        title: "All Batches Complete",
+        description: `Total: ${allResults.summary.updated} updated, ${allResults.summary.skipped} skipped, ${allResults.summary.failed} failed`,
       });
 
     } catch (error: any) {

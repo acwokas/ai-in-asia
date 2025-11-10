@@ -21,6 +21,19 @@ serve(async (req) => {
       );
     }
 
+    // Limit batch size to prevent timeouts (edge functions have ~150s limit)
+    const MAX_BATCH_SIZE = 50;
+    if (articleIds.length > MAX_BATCH_SIZE) {
+      return new Response(
+        JSON.stringify({ 
+          error: `Batch size too large. Maximum ${MAX_BATCH_SIZE} articles per request. Please process in smaller batches.`,
+          maxBatchSize: MAX_BATCH_SIZE,
+          receivedCount: articleIds.length
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
