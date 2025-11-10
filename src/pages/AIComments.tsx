@@ -405,6 +405,73 @@ const AIComments = () => {
     }
   };
 
+  // Auto-regenerate low quality comments mutation
+  const autoRegenerateMutation = useMutation({
+    mutationFn: async (articleIds: string[]) => {
+      // Delete existing comments for these articles
+      for (const articleId of articleIds) {
+        await supabase
+          .from('ai_generated_comments')
+          .delete()
+          .eq('article_id', articleId);
+      }
+
+      // Queue the regeneration
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('bulk_operation_queue')
+        .insert({
+          operation_type: 'generate_ai_comments',
+          article_ids: articleIds,
+          status: 'queued',
+          total_items: articleIds.length,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Auto-Regeneration Queued",
+        description: `Regenerating comments for ${data.total_items} low-quality articles`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['bulk-operation-queue'] });
+      setActiveTab('queue');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAutoRegenerate = () => {
+    if (!qualityData?.results) return;
+    
+    const lowQualityArticles = qualityData.results
+      .filter((r: any) => r.qualityScore < 60)
+      .map((r: any) => r.articleId);
+
+    if (lowQualityArticles.length === 0) {
+      toast({
+        title: "No Articles Need Regeneration",
+        description: "All articles have acceptable quality scores!",
+      });
+      return;
+    }
+
+    if (confirm(`This will delete and regenerate comments for ${lowQualityArticles.length} articles with quality scores below 60. Continue?`)) {
+      autoRegenerateMutation.mutate(lowQualityArticles);
+    }
+  };
+
   const handleQueueBulkOperation = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -552,18 +619,34 @@ const AIComments = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            onClick={handleAnalyzeQuality}
-            disabled={isAnalyzing}
-            className="w-full mb-4"
-          >
-            {isAnalyzing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <BarChart3 className="mr-2 h-4 w-4" />
+          <div className="flex gap-2 mb-4">
+            <Button
+              onClick={handleAnalyzeQuality}
+              disabled={isAnalyzing}
+              className="flex-1"
+            >
+              {isAnalyzing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <BarChart3 className="mr-2 h-4 w-4" />
+              )}
+              Analyze Comment Quality
+            </Button>
+            {qualityData && qualityData.flaggedArticles > 0 && (
+              <Button
+                onClick={handleAutoRegenerate}
+                disabled={autoRegenerateMutation.isPending}
+                variant="destructive"
+              >
+                {autoRegenerateMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Auto-Regenerate ({qualityData.flaggedArticles})
+              </Button>
             )}
-            Analyze Comment Quality
-          </Button>
+          </div>
 
           {qualityData && (
             <div className="space-y-4">
