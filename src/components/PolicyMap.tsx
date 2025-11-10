@@ -108,7 +108,10 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
 
           // Create marker container with pulse effect
           const markerContainer = document.createElement('div');
-          markerContainer.style.position = 'relative';
+          markerContainer.style.cssText = `
+            width: 30px;
+            height: 30px;
+          `;
           
           // Add pulse ring if recently updated
           if (isRecent) {
@@ -132,7 +135,6 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
           const el = document.createElement('div');
           el.className = 'policy-map-marker';
           el.style.cssText = `
-            position: relative;
             width: 30px;
             height: 30px;
             border-radius: 50%;
