@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, Clock, ExternalLink, RefreshCw, TrendingUp } from "lucide-react";
+import { Loader2, AlertTriangle, Clock, ExternalLink, RefreshCw, TrendingUp, Mail, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 type FreshnessLevel = "fresh" | "needs-review" | "stale" | "critical";
 
@@ -32,8 +33,10 @@ interface ArticleWithFreshness {
 
 const ContentFreshness = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState<"all" | FreshnessLevel>("all");
+  const [isSendingAlert, setIsSendingAlert] = useState(false);
 
   const { data: articles, isLoading } = useQuery({
     queryKey: ["articles-freshness"],
@@ -147,6 +150,36 @@ const ContentFreshness = () => {
     }
   };
 
+  const handleSendAlertNow = async () => {
+    setIsSendingAlert(true);
+    try {
+      toast({
+        title: "Sending Alert",
+        description: "Checking content freshness and sending alerts to admins...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('check-content-freshness', {
+        body: { time: new Date().toISOString() }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Alert Sent",
+        description: `Successfully sent freshness alerts to admins. ${data?.stats?.total || 0} articles flagged.`,
+      });
+    } catch (error: any) {
+      console.error('Error sending alert:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send freshness alert",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingAlert(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -231,6 +264,66 @@ const ContentFreshness = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Alert Settings Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Automated Freshness Alerts
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Daily automated alerts are scheduled for 9 AM UTC. Admins receive emails when articles fall below freshness threshold (score &lt; 60).
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleSendAlertNow}
+                disabled={isSendingAlert}
+                variant="outline"
+              >
+                {isSendingAlert ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Sending Alert...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Alert Now
+                  </>
+                )}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Manually trigger freshness check and email alert to all admins
+              </div>
+            </div>
+            
+            {(stats.critical > 0 || stats.stale > 0) && (
+              <Alert className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Action Required</AlertTitle>
+                <AlertDescription>
+                  {stats.critical > 0 && (
+                    <p className="font-medium text-red-600">
+                      {stats.critical} critical article{stats.critical > 1 ? 's' : ''} need immediate attention
+                    </p>
+                  )}
+                  {stats.stale > 0 && (
+                    <p className="text-orange-600">
+                      {stats.stale} stale article{stats.stale > 1 ? 's' : ''} should be updated soon
+                    </p>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Content Tabs */}
         <Card>
