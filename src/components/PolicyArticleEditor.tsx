@@ -14,11 +14,10 @@ interface PolicySection {
 
 interface ComparisonTable {
   title: string;
+  columnHeaders: string[];
   rows: {
     aspect: string;
-    country1: string;
-    country2: string;
-    country3: string;
+    values: string[];
   }[];
 }
 
@@ -99,7 +98,8 @@ export const PolicyArticleEditor = ({
       ...comparisonTables,
       {
         title: "",
-        rows: [{ aspect: "", country1: "", country2: "", country3: "" }],
+        columnHeaders: ["Country 1", "Country 2", "Country 3"],
+        rows: [{ aspect: "", values: ["", "", ""] }],
       },
     ]);
   };
@@ -116,24 +116,17 @@ export const PolicyArticleEditor = ({
 
   const handleAddComparisonRow = (tableIndex: number) => {
     const newTables = [...comparisonTables];
-    newTables[tableIndex].rows.push({ aspect: "", country1: "", country2: "", country3: "" });
+    const columnCount = newTables[tableIndex].columnHeaders.length;
+    newTables[tableIndex].rows.push({ 
+      aspect: "", 
+      values: Array(columnCount).fill("") 
+    });
     onComparisonTablesChange(newTables);
   };
 
   const handleRemoveComparisonRow = (tableIndex: number, rowIndex: number) => {
     const newTables = [...comparisonTables];
     newTables[tableIndex].rows = newTables[tableIndex].rows.filter((_, i) => i !== rowIndex);
-    onComparisonTablesChange(newTables);
-  };
-
-  const handleComparisonRowChange = (
-    tableIndex: number,
-    rowIndex: number,
-    field: 'aspect' | 'country1' | 'country2' | 'country3',
-    value: string
-  ) => {
-    const newTables = [...comparisonTables];
-    newTables[tableIndex].rows[rowIndex][field] = value;
     onComparisonTablesChange(newTables);
   };
 
@@ -292,7 +285,7 @@ export const PolicyArticleEditor = ({
       <Card>
         <CardHeader>
           <CardTitle>Comparison Tables</CardTitle>
-          <CardDescription>Compare up to 3 countries per table</CardDescription>
+          <CardDescription>Add multiple columns to compare countries/regions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {comparisonTables.map((table, tableIndex) => (
@@ -314,59 +307,115 @@ export const PolicyArticleEditor = ({
                 </Button>
               </div>
 
+              {/* Column Headers */}
               <div className="space-y-2">
-                <div className="grid grid-cols-4 gap-2 text-xs font-medium text-muted-foreground">
-                  <div>Aspect</div>
-                  <div>Country 1</div>
-                  <div>Country 2</div>
-                  <div>Country 3</div>
-                </div>
-
-                {table.rows.map((row, rowIndex) => (
-                  <div key={rowIndex} className="flex items-start gap-2">
-                    <div className="grid grid-cols-4 gap-2 flex-1">
+                <Label className="text-sm font-medium">Column Headers</Label>
+                <div className="flex gap-2 items-center flex-wrap">
+                  {table.columnHeaders.map((header, colIndex) => (
+                    <div key={colIndex} className="flex items-center gap-1">
                       <Input
-                        value={row.aspect}
-                        onChange={(e) => handleComparisonRowChange(tableIndex, rowIndex, 'aspect', e.target.value)}
-                        placeholder="Aspect..."
+                        value={header}
+                        onChange={(e) => {
+                          const newTables = [...comparisonTables];
+                          newTables[tableIndex].columnHeaders[colIndex] = e.target.value;
+                          onComparisonTablesChange(newTables);
+                        }}
+                        placeholder={`Column ${colIndex + 1}`}
+                        className="w-32"
                       />
-                      <Input
-                        value={row.country1}
-                        onChange={(e) => handleComparisonRowChange(tableIndex, rowIndex, 'country1', e.target.value)}
-                        placeholder="Value..."
-                      />
-                      <Input
-                        value={row.country2}
-                        onChange={(e) => handleComparisonRowChange(tableIndex, rowIndex, 'country2', e.target.value)}
-                        placeholder="Value..."
-                      />
-                      <Input
-                        value={row.country3}
-                        onChange={(e) => handleComparisonRowChange(tableIndex, rowIndex, 'country3', e.target.value)}
-                        placeholder="Value..."
-                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newTables = [...comparisonTables];
+                          newTables[tableIndex].columnHeaders.splice(colIndex, 1);
+                          newTables[tableIndex].rows.forEach(row => {
+                            row.values.splice(colIndex, 1);
+                          });
+                          onComparisonTablesChange(newTables);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveComparisonRow(tableIndex, rowIndex)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newTables = [...comparisonTables];
+                      newTables[tableIndex].columnHeaders.push('');
+                      newTables[tableIndex].rows.forEach(row => {
+                        row.values.push('');
+                      });
+                      onComparisonTablesChange(newTables);
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddComparisonRow(tableIndex)}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Row
-                </Button>
+              {/* Data Rows */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Comparison Data</Label>
+                <div className="space-y-2">
+                  <div className={`grid gap-2 text-xs font-medium text-muted-foreground`} style={{ gridTemplateColumns: `150px repeat(${table.columnHeaders.length}, 1fr)` }}>
+                    <div>Aspect</div>
+                    {table.columnHeaders.map((header, idx) => (
+                      <div key={idx}>{header || `Column ${idx + 1}`}</div>
+                    ))}
+                  </div>
+
+                  {table.rows.map((row, rowIndex) => (
+                    <div key={rowIndex} className="flex items-start gap-2">
+                      <div className={`grid gap-2 flex-1`} style={{ gridTemplateColumns: `150px repeat(${table.columnHeaders.length}, 1fr)` }}>
+                        <Input
+                          value={row.aspect}
+                          onChange={(e) => {
+                            const newTables = [...comparisonTables];
+                            newTables[tableIndex].rows[rowIndex].aspect = e.target.value;
+                            onComparisonTablesChange(newTables);
+                          }}
+                          placeholder="Aspect..."
+                        />
+                        {row.values.map((value, colIndex) => (
+                          <Input
+                            key={colIndex}
+                            value={value}
+                            onChange={(e) => {
+                              const newTables = [...comparisonTables];
+                              newTables[tableIndex].rows[rowIndex].values[colIndex] = e.target.value;
+                              onComparisonTablesChange(newTables);
+                            }}
+                            placeholder="Value..."
+                          />
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveComparisonRow(tableIndex, rowIndex)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddComparisonRow(tableIndex)}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Row
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

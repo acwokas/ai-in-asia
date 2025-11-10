@@ -47,39 +47,49 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
       {/* Comparison Tables */}
       {comparisonTables.length > 0 && (
         <div className="space-y-6">
-          {comparisonTables.map((table: any, index: number) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle>{table.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        {Array.isArray(table.rows) && table.rows[0] && Object.keys(table.rows[0]).map((key: string, i: number) => (
-                          <th key={i} className="text-left p-3 font-semibold">
-                            {key}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(table.rows) && table.rows.map((row: any, rowIndex: number) => (
-                        <tr key={rowIndex} className="border-b">
-                          {Object.values(row).map((value: any, cellIndex: number) => (
-                            <td key={cellIndex} className="p-3">
-                              {String(value)}
-                            </td>
+          {comparisonTables.map((table: any, index: number) => {
+            const columnHeaders = Array.isArray(table.columnHeaders) ? table.columnHeaders : [];
+            const rows = Array.isArray(table.rows) ? table.rows : [];
+            
+            return (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle>{table.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 bg-muted font-semibold">Aspect</th>
+                          {columnHeaders.map((header: string, colIdx: number) => (
+                            <th key={colIdx} className="text-left p-3 bg-muted font-semibold">
+                              {header || `Column ${colIdx + 1}`}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                      </thead>
+                      <tbody>
+                        {rows.map((row: any, rowIdx: number) => {
+                          if (!row || typeof row !== 'object') return null;
+                          const values = Array.isArray(row.values) ? row.values : [];
+                          
+                          return (
+                            <tr key={rowIdx} className="border-b">
+                              <td className="p-3 font-medium">{row.aspect || ''}</td>
+                              {values.map((value: string, colIdx: number) => (
+                                <td key={colIdx} className="p-3">{value || '-'}</td>
+                              ))}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
