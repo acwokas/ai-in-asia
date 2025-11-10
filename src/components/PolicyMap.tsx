@@ -46,7 +46,13 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
   }, []);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapToken || map.current) return;
+    if (!mapContainer.current || !mapToken) return;
+
+    // Clean up existing map if any
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
 
     mapboxgl.accessToken = mapToken;
     
@@ -55,7 +61,7 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
       style: 'mapbox://styles/mapbox/light-v11',
       center: [100, 20],
       zoom: 2,
-      projection: 'mercator'
+      projection: 'mercator' as any
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -77,9 +83,11 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
     };
 
     map.current.on('load', () => {
+      if (!map.current) return;
+      
       regions.forEach((region) => {
         const coords = regionCoordinates[region.slug];
-        if (!coords) return;
+        if (!coords || !map.current) return;
 
         const el = document.createElement('div');
         el.className = 'policy-map-marker';
@@ -122,7 +130,10 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
     });
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [mapToken, regions, navigate]);
 
