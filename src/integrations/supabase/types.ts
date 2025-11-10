@@ -594,6 +594,39 @@ export type Database = {
           },
         ]
       }
+      bulk_link_operations: {
+        Row: {
+          articles_modified: number
+          backup_data: Json
+          created_at: string
+          created_by: string | null
+          failed_count: number
+          id: string
+          notes: string | null
+          undone_at: string | null
+        }
+        Insert: {
+          articles_modified?: number
+          backup_data?: Json
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          id?: string
+          notes?: string | null
+          undone_at?: string | null
+        }
+        Update: {
+          articles_modified?: number
+          backup_data?: Json
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          id?: string
+          notes?: string | null
+          undone_at?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null

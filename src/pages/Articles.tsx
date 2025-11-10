@@ -800,8 +800,8 @@ const Articles = () => {
                     </TableCell>
                     <TableCell className="text-center">
                       <Switch
-                        checked={article.is_trending || false}
-                        onCheckedChange={(checked) => handleUpdate(article.id, "is_trending", checked)}
+                        checked={article.homepage_trending || false}
+                        onCheckedChange={(checked) => handleUpdate(article.id, "homepage_trending", checked)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
