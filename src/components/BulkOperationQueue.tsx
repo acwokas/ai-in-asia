@@ -283,10 +283,62 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     }
   };
 
+  const calculateTimeRemaining = (job: QueueJob): string | null => {
+    if (job.status !== 'processing' || !job.started_at || job.processed_items === 0) {
+      return null;
+    }
+
+    const now = new Date();
+    const startTime = new Date(job.started_at);
+    const elapsedMs = now.getTime() - startTime.getTime();
+    const elapsedMinutes = elapsedMs / (1000 * 60);
+
+    // Calculate processing rate (items per minute)
+    const itemsPerMinute = job.processed_items / elapsedMinutes;
+    
+    if (itemsPerMinute === 0) return null;
+
+    const remainingItems = job.total_items - job.processed_items;
+    const estimatedMinutesRemaining = remainingItems / itemsPerMinute;
+
+    // Format time remaining
+    if (estimatedMinutesRemaining < 1) {
+      return "< 1 min";
+    } else if (estimatedMinutesRemaining < 60) {
+      return `~${Math.round(estimatedMinutesRemaining)} min`;
+    } else {
+      const hours = Math.floor(estimatedMinutesRemaining / 60);
+      const mins = Math.round(estimatedMinutesRemaining % 60);
+      return `~${hours}h ${mins}m`;
+    }
+  };
+
+  const getProcessingRate = (job: QueueJob): string | null => {
+    if (job.status !== 'processing' || !job.started_at || job.processed_items === 0) {
+      return null;
+    }
+
+    const now = new Date();
+    const startTime = new Date(job.started_at);
+    const elapsedMs = now.getTime() - startTime.getTime();
+    const elapsedMinutes = elapsedMs / (1000 * 60);
+
+    const itemsPerMinute = job.processed_items / elapsedMinutes;
+    
+    if (itemsPerMinute < 1) {
+      const secondsPerItem = 60 / itemsPerMinute;
+      return `${secondsPerItem.toFixed(1)}s per article`;
+    }
+    
+    return `${itemsPerMinute.toFixed(1)} articles/min`;
+  };
+
   const getOperationTypeName = (type: string) => {
     switch (type) {
       case 'add_internal_links':
         return 'Add Internal Links';
+      case 'generate_ai_comments':
+        return 'Generate AI Comments';
       case 'update_seo':
         return 'Update SEO';
       default:
@@ -319,9 +371,15 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
                 <span>{activeJob.total_items > 0 ? Math.round((activeJob.processed_items / activeJob.total_items) * 100) : 0}%</span>
               </div>
               <Progress value={activeJob.total_items > 0 ? (activeJob.processed_items / activeJob.total_items) * 100 : 0} />
-              <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
                 <span>✅ {activeJob.successful_items} successful</span>
                 <span>❌ {activeJob.failed_items} failed</span>
+                {getProcessingRate(activeJob) && (
+                  <span>⚡ {getProcessingRate(activeJob)}</span>
+                )}
+                {calculateTimeRemaining(activeJob) && (
+                  <span className="font-medium text-foreground">⏱️ {calculateTimeRemaining(activeJob)} remaining</span>
+                )}
               </div>
             </div>
           </AlertDescription>
@@ -397,10 +455,20 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
                               Created: {format(new Date(job.created_at), 'PPp')}
                             </div>
                             {job.status === 'processing' && (
-                              <div className="flex items-center gap-2 mt-2">
-                                <Progress value={(job.processed_items / job.total_items) * 100} className="flex-1" />
-                                <span className="text-xs">{job.processed_items}/{job.total_items}</span>
-                              </div>
+                              <>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <Progress value={(job.processed_items / job.total_items) * 100} className="flex-1" />
+                                  <span className="text-xs whitespace-nowrap">{job.processed_items}/{job.total_items}</span>
+                                </div>
+                                <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+                                  {getProcessingRate(job) && (
+                                    <span>⚡ {getProcessingRate(job)}</span>
+                                  )}
+                                  {calculateTimeRemaining(job) && (
+                                    <span className="font-medium">⏱️ {calculateTimeRemaining(job)} remaining</span>
+                                  )}
+                                </div>
+                              </>
                             )}
                             {job.status === 'completed' && (
                               <div className="text-green-600 text-sm font-medium">
