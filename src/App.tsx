@@ -58,7 +58,7 @@ const CleanArticles = lazy(() => import("./pages/CleanArticles"));
 const FixMigratedContent = lazy(() => import("./pages/FixMigratedContent"));
 const RemoveTweetLinks = lazy(() => import("./pages/RemoveTweetLinks"));
 const PublishAllArticles = lazy(() => import("./pages/PublishAllArticles"));
-const BulkCommentGeneration = lazy(() => import("./pages/BulkCommentGeneration"));
+const AIComments = lazy(() => import("./pages/AIComments"));
 const GenerateTldrBulk = lazy(() => import("./pages/GenerateTldrBulk"));
 const AssignCategories = lazy(() => import("./pages/AssignCategories"));
 const FixBrokenImage = lazy(() => import("./pages/FixBrokenImage"));
@@ -200,7 +200,7 @@ const App = () => (
               <Route path="/admin/fix-migrated-content" element={<FixMigratedContent />} />
               <Route path="/admin/remove-tweet-links" element={<RemoveTweetLinks />} />
               <Route path="/admin/publish-all" element={<PublishAllArticles />} />
-              <Route path="/admin/bulk-comments" element={<BulkCommentGeneration />} />
+              <Route path="/admin/ai-comments" element={<AIComments />} />
               <Route path="/admin/generate-tldr" element={<GenerateTldrBulk />} />
               <Route path="/admin/assign-categories" element={<AssignCategories />} />
               <Route path="/admin/fix-broken-image" element={<FixBrokenImage />} />

@@ -44,6 +44,84 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_comment_authors: {
+        Row: {
+          avatar_url: string | null
+          comment_count: number | null
+          created_at: string | null
+          handle: string
+          id: string
+          is_power_user: boolean | null
+          name: string
+          region: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          handle: string
+          id?: string
+          is_power_user?: boolean | null
+          name: string
+          region: string
+        }
+        Update: {
+          avatar_url?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          handle?: string
+          id?: string
+          is_power_user?: boolean | null
+          name?: string
+          region?: string
+        }
+        Relationships: []
+      }
+      ai_generated_comments: {
+        Row: {
+          article_id: string
+          author_id: string
+          comment_date: string
+          content: string
+          created_at: string | null
+          id: string
+          is_ai: boolean | null
+        }
+        Insert: {
+          article_id: string
+          author_id: string
+          comment_date: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_ai?: boolean | null
+        }
+        Update: {
+          article_id?: string
+          author_id?: string
+          comment_date?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_ai?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generated_comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "ai_comment_authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_tools: {
         Row: {
           category: string | null

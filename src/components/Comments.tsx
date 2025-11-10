@@ -12,8 +12,11 @@ interface Comment {
   id: string;
   content: string;
   author_name: string | null;
+  author_handle?: string | null;
+  avatar_url?: string | null;
   created_at: string;
   approved: boolean;
+  is_ai?: boolean;
 }
 
 interface CommentsProps {
@@ -58,7 +61,7 @@ const Comments = ({ articleId }: CommentsProps) => {
 
   const fetchComments = async () => {
     try {
-      // Fetch approved comments
+      // Fetch approved real comments
       const { data: approvedData, error: approvedError } = await supabase
         .from("comments")
         .select("*")
@@ -67,7 +70,42 @@ const Comments = ({ articleId }: CommentsProps) => {
         .order("created_at", { ascending: false });
 
       if (approvedError) throw approvedError;
-      setComments(approvedData || []);
+
+      // Fetch AI generated comments
+      const { data: aiComments, error: aiError } = await supabase
+        .from("ai_generated_comments")
+        .select(`
+          id,
+          content,
+          comment_date,
+          ai_comment_authors (
+            name,
+            handle,
+            avatar_url
+          )
+        `)
+        .eq("article_id", articleId)
+        .order("comment_date", { ascending: false });
+
+      if (aiError) throw aiError;
+
+      // Transform AI comments to match Comment interface
+      const transformedAiComments: Comment[] = (aiComments || []).map((aiComment: any) => ({
+        id: aiComment.id,
+        content: aiComment.content,
+        author_name: aiComment.ai_comment_authors.name,
+        author_handle: aiComment.ai_comment_authors.handle,
+        avatar_url: aiComment.ai_comment_authors.avatar_url,
+        created_at: aiComment.comment_date,
+        approved: true,
+        is_ai: true,
+      }));
+
+      // Combine and sort all comments by date
+      const allComments = [...(approvedData || []), ...transformedAiComments];
+      allComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setComments(allComments);
 
       // Fetch pending comments if admin
       if (isAdmin) {
@@ -267,13 +305,29 @@ const Comments = ({ articleId }: CommentsProps) => {
               {comments.length > 0 && <h3 className="font-semibold text-lg">Latest Comments ({comments.length})</h3>}
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
+                  {comment.avatar_url ? (
+                    <img 
+                      src={comment.avatar_url} 
+                      alt={comment.author_name || "User"} 
+                      className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold">
                         {comment.author_name || "Anonymous"}
+                      </span>
+                      {comment.author_handle && (
+                        <span className="text-sm text-muted-foreground">
+                          @{comment.author_handle}
+                        </span>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        •
                       </span>
                       <span className="text-sm text-muted-foreground">
                         {new Date(comment.created_at).toLocaleDateString("en-GB", {
