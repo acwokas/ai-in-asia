@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -37,6 +37,7 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
   const [activeJob, setActiveJob] = useState<QueueJob | null>(null);
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
   const [isRetrying, setIsRetrying] = useState<string | null>(null);
+  const [isResuming, setIsResuming] = useState(false);
 
   // Fetch queue jobs
   const { data: queueJobs, refetch } = useQuery({
@@ -229,6 +230,37 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     });
   };
 
+  const handleResumeProcessing = async () => {
+    try {
+      setIsResuming(true);
+      
+      const { error } = await supabase.functions.invoke('process-bulk-queue', {
+        method: 'POST'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Processing Resumed",
+        description: "Bulk queue processor has been triggered manually",
+      });
+
+      // Refetch queue data after a short delay
+      setTimeout(() => {
+        refetch();
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error resuming processing:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resume processing",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
   const getFailedArticles = (job: QueueJob) => {
     const results = job.results as any[] || [];
     return results.filter((r: any) => r.status === "failed");
@@ -299,10 +331,34 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
       {/* Queue History */}
       <Card>
         <CardHeader>
-          <CardTitle>Queue History</CardTitle>
-          <CardDescription>
-            Recent and active bulk operations. Jobs are processed automatically every 2 minutes.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Queue History</CardTitle>
+              <CardDescription>
+                Recent and active bulk operations. Updates in real-time. Jobs process automatically every minute.
+              </CardDescription>
+            </div>
+            {(activeJob?.status === 'processing' || queueJobs?.some(j => j.status === 'queued')) && (
+              <Button
+                onClick={handleResumeProcessing}
+                disabled={isResuming}
+                size="sm"
+                variant="outline"
+              >
+                {isResuming ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Resuming...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Resume Now
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {!queueJobs || queueJobs.length === 0 ? (
