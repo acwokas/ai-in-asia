@@ -265,6 +265,48 @@ const AIComments = () => {
     }
   };
 
+  // Regenerate single comment
+  const regenerateSingleComment = useMutation({
+    mutationFn: async ({ commentId, articleId }: { commentId: string; articleId: string }) => {
+      // First delete the existing comment
+      const { error: deleteError } = await supabase
+        .from('ai_generated_comments')
+        .delete()
+        .eq('id', commentId);
+      
+      if (deleteError) throw deleteError;
+
+      // Then generate a new comment for this article
+      const { data, error } = await supabase.functions.invoke('generate-ai-comments', {
+        body: { 
+          articleIds: [articleId],
+          count: 1 // Request just one comment
+        },
+      });
+      
+      if (error) {
+        const errorMessage = (data as any)?.error || error.message || 'Failed to regenerate comment';
+        throw new Error(errorMessage);
+      }
+      
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Comment Regenerated",
+        description: "New comment generated successfully",
+      });
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -440,6 +482,18 @@ const AIComments = () => {
                           <span className="text-xs text-muted-foreground">
                             {new Date(comment.comment_date).toLocaleDateString()}
                           </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => regenerateSingleComment.mutate({ 
+                              commentId: comment.id, 
+                              articleId: article.id 
+                            })}
+                            disabled={regenerateSingleComment.isPending}
+                            title="Regenerate this comment"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
@@ -447,7 +501,7 @@ const AIComments = () => {
                                 size="sm"
                                 onClick={() => setEditingComment({ id: comment.id, content: comment.content })}
                               >
-                                Edit
+                                <Edit className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
@@ -474,6 +528,7 @@ const AIComments = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => deleteCommentMutation.mutate(comment.id)}
+                            title="Delete this comment"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
