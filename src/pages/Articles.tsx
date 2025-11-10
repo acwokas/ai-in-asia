@@ -545,12 +545,31 @@ const Articles = () => {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <Input
-                        type="date"
-                        value={article.published_at ? new Date(article.published_at).toISOString().split('T')[0] : ""}
-                        onChange={(e) => handleUpdate(article.id, "published_at", e.target.value ? new Date(e.target.value).toISOString() : null)}
-                        className="w-[140px]"
-                      />
+                      {article.status === "scheduled" && article.scheduled_for ? (
+                        <div className="text-sm">
+                          <div className="font-medium">
+                            {new Date(article.scheduled_for).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(article.scheduled_for).toLocaleTimeString('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <Input
+                          type="date"
+                          value={article.published_at ? new Date(article.published_at).toISOString().split('T')[0] : ""}
+                          onChange={(e) => handleUpdate(article.id, "published_at", e.target.value ? new Date(e.target.value).toISOString() : null)}
+                          className="w-[140px]"
+                        />
+                      )}
                     </TableCell>
                     <TableCell>
                       {article.view_count || 0}
