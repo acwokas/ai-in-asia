@@ -46,6 +46,7 @@ const YouMayAlsoLikeComponent = () => {
                 primary_category_id,
                 comment_count,
                 published_at,
+                is_trending,
                 authors (name, slug),
                 categories:primary_category_id (name, slug)
               `)
@@ -92,6 +93,7 @@ const YouMayAlsoLikeComponent = () => {
               primary_category_id,
               comment_count,
               published_at,
+              is_trending,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
@@ -133,6 +135,7 @@ const YouMayAlsoLikeComponent = () => {
               primary_category_id,
               comment_count,
               published_at,
+              is_trending,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             `)
@@ -186,6 +189,7 @@ const YouMayAlsoLikeComponent = () => {
               readTime={`${article.reading_time_minutes || 5} min read`}
               image={article.featured_image_url || "/placeholder.svg"}
               slug={article.slug}
+              isTrending={article.is_trending || false}
               commentCount={article.comment_count || 0}
               publishedAt={article.published_at}
             />

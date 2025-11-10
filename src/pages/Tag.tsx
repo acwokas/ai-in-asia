@@ -141,6 +141,7 @@ const Tag = () => {
                 readTime={`${article.reading_time_minutes || 5} min read`}
                 image={article.featured_image_url || ""}
                 slug={article.slug}
+                isTrending={article.is_trending || false}
                 commentCount={article.comment_count || 0}
               />
             ))}

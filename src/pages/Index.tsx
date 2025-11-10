@@ -68,6 +68,7 @@ const Index = () => {
           sticky,
           primary_category_id,
           comment_count,
+          is_trending,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -98,6 +99,7 @@ const Index = () => {
           view_count,
           primary_category_id,
           comment_count,
+          is_trending,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -383,6 +385,12 @@ const Index = () => {
                     <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
                       {article.categories?.name || "Uncategorized"}
                     </Badge>
+                    {article.is_trending && (
+                      <Badge className="absolute top-2 left-24 bg-orange-500 text-white flex items-center gap-1 text-xs">
+                        <TrendingUp className="h-3 w-3" />
+                        Trending
+                      </Badge>
+                    )}
                     {index === 0 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                         <p className="text-white text-xs mb-1">
@@ -436,9 +444,17 @@ const Index = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <Badge className="bg-primary text-primary-foreground mb-3">
-                        {featuredArticle.categories?.name || "Uncategorized"}
-                      </Badge>
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <Badge className="bg-primary text-primary-foreground">
+                          {featuredArticle.categories?.name || "Uncategorized"}
+                        </Badge>
+                        {featuredArticle.is_trending && (
+                          <Badge className="bg-orange-500 text-white flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3" />
+                            Trending
+                          </Badge>
+                        )}
+                      </div>
                       <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">
                         {featuredArticle.title}
                       </h1>
@@ -471,9 +487,17 @@ const Index = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-8">
-                        <Badge className="bg-primary text-primary-foreground mb-3">
-                          {trendingArticles[0].categories?.name || "Uncategorized"}
-                        </Badge>
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          <Badge className="bg-primary text-primary-foreground">
+                            {trendingArticles[0].categories?.name || "Uncategorized"}
+                          </Badge>
+                          {trendingArticles[0].is_trending && (
+                            <Badge className="bg-orange-500 text-white flex items-center gap-1">
+                              <TrendingUp className="h-3 w-3" />
+                              Trending
+                            </Badge>
+                          )}
+                        </div>
                         <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">
                           {trendingArticles[0].title}
                         </h1>
@@ -524,9 +548,17 @@ const Index = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <Badge className="bg-primary text-primary-foreground text-xs mb-2">
-                          {article.categories?.name || "Uncategorized"}
-                        </Badge>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            {article.categories?.name || "Uncategorized"}
+                          </Badge>
+                          {article.is_trending && (
+                            <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs">
+                              <TrendingUp className="h-3 w-3" />
+                              Trending
+                            </Badge>
+                          )}
+                        </div>
                         <h3 className="text-white font-bold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
@@ -608,9 +640,17 @@ const Index = () => {
                             loading="lazy"
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          <Badge className="absolute top-2 left-2 bg-secondary text-secondary-foreground text-xs">
-                            {article.categories?.name || "Uncategorized"}
-                          </Badge>
+                          <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+                            <Badge className="bg-secondary text-secondary-foreground text-xs">
+                              {article.categories?.name || "Uncategorized"}
+                            </Badge>
+                            {article.is_trending && (
+                              <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs">
+                                <TrendingUp className="h-3 w-3" />
+                                Trending
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         <p className="text-xs text-muted-foreground mb-1">
                           {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
