@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { TrendingSuggestions } from "@/components/TrendingSuggestions";
 import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -464,6 +465,8 @@ const Articles = () => {
             </Button>
           </div>
         </div>
+
+        <TrendingSuggestions />
 
         {/* Articles Table */}
         <div className="bg-card border border-border rounded-lg overflow-hidden">
