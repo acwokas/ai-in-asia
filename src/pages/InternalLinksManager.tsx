@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,15 +8,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ExternalLink, AlertTriangle, TrendingUp } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, ExternalLink, AlertTriangle, TrendingUp, CheckCircle2, Zap, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const InternalLinksManager = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [isGeneratingLinks, setIsGeneratingLinks] = useState<string | null>(null);
+  const [selectedArticles, setSelectedArticles] = useState<Set<string>>(new Set());
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
+  const [showBulkResults, setShowBulkResults] = useState(false);
+  const [bulkResults, setBulkResults] = useState<any>(null);
 
   // Fetch all published articles with their internal link count
   const { data: articles, isLoading } = useQuery({
@@ -74,16 +83,12 @@ const InternalLinksManager = () => {
       if (error) throw error;
 
       if (data?.suggestions) {
-        // Show suggestions in a dialog or navigate to editor with suggestions
         toast({
           title: "Link Suggestions Generated",
           description: `Found ${data.suggestions.internalLinks?.length || 0} internal and ${data.suggestions.externalLinks?.length || 0} external link suggestions`,
         });
         
-        // You could store these suggestions and pass them to the editor
         console.log("Link suggestions:", data.suggestions);
-        
-        // Navigate to editor with the article
         navigate(`/editor?id=${articleId}`);
       }
     } catch (error: any) {
@@ -95,6 +100,87 @@ const InternalLinksManager = () => {
       });
     } finally {
       setIsGeneratingLinks(null);
+    }
+  };
+
+  const toggleArticleSelection = (articleId: string) => {
+    setSelectedArticles(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(articleId)) {
+        newSet.delete(articleId);
+      } else {
+        newSet.add(articleId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectArticlesNeedingLinks = () => {
+    const articlesNeedingLinks = articles?.filter(
+      a => a.internalLinkCount === 0 || a.externalLinkCount === 0
+    ).map(a => a.id) || [];
+    
+    setSelectedArticles(new Set(articlesNeedingLinks));
+    toast({
+      title: "Articles Selected",
+      description: `Selected ${articlesNeedingLinks.length} articles that need links`,
+    });
+  };
+
+  const handleBulkAddLinks = async (dryRun: boolean = false) => {
+    if (selectedArticles.size === 0) {
+      toast({
+        title: "No Articles Selected",
+        description: "Please select at least one article to process",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsBulkProcessing(true);
+    setBulkProgress(0);
+    setShowBulkResults(false);
+
+    try {
+      const articleIds = Array.from(selectedArticles);
+      
+      toast({
+        title: dryRun ? "Previewing Changes..." : "Processing Articles...",
+        description: `Adding internal and external links to ${articleIds.length} articles`,
+      });
+
+      const { data, error } = await supabase.functions.invoke("bulk-add-internal-links", {
+        body: { 
+          articleIds,
+          dryRun
+        },
+      });
+
+      if (error) throw error;
+
+      setBulkResults(data);
+      setShowBulkResults(true);
+
+      if (!dryRun && data.summary.updated > 0) {
+        queryClient.invalidateQueries({ queryKey: ["articles-internal-links"] });
+        setSelectedArticles(new Set());
+      }
+
+      toast({
+        title: dryRun ? "Preview Complete" : "Bulk Processing Complete",
+        description: `${data.summary.updated} articles updated, ${data.summary.skipped} skipped, ${data.summary.failed} failed`,
+      });
+
+    } catch (error: any) {
+      console.error("Error in bulk processing:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process articles",
+        variant: "destructive"
+      });
+    } finally {
+      setIsBulkProcessing(false);
+      setBulkProgress(100);
     }
   };
 
@@ -124,6 +210,96 @@ const InternalLinksManager = () => {
             Monitor and improve your internal linking strategy for better SEO
           </p>
         </div>
+
+        {/* Bulk Actions Card */}
+        {selectedArticles.size > 0 && (
+          <Alert className="mb-6">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Bulk Actions</AlertTitle>
+            <AlertDescription>
+              <div className="flex items-center justify-between mt-2">
+                <span>{selectedArticles.size} articles selected</span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedArticles(new Set())}
+                  >
+                    Clear Selection
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleBulkAddLinks(true)}
+                    disabled={isBulkProcessing}
+                  >
+                    Preview Changes
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkAddLinks(false)}
+                    disabled={isBulkProcessing}
+                    className="bg-primary"
+                  >
+                    {isBulkProcessing ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-3 w-3 mr-1" />
+                        Add Links to Selected
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              {isBulkProcessing && (
+                <Progress value={bulkProgress} className="mt-2" />
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Bulk Results */}
+        {showBulkResults && bulkResults && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                Bulk Processing Results
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-4 mb-4">
+                <div>
+                  <div className="text-2xl font-bold">{bulkResults.summary.total}</div>
+                  <div className="text-sm text-muted-foreground">Total</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{bulkResults.summary.updated}</div>
+                  <div className="text-sm text-muted-foreground">Updated</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-yellow-600">{bulkResults.summary.skipped}</div>
+                  <div className="text-sm text-muted-foreground">Skipped</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-600">{bulkResults.summary.failed}</div>
+                  <div className="text-sm text-muted-foreground">Failed</div>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowBulkResults(false)}
+              >
+                Close
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -187,13 +363,20 @@ const InternalLinksManager = () => {
             <CardDescription>
               View internal and external link counts for each article
             </CardDescription>
-            <div className="mt-4">
+            <div className="mt-4 flex gap-4">
               <Input
                 placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
               />
+              <Button
+                variant="outline"
+                onClick={selectArticlesNeedingLinks}
+                className="whitespace-nowrap"
+              >
+                Select All Needing Links
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -205,6 +388,18 @@ const InternalLinksManager = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedArticles.size === filteredArticles?.length && filteredArticles?.length > 0}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedArticles(new Set(filteredArticles?.map(a => a.id)));
+                          } else {
+                            setSelectedArticles(new Set());
+                          }
+                        }}
+                      />
+                    </TableHead>
                     <TableHead>Article Title</TableHead>
                     <TableHead className="text-center">Internal Links</TableHead>
                     <TableHead className="text-center">External Links</TableHead>
@@ -216,6 +411,12 @@ const InternalLinksManager = () => {
                 <TableBody>
                   {filteredArticles?.map((article) => (
                     <TableRow key={article.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedArticles.has(article.id)}
+                          onCheckedChange={() => toggleArticleSelection(article.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         <a 
                           href={`/article/${article.slug}`}
