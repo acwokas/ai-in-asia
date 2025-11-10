@@ -5,15 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, Trash2, RefreshCw, Users } from "lucide-react";
+import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AIComments = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [editingComment, setEditingComment] = useState<{ id: string; content: string } | null>(null);
+  const [editingAuthor, setEditingAuthor] = useState<any>(null);
+  const [isManageAuthorsOpen, setIsManageAuthorsOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -65,6 +72,20 @@ const AIComments = () => {
       };
     },
     enabled: isAdmin,
+  });
+
+  // Fetch all authors for management
+  const { data: allAuthors, refetch: refetchAuthors } = useQuery({
+    queryKey: ['all-ai-authors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ai_comment_authors')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin && isManageAuthorsOpen,
   });
 
   // Fetch articles with AI comments
@@ -187,6 +208,35 @@ const AIComments = () => {
     },
   });
 
+  // Update author mutation
+  const updateAuthorMutation = useMutation({
+    mutationFn: async (author: any) => {
+      const { error } = await supabase
+        .from('ai_comment_authors')
+        .update({
+          name: author.name,
+          handle: author.handle,
+          region: author.region,
+          is_power_user: author.is_power_user,
+        })
+        .eq('id', author.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Author updated successfully" });
+      setEditingAuthor(null);
+      refetchAuthors();
+      queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error updating author",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Regenerate comments for article
   const regenerateForArticle = async (articleId: string) => {
     setIsGenerating(true);
@@ -247,35 +297,49 @@ const AIComments = () => {
         </CardHeader>
         <CardContent>
           {authorStats && authorStats.total > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <div>
-                <div className="text-2xl font-bold">{authorStats.total}</div>
-                <div className="text-sm text-muted-foreground">Total Authors</div>
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.total}</div>
+                  <div className="text-sm text-muted-foreground">Total Authors</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.powerUsers}</div>
+                  <div className="text-sm text-muted-foreground">Power Users</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.singapore}</div>
+                  <div className="text-sm text-muted-foreground">Singapore</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.india}</div>
+                  <div className="text-sm text-muted-foreground">India</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.philippines}</div>
+                  <div className="text-sm text-muted-foreground">Philippines</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.china_hk + authorStats.byRegion.west}</div>
+                  <div className="text-sm text-muted-foreground">CN/HK/West</div>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-bold">{authorStats.powerUsers}</div>
-                <div className="text-sm text-muted-foreground">Power Users</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{authorStats.byRegion.singapore}</div>
-                <div className="text-sm text-muted-foreground">Singapore</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{authorStats.byRegion.india}</div>
-                <div className="text-sm text-muted-foreground">India</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{authorStats.byRegion.philippines}</div>
-                <div className="text-sm text-muted-foreground">Philippines</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{authorStats.byRegion.china_hk + authorStats.byRegion.west}</div>
-                <div className="text-sm text-muted-foreground">CN/HK/West</div>
-              </div>
-            </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsManageAuthorsOpen(true)}
+                className="w-full"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Manage Author Pool
+              </Button>
+            </>
           ) : (
             <div className="text-center py-4">
-              <p className="text-muted-foreground mb-4">No author pool exists yet</p>
+              <p className="text-muted-foreground mb-4">
+                {seedAuthorsMutation.isPending 
+                  ? "Creating author pool... This may take a few moments." 
+                  : "No author pool exists yet"}
+              </p>
               <Button 
                 onClick={() => seedAuthorsMutation.mutate()}
                 disabled={seedAuthorsMutation.isPending}
@@ -424,6 +488,130 @@ const AIComments = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Manage Authors Dialog */}
+      <Dialog open={isManageAuthorsOpen} onOpenChange={setIsManageAuthorsOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Manage Author Pool</DialogTitle>
+            <DialogDescription>
+              Edit author details, regions, and power user status
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Handle</TableHead>
+                  <TableHead>Region</TableHead>
+                  <TableHead>Power User</TableHead>
+                  <TableHead>Comments</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allAuthors?.map((author) => (
+                  <TableRow key={author.id}>
+                    <TableCell className="font-medium">{author.name}</TableCell>
+                    <TableCell>@{author.handle}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {author.region.replace('_', '/')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {author.is_power_user && (
+                        <Badge variant="secondary">Power User</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{author.comment_count || 0}</TableCell>
+                    <TableCell>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingAuthor(author)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Author</DialogTitle>
+                            <DialogDescription>
+                              Update author information
+                            </DialogDescription>
+                          </DialogHeader>
+                          {editingAuthor?.id === author.id && (
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                  id="name"
+                                  value={editingAuthor.name}
+                                  onChange={(e) => setEditingAuthor({ ...editingAuthor, name: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="handle">Handle</Label>
+                                <Input
+                                  id="handle"
+                                  value={editingAuthor.handle}
+                                  onChange={(e) => setEditingAuthor({ ...editingAuthor, handle: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="region">Region</Label>
+                                <Select
+                                  value={editingAuthor.region}
+                                  onValueChange={(value) => setEditingAuthor({ ...editingAuthor, region: value })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="singapore">Singapore</SelectItem>
+                                    <SelectItem value="india">India</SelectItem>
+                                    <SelectItem value="philippines">Philippines</SelectItem>
+                                    <SelectItem value="china_hk">China/HK</SelectItem>
+                                    <SelectItem value="west">West</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  id="power-user"
+                                  checked={editingAuthor.is_power_user}
+                                  onCheckedChange={(checked) => 
+                                    setEditingAuthor({ ...editingAuthor, is_power_user: checked })
+                                  }
+                                />
+                                <Label htmlFor="power-user">Power User</Label>
+                              </div>
+                              <Button
+                                onClick={() => updateAuthorMutation.mutate(editingAuthor)}
+                                disabled={updateAuthorMutation.isPending}
+                                className="w-full"
+                              >
+                                {updateAuthorMutation.isPending && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                Save Changes
+                              </Button>
+                            </div>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
