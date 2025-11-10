@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock } from "lucide-react";
+import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock, TrendingUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -107,6 +107,7 @@ const Articles = () => {
           primary_category_id,
           sticky,
           featured_on_homepage,
+          is_trending,
           preview_code,
           authors (name, slug),
           categories:primary_category_id (name, slug)
@@ -492,6 +493,12 @@ const Articles = () => {
                       Homepage
                     </div>
                   </TableHead>
+                  <TableHead className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      Trending
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -693,6 +700,12 @@ const Articles = () => {
                       <Switch
                         checked={article.featured_on_homepage || false}
                         onCheckedChange={(checked) => handleUpdate(article.id, "featured_on_homepage", checked)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Switch
+                        checked={article.is_trending || false}
+                        onCheckedChange={(checked) => handleUpdate(article.id, "is_trending", checked)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
