@@ -307,6 +307,31 @@ const AIComments = () => {
     },
   });
 
+  // Delete all legacy comments
+  const deleteLegacyComments = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Legacy Comments Deleted",
+        description: "All legacy comments have been removed",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -366,14 +391,29 @@ const AIComments = () => {
                   <div className="text-sm text-muted-foreground">CN/HK/West</div>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsManageAuthorsOpen(true)}
-                className="w-full"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Manage Author Pool
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsManageAuthorsOpen(true)}
+                  className="flex-1"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Manage Author Pool
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete ALL legacy comments? This cannot be undone.')) {
+                      deleteLegacyComments.mutate();
+                    }
+                  }}
+                  disabled={deleteLegacyComments.isPending}
+                  className="flex-1"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete All Legacy Comments
+                </Button>
+              </div>
             </>
           ) : (
             <div className="text-center py-4">
