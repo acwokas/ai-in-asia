@@ -190,6 +190,32 @@ const AIComments = () => {
     },
   });
 
+  // Delete ALL AI comments mutation
+  const deleteAllCommentsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('ai_generated_comments')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "All AI Comments Deleted",
+        description: "All AI-generated comments have been removed. You can now regenerate them.",
+      });
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete comment mutation
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
@@ -518,24 +544,43 @@ const AIComments = () => {
                   <div className="text-sm text-muted-foreground">CN/HK/West</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsManageAuthorsOpen(true)}
-                  className="flex-1"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Manage Author Pool
-                </Button>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsManageAuthorsOpen(true)}
+                    className="flex-1"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Manage Author Pool
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete ALL AI comments and regenerate? This cannot be undone. Use this when comments need more variety.')) {
+                        deleteAllCommentsMutation.mutate();
+                      }
+                    }}
+                    disabled={deleteAllCommentsMutation.isPending}
+                    className="flex-1"
+                  >
+                    {deleteAllCommentsMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
+                    Delete All AI Comments
+                  </Button>
+                </div>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   onClick={() => {
                     if (confirm('Are you sure you want to delete ALL legacy comments? This cannot be undone.')) {
                       deleteLegacyComments.mutate();
                     }
                   }}
                   disabled={deleteLegacyComments.isPending}
-                  className="flex-1"
+                  size="sm"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete All Legacy Comments

@@ -243,7 +243,15 @@ Deno.serve(async (req) => {
 Article: "${article.title}"
 Summary: "${article.excerpt || 'No summary available'}"
 
-Requirements:
+CRITICAL VARIETY REQUIREMENTS (this article will have ${numComments} comments):
+- Comment ${i + 1} of ${numComments} - MUST be completely different in structure and ending from the others
+- NEVER end with question tags like "isn't it", "right?", "don't you think?", "no?", etc.
+- VARY sentence structures: some simple, some complex, some fragments
+- VARY endings: statement, question, ellipsis, exclamation (but NOT question tags)
+- AVOID repetitive patterns or phrases that might appear in other comments
+- Each comment should have a unique voice and style
+
+Style Requirements:
 - Length: ${targetLength}
 - Focus: ${selectedAngle}
 ${temporalInstruction ? `- ${temporalInstruction}` : ''}
@@ -255,7 +263,6 @@ ${temporalInstruction ? `- ${temporalInstruction}` : ''}
 - NO promotional content
 - NO contradicting the article's facts
 - Mix of constructive, neutral, or mildly critical tone
-- Make this comment distinctly different from others on the same article
 
 Write ONLY the comment text, no metadata.`;
 
