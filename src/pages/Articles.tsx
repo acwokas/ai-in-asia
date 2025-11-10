@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock, TrendingUp } from "lucide-react";
+import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -250,11 +250,28 @@ const Articles = () => {
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      // Three-state cycle: asc → desc → default
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else if (sortOrder === "desc") {
+        // Return to default (created_at desc)
+        setSortBy("created_at");
+        setSortOrder("desc");
+      }
     } else {
+      // First click: sort ascending
       setSortBy(column);
-      setSortOrder("desc");
+      setSortOrder("asc");
     }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <ArrowUpDown className="h-3 w-3 ml-1 inline opacity-50" />;
+    }
+    return sortOrder === "asc" 
+      ? <ArrowUp className="h-3 w-3 ml-1 inline" />
+      : <ArrowDown className="h-3 w-3 ml-1 inline" />;
   };
 
   const handleScheduledDateTimeUpdate = (articleId: string, date: Date | undefined, time: string) => {
@@ -459,44 +476,97 @@ const Articles = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted/50 select-none"
                     onClick={() => handleSort("title")}
                   >
-                    Title {sortBy === "title" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <div className="flex items-center">
+                      Title
+                      {getSortIcon("title")}
+                    </div>
                   </TableHead>
-                  <TableHead>Author</TableHead>
-                   <TableHead>Category</TableHead>
-                  <TableHead>Type</TableHead>
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("author_id")}
+                  >
+                    <div className="flex items-center">
+                      Author
+                      {getSortIcon("author_id")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("primary_category_id")}
+                  >
+                    <div className="flex items-center">
+                      Category
+                      {getSortIcon("primary_category_id")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("article_type")}
+                  >
+                    <div className="flex items-center">
+                      Type
+                      {getSortIcon("article_type")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
                     onClick={() => handleSort("status")}
                   >
-                    Status {sortBy === "status" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <div className="flex items-center">
+                      Status
+                      {getSortIcon("status")}
+                    </div>
                   </TableHead>
-                  <TableHead>Published Date</TableHead>
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("published_at")}
+                  >
+                    <div className="flex items-center">
+                      Published Date
+                      {getSortIcon("published_at")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
                     onClick={() => handleSort("view_count")}
                   >
-                    Views {sortBy === "view_count" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <div className="flex items-center">
+                      Views
+                      {getSortIcon("view_count")}
+                    </div>
                   </TableHead>
                   <TableHead className="text-center">View</TableHead>
-                  <TableHead className="text-center">
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("sticky")}
+                  >
                     <div className="flex items-center justify-center gap-1">
                       <Pin className="h-3 w-3" />
                       Sticky
+                      {getSortIcon("sticky")}
                     </div>
                   </TableHead>
-                  <TableHead className="text-center">
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("featured_on_homepage")}
+                  >
                     <div className="flex items-center justify-center gap-1">
                       <Globe className="h-3 w-3" />
                       Homepage
+                      {getSortIcon("featured_on_homepage")}
                     </div>
                   </TableHead>
-                  <TableHead className="text-center">
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("is_trending")}
+                  >
                     <div className="flex items-center justify-center gap-1">
                       <TrendingUp className="h-3 w-3" />
                       Trending
+                      {getSortIcon("is_trending")}
                     </div>
                   </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
