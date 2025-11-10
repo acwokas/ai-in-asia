@@ -35,7 +35,17 @@ const PolicyAtlas = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('*, authors(name, slug), categories:primary_category_id(name, slug)')
+        .select(`
+          *,
+          authors!inner (
+            name,
+            slug
+          ),
+          categories!primary_category_id (
+            name,
+            slug
+          )
+        `)
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
         .order('updated_at', { ascending: false })
@@ -96,7 +106,7 @@ const PolicyAtlas = () => {
           <h2 className="text-2xl font-bold mb-6">Latest Updates</h2>
           <div className="space-y-4">
             {latestUpdates?.map((article) => (
-              <Link key={article.id} to={`/${article.categories?.slug}/${article.slug}`}>
+              <Link key={article.id} to={`/ai-policy-atlas/${article.categories?.slug}/${article.slug}`}>
                 <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -104,7 +114,7 @@ const PolicyAtlas = () => {
                         <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                         <p className="text-sm text-muted-foreground mb-3">{article.excerpt}</p>
                         <div className="flex items-center gap-3 text-sm">
-                          <Badge variant="secondary">{article.region}</Badge>
+                          <Badge variant="secondary">{article.categories?.name}</Badge>
                           <span className="text-muted-foreground">
                             Updated {new Date(article.updated_at).toLocaleDateString()}
                           </span>
