@@ -126,7 +126,8 @@ const Admin = () => {
   const { data: recentArticles } = useQuery({
     queryKey: ["recent-articles"],
     enabled: enableSecondaryQueries && isAdmin === true,
-    staleTime: 60 * 1000, // 1 minute cache
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true, // Always refetch on mount
     queryFn: async () => {
       const { data } = await supabase
         .from("articles")
