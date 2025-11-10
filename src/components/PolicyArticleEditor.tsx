@@ -47,12 +47,12 @@ interface PolicyArticleEditorProps {
 
 const DEFAULT_SECTIONS = [
   { heading: "Quick Overview", body: "" },
-  { heading: "What's Changing", body: "" },
-  { heading: "Who's Affected", body: "" },
-  { heading: "Core Principles", body: "" },
+  { heading: "What's Changing", body: "- \n- \n- " },
+  { heading: "Who's Affected", body: "- \n- \n- " },
+  { heading: "Core Principles", body: "1. \n2. \n3. " },
   { heading: "What It Means for Business", body: "" },
   { heading: "How It Compares", body: "" },
-  { heading: "What to Watch Next", body: "" },
+  { heading: "What to Watch Next", body: "- \n- \n- " },
 ];
 
 export const PolicyArticleEditor = ({
