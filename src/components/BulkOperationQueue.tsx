@@ -27,7 +27,11 @@ interface QueueJob {
   results: any;
 }
 
-export const BulkOperationQueue = () => {
+interface BulkOperationQueueProps {
+  operationType?: string;
+}
+
+export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeJob, setActiveJob] = useState<QueueJob | null>(null);
@@ -36,13 +40,19 @@ export const BulkOperationQueue = () => {
 
   // Fetch queue jobs
   const { data: queueJobs, refetch } = useQuery({
-    queryKey: ["bulk-operation-queue"],
+    queryKey: ["bulk-operation-queue", operationType],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("bulk_operation_queue")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(20);
+
+      if (operationType) {
+        query = query.eq("operation_type", operationType);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as QueueJob[];

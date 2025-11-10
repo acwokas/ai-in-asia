@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight } from "lucide-react";
+import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -24,6 +25,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import Header from "@/components/Header";
+import { BulkOperationQueue } from "@/components/BulkOperationQueue";
 
 const AIComments = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -31,6 +33,7 @@ const AIComments = () => {
   const [editingComment, setEditingComment] = useState<{ id: string; content: string } | null>(null);
   const [editingAuthor, setEditingAuthor] = useState<any>(null);
   const [isManageAuthorsOpen, setIsManageAuthorsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("generate");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -342,6 +345,80 @@ const AIComments = () => {
     },
   });
 
+  // Queue bulk operation for all articles without comments
+  const handleQueueBulkOperation = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Get all published articles
+      const { data: allArticles, error: articlesError } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('status', 'published');
+
+      if (articlesError) throw articlesError;
+      if (!allArticles || allArticles.length === 0) {
+        toast({
+          title: "No Articles",
+          description: "No published articles found to process",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Get articles that already have AI comments
+      const { data: articlesWithComments, error: commentsError } = await supabase
+        .from('ai_generated_comments')
+        .select('article_id');
+
+      if (commentsError) throw commentsError;
+
+      const articlesWithCommentsIds = new Set(
+        articlesWithComments?.map(c => c.article_id) || []
+      );
+
+      // Filter to only articles without comments
+      const articlesNeedingComments = allArticles
+        .filter(a => !articlesWithCommentsIds.has(a.id))
+        .map(a => a.id);
+
+      if (articlesNeedingComments.length === 0) {
+        toast({
+          title: "All Set",
+          description: "All published articles already have AI comments",
+        });
+        return;
+      }
+
+      // Create queue job
+      const { error: queueError } = await supabase
+        .from('bulk_operation_queue')
+        .insert({
+          operation_type: 'generate_ai_comments',
+          article_ids: articlesNeedingComments,
+          created_by: user.id,
+          status: 'queued'
+        });
+
+      if (queueError) throw queueError;
+
+      toast({
+        title: "Operation Queued",
+        description: `${articlesNeedingComments.length} articles queued for AI comment generation`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['bulk-operation-queue'] });
+      setActiveTab("queue");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -389,6 +466,20 @@ const AIComments = () => {
             Generate natural, authentic-looking comments for published articles
           </p>
         </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="generate">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Generate
+            </TabsTrigger>
+            <TabsTrigger value="queue">
+              <ListChecks className="mr-2 h-4 w-4" />
+              Queue & History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="generate" className="space-y-6">
 
       {/* Author Pool Stats */}
       <Card className="mb-6">
@@ -467,6 +558,26 @@ const AIComments = () => {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Bulk Queue Operation */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Bulk Generate Comments</CardTitle>
+          <CardDescription>
+            Queue AI comment generation for all articles without comments
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleQueueBulkOperation}
+            disabled={!authorStats}
+            className="w-full"
+          >
+            <ListChecks className="mr-2 h-4 w-4" />
+            Queue All Articles Without Comments
+          </Button>
         </CardContent>
       </Card>
 
@@ -743,6 +854,13 @@ const AIComments = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      </TabsContent>
+
+      <TabsContent value="queue">
+        <BulkOperationQueue operationType="generate_ai_comments" />
+      </TabsContent>
+      
+      </Tabs>
       </div>
     </div>
   );
