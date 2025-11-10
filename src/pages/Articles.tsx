@@ -136,8 +136,14 @@ const Articles = () => {
         query = query.eq("author_id", authorFilter);
       }
 
-      // Apply sorting
-      query = query.order(sortBy, { ascending: sortOrder === "asc" });
+      // Apply sorting - use scheduled_for for scheduled articles when sorting by published_at
+      if (sortBy === "published_at") {
+        // Sort by scheduled_for first (for scheduled articles), then published_at
+        query = query.order("scheduled_for", { ascending: sortOrder === "asc", nullsFirst: false })
+                     .order("published_at", { ascending: sortOrder === "asc", nullsFirst: false });
+      } else {
+        query = query.order(sortBy, { ascending: sortOrder === "asc" });
+      }
 
       // Apply pagination
       if (pageSize !== "all") {
