@@ -22,6 +22,7 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
     // Fetch Mapbox token from edge function
     const fetchToken = async () => {
       try {
+        console.log('Fetching Mapbox token from edge function...');
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`, {
           headers: {
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
@@ -29,11 +30,12 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
         });
         
         if (!response.ok) {
-          console.error('Failed to fetch Mapbox token');
+          console.error('Failed to fetch Mapbox token:', response.status, response.statusText);
           return;
         }
         
         const data = await response.json();
+        console.log('Mapbox token received:', data.token ? 'Yes' : 'No');
         if (data.token) {
           setMapToken(data.token);
         }
@@ -46,7 +48,15 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
   }, []);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapToken) return;
+    if (!mapContainer.current || !mapToken) {
+      console.log('Map initialization waiting:', { 
+        hasContainer: !!mapContainer.current, 
+        hasToken: !!mapToken 
+      });
+      return;
+    }
+
+    console.log('Initializing map with token...');
 
     // Clean up existing map if any
     if (map.current) {
@@ -54,80 +64,93 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
       map.current = null;
     }
 
-    mapboxgl.accessToken = mapToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [100, 20],
-      zoom: 2,
-      projection: 'mercator' as any
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    const regionCoordinates: Record<string, [number, number]> = {
-      'north-asia': [135, 37],
-      'asean': [105, 10],
-      'oceania': [145, -25],
-      'greater-china': [110, 35],
-      'anglosphere': [-95, 40],
-      'europe': [10, 50],
-      'mena': [45, 25],
-      'africa': [20, 0],
-      'latin-america': [-60, -10],
-      'south-asia': [78, 20],
-      'pan-pacific': [180, 0],
-      'pan-asia': [100, 30],
-      'global-comparison': [0, 20]
-    };
-
-    map.current.on('load', () => {
-      if (!map.current) return;
+    try {
+      mapboxgl.accessToken = mapToken;
       
-      regions.forEach((region) => {
-        const coords = regionCoordinates[region.slug];
-        if (!coords || !map.current) return;
-
-        const el = document.createElement('div');
-        el.className = 'policy-map-marker';
-        el.style.width = '30px';
-        el.style.height = '30px';
-        el.style.borderRadius = '50%';
-        el.style.backgroundColor = 'hsl(var(--primary))';
-        el.style.border = '3px solid white';
-        el.style.cursor = 'pointer';
-        el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-        el.style.transition = 'all 0.2s';
-        
-        el.addEventListener('mouseenter', () => {
-          el.style.transform = 'scale(1.2)';
-          el.style.backgroundColor = 'hsl(var(--primary) / 0.8)';
-        });
-        
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1)';
-          el.style.backgroundColor = 'hsl(var(--primary))';
-        });
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat(coords)
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div style="padding: 8px;">
-                  <h3 style="margin: 0 0 4px 0; font-weight: 600;">${region.name}</h3>
-                  <p style="margin: 0; font-size: 12px; color: #666;">${region.description}</p>
-                </div>
-              `)
-          )
-          .addTo(map.current!);
-
-        el.addEventListener('click', () => {
-          navigate(`/ai-policy-atlas/${region.slug}`);
-        });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [100, 20],
+        zoom: 2,
+        projection: 'mercator' as any
       });
-    });
+
+      console.log('Map created, adding controls...');
+
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      const regionCoordinates: Record<string, [number, number]> = {
+        'north-asia': [135, 37],
+        'asean': [105, 10],
+        'oceania': [145, -25],
+        'greater-china': [110, 35],
+        'anglosphere': [-95, 40],
+        'europe': [10, 50],
+        'mena': [45, 25],
+        'africa': [20, 0],
+        'latin-america': [-60, -10],
+        'south-asia': [78, 20],
+        'pan-pacific': [180, 0],
+        'pan-asia': [100, 30],
+        'global-comparison': [0, 20]
+      };
+
+      map.current.on('load', () => {
+        console.log('Map loaded, adding markers...');
+        if (!map.current) return;
+        
+        regions.forEach((region) => {
+          const coords = regionCoordinates[region.slug];
+          if (!coords || !map.current) return;
+
+          const el = document.createElement('div');
+          el.className = 'policy-map-marker';
+          el.style.width = '30px';
+          el.style.height = '30px';
+          el.style.borderRadius = '50%';
+          el.style.backgroundColor = 'hsl(var(--primary))';
+          el.style.border = '3px solid white';
+          el.style.cursor = 'pointer';
+          el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+          el.style.transition = 'all 0.2s';
+          
+          el.addEventListener('mouseenter', () => {
+            el.style.transform = 'scale(1.2)';
+            el.style.backgroundColor = 'hsl(var(--primary) / 0.8)';
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            el.style.transform = 'scale(1)';
+            el.style.backgroundColor = 'hsl(var(--primary))';
+          });
+
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat(coords)
+            .setPopup(
+              new mapboxgl.Popup({ offset: 25 })
+                .setHTML(`
+                  <div style="padding: 8px;">
+                    <h3 style="margin: 0 0 4px 0; font-weight: 600;">${region.name}</h3>
+                    <p style="margin: 0; font-size: 12px; color: #666;">${region.description}</p>
+                  </div>
+                `)
+            )
+            .addTo(map.current!);
+
+          el.addEventListener('click', () => {
+            navigate(`/ai-policy-atlas/${region.slug}`);
+          });
+        });
+
+        console.log('Markers added successfully');
+      });
+
+      map.current.on('error', (e) => {
+        console.error('Map error:', e);
+      });
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
 
     return () => {
       if (map.current) {
