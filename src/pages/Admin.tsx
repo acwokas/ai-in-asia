@@ -903,6 +903,10 @@ const Admin = () => {
                 <Button onClick={() => navigate("/admin/category-sponsors")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   Category Sponsors
                 </Button>
+                <Button onClick={() => navigate("/admin/ai-comments")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  AI Comments
+                </Button>
               </div>
             </div>
           </CardContent>
