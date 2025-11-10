@@ -131,7 +131,11 @@ const AIComments = () => {
       const { data, error } = await supabase.functions.invoke('generate-ai-comments', {
         body: { categoryId },
       });
-      if (error) throw error;
+      if (error) {
+        // Extract error message from response body if available
+        const errorMessage = (data as any)?.error || error.message || 'Failed to generate comments';
+        throw new Error(errorMessage);
+      }
       return data;
     },
     onSuccess: (data) => {
@@ -190,7 +194,11 @@ const AIComments = () => {
       const { data, error } = await supabase.functions.invoke('generate-ai-comments', {
         body: { articleIds: [articleId] },
       });
-      if (error) throw error;
+      if (error) {
+        // Extract error message from response body if available
+        const errorMessage = (data as any)?.error || error.message || 'Failed to regenerate';
+        throw new Error(errorMessage);
+      }
       toast({
         title: "Comments Regenerated",
         description: `${data.commentsGenerated} new comments generated`,
