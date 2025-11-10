@@ -79,6 +79,7 @@ const UploadAuthorAvatars = lazy(() => import("./pages/UploadAuthorAvatars"));
 const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments"));
 const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
 const CategorySponsorsManager = lazy(() => import("./pages/CategorySponsorsManager"));
+const InternalLinksManager = lazy(() => import("./pages/InternalLinksManager"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -198,6 +199,7 @@ const App = () => (
               <Route path="/admin/category-mapper" element={<CategoryMapper />} />
               <Route path="/admin/clean-articles" element={<CleanArticles />} />
               <Route path="/admin/fix-migrated-content" element={<FixMigratedContent />} />
+              <Route path="/admin/internal-links" element={<InternalLinksManager />} />
               <Route path="/admin/remove-tweet-links" element={<RemoveTweetLinks />} />
               <Route path="/admin/publish-all" element={<PublishAllArticles />} />
               <Route path="/admin/ai-comments" element={<AIComments />} />

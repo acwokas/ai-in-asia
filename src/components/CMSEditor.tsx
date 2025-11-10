@@ -656,7 +656,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     
     try {
       const { data, error } = await supabase.functions.invoke("scout-rewrite-article", {
-        body: { content, title },
+        body: { 
+          content, 
+          title,
+          currentArticleId: initialData?.id 
+        },
       });
 
       if (error) throw error;
@@ -667,8 +671,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
           setExcerpt(data.excerpt);
         }
         toast({
-          title: "Article Rewritten!",
-          description: data?.excerpt ? "Article and excerpt generated successfully" : "Article rewritten with a fresh perspective",
+          title: "Article Rewritten with Links",
+          description: "Content rewritten with internal and external links automatically added",
         });
       }
     } catch (error: any) {

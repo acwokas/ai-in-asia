@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, title } = await req.json();
+    const { content, title, currentArticleId } = await req.json();
 
     if (!content || content.trim().length === 0) {
       return new Response(
@@ -21,10 +22,30 @@ serve(async (req) => {
       );
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Fetch published articles for internal linking
+    const query = supabase
+      .from('articles')
+      .select('id, title, slug, excerpt')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(50);
+
+    if (currentArticleId) {
+      query.neq('id', currentArticleId);
+    }
+
+    const { data: articles } = await query;
+    const articlesList = articles?.map(a => `- ${a.title} (/${a.slug})`).join('\n') || '';
 
     const systemPrompt = `You are an expert content writer and editor specialising in British English. Your task is to completely rewrite articles from a fresh perspective while maintaining accuracy and educational value.
 
@@ -39,10 +60,20 @@ CRITICAL REQUIREMENTS:
 - Include specific examples and concrete details
 - Keep it concise and punchy - get to the point without waffle
 
+INTERNAL & EXTERNAL LINKING:
+- Naturally integrate 2-4 internal links to our existing articles using relevant anchor text
+- Add at least 1 authoritative external link to support claims (research papers, official reports, major publications)
+- External links MUST use this format: [text](url)^  - the ^ makes them open in new tabs
+- Internal links use format: [text](/slug)
+- Place links where they add value, not forced
+- Make anchor text natural and descriptive
+
+AVAILABLE ARTICLES FOR INTERNAL LINKING:
+${articlesList}
+
 FORMATTING REQUIREMENTS:
 - Use ## for H2 headings (main sections)
 - Use > for blockquotes (for emphasis or notable quotes)
-- Format external links as [link text](URL) - these will automatically open in new tabs
 - Use **bold** for emphasis sparingly
 - Use *italic* for subtle emphasis or terms
 - Keep paragraphs relatively short (2-4 sentences typically)
@@ -58,7 +89,7 @@ CONTENT APPROACH:
 - Include relevant context where helpful
 - Get to the point quickly - avoid unnecessary preamble
 
-Return ONLY the rewritten markdown content, nothing else.`;
+Return ONLY the rewritten markdown content with embedded links, nothing else.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -70,7 +101,7 @@ Return ONLY the rewritten markdown content, nothing else.`;
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Rewrite this article completely with a fresh perspective:\n\n${content}` }
+          { role: 'user', content: `Rewrite this article completely with a fresh perspective, including internal links from our articles and at least one external authoritative link:\n\n${content}` }
         ],
         temperature: 0.8,
       }),
