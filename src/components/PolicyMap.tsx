@@ -170,7 +170,7 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
 
   return (
     <div className="relative w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
       <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur px-4 py-2 rounded-md shadow-md">
         <p className="text-sm text-muted-foreground">Click markers to explore regions</p>
       </div>
