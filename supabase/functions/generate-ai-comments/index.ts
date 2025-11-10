@@ -125,6 +125,13 @@ Deno.serve(async (req) => {
       .select('*');
 
     if (authorsError) throw authorsError;
+    
+    if (!authors || authors.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No AI comment authors found. Please seed the author pool first.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const authorsByRegion = {
       singapore: authors.filter(a => a.region === 'singapore'),
@@ -135,6 +142,17 @@ Deno.serve(async (req) => {
     };
 
     const powerUsers = authors.filter(a => a.is_power_user);
+    
+    // Validate that we have authors in all regions
+    const allAuthors = [...authorsByRegion.singapore, ...authorsByRegion.india, 
+                       ...authorsByRegion.philippines, ...authorsByRegion.china_hk, 
+                       ...authorsByRegion.west];
+    if (allAuthors.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No AI comment authors available in any region.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     let totalGenerated = 0;
 
@@ -170,7 +188,17 @@ Deno.serve(async (req) => {
           else region = 'west';
 
           const regionAuthors = authorsByRegion[region];
-          selectedAuthor = regionAuthors[Math.floor(Math.random() * regionAuthors.length)];
+          if (regionAuthors.length === 0) {
+            // Fallback to any available author if region is empty
+            selectedAuthor = allAuthors[Math.floor(Math.random() * allAuthors.length)];
+          } else {
+            selectedAuthor = regionAuthors[Math.floor(Math.random() * regionAuthors.length)];
+          }
+        }
+        
+        if (!selectedAuthor) {
+          console.error('Failed to select author');
+          continue;
         }
 
         // Determine comment length (20% short, 60% medium, 20% long)
