@@ -6,8 +6,10 @@ import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Search, Globe, FileText } from "lucide-react";
+import { Search, Globe, FileText, GitCompare } from "lucide-react";
+import PolicyMap from "@/components/PolicyMap";
 
 const PolicyAtlas = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,17 +70,31 @@ const PolicyAtlas = () => {
             Mapping digital governance across the world
           </p>
           
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search by keyword, region, or country..."
-              className="pl-10 h-12"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mb-8">
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by keyword, region, or country..."
+                className="pl-10 h-12"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button asChild size="lg">
+              <Link to="/ai-policy-atlas/compare" className="flex items-center gap-2">
+                <GitCompare className="h-5 w-5" />
+                Compare
+              </Link>
+            </Button>
           </div>
+        </div>
+
+        {/* Interactive Map */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold mb-6">Interactive Map</h2>
+          {regions && <PolicyMap regions={regions} />}
         </div>
 
         {/* Region Grid */}

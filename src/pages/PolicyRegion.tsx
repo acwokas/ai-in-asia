@@ -6,8 +6,8 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { ArrowLeft, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
+import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 
 const PolicyRegion = () => {
   const { region } = useParams();
@@ -58,15 +58,11 @@ const PolicyRegion = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button variant="ghost" asChild>
-            <Link to="/ai-policy-atlas" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to AI Policy Atlas
-            </Link>
-          </Button>
-        </div>
+        {/* Breadcrumbs */}
+        <PolicyBreadcrumbs 
+          regionName={regionData?.name}
+          regionSlug={region}
+        />
 
         {/* Region Header */}
         <div className="mb-12">

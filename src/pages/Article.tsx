@@ -10,6 +10,8 @@ import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
 import GoogleAd, { InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
+import PolicyArticleContent from "@/components/PolicyArticleContent";
+import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -727,19 +729,27 @@ const Article = () => {
         <main className="flex-1">
           <article className="container mx-auto px-4 py-8 max-w-4xl">
             {/* Breadcrumbs */}
-            <nav className="text-sm text-muted-foreground mb-6">
-              <Link to="/" className="hover:text-primary">Home</Link>
-              <span className="mx-2">›</span>
-              {article.categories && (
-                <>
-                  <Link to={`/category/${article.categories.slug}`} className="hover:text-primary">
-                    {article.categories.name}
-                  </Link>
-                  <span className="mx-2">›</span>
-                </>
-              )}
-              <span>{article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}</span>
-            </nav>
+            {article.article_type === 'policy_article' ? (
+              <PolicyBreadcrumbs 
+                regionName={article.categories?.name}
+                regionSlug={article.categories?.slug}
+                articleTitle={article.title}
+              />
+            ) : (
+              <nav className="text-sm text-muted-foreground mb-6">
+                <Link to="/" className="hover:text-primary">Home</Link>
+                <span className="mx-2">›</span>
+                {article.categories && (
+                  <>
+                    <Link to={`/category/${article.categories.slug}`} className="hover:text-primary">
+                      {article.categories.name}
+                    </Link>
+                    <span className="mx-2">›</span>
+                  </>
+                )}
+                <span>{article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}</span>
+              </nav>
+            )}
 
             {/* Article Header */}
             <header className="mb-8">
@@ -969,7 +979,11 @@ const Article = () => {
 
             {/* Article Content */}
             <div className="prose prose-lg max-w-none">
-              {renderContent(article.content)}
+              {article.article_type === 'policy_article' ? (
+                <PolicyArticleContent article={article} />
+              ) : (
+                renderContent(article.content)
+              )}
             </div>
 
             {/* Second Ad - After Content, Before Comments */}
