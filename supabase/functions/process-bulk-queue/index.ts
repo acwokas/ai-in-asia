@@ -24,11 +24,30 @@ serve(async (req) => {
 
     console.log("Checking for queued bulk operations...");
 
-    // Get the oldest queued or in-progress job
+    // First, check for stalled jobs (processing for more than 10 minutes with no progress)
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: stalledJobs } = await supabase
+      .from("bulk_operation_queue")
+      .select("id, operation_type, processed_items, started_at")
+      .eq("status", "processing")
+      .lt("started_at", tenMinutesAgo);
+
+    if (stalledJobs && stalledJobs.length > 0) {
+      console.log(`Found ${stalledJobs.length} stalled jobs, resetting to queued...`);
+      for (const stalledJob of stalledJobs) {
+        await supabase
+          .from("bulk_operation_queue")
+          .update({ status: "queued" })
+          .eq("id", stalledJob.id);
+        console.log(`Reset stalled job ${stalledJob.id}`);
+      }
+    }
+
+    // Get the oldest queued job OR the oldest processing job (but only one)
     const { data: queuedJobs, error: queueError } = await supabase
       .from("bulk_operation_queue")
       .select("*")
-      .in("status", ["queued", "processing"])
+      .eq("status", "queued")
       .order("created_at", { ascending: true })
       .limit(1);
 
@@ -37,15 +56,28 @@ serve(async (req) => {
       throw queueError;
     }
 
-    if (!queuedJobs || queuedJobs.length === 0) {
-      console.log("No queued jobs found");
+    // If no queued jobs, check for a processing job to continue
+    let job = queuedJobs?.[0];
+    
+    if (!job) {
+      const { data: processingJobs } = await supabase
+        .from("bulk_operation_queue")
+        .select("*")
+        .eq("status", "processing")
+        .order("started_at", { ascending: true })
+        .limit(1);
+      
+      job = processingJobs?.[0];
+    }
+
+    if (!job) {
+      console.log("No queued or processing jobs found");
       return new Response(
         JSON.stringify({ message: "No queued jobs to process" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const job = queuedJobs[0];
     console.log(`Processing job ${job.id}: ${job.operation_type}, status: ${job.status}, progress: ${job.processed_items || 0}/${job.total_items || '?'}`);
 
     // Mark job as processing if it's queued
