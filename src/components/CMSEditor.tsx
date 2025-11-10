@@ -1583,6 +1583,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               size="sm"
               onClick={handleGenerateTldr}
               disabled={isGeneratingTldr || !title || !content}
+              className="bg-[#10b981] hover:bg-[#059669] text-white border-0"
             >
               {isGeneratingTldr ? (
                 <>
@@ -1590,7 +1591,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   Generating...
                 </>
               ) : (
-                "Generate TL;DR"
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Scout Assist
+                </>
               )}
             </Button>
           </div>
