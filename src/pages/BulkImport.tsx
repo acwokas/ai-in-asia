@@ -130,10 +130,6 @@ export default function BulkImport() {
   };
 
   const handleDeleteLog = async (logId: string) => {
-    if (!confirm("Are you sure you want to delete this import log? This will only remove the log entry, not the imported articles.")) {
-      return;
-    }
-
     setDeleting(logId);
 
     try {
@@ -1215,24 +1211,44 @@ Special characters are fine as long as the file is UTF-8 encoded.","Guide to for
                             )}
                           </Button>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteLog(importLog.id)}
-                          disabled={deleting === importLog.id}
-                        >
-                          {deleting === importLog.id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                              Deleting...
-                            </>
-                          ) : (
-                            <>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete Log
-                            </>
-                          )}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={deleting === importLog.id}
+                            >
+                              {deleting === importLog.id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                  Deleting...
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete Log
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Import Log</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this import log? This will only remove the log entry, not the imported articles.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteLog(importLog.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   ))}

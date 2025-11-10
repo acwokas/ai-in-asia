@@ -190,9 +190,7 @@ const AuthorManagement = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this author? This action cannot be undone.")) {
-      deleteMutation.mutate(id);
-    }
+    deleteMutation.mutate(id);
   };
 
   const resetForm = () => {
