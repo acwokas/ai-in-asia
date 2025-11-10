@@ -288,7 +288,13 @@ export const PolicyArticleEditor = ({
           <CardDescription>Add multiple columns to compare countries/regions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {comparisonTables.map((table, tableIndex) => (
+          {comparisonTables.map((table, tableIndex) => {
+            // Ensure table has proper structure
+            if (!table || typeof table !== 'object') return null;
+            const columnHeaders = Array.isArray(table.columnHeaders) ? table.columnHeaders : [];
+            const rows = Array.isArray(table.rows) ? table.rows : [];
+            
+            return (
             <div key={tableIndex} className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <Input
@@ -311,7 +317,7 @@ export const PolicyArticleEditor = ({
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Column Headers</Label>
                 <div className="flex gap-2 items-center flex-wrap">
-                  {table.columnHeaders.map((header, colIndex) => (
+                  {columnHeaders.map((header, colIndex) => (
                     <div key={colIndex} className="flex items-center gap-1">
                       <Input
                         value={header}
@@ -362,18 +368,22 @@ export const PolicyArticleEditor = ({
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Comparison Data</Label>
                 <div className="space-y-2">
-                  <div className={`grid gap-2 text-xs font-medium text-muted-foreground`} style={{ gridTemplateColumns: `150px repeat(${table.columnHeaders.length}, 1fr)` }}>
+                  <div className={`grid gap-2 text-xs font-medium text-muted-foreground`} style={{ gridTemplateColumns: `150px repeat(${columnHeaders.length}, 1fr)` }}>
                     <div>Aspect</div>
-                    {table.columnHeaders.map((header, idx) => (
+                    {columnHeaders.map((header, idx) => (
                       <div key={idx}>{header || `Column ${idx + 1}`}</div>
                     ))}
                   </div>
 
-                  {table.rows.map((row, rowIndex) => (
+                  {rows.map((row, rowIndex) => {
+                    if (!row || typeof row !== 'object') return null;
+                    const rowValues = Array.isArray(row.values) ? row.values : [];
+                    
+                    return (
                     <div key={rowIndex} className="flex items-start gap-2">
-                      <div className={`grid gap-2 flex-1`} style={{ gridTemplateColumns: `150px repeat(${table.columnHeaders.length}, 1fr)` }}>
+                      <div className={`grid gap-2 flex-1`} style={{ gridTemplateColumns: `150px repeat(${columnHeaders.length}, 1fr)` }}>
                         <Input
-                          value={row.aspect}
+                          value={row.aspect || ''}
                           onChange={(e) => {
                             const newTables = [...comparisonTables];
                             newTables[tableIndex].rows[rowIndex].aspect = e.target.value;
@@ -381,7 +391,7 @@ export const PolicyArticleEditor = ({
                           }}
                           placeholder="Aspect..."
                         />
-                        {row.values.map((value, colIndex) => (
+                        {rowValues.map((value, colIndex) => (
                           <Input
                             key={colIndex}
                             value={value}
@@ -403,7 +413,8 @@ export const PolicyArticleEditor = ({
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
-                  ))}
+                    );
+                  })}
 
                   <Button
                     type="button"
@@ -418,7 +429,8 @@ export const PolicyArticleEditor = ({
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           <Button type="button" variant="outline" onClick={handleAddComparisonTable} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
