@@ -31,16 +31,68 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
       {/* Policy Sections */}
       {policySections.length > 0 && (
         <div className="space-y-6">
-          {policySections.map((section: any, index: number) => (
-            <div key={index}>
-              <h2 className="text-2xl font-bold mb-4">{section.heading}</h2>
-              <div className="prose prose-lg max-w-none">
-                {String(section.body).split('\n').map((paragraph: string, pIndex: number) => (
-                  paragraph.trim() && <p key={pIndex} className="mb-4">{paragraph}</p>
-                ))}
+          {policySections.map((section: any, index: number) => {
+            const lines = String(section.body).split('\n').filter(line => line.trim());
+            const content: JSX.Element[] = [];
+            let currentList: { type: 'ul' | 'ol', items: string[] } | null = null;
+
+            const renderList = (list: { type: 'ul' | 'ol', items: string[] }, key: string) => {
+              return list.type === 'ul' 
+                ? <ul key={key} className="list-disc pl-6 mb-4 space-y-2">{list.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+                : <ol key={key} className="list-decimal pl-6 mb-4 space-y-2">{list.items.map((it, i) => <li key={i}>{it}</li>)}</ol>;
+            };
+
+            lines.forEach((line: string) => {
+              const trimmedLine = line.trim();
+              
+              // Check for bullet points
+              if (trimmedLine.startsWith('- ')) {
+                const item = trimmedLine.substring(2).trim();
+                if (currentList?.type === 'ul') {
+                  currentList.items.push(item);
+                } else {
+                  if (currentList) {
+                    content.push(renderList(currentList, `list-${content.length}`));
+                  }
+                  currentList = { type: 'ul', items: [item] };
+                }
+              }
+              // Check for numbered lists
+              else if (/^\d+\.\s/.test(trimmedLine)) {
+                const item = trimmedLine.replace(/^\d+\.\s/, '').trim();
+                if (currentList?.type === 'ol') {
+                  currentList.items.push(item);
+                } else {
+                  if (currentList) {
+                    content.push(renderList(currentList, `list-${content.length}`));
+                  }
+                  currentList = { type: 'ol', items: [item] };
+                }
+              }
+              // Regular paragraph
+              else {
+                if (currentList) {
+                  content.push(renderList(currentList, `list-${content.length}`));
+                  currentList = null;
+                }
+                content.push(<p key={`p-${content.length}`} className="mb-4">{trimmedLine}</p>);
+              }
+            });
+
+            // Don't forget any remaining list
+            if (currentList) {
+              content.push(renderList(currentList, `list-${content.length}`));
+            }
+
+            return (
+              <div key={index}>
+                <h2 className="text-2xl font-bold mb-4">{section.heading}</h2>
+                <div className="prose prose-lg max-w-none">
+                  {content}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
