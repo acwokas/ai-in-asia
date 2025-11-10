@@ -444,6 +444,9 @@ const Article = () => {
       // Replace all double line breaks between bullets with single line breaks
       let consolidated = content.replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
       
+      // Consolidate numbered lists - merge consecutive numbered items separated by double line breaks
+      consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
+      
       // Process inline formatting FIRST (before splitting into blocks)
       let processed = consolidated
         // Remove legacy WordPress tweet links (e.g., <a href="...">Tweet</a> or [Tweet](...))
