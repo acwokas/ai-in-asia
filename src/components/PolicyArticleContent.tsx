@@ -169,8 +169,8 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
       {localResources.length > 0 && (
         <Card className="overflow-hidden border-2 border-accent/30 shadow-2xl bg-gradient-to-br from-background via-accent/5 to-background">
           <CardHeader className="bg-gradient-to-r from-accent/20 via-accent/10 to-secondary/10 border-b-2 border-accent/30">
-            <CardTitle className="text-3xl font-bold flex items-center gap-3 text-accent-foreground">
-              <ExternalLink className="h-7 w-7" />
+            <CardTitle className="text-3xl font-bold flex items-center gap-3 text-foreground">
+              <ExternalLink className="h-7 w-7 text-accent" />
               Local Resources
             </CardTitle>
           </CardHeader>
