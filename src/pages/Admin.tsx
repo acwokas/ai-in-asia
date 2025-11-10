@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench, Link2 } from "lucide-react";
+import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench, Link2, Activity, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import AIToolsManager from "./AIToolsManager";
@@ -910,6 +910,14 @@ const Admin = () => {
                 <Button onClick={() => navigate("/admin/internal-links")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   <Link2 className="h-4 w-4 mr-2" />
                   Internal Links Manager
+                </Button>
+                <Button onClick={() => navigate("/admin/link-health")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Link Health Monitor
+                </Button>
+                <Button onClick={() => navigate("/admin/content-freshness")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Content Freshness Tracker
                 </Button>
               </div>
             </div>
