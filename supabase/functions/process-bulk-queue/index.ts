@@ -24,7 +24,29 @@ serve(async (req) => {
 
     console.log("Checking for queued bulk operations...");
 
-    // First, check for stalled jobs (processing for more than 10 minutes with no progress)
+    // CRITICAL: Ensure only ONE job can be processing at a time
+    // First, get ALL processing jobs and keep only the oldest one
+    const { data: allProcessingJobs } = await supabase
+      .from("bulk_operation_queue")
+      .select("id, operation_type, started_at, created_at")
+      .eq("status", "processing")
+      .order("started_at", { ascending: true });
+
+    if (allProcessingJobs && allProcessingJobs.length > 1) {
+      console.log(`WARNING: Found ${allProcessingJobs.length} processing jobs. Resetting extras to queued...`);
+      const oldestProcessingJob = allProcessingJobs[0];
+      
+      // Reset all other processing jobs back to queued
+      for (let i = 1; i < allProcessingJobs.length; i++) {
+        await supabase
+          .from("bulk_operation_queue")
+          .update({ status: "queued", started_at: null })
+          .eq("id", allProcessingJobs[i].id);
+        console.log(`Reset extra processing job ${allProcessingJobs[i].id} to queued`);
+      }
+    }
+
+    // Check for stalled jobs (processing for more than 10 minutes with no progress)
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: stalledJobs } = await supabase
       .from("bulk_operation_queue")
@@ -37,13 +59,13 @@ serve(async (req) => {
       for (const stalledJob of stalledJobs) {
         await supabase
           .from("bulk_operation_queue")
-          .update({ status: "queued" })
+          .update({ status: "queued", started_at: null })
           .eq("id", stalledJob.id);
         console.log(`Reset stalled job ${stalledJob.id}`);
       }
     }
 
-    // Get the oldest queued job OR the oldest processing job (but only one)
+    // Now get the job to process: oldest queued job OR the one processing job
     const { data: queuedJobs, error: queueError } = await supabase
       .from("bulk_operation_queue")
       .select("*")
@@ -56,7 +78,7 @@ serve(async (req) => {
       throw queueError;
     }
 
-    // If no queued jobs, check for a processing job to continue
+    // If no queued jobs, check for THE processing job
     let job = queuedJobs?.[0];
     
     if (!job) {
@@ -80,8 +102,23 @@ serve(async (req) => {
 
     console.log(`Processing job ${job.id}: ${job.operation_type}, status: ${job.status}, progress: ${job.processed_items || 0}/${job.total_items || '?'}`);
 
-    // Mark job as processing if it's queued
+    // CRITICAL: Before marking a queued job as processing, verify NO other job is currently processing
     if (job.status === 'queued') {
+      const { data: currentlyProcessing } = await supabase
+        .from("bulk_operation_queue")
+        .select("id")
+        .eq("status", "processing")
+        .limit(1);
+
+      if (currentlyProcessing && currentlyProcessing.length > 0) {
+        console.log(`Another job is already processing (${currentlyProcessing[0].id}). Skipping this job.`);
+        return new Response(
+          JSON.stringify({ message: "Another job is already being processed" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Safe to mark as processing
       await supabase
         .from("bulk_operation_queue")
         .update({ 
@@ -89,6 +126,8 @@ serve(async (req) => {
           started_at: new Date().toISOString() 
         })
         .eq("id", job.id);
+      
+      console.log(`Marked job ${job.id} as processing`);
     }
 
     try {
