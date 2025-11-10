@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -15,7 +16,15 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Upload, X } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Upload, X, Home } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
@@ -171,6 +180,30 @@ export default function NewsletterManager() {
     <>
       <Header />
       <div className="container mx-auto px-4 py-8 min-h-screen">
+        {/* Breadcrumbs */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center gap-1">
+                  <Home className="h-4 w-4" />
+                  Home
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/admin">Admin</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Newsletter Manager</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Newsletter Manager</h1>
           <p className="text-muted-foreground">AI in ASIA Weekly Brief</p>

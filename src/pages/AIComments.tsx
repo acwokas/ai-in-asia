@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings } from "lucide-react";
+import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -14,6 +15,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
+import Header from "@/components/Header";
 
 const AIComments = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -346,13 +356,39 @@ const AIComments = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">AI Comment Generator</h1>
-        <p className="text-muted-foreground">
-          Generate natural, authentic-looking comments for published articles
-        </p>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumbs */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center gap-1">
+                  <Home className="h-4 w-4" />
+                  Home
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/admin">Admin</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>AI Comments</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">AI Comment Generator</h1>
+          <p className="text-muted-foreground">
+            Generate natural, authentic-looking comments for published articles
+          </p>
+        </div>
 
       {/* Author Pool Stats */}
       <Card className="mb-6">
@@ -707,6 +743,7 @@ const AIComments = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };
