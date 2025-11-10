@@ -829,7 +829,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Headline
+                        Scout Assist: Headline
                       </>
                     )}
                   </Button>
@@ -996,7 +996,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Assist
+                        Scout Assist: Rewrite
                       </>
                     )}
                   </Button>
@@ -1036,7 +1036,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Assist
+                        Scout Assist: Image Prompt
                       </>
                     )}
                   </Button>
@@ -1166,7 +1166,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   ) : (
                     <>
                       <Wand2 className="h-4 w-4 mr-2" />
-                      Auto-Generate SEO
+                      Scout Assist: SEO
                     </>
                   )}
                 </Button>
@@ -1652,7 +1652,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               ) : (
                 <>
                   <Wand2 className="h-4 w-4 mr-2" />
-                  Scout Assist
+                  Scout Assist: TL;DR
                 </>
               )}
             </Button>
