@@ -1146,8 +1146,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         </TabsContent>
 
         {/* Policy Article Tab */}
-        {articleType === 'policy_article' && (
-          <TabsContent value="policy" className="space-y-6">
+        <TabsContent value="policy" className="space-y-6">
+          {articleType === 'policy_article' ? (
             <PolicyArticleEditor
               region={region}
               country={country}
@@ -1166,8 +1166,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               availableRegions={policyRegions || []}
               availableTopicTags={policyTopicTags || []}
             />
-          </TabsContent>
-        )}
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-muted-foreground">
+                Policy Data tab is only available for Policy Articles
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         <TabsContent value="seo" className="space-y-6">
           <Card>
