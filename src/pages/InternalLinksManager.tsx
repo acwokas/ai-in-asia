@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, ExternalLink, AlertTriangle, TrendingUp, CheckCircle2, Zap, Info } from "lucide-react";
+import { Loader2, ExternalLink, AlertTriangle, TrendingUp, CheckCircle2, Zap, Info, ListChecks } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { BulkOperationQueue } from "@/components/BulkOperationQueue";
 
 const InternalLinksManager = () => {
   const navigate = useNavigate();
@@ -22,10 +23,7 @@ const InternalLinksManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isGeneratingLinks, setIsGeneratingLinks] = useState<string | null>(null);
   const [selectedArticles, setSelectedArticles] = useState<Set<string>>(new Set());
-  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState(0);
-  const [showBulkResults, setShowBulkResults] = useState(false);
-  const [bulkResults, setBulkResults] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("articles");
 
   // Fetch all published articles with their internal link count
   const { data: articles, isLoading } = useQuery({
@@ -127,7 +125,7 @@ const InternalLinksManager = () => {
     });
   };
 
-  const handleBulkAddLinks = async (dryRun: boolean = false) => {
+  const handleQueueBulkOperation = async () => {
     if (selectedArticles.size === 0) {
       toast({
         title: "No Articles Selected",
@@ -137,136 +135,49 @@ const InternalLinksManager = () => {
       return;
     }
 
-    const MAX_BATCH_SIZE = 50;
-    const articleIds = Array.from(selectedArticles);
-    const totalArticles = articleIds.length;
-    const batches: string[][] = [];
-    
-    // Split into batches of 50
-    for (let i = 0; i < totalArticles; i += MAX_BATCH_SIZE) {
-      batches.push(articleIds.slice(i, i + MAX_BATCH_SIZE));
-    }
-
-    setIsBulkProcessing(true);
-    setBulkProgress(0);
-    setShowBulkResults(false);
-
-    const allResults: any = {
-      success: true,
-      summary: {
-        total: totalArticles,
-        processed: 0,
-        updated: 0,
-        failed: 0,
-        skipped: 0
-      },
-      results: [],
-      dryRun
-    };
-
     try {
-      toast({
-        title: dryRun ? "Previewing Changes..." : "Processing Articles...",
-        description: `Processing ${totalArticles} articles in ${batches.length} batch${batches.length > 1 ? 'es' : ''} of up to ${MAX_BATCH_SIZE} articles`,
-      });
-
-      // Process each batch sequentially
-      for (let i = 0; i < batches.length; i++) {
-        const batch = batches[i];
-        const batchStart = i * MAX_BATCH_SIZE + 1;
-        const batchEnd = Math.min((i + 1) * MAX_BATCH_SIZE, totalArticles);
-        
-        console.log(`Processing batch ${i + 1}/${batches.length}: articles ${batchStart}-${batchEnd}`);
-        
-        try {
-          const { data, error } = await supabase.functions.invoke("bulk-add-internal-links", {
-            body: { 
-              articleIds: batch,
-              dryRun
-            },
-          });
-
-          if (error) {
-            console.error(`Batch ${i + 1} error:`, error);
-            
-            // Add failed entries for this batch
-            batch.forEach(articleId => {
-              allResults.results.push({
-                articleId,
-                status: "failed",
-                error: error.message || "Batch processing failed"
-              });
-              allResults.summary.failed++;
-            });
-            
-            toast({
-              title: `Batch ${i + 1}/${batches.length} Failed`,
-              description: error.message || "Failed to process batch. Continuing with next batch...",
-              variant: "destructive",
-            });
-            
-            continue; // Continue with next batch
-          }
-
-          // Aggregate results from this batch
-          allResults.summary.processed += data.summary.processed;
-          allResults.summary.updated += data.summary.updated;
-          allResults.summary.failed += data.summary.failed;
-          allResults.summary.skipped += data.summary.skipped;
-          allResults.results.push(...data.results);
-          
-          // Update progress
-          const progressPercent = Math.round((allResults.summary.processed / totalArticles) * 100);
-          setBulkProgress(progressPercent);
-          
-          toast({
-            title: `Batch ${i + 1}/${batches.length} Complete`,
-            description: `Processed articles ${batchStart}-${batchEnd}. ${data.summary.updated} updated, ${data.summary.skipped} skipped, ${data.summary.failed} failed`,
-          });
-
-          // Small delay between batches to avoid overwhelming the system
-          if (i < batches.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
-
-        } catch (batchError: any) {
-          console.error(`Unexpected error in batch ${i + 1}:`, batchError);
-          
-          // Mark all articles in this batch as failed
-          batch.forEach(articleId => {
-            allResults.results.push({
-              articleId,
-              status: "failed",
-              error: batchError.message || "Unexpected error"
-            });
-            allResults.summary.failed++;
-          });
-        }
+      const articleIds = Array.from(selectedArticles);
+      
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to queue bulk operations",
+          variant: "destructive",
+        });
+        return;
       }
 
-      setBulkResults(allResults);
-      setShowBulkResults(true);
+      const { data, error } = await supabase
+        .from("bulk_operation_queue")
+        .insert({
+          operation_type: "add_internal_links",
+          article_ids: articleIds,
+          total_items: articleIds.length,
+          created_by: userData.user.id,
+          options: { dryRun: false }
+        })
+        .select()
+        .single();
 
-      if (!dryRun && allResults.summary.updated > 0) {
-        queryClient.invalidateQueries({ queryKey: ["articles-internal-links"] });
-        setSelectedArticles(new Set());
-      }
+      if (error) throw error;
 
       toast({
-        title: "All Batches Complete",
-        description: `Total: ${allResults.summary.updated} updated, ${allResults.summary.skipped} skipped, ${allResults.summary.failed} failed`,
+        title: "✅ Operation Queued",
+        description: `${articleIds.length} articles queued for processing. You'll be notified when complete.`,
       });
+
+      setSelectedArticles(new Set());
+      setActiveTab("queue");
+      queryClient.invalidateQueries({ queryKey: ["bulk-operation-queue"] });
 
     } catch (error: any) {
-      console.error("Error in bulk processing:", error);
+      console.error("Error queueing operation:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to process articles",
+        description: error.message || "Failed to queue operation",
         variant: "destructive"
       });
-    } finally {
-      setIsBulkProcessing(false);
-      setBulkProgress(100);
     }
   };
 
@@ -300,7 +211,7 @@ const InternalLinksManager = () => {
         {/* Bulk Actions Card */}
         {selectedArticles.size > 0 && (
           <Alert className="mb-6">
-            <Info className="h-4 w-4" />
+            <ListChecks className="h-4 w-4" />
             <AlertTitle>Bulk Actions</AlertTitle>
             <AlertDescription>
               <div className="flex items-center justify-between mt-2">
@@ -315,77 +226,30 @@ const InternalLinksManager = () => {
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
-                    onClick={() => handleBulkAddLinks(true)}
-                    disabled={isBulkProcessing}
-                  >
-                    Preview Changes
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleBulkAddLinks(false)}
-                    disabled={isBulkProcessing}
+                    onClick={handleQueueBulkOperation}
                     className="bg-primary"
                   >
-                    {isBulkProcessing ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-3 w-3 mr-1" />
-                        Add Links to Selected
-                      </>
-                    )}
+                    <Zap className="h-3 w-3 mr-1" />
+                    Queue Operation ({selectedArticles.size} articles)
                   </Button>
                 </div>
               </div>
-              {isBulkProcessing && (
-                <Progress value={bulkProgress} className="mt-2" />
-              )}
             </AlertDescription>
           </Alert>
         )}
 
-        {/* Bulk Results */}
-        {showBulkResults && bulkResults && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                Bulk Processing Results
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-4 mb-4">
-                <div>
-                  <div className="text-2xl font-bold">{bulkResults.summary.total}</div>
-                  <div className="text-sm text-muted-foreground">Total</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">{bulkResults.summary.updated}</div>
-                  <div className="text-sm text-muted-foreground">Updated</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-yellow-600">{bulkResults.summary.skipped}</div>
-                  <div className="text-sm text-muted-foreground">Skipped</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{bulkResults.summary.failed}</div>
-                  <div className="text-sm text-muted-foreground">Failed</div>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowBulkResults(false)}
-              >
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Tabs for Articles and Queue */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+          <TabsList>
+            <TabsTrigger value="articles">Articles</TabsTrigger>
+            <TabsTrigger value="queue">Queue & History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="queue" className="mt-6">
+            <BulkOperationQueue />
+          </TabsContent>
+
+          <TabsContent value="articles" className="mt-6 space-y-8">
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -572,6 +436,8 @@ const InternalLinksManager = () => {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </main>
       <Footer />
     </div>
@@ -579,3 +445,4 @@ const InternalLinksManager = () => {
 };
 
 export default InternalLinksManager;
+

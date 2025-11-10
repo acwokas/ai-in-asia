@@ -627,6 +627,63 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_operation_queue: {
+        Row: {
+          article_ids: Json
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          failed_items: number
+          id: string
+          operation_type: string
+          options: Json | null
+          processed_items: number
+          results: Json | null
+          started_at: string | null
+          status: string
+          successful_items: number
+          total_items: number
+          updated_at: string
+        }
+        Insert: {
+          article_ids: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          operation_type: string
+          options?: Json | null
+          processed_items?: number
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+        }
+        Update: {
+          article_ids?: Json
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          operation_type?: string
+          options?: Json | null
+          processed_items?: number
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
