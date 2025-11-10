@@ -19,11 +19,30 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
   const [mapToken, setMapToken] = useState<string>('');
 
   useEffect(() => {
-    // Get Mapbox token from environment
-    const token = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
-    if (token) {
-      setMapToken(token);
-    }
+    // Fetch Mapbox token from edge function
+    const fetchToken = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`, {
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          }
+        });
+        
+        if (!response.ok) {
+          console.error('Failed to fetch Mapbox token');
+          return;
+        }
+        
+        const data = await response.json();
+        if (data.token) {
+          setMapToken(data.token);
+        }
+      } catch (error) {
+        console.error('Error fetching Mapbox token:', error);
+      }
+    };
+    
+    fetchToken();
   }, []);
 
   useEffect(() => {
