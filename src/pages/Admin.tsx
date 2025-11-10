@@ -826,113 +826,10 @@ const Admin = () => {
               Content Tools & Utilities
             </CardTitle>
             <CardDescription>
-              Bulk operations, content migration, and AI-powered tools
+              Publishing operations, analytics, and content management tools
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Migration & Import Tools */}
-            <div>
-              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Migration & Import</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Button onClick={() => navigate("/admin/migration-dashboard")} variant="outline" className="justify-start">
-                  Migration Dashboard
-                </Button>
-                <Button onClick={() => navigate("/admin/bulk-import")} variant="outline" className="justify-start">
-                  Bulk Import Articles
-                </Button>
-                <Button onClick={() => navigate("/admin/migrate-category-urls")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
-                  Migrate to Category URLs
-                </Button>
-                <Button onClick={() => navigate("/admin/bulk-redirects")} variant="outline" className="justify-start">
-                  Bulk URL Redirects
-                </Button>
-                <Button onClick={() => navigate("/admin/extract-image-urls")} variant="outline" className="justify-start">
-                  Extract Image URLs
-                </Button>
-                <Button onClick={() => navigate("/admin/category-mapper")} variant="outline" className="justify-start">
-                  Category Mapper
-                </Button>
-              </div>
-            </div>
-
-            {/* Content Processing */}
-            <div>
-              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Content Processing</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Button onClick={() => navigate("/admin/clean-articles")} variant="outline" className="justify-start">
-                  Clean Article Formatting
-                </Button>
-                <Button onClick={() => navigate("/admin/content-processor")} variant="outline" className="justify-start">
-                  Content Processor
-                </Button>
-                <Button onClick={() => navigate("/admin/assign-categories")} variant="outline" className="justify-start">
-                  Auto-Assign Categories
-                </Button>
-              </div>
-            </div>
-
-            {/* Image Tools */}
-            <div>
-              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Image Management</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Button onClick={() => navigate("/admin/image-migration")} variant="outline" className="justify-start">
-                  Image Migration
-                </Button>
-                <Button onClick={() => navigate("/admin/update-article-images")} variant="outline" className="justify-start">
-                  Update Article Images
-                </Button>
-                <Button onClick={() => navigate("/admin/fix-broken-image")} variant="outline" className="justify-start">
-                  Fix Broken Images
-                </Button>
-              </div>
-            </div>
-
-            {/* AI & Generation Tools */}
-            <div>
-              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">AI & Generation</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Button onClick={() => navigate("/admin/generate-tldr")} variant="outline" className="justify-start">
-                  Generate TLDR (Bulk)
-                </Button>
-                <Button onClick={() => navigate("/admin/bulk-comments")} variant="outline" className="justify-start">
-                  Generate Comments (Bulk)
-                </Button>
-                <Button onClick={() => navigate("/admin/process-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
-                  Process Pending Comments
-                </Button>
-                <Button
-                  onClick={handleAutoScheduleComments} 
-                  variant="outline" 
-                  className="justify-start bg-primary/5"
-                  disabled={autoScheduling}
-                >
-                  {autoScheduling ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Auto-Scheduling...
-                    </>
-                  ) : (
-                    "Auto-Schedule Missing Comments"
-                  )}
-                </Button>
-                <Button 
-                  onClick={handleCleanWordPressMarkup} 
-                  variant="outline" 
-                  className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
-                  disabled={cleaningMarkup}
-                >
-                  {cleaningMarkup ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Cleaning Markup...
-                    </>
-                  ) : (
-                    "Clean WordPress Markup"
-                  )}
-                </Button>
-              </div>
-            </div>
-
             {/* Publishing Tools */}
             <div>
               <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Publishing & Operations</h3>
@@ -1018,6 +915,7 @@ const Admin = () => {
             <TabsTrigger value="articles">Recent Articles</TabsTrigger>
             <TabsTrigger value="comments">Pending Comments</TabsTrigger>
             <TabsTrigger value="tools">AI Tools</TabsTrigger>
+            <TabsTrigger value="migration">Migration</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -1115,6 +1013,127 @@ const Admin = () => {
             <Card>
               <CardContent className="pt-6">
                 <AIToolsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="migration" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wrench className="h-5 w-5" />
+                  Migration Tools & Utilities
+                </CardTitle>
+                <CardDescription>
+                  Bulk operations, content migration, image processing, and AI-powered tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Migration & Import Tools */}
+                <div>
+                  <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Migration & Import</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <Button onClick={() => navigate("/admin/migration-dashboard")} variant="outline" className="justify-start">
+                      Migration Dashboard
+                    </Button>
+                    <Button onClick={() => navigate("/admin/bulk-import")} variant="outline" className="justify-start">
+                      Bulk Import Articles
+                    </Button>
+                    <Button onClick={() => navigate("/admin/migrate-category-urls")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                      Migrate to Category URLs
+                    </Button>
+                    <Button onClick={() => navigate("/admin/bulk-redirects")} variant="outline" className="justify-start">
+                      Bulk URL Redirects
+                    </Button>
+                    <Button onClick={() => navigate("/admin/extract-image-urls")} variant="outline" className="justify-start">
+                      Extract Image URLs
+                    </Button>
+                    <Button onClick={() => navigate("/admin/category-mapper")} variant="outline" className="justify-start">
+                      Category Mapper
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Content Processing */}
+                <div>
+                  <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Content Processing</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <Button onClick={() => navigate("/admin/clean-articles")} variant="outline" className="justify-start">
+                      Clean Article Formatting
+                    </Button>
+                    <Button onClick={() => navigate("/admin/content-processor")} variant="outline" className="justify-start">
+                      Content Processor
+                    </Button>
+                    <Button onClick={() => navigate("/admin/assign-categories")} variant="outline" className="justify-start">
+                      Auto-Assign Categories
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Image Tools */}
+                <div>
+                  <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Image Management</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <Button onClick={() => navigate("/admin/image-migration")} variant="outline" className="justify-start">
+                      Image Migration
+                    </Button>
+                    <Button onClick={() => navigate("/admin/update-article-images")} variant="outline" className="justify-start">
+                      Update Article Images
+                    </Button>
+                    <Button onClick={() => navigate("/admin/fix-broken-image")} variant="outline" className="justify-start">
+                      Fix Broken Images
+                    </Button>
+                  </div>
+                </div>
+
+                {/* AI & Generation Tools */}
+                <div>
+                  <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">AI & Generation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <Button onClick={() => navigate("/admin/generate-tldr")} variant="outline" className="justify-start">
+                      Generate TLDR (Bulk)
+                    </Button>
+                    <Button onClick={() => navigate("/admin/bulk-comments")} variant="outline" className="justify-start">
+                      Generate Comments (Bulk)
+                    </Button>
+                    <Button onClick={() => navigate("/admin/ai-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
+                      AI Comments Manager
+                    </Button>
+                    <Button onClick={() => navigate("/admin/process-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
+                      Process Pending Comments
+                    </Button>
+                    <Button
+                      onClick={handleAutoScheduleComments} 
+                      variant="outline" 
+                      className="justify-start bg-primary/5"
+                      disabled={autoScheduling}
+                    >
+                      {autoScheduling ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Auto-Scheduling...
+                        </>
+                      ) : (
+                        "Auto-Schedule Missing Comments"
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={handleCleanWordPressMarkup} 
+                      variant="outline" 
+                      className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
+                      disabled={cleaningMarkup}
+                    >
+                      {cleaningMarkup ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Cleaning Markup...
+                        </>
+                      ) : (
+                        "Clean WordPress Markup"
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
