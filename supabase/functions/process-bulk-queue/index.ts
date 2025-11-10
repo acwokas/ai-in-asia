@@ -165,12 +165,12 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
         const hasExternalLinks = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/.test(contentString);
 
         if (hasInternalLinks && hasExternalLinks) {
-          results.push({
-            articleId: article.id,
-            title: article.title,
-            status: "skipped",
-            reason: "Already has internal and external links"
-          });
+        results.push({
+          articleId: article.id,
+          title: article.title,
+          status: "skipped",
+          reason: "Already has internal and external links"
+        });
           processedCount++;
           continue;
         }
@@ -266,8 +266,21 @@ Return ONLY the updated content with links added. Do not change any other aspect
 
       } catch (error: any) {
         console.error(`Error processing article ${articleId}:`, error);
+        
+        // Try to fetch article title for better error reporting
+        let articleTitle = 'Unknown';
+        try {
+          const { data: article } = await supabase
+            .from("articles")
+            .select("title")
+            .eq("id", articleId)
+            .single();
+          if (article) articleTitle = article.title;
+        } catch {}
+
         results.push({
           articleId,
+          title: articleTitle,
           status: "failed",
           error: error.message
         });

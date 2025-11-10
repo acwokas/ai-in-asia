@@ -209,8 +209,21 @@ Return ONLY the updated content with links added. Do not change any other aspect
 
       } catch (error) {
         console.error(`Error processing article ${articleId}:`, error);
+        
+        // Try to fetch article title for better error reporting
+        let articleTitle = 'Unknown';
+        try {
+          const { data: article } = await supabase
+            .from("articles")
+            .select("title")
+            .eq("id", articleId)
+            .single();
+          if (article) articleTitle = article.title;
+        } catch {}
+        
         results.push({
           articleId,
+          title: articleTitle,
           status: "failed",
           error: error instanceof Error ? error.message : "Unknown error"
         });

@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface QueueJob {
   id: string;
@@ -22,11 +24,15 @@ interface QueueJob {
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;
+  results: any;
 }
 
 export const BulkOperationQueue = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeJob, setActiveJob] = useState<QueueJob | null>(null);
+  const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
+  const [isRetrying, setIsRetrying] = useState<string | null>(null);
 
   // Fetch queue jobs
   const { data: queueJobs, refetch } = useQuery({
@@ -139,6 +145,85 @@ export const BulkOperationQueue = () => {
     }
   };
 
+  const handleRetryFailed = async (job: QueueJob) => {
+    try {
+      setIsRetrying(job.id);
+      
+      // Get failed article IDs from results
+      const results = job.results as any[] || [];
+      const failedArticleIds = results
+        .filter((r: any) => r.status === "failed")
+        .map((r: any) => r.articleId)
+        .filter(Boolean);
+
+      if (failedArticleIds.length === 0) {
+        toast({
+          title: "No Failed Articles",
+          description: "There are no failed articles to retry",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to retry operations",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a new queue job for failed articles
+      const { error } = await supabase
+        .from("bulk_operation_queue")
+        .insert({
+          operation_type: job.operation_type,
+          article_ids: failedArticleIds,
+          total_items: failedArticleIds.length,
+          created_by: userData.user.id,
+          options: { retry: true, originalJobId: job.id }
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Retry Queued",
+        description: `${failedArticleIds.length} failed articles queued for reprocessing`,
+      });
+
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["bulk-operation-queue"] });
+    } catch (error: any) {
+      console.error("Error retrying failed articles:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to queue retry",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRetrying(null);
+    }
+  };
+
+  const toggleJobExpansion = (jobId: string) => {
+    setExpandedJobs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobId)) {
+        newSet.delete(jobId);
+      } else {
+        newSet.add(jobId);
+      }
+      return newSet;
+    });
+  };
+
+  const getFailedArticles = (job: QueueJob) => {
+    const results = job.results as any[] || [];
+    return results.filter((r: any) => r.status === "failed");
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'queued':
@@ -216,61 +301,148 @@ export const BulkOperationQueue = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {queueJobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-medium">{getOperationTypeName(job.operation_type)}</span>
-                      {getStatusBadge(job.status)}
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>
-                        Created: {format(new Date(job.created_at), 'PPp')}
+              {queueJobs.map((job) => {
+                const failedArticles = getFailedArticles(job);
+                const isExpanded = expandedJobs.has(job.id);
+                const hasFailures = failedArticles.length > 0;
+
+                return (
+                  <Card key={job.id} className="overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="font-medium">{getOperationTypeName(job.operation_type)}</span>
+                            {getStatusBadge(job.status)}
+                            {(job as any).options?.retry && (
+                              <Badge variant="outline" className="text-xs">
+                                <RotateCcw className="h-3 w-3 mr-1" />
+                                Retry
+                              </Badge>
+                            )}
+                            {hasFailures && (job.status === 'completed' || job.status === 'failed') && (
+                              <Badge variant="destructive" className="text-xs">
+                                {failedArticles.length} failed
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <div>
+                              Created: {format(new Date(job.created_at), 'PPp')}
+                            </div>
+                            {job.status === 'processing' && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <Progress value={(job.processed_items / job.total_items) * 100} className="flex-1" />
+                                <span className="text-xs">{job.processed_items}/{job.total_items}</span>
+                              </div>
+                            )}
+                            {job.status === 'completed' && (
+                              <div className="text-green-600 text-sm font-medium">
+                                ✅ {job.successful_items}/{job.total_items} successful
+                                {job.failed_items > 0 && (
+                                  <span className="text-red-600 ml-2">
+                                    ❌ {job.failed_items} failed
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {job.status === 'failed' && job.error_message && (
+                              <div className="text-red-600 text-xs mt-1">
+                                Error: {job.error_message}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-start">
+                          {hasFailures && (job.status === 'completed' || job.status === 'failed') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRetryFailed(job)}
+                              disabled={isRetrying === job.id}
+                            >
+                              {isRetrying === job.id ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  Queueing...
+                                </>
+                              ) : (
+                                <>
+                                  <RotateCcw className="h-3 w-3 mr-1" />
+                                  Retry Failed
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {job.status === 'queued' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCancelJob(job.id)}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          {['completed', 'failed', 'cancelled'].includes(job.status) && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteJob(job.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {hasFailures && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleJobExpansion(job.id)}
+                            >
+                              {isExpanded ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      {job.status === 'processing' && (
-                        <div className="flex items-center gap-2">
-                          <Progress value={(job.processed_items / job.total_items) * 100} className="flex-1" />
-                          <span className="text-xs">{job.processed_items}/{job.total_items}</span>
-                        </div>
-                      )}
-                      {job.status === 'completed' && (
-                        <div className="text-green-600">
-                          ✅ {job.successful_items}/{job.total_items} successful
-                          {job.failed_items > 0 && `, ${job.failed_items} failed`}
-                        </div>
-                      )}
-                      {job.status === 'failed' && job.error_message && (
-                        <div className="text-red-600 text-xs">
-                          Error: {job.error_message}
+
+                      {/* Failed Articles Details */}
+                      {hasFailures && isExpanded && (
+                        <div className="mt-4 pt-4 border-t">
+                          <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-destructive" />
+                            Failed Articles ({failedArticles.length})
+                          </h4>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {failedArticles.map((result: any, index: number) => (
+                              <div
+                                key={index}
+                                className="p-3 bg-destructive/10 border border-destructive/20 rounded text-sm"
+                              >
+                                <div className="font-medium text-destructive">
+                                  {result.title || 'Unknown Article'}
+                                </div>
+                                {result.error && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Error: {result.error}
+                                  </div>
+                                )}
+                                {result.articleId && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    ID: {result.articleId}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {job.status === 'queued' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCancelJob(job.id)}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                    {['completed', 'failed', 'cancelled'].includes(job.status) && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteJob(job.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>
