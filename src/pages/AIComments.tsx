@@ -246,7 +246,7 @@ const AIComments = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {authorStats ? (
+          {authorStats && authorStats.total > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div>
                 <div className="text-2xl font-bold">{authorStats.total}</div>
