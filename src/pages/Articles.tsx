@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink } from "lucide-react";
+import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -30,6 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const Articles = () => {
   const navigate = useNavigate();
@@ -45,6 +53,7 @@ const Articles = () => {
   const [deleteArticle, setDeleteArticle] = useState<{ id: string; title: string } | null>(null);
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [scheduledDateTime, setScheduledDateTime] = useState<{ [key: string]: { date: Date | undefined; time: string } }>({});
 
   useEffect(() => {
     checkAdminStatus();
@@ -245,6 +254,16 @@ const Articles = () => {
       setSortBy(column);
       setSortOrder("desc");
     }
+  };
+
+  const handleScheduledDateTimeUpdate = (articleId: string, date: Date | undefined, time: string) => {
+    if (!date || !time) return;
+    
+    const [hours, minutes] = time.split(':');
+    const dateTime = new Date(date);
+    dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    
+    handleUpdate(articleId, "scheduled_for", dateTime.toISOString());
   };
 
   if (isAdmin === null) {
@@ -546,22 +565,85 @@ const Articles = () => {
                     </TableCell>
                     <TableCell>
                       {article.status === "scheduled" && article.scheduled_for ? (
-                        <div className="text-sm text-[#10b981]">
-                          <div className="font-medium">
-                            {new Date(article.scheduled_for).toLocaleDateString('en-GB', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric'
-                            })}
-                          </div>
-                          <div className="text-xs">
-                            {new Date(article.scheduled_for).toLocaleTimeString('en-GB', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false
-                            })}
-                          </div>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="h-auto p-2 text-[#10b981] hover:text-[#10b981] hover:bg-[#10b981]/10"
+                            >
+                              <div className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4" />
+                                <div className="text-left">
+                                  <div className="font-medium text-sm">
+                                    {new Date(article.scheduled_for).toLocaleDateString('en-GB', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric'
+                                    })}
+                                  </div>
+                                  <div className="text-xs flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {new Date(article.scheduled_for).toLocaleTimeString('en-GB', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: false
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <div className="p-4 space-y-3">
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">Select Date</label>
+                                <Calendar
+                                  mode="single"
+                                  selected={scheduledDateTime[article.id]?.date || new Date(article.scheduled_for)}
+                                  onSelect={(date) => {
+                                    setScheduledDateTime(prev => ({
+                                      ...prev,
+                                      [article.id]: {
+                                        date: date,
+                                        time: prev[article.id]?.time || new Date(article.scheduled_for).toTimeString().slice(0, 5)
+                                      }
+                                    }));
+                                  }}
+                                  initialFocus
+                                  className={cn("p-3 pointer-events-auto")}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">Select Time</label>
+                                <Input
+                                  type="time"
+                                  value={scheduledDateTime[article.id]?.time || new Date(article.scheduled_for).toTimeString().slice(0, 5)}
+                                  onChange={(e) => {
+                                    setScheduledDateTime(prev => ({
+                                      ...prev,
+                                      [article.id]: {
+                                        date: prev[article.id]?.date || new Date(article.scheduled_for),
+                                        time: e.target.value
+                                      }
+                                    }));
+                                  }}
+                                  className="w-full"
+                                />
+                              </div>
+                              <Button
+                                onClick={() => {
+                                  const dateTime = scheduledDateTime[article.id];
+                                  if (dateTime?.date && dateTime?.time) {
+                                    handleScheduledDateTimeUpdate(article.id, dateTime.date, dateTime.time);
+                                  }
+                                }}
+                                className="w-full"
+                              >
+                                Update Schedule
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       ) : (
                         <Input
                           type="date"
