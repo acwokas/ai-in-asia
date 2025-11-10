@@ -100,12 +100,13 @@ const Admin = () => {
     enabled: isAdmin === true,
     staleTime: 2 * 60 * 1000, // 2 minutes cache - stats don't change frequently
     queryFn: async () => {
-      const [articles, authors, categories, tags, comments, subscribers] = await Promise.all([
+      const [articles, authors, categories, tags, comments, aiComments, subscribers] = await Promise.all([
         supabase.from("articles").select("id", { count: "exact", head: true }),
         supabase.from("authors").select("id", { count: "exact", head: true }),
         supabase.from("categories").select("id", { count: "exact", head: true }),
         supabase.from("tags").select("id", { count: "exact", head: true }),
         supabase.from("comments").select("id", { count: "exact", head: true }),
+        supabase.from("ai_generated_comments").select("id", { count: "exact", head: true }),
         supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }),
       ]);
 
@@ -114,7 +115,7 @@ const Admin = () => {
         authors: authors.count || 0,
         categories: categories.count || 0,
         tags: tags.count || 0,
-        comments: comments.count || 0,
+        comments: (comments.count || 0) + (aiComments.count || 0),
         subscribers: subscribers.count || 0,
       };
     },
