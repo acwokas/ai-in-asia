@@ -32,6 +32,33 @@ const PolicyAtlas = () => {
     }
   });
 
+  // Fetch recent updates to determine which regions should pulse
+  const { data: recentUpdates } = useQuery({
+    queryKey: ['recent-policy-updates'],
+    queryFn: async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data, error } = await supabase
+        .from('articles')
+        .select('categories!primary_category_id(slug)')
+        .eq('article_type', 'policy_article')
+        .eq('status', 'published')
+        .gte('updated_at', thirtyDaysAgo.toISOString());
+      
+      if (error) throw error;
+      
+      // Extract unique region slugs
+      const recentRegions = new Set(
+        data
+          .map(article => article.categories?.slug)
+          .filter(Boolean)
+      );
+      
+      return Array.from(recentRegions);
+    }
+  });
+
   const { data: latestUpdates } = useQuery({
     queryKey: ['policy-latest-updates'],
     queryFn: async () => {
@@ -94,7 +121,7 @@ const PolicyAtlas = () => {
         {/* Interactive Map */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-6">Interactive Map</h2>
-          {regions && <PolicyMap regions={regions} />}
+          {regions && <PolicyMap regions={regions} recentlyUpdatedRegions={recentUpdates || []} />}
         </div>
 
         {/* Region Grid */}

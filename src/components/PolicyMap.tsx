@@ -10,9 +10,10 @@ interface PolicyMapProps {
     slug: string;
     description: string;
   }>;
+  recentlyUpdatedRegions: string[];
 }
 
-const PolicyMap = ({ regions }: PolicyMapProps) => {
+const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
@@ -103,16 +104,44 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
           const coords = regionCoordinates[region.slug];
           if (!coords || !map.current) return;
 
+          const isRecent = recentlyUpdatedRegions.includes(region.slug);
+
+          // Create marker container with pulse effect
+          const markerContainer = document.createElement('div');
+          markerContainer.style.position = 'relative';
+          
+          // Add pulse ring if recently updated
+          if (isRecent) {
+            const pulseRing = document.createElement('div');
+            pulseRing.className = 'pulse-ring';
+            pulseRing.style.cssText = `
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              border: 2px solid hsl(var(--primary));
+              animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+              pointer-events: none;
+            `;
+            markerContainer.appendChild(pulseRing);
+          }
+
           const el = document.createElement('div');
           el.className = 'policy-map-marker';
-          el.style.width = '30px';
-          el.style.height = '30px';
-          el.style.borderRadius = '50%';
-          el.style.backgroundColor = 'hsl(var(--primary))';
-          el.style.border = '3px solid white';
-          el.style.cursor = 'pointer';
-          el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-          el.style.transition = 'all 0.2s';
+          el.style.cssText = `
+            position: relative;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: hsl(var(--primary));
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+          `;
           
           el.addEventListener('mouseenter', () => {
             el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)';
@@ -124,18 +153,33 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
             el.style.borderWidth = '3px';
           });
 
-          const marker = new mapboxgl.Marker(el)
+          markerContainer.appendChild(el);
+
+          const popup = new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            closeOnClick: false
+          }).setHTML(`
+            <div style="padding: 8px;">
+              <h3 style="margin: 0 0 4px 0; font-weight: 600;">${region.name}</h3>
+              <p style="margin: 0; font-size: 12px; color: #666;">${region.description}</p>
+              ${isRecent ? '<span style="display: inline-block; margin-top: 4px; padding: 2px 6px; background: hsl(var(--primary)); color: white; font-size: 10px; border-radius: 4px; font-weight: 500;">Recently Updated</span>' : ''}
+            </div>
+          `);
+
+          const marker = new mapboxgl.Marker(markerContainer)
             .setLngLat(coords)
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 })
-                .setHTML(`
-                  <div style="padding: 8px;">
-                    <h3 style="margin: 0 0 4px 0; font-weight: 600;">${region.name}</h3>
-                    <p style="margin: 0; font-size: 12px; color: #666;">${region.description}</p>
-                  </div>
-                `)
-            )
+            .setPopup(popup)
             .addTo(map.current!);
+
+          // Show popup on hover
+          el.addEventListener('mouseenter', () => {
+            popup.addTo(map.current!);
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            popup.remove();
+          });
 
           el.addEventListener('click', () => {
             navigate(`/ai-policy-atlas/${region.slug}`);
@@ -170,9 +214,25 @@ const PolicyMap = ({ regions }: PolicyMapProps) => {
 
   return (
     <div className="relative w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
+      <style>{`
+        @keyframes pulse-ring {
+          0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0.5;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+        }
+      `}</style>
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
       <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur px-4 py-2 rounded-md shadow-md">
-        <p className="text-sm text-muted-foreground">Click markers to explore regions</p>
+        <p className="text-sm text-muted-foreground">Hover over markers to view details • Pulsing markers indicate recent updates</p>
       </div>
     </div>
   );
