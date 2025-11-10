@@ -314,7 +314,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         baseFileName = `image-${Date.now()}`;
       }
       
-      const fileName = `${baseFileName}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `${baseFileName}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
