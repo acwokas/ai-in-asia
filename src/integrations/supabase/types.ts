@@ -317,6 +317,7 @@ export type Database = {
           featured_on_homepage: boolean | null
           focus_keyphrase: string | null
           governance_maturity: string | null
+          homepage_trending: boolean | null
           id: string
           is_launch_article: boolean | null
           is_trending: boolean | null
@@ -380,6 +381,7 @@ export type Database = {
           featured_on_homepage?: boolean | null
           focus_keyphrase?: string | null
           governance_maturity?: string | null
+          homepage_trending?: boolean | null
           id?: string
           is_launch_article?: boolean | null
           is_trending?: boolean | null
@@ -443,6 +445,7 @@ export type Database = {
           featured_on_homepage?: boolean | null
           focus_keyphrase?: string | null
           governance_maturity?: string | null
+          homepage_trending?: boolean | null
           id?: string
           is_launch_article?: boolean | null
           is_trending?: boolean | null

@@ -76,6 +76,7 @@ const BulkOperations = () => {
           status,
           published_at,
           featured_on_homepage,
+          homepage_trending,
           is_trending,
           sticky,
           series_id,
@@ -197,11 +198,25 @@ const BulkOperations = () => {
         case "trending":
           await supabase
             .from("articles")
-            .update({ is_trending: true })
+            .update({ homepage_trending: true })
             .in("id", selectedArticles);
           break;
 
         case "untrending":
+          await supabase
+            .from("articles")
+            .update({ homepage_trending: false })
+            .in("id", selectedArticles);
+          break;
+
+        case "category-trending":
+          await supabase
+            .from("articles")
+            .update({ is_trending: true })
+            .in("id", selectedArticles);
+          break;
+
+        case "category-untrending":
           await supabase
             .from("articles")
             .update({ is_trending: false })
@@ -382,8 +397,10 @@ const BulkOperations = () => {
                       <SelectItem value="archive">Archive Articles</SelectItem>
                       <SelectItem value="feature">Feature on Homepage</SelectItem>
                       <SelectItem value="unfeature">Remove from Homepage</SelectItem>
-                      <SelectItem value="trending">Mark as Trending</SelectItem>
-                      <SelectItem value="untrending">Remove Trending</SelectItem>
+                      <SelectItem value="trending">Mark as Homepage Trending</SelectItem>
+                      <SelectItem value="untrending">Remove Homepage Trending</SelectItem>
+                      <SelectItem value="category-trending">Mark as Category Trending</SelectItem>
+                      <SelectItem value="category-untrending">Remove Category Trending</SelectItem>
                       <SelectItem value="sticky">Make Sticky</SelectItem>
                       <SelectItem value="unsticky">Remove Sticky</SelectItem>
                       <SelectItem value="category">Assign Category</SelectItem>
@@ -497,8 +514,11 @@ const BulkOperations = () => {
                           {article.featured_on_homepage && (
                             <Badge variant="secondary" className="text-xs">Featured</Badge>
                           )}
+                          {article.homepage_trending && (
+                            <Badge variant="secondary" className="text-xs">Homepage Trending</Badge>
+                          )}
                           {article.is_trending && (
-                            <Badge variant="secondary" className="text-xs">Trending</Badge>
+                            <Badge variant="secondary" className="text-xs">Category Trending</Badge>
                           )}
                           {article.sticky && (
                             <Badge variant="secondary" className="text-xs">Sticky</Badge>

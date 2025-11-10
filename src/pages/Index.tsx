@@ -85,7 +85,7 @@ const Index = () => {
       const featured = articles[0];
       const latest = articles.slice(1, 13); // Take up to 12 for latest
       
-      // Get trending articles from recent high-engagement content - only needed fields
+      // Get trending articles for homepage - only show manually selected ones
       const { data: trendingData, error: trendingError } = await supabase
         .from("articles")
         .select(`
@@ -99,13 +99,13 @@ const Index = () => {
           view_count,
           primary_category_id,
           comment_count,
-          is_trending,
+          homepage_trending,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
-        .gte("published_at", fourteenDaysAgo.toISOString())
-        .order("view_count", { ascending: false, nullsFirst: false })
+        .eq("homepage_trending", true)
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5);
       
       if (trendingError) console.error("Error fetching trending:", trendingError);
@@ -491,7 +491,7 @@ const Index = () => {
                           <Badge className="bg-primary text-primary-foreground">
                             {trendingArticles[0].categories?.name || "Uncategorized"}
                           </Badge>
-                          {trendingArticles[0].is_trending && (
+                          {trendingArticles[0].homepage_trending && (
                             <Badge className="bg-orange-500 text-white flex items-center gap-1">
                               <TrendingUp className="h-3 w-3" />
                               Trending

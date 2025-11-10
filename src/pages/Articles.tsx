@@ -107,6 +107,7 @@ const Articles = () => {
           primary_category_id,
           sticky,
           featured_on_homepage,
+          homepage_trending,
           is_trending,
           preview_code,
           authors (name, slug),
@@ -567,11 +568,21 @@ const Articles = () => {
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort("homepage_trending")}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      Homepage
+                      {getSortIcon("homepage_trending")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
                     onClick={() => handleSort("is_trending")}
                   >
                     <div className="flex items-center justify-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      Trending
+                      Category
                       {getSortIcon("is_trending")}
                     </div>
                   </TableHead>
@@ -776,6 +787,12 @@ const Articles = () => {
                       <Switch
                         checked={article.featured_on_homepage || false}
                         onCheckedChange={(checked) => handleUpdate(article.id, "featured_on_homepage", checked)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Switch
+                        checked={article.homepage_trending || false}
+                        onCheckedChange={(checked) => handleUpdate(article.id, "homepage_trending", checked)}
                       />
                     </TableCell>
                     <TableCell className="text-center">
