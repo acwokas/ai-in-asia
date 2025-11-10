@@ -633,16 +633,19 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     
     try {
       const { data, error } = await supabase.functions.invoke("scout-rewrite-article", {
-        body: { content },
+        body: { content, title },
       });
 
       if (error) throw error;
 
       if (data?.rewrittenContent) {
         setContent(data.rewrittenContent);
+        if (data?.excerpt) {
+          setExcerpt(data.excerpt);
+        }
         toast({
           title: "Article Rewritten!",
-          description: "Scout has completely rewritten your article with a fresh perspective",
+          description: data?.excerpt ? "Article and excerpt generated successfully" : "Article rewritten with a fresh perspective",
         });
       }
     } catch (error: any) {
@@ -776,6 +779,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     size="sm"
                     onClick={handleGenerateHeadline}
                     disabled={isGeneratingHeadline}
+                    className="bg-[#10b981] hover:bg-[#059669] text-white border-0"
                     title="Generate catchy headline from clipboard"
                   >
                     {isGeneratingHeadline ? (
@@ -942,7 +946,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     size="sm"
                     onClick={handleScoutRewrite}
                     disabled={isRewritingArticle || !content}
-                    title="Rewrite entire article with fresh perspective"
+                    className="bg-[#10b981] hover:bg-[#059669] text-white"
+                    title="Rewrite entire article and generate excerpt"
                   >
                     {isRewritingArticle ? (
                       <>
@@ -961,7 +966,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   value={content}
                   onChange={setContent}
                   onSelect={setSelectedText}
-                  placeholder="Start writing your article... Use markdown for formatting."
+                  placeholder="Start writing your article..."
                 />
               </div>
 

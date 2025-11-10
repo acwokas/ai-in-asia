@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content } = await req.json();
+    const { content, title } = await req.json();
 
     if (!content || content.trim().length === 0) {
       return new Response(
@@ -100,8 +100,42 @@ Return ONLY the rewritten markdown content, nothing else.`;
     const data = await response.json();
     const rewrittenContent = data.choices[0].message.content;
 
+    // Generate excerpt if title is provided
+    let excerpt = '';
+    if (title) {
+      const excerptPrompt = `Create a short, engaging excerpt (2-3 sentences, max 160 characters) for this article titled "${title}". The excerpt should:
+- Use British English spelling
+- Be conversational but professional
+- Encourage readers to click through to read more
+- Not use em dashes
+- Be punchy and intriguing
+
+Article content:
+${rewrittenContent.substring(0, 500)}...`;
+
+      const excerptResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'user', content: excerptPrompt }
+          ],
+          temperature: 0.7,
+        }),
+      });
+
+      if (excerptResponse.ok) {
+        const excerptData = await excerptResponse.json();
+        excerpt = excerptData.choices[0].message.content.trim();
+      }
+    }
+
     return new Response(
-      JSON.stringify({ rewrittenContent }),
+      JSON.stringify({ rewrittenContent, excerpt }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

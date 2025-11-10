@@ -87,7 +87,7 @@ const ScoutWritingAssistant = ({ selectedText, onReplace, fullFieldContent, cont
           variant="outline"
           size="sm"
           disabled={isLoading || (!selectedText.trim() && !fullFieldContent?.trim())}
-          className="gap-2"
+          className="bg-[#10b981] hover:bg-[#059669] text-white border-0 gap-2"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
