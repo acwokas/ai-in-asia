@@ -763,9 +763,9 @@ const Article = () => {
 
               {/* Admin Controls */}
               {!isLoadingAdmin && isAdmin && (
-                <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
+                <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-3 relative z-10">
                   <div className="flex items-center gap-2">
-                    <Edit className="h-4 w-4 text-primary" />
+                    <Edit className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-sm font-medium">Admin Controls</span>
                     {article.status !== 'published' && (
                       <Badge variant="outline" className="ml-2">
@@ -773,11 +773,12 @@ const Article = () => {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowAdminView(!showAdminView)}
+                      className="cursor-pointer"
                     >
                       {showAdminView ? (
                         <>
@@ -797,6 +798,7 @@ const Article = () => {
                         size="sm"
                         onClick={handlePublish}
                         disabled={isPublishing}
+                        className="cursor-pointer"
                       >
                         {isPublishing ? (
                           <>
@@ -815,6 +817,7 @@ const Article = () => {
                       asChild
                       size="sm"
                       variant="outline"
+                      className="cursor-pointer"
                     >
                       <Link to={`/editor?id=${article.id}`}>
                         <Edit className="h-4 w-4 mr-2" />
