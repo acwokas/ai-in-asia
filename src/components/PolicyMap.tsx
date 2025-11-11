@@ -208,14 +208,14 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
 
   if (!mapToken) {
     return (
-      <div className="w-full h-[500px] bg-muted rounded-lg flex items-center justify-center">
+      <div className="w-full h-[300px] md:h-[500px] bg-muted rounded-lg flex items-center justify-center">
         <p className="text-muted-foreground">Loading map...</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
+    <div className="relative w-full h-[300px] md:h-[500px] rounded-lg overflow-hidden shadow-lg">
       <style>{`
         @keyframes pulse-ring {
           0% {
@@ -233,8 +233,11 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
         }
       `}</style>
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
-      <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur px-4 py-2 rounded-md shadow-md">
-        <p className="text-sm text-muted-foreground">Hover over markers to view details • Pulsing markers indicate recent updates</p>
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 bg-background/95 backdrop-blur px-2 py-1 md:px-4 md:py-2 rounded-md shadow-md max-w-[90%]">
+        <p className="text-xs md:text-sm text-muted-foreground">
+          <span className="hidden md:inline">Hover over markers to view details • Pulsing markers indicate recent updates</span>
+          <span className="md:hidden">Tap markers for details</span>
+        </p>
       </div>
     </div>
   );
