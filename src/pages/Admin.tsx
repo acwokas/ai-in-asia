@@ -32,6 +32,7 @@ const Admin = () => {
   const [fixingDates, setFixingDates] = useState(false);
   const [autoScheduling, setAutoScheduling] = useState(false);
   const [cleaningMarkup, setCleaningMarkup] = useState(false);
+  const [refreshingContent, setRefreshingContent] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -646,6 +647,54 @@ const Admin = () => {
     }
   };
 
+  const handleRefreshFeaturedContent = async () => {
+    try {
+      setRefreshingContent(true);
+      
+      toast({
+        title: "Refreshing content...",
+        description: "Updating editors picks and trending articles",
+      });
+
+      const { data, error } = await supabase.functions.invoke('auto-refresh-featured-content', {
+        body: { manual: true }
+      });
+      
+      if (error) throw error;
+
+      const results = data;
+      const messages = [];
+      
+      if (results.editorsPicksRefreshed) {
+        messages.push("Editors picks refreshed");
+      }
+      if (results.trendingRefreshed) {
+        messages.push("Category trending refreshed");
+      }
+      if (results.homepageTrendingRefreshed) {
+        messages.push("Homepage trending refreshed");
+      }
+
+      toast({
+        title: "Content refreshed successfully!",
+        description: messages.length > 0 ? messages.join(", ") : "All content is up to date",
+      });
+
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["editors-picks"] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+      queryClient.invalidateQueries({ queryKey: ["trending-articles"] });
+    } catch (error: any) {
+      toast({
+        title: "Error refreshing content",
+        description: error.message || "Failed to refresh featured content",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshingContent(false);
+    }
+  };
+
   // Show header immediately while checking admin status
   if (isAdmin === null) {
     return (
@@ -1202,6 +1251,29 @@ const Admin = () => {
                     }}
                   >
                     Configure
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold">Featured Content Refresh</h4>
+                    <p className="text-sm text-muted-foreground">Manually update editors picks and trending articles</p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={handleRefreshFeaturedContent}
+                    disabled={refreshingContent}
+                  >
+                    {refreshingContent ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="mr-2 h-4 w-4" />
+                        Refresh Now
+                      </>
+                    )}
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
