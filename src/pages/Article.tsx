@@ -26,7 +26,7 @@ const Article = () => {
   const { category, slug } = useParams();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isAdmin } = useAdminRole();
+  const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
   const queryClient = useQueryClient();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
@@ -762,7 +762,7 @@ const Article = () => {
               )}
 
               {/* Admin Controls */}
-              {isAdmin && (
+              {!isLoadingAdmin && isAdmin && (
                 <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Edit className="h-4 w-4 text-primary" />
@@ -826,7 +826,7 @@ const Article = () => {
               )}
 
               {/* Admin Debug Info */}
-              {isAdmin && showAdminView && (
+              {!isLoadingAdmin && isAdmin && showAdminView && (
                 <div className="mb-4 p-4 bg-muted/50 border border-border rounded-lg space-y-2">
                   <h3 className="text-sm font-semibold mb-2">Article Metadata</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
