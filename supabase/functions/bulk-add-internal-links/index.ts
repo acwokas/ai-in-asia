@@ -47,14 +47,24 @@ serve(async (req) => {
     // Fetch all published articles for reference
     const { data: allArticles, error: allArticlesError } = await supabase
       .from("articles")
-      .select("id, title, slug, excerpt")
+      .select(`
+        id, 
+        title, 
+        slug, 
+        excerpt,
+        primary_category_id,
+        categories!articles_primary_category_id_fkey (slug)
+      `)
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(100);
 
     if (allArticlesError) throw allArticlesError;
 
-    const articlesList = allArticles?.map(a => `- ${a.title} (/${a.slug})`).join("\n") || "";
+    const articlesList = allArticles?.map(a => {
+      const categorySlug = a.categories?.slug || 'news';
+      return `- ${a.title} (/${categorySlug}/${a.slug})`;
+    }).join("\n") || "";
 
     const results: any[] = [];
     let processed = 0;
@@ -119,7 +129,8 @@ CRITICAL RULES:
 - Add 2-4 internal links from our article list using natural anchor text
 - Add at least 1 authoritative external link (research papers, official reports, major publications)
 - External links MUST use format: [text](url)^ to open in new tabs
-- Internal links use format: [text](/slug)
+- Internal links MUST use EXACT URL from list including /category/slug format: [text](/category/article-slug)
+- NEVER use [text](/article-slug) format - always include the category
 - Only modify the content to add links - preserve all existing text, formatting, headings, paragraphs
 - Make anchor text natural and contextual
 - Place links where they genuinely add value

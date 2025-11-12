@@ -34,7 +34,14 @@ serve(async (req) => {
     // Fetch published articles for internal linking (exclude current article)
     const query = supabase
       .from("articles")
-      .select("id, title, slug, excerpt")
+      .select(`
+        id, 
+        title, 
+        slug, 
+        excerpt,
+        primary_category_id,
+        categories!articles_primary_category_id_fkey (slug)
+      `)
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(50);
@@ -47,8 +54,11 @@ serve(async (req) => {
 
     if (articlesError) throw articlesError;
 
-    // Create a condensed list of articles for the AI
-    const articlesList = articles?.map(a => `- ${a.title} (/${a.slug})`).join("\n") || "";
+    // Create a condensed list of articles for the AI with correct /category/slug format
+    const articlesList = articles?.map(a => {
+      const categorySlug = a.categories?.slug || 'news';
+      return `- ${a.title} (/${categorySlug}/${a.slug})`;
+    }).join("\n") || "";
 
     // Use AI to suggest internal and external links
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -68,6 +78,7 @@ serve(async (req) => {
 
 For INTERNAL links:
 - Only suggest links from the provided article list
+- Use the EXACT URL format provided in the list (includes /category/slug structure)
 - Choose articles that are genuinely relevant and add value
 - Suggest where in the content each link should be placed (quote 3-5 words of anchor text)
 
@@ -81,7 +92,7 @@ Return ONLY valid JSON:
   "internalLinks": [
     {
       "articleTitle": "exact article title from list",
-      "articleSlug": "article-slug",
+      "articleUrl": "/category/article-slug (use EXACT format from list)",
       "anchorText": "suggested anchor text",
       "placement": "context where it should be placed",
       "reason": "why this link is relevant"
