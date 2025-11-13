@@ -35,7 +35,14 @@ serve(async (req) => {
     // Fetch published articles for internal linking
     const query = supabase
       .from('articles')
-      .select('id, title, slug, excerpt')
+      .select(`
+        id, 
+        title, 
+        slug, 
+        excerpt,
+        primary_category_id,
+        categories!articles_primary_category_id_fkey (slug)
+      `)
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(50);
@@ -45,7 +52,10 @@ serve(async (req) => {
     }
 
     const { data: articles } = await query;
-    const articlesList = articles?.map(a => `- ${a.title} (/${a.slug})`).join('\n') || '';
+    const articlesList = articles?.map(a => {
+      const categorySlug = a.categories?.slug || 'news';
+      return `- ${a.title} (/${categorySlug}/${a.slug})`;
+    }).join('\n') || '';
 
     const systemPrompt = `You are an expert content writer and editor specialising in British English. Your task is to completely rewrite articles from a fresh perspective while maintaining accuracy and educational value.
 
@@ -64,7 +74,8 @@ INTERNAL & EXTERNAL LINKING:
 - Naturally integrate 2-4 internal links to our existing articles using relevant anchor text
 - Add at least 1 authoritative external link to support claims (research papers, official reports, major publications)
 - External links MUST use this format: [text](url)^  - the ^ makes them open in new tabs
-- Internal links use format: [text](/slug)
+- Internal links MUST use EXACT URL from list including /category/slug format: [text](/category/article-slug)
+- NEVER use [text](/article-slug) format - always include the category from the provided list
 - Place links where they add value, not forced
 - Make anchor text natural and descriptive
 

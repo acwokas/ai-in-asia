@@ -56,7 +56,8 @@ serve(async (req) => {
       }
 
       // Find broken internal links (format: [text](/article-slug) without category)
-      const brokenLinkPattern = /\[([^\]]+)\]\(\/([a-z0-9-]+)\)(?!\^)/g;
+      // Pattern matches /single-slug but NOT /category/article-slug
+      const brokenLinkPattern = /\[([^\]]+)\]\(\/([a-z0-9-]+)\)(?!\/|\^)/g;
       const matches = [...contentString.matchAll(brokenLinkPattern)];
 
       if (matches.length === 0) continue;
