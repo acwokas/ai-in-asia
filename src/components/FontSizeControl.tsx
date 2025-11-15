@@ -25,6 +25,12 @@ const FontSizeControl = () => {
     if (article) {
       (article as HTMLElement).style.fontSize = `${size}%`;
     }
+    
+    // Also apply to TL;DR snapshot
+    const tldrCard = document.querySelector(".tldr-snapshot");
+    if (tldrCard) {
+      (tldrCard as HTMLElement).style.fontSize = `${size}%`;
+    }
   };
 
   const handleIncrease = () => {
