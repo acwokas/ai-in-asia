@@ -991,7 +991,7 @@ const Article = () => {
                     )}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {article.reading_time_minutes || 5} min read • 
+                      {article.reading_time_minutes || 5} min read •{' '}
                       {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "long",
