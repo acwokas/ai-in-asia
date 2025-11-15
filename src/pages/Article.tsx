@@ -12,6 +12,7 @@ import GoogleAd, { InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
+import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -439,8 +440,8 @@ const Article = () => {
 
   const renderContent = (content: any) => {
     if (!content) return null;
-    
-    // If content is a string (markdown), convert it to HTML with proper parsing
+
+    // Handle string content (markdown)
     if (typeof content === 'string') {
       // Consolidate ALL consecutive bullet points into single lists
       // Replace all double line breaks between bullets with single line breaks
@@ -558,6 +559,8 @@ const Article = () => {
         return processed;
       };
       
+      const midPoint = Math.floor(blocks.length / 2);
+      
       return blocks.map((block: any, index: number) => {
         // Skip TL;DR headings (they should be in tldr_snapshot field instead)
         if (block.type === 'heading' && block.content && 
@@ -565,43 +568,54 @@ const Article = () => {
           return null;
         }
         
+        // Insert related articles at midpoint
+        const elements = [];
+        if (index === midPoint && article?.categories?.id) {
+          elements.push(
+            <InlineRelatedArticles
+              key={`related-${index}`}
+              currentArticleId={article.id}
+              categoryId={article.categories.id}
+              categorySlug={article.categories.slug}
+            />
+          );
+        }
+        
         switch (block.type) {
           case 'paragraph':
-            if (!block.content) return null;
-            
-            // Check if this is an image caption - only if previous block was an image
-            const prevBlock = index > 0 ? blocks[index - 1] : null;
-            const isLikelyImageCaption = prevBlock?.type === 'image' && 
-              block.content.length < 150 && 
-              (block.content.toLowerCase().includes('source') || 
-               block.content.toLowerCase().includes('credit') ||
-               block.content.toLowerCase().includes('photo') ||
-               block.content.toLowerCase().includes('image'));
-            
-            // Check if paragraph is a quote (italic text in quotes)
-            const isQuote = block.content.startsWith('*"') && block.content.endsWith('"*');
-            
-            if (isQuote) {
-              const quoteText = block.content.replace(/^\*"|"\*$/g, '');
-              return (
-                <blockquote key={index} className="border-l-4 border-primary pl-6 py-2 my-8 italic text-xl">
-                  {quoteText}
-                </blockquote>
-              );
-            }
-            
-            const processedContent = processInlineFormatting(block.content);
-            const sanitizedContent = DOMPurify.sanitize(processedContent, {
+          return text
+            .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+              if (url.startsWith('/')) {
+                return `<a href="${url}" class="text-primary hover:underline">${text}</a>`;
+              }
+              return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">${text}</a>`;
+            });
+        };
+
+            const contentText = block.content || '';
+            const sanitizedContent = DOMPurify.sanitize(processInlineFormatting(contentText), {
               ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
               ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
             });
-            return (
+
+            const isLikelyImageCaption = contentText.length < 100 && (
+              contentText.toLowerCase().includes('image:') ||
+              contentText.toLowerCase().includes('source:') ||
+              contentText.toLowerCase().includes('credit:') ||
+              contentText.toLowerCase().includes('photo:')
+            );
+
+            elements.push(
               <p 
                 key={index} 
                 className={`leading-relaxed mb-6 ${isLikelyImageCaption ? 'text-sm text-muted-foreground text-center -mt-4' : ''}`}
                 dangerouslySetInnerHTML={{ __html: sanitizedContent }}
               />
             );
+            break;
             
           case 'heading':
             const level = block.attrs?.level || 2;
@@ -609,69 +623,79 @@ const Article = () => {
             const headingClasses = level === 1 ? "text-4xl font-bold mt-8 mb-4" :
                                  level === 2 ? "text-3xl font-bold mt-8 mb-4" :
                                  "text-2xl font-semibold mt-8 mb-4";
-            return (
+            elements.push(
               <HeadingTag key={index} className={headingClasses}>
                 {block.content}
               </HeadingTag>
             );
+            break;
             
           case 'quote':
-            return (
+            elements.push(
               <blockquote key={index} className="border-l-4 border-primary pl-6 py-2 my-8 italic text-xl">
                 {block.content}
               </blockquote>
             );
+            break;
             
           case 'list':
-            const listItems = Array.isArray(block.content) ? block.content : [block.content];
-            const isOrdered = block.attrs?.listType === 'ordered';
-            const ListTag = isOrdered ? 'ol' : 'ul';
-            
-            return (
-              <ListTag 
-                key={index} 
-                className={isOrdered ? "list-none pl-10 my-6 space-y-2" : "list-disc pl-8 my-6 space-y-2"}
-                style={isOrdered ? { counterReset: 'list-counter' } : undefined}
-              >
-                {listItems.map((item: string, i: number) => {
-                  const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
-                    ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+        const listItems = Array.isArray(block.content) ? block.content : [block.content];
+        const isOrdered = block.attrs?.listType === 'ordered';
+        const ListTag = isOrdered ? 'ol' : 'ul';
+        
+        return (
+          <ListTag 
+            key={index} 
+            className={isOrdered ? "list-none pl-10 my-6 space-y-2" : "list-disc pl-8 my-6 space-y-2"}
+            style={isOrdered ? { counterReset: 'list-counter' } : undefined}
+          >
+            {listItems.map((item: string, i: number) => {
+              const processInlineFormatting = (text: string) => {
+                return text
+                  .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                  .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+                    if (url.startsWith('/')) {
+                      return `<a href="${url}" class="text-primary hover:underline">${text}</a>`;
+                    }
+                    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">${text}</a>`;
                   });
-                  return (
-                    <li 
-                      key={i}
-                      className={isOrdered ? "relative pl-2" : ""}
-                      style={isOrdered ? { counterIncrement: 'list-counter' } : undefined}
-                      dangerouslySetInnerHTML={{ __html: sanitizedItem }}
-                    />
-                  );
-                })}
-              </ListTag>
-            );
-            
-          case 'image':
-            return (
-              <div key={index} className="my-8">
-                <img 
-                  src={block.attrs?.src || block.url} 
-                  alt={block.attrs?.alt || block.alt || ''} 
-                  className="w-full rounded-lg" 
+              };
+              const sanitizedItem = DOMPurify.sanitize(processInlineFormatting(item), {
+                ALLOWED_TAGS: ['strong', 'em', 'a', 'br', 'span'],
+                ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+              });
+              return (
+                <li 
+                  key={i}
+                  className={isOrdered ? "relative pl-2" : ""}
+                  style={isOrdered ? { counterIncrement: 'list-counter' } : undefined}
+                  dangerouslySetInnerHTML={{ __html: sanitizedItem }}
                 />
-                {(block.attrs?.caption || block.caption) && (
-                  <p className="text-sm text-muted-foreground text-center mt-2">
-                    {block.attrs?.caption || block.caption}
-                  </p>
-                )}
-              </div>
-            );
-            
-          default:
-            return null;
-        }
-      }).filter(Boolean);
-    } catch (error) {
-      return <p className="leading-relaxed mb-6">{content}</p>;
+              );
+            })}
+          </ListTag>
+        );
+        
+      case 'image':
+        return (
+          <div key={index} className="my-8">
+            <img 
+              src={block.attrs?.src || block.url} 
+              alt={block.attrs?.alt || block.alt || ''} 
+              className="w-full rounded-lg" 
+            />
+            {(block.attrs?.caption || block.caption) && (
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                {block.attrs?.caption || block.caption}
+              </p>
+            )}
+          </div>
+        );
+        
+      default:
+        return null;
     }
   };
 
