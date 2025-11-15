@@ -13,6 +13,9 @@ import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/St
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
+import ReadingProgressBar from "@/components/ReadingProgressBar";
+import FontSizeControl from "@/components/FontSizeControl";
+import TextToSpeech from "@/components/TextToSpeech";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -113,6 +116,54 @@ const Article = () => {
       return () => clearTimeout(timer);
     }
   }, [article?.id]);
+
+  // Reading position tracking
+  useEffect(() => {
+    if (!article || !cleanSlug) return;
+
+    const READING_POSITION_KEY = `reading-position-${cleanSlug}`;
+    
+    // Restore reading position
+    const savedPosition = localStorage.getItem(READING_POSITION_KEY);
+    if (savedPosition) {
+      const position = parseInt(savedPosition);
+      // Small delay to ensure content is loaded
+      setTimeout(() => {
+        window.scrollTo({ top: position, behavior: 'smooth' });
+      }, 100);
+    }
+
+    // Save reading position on scroll
+    const savePosition = () => {
+      localStorage.setItem(READING_POSITION_KEY, window.scrollY.toString());
+    };
+
+    const throttledSave = (() => {
+      let timeout: NodeJS.Timeout;
+      return () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(savePosition, 1000);
+      };
+    })();
+
+    window.addEventListener('scroll', throttledSave);
+    
+    // Clear position when article is finished (scrolled to bottom)
+    const clearOnFinish = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollTop >= docHeight - 100) {
+        localStorage.removeItem(READING_POSITION_KEY);
+      }
+    };
+    
+    window.addEventListener('scroll', clearOnFinish);
+
+    return () => {
+      window.removeEventListener('scroll', throttledSave);
+      window.removeEventListener('scroll', clearOnFinish);
+    };
+  }, [article, cleanSlug]);
 
   const trackArticleView = async () => {
     if (!article?.id) return;
@@ -688,6 +739,7 @@ const Article = () => {
 
   return (
     <>
+      <ReadingProgressBar />
       <Helmet>
         <title>{((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} | AI in ASIA</title>
         <meta name="description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
@@ -978,6 +1030,17 @@ const Article = () => {
             {article.tldr_snapshot && Array.isArray(article.tldr_snapshot) && article.tldr_snapshot.length > 0 && (
               <TldrSnapshot bullets={article.tldr_snapshot as string[]} />
             )}
+
+            {/* Reading Tools */}
+            <div className="flex flex-col sm:flex-row gap-4 my-6">
+              <FontSizeControl />
+            </div>
+
+            {/* Text to Speech */}
+            <TextToSpeech 
+              content={JSON.stringify(article.content)}
+              title={article.title}
+            />
 
             {/* Series Navigation */}
             {article.series_id && article.series_part && (
