@@ -46,7 +46,7 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold">Related Articles</h3>
         <Link 
-          to={`/${categorySlug}`}
+          to={`/category/${categorySlug}`}
           className="text-sm text-primary hover:underline flex items-center gap-1"
         >
           View more <ArrowRight className="h-3 w-3" />
