@@ -15,7 +15,6 @@ import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
-import TextToSpeech from "@/components/TextToSpeech";
 import FollowButton from "@/components/FollowButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1034,22 +1033,19 @@ const Article = () => {
                     />
                   )}
                   
-                  <div className="ml-auto flex flex-wrap items-center gap-2">
+                  <div className="ml-auto flex items-center gap-2">
                     <Button 
                       variant="outline" 
                       size="icon" 
                       onClick={handleBookmark}
                       title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
+                      className="h-8 w-8"
                     >
                       <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                     </Button>
                     
-                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
+                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
                       <FontSizeControl />
-                    </div>
-                    
-                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
-                      <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
                     </div>
                     
                     <Button 
@@ -1057,6 +1053,7 @@ const Article = () => {
                       size="icon" 
                       onClick={handleShare}
                       title="Share article"
+                      className="h-8 w-8"
                     >
                       <Share2 className="h-4 w-4" />
                     </Button>
