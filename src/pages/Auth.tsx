@@ -30,6 +30,7 @@ const Auth = () => {
   // Sign In state
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   
   // Sign Up state - Step 1 (Essential)
   const [firstName, setFirstName] = useState("");
@@ -71,6 +72,15 @@ const Auth = () => {
       navigate("/profile");
     }
   }, [user, navigate]);
+
+  // Load remembered email on mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setSignInEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -180,6 +190,13 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', signInEmail);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       toast({
         title: "Welcome back!",
         description: "Successfully signed in.",
@@ -243,6 +260,19 @@ const Auth = () => {
                       )}
                     </Button>
                   </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="remember-me"
+                    className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    Remember my email
+                  </label>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
