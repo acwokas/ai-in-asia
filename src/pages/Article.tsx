@@ -964,8 +964,8 @@ const Article = () => {
                 </p>
               )}
 
-              <div className="flex items-center justify-between gap-4 pb-6 border-b border-border">
-                <div className="flex items-center gap-4 flex-1">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 pb-6 border-b border-border">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   {article.authors?.slug ? (
                     <Link to={`/author/${article.authors.slug}`}>
                       {article.authors.avatar_url ? (
@@ -989,35 +989,38 @@ const Article = () => {
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
                     )
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 font-semibold">
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4 flex-shrink-0" />
                       {article.authors?.slug ? (
-                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors">
+                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors truncate">
                           {article.authors.name}
                         </Link>
                       ) : (
-                        article.authors?.name || 'Anonymous'
+                        <span className="truncate">{article.authors?.name || 'Anonymous'}</span>
                       )}
                     </div>
                     {article.authors?.job_title && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground truncate">
                         {article.authors.job_title}
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {article.reading_time_minutes || 5} min read •{' '}
-                      {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                      <Clock className="h-3 w-3 flex-shrink-0" />
+                      <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min read</span>
+                      <span>•</span>
+                      <span className="whitespace-nowrap">
+                        {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                   {article.authors && (
                     <FollowButton
                       followType="author"
@@ -1033,7 +1036,7 @@ const Article = () => {
                     />
                   )}
                   
-                  <div className="ml-auto flex items-center gap-2">
+                  <div className="flex items-center gap-2 ml-auto md:ml-0">
                     <Button 
                       variant="outline" 
                       size="icon" 
