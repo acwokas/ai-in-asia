@@ -325,6 +325,11 @@ const Article = () => {
       }
     } catch (err) {
       console.error('Error sharing:', err);
+      toast({
+        title: "Unable to share",
+        description: "Please try copying the link instead",
+        variant: "destructive",
+      });
     }
   };
 
