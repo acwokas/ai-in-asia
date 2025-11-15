@@ -568,20 +568,32 @@ export type Database = {
       bookmarks: {
         Row: {
           article_id: string
+          completed_at: string | null
           created_at: string | null
           id: string
+          notes: string | null
+          queue_position: number | null
+          reading_priority: string | null
           user_id: string
         }
         Insert: {
           article_id: string
+          completed_at?: string | null
           created_at?: string | null
           id?: string
+          notes?: string | null
+          queue_position?: number | null
+          reading_priority?: string | null
           user_id: string
         }
         Update: {
           article_id?: string
+          completed_at?: string | null
           created_at?: string | null
           id?: string
+          notes?: string | null
+          queue_position?: number | null
+          reading_priority?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1622,6 +1634,42 @@ export type Database = {
           },
         ]
       }
+      reading_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_read_date: string | null
+          longest_streak: number | null
+          streak_start_date: string | null
+          total_articles_read: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_read_date?: string | null
+          longest_streak?: number | null
+          streak_start_date?: string | null
+          total_articles_read?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_read_date?: string | null
+          longest_streak?: number | null
+          streak_start_date?: string | null
+          total_articles_read?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       redirects: {
         Row: {
           created_at: string
@@ -1987,6 +2035,7 @@ export type Database = {
         Args: { article_id: string }
         Returns: undefined
       }
+      update_reading_streak: { Args: { p_user_id: string }; Returns: undefined }
       update_streak: { Args: { _user_id: string }; Returns: undefined }
       update_trending_articles: { Args: never; Returns: undefined }
     }

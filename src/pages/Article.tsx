@@ -16,6 +16,7 @@ import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import TextToSpeech from "@/components/TextToSpeech";
+import ShareCardGenerator from "@/components/ShareCardGenerator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1011,6 +1012,10 @@ const Article = () => {
                   <Button variant="outline" size="icon" onClick={handleBookmark}>
                     <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                   </Button>
+                  <ShareCardGenerator 
+                    articleTitle={article.title}
+                    articleExcerpt={article.excerpt || ''}
+                  />
                   <Button variant="outline" size="icon" onClick={handleShare}>
                     <Share2 className="h-4 w-4" />
                   </Button>
