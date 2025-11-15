@@ -94,6 +94,8 @@ const Admin = () => {
     }
 
     setIsAdmin(true);
+    // Redirect to dashboard on login
+    navigate("/admin/dashboard");
   };
 
   // Optimized stats query - already batched with Promise.all

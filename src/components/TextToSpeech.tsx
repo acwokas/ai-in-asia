@@ -13,6 +13,14 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
+    // Load voices on mount
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.addEventListener('voiceschanged', () => {
+        window.speechSynthesis.getVoices();
+      });
+    }
+    
     return () => {
       if (utteranceRef.current) {
         window.speechSynthesis.cancel();
@@ -57,7 +65,27 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
     const fullText = `${title}. ${text}`;
     
     const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.rate = 1;
+    
+    // Get available voices and select a high-quality one
+    const voices = window.speechSynthesis.getVoices();
+    
+    // Prefer Google, Microsoft, or Apple neural voices for better quality
+    const preferredVoice = voices.find(voice => 
+      (voice.name.includes('Google') || 
+       voice.name.includes('Microsoft') || 
+       voice.name.includes('Samantha') ||
+       voice.name.includes('Alex')) && 
+      voice.lang.startsWith('en')
+    ) || voices.find(voice => voice.lang.startsWith('en'));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    // Optimize speech parameters for more natural sound
+    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.pitch = 1.0; // Natural pitch
+    utterance.volume = 1.0; // Full volume
 
     utterance.onend = () => {
       setIsPlaying(false);
