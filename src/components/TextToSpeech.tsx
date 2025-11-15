@@ -1,32 +1,31 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Play, Pause, Square } from "lucide-react";
+import { toast } from "./ui/use-toast";
 
 interface TextToSpeechProps {
   content: string;
   title: string;
 }
 
+declare global {
+  interface Window {
+    puter: {
+      ai: {
+        txt2speech: (text: string, options?: {
+          voice?: string;
+          engine?: 'standard' | 'neural' | 'generative';
+          language?: string;
+        }) => Promise<HTMLAudioElement>;
+      };
+    };
+  }
+}
+
 const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  useEffect(() => {
-    // Load voices on mount
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.addEventListener('voiceschanged', () => {
-        window.speechSynthesis.getVoices();
-      });
-    }
-    
-    return () => {
-      if (utteranceRef.current) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   const extractText = (content: string): string => {
     try {
@@ -51,67 +50,83 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
     return content;
   };
 
-  const handlePlay = () => {
-    if (!('speechSynthesis' in window)) return;
+  const handlePlay = async () => {
+    if (!window.puter) {
+      toast({
+        title: "Error",
+        description: "Text-to-speech service is not available",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    if (isPaused) {
-      window.speechSynthesis.resume();
+    if (isPaused && currentAudio) {
+      currentAudio.play();
       setIsPaused(false);
       setIsPlaying(true);
       return;
     }
 
     const text = extractText(content);
-    const fullText = `${title}. ${text}`;
+    const fullText = `${title}. ${text}`.substring(0, 3000); // Puter has 3000 char limit
     
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    
-    // Get available voices and select a high-quality one
-    const voices = window.speechSynthesis.getVoices();
-    
-    // Prefer Google, Microsoft, or Apple neural voices for better quality
-    const preferredVoice = voices.find(voice => 
-      (voice.name.includes('Google') || 
-       voice.name.includes('Microsoft') || 
-       voice.name.includes('Samantha') ||
-       voice.name.includes('Alex')) && 
-      voice.lang.startsWith('en')
-    ) || voices.find(voice => voice.lang.startsWith('en'));
-    
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    try {
+      toast({
+        title: "Generating audio...",
+        description: "Please wait while we prepare the audio",
+      });
+
+      const audio = await window.puter.ai.txt2speech(fullText, {
+        voice: "Joanna",
+        engine: "neural",
+        language: "en-US"
+      });
+
+      audio.onplay = () => {
+        setIsPlaying(true);
+        setIsPaused(false);
+      };
+
+      audio.onpause = () => {
+        setIsPlaying(false);
+        setIsPaused(true);
+      };
+
+      audio.onended = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+        setCurrentAudio(null);
+      };
+
+      setCurrentAudio(audio);
+      audio.play();
+    } catch (error) {
+      console.error('TTS error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate audio. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    // Optimize speech parameters for more natural sound
-    utterance.rate = 0.95; // Slightly slower for clarity
-    utterance.pitch = 1.0; // Natural pitch
-    utterance.volume = 1.0; // Full volume
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-    setIsPlaying(true);
   };
 
   const handlePause = () => {
-    window.speechSynthesis.pause();
-    setIsPaused(true);
-    setIsPlaying(false);
+    if (currentAudio) {
+      currentAudio.pause();
+      setIsPaused(true);
+      setIsPlaying(false);
+    }
   };
 
   const handleStop = () => {
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-    setIsPaused(false);
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setIsPlaying(false);
+      setIsPaused(false);
+      setCurrentAudio(null);
+    }
   };
-
-  if (!('speechSynthesis' in window)) {
-    return null;
-  }
 
   return (
     <div className="flex items-center gap-1">
