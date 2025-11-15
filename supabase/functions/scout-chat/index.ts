@@ -114,6 +114,26 @@ serve(async (req) => {
     }
     console.log('Query count updated, proceeding to AI gateway');
     
+    // Get contextual article suggestions based on conversation
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('id, title, slug, excerpt, primary_category_id, categories:primary_category_id(slug)')
+      .eq('status', 'published')
+      .textSearch('title', lastUserMessage.split(' ').slice(0, 5).join(' | '), {
+        type: 'websearch',
+        config: 'english'
+      })
+      .limit(3);
+    
+    const suggestedArticles = articles?.map(a => ({
+      id: a.id,
+      title: a.title,
+      slug: a.slug,
+      excerpt: a.excerpt || '',
+      category_slug: (a.categories as any)?.slug || 'news'
+    })) || [];
+    
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
