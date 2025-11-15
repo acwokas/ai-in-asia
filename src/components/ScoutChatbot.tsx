@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Loader2, Sparkles, Bot } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Sparkles, Bot, Mic, Download, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,14 @@ import { supabase } from "@/integrations/supabase/client";
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+interface ArticleSuggestion {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category_slug: string;
 }
 
 const ScoutChatbot = () => {
@@ -26,14 +34,50 @@ const ScoutChatbot = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [articleSuggestions, setArticleSuggestions] = useState<ArticleSuggestion[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
       fetchQueryLimit();
+      if (user) {
+        loadConversation();
+      }
     }
   }, [isOpen, user]);
+
+  useEffect(() => {
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+      
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+        toast({
+          title: "Voice input failed",
+          description: "Please try again or type your message.",
+          variant: "destructive",
+        });
+      };
+      
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
 
   const fetchQueryLimit = async () => {
     let queryLimit = 3;
@@ -78,6 +122,52 @@ const ScoutChatbot = () => {
     setQueriesRemaining(queryLimit - currentCount);
   };
 
+  const loadConversation = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('chat_conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (data) {
+      setConversationId(data.id);
+      setMessages(data.messages as unknown as Message[]);
+    }
+  };
+
+  const saveConversation = async (newMessages: Message[]) => {
+    if (!user) return;
+    
+    if (conversationId) {
+      await supabase
+        .from('chat_conversations')
+        .update({ 
+          messages: newMessages as any,
+          updated_at: new Date().toISOString(),
+          title: newMessages[1]?.content.substring(0, 50) || 'New Conversation'
+        })
+        .eq('id', conversationId);
+    } else {
+      const { data } = await supabase
+        .from('chat_conversations')
+        .insert({
+          user_id: user.id,
+          messages: newMessages as any,
+          title: newMessages[1]?.content.substring(0, 50) || 'New Conversation'
+        })
+        .select()
+        .single();
+      
+      if (data) {
+        setConversationId(data.id);
+      }
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -85,6 +175,34 @@ const ScoutChatbot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const startVoiceInput = () => {
+    if (recognitionRef.current && !isListening) {
+      setIsListening(true);
+      recognitionRef.current.start();
+    }
+  };
+
+  const exportTranscript = () => {
+    const transcript = messages
+      .map(m => `${m.role === 'user' ? 'You' : 'Scout'}: ${m.content}`)
+      .join('\n\n');
+    
+    const blob = new Blob([transcript], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scout-chat-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Transcript exported",
+      description: "Your chat history has been downloaded.",
+    });
+  };
 
   const sendMessage = async () => {
     console.log("sendMessage called, input:", input, "isLoading:", isLoading);
