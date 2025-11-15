@@ -740,6 +740,14 @@ const Article = () => {
   return (
     <>
       <ReadingProgressBar />
+      
+      {/* Floating compact toolbar */}
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border rounded-full px-3 py-2 shadow-lg">
+        <FontSizeControl />
+        <div className="h-4 w-px bg-border" />
+        <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
+      </div>
+      
       <Helmet>
         <title>{((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} | AI in ASIA</title>
         <meta name="description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
@@ -1031,16 +1039,6 @@ const Article = () => {
               <TldrSnapshot bullets={article.tldr_snapshot as string[]} />
             )}
 
-            {/* Reading Tools */}
-            <div className="flex flex-col sm:flex-row gap-4 my-6">
-              <FontSizeControl />
-            </div>
-
-            {/* Text to Speech */}
-            <TextToSpeech 
-              content={JSON.stringify(article.content)}
-              title={article.title}
-            />
 
             {/* Series Navigation */}
             {article.series_id && article.series_part && (
