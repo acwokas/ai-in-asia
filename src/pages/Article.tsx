@@ -1012,9 +1012,6 @@ const Article = () => {
             {/* Second Ad - After Content, Before Comments */}
             <InArticleAd />
 
-            {/* Comments Section */}
-            <Comments articleId={article.id} />
-
             {/* Article Footer */}
             <footer className="mt-12 pt-8 border-t border-border">
               <div className="flex items-center justify-between mb-8">
