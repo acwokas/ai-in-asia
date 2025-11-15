@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { Minus, Plus, RotateCcw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Minus, Plus } from "lucide-react";
 
 const FONT_SIZE_KEY = "article-font-size";
 const DEFAULT_SIZE = 100;
@@ -11,10 +10,8 @@ const STEP = 10;
 
 const FontSizeControl = () => {
   const [fontSize, setFontSize] = useState(DEFAULT_SIZE);
-  const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved font size
     const saved = localStorage.getItem(FONT_SIZE_KEY);
     if (saved) {
       const size = parseInt(saved);
@@ -36,10 +33,6 @@ const FontSizeControl = () => {
       setFontSize(newSize);
       localStorage.setItem(FONT_SIZE_KEY, newSize.toString());
       applyFontSize(newSize);
-      toast({
-        description: "Font size increased",
-        duration: 1500,
-      });
     }
   };
 
@@ -49,57 +42,30 @@ const FontSizeControl = () => {
       setFontSize(newSize);
       localStorage.setItem(FONT_SIZE_KEY, newSize.toString());
       applyFontSize(newSize);
-      toast({
-        description: "Font size decreased",
-        duration: 1500,
-      });
     }
   };
 
-  const handleReset = () => {
-    setFontSize(DEFAULT_SIZE);
-    localStorage.setItem(FONT_SIZE_KEY, DEFAULT_SIZE.toString());
-    applyFontSize(DEFAULT_SIZE);
-    toast({
-      description: "Font size reset to default",
-      duration: 1500,
-    });
-  };
-
   return (
-    <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
-      <span className="text-sm text-muted-foreground mr-2">Text size:</span>
+    <div className="flex items-center gap-1">
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={handleDecrease}
         disabled={fontSize <= MIN_SIZE}
-        className="h-8 w-8"
+        className="h-7 w-7"
         title="Decrease font size"
       >
-        <Minus className="h-4 w-4" />
-      </Button>
-      <span className="text-sm font-medium min-w-[3rem] text-center">
-        {fontSize}%
-      </span>
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleIncrease}
-        disabled={fontSize >= MAX_SIZE}
-        className="h-8 w-8"
-        title="Increase font size"
-      >
-        <Plus className="h-4 w-4" />
+        <Minus className="h-3 w-3" />
       </Button>
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleReset}
-        className="h-8 w-8"
-        title="Reset to default"
+        onClick={handleIncrease}
+        disabled={fontSize >= MAX_SIZE}
+        className="h-7 w-7"
+        title="Increase font size"
       >
-        <RotateCcw className="h-4 w-4" />
+        <Plus className="h-3 w-3" />
       </Button>
     </div>
   );
