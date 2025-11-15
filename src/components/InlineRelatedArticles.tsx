@@ -14,6 +14,7 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
   const { data: relatedArticles } = useQuery({
     queryKey: ["inline-related", currentArticleId, categoryId],
     queryFn: async () => {
+      // Fetch recent articles from same category (different from YouMayAlsoLike which uses view_count)
       const { data, error } = await supabase
         .from("articles")
         .select(`
@@ -28,7 +29,7 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
         .eq("primary_category_id", categoryId)
         .eq("status", "published")
         .neq("id", currentArticleId)
-        .order("view_count", { ascending: false })
+        .order("published_at", { ascending: false })
         .limit(3);
 
       if (error) throw error;
