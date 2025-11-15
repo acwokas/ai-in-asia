@@ -559,8 +559,6 @@ const Article = () => {
         return processed;
       };
       
-      const midPoint = Math.floor(blocks.length / 2);
-      
       return blocks.map((block: any, index: number) => {
         // Skip TL;DR headings (they should be in tldr_snapshot field instead)
         if (block.type === 'heading' && block.content && 
@@ -568,22 +566,10 @@ const Article = () => {
           return null;
         }
         
-        // Insert related articles at midpoint
-        const elements = [];
-        if (index === midPoint && article?.categories?.id) {
-          elements.push(
-            <InlineRelatedArticles
-              key={`related-${index}`}
-              currentArticleId={article.id}
-              categoryId={article.categories.id}
-              categorySlug={article.categories.slug}
-            />
-          );
-        }
-        
         switch (block.type) {
           case 'paragraph':
-          return text
+            const processInlineFormatting = (text: string) => {
+              return text
             .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -608,14 +594,13 @@ const Article = () => {
               contentText.toLowerCase().includes('photo:')
             );
 
-            elements.push(
+            return (
               <p 
                 key={index} 
                 className={`leading-relaxed mb-6 ${isLikelyImageCaption ? 'text-sm text-muted-foreground text-center -mt-4' : ''}`}
                 dangerouslySetInnerHTML={{ __html: sanitizedContent }}
               />
             );
-            break;
             
           case 'heading':
             const level = block.attrs?.level || 2;
@@ -623,20 +608,18 @@ const Article = () => {
             const headingClasses = level === 1 ? "text-4xl font-bold mt-8 mb-4" :
                                  level === 2 ? "text-3xl font-bold mt-8 mb-4" :
                                  "text-2xl font-semibold mt-8 mb-4";
-            elements.push(
+            return (
               <HeadingTag key={index} className={headingClasses}>
                 {block.content}
               </HeadingTag>
             );
-            break;
             
           case 'quote':
-            elements.push(
+            return (
               <blockquote key={index} className="border-l-4 border-primary pl-6 py-2 my-8 italic text-xl">
                 {block.content}
               </blockquote>
             );
-            break;
             
           case 'list':
         const listItems = Array.isArray(block.content) ? block.content : [block.content];
@@ -694,8 +677,12 @@ const Article = () => {
           </div>
         );
         
-      default:
-        return null;
+          default:
+            return null;
+        }
+      }).filter(Boolean);
+    } catch (error) {
+      return <p className="leading-relaxed mb-6">{content}</p>;
     }
   };
 
@@ -1012,6 +999,15 @@ const Article = () => {
                 renderContent(article.content)
               )}
             </div>
+
+            {/* Related Articles - Mid Article */}
+            {article.categories?.id && (
+              <InlineRelatedArticles
+                currentArticleId={article.id}
+                categoryId={article.categories.id}
+                categorySlug={article.categories.slug}
+              />
+            )}
 
             {/* Second Ad - After Content, Before Comments */}
             <InArticleAd />
