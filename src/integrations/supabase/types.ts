@@ -1498,6 +1498,48 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          breaking_news: boolean | null
+          created_at: string | null
+          daily_digest: boolean | null
+          digest_time: string | null
+          digest_timezone: string | null
+          followed_authors: boolean | null
+          followed_categories: boolean | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          weekly_roundup: boolean | null
+        }
+        Insert: {
+          breaking_news?: boolean | null
+          created_at?: string | null
+          daily_digest?: boolean | null
+          digest_time?: string | null
+          digest_timezone?: string | null
+          followed_authors?: boolean | null
+          followed_categories?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          weekly_roundup?: boolean | null
+        }
+        Update: {
+          breaking_news?: boolean | null
+          created_at?: string | null
+          daily_digest?: boolean | null
+          digest_time?: string | null
+          digest_timezone?: string | null
+          followed_authors?: boolean | null
+          followed_categories?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          weekly_roundup?: boolean | null
+        }
+        Relationships: []
+      }
       pending_comments: {
         Row: {
           article_id: string
@@ -1599,6 +1641,39 @@ export type Database = {
           newsletter_subscribed?: boolean | null
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1909,6 +1984,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string | null
+          follow_id: string
+          follow_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follow_id: string
+          follow_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          follow_id?: string
+          follow_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

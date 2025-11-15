@@ -16,7 +16,7 @@ import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import TextToSpeech from "@/components/TextToSpeech";
-import ShareCardGenerator from "@/components/ShareCardGenerator";
+import FollowButton from "@/components/FollowButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,7 +54,7 @@ const Article = () => {
         .from("articles")
         .select(`
           *,
-          authors (name, slug, bio, avatar_url, job_title),
+          authors (id, name, slug, bio, avatar_url, job_title),
           categories:primary_category_id (name, slug, id)
         `)
         .eq("slug", cleanSlug);
@@ -1002,36 +1002,48 @@ const Article = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={handleBookmark}
-                    title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
-                  >
-                    <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                  </Button>
+                  {article.authors && (
+                    <FollowButton
+                      followType="author"
+                      followId={article.authors.id}
+                      followName={article.authors.name}
+                    />
+                  )}
+                  {article.categories && (
+                    <FollowButton
+                      followType="category"
+                      followId={article.categories.id}
+                      followName={article.categories.name}
+                    />
+                  )}
                   
-                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
-                    <FontSizeControl />
+                  <div className="ml-auto flex flex-wrap items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={handleBookmark}
+                      title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
+                    >
+                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
+                      <FontSizeControl />
+                    </div>
+                    
+                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
+                      <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={handleShare}
+                      title="Share article"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  
-                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
-                    <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
-                  </div>
-                  
-                  <ShareCardGenerator 
-                    articleTitle={article.title}
-                    articleExcerpt={article.excerpt || ''}
-                  />
-                  
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={handleShare}
-                    title="Share article"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             </header>
