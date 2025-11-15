@@ -332,7 +332,12 @@ const ContentAnalytics = () => {
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium mb-1">{article.title}</h3>
+                        <Link 
+                          to={`/${article.categories?.slug || 'news'}/${article.slug}`}
+                          className="font-medium mb-1 hover:text-primary transition-colors block"
+                        >
+                          {article.title}
+                        </Link>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Eye className="h-3 w-3" />
@@ -374,7 +379,12 @@ const ContentAnalytics = () => {
                   {recentArticles?.map((article) => (
                     <div key={article.id} className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium mb-1">{article.title}</h3>
+                        <Link 
+                          to={`/${article.categories?.slug || 'news'}/${article.slug}`}
+                          className="font-medium mb-1 hover:text-primary transition-colors block"
+                        >
+                          {article.title}
+                        </Link>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Eye className="h-3 w-3" />
