@@ -742,13 +742,6 @@ const Article = () => {
     <>
       <ReadingProgressBar />
       
-      {/* Floating compact toolbar */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border rounded-full px-3 py-2 shadow-lg">
-        <FontSizeControl />
-        <div className="h-4 w-px bg-border" />
-        <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
-      </div>
-      
       <Helmet>
         <title>{((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} | AI in ASIA</title>
         <meta name="description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
@@ -1008,15 +1001,35 @@ const Article = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon" onClick={handleBookmark}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleBookmark}
+                    title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
+                  >
                     <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                   </Button>
+                  
+                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
+                    <FontSizeControl />
+                  </div>
+                  
+                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1">
+                    <TextToSpeech content={JSON.stringify(article.content)} title={article.title} />
+                  </div>
+                  
                   <ShareCardGenerator 
                     articleTitle={article.title}
                     articleExcerpt={article.excerpt || ''}
                   />
-                  <Button variant="outline" size="icon" onClick={handleShare}>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleShare}
+                    title="Share article"
+                  >
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>

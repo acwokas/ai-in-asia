@@ -124,16 +124,15 @@ const ShareCardGenerator = ({ articleTitle, articleExcerpt, selectedQuote }: Sha
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          variant="ghost" 
-          size="sm" 
-          className="gap-2"
+          variant="outline" 
+          size="icon" 
+          title="Generate share card"
           onClick={() => {
             setCardImage(null);
             generateCard(defaultQuote);
           }}
         >
           <Share2 className="h-4 w-4" />
-          Share Card
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
