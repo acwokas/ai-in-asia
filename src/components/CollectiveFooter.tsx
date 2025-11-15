@@ -6,7 +6,13 @@ import promptAndGoLogo from "@/assets/promptandgo-logo.png";
 import myOfferClubLogo from "@/assets/myofferclub-logo.png";
 import aiAcademyLogo from "@/assets/aiacademy-logo.png";
 
-const collectiveLinks = [
+const collectiveLinks: Array<{
+  subdomain: string;
+  url: string;
+  displayName: string;
+  logo: string;
+  comingSoon?: boolean;
+}> = [
   {
     subdomain: "discover.withthepowerof.ai",
     url: "https://www.aiinasia.com",
@@ -27,10 +33,9 @@ const collectiveLinks = [
   },
   {
     subdomain: "shop.withthepowerof.ai",
-    url: "#",
+    url: "https://www.myofferclub.com",
     displayName: "MyOfferClub.com",
     logo: myOfferClubLogo,
-    comingSoon: true,
   },
   {
     subdomain: "learn.withthepowerof.ai",
