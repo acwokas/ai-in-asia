@@ -12,9 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { TrendingUp, Users, Loader2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
+import ReadingStreakTracker from "@/components/ReadingStreakTracker";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -39,6 +41,7 @@ const Index = () => {
   const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(false);
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Enable secondary queries after main content loads
   useEffect(() => {
@@ -693,6 +696,13 @@ const Index = () => {
         <section className="container mx-auto px-4 py-8">
           <PromptAndGoBanner />
         </section>
+
+        {/* Reading Streak Tracker - Only for logged in users */}
+        {user && (
+          <section className="container mx-auto px-4 pb-4">
+            <ReadingStreakTracker />
+          </section>
+        )}
 
         {/* Editor's Pick */}
         {editorsPick && (

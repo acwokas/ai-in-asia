@@ -1,6 +1,7 @@
 import { Search, Menu, Moon, Sun, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ReadingQueue from "@/components/ReadingQueue";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +82,8 @@ const Header = memo(() => {
             >
               {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
             </Button>
+
+            <ReadingQueue />
 
             {user ? (
               <DropdownMenu>
