@@ -1021,20 +1021,22 @@ const Article = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                  {article.authors && (
-                    <FollowButton
-                      followType="author"
-                      followId={article.authors.id}
-                      followName={article.authors.name}
-                    />
-                  )}
-                  {article.categories && (
-                    <FollowButton
-                      followType="category"
-                      followId={article.categories.id}
-                      followName={article.categories.name}
-                    />
-                  )}
+                  <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2">
+                    {article.authors && (
+                      <FollowButton
+                        followType="author"
+                        followId={article.authors.id}
+                        followName={article.authors.name}
+                      />
+                    )}
+                    {article.categories && (
+                      <FollowButton
+                        followType="category"
+                        followId={article.categories.id}
+                        followName={article.categories.name}
+                      />
+                    )}
+                  </div>
                   
                   <div className="flex items-center gap-2 ml-auto md:ml-0">
                     <Button 
