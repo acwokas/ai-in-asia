@@ -185,7 +185,7 @@ const Index = () => {
 
   // Optimized: Combine both editor's picks into single query
   const { data: editorsPicks } = useQuery({
-    queryKey: ["editors-picks-combined"],
+    queryKey: ["editors-picks-combined", homepageData?.featured?.id],
     enabled: enableSecondaryQueries,
     staleTime: 0, // Always fetch fresh editor's picks
     queryFn: async () => {
@@ -204,9 +204,15 @@ const Index = () => {
       
       if (error) throw error;
       
+      // Filter out homepage editor's pick if it's the same as featured article
+      const homepagePick = data?.find(p => p.location === "homepage");
+      const trendingPick = data?.find(p => p.location === "trending-featured");
+      
       return {
-        homepage: data?.find(p => p.location === "homepage")?.articles,
-        trendingFeatured: data?.find(p => p.location === "trending-featured")?.articles
+        homepage: homepagePick?.articles && (homepagePick.articles as any).id !== homepageData?.featured?.id 
+          ? homepagePick.articles 
+          : null,
+        trendingFeatured: trendingPick?.articles
       };
     },
   });
