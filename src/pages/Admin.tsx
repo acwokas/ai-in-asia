@@ -95,12 +95,9 @@ const Admin = () => {
 
     setIsAdmin(true);
     
-    // Only redirect to dashboard if coming from auth or home page
-    const currentPath = window.location.pathname;
-    const hasVisitedAdmin = sessionStorage.getItem('admin_visited');
-    
-    if (currentPath === '/admin' && !hasVisitedAdmin) {
-      sessionStorage.setItem('admin_visited', 'true');
+    // Only redirect if explicitly coming from auth (via URL parameter)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('from') === 'auth') {
       navigate("/admin/dashboard");
     }
   };

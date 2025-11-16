@@ -134,10 +134,7 @@ const AdminDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => {
-              sessionStorage.removeItem('admin_visited');
-              navigate("/admin");
-            }}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin")}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Users className="h-8 w-8 text-primary" />
