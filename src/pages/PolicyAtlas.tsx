@@ -32,11 +32,12 @@ const PolicyAtlas = () => {
         console.error('Error fetching regions:', error);
         throw error;
       }
-      console.log('Regions fetched:', data?.length);
+      console.log('Regions fetched:', data?.length, data);
       return data || [];
     },
     retry: 3,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Don't cache to ensure fresh data
+    refetchOnMount: 'always',
   });
 
   // Fetch recent updates to determine which regions should pulse
@@ -75,7 +76,8 @@ const PolicyAtlas = () => {
       return Array.from(recentRegions);
     },
     retry: 3,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Don't cache
+    refetchOnMount: 'always',
   });
 
   const { data: latestUpdates } = useQuery({
@@ -139,32 +141,32 @@ const PolicyAtlas = () => {
 
         {/* Interactive Map */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Interactive Map</h2>
+          <h2 className="text-2xl font-bold mb-6">Explore by Region</h2>
           {regionsError ? (
             <div className="text-center py-8 text-destructive">
-              Failed to load map. Please refresh the page.
+              Failed to load map: {regionsError.message}
             </div>
           ) : regionsLoading ? (
-            <div className="w-full h-[600px] bg-muted animate-pulse rounded-lg" />
+            <div className="w-full h-[500px] bg-muted animate-pulse rounded-lg" />
           ) : regions && regions.length > 0 ? (
             <PolicyMap regions={regions} recentlyUpdatedRegions={recentUpdates || []} />
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              No regions available
+              No regions available. Please check your database connection.
             </div>
           )}
         </div>
 
         {/* Region Grid */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Explore by Region</h2>
+          <h2 className="text-2xl font-bold mb-6">All Regions</h2>
           {regionsError ? (
             <div className="text-center py-8 text-destructive">
-              Failed to load regions. Please try again later.
+              Failed to load regions: {regionsError.message}
             </div>
           ) : regionsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(9)].map((_, i) => (
+              {[...Array(12)].map((_, i) => (
                 <Card key={i} className="h-full">
                   <CardHeader>
                     <div className="flex items-center gap-2">
@@ -176,9 +178,9 @@ const PolicyAtlas = () => {
                 </Card>
               ))}
             </div>
-          ) : (
+          ) : regions && regions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regions?.map((region) => (
+              {regions.map((region) => (
                 <Link key={region.id} to={`/ai-policy-atlas/${region.slug}`}>
                   <Card className="hover:shadow-lg transition-shadow h-full">
                     <CardHeader>
@@ -191,6 +193,10 @@ const PolicyAtlas = () => {
                   </Card>
                 </Link>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No regions found. Please check your database.
             </div>
           )}
         </div>
