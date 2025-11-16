@@ -246,9 +246,14 @@ const Category = () => {
 
       if (manualError && manualError.code !== 'PGRST116') throw manualError;
       
-      // If manual pick exists and article is published, return it
+      // If manual pick exists and article is published, return it UNLESS it's the featured article
       if (manualPick?.articles && (manualPick.articles as any).status === 'published') {
-        return manualPick.articles;
+        const manualArticle = manualPick.articles as any;
+        // Don't use manual pick if it's the same as the featured article
+        if (manualArticle.id !== articles[0]?.id) {
+          return manualArticle;
+        }
+        // If manual pick is same as featured, fall through to automatic selection
       }
 
       // Otherwise, fallback to automatic selection
