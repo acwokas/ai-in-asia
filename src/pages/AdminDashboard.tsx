@@ -133,6 +133,37 @@ const AdminDashboard = () => {
           <h1 className="headline text-4xl mb-8">Admin Dashboard</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Quick Actions */}
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin")}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle>Admin Panel</CardTitle>
+                <CardDescription>Manage site settings and content</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Access the full admin panel for comprehensive site management
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/editor")}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <FileText className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle>Create Article</CardTitle>
+                <CardDescription>Write a new article</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Start creating new content for your publication
+                </p>
+              </CardContent>
+            </Card>
+
             {/* Newsletter Subscribers */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/newsletter-manager")}>
               <CardHeader>
