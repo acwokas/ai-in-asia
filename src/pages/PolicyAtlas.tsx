@@ -14,7 +14,7 @@ import PolicyMap from "@/components/PolicyMap";
 const PolicyAtlas = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: regions } = useQuery({
+  const { data: regions, isLoading: regionsLoading, error: regionsError } = useQuery({
     queryKey: ['policy-regions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -127,21 +127,41 @@ const PolicyAtlas = () => {
         {/* Region Grid */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-6">Explore by Region</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {regions?.map((region) => (
-              <Link key={region.id} to={`/ai-policy-atlas/${region.slug}`}>
-                <Card className="hover:shadow-lg transition-shadow h-full">
+          {regionsError ? (
+            <div className="text-center py-8 text-destructive">
+              Failed to load regions. Please try again later.
+            </div>
+          ) : regionsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(9)].map((_, i) => (
+                <Card key={i} className="h-full">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Globe className="h-5 w-5" />
-                      {region.name}
-                    </CardTitle>
-                    <CardDescription>{region.description}</CardDescription>
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 bg-muted animate-pulse rounded" />
+                      <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+                    </div>
+                    <div className="h-4 w-full bg-muted animate-pulse rounded mt-2" />
                   </CardHeader>
                 </Card>
-              </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {regions?.map((region) => (
+                <Link key={region.id} to={`/ai-policy-atlas/${region.slug}`}>
+                  <Card className="hover:shadow-lg transition-shadow h-full">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Globe className="h-5 w-5" />
+                        {region.name}
+                      </CardTitle>
+                      <CardDescription>{region.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Latest Updates */}
