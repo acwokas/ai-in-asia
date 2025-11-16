@@ -9,7 +9,7 @@ interface PolicyBreadcrumbsProps {
 
 const PolicyBreadcrumbs = ({ regionName, regionSlug, articleTitle }: PolicyBreadcrumbsProps) => {
   return (
-    <nav className="flex items-center gap-2 text-sm mb-6" aria-label="Breadcrumb">
+    <nav className="sticky top-16 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 -mt-4 mb-6 border-b flex items-center gap-2 text-sm" aria-label="Breadcrumb">
       <Link 
         to="/ai-policy-atlas" 
         className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline"
