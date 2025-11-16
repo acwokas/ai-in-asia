@@ -103,6 +103,8 @@ const Category = () => {
   const { data: articles, isLoading: articlesLoading } = useQuery({
     queryKey: ["category-articles", slug],
     enabled: !!category?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -155,6 +157,8 @@ const Category = () => {
   const { data: kooArticles } = useQuery({
     queryKey: ["koo-articles", category?.id],
     enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -187,6 +191,8 @@ const Category = () => {
   const { data: adrianArticles } = useQuery({
     queryKey: ["adrian-articles", category?.id],
     enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -219,6 +225,8 @@ const Category = () => {
   const { data: editorsPick } = useQuery({
     queryKey: ["editors-pick", category?.id, slug],
     enabled: !!category?.id && !!articles,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id || !articles) return null;
 
@@ -304,6 +312,8 @@ const Category = () => {
   const { data: mostReadArticles } = useQuery({
     queryKey: ["category-most-read", slug],
     enabled: enableSecondaryQueries && !!category?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -354,6 +364,8 @@ const Category = () => {
   const { data: trendingArticles } = useQuery({
     queryKey: ["category-trending", slug],
     enabled: enableSecondaryQueries && !!category?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -492,6 +504,8 @@ const Category = () => {
   const { data: featuredVoices } = useQuery({
     queryKey: ["featured-voices", category?.slug],
     enabled: category?.slug === "voices",
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       // Fetch specific featured authors: Adrian Watkins, Victoria Watkins, Koo Ping Shung
       const { data, error } = await supabase
