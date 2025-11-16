@@ -29,6 +29,17 @@ const PolicyRegion = () => {
   const { data: articles } = useQuery({
     queryKey: ['policy-articles', region],
     queryFn: async () => {
+      // First get the category ID for this region
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', region)
+        .single();
+      
+      if (categoryError) throw categoryError;
+      if (!categoryData) return [];
+      
+      // Then get articles for this category
       const { data, error } = await supabase
         .from('articles')
         .select(`
@@ -44,7 +55,7 @@ const PolicyRegion = () => {
         `)
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
-        .eq('categories.slug', region)
+        .eq('primary_category_id', categoryData.id)
         .order('updated_at', { ascending: false });
       
       if (error) throw error;
