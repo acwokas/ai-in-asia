@@ -168,11 +168,18 @@ export const PolicyArticleEditor = ({
                 <SelectValue placeholder="Select region..." />
               </SelectTrigger>
               <SelectContent>
-                {availableRegions?.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                  </SelectItem>
-                ))}
+                {availableRegions && Array.isArray(availableRegions) && availableRegions.length > 0 ? (
+                  availableRegions.map((r) => {
+                    if (typeof r !== 'string') return null;
+                    return (
+                      <SelectItem key={r} value={r}>
+                        {r.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                      </SelectItem>
+                    );
+                  })
+                ) : (
+                  <SelectItem value="" disabled>Loading regions...</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -208,17 +215,24 @@ export const PolicyArticleEditor = ({
           <div>
             <Label>Topic Tags</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {availableTopicTags?.map((tag) => (
-                <Button
-                  key={tag}
-                  type="button"
-                  variant={topicTags.includes(tag) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleTopicTagToggle(tag)}
-                >
-                  {tag}
-                </Button>
-              ))}
+              {availableTopicTags && Array.isArray(availableTopicTags) && availableTopicTags.length > 0 ? (
+                availableTopicTags.map((tag) => {
+                  if (typeof tag !== 'string') return null;
+                  return (
+                    <Button
+                      key={tag}
+                      type="button"
+                      variant={topicTags.includes(tag) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleTopicTagToggle(tag)}
+                    >
+                      {tag}
+                    </Button>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-muted-foreground">Loading topic tags...</p>
+              )}
             </div>
           </div>
         </CardContent>
