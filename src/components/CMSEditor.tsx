@@ -195,39 +195,35 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   // Fetch policy regions (for policy articles)
   const { data: policyRegions, isLoading: policyRegionsLoading, error: policyRegionsError } = useQuery({
     queryKey: ['policy-regions'],
-    staleTime: 5 * 60 * 1000,
-    enabled: articleType === 'policy_article',
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('slug')
-          .in('slug', [
-            'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
-            'europe', 'mena', 'africa', 'latin-america', 'south-asia',
-            'pan-pacific', 'pan-asia', 'global-comparison'
-          ])
-          .order('display_order');
-        
-        if (error) {
-          console.error('Error fetching policy regions:', error);
-          throw error;
-        }
-        const regions = data?.map(r => r.slug) || [];
-        console.log('Policy regions loaded:', regions);
-        return regions;
-      } catch (err) {
-        console.error('Failed to load policy regions:', err);
-        return [];
+      console.log('Fetching policy regions for editor...');
+      const { data, error } = await supabase
+        .from('categories')
+        .select('slug')
+        .in('slug', [
+          'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
+          'europe', 'mena', 'africa', 'latin-america', 'south-asia',
+          'pan-pacific', 'pan-asia', 'global-comparison'
+        ])
+        .order('display_order');
+      
+      if (error) {
+        console.error('Error fetching policy regions:', error);
+        throw error;
       }
+      const regions = data?.map(r => r.slug) || [];
+      console.log('Policy regions loaded for editor:', regions);
+      return regions;
     }
   });
 
   // Fetch topic tags (for policy articles)
   const { data: policyTopicTags, isLoading: policyTopicTagsLoading, error: policyTopicTagsError } = useQuery({
     queryKey: ['policy-topic-tags'],
-    staleTime: 5 * 60 * 1000,
-    enabled: articleType === 'policy_article',
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       try {
         const { data, error } = await supabase
