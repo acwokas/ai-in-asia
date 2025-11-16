@@ -39,7 +39,18 @@ const PolicyRegion = () => {
       if (categoryError) throw categoryError;
       if (!categoryData) return [];
       
-      // Then get articles for this category
+      // Get articles via the junction table to support multi-category assignments
+      const { data: articleCategories, error: acError } = await supabase
+        .from('article_categories')
+        .select('article_id')
+        .eq('category_id', categoryData.id);
+      
+      if (acError) throw acError;
+      if (!articleCategories || articleCategories.length === 0) return [];
+      
+      const articleIds = articleCategories.map(ac => ac.article_id);
+      
+      // Then get the full article data
       const { data, error } = await supabase
         .from('articles')
         .select(`
@@ -55,7 +66,7 @@ const PolicyRegion = () => {
         `)
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
-        .eq('primary_category_id', categoryData.id)
+        .in('id', articleIds)
         .order('updated_at', { ascending: false });
       
       if (error) throw error;
