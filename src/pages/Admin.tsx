@@ -95,9 +95,10 @@ const Admin = () => {
 
     setIsAdmin(true);
     
-    // Only redirect to dashboard on initial login (when coming from /auth)
-    const fromAuth = document.referrer.includes('/auth') || window.location.search.includes('from=auth');
-    if (fromAuth) {
+    // Redirect to dashboard on first admin visit in this session
+    const hasVisitedAdmin = sessionStorage.getItem('admin_visited');
+    if (!hasVisitedAdmin) {
+      sessionStorage.setItem('admin_visited', 'true');
       navigate("/admin/dashboard");
     }
   };
