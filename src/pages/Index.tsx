@@ -52,7 +52,7 @@ const Index = () => {
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["homepage-articles"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 1 minute - ensure fresh content on homepage
     queryFn: async () => {
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
@@ -187,7 +187,7 @@ const Index = () => {
   const { data: editorsPicks } = useQuery({
     queryKey: ["editors-picks-combined"],
     enabled: enableSecondaryQueries,
-    staleTime: 15 * 60 * 1000, // 15 minutes - editor picks are relatively static
+    staleTime: 0, // Always fetch fresh editor's picks
     queryFn: async () => {
       const { data, error } = await supabase
         .from("editors_picks")
