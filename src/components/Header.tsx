@@ -67,7 +67,7 @@ const Header = memo(() => {
                 <Input
                   type="search"
                   placeholder="Search articles..."
-                  className="w-64 pl-8"
+                  className="w-48 pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
