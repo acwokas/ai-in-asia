@@ -94,6 +94,12 @@ const Admin = () => {
     }
 
     setIsAdmin(true);
+    
+    // Only redirect to dashboard on initial login (when coming from /auth)
+    const fromAuth = document.referrer.includes('/auth') || window.location.search.includes('from=auth');
+    if (fromAuth) {
+      navigate("/admin/dashboard");
+    }
   };
 
   // Optimized stats query - already batched with Promise.all
@@ -753,6 +759,15 @@ const Admin = () => {
               <p className="text-muted-foreground">Welcome back, {getFirstName(user?.email)}</p>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
+              <Button 
+                onClick={() => navigate("/admin/dashboard")}
+                variant="default"
+                size="lg"
+                className="flex-1 md:flex-initial"
+              >
+                <BarChart className="h-4 w-4 mr-2" />
+                View Dashboard
+              </Button>
               <Button 
                 onClick={() => {
                   refetchStats();
