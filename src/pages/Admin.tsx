@@ -95,9 +95,11 @@ const Admin = () => {
 
     setIsAdmin(true);
     
-    // Redirect to dashboard on first admin visit in this session
+    // Only redirect to dashboard if coming from auth or home page
+    const currentPath = window.location.pathname;
     const hasVisitedAdmin = sessionStorage.getItem('admin_visited');
-    if (!hasVisitedAdmin) {
+    
+    if (currentPath === '/admin' && !hasVisitedAdmin) {
       sessionStorage.setItem('admin_visited', 'true');
       navigate("/admin/dashboard");
     }
