@@ -728,34 +728,34 @@ const Category = () => {
             </section>
           )}
 
-          {/* Voices Layout: The View From Koo (Left) + Latest & Ad (Right) */}
-          {category?.slug === 'voices' && kooArticles && kooArticles.length > 0 ? (
+          {/* Voices Layout: Latest Published (Left) + Latest & Ad (Right) */}
+          {category?.slug === 'voices' && featuredArticle ? (
             <section className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">The View From Koo</h2>
+              <h2 className="text-2xl font-bold mb-6">Latest Voice</h2>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* The View From Koo - Larger Featured Card on Left */}
+                {/* Latest Published - Larger Featured Card on Left */}
                 <div className="lg:col-span-8">
                     <Card className="overflow-hidden hover:shadow-xl transition-shadow group">
-                      <Link to={`/${kooArticles[0].categories?.slug || 'news'}/${kooArticles[0].slug}`}>
+                      <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}>
                         <div className="relative aspect-video overflow-hidden">
                           <img 
-                            src={kooArticles[0].featured_image_url} 
-                            alt={kooArticles[0].title}
+                            src={featuredArticle.featured_image_url} 
+                            alt={featuredArticle.title}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>
                         <div className="p-6">
                           <h3 className="headline text-2xl md:text-3xl mb-3 group-hover:text-primary transition-colors">
-                            {kooArticles[0].title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                            {featuredArticle.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
                           </h3>
                           <p className="text-muted-foreground mb-4 line-clamp-2">
-                            {kooArticles[0].excerpt}
+                            {featuredArticle.excerpt}
                           </p>
                           <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <span>{kooArticles[0].authors?.name}</span>
+                            <span>{featuredArticle.authors?.name}</span>
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {kooArticles[0].reading_time_minutes || 5} min
+                              {featuredArticle.reading_time_minutes || 5} min
                             </span>
                           </div>
                         </div>
