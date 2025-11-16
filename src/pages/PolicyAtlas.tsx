@@ -17,6 +17,7 @@ const PolicyAtlas = () => {
   const { data: regions, isLoading: regionsLoading, error: regionsError } = useQuery({
     queryKey: ['policy-regions'],
     queryFn: async () => {
+      console.log('Fetching policy regions...');
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -27,36 +28,54 @@ const PolicyAtlas = () => {
         ])
         .order('display_order');
       
-      if (error) throw error;
-      return data;
-    }
+      if (error) {
+        console.error('Error fetching regions:', error);
+        throw error;
+      }
+      console.log('Regions fetched:', data?.length);
+      return data || [];
+    },
+    retry: 3,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Fetch recent updates to determine which regions should pulse
   const { data: recentUpdates } = useQuery({
     queryKey: ['recent-policy-updates'],
     queryFn: async () => {
+      console.log('Fetching recent policy updates...');
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
       const { data, error } = await supabase
         .from('articles')
-        .select('categories!primary_category_id(slug)')
+        .select(`
+          primary_category_id,
+          categories:primary_category_id(slug)
+        `)
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
         .gte('updated_at', thirtyDaysAgo.toISOString());
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching recent updates:', error);
+        return [];
+      }
       
       // Extract unique region slugs
-      const recentRegions = new Set(
-        data
-          .map(article => article.categories?.slug)
-          .filter(Boolean)
-      );
+      const recentRegions = new Set<string>();
+      data?.forEach(article => {
+        if (article.categories && typeof article.categories === 'object' && 'slug' in article.categories) {
+          const slug = (article.categories as { slug: string }).slug;
+          if (slug) recentRegions.add(slug);
+        }
+      });
       
+      console.log('Recent regions:', Array.from(recentRegions));
       return Array.from(recentRegions);
-    }
+    },
+    retry: 3,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: latestUpdates } = useQuery({
@@ -121,7 +140,19 @@ const PolicyAtlas = () => {
         {/* Interactive Map */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-6">Interactive Map</h2>
-          {regions && <PolicyMap regions={regions} recentlyUpdatedRegions={recentUpdates || []} />}
+          {regionsError ? (
+            <div className="text-center py-8 text-destructive">
+              Failed to load map. Please refresh the page.
+            </div>
+          ) : regionsLoading ? (
+            <div className="w-full h-[600px] bg-muted animate-pulse rounded-lg" />
+          ) : regions && regions.length > 0 ? (
+            <PolicyMap regions={regions} recentlyUpdatedRegions={recentUpdates || []} />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No regions available
+            </div>
+          )}
         </div>
 
         {/* Region Grid */}
