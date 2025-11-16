@@ -193,38 +193,60 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   });
 
   // Fetch policy regions (for policy articles)
-  const { data: policyRegions } = useQuery({
+  const { data: policyRegions, isLoading: policyRegionsLoading, error: policyRegionsError } = useQuery({
     queryKey: ['policy-regions'],
     staleTime: 5 * 60 * 1000,
+    enabled: articleType === 'policy_article',
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('slug')
-        .in('slug', [
-          'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
-          'europe', 'mena', 'africa', 'latin-america', 'south-asia',
-          'pan-pacific', 'pan-asia', 'global-comparison'
-        ])
-        .order('display_order');
-      
-      if (error) throw error;
-      return data?.map(r => r.slug) || [];
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('slug')
+          .in('slug', [
+            'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
+            'europe', 'mena', 'africa', 'latin-america', 'south-asia',
+            'pan-pacific', 'pan-asia', 'global-comparison'
+          ])
+          .order('display_order');
+        
+        if (error) {
+          console.error('Error fetching policy regions:', error);
+          throw error;
+        }
+        const regions = data?.map(r => r.slug) || [];
+        console.log('Policy regions loaded:', regions);
+        return regions;
+      } catch (err) {
+        console.error('Failed to load policy regions:', err);
+        return [];
+      }
     }
   });
 
   // Fetch topic tags (for policy articles)
-  const { data: policyTopicTags } = useQuery({
+  const { data: policyTopicTags, isLoading: policyTopicTagsLoading, error: policyTopicTagsError } = useQuery({
     queryKey: ['policy-topic-tags'],
     staleTime: 5 * 60 * 1000,
+    enabled: articleType === 'policy_article',
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tags')
-        .select('name')
-        .in('slug', ['privacy', 'safety', 'accountability', 'fairness', 'transparency', 'risk', 'law', 'ethics', 'regulation'])
-        .order('name');
-      
-      if (error) throw error;
-      return data?.map(t => t.name) || [];
+      try {
+        const { data, error } = await supabase
+          .from('tags')
+          .select('name')
+          .in('slug', ['privacy', 'safety', 'accountability', 'fairness', 'transparency', 'risk', 'law', 'ethics', 'regulation'])
+          .order('name');
+        
+        if (error) {
+          console.error('Error fetching policy topic tags:', error);
+          throw error;
+        }
+        const tags = data?.map(t => t.name) || [];
+        console.log('Policy topic tags loaded:', tags);
+        return tags;
+      } catch (err) {
+        console.error('Failed to load policy topic tags:', err);
+        return [];
+      }
     }
   });
 
@@ -1148,24 +1170,42 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         {/* Policy Article Tab */}
         <TabsContent value="policy" className="space-y-6">
           {articleType === 'policy_article' ? (
-            <PolicyArticleEditor
-              region={region}
-              country={country}
-              governanceMaturity={governanceMaturity}
-              policySections={policySections}
-              comparisonTables={comparisonTables}
-              localResources={localResources}
-              topicTags={topicTags}
-              onRegionChange={setRegion}
-              onCountryChange={setCountry}
-              onGovernanceMaturityChange={setGovernanceMaturity}
-              onPolicySectionsChange={setPolicySections}
-              onComparisonTablesChange={setComparisonTables}
-              onLocalResourcesChange={setLocalResources}
-              onTopicTagsChange={setTopicTags}
-              availableRegions={policyRegions || []}
-              availableTopicTags={policyTopicTags || []}
-            />
+            policyRegionsLoading || policyTopicTagsLoading ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                  <p className="text-muted-foreground">Loading policy data...</p>
+                </CardContent>
+              </Card>
+            ) : policyRegionsError || policyTopicTagsError ? (
+              <Card>
+                <CardContent className="p-6 text-center text-destructive">
+                  <p>Failed to load policy data. Please refresh the page.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {policyRegionsError?.message || policyTopicTagsError?.message}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <PolicyArticleEditor
+                region={region}
+                country={country}
+                governanceMaturity={governanceMaturity}
+                policySections={policySections}
+                comparisonTables={comparisonTables}
+                localResources={localResources}
+                topicTags={topicTags}
+                onRegionChange={setRegion}
+                onCountryChange={setCountry}
+                onGovernanceMaturityChange={setGovernanceMaturity}
+                onPolicySectionsChange={setPolicySections}
+                onComparisonTablesChange={setComparisonTables}
+                onLocalResourcesChange={setLocalResources}
+                onTopicTagsChange={setTopicTags}
+                availableRegions={policyRegions || []}
+                availableTopicTags={policyTopicTags || []}
+              />
+            )
           ) : (
             <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
