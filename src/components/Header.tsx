@@ -43,7 +43,7 @@ const Header = memo(() => {
         <div className="flex h-24 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center -ml-8">
-              <img src={logo} alt="AI in ASIA" className="h-32 md:h-24 w-auto" width={171} height={96} />
+              <img src={logo} alt="AI in ASIA" className="h-20 md:h-24 w-auto" width={171} height={96} />
             </Link>
             
             <nav className="hidden md:flex items-center space-x-6">
