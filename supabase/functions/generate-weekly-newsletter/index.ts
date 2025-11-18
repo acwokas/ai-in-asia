@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getUserFromAuth, requireAdmin } from '../_shared/requireAdmin.ts';
 
 const corsHeaders = {
