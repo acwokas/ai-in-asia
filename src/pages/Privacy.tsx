@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
@@ -13,6 +14,15 @@ import {
 const Privacy = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Privacy Policy | AI in ASIA</title>
+        <meta name="description" content="Read AI in ASIA's Privacy Policy. Learn how we collect, use, and protect your personal information." />
+        <link rel="canonical" href="https://aiinasia.com/privacy" />
+        <meta property="og:title" content="Privacy Policy | AI in ASIA" />
+        <meta property="og:description" content="Read AI in ASIA's Privacy Policy. Learn how we collect, use, and protect your personal information." />
+        <meta property="og:url" content="https://aiinasia.com/privacy" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">

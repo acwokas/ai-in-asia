@@ -491,6 +491,10 @@ const Article = () => {
   if (!article) {
     return (
       <div className="min-h-screen flex flex-col">
+        <Helmet>
+          <title>Article Not Found - 404 | AI in ASIA</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
