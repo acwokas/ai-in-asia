@@ -36,12 +36,13 @@ serve(async (req) => {
         return new Response("Category not found", { status: 404 });
       }
 
-      // Fetch articles for this category
+    // Fetch articles for this category
       const { data: articles, error } = await supabase
         .from("articles")
         .select(`
           slug,
           updated_at,
+          published_at,
           primary_category_id,
           categories:primary_category_id(slug)
         `)
@@ -56,11 +57,29 @@ serve(async (req) => {
 
       articles?.forEach((article: any) => {
         const lastmod = new Date(article.updated_at).toISOString().split("T")[0];
+        const publishedDate = new Date(article.published_at);
+        const daysSincePublished = Math.floor((Date.now() - publishedDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Dynamic priority based on freshness
+        let priority = 0.7;
+        let changefreq = "monthly";
+        
+        if (daysSincePublished <= 7) {
+          priority = 0.9;
+          changefreq = "daily";
+        } else if (daysSincePublished <= 30) {
+          priority = 0.8;
+          changefreq = "weekly";
+        } else if (daysSincePublished <= 90) {
+          priority = 0.7;
+          changefreq = "weekly";
+        }
+        
         sitemap += `  <url>
     <loc>${baseUrl}/${article.categories?.slug || slug}/${article.slug}</loc>
     <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
   </url>\n`;
       });
 
@@ -71,6 +90,7 @@ serve(async (req) => {
           ...corsHeaders,
           "Content-Type": "application/xml",
           "Cache-Control": "public, max-age=3600",
+          "Last-Modified": new Date().toUTCString(),
         },
       });
     }
@@ -90,7 +110,7 @@ serve(async (req) => {
 
     const { data: articles } = await supabase
       .from("articles")
-      .select("slug, updated_at, primary_category_id, categories:primary_category_id(slug)")
+      .select("slug, updated_at, published_at, primary_category_id, categories:primary_category_id(slug)")
       .eq("status", "published")
       .order("updated_at", { ascending: false });
 
@@ -119,6 +139,7 @@ serve(async (req) => {
         ...corsHeaders,
         "Content-Type": "application/xml",
         "Cache-Control": "public, max-age=3600",
+        "Last-Modified": new Date().toUTCString(),
       },
     });
   } catch (error) {
