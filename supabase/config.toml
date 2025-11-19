@@ -1,5 +1,8 @@
 project_id = "pbmtnvxywplgpldmlygv"
 
+[functions.enrich-article]
+verify_jwt = true
+
 [functions.scout-chat]
 verify_jwt = false
 
