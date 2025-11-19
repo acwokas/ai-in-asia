@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -59,8 +59,33 @@ export default function KnowledgeEngine() {
       return data;
     },
     enabled: isAdmin,
-    refetchInterval: 5000, // Refresh every 5 seconds
   });
+
+  // Set up realtime subscription for queue updates
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const channel = supabase
+      .channel('enrichment-queue-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'enrichment_queue'
+        },
+        (payload) => {
+          console.log('Queue update:', payload);
+          queryClient.invalidateQueries({ queryKey: ['enrichment-queue-status'] });
+          queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin, queryClient]);
 
   // Enrich single article
   const enrichSingleMutation = useMutation({
