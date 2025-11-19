@@ -98,8 +98,8 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
           // Parse AI response - strip markdown code blocks if present
           let enrichmentData;
           try {
-            // Remove markdown code blocks if present
-            aiContent = aiContent.replace(/```json\s*\n?/g, '').replace(/```\s*$/g, '').trim();
+            // Remove markdown code blocks - handle various formats
+            aiContent = aiContent.replace(/^```(?:json)?\s*/g, '').replace(/\s*```$/g, '').trim();
             enrichmentData = JSON.parse(aiContent);
           } catch (parseError) {
             console.error('Failed to parse AI response:', aiContent);
