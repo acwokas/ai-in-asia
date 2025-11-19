@@ -31,10 +31,23 @@ serve(async (req) => {
     }
 
     console.log(`Starting enrichment for ${article_ids.length} articles, batch: ${batch_id}`);
-
+ 
     const results: EnrichmentResult[] = [];
-
-    // Process articles in chunks to avoid timeouts
+    let processedCount = 0;
+    let successCount = 0;
+    let failCount = 0;
+ 
+    // Mark queue as processing if batch_id is provided
+    if (batch_id) {
+      await supabase
+        .from('enrichment_queue')
+        .update({
+          status: 'processing',
+          started_at: new Date().toISOString(),
+          total_items: article_ids.length,
+        })
+        .eq('batch_id', batch_id);
+    }
     const CHUNK_SIZE = 5;
     for (let i = 0; i < article_ids.length; i += CHUNK_SIZE) {
       const chunk = article_ids.slice(i, i + CHUNK_SIZE);
@@ -208,21 +221,26 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
       }
     }
 
-    const successCount = results.filter(r => r.success).length;
-    const failCount = results.filter(r => !r.success).length;
-
+    // Recalculate counts from results to ensure consistency
+    successCount = results.filter(r => r.success).length;
+    failCount = results.filter(r => !r.success).length;
+ 
     console.log(`Batch complete: ${successCount} succeeded, ${failCount} failed`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        processed: results.length,
-        succeeded: successCount,
-        failed: failCount,
-        results,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+ 
+    // Mark queue as completed if batch_id is provided
+    if (batch_id) {
+      await supabase
+        .from('enrichment_queue')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          processed_items: results.length,
+          successful_items: successCount,
+          failed_items: failCount,
+          results,
+        })
+        .eq('batch_id', batch_id);
+    }
 
   } catch (error) {
     console.error('Enrichment error:', error);
