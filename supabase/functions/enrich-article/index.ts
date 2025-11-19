@@ -106,13 +106,44 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
           }
 
           const aiData = await aiResponse.json();
-          let aiContent = aiData.choices[0].message.content;
+          // Handle different possible content formats from the AI API
+          const rawContent = aiData.choices?.[0]?.message?.content;
+          let aiContent: string;
+
+          if (typeof rawContent === 'string') {
+            aiContent = rawContent;
+          } else if (Array.isArray(rawContent)) {
+            // Some providers return an array of content parts
+            aiContent = rawContent
+              .map((part: any) => {
+                if (!part) return '';
+                if (typeof part === 'string') return part;
+                if (part.type === 'text' && typeof part.text?.value === 'string') return part.text.value;
+                if (typeof part.text === 'string') return part.text;
+                return '';
+              })
+              .join('\n');
+          } else if (rawContent && typeof rawContent === 'object') {
+            // Fallback: stringify object content
+            aiContent = JSON.stringify(rawContent);
+          } else {
+            aiContent = '';
+          }
           
           // Parse AI response - strip markdown code blocks if present
           let enrichmentData;
           try {
-            // Remove markdown code blocks - handle various formats
-            aiContent = aiContent.replace(/^```(?:json)?\s*/g, '').replace(/\s*```$/g, '').trim();
+            // If response is wrapped in ```json ... ``` or ``` ... ``` blocks, extract inner JSON
+            if (aiContent.includes('```')) {
+              const firstFence = aiContent.indexOf('```');
+              const lastFence = aiContent.lastIndexOf('```');
+              if (lastFence > firstFence) {
+                aiContent = aiContent.slice(firstFence + 3, lastFence).trim();
+                // Remove optional leading `json` identifier
+                aiContent = aiContent.replace(/^json\s*/i, '').trim();
+              }
+            }
+
             enrichmentData = JSON.parse(aiContent);
           } catch (parseError) {
             console.error('Failed to parse AI response:', aiContent);
