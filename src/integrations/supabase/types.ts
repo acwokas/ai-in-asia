@@ -511,6 +511,68 @@ export type Database = {
           },
         ]
       }
+      articles_enriched: {
+        Row: {
+          article_id: string
+          cluster_id: string | null
+          created_at: string | null
+          embedding_vector: string | null
+          entities: Json | null
+          id: string
+          keyphrases: string[] | null
+          metadata_timestamp: string | null
+          original_url: string
+          raw_content_reference: string | null
+          related_articles: string[] | null
+          summary: string | null
+          title: string
+          topics: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          article_id: string
+          cluster_id?: string | null
+          created_at?: string | null
+          embedding_vector?: string | null
+          entities?: Json | null
+          id?: string
+          keyphrases?: string[] | null
+          metadata_timestamp?: string | null
+          original_url: string
+          raw_content_reference?: string | null
+          related_articles?: string[] | null
+          summary?: string | null
+          title: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          article_id?: string
+          cluster_id?: string | null
+          created_at?: string | null
+          embedding_vector?: string | null
+          entities?: Json | null
+          id?: string
+          keyphrases?: string[] | null
+          metadata_timestamp?: string | null
+          original_url?: string
+          raw_content_reference?: string | null
+          related_articles?: string[] | null
+          summary?: string | null
+          title?: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_enriched_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       authors: {
         Row: {
           article_count: number | null
@@ -929,6 +991,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      enrichment_queue: {
+        Row: {
+          article_ids: Json
+          batch_id: string
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          failed_items: number
+          id: string
+          processed_items: number
+          results: Json | null
+          started_at: string | null
+          status: string
+          successful_items: number
+          total_items: number
+        }
+        Insert: {
+          article_ids: Json
+          batch_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          processed_items?: number
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+        }
+        Update: {
+          article_ids?: Json
+          batch_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          processed_items?: number
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+        }
+        Relationships: []
+      }
+      entities: {
+        Row: {
+          co_occurring_entities: string[] | null
+          created_at: string | null
+          description: string | null
+          entity_name: string
+          entity_slug: string
+          entity_type: string
+          id: string
+          mention_count: number | null
+          related_articles: string[] | null
+          related_topics: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          co_occurring_entities?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          entity_name: string
+          entity_slug: string
+          entity_type: string
+          id?: string
+          mention_count?: number | null
+          related_articles?: string[] | null
+          related_topics?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          co_occurring_entities?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          entity_name?: string
+          entity_slug?: string
+          entity_type?: string
+          id?: string
+          mention_count?: number | null
+          related_articles?: string[] | null
+          related_topics?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       events: {
         Row: {
@@ -1938,6 +2093,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      topics: {
+        Row: {
+          article_count: number | null
+          article_ids: string[] | null
+          created_at: string | null
+          id: string
+          related_entities: Json | null
+          related_topics: string[] | null
+          topic_description: string | null
+          topic_image: string | null
+          topic_name: string
+          topic_slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          article_count?: number | null
+          article_ids?: string[] | null
+          created_at?: string | null
+          id?: string
+          related_entities?: Json | null
+          related_topics?: string[] | null
+          topic_description?: string | null
+          topic_image?: string | null
+          topic_name: string
+          topic_slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          article_count?: number | null
+          article_ids?: string[] | null
+          created_at?: string | null
+          id?: string
+          related_entities?: Json | null
+          related_topics?: string[] | null
+          topic_description?: string | null
+          topic_image?: string | null
+          topic_name?: string
+          topic_slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       url_mappings: {
         Row: {

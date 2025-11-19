@@ -1181,6 +1181,9 @@ const Admin = () => {
                     <Button onClick={() => navigate("/admin/ai-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
                       AI Comments Manager
                     </Button>
+                    <Button onClick={() => navigate("/admin/knowledge-engine")} variant="outline" className="justify-start bg-purple-500/10 border-purple-500 text-purple-700 hover:bg-purple-500/20">
+                      Knowledge Engine
+                    </Button>
                     <Button onClick={() => navigate("/admin/process-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
                       Process Pending Comments
                     </Button>

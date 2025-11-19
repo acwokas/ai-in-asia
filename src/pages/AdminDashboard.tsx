@@ -7,7 +7,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Bell, TrendingUp, Mail, Calendar } from "lucide-react";
+import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AdminDashboard = () => {
@@ -160,6 +160,21 @@ const AdminDashboard = () => {
               <CardContent>
                 <p className="text-sm text-muted-foreground">
                   Start creating new content for your publication
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/knowledge-engine")}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Brain className="h-8 w-8 text-purple-600" />
+                </div>
+                <CardTitle>Knowledge Engine</CardTitle>
+                <CardDescription>AI-powered semantic enrichment</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Extract entities, topics, and build semantic intelligence
                 </p>
               </CardContent>
             </Card>

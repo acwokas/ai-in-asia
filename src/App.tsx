@@ -87,6 +87,7 @@ const LinkHealthMonitor = lazy(() => import("./pages/LinkHealthMonitor"));
 const BulkLinksUndo = lazy(() => import("./pages/BulkLinksUndo"));
 const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
 const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
+const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -216,6 +217,7 @@ const App = () => (
               <Route path="/admin/remove-tweet-links" element={<RemoveTweetLinks />} />
               <Route path="/admin/publish-all" element={<PublishAllArticles />} />
               <Route path="/admin/ai-comments" element={<AIComments />} />
+              <Route path="/admin/knowledge-engine" element={<KnowledgeEngine />} />
               <Route path="/admin/generate-tldr" element={<GenerateTldrBulk />} />
               <Route path="/admin/assign-categories" element={<AssignCategories />} />
               <Route path="/admin/fix-broken-image" element={<FixBrokenImage />} />
