@@ -144,6 +144,12 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
               }
             }
 
+            // Remove common corruption patterns (stray words between JSON elements)
+            // Pattern: }\n   word, or ]\n   word,
+            aiContent = aiContent.replace(/(\]|\})(\s+)[a-zA-Z]+(\s*)(,|\]|\})/g, '$1$4');
+            // Pattern: }\n   word" or ]\n   word"
+            aiContent = aiContent.replace(/(\]|\})(\s+)[a-zA-Z]+(\s*)(")/g, '$1$4');
+
             enrichmentData = JSON.parse(aiContent);
           } catch (parseError) {
             console.error('Failed to parse AI response:', aiContent);
