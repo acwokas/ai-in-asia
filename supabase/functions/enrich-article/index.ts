@@ -204,7 +204,21 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
           }
 
           results.push({ article_id: articleId, success: true });
+          processedCount += 1;
+          successCount += 1;
           console.log(`✓ Enriched: ${article.title}`);
+
+          // Incremental queue progress update
+          if (batch_id) {
+            await supabase
+              .from('enrichment_queue')
+              .update({
+                processed_items: processedCount,
+                successful_items: successCount,
+                failed_items: failCount,
+              })
+              .eq('batch_id', batch_id);
+          }
 
         } catch (error) {
           console.error(`Failed to enrich article ${articleId}:`, error);
@@ -214,6 +228,21 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
             success: false, 
             error: errorMessage
           });
+          processedCount += 1;
+          failCount += 1;
+
+          // Incremental queue progress update on failure
+          if (batch_id) {
+            await supabase
+              .from('enrichment_queue')
+              .update({
+                processed_items: processedCount,
+                successful_items: successCount,
+                failed_items: failCount,
+                error_message: errorMessage,
+              })
+              .eq('batch_id', batch_id);
+          }
         }
 
         // Small delay to respect rate limits
@@ -241,6 +270,17 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
         })
         .eq('batch_id', batch_id);
     }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        processed: results.length,
+        succeeded: successCount,
+        failed: failCount,
+        results,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('Enrichment error:', error);
