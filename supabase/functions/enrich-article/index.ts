@@ -93,11 +93,13 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
           }
 
           const aiData = await aiResponse.json();
-          const aiContent = aiData.choices[0].message.content;
+          let aiContent = aiData.choices[0].message.content;
           
-          // Parse AI response
+          // Parse AI response - strip markdown code blocks if present
           let enrichmentData;
           try {
+            // Remove markdown code blocks if present
+            aiContent = aiContent.replace(/```json\s*\n?/g, '').replace(/```\s*$/g, '').trim();
             enrichmentData = JSON.parse(aiContent);
           } catch (parseError) {
             console.error('Failed to parse AI response:', aiContent);
