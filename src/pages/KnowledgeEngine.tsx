@@ -96,13 +96,24 @@ export default function KnowledgeEngine() {
   // Enrich batch of articles
   const enrichBatchMutation = useMutation({
     mutationFn: async (limit: number) => {
+      // First get enriched article IDs
+      const { data: enrichedArticles } = await supabase
+        .from('articles_enriched')
+        .select('article_id');
+      
+      const enrichedIds = enrichedArticles?.map(a => a.article_id) || [];
+      
       // Get unenriched articles
-      const { data: articles, error: fetchError } = await supabase
+      const query = supabase
         .from('articles')
         .select('id')
         .eq('status', 'published')
-        .not('id', 'in', supabase.from('articles_enriched').select('article_id'))
         .limit(limit);
+      
+      // Only apply not.in filter if there are enriched IDs
+      const { data: articles, error: fetchError } = enrichedIds.length > 0
+        ? await query.not('id', 'in', `(${enrichedIds.join(',')})`)
+        : await query;
 
       if (fetchError) throw fetchError;
       if (!articles || articles.length === 0) {
