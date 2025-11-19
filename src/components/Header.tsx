@@ -60,7 +60,7 @@ const Header = memo(() => {
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -79,13 +79,15 @@ const Header = memo(() => {
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="h-12 w-12 md:h-16 md:w-16"
+              className="hidden md:flex h-12 w-12 md:h-16 md:w-16"
             >
               {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
             </Button>
 
-            <NotificationPreferences />
-            <ReadingQueue />
+            <div className="hidden md:flex items-center gap-4">
+              <NotificationPreferences />
+              <ReadingQueue />
+            </div>
 
             {user ? (
               <DropdownMenu>
@@ -175,6 +177,19 @@ const Header = memo(() => {
                   placeholder="Search..."
                   className="w-full"
                 />
+              </div>
+              <div className="flex items-center gap-2 pt-2 border-t border-border">
+                <NotificationPreferences />
+                <ReadingQueue />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                  className="h-10 w-10"
+                >
+                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
               </div>
             </div>
           </nav>
