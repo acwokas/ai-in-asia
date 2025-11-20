@@ -137,7 +137,7 @@ export default function KnowledgeEngine() {
       
       // Only apply not.in filter if there are enriched IDs
       const { data: articles, error: fetchError } = enrichedIds.length > 0
-        ? await query.not('id', 'in', `(${enrichedIds.join(',')})`)
+        ? await query.not('id', 'in', enrichedIds)
         : await query;
 
       if (fetchError) throw fetchError;
