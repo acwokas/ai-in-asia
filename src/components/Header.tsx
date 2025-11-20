@@ -183,13 +183,18 @@ const Header = memo(() => {
                   </div>
                 </>
               )}
-              <div className="pt-2">
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="w-full"
-                />
-              </div>
+              <form onSubmit={handleSearch} className="pt-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search articles..."
+                    className="w-full pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </form>
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <NotificationPreferences />
                 <ReadingQueue />
