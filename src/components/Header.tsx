@@ -61,6 +61,18 @@ const Header = memo(() => {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Mobile search button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/search')}
+              aria-label="Search"
+              className="flex lg:hidden h-12 w-12"
+            >
+              <Search className="h-6 w-6" />
+            </Button>
+
+            {/* Desktop search form */}
             <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
