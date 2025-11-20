@@ -971,6 +971,10 @@ const Admin = () => {
                   <MessageSquare className="h-4 w-4 mr-2" />
                   AI Comments
                 </Button>
+                <Button onClick={() => navigate("/admin/knowledge-engine")} variant="outline" className="justify-start bg-purple-500/10 border-purple-500 text-purple-700 hover:bg-purple-500/20">
+                  <Wrench className="h-4 w-4 mr-2" />
+                  Knowledge Engine
+                </Button>
                 <Button onClick={() => navigate("/admin/internal-links")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   <Link2 className="h-4 w-4 mr-2" />
                   Internal Links Manager
