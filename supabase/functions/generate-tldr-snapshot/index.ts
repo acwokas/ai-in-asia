@@ -209,19 +209,31 @@ Content: ${contentText.substring(0, 2000)}`;
     // Update article with TL;DR and cleaned content only if articleId exists
     if (articleId) {
       console.log("Updating article in database...");
-      const { error: updateError } = await supabase
+      
+      // Update in two separate queries to avoid timeout with large content
+      // First update just the TL;DR
+      const { error: tldrError } = await supabase
         .from("articles")
-        .update({
-          tldr_snapshot: tldrBullets,
-          content: cleanedContent
-        })
+        .update({ tldr_snapshot: tldrBullets })
         .eq("id", articleId);
 
-      if (updateError) {
-        console.error("Database update error:", updateError);
-        throw updateError;
+      if (tldrError) {
+        console.error("TL;DR update error:", tldrError);
+        throw tldrError;
       }
-      console.log("Article updated successfully");
+      console.log("TL;DR updated successfully");
+
+      // Then update the content separately
+      const { error: contentError } = await supabase
+        .from("articles")
+        .update({ content: cleanedContent })
+        .eq("id", articleId);
+
+      if (contentError) {
+        console.error("Content update error:", contentError);
+        throw contentError;
+      }
+      console.log("Content updated successfully");
     }
 
     return new Response(
