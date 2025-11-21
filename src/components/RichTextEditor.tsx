@@ -194,9 +194,9 @@ const RichTextEditor = ({
       .replace(/<p[^>]*>(.*?)<\/p>/gs, '$1')
       // Convert breaks
       .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<div[^>]*>(.*?)<\/div>/gs, '$1\n')
-      // Remove remaining HTML tags
-      .replace(/<[^>]+>/g, '')
+      // Note: we intentionally keep remaining HTML tags (like custom prompt cards, images, etc.)
+      // so complex layouts are preserved when saving and reloading content.
+      // Decode HTML entities
       // Decode HTML entities
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
