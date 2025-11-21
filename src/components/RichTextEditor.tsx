@@ -123,6 +123,12 @@ const RichTextEditor = ({
 
   const convertHtmlToMarkdown = (html: string): string => {
     if (!html) return '';
+
+    // If the content contains our custom prompt cards, keep the raw HTML
+    // so their layout (multiple cards, images, etc.) is preserved across saves.
+    if (html.includes('class="prompt-box"')) {
+      return html;
+    }
     
     // First, preserve YouTube embeds, iframes, and prompt boxes by converting them to placeholder markers
     const preservedMatches: string[] = [];
