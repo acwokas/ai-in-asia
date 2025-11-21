@@ -165,6 +165,61 @@ const Article = () => {
     };
   }, [article, cleanSlug]);
 
+  // Handle copy functionality for prompt boxes
+  useEffect(() => {
+    if (!article?.content) return;
+
+    const promptBoxes = document.querySelectorAll('.prompt-box');
+    
+    const handleCopy = async (e: Event) => {
+      e.preventDefault();
+      const button = e.currentTarget as HTMLElement;
+      const promptBox = button.closest('.prompt-box');
+      
+      if (promptBox) {
+        // Find the prompt text (everything except the button)
+        const promptText = Array.from(promptBox.childNodes)
+          .filter(node => !node.textContent?.includes('Copy Prompt'))
+          .map(node => node.textContent?.trim())
+          .filter(Boolean)
+          .join('\n\n');
+        
+        try {
+          await navigator.clipboard.writeText(promptText);
+          toast({
+            title: "Copied!",
+            description: "Prompt copied to clipboard",
+          });
+        } catch (err) {
+          console.error('Copy failed:', err);
+          toast({
+            title: "Copy failed",
+            description: "Please try selecting and copying manually",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    // Attach click handlers to all copy buttons in prompt boxes
+    promptBoxes.forEach(box => {
+      const copyButton = box.querySelector('a[href*="copy"], button');
+      if (copyButton) {
+        copyButton.addEventListener('click', handleCopy as EventListener);
+      }
+    });
+
+    // Cleanup
+    return () => {
+      promptBoxes.forEach(box => {
+        const copyButton = box.querySelector('a[href*="copy"], button');
+        if (copyButton) {
+          copyButton.removeEventListener('click', handleCopy as EventListener);
+        }
+      });
+    };
+  }, [article?.content, toast]);
+
   const trackArticleView = async () => {
     if (!article?.id) return;
 
@@ -600,8 +655,8 @@ const Article = () => {
       });
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading']
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin']
       });
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
