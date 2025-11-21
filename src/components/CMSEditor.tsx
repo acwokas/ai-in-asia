@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check } from "lucide-react";
+import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
@@ -135,9 +135,9 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [isGeneratingHeadline, setIsGeneratingHeadline] = useState(false);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isRewritingArticle, setIsRewritingArticle] = useState(false);
-  const [copiedPrompt, setCopiedPrompt] = useState<'ideogram' | 'midjourney' | null>(null);
+  const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
   const [isGeneratingImagePrompts, setIsGeneratingImagePrompts] = useState(false);
-  const [imagePrompts, setImagePrompts] = useState<{ ideogram: string; midjourney: string } | null>(null);
+  const [imagePrompts, setImagePrompts] = useState<Array<{ title: string; prompt: string; explanation: string }> | null>(null);
   
   // Policy article specific state
   const [region, setRegion] = useState(initialData?.region || "");
@@ -724,17 +724,54 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
       if (error) throw error;
 
-      if (data?.ideogram && data?.midjourney) {
-        setImagePrompts(data);
+      if (data?.ideogram) {
+        // Parse the prompts from the response
+        const parsePrompts = (text: string) => {
+          const prompts = [];
+          // Split by numbered sections like "1.", "2.", etc. or "###"
+          const sections = text.split(/(?=\d+\.\s+[A-Z])/);
+          
+          for (const section of sections) {
+            if (!section.trim()) continue;
+            
+            // Extract title (first line)
+            const lines = section.split('\n').filter(l => l.trim());
+            if (lines.length === 0) continue;
+            
+            const titleMatch = lines[0].match(/\d+\.\s+(.+)/);
+            const title = titleMatch ? titleMatch[1] : lines[0];
+            
+            // Extract prompt (text before "Why it works:")
+            const whyIndex = section.indexOf('Why it works:');
+            let prompt = '';
+            let explanation = '';
+            
+            if (whyIndex > -1) {
+              prompt = section.substring(0, whyIndex).replace(/\d+\.\s+.+\n/, '').trim();
+              explanation = section.substring(whyIndex + 14).trim();
+            } else {
+              prompt = section.replace(/\d+\.\s+.+\n/, '').trim();
+            }
+            
+            if (prompt) {
+              prompts.push({ title, prompt, explanation });
+            }
+          }
+          
+          return prompts;
+        };
+        
+        const parsedPrompts = parsePrompts(data.ideogram);
+        setImagePrompts(parsedPrompts);
         toast({
           title: "Prompts Generated!",
-          description: "Scout has analyzed your article and created custom image prompts",
+          description: `Scout has created ${parsedPrompts.length} custom image prompts`,
         });
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to generate image prompts",
         variant: "destructive"
       });
     } finally {
@@ -1085,77 +1122,61 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   </Button>
                 </div>
 
-                {imagePrompts && (
-                  <div className="space-y-3 mt-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-semibold">Ideogram Prompt</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(imagePrompts.ideogram);
-                            setCopiedPrompt('ideogram');
-                            setTimeout(() => setCopiedPrompt(null), 2000);
-                            toast({
-                              title: "Copied!",
-                              description: "Ideogram prompt copied to clipboard",
-                            });
-                          }}
-                        >
-                          {copiedPrompt === 'ideogram' ? (
-                            <>
-                              <Check className="h-4 w-4 mr-2" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Copy Prompt
-                            </>
+                {imagePrompts && imagePrompts.length > 0 && (
+                  <div className="space-y-4 mt-4">
+                    {imagePrompts.map((prompt, index) => (
+                      <Card key={index} className="bg-cyan-500/10 border-cyan-500/20">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <Sparkles className="h-4 w-4 text-cyan-500" />
+                              {index + 1}. {prompt.title}
+                            </CardTitle>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await navigator.clipboard.writeText(prompt.prompt);
+                                setCopiedPrompt(index);
+                                setTimeout(() => setCopiedPrompt(null), 2000);
+                                toast({
+                                  title: "Copied!",
+                                  description: "Prompt copied to clipboard",
+                                });
+                              }}
+                            >
+                              {copiedPrompt === index ? (
+                                <>
+                                  <Check className="h-4 w-4 mr-1" />
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-4 w-4 mr-1" />
+                                  Copy
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label className="text-cyan-600 font-medium mb-2 block">Prompt</Label>
+                            <div className="text-sm p-3 bg-background border border-border rounded-md">
+                              {prompt.prompt}
+                            </div>
+                          </div>
+                          {prompt.explanation && (
+                            <div>
+                              <Label className="text-cyan-600 font-medium mb-2 block">Why it works</Label>
+                              <div className="text-sm p-3 bg-background border border-border rounded-md text-muted-foreground">
+                                {prompt.explanation}
+                              </div>
+                            </div>
                           )}
-                        </Button>
-                      </div>
-                      <div className="text-xs p-3 bg-background border border-border rounded-md">
-                        {imagePrompts.ideogram}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-semibold">Midjourney Prompt</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(imagePrompts.midjourney);
-                            setCopiedPrompt('midjourney');
-                            setTimeout(() => setCopiedPrompt(null), 2000);
-                            toast({
-                              title: "Copied!",
-                              description: "Midjourney prompt copied to clipboard",
-                            });
-                          }}
-                        >
-                          {copiedPrompt === 'midjourney' ? (
-                            <>
-                              <Check className="h-4 w-4 mr-2" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Copy Prompt
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <div className="text-xs p-3 bg-background border border-border rounded-md">
-                        {imagePrompts.midjourney}
-                      </div>
-                    </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
               </div>
