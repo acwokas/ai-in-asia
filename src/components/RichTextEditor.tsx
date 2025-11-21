@@ -68,6 +68,12 @@ const RichTextEditor = ({
   const convertMarkdownToHtml = (markdown: string): string => {
     if (!markdown) return '';
     
+    // If the content already contains prompt boxes or other complex HTML, 
+    // it's already HTML and doesn't need markdown conversion
+    if (markdown.includes('class="prompt-box"') || markdown.includes('class="youtube-embed"')) {
+      return markdown;
+    }
+    
     // First, preserve any existing HTML (prompt boxes, YouTube embeds, iframes) by converting to placeholders
     const preservedMatches: string[] = [];
     
