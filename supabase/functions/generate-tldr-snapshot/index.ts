@@ -72,7 +72,9 @@ serve(async (req) => {
         .join(" ");
     }
 
-    // Generate TL;DR using AI
+    // Generate TL;DR using AI with timeout handling
+    console.log("Starting TL;DR generation...");
+    
     const systemPrompt = `You are creating a TL;DR Snapshot for an article. 
 CRITICAL RULES:
 - NEVER use em dashes (—)
@@ -84,60 +86,90 @@ CRITICAL RULES:
 - Return ONLY a JSON array of 3 strings, nothing else
 
 Article: "${title}"
-Content: ${contentText.substring(0, 3000)}`;
+Content: ${contentText.substring(0, 2000)}`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: "Generate 3 concise TL;DR bullet points." }
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "generate_tldr",
-            description: "Generate TL;DR bullet points",
-            parameters: {
-              type: "object",
-              properties: {
-                bullets: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Array of 3 bullet point strings",
-                  minItems: 3,
-                  maxItems: 3
-                }
-              },
-              required: ["bullets"],
-              additionalProperties: false
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
+    let tldrBullets: string[] = [];
+
+    try {
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Generate 3 concise TL;DR bullet points." }
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "generate_tldr",
+              description: "Generate TL;DR bullet points",
+              parameters: {
+                type: "object",
+                properties: {
+                  bullets: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Array of 3 bullet point strings",
+                    minItems: 3,
+                    maxItems: 3
+                  }
+                },
+                required: ["bullets"],
+                additionalProperties: false
+              }
             }
-          }
-        }],
-        tool_choice: { type: "function", function: { name: "generate_tldr" } }
-      }),
-    });
+          }],
+          tool_choice: { type: "function", function: { name: "generate_tldr" } }
+        }),
+      });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", aiResponse.status, errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      clearTimeout(timeoutId);
+
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error("AI API error:", aiResponse.status, errorText);
+        
+        if (aiResponse.status === 429) {
+          throw new Error("Rate limit exceeded. Please try again in a moment.");
+        }
+        if (aiResponse.status === 402) {
+          throw new Error("Payment required. Please add credits to your Lovable AI workspace.");
+        }
+        throw new Error(`AI API error: ${aiResponse.status} - ${errorText}`);
+      }
+
+      console.log("AI response received, parsing...");
+      const aiData = await aiResponse.json();
+      const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
+      
+      if (!toolCall) {
+        console.error("No tool call in response:", JSON.stringify(aiData));
+        throw new Error("No tool call in AI response");
+      }
+
+      const parsedArgs = JSON.parse(toolCall.function.arguments);
+      tldrBullets = parsedArgs.bullets.slice(0, 3);
+      console.log("TL;DR generated successfully:", tldrBullets.length, "bullets");
+      
+      if (tldrBullets.length < 3) {
+        throw new Error(`Only ${tldrBullets.length} bullets generated, expected 3`);
+      }
+    } catch (error: unknown) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error("Request timeout after 120 seconds");
+        throw new Error("TL;DR generation timed out. Please try again with a shorter article.");
+      }
+      throw error;
     }
-
-    const aiData = await aiResponse.json();
-    const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall) {
-      throw new Error("No tool call in AI response");
-    }
-
-    const parsedArgs = JSON.parse(toolCall.function.arguments);
-    const tldrBullets = parsedArgs.bullets.slice(0, 3); // Ensure exactly 3
 
     // Remove existing TL;DR from content if it exists
     let cleanedContent = content;
@@ -176,6 +208,7 @@ Content: ${contentText.substring(0, 3000)}`;
 
     // Update article with TL;DR and cleaned content only if articleId exists
     if (articleId) {
+      console.log("Updating article in database...");
       const { error: updateError } = await supabase
         .from("articles")
         .update({
@@ -185,8 +218,10 @@ Content: ${contentText.substring(0, 3000)}`;
         .eq("id", articleId);
 
       if (updateError) {
+        console.error("Database update error:", updateError);
         throw updateError;
       }
+      console.log("Article updated successfully");
     }
 
     return new Response(
