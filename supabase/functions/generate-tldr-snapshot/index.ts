@@ -224,16 +224,14 @@ Content: ${contentText.substring(0, 2000)}`;
       console.log("TL;DR updated successfully");
 
       // Then update the content separately
-      const { error: contentError } = await supabase
-        .from("articles")
-        .update({ content: cleanedContent })
-        .eq("id", articleId);
+      // NOTE: To improve reliability and avoid timeouts on very large drafts,
+      // we no longer persist cleaned content from this function. The editor
+      // already has the latest content locally, and this function's primary
+      // responsibility is generating the TL;DR snapshot.
+      //
+      // If we need to resume server-side content cleaning in the future,
+      // this should be moved into a dedicated background task.
 
-      if (contentError) {
-        console.error("Content update error:", contentError);
-        throw contentError;
-      }
-      console.log("Content updated successfully");
     }
 
     return new Response(
