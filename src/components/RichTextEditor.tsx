@@ -93,15 +93,18 @@ const RichTextEditor = ({
     });
     
     let html = processed
+      // Convert headings first (they should remain as block elements)
+      .replace(/^### (.+)$/gm, '\n<h3>$1</h3>\n')
+      .replace(/^## (.+)$/gm, '\n<h2>$1</h2>\n')
+      .replace(/^# (.+)$/gm, '\n<h1>$1</h1>\n')
+      // Convert inline formatting
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
       // Handle links with new tab marker (^)
       .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       // Handle regular links
       .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+      // Convert lists
       .replace(/^- (.+)$/gm, '<li>$1</li>')
       .replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>')
       .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
@@ -109,9 +112,22 @@ const RichTextEditor = ({
         if (match.includes('<ul>')) return match;
         return '<ol>' + match + '</ol>';
       })
+      // Convert blockquotes
       .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-      .replace(/\n\n/g, '</p><p>')
+      // Handle line breaks - don't wrap headers, lists, or blockquotes in p tags
+      .replace(/\n\n+/g, '</p><p>')
       .replace(/\n/g, '<br>');
+    
+    // Clean up any p tags around block elements
+    html = html
+      .replace(/<p>\s*<h([123])>/g, '<h$1>')
+      .replace(/<\/h([123])>\s*<\/p>/g, '</h$1>')
+      .replace(/<p>\s*<ul>/g, '<ul>')
+      .replace(/<\/ul>\s*<\/p>/g, '</ul>')
+      .replace(/<p>\s*<ol>/g, '<ol>')
+      .replace(/<\/ol>\s*<\/p>/g, '</ol>')
+      .replace(/<p>\s*<blockquote>/g, '<blockquote>')
+      .replace(/<\/blockquote>\s*<\/p>/g, '</blockquote>');
     
     // Restore preserved elements
     preservedMatches.forEach((preserved, index) => {
@@ -869,9 +885,9 @@ const RichTextEditor = ({
               "min-h-[500px] w-full bg-background px-4 py-3",
               "focus-visible:outline-none",
               "prose prose-slate max-w-none",
-              "[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4",
-              "[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3",
-              "[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2",
+              "[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4 [&_h1]:font-display",
+              "[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3 [&_h2]:font-display",
+              "[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:font-display",
               "[&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-4",
               "[&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-4",
               "[&_li]:my-1",
