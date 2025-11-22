@@ -670,7 +670,7 @@ const Article = () => {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
         ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin']
       });
-      return <div className="prose font-sans" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
     
     // Otherwise try to parse as JSON blocks (legacy format)
