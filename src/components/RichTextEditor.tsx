@@ -66,74 +66,113 @@ const RichTextEditor = ({
   }, [value]);
 
   const convertMarkdownToHtml = (markdown: string): string => {
-    if (!markdown) return '';
-    
+    if (!markdown) return "";
+
+    // DEBUG: log a small sample of the incoming markdown so we can see
+    // if headings are coming through correctly in the console
+    try {
+      console.log("[RichTextEditor] convertMarkdownToHtml sample:", markdown.slice(0, 300));
+    } catch {
+      // ignore logging errors in case console is unavailable
+    }
+
     // First, preserve any existing HTML (prompt boxes, YouTube embeds, iframes) by converting to placeholders
     const preservedMatches: string[] = [];
-    
+
     // Preserve prompt boxes
     let processed = markdown.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
       const index = preservedMatches.length;
       preservedMatches.push(match);
       return `__PRESERVED_${index}__`;
     });
-    
+
     // Preserve YouTube embeds
     processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
       const index = preservedMatches.length;
       preservedMatches.push(match);
       return `__PRESERVED_${index}__`;
     });
-    
+
     // Preserve standalone iframes
     processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
       const index = preservedMatches.length;
       preservedMatches.push(match);
       return `__PRESERVED_${index}__`;
     });
-    
-    let html = processed
-      // Convert headings first (they should remain as block elements)
-      .replace(/^### (.+)$/gm, '\n<h3>$1</h3>\n')
-      .replace(/^## (.+)$/gm, '\n<h2>$1</h2>\n')
-      .replace(/^# (.+)$/gm, '\n<h1>$1</h1>\n')
-      // Convert inline formatting
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      // Handle links with new tab marker (^)
-      .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-      // Handle regular links
-      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
-      // Convert lists
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>')
-      .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*?<\/li>\s*)+/gs, (match) => {
-        if (match.includes('<ul>')) return match;
-        return '<ol>' + match + '</ol>';
-      })
-      // Convert blockquotes
-      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-      // Handle line breaks - don't wrap headers, lists, or blockquotes in p tags
-      .replace(/\n\n+/g, '</p><p>')
-      .replace(/\n/g, '<br>');
-    
-    // Clean up any p tags around block elements
+
+    // More robust line-by-line markdown handling, especially for headings
+    const lines = processed.split(/\r?\n/);
+    const htmlLines = lines.map((line) => {
+      const trimmed = line.trim();
+
+      // Headings (support up to ### for now)
+      if (/^###\s+/.test(trimmed)) {
+        return `<h3>${trimmed.replace(/^###\s+/, "")}</h3>`;
+      }
+      if (/^##\s+/.test(trimmed)) {
+        return `<h2>${trimmed.replace(/^##\s+/, "")}</h2>`;
+      }
+      if (/^#\s+/.test(trimmed)) {
+        return `<h1>${trimmed.replace(/^#\s+/, "")}</h1>`;
+      }
+
+      // Blockquote
+      if (/^>\s+/.test(trimmed)) {
+        return `<blockquote>${trimmed.replace(/^>\s+/, "")}</blockquote>`;
+      }
+
+      // Unordered list item
+      if (/^-\s+/.test(trimmed)) {
+        return `<li>${trimmed.replace(/^-\s+/, "")}</li>`;
+      }
+
+      // Ordered list item
+      if (/^\d+\.\s+/.test(trimmed)) {
+        return `<li>${trimmed.replace(/^\d+\.\s+/, "")}</li>`;
+      }
+
+      // Empty line
+      if (trimmed === "") {
+        return "";
+      }
+
+      // Fallback paragraph text (inline formatting and links will be handled later)
+      return trimmed;
+    });
+
+    let html = htmlLines.join("\n");
+
+    // Inline formatting and links
     html = html
-      .replace(/<p>\s*<h([123])>/g, '<h$1>')
-      .replace(/<\/h([123])>\s*<\/p>/g, '</h$1>')
-      .replace(/<p>\s*<ul>/g, '<ul>')
-      .replace(/<\/ul>\s*<\/p>/g, '</ul>')
-      .replace(/<p>\s*<ol>/g, '<ol>')
-      .replace(/<\/ol>\s*<\/p>/g, '</ol>')
-      .replace(/<p>\s*<blockquote>/g, '<blockquote>')
-      .replace(/<\/blockquote>\s*<\/p>/g, '</blockquote>');
-    
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1<\/strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1<\/em>")
+      // Handle links with new tab marker (^)
+      .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<\/a>')
+      // Handle regular links
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1<\/a>');
+
+    // Group consecutive list items into <ul> / <ol>
+    html = html
+      .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => {
+        // If it already has a parent list, leave as is
+        if (/<ul>|<ol>/.test(match)) return match;
+        // Heuristic: treat as unordered list for now
+        return `<ul>${match}<\/ul>`;
+      })
+      // Convert single line-breaks to <br> and double to paragraph breaks
+      .replace(/\n{2,}/g, "</p><p>")
+      .replace(/\n/g, "<br>");
+
+    // Wrap entire content in a paragraph if it doesn't start with a block-level element
+    if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
+      html = `<p>${html}</p>`;
+    }
+
     // Restore preserved elements
     preservedMatches.forEach((preserved, index) => {
       html = html.replace(`__PRESERVED_${index}__`, preserved);
     });
-    
+
     return html;
   };
 
