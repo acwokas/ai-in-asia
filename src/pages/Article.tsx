@@ -582,7 +582,7 @@ const Article = () => {
       consolidated = consolidated
         .replace(/<div>\s*<\/div>/g, '\n\n')
         .replace(/<\/div>\s*<div>/g, '\n\n')
-        .replace(/<\/?div>/g, '');
+        .replace(/<\/?div>/g, '')
         // Remove legacy WordPress tweet links (e.g., <a href="...">Tweet</a> or [Tweet](...))
         .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
         .replace(/\[Tweet\]\([^)]*\)/gi, '')
@@ -610,13 +610,13 @@ const Article = () => {
       // Ensure markdown headings (lines starting with #, ##, ###) always start their own block
       // by forcing a double line break before them. This fixes cases where a heading immediately
       // follows a paragraph on the next line but within the same block.
-      processed = processed.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
+      consolidated = consolidated.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
         const safePrefix = prefix || '';
         return `${safePrefix}\n\n${hashes}`;
       });
       
       // Split into blocks by double line breaks
-      const blocks = processed.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
+      const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
       
       // Process each block
       const htmlBlocks = blocks.map(block => {
