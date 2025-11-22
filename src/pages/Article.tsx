@@ -585,11 +585,11 @@ const Article = () => {
         // Remove any standalone "Tweet" text that looks like a link remnant
         .replace(/^\s*Tweet\s*$/gm, '')
         // Convert markdown images ![alt](url) to HTML
-        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /></div>')
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /><\/div>')
         // Convert actual bold text first
-        .replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1<\/strong>')
         // Convert italic text (single asterisks only, not part of **)
-        .replace(/(?<!\*)\*([^\*]+?)\*(?!\*)/g, '<em>$1</em>')
+        .replace(/(?<!\*)\*([^\*]+?)\*(?!\*)/g, '<em>$1<\/em>')
         // Remove any remaining standalone ** markers (cleanup)
         .replace(/\*\*/g, '')
         // Fix old subscribe links - replace any aiinasia.com subscribe links with /newsletter
@@ -597,11 +597,19 @@ const Article = () => {
         // Redirect /connect/ links to /contact
         .replace(/\[([^\]]+)\]\((https?:\/\/)?(www\.)?aiinasia\.com\/connect\/?[^\)]*\)/gi, '[$1](/contact)')
         // Convert links with new tab marker (^) - add external link icon (must come before regular links)
-        .replace(/\[([^\]]+)\]\(([^)]+)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline inline-flex items-center gap-1">$1<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline ml-0.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg></a>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline inline-flex items-center gap-1">$1<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline ml-0.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"><\/path><polyline points="15 3 21 3 21 9"><\/polyline><line x1="10" x2="21" y1="14" y2="3"><\/line></svg></a>')
         // Convert external links (http/https but not internal domain) - open in new tab
-        .replace(/\[([^\]]+)\]\((https?:\/\/(?!aiinasia\.com)[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1</a>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/(?!aiinasia\.com)[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1<\/a>')
         // Convert internal links (no http or relative paths)
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline hover:no-underline">$1</a>');
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline hover:no-underline">$1<\/a>');
+
+      // Ensure markdown headings (lines starting with #, ##, ###) always start their own block
+      // by forcing a double line break before them. This fixes cases where a heading immediately
+      // follows a paragraph on the next line but within the same block.
+      processed = processed.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
+        const safePrefix = prefix || '';
+        return `${safePrefix}\n\n${hashes}`;
+      });
       
       // Split into blocks by double line breaks
       const blocks = processed.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
