@@ -183,6 +183,17 @@ All colors MUST be HSL.
     @apply text-sm text-muted-foreground flex items-center gap-1;
   }
   
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  
   .youtube-embed {
     position: relative;
     padding-bottom: 56.25%;
