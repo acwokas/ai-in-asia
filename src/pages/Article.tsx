@@ -577,8 +577,12 @@ const Article = () => {
       // Consolidate numbered lists - merge consecutive numbered items separated by double line breaks
       consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
       
-      // Process inline formatting FIRST (before splitting into blocks)
-      let processed = consolidated
+      // Clean up simple div wrappers from pasted content so markdown headings are detectable
+      // e.g. "</div>## Heading" or "<div>paragraph</div>" from rich-text sources
+      consolidated = consolidated
+        .replace(/<div>\s*<\/div>/g, '\n\n')
+        .replace(/<\/div>\s*<div>/g, '\n\n')
+        .replace(/<\/?div>/g, '');
         // Remove legacy WordPress tweet links (e.g., <a href="...">Tweet</a> or [Tweet](...))
         .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
         .replace(/\[Tweet\]\([^)]*\)/gi, '')

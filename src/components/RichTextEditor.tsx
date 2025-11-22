@@ -93,12 +93,12 @@ const RichTextEditor = ({
       return `__PRESERVED_${index}__`;
     });
 
-    // Preserve standalone iframes
-    processed = processed.replace(/<iframe[^>]*>.*?<\/iframe>/gs, (match) => {
-      const index = preservedMatches.length;
-      preservedMatches.push(match);
-      return `__PRESERVED_${index}__`;
-    });
+    // Normalize simple <div> wrappers from pasted content so markdown headings are detectable
+    // e.g. "</div>## Heading" or "<div>paragraph</div>" coming from external rich-text editors
+    processed = processed
+      .replace(/<div>\s*<\/div>/g, '\n\n')
+      .replace(/<\/div>\s*<div>/g, '\n\n')
+      .replace(/<\/?div>/g, '');
 
     // More robust line-by-line markdown handling, especially for headings
     const lines = processed.split(/\r?\n/);
