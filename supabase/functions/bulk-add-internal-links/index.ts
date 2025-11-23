@@ -128,11 +128,12 @@ serve(async (req) => {
 CRITICAL RULES:
 - Add 2-4 internal links from our article list using natural anchor text
 - Add at least 1 authoritative external link (research papers, official reports, major publications)
-- External links MUST use format: [text](url)^ to open in new tabs
-- Internal links MUST use EXACT URL from list including /category/slug format: [text](/category/article-slug)
-- NEVER use [text](/article-slug) format - always include the category
+- External links MUST use HTML format: <a href="url" target="_blank" rel="noopener noreferrer">text</a>
+- Internal links MUST use markdown with EXACT URL from list including /category/slug format: [text](/category/article-slug)
+- NEVER use [text](/article-slug) format for internal links - always include the category
 - Only modify the content to add links - preserve all existing text, formatting, headings, paragraphs
-- Make anchor text natural and contextual
+- Make anchor text natural and contextual (2-5 words maximum)
+- Seamlessly integrate links into sentences - never expose raw URLs
 - Place links where they genuinely add value
 
 AVAILABLE ARTICLES:
