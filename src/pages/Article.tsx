@@ -616,7 +616,7 @@ const Article = () => {
       });
       
       // If content contains prompt cards, sanitize and render as HTML after markdown processing
-      if (consolidated.includes('class="prompt-box"')) {
+      if (consolidated.includes('prompt-box')) {
         // Split by double line breaks first
         const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
         
@@ -624,7 +624,7 @@ const Article = () => {
         // This preserves the exact layout with prompt cards
         const htmlBlocks = blocks.map(block => {
           // If it's a prompt-box, return as-is
-          if (block.includes('class="prompt-box"')) {
+          if (block.includes('prompt-box')) {
             return block;
           }
           // Otherwise wrap in paragraph
