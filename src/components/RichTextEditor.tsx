@@ -79,6 +79,8 @@ const RichTextEditor = ({
     // First, preserve any existing HTML (prompt boxes, YouTube embeds, iframes) by converting to placeholders
     const preservedMatches: string[] = [];
 
+    const hasPromptBoxes = markdown.includes('prompt-box');
+
     // Preserve prompt boxes
     let processed = markdown.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
       const index = preservedMatches.length;
@@ -93,12 +95,15 @@ const RichTextEditor = ({
       return `__PRESERVED_${index}__`;
     });
 
-    // Normalize simple <div> wrappers from pasted content so markdown headings are detectable
-    // e.g. "</div>## Heading" or "<div>paragraph</div>" coming from external rich-text editors
-    processed = processed
-      .replace(/<div>\s*<\/div>/g, '\n\n')
-      .replace(/<\/div>\s*<div>/g, '\n\n')
-      .replace(/<\/?div>/g, '');
+    if (!hasPromptBoxes) {
+      // Normalize simple <div> wrappers from pasted content so markdown headings are detectable
+      // e.g. "</div>## Heading" or "<div>paragraph</div>" coming from external rich-text editors
+      processed = processed
+        .replace(/<div>\s*<\/div>/g, '\n\n')
+        .replace(/<\/div>\s*<div>/g, '\n\n')
+        .replace(/<\/?div>/g, '');
+    }
+
 
     // More robust line-by-line markdown handling, especially for headings
     const lines = processed.split(/\r?\n/);
