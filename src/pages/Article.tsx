@@ -568,8 +568,18 @@ const Article = () => {
   const renderContent = (content: any) => {
     if (!content) return null;
 
-    // Handle string content (markdown)
+    // Handle string content (markdown or raw HTML from the editor)
     if (typeof content === 'string') {
+      // If the content contains our custom prompt cards, treat it as raw HTML
+      // so we preserve the exact layout (multiple cards with content between them).
+      if (content.includes('class="prompt-box"')) {
+        const sanitizedHtml = DOMPurify.sanitize(content, {
+          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
+          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'onclick', 'type']
+        });
+        return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      }
+
       // Consolidate ALL consecutive bullet points into single lists
       // Replace all double line breaks between bullets with single line breaks
       let consolidated = content.replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
