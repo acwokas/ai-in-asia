@@ -570,6 +570,8 @@ const Article = () => {
 
     // Handle string content (markdown or raw HTML from the editor)
     if (typeof content === 'string') {
+      const hasPromptBoxes = content.includes('prompt-box');
+
       // Consolidate ALL consecutive bullet points into single lists
       // Replace all double line breaks between bullets with single line breaks
       let consolidated = content.replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
@@ -578,11 +580,15 @@ const Article = () => {
       consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
       
       // Clean up simple div wrappers from pasted content so markdown headings are detectable
-      // e.g. "</div>## Heading" or "<div>paragraph</div>" from rich-text sources
+      // Only do this when we DON'T have prompt boxes, otherwise it destroys their layout
+      if (!hasPromptBoxes) {
+        consolidated = consolidated
+          .replace(/<div>\s*<\/div>/g, '\n\n')
+          .replace(/<\/div>\s*<div>/g, '\n\n')
+          .replace(/<\/?div>/g, '');
+      }
+
       consolidated = consolidated
-        .replace(/<div>\s*<\/div>/g, '\n\n')
-        .replace(/<\/div>\s*<div>/g, '\n\n')
-        .replace(/<\/?div>/g, '')
         // Remove legacy WordPress tweet links (e.g., <a href="...">Tweet</a> or [Tweet](...))
         .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
         .replace(/\[Tweet\]\([^)]*\)/gi, '')
