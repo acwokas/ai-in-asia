@@ -570,16 +570,6 @@ const Article = () => {
 
     // Handle string content (markdown or raw HTML from the editor)
     if (typeof content === 'string') {
-      // If the content contains our custom prompt cards, treat it as raw HTML
-      // so we preserve the exact layout (multiple cards with content between them).
-      if (content.includes('class="prompt-box"')) {
-        const sanitizedHtml = DOMPurify.sanitize(content, {
-          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
-          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'onclick', 'type']
-        });
-        return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
-      }
-
       // Consolidate ALL consecutive bullet points into single lists
       // Replace all double line breaks between bullets with single line breaks
       let consolidated = content.replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
@@ -624,6 +614,29 @@ const Article = () => {
         const safePrefix = prefix || '';
         return `${safePrefix}\n\n${hashes}`;
       });
+      
+      // If content contains prompt cards, sanitize and render as HTML after markdown processing
+      if (consolidated.includes('class="prompt-box"')) {
+        // Split by double line breaks first
+        const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
+        
+        // Join back with proper spacing but don't process blocks individually
+        // This preserves the exact layout with prompt cards
+        const htmlBlocks = blocks.map(block => {
+          // If it's a prompt-box, return as-is
+          if (block.includes('class="prompt-box"')) {
+            return block;
+          }
+          // Otherwise wrap in paragraph
+          return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
+        });
+        
+        const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
+          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
+          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'onclick', 'type']
+        });
+        return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      }
       
       // Split into blocks by double line breaks
       const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
