@@ -53,8 +53,9 @@ const ReadingQueue = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+      await queryClient.refetchQueries({ queryKey: ["reading-queue", user?.id] });
       toast({ description: "Article marked as read!" });
     },
   });
@@ -68,8 +69,9 @@ const ReadingQueue = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+      await queryClient.refetchQueries({ queryKey: ["reading-queue", user?.id] });
       toast({ description: "Removed from queue" });
     },
   });
