@@ -55,14 +55,14 @@ const Header = memo(() => {
               <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
               <div className="h-4 w-px bg-primary mx-2" />
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
+              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">AI Policy Atlas</Link>
               <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
             </nav>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
             {/* Mobile search button */}
             <Button
               variant="ghost"
@@ -75,7 +75,7 @@ const Header = memo(() => {
             </Button>
 
             {/* Desktop search form */}
-            <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2">
+            <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 ml-8">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -88,55 +88,55 @@ const Header = memo(() => {
               </div>
             </form>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="hidden md:flex h-12 w-12 md:h-16 md:w-16"
-            >
-              {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
-            </Button>
-
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 ml-auto">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="h-12 w-12 md:h-16 md:w-16"
+              >
+                {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
+              </Button>
+              
               <NotificationPreferences />
               <ReadingQueue />
-            </div>
-
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16">
-                    <User className="h-6 w-6 md:h-8 md:w-8" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  {isAdmin && (
+              
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16">
+                      <User className="h-6 w-6 md:h-8 md:w-8" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/admin" className="cursor-pointer text-destructive">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Admin
+                      <Link to="/profile" className="cursor-pointer">
+                        Profile
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="default" className="hidden md:inline-flex" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
-            )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer text-destructive">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="default" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              )}
+            </div>
 
             <Button
               variant="ghost"
