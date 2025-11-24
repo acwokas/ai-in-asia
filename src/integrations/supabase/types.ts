@@ -1722,6 +1722,36 @@ export type Database = {
         }
         Relationships: []
       }
+      page_not_found_log: {
+        Row: {
+          created_at: string | null
+          id: string
+          path: string
+          redirect_created: boolean | null
+          referrer: string | null
+          resolved: boolean | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          path: string
+          redirect_created?: boolean | null
+          referrer?: string | null
+          resolved?: boolean | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          path?: string
+          redirect_created?: boolean | null
+          referrer?: string | null
+          resolved?: boolean | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       pending_comments: {
         Row: {
           article_id: string
