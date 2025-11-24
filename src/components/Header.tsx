@@ -62,7 +62,7 @@ const Header = memo(() => {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-6">
             {/* Mobile search button */}
             <Button
               variant="ghost"
@@ -98,7 +98,7 @@ const Header = memo(() => {
               {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
             </Button>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-2">
               <NotificationPreferences />
               <ReadingQueue />
             </div>
