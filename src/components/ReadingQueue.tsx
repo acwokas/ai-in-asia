@@ -52,10 +52,29 @@ const ReadingQueue = () => {
         .eq("id", bookmarkId);
 
       if (error) throw error;
+      return bookmarkId;
+    },
+    onMutate: async (bookmarkId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["reading-queue", user?.id] });
+      
+      // Snapshot the previous value
+      const previousQueue = queryClient.getQueryData(["reading-queue", user?.id]);
+      
+      // Optimistically update by removing the item from the queue
+      queryClient.setQueryData(["reading-queue", user?.id], (old: any) => {
+        if (!old) return old;
+        return old.filter((item: any) => item.id !== bookmarkId);
+      });
+      
+      return { previousQueue };
+    },
+    onError: (_err, _bookmarkId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
-      await queryClient.refetchQueries({ queryKey: ["reading-queue", user?.id] });
       toast({ description: "Article marked as read!" });
     },
   });
@@ -68,10 +87,29 @@ const ReadingQueue = () => {
         .eq("id", bookmarkId);
 
       if (error) throw error;
+      return bookmarkId;
+    },
+    onMutate: async (bookmarkId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["reading-queue", user?.id] });
+      
+      // Snapshot the previous value
+      const previousQueue = queryClient.getQueryData(["reading-queue", user?.id]);
+      
+      // Optimistically update by removing the item from the queue
+      queryClient.setQueryData(["reading-queue", user?.id], (old: any) => {
+        if (!old) return old;
+        return old.filter((item: any) => item.id !== bookmarkId);
+      });
+      
+      return { previousQueue };
+    },
+    onError: (_err, _bookmarkId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
-      await queryClient.refetchQueries({ queryKey: ["reading-queue", user?.id] });
       toast({ description: "Removed from queue" });
     },
   });
