@@ -12,6 +12,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SECURITY: Validate cron secret to prevent unauthorized access
+    const cronSecret = Deno.env.get('CRON_SECRET')
+    const providedSecret = req.headers.get('X-Cron-Secret')
+    
+    if (!cronSecret || providedSecret !== cronSecret) {
+      console.error('Unauthorized access attempt to publish-scheduled-articles')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     console.log('Starting scheduled articles publish job...')
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
