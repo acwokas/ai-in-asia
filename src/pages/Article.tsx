@@ -36,7 +36,10 @@ const Article = () => {
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [enableRelatedArticles, setEnableRelatedArticles] = useState(false);
-  const cleanSlug = slug?.replace(/\/+$/g, '');
+  
+  // Construct full slug from category and slug params
+  const fullSlug = category && slug ? `${category}/${slug}` : slug;
+  const cleanSlug = fullSlug?.replace(/\/+$/g, '');
   
   // Check for preview code in URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -47,7 +50,7 @@ const Article = () => {
     queryKey: ["article", cleanSlug, previewCode],
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      console.log('Article fetch:', { slug: cleanSlug, previewCode, isPreview });
+      console.log('Article fetch:', { category, slug, fullSlug: cleanSlug, previewCode, isPreview });
       
       let query = supabase
         .from("articles")
