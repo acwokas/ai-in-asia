@@ -130,30 +130,54 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
             aiContent = '';
           }
           
-          // Parse AI response - strip markdown code blocks if present
+          // Parse AI response with robust error handling
           let enrichmentData;
           try {
-            // If response is wrapped in ```json ... ``` or ``` ... ``` blocks, extract inner JSON
-            if (aiContent.includes('```')) {
-              const firstFence = aiContent.indexOf('```');
-              const lastFence = aiContent.lastIndexOf('```');
-              if (lastFence > firstFence) {
-                aiContent = aiContent.slice(firstFence + 3, lastFence).trim();
-                // Remove optional leading `json` identifier
-                aiContent = aiContent.replace(/^json\s*/i, '').trim();
+            let jsonText = aiContent.trim();
+            
+            // Remove markdown code blocks
+            if (jsonText.includes('```')) {
+              const match = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+              if (match) {
+                jsonText = match[1].trim();
               }
             }
-
-            // Remove common corruption patterns (stray words between JSON elements)
-            // Pattern: }\n   word, or ]\n   word,
-            aiContent = aiContent.replace(/(\]|\})(\s+)[a-zA-Z]+(\s*)(,|\]|\})/g, '$1$4');
-            // Pattern: }\n   word" or ]\n   word"
-            aiContent = aiContent.replace(/(\]|\})(\s+)[a-zA-Z]+(\s*)(")/g, '$1$4');
-
-            enrichmentData = JSON.parse(aiContent);
+            
+            // Find JSON object boundaries more reliably
+            const startIdx = jsonText.indexOf('{');
+            const endIdx = jsonText.lastIndexOf('}');
+            
+            if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+              throw new Error('No valid JSON object found in response');
+            }
+            
+            // Extract only the JSON portion
+            jsonText = jsonText.substring(startIdx, endIdx + 1);
+            
+            // Try to parse
+            enrichmentData = JSON.parse(jsonText);
+            
+            // Validate required fields
+            if (!enrichmentData || typeof enrichmentData !== 'object') {
+              throw new Error('Response is not a valid object');
+            }
+            if (!Array.isArray(enrichmentData.entities)) {
+              throw new Error('Missing or invalid entities array');
+            }
+            if (!Array.isArray(enrichmentData.keyphrases)) {
+              throw new Error('Missing or invalid keyphrases array');
+            }
+            if (!Array.isArray(enrichmentData.topics)) {
+              throw new Error('Missing or invalid topics array');
+            }
+            if (!enrichmentData.summary || typeof enrichmentData.summary !== 'string') {
+              throw new Error('Missing or invalid summary string');
+            }
+            
           } catch (parseError) {
-            console.error('Failed to parse AI response:', aiContent);
-            throw new Error('Invalid AI response format');
+            console.error('Failed to parse AI response:', parseError instanceof Error ? parseError.message : 'Unknown error');
+            console.error('Raw content sample:', aiContent.substring(0, 500));
+            throw new Error(`Invalid AI response format: ${parseError instanceof Error ? parseError.message : 'Parse failed'}`);
           }
 
           // Generate embedding for semantic search
