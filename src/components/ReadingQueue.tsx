@@ -73,8 +73,7 @@ const ReadingQueue = () => {
       // Rollback on error
       queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+    onSuccess: () => {
       toast({ description: "Article marked as read!" });
     },
   });
@@ -108,8 +107,7 @@ const ReadingQueue = () => {
       // Rollback on error
       queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["reading-queue", user?.id] });
+    onSuccess: () => {
       toast({ description: "Removed from queue" });
     },
   });
