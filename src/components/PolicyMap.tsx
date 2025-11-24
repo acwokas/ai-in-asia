@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { supabase } from "@/integrations/supabase/client";
 
 interface PolicyMapProps {
   regions: Array<{
@@ -20,31 +21,26 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
   const [mapToken, setMapToken] = useState<string>('');
 
   useEffect(() => {
-    // Fetch Mapbox token from edge function
     const fetchToken = async () => {
       try {
-        console.log('Fetching Mapbox token from edge function...');
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`, {
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-          }
-        });
-        
-        if (!response.ok) {
-          console.error('Failed to fetch Mapbox token:', response.status, response.statusText);
+        console.log('Fetching Mapbox token via supabase.functions.invoke...');
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+
+        if (error) {
+          console.error('Failed to fetch Mapbox token:', error);
           return;
         }
-        
-        const data = await response.json();
-        console.log('Mapbox token received:', data.token ? 'Yes' : 'No');
-        if (data.token) {
-          setMapToken(data.token);
+
+        const token = (data as { token?: string } | null)?.token;
+        console.log('Mapbox token received:', token ? 'Yes' : 'No');
+        if (token) {
+          setMapToken(token);
         }
       } catch (error) {
         console.error('Error fetching Mapbox token:', error);
       }
     };
-    
+
     fetchToken();
   }, []);
 
