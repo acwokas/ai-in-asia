@@ -47,7 +47,14 @@ const Article = () => {
     queryKey: ["article", cleanSlug, previewCode],
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      console.log('Article fetch:', { slug: cleanSlug, previewCode, isPreview });
+      console.log('Article fetch params:', { 
+        category, 
+        slug, 
+        cleanSlug, 
+        previewCode, 
+        isPreview,
+        fullUrl: window.location.href 
+      });
       
       let query = supabase
         .from("articles")
