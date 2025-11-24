@@ -60,7 +60,7 @@ const Article = () => {
         .from("articles")
         .select(`
           *,
-          authors (id, name, slug, bio, avatar_url, job_title),
+          authors:author_id (id, name, slug, bio, avatar_url, job_title),
           categories:primary_category_id (name, slug, id)
         `)
         .eq("slug", cleanSlug);
