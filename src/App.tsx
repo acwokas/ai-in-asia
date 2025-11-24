@@ -88,6 +88,7 @@ const BulkLinksUndo = lazy(() => import("./pages/BulkLinksUndo"));
 const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
 const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
+const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -230,6 +231,7 @@ const App = () => (
               <Route path="/admin/process-comments" element={<ProcessPendingComments />} />
               <Route path="/admin/bulk-seo" element={<BulkSEOGeneration />} />
               <Route path="/admin/category-sponsors" element={<CategorySponsorsManager />} />
+              <Route path="/admin/404-analytics" element={<NotFoundAnalytics />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CollectiveFooter />

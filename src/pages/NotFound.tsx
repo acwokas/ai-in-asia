@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Home, FileText, TrendingUp, Compass } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const NotFound = () => {
   const location = useLocation();
@@ -16,6 +17,21 @@ const NotFound = () => {
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    
+    // Log 404 to database for tracking
+    const log404 = async () => {
+      try {
+        await supabase.from("page_not_found_log").insert({
+          path: location.pathname,
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent,
+        });
+      } catch (error) {
+        console.error("Failed to log 404:", error);
+      }
+    };
+    
+    log404();
   }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
