@@ -54,9 +54,10 @@ const Header = memo(() => {
               <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
               <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
+              <div className="h-4 w-px bg-border mx-2" />
+              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
             </nav>
           </div>
 
@@ -157,9 +158,10 @@ const Header = memo(() => {
               <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
               <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
+              <div className="h-px bg-border my-2" />
+              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
               {!user && (
                 <div className="pt-2">
