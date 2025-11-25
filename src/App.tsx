@@ -65,6 +65,7 @@ const AIComments = lazy(() => import("./pages/AIComments"));
 const GenerateTldrBulk = lazy(() => import("./pages/GenerateTldrBulk"));
 const AssignCategories = lazy(() => import("./pages/AssignCategories"));
 const FixBrokenImage = lazy(() => import("./pages/FixBrokenImage"));
+const FixExternalLinks = lazy(() => import("./pages/FixExternalLinks"));
 const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
 const SEOTools = lazy(() => import("./pages/SEOTools"));
@@ -222,6 +223,7 @@ const App = () => (
               <Route path="/admin/generate-tldr" element={<GenerateTldrBulk />} />
               <Route path="/admin/assign-categories" element={<AssignCategories />} />
               <Route path="/admin/fix-broken-image" element={<FixBrokenImage />} />
+              <Route path="/admin/fix-external-links" element={<FixExternalLinks />} />
               <Route path="/admin/bulk-operations" element={<BulkOperations />} />
               <Route path="/admin/analytics" element={<ContentAnalytics />} />
               <Route path="/admin/seo-tools" element={<SEOTools />} />
