@@ -16,6 +16,7 @@ import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, H
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import AIToolsManager from "./AIToolsManager";
+import { TrendingSuggestions } from "@/components/TrendingSuggestions";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -995,6 +996,8 @@ const Admin = () => {
             </div>
           </CardContent>
         </Card>
+
+        <TrendingSuggestions />
 
         <Tabs defaultValue="articles" className="space-y-4">
           <TabsList>
