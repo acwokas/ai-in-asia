@@ -179,6 +179,16 @@ const Header = memo(() => {
                       <Link to="/profile">Profile</Link>
                     </Button>
                   </div>
+                  {isAdmin && (
+                    <div>
+                      <Button variant="destructive" className="w-full" asChild>
+                        <Link to="/admin">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                   <div>
                     <Button variant="outline" className="w-full" onClick={signOut}>
                       <LogOut className="mr-2 h-4 w-4" />
