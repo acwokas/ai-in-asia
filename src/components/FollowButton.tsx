@@ -98,6 +98,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
   });
 
   const handleClick = () => {
+    console.log('[FollowButton] Clicked', { followType, followId, hasUser: !!user });
     if (!user) {
       toast({
         title: "Login Required",
@@ -106,7 +107,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.href = '/auth'}
+            onClick={() => (window.location.href = "/auth")}
           >
             Log In
           </Button>

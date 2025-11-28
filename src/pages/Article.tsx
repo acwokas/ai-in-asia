@@ -351,49 +351,50 @@ const Article = () => {
   };
 
   const handleShare = async () => {
+    console.log('[Article] Share clicked');
     const shareData = {
-      title: article?.title || '',
-      text: article?.excerpt || '',
-      url: window.location.href
+      title: article?.title || "",
+      text: article?.excerpt || "",
+      url: window.location.href,
     };
 
     try {
       if (navigator.share) {
         try {
           await navigator.share(shareData);
-          
+
           // Track share if user is logged in
           if (user) {
             const { data: stats } = await supabase
-              .from('user_stats')
-              .select('shares_made')
-              .eq('user_id', user.id)
+              .from("user_stats")
+              .select("shares_made")
+              .eq("user_id", user.id)
               .single();
-            
+
             if (stats) {
               await supabase
-                .from('user_stats')
+                .from("user_stats")
                 .update({ shares_made: (stats.shares_made || 0) + 1 })
-                .eq('user_id', user.id);
-              
-              await supabase.rpc('award_points', { 
-                _user_id: user.id, 
-                _points: 5 
+                .eq("user_id", user.id);
+
+              await supabase.rpc("award_points", {
+                _user_id: user.id,
+                _points: 5,
               });
             }
           }
           return;
         } catch (shareErr: any) {
           // If share fails (e.g., in iframe/preview), fall through to clipboard
-          if (shareErr.name !== 'AbortError') {
-            console.log('Share API unavailable, using clipboard fallback');
+          if (shareErr.name !== "AbortError") {
+            console.log("Share API unavailable, using clipboard fallback", shareErr);
           } else {
             // User cancelled the share dialog
             return;
           }
         }
       }
-      
+
       // Fallback to clipboard
       await navigator.clipboard.writeText(window.location.href);
       toast({
@@ -401,7 +402,7 @@ const Article = () => {
         description: "Article link copied to clipboard",
       });
     } catch (err) {
-      console.error('Error sharing:', err);
+      console.error("Error sharing:", err);
       toast({
         title: "Unable to share",
         description: "Please try copying the link manually",
