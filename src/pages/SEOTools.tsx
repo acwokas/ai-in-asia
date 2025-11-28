@@ -27,6 +27,7 @@ const SEOTools = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<"all" | "need-attention" | "optimized">("all");
+  const [isFixingBulk, setIsFixingBulk] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -112,6 +113,31 @@ const SEOTools = () => {
     return score;
   };
 
+  const handleBulkFixSEO = async () => {
+    setIsFixingBulk(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("bulk-generate-seo");
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success!",
+        description: `Processed ${data.processed} articles. ${data.failed} failed.`,
+      });
+      
+      // Refresh articles
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsFixingBulk(false);
+    }
+  };
+
   if (isAdmin === null || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -164,6 +190,39 @@ const SEOTools = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {articles && articles.filter(a => getSEOScore(a) < 80).length > 0 && (
+              <Card className="border-orange-200 bg-orange-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-orange-600" />
+                    Bulk SEO Fix Available
+                  </CardTitle>
+                  <CardDescription>
+                    {articles.filter(a => getSEOScore(a) < 80).length} articles need SEO improvements
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={handleBulkFixSEO}
+                    disabled={isFixingBulk}
+                    className="w-full md:w-auto"
+                  >
+                    {isFixingBulk ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Fixing SEO Issues...
+                      </>
+                    ) : (
+                      <>Fix All SEO Issues</>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This will automatically generate missing meta titles, descriptions, and keyphrases for all articles with SEO issues.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card 
                 className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}

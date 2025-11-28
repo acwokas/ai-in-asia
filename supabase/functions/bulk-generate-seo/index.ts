@@ -27,8 +27,7 @@ serve(async (req) => {
       .from("articles")
       .select("id, title, content, excerpt, meta_title, seo_title, focus_keyphrase, keyphrase_synonyms")
       .eq("status", "published")
-      .or("meta_title.is.null,seo_title.is.null,focus_keyphrase.is.null,keyphrase_synonyms.is.null,meta_title.eq.,seo_title.eq.,focus_keyphrase.eq.,keyphrase_synonyms.eq.")
-      .limit(100);
+      .or("meta_title.is.null,seo_title.is.null,focus_keyphrase.is.null,keyphrase_synonyms.is.null,meta_title.eq.,seo_title.eq.,focus_keyphrase.eq.,keyphrase_synonyms.eq.");
 
     if (fetchError) throw fetchError;
 
