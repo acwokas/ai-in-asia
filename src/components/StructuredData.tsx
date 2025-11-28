@@ -135,3 +135,92 @@ export const PersonStructuredData = ({
     </Helmet>
   );
 };
+
+export const EventStructuredData = ({
+  name,
+  description,
+  startDate,
+  endDate,
+  location,
+  city,
+  country,
+  organizer,
+  url,
+  eventType,
+}: {
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  location: string;
+  city: string;
+  country: string;
+  organizer?: string;
+  url?: string;
+  eventType?: string;
+}) => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: name,
+    ...(description && { description: description }),
+    startDate: startDate,
+    ...(endDate && { endDate: endDate }),
+    location: {
+      "@type": "Place",
+      name: location,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: city,
+        addressCountry: country,
+      },
+    },
+    ...(organizer && {
+      organizer: {
+        "@type": "Organization",
+        name: organizer,
+      },
+    }),
+    ...(url && { url: url }),
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
+    </Helmet>
+  );
+};
+
+export const FAQPageStructuredData = ({
+  questions,
+}: {
+  questions: Array<{
+    question: string;
+    answer: string;
+  }>;
+}) => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: questions.map((qa) => ({
+      "@type": "Question",
+      name: qa.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: qa.answer,
+      },
+    })),
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
+    </Helmet>
+  );
+};
