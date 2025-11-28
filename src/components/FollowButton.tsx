@@ -76,6 +76,8 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
 
   if (!user) return null;
 
+  const buttonLabel = followType === "author" ? "Author" : followName;
+  
   return (
     <Button
       variant={isFollowing ? "default" : "outline"}
@@ -86,7 +88,12 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
       title={isFollowing ? `Unfollow ${followName}` : `Follow ${followName}`}
     >
       {isFollowing ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-      {isFollowing ? "Following" : "Follow"}
+      <span className="hidden sm:inline">
+        {isFollowing ? `Following ${buttonLabel}` : `Follow ${buttonLabel}`}
+      </span>
+      <span className="sm:hidden">
+        {isFollowing ? "Following" : "Follow"}
+      </span>
     </Button>
   );
 };
