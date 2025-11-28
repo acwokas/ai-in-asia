@@ -1171,7 +1171,7 @@ const Article = () => {
                       size="icon" 
                       onClick={handleBookmark}
                       title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
-                      className="h-8 w-8"
+                      className="h-8 w-8 cursor-pointer"
                     >
                       <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                     </Button>
@@ -1185,7 +1185,7 @@ const Article = () => {
                       size="icon" 
                       onClick={handleShare}
                       title="Share article"
-                      className="h-8 w-8"
+                      className="h-8 w-8 cursor-pointer"
                     >
                       <Share2 className="h-4 w-4" />
                     </Button>

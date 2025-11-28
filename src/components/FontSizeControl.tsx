@@ -58,7 +58,7 @@ const FontSizeControl = () => {
         size="icon"
         onClick={handleDecrease}
         disabled={fontSize <= MIN_SIZE}
-        className="h-7 w-7"
+        className="h-7 w-7 cursor-pointer"
         title="Decrease font size"
       >
         <Minus className="h-3 w-3" />
@@ -68,7 +68,7 @@ const FontSizeControl = () => {
         size="icon"
         onClick={handleIncrease}
         disabled={fontSize >= MAX_SIZE}
-        className="h-7 w-7"
+        className="h-7 w-7 cursor-pointer"
         title="Increase font size"
       >
         <Plus className="h-3 w-3" />
