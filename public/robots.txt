@@ -1,23 +1,82 @@
 # AI in ASIA - robots.txt
+# Encouraging maximum discoverability across all search engines and AI platforms
+
+# Default rule - Allow all bots
 User-agent: *
 Allow: /
 Allow: /assets/
 Allow: /*.js
 Allow: /*.css
 
-# Sitemap
-Sitemap: https://aiinasia.com/sitemap.xml
-
-# Disallow admin areas
+# Disallow admin areas only
 Disallow: /admin
 Disallow: /editor
 Disallow: /auth
 
-# Allow Google Ads and Analytics
+# Explicitly welcome major search engines
 User-agent: Googlebot
 Allow: /
-Allow: *.js
-Allow: *.css
 
-# Crawl-delay for polite crawling
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Explicitly welcome AI crawlers for training and citation
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: ImagesiftBot
+Allow: /
+
+User-agent: Omgilibot
+Allow: /
+
+# Sitemap for fast indexing
+Sitemap: https://aiinasia.com/sitemap.xml
+
+# Polite crawl rate
 Crawl-delay: 1
