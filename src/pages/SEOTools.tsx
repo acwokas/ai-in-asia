@@ -26,6 +26,7 @@ const SEOTools = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "need-attention" | "optimized">("all");
 
   useEffect(() => {
     checkAdminStatus();
@@ -165,7 +166,10 @@ const SEOTools = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}
+                onClick={() => setActiveFilter("all")}
+              >
                 <CardHeader>
                   <CardTitle className="text-lg">Total Articles</CardTitle>
                 </CardHeader>
@@ -174,7 +178,10 @@ const SEOTools = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "optimized" ? "ring-2 ring-primary" : ""}`}
+                onClick={() => setActiveFilter("optimized")}
+              >
                 <CardHeader>
                   <CardTitle className="text-lg">SEO Optimized</CardTitle>
                 </CardHeader>
@@ -185,7 +192,10 @@ const SEOTools = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "need-attention" ? "ring-2 ring-primary" : ""}`}
+                onClick={() => setActiveFilter("need-attention")}
+              >
                 <CardHeader>
                   <CardTitle className="text-lg">Need Attention</CardTitle>
                 </CardHeader>
@@ -200,52 +210,91 @@ const SEOTools = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Article SEO Scores</CardTitle>
-                <CardDescription>Review and optimize your content</CardDescription>
+                <CardDescription>
+                  {activeFilter === "all" && "Review and optimize your content"}
+                  {activeFilter === "optimized" && "Articles with good SEO (80%+ score)"}
+                  {activeFilter === "need-attention" && "Articles needing SEO improvements"}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>SEO Score</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {articles?.map((article) => {
+                {activeFilter !== "all" && (
+                  <div className="mb-4 flex items-center gap-2">
+                    <Badge variant="outline">{
+                      activeFilter === "optimized" 
+                        ? `${articles?.filter(a => getSEOScore(a) >= 80).length || 0} articles`
+                        : `${articles?.filter(a => getSEOScore(a) < 80).length || 0} articles`
+                    }</Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setActiveFilter("all")}
+                    >
+                      Clear filter
+                    </Button>
+                  </div>
+                )}
+                <div className="space-y-4">
+                  {articles
+                    ?.filter(article => {
                       const score = getSEOScore(article);
+                      if (activeFilter === "optimized") return score >= 80;
+                      if (activeFilter === "need-attention") return score < 80;
+                      return true;
+                    })
+                    .map((article) => {
+                      const score = getSEOScore(article);
+                      const { issues, warnings } = analyzeSEO(article);
                       return (
-                        <TableRow key={article.id}>
-                          <TableCell className="font-medium">{article.title}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={score >= 80 ? "default" : score >= 50 ? "secondary" : "destructive"}
-                            >
-                              {score}%
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {score >= 80 ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-orange-600" />
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/admin/editor/${article.id}`)}
-                            >
-                              Edit
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                        <Card key={article.id} className="border">
+                          <CardContent className="pt-6">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <h3 className="font-medium mb-2">{article.title}</h3>
+                                {(issues.length > 0 || warnings.length > 0) && (
+                                  <div className="space-y-2">
+                                    {issues.length > 0 && (
+                                      <div>
+                                        <p className="text-sm font-medium text-red-600 mb-1">Critical Issues:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                          {issues.map((issue, i) => (
+                                            <li key={i} className="text-sm text-muted-foreground">{issue}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {warnings.length > 0 && (
+                                      <div>
+                                        <p className="text-sm font-medium text-orange-600 mb-1">Warnings:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                          {warnings.map((warning, i) => (
+                                            <li key={i} className="text-sm text-muted-foreground">{warning}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <Badge
+                                  variant={score >= 80 ? "default" : score >= 50 ? "secondary" : "destructive"}
+                                >
+                                  {score}%
+                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/admin/editor/${article.id}`)}
+                                >
+                                  Edit
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
-                  </TableBody>
-                </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
