@@ -28,6 +28,7 @@ const SEOTools = () => {
   const [selectedArticle, setSelectedArticle] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<"all" | "need-attention" | "optimized">("all");
   const [isFixingBulk, setIsFixingBulk] = useState(false);
+  const [queueJobId, setQueueJobId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminStatus();
@@ -73,6 +74,44 @@ const SEOTools = () => {
     },
   });
 
+  // Poll queue status if job is running
+  const { data: queueStatus } = useQuery({
+    queryKey: ["seo-queue-status", queueJobId],
+    enabled: !!queueJobId,
+    refetchInterval: 3000, // Poll every 3 seconds
+    queryFn: async () => {
+      if (!queueJobId) return null;
+      const { data } = await supabase
+        .from("bulk_operation_queue")
+        .select("*")
+        .eq("id", queueJobId)
+        .single();
+      return data;
+    },
+  });
+
+  // Reset job ID when completed
+  useEffect(() => {
+    if (queueStatus && (queueStatus.status === "completed" || queueStatus.status === "failed")) {
+      setIsFixingBulk(false);
+      if (queueStatus.status === "completed") {
+        toast({
+          title: "SEO Fix Complete!",
+          description: `Successfully fixed ${queueStatus.successful_items} articles. ${queueStatus.failed_items} failed.`,
+        });
+      } else {
+        toast({
+          title: "SEO Fix Failed",
+          description: queueStatus.error_message || "An error occurred",
+          variant: "destructive",
+        });
+      }
+      setQueueJobId(null);
+      // Refresh articles
+      window.location.reload();
+    }
+  }, [queueStatus, toast]);
+
   const analyzeSEO = (article: any) => {
     const issues = [];
     const warnings = [];
@@ -116,24 +155,48 @@ const SEOTools = () => {
   const handleBulkFixSEO = async () => {
     setIsFixingBulk(true);
     try {
-      const { data, error } = await supabase.functions.invoke("bulk-generate-seo");
+      // Get all articles that need SEO fixes
+      const articlesNeedingFix = articles?.filter(a => getSEOScore(a) < 80) || [];
       
-      if (error) throw error;
+      if (articlesNeedingFix.length === 0) {
+        toast({
+          title: "No Articles Need Fixing",
+          description: "All articles already have good SEO!",
+        });
+        setIsFixingBulk(false);
+        return;
+      }
+
+      const articleIds = articlesNeedingFix.map(a => a.id);
+
+      // Create queue entry
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data: queueEntry, error: queueError } = await supabase
+        .from("bulk_operation_queue")
+        .insert({
+          operation_type: "seo-generation",
+          article_ids: articleIds,
+          total_items: articleIds.length,
+          status: "queued",
+          created_by: session?.user.id,
+        })
+        .select()
+        .single();
+
+      if (queueError) throw queueError;
+
+      setQueueJobId(queueEntry.id);
       
       toast({
-        title: "Success!",
-        description: `Processed ${data.processed} articles. ${data.failed} failed.`,
+        title: "SEO Fix Queued",
+        description: `Processing ${articleIds.length} articles in background. This page will update with progress.`,
       });
-      
-      // Refresh articles
-      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
       setIsFixingBulk(false);
     }
   };
@@ -202,22 +265,49 @@ const SEOTools = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {queueStatus && queueStatus.status === "processing" && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                        <span className="font-medium text-blue-900">Processing SEO Fixes</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-blue-700">
+                          {queueStatus.processed_items || 0} of {queueStatus.total_items || 0} articles processed
+                        </p>
+                        <div className="w-full bg-blue-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${((queueStatus.processed_items || 0) / (queueStatus.total_items || 1)) * 100}%` 
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-blue-600">
+                          {queueStatus.successful_items || 0} successful, {queueStatus.failed_items || 0} failed
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
                   <Button 
                     onClick={handleBulkFixSEO}
-                    disabled={isFixingBulk}
+                    disabled={isFixingBulk || (queueStatus?.status === "processing")}
                     className="w-full md:w-auto"
                   >
-                    {isFixingBulk ? (
+                    {isFixingBulk || queueStatus?.status === "processing" ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Fixing SEO Issues...
+                        {queueStatus?.status === "processing" 
+                          ? `Processing... ${queueStatus.processed_items}/${queueStatus.total_items}`
+                          : "Queueing..."}
                       </>
                     ) : (
                       <>Fix All SEO Issues</>
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-2">
-                    This will automatically generate missing meta titles, descriptions, and keyphrases for all articles with SEO issues.
+                    This will automatically generate missing meta titles, descriptions, and keyphrases for all articles with SEO issues. Processing happens in the background in batches of 30 articles.
                   </p>
                 </CardContent>
               </Card>
