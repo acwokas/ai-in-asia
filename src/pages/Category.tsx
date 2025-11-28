@@ -69,12 +69,13 @@ const Category = () => {
 
   const { data: category, isLoading: categoryLoading } = useQuery({
     queryKey: ["category", slug],
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("*")
+        .select("id, name, slug, description, color")
         .eq("slug", slug)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
@@ -85,12 +86,13 @@ const Category = () => {
   const { data: sponsor } = useQuery({
     queryKey: ["category-sponsor", category?.id],
     enabled: !!category?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return null;
       
       const { data, error } = await supabase
         .from("category_sponsors")
-        .select("*")
+        .select("id, sponsor_name, sponsor_logo_url, sponsor_website_url, sponsor_tagline")
         .eq("category_id", category.id)
         .eq("is_active", true)
         .maybeSingle();
@@ -103,8 +105,7 @@ const Category = () => {
   const { data: articles, isLoading: articlesLoading } = useQuery({
     queryKey: ["category-articles", slug],
     enabled: !!category?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000, // 2 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -114,13 +115,14 @@ const Category = () => {
           .from("article_categories")
           .select(`
             articles!inner (
-              *,
+              id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes,
               authors (name, slug),
               categories:primary_category_id!inner (name, slug)
             )
           `)
           .eq("category_id", category.id)
-          .eq("articles.status", "published");
+          .eq("articles.status", "published")
+          .limit(20);
         
         if (error) throw error;
         
@@ -139,14 +141,14 @@ const Category = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
-        .limit(50);
+        .limit(20);
       
       if (error) throw error;
       return data;
@@ -157,8 +159,7 @@ const Category = () => {
   const { data: kooArticles } = useQuery({
     queryKey: ["koo-articles", category?.id],
     enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -166,7 +167,7 @@ const Category = () => {
         .from("article_categories")
         .select(`
           articles (
-            *,
+            id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
             authors!inner (name, slug),
             categories:primary_category_id (name, slug)
           )
@@ -191,8 +192,7 @@ const Category = () => {
   const { data: adrianArticles } = useQuery({
     queryKey: ["adrian-articles", category?.id],
     enabled: enableSecondaryQueries && category?.slug === "voices" && !!category?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -200,7 +200,7 @@ const Category = () => {
         .from("article_categories")
         .select(`
           articles (
-            *,
+            id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
             authors!inner (name, slug),
             categories:primary_category_id (name, slug)
           )
@@ -221,12 +221,11 @@ const Category = () => {
     },
   });
 
-  // Fetch Editor's Pick - Most popular article excluding featured and latest
+  // Defer: Fetch Editor's Pick - Most popular article excluding featured and latest
   const { data: editorsPick } = useQuery({
     queryKey: ["editors-pick", category?.id, slug],
-    enabled: !!category?.id && !!articles,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    enabled: enableSecondaryQueries && !!category?.id && !!articles,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id || !articles) return null;
 
@@ -236,7 +235,7 @@ const Category = () => {
         .select(`
           article_id,
           articles (
-            *,
+            id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, status, reading_time_minutes,
             authors (name, slug),
             categories:primary_category_id (name, slug)
           )
@@ -269,7 +268,7 @@ const Category = () => {
           .from("article_categories")
           .select(`
             articles (
-              *,
+              id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             )
@@ -297,7 +296,7 @@ const Category = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -317,8 +316,7 @@ const Category = () => {
   const { data: mostReadArticles } = useQuery({
     queryKey: ["category-most-read", slug],
     enabled: enableSecondaryQueries && !!category?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -328,7 +326,7 @@ const Category = () => {
           .from("article_categories")
           .select(`
             articles (
-              *,
+              id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             )
@@ -351,7 +349,7 @@ const Category = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -369,8 +367,7 @@ const Category = () => {
   const { data: trendingArticles } = useQuery({
     queryKey: ["category-trending", slug],
     enabled: enableSecondaryQueries && !!category?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -380,7 +377,7 @@ const Category = () => {
           .from("article_categories")
           .select(`
             articles!inner (
-              *,
+              id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
               authors (name, slug),
               categories:primary_category_id (name, slug)
             )
@@ -404,7 +401,7 @@ const Category = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          *,
+          id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -423,6 +420,7 @@ const Category = () => {
   const { data: popularTags } = useQuery({
     queryKey: ["category-popular-tags", slug],
     enabled: enableSecondaryQueries && !!category?.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
@@ -465,6 +463,7 @@ const Category = () => {
   const { data: tagArticlesData } = useQuery({
     queryKey: ["category-tag-articles", popularTags?.slice(0, 3).map(t => t.id).join(",")],
     enabled: !!popularTags && popularTags.length > 0 && !!category?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!popularTags || popularTags.length === 0 || !category?.id) return [];
 
@@ -476,7 +475,7 @@ const Category = () => {
             .select(`
               article_id,
               articles!inner (
-                *,
+                id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, reading_time_minutes,
                 authors (name, slug),
                 categories:primary_category_id (name, slug)
               )
