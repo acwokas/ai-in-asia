@@ -34,6 +34,7 @@ const FontSizeControl = () => {
   };
 
   const handleIncrease = () => {
+    console.log('[FontSizeControl] Increase clicked', { fontSize });
     if (fontSize < MAX_SIZE) {
       const newSize = fontSize + STEP;
       setFontSize(newSize);
@@ -43,6 +44,7 @@ const FontSizeControl = () => {
   };
 
   const handleDecrease = () => {
+    console.log('[FontSizeControl] Decrease clicked', { fontSize });
     if (fontSize > MIN_SIZE) {
       const newSize = fontSize - STEP;
       setFontSize(newSize);
