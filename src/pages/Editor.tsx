@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -9,7 +9,8 @@ import { Loader2, Home } from "lucide-react";
 
 const Editor = () => {
   const [searchParams] = useSearchParams();
-  const articleId = searchParams.get("id");
+  const params = useParams();
+  const articleId = params.id || searchParams.get("id");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
