@@ -36,25 +36,47 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
 
   const toggleFollow = useMutation({
     mutationFn: async () => {
+      if (!user) {
+        console.warn("FollowButton: toggleFollow called without authenticated user", {
+          followType,
+          followId,
+          followName,
+        });
+        return;
+      }
+
+      console.log("FollowButton: toggling follow", {
+        userId: user.id,
+        followType,
+        followId,
+        isFollowing,
+      });
+
       if (isFollowing) {
         const { error } = await supabase
           .from("user_follows")
           .delete()
-          .eq("user_id", user!.id)
+          .eq("user_id", user.id)
           .eq("follow_type", followType)
           .eq("follow_id", followId);
 
-        if (error) throw error;
+        if (error) {
+          console.error("FollowButton: error unfollowing", error);
+          throw error;
+        }
       } else {
         const { error } = await supabase
           .from("user_follows")
           .insert({
-            user_id: user!.id,
+            user_id: user.id,
             follow_type: followType,
             follow_id: followId,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error("FollowButton: error following", error);
+          throw error;
+        }
       }
     },
     onSuccess: () => {
@@ -66,6 +88,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
       });
     },
     onError: (error) => {
+      console.error("FollowButton: mutation error", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update follow status",
