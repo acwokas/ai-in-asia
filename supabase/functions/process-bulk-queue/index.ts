@@ -148,7 +148,7 @@ serve(async (req) => {
         await processInternalLinks(supabase, job, lovableApiKey);
       } else if (job.operation_type === "generate_ai_comments") {
         await processAIComments(supabase, job, lovableApiKey);
-      } else if (job.operation_type === "seo-generation") {
+      } else if (job.operation_type === "generate_seo") {
         await processSEOGeneration(supabase, job, lovableApiKey);
       } else {
         throw new Error(`Unknown operation type: ${job.operation_type}`);
