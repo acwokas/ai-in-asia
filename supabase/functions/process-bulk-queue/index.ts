@@ -148,6 +148,8 @@ serve(async (req) => {
         await processInternalLinks(supabase, job, lovableApiKey);
       } else if (job.operation_type === "generate_ai_comments") {
         await processAIComments(supabase, job, lovableApiKey);
+      } else if (job.operation_type === "seo-generation") {
+        await processSEOGeneration(supabase, job, lovableApiKey);
       } else {
         throw new Error(`Unknown operation type: ${job.operation_type}`);
       }
@@ -733,5 +735,182 @@ Write ONLY the comment text, no metadata.`;
     console.log(`Chunk complete: ${processedCount}/${articleIds.length} articles processed`);
     // Keep job in processing state - it will be picked up again
     throw new Error('CONTINUE_PROCESSING'); // Special error to indicate job should continue
+  }
+}
+
+async function processSEOGeneration(supabase: any, job: any, lovableApiKey: string) {
+  const articleIds = job.article_ids as string[];
+  const ARTICLES_PER_RUN = 30; // Process 30 articles per invocation
+  const processedSoFar = job.processed_items || 0;
+
+  console.log(`Processing SEO generation: ${processedSoFar}/${articleIds.length} articles completed`);
+
+  // Update total items on first run
+  if (processedSoFar === 0) {
+    await supabase
+      .from("bulk_operation_queue")
+      .update({ total_items: articleIds.length })
+      .eq("id", job.id);
+  }
+
+  // Get existing results or initialize
+  const results: any[] = job.results || [];
+  let processedCount = processedSoFar;
+  let successCount = job.successful_items || 0;
+  let failedCount = job.failed_items || 0;
+
+  // Process only the next chunk of articles
+  const startIdx = processedSoFar;
+  const endIdx = Math.min(startIdx + ARTICLES_PER_RUN, articleIds.length);
+  const articlesToProcess = articleIds.slice(startIdx, endIdx);
+
+  console.log(`Processing articles ${startIdx + 1} to ${endIdx} of ${articleIds.length}`);
+
+  for (const articleId of articlesToProcess) {
+    try {
+      // Fetch the article
+      const { data: article, error: articleError } = await supabase
+        .from("articles")
+        .select("id, title, content, excerpt")
+        .eq("id", articleId)
+        .single();
+
+      if (articleError) throw articleError;
+      if (!article) continue;
+
+      // Extract text content
+      let textContent = "";
+      if (typeof article.content === "string") {
+        textContent = article.content;
+      } else if (Array.isArray(article.content)) {
+        textContent = article.content.map((block: any) => block.content || "").join(" ");
+      }
+
+      const fullText = `${article.title}\n\n${article.excerpt || ""}\n\n${textContent}`.substring(0, 3000);
+
+      // Generate SEO metadata
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert SEO specialist. Generate SEO metadata for articles about AI, technology, and innovation in Asia-Pacific. Return ONLY valid JSON with these exact fields:
+{
+  "meta_title": "60 character HTML title tag with main keyword",
+  "seo_title": "60 character optimized title with main keyword",
+  "focus_keyphrase": "main keyword phrase (2-4 words)",
+  "keyphrase_synonyms": "synonym1, synonym2, synonym3",
+  "meta_description": "155 character compelling description with keyword"
+}`,
+            },
+            {
+              role: "user",
+              content: `Generate SEO metadata for this article:\n\n${fullText}`,
+            },
+          ],
+          temperature: 0.7,
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        console.error(`AI error for article ${article.id}:`, aiResponse.status);
+        throw new Error(`AI generation failed: ${aiResponse.status}`);
+      }
+
+      const aiData = await aiResponse.json();
+      const generatedText = aiData.choices?.[0]?.message?.content;
+
+      if (!generatedText) {
+        throw new Error("No content generated from AI");
+      }
+
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("Invalid JSON response from AI");
+      }
+
+      const seoData = JSON.parse(jsonMatch[0]);
+
+      // Update article
+      const { error: updateError } = await supabase
+        .from("articles")
+        .update({
+          meta_title: seoData.meta_title,
+          seo_title: seoData.seo_title,
+          focus_keyphrase: seoData.focus_keyphrase,
+          keyphrase_synonyms: seoData.keyphrase_synonyms,
+          meta_description: seoData.meta_description || article.excerpt,
+        })
+        .eq("id", article.id);
+
+      if (updateError) throw updateError;
+
+      results.push({
+        articleId: article.id,
+        title: article.title,
+        status: "success"
+      });
+      successCount++;
+      processedCount++;
+
+      // Update progress
+      await supabase
+        .from("bulk_operation_queue")
+        .update({ 
+          processed_items: processedCount,
+          successful_items: successCount,
+          failed_items: failedCount,
+          results: results
+        })
+        .eq("id", job.id);
+
+      // Rate limiting delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+    } catch (error: any) {
+      console.error(`Error processing article ${articleId}:`, error);
+      
+      let articleTitle = 'Unknown';
+      try {
+        const { data: article } = await supabase
+          .from("articles")
+          .select("title")
+          .eq("id", articleId)
+          .single();
+        if (article) articleTitle = article.title;
+      } catch {}
+
+      results.push({
+        articleId,
+        title: articleTitle,
+        status: "failed",
+        error: error.message
+      });
+      failedCount++;
+      processedCount++;
+
+      await supabase
+        .from("bulk_operation_queue")
+        .update({ 
+          processed_items: processedCount,
+          failed_items: failedCount,
+          results: results
+        })
+        .eq("id", job.id);
+    }
+  }
+
+  // Check if all articles have been processed
+  if (processedCount >= articleIds.length) {
+    console.log(`All SEO generation complete: ${successCount} successful, ${failedCount} failed`);
+  } else {
+    console.log(`Chunk complete: ${processedCount}/${articleIds.length} articles processed`);
+    throw new Error('CONTINUE_PROCESSING');
   }
 }
