@@ -1095,7 +1095,7 @@ const Article = () => {
                 </p>
               )}
 
-              <div className="flex flex-col md:flex-row md:items-center gap-4 pb-6 border-b border-border">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 pb-6 border-b border-border relative z-20">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   {article.authors?.slug ? (
                     <Link to={`/author/${article.authors.slug}`}>
