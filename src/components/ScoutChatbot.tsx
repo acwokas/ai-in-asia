@@ -348,6 +348,7 @@ const ScoutChatbot = () => {
           onClick={() => setIsOpen(true)}
           className="relative rounded-full w-16 h-16 bg-gradient-to-br from-primary via-primary to-accent shadow-[0_0_30px_rgba(0,188,212,0.5)] hover:shadow-[0_0_40px_rgba(0,188,212,0.8)] transition-all duration-300 hover:scale-110 border border-primary/50"
           size="icon"
+          aria-label="Open Scout AI assistant"
         >
           <Bot className="h-7 w-7 animate-pulse" />
         </Button>
@@ -400,6 +401,7 @@ const ScoutChatbot = () => {
             size="icon"
             onClick={() => setIsOpen(false)}
             className="hover:bg-primary/10 hover:text-primary transition-all rounded-full"
+            aria-label="Close Scout assistant"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -503,6 +505,7 @@ const ScoutChatbot = () => {
             size="icon" 
             disabled={isLoading || !input.trim()}
             className="relative bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-[0_0_20px_rgba(0,188,212,0.3)] hover:shadow-[0_0_30px_rgba(0,188,212,0.5)] transition-all disabled:opacity-50 disabled:shadow-none rounded-lg"
+            aria-label="Send message to Scout"
           >
             <Send className="h-4 w-4" />
           </Button>

@@ -105,7 +105,7 @@ const Header = memo(() => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16">
+                    <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16" aria-label="User menu">
                       <User className="h-6 w-6 md:h-8 md:w-8" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -143,6 +143,7 @@ const Header = memo(() => {
               size="icon"
               className="md:hidden h-12 w-12"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
             >
               <Menu className="h-6 w-6" />
             </Button>
