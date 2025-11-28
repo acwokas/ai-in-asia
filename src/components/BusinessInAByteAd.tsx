@@ -9,7 +9,7 @@ export const BusinessInAByteAd = () => {
         target="_blank"
         rel="noopener noreferrer sponsored"
         className="block relative group overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 h-full bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 border-0"
-        aria-label="Visit Business in a Byte - Launch Your Startup in 7 Days"
+        aria-label="Free tools and playbooks for entrepreneurs - Launch in 7 Days with Business in a Byte"
       >
         <div className="absolute inset-0 flex flex-col items-center justify-between p-5 text-center">
           {/* Logo - Much smaller */}
