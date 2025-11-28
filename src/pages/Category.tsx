@@ -379,7 +379,7 @@ const Category = () => {
         const { data, error } = await supabase
           .from("article_categories")
           .select(`
-            articles (
+            articles!inner (
               *,
               authors (name, slug),
               categories:primary_category_id (name, slug)
