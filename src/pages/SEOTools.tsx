@@ -67,8 +67,7 @@ const SEOTools = () => {
         .from("articles")
         .select("id, title, slug, meta_title, meta_description, focus_keyphrase, status")
         .eq("status", "published")
-        .order("published_at", { ascending: false })
-        .limit(100);
+        .order("published_at", { ascending: false });
       return data || [];
     },
   });
