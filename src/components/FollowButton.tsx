@@ -97,7 +97,25 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
     },
   });
 
-  if (!user) return null;
+  const handleClick = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to follow authors and categories",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = '/auth'}
+          >
+            Log In
+          </Button>
+        ),
+      });
+      return;
+    }
+    toggleFollow.mutate();
+  };
 
   const buttonLabel = followType === "author" ? "Author" : followName;
   
@@ -105,7 +123,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
     <Button
       variant={isFollowing ? "default" : "outline"}
       size="sm"
-      onClick={() => toggleFollow.mutate()}
+      onClick={handleClick}
       disabled={isLoading || toggleFollow.isPending}
       className="gap-2"
       title={isFollowing ? `Unfollow ${followName}` : `Follow ${followName}`}
