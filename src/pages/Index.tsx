@@ -812,7 +812,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground mb-4">{tool.description}</p>
                   <Button variant="outline" size="sm" className="w-full" asChild>
                     <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      Learn More
+                      Learn More about {tool.name}
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
@@ -832,7 +832,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground mb-4">{tool.desc}</p>
                   <Button variant="outline" size="sm" className="w-full" asChild>
                     <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      Learn More
+                      Learn More about {tool.name}
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
