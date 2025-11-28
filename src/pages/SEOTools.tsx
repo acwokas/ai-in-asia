@@ -174,7 +174,7 @@ const SEOTools = () => {
       const { data: queueEntry, error: queueError } = await supabase
         .from("bulk_operation_queue")
         .insert({
-          operation_type: "seo-generation",
+          operation_type: "generate_seo",
           article_ids: articleIds,
           total_items: articleIds.length,
           status: "queued",
