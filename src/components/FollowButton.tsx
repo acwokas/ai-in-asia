@@ -125,7 +125,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
       size="sm"
       onClick={handleClick}
       disabled={isLoading || toggleFollow.isPending}
-      className="gap-2"
+      className="gap-2 cursor-pointer pointer-events-auto"
       title={isFollowing ? `Unfollow ${followName}` : `Follow ${followName}`}
     >
       {isFollowing ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}

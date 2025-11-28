@@ -156,6 +156,9 @@ const Article = () => {
 
     window.addEventListener('scroll', throttledSave);
     
+    // Debug log for article interaction handlers
+    console.log('[Article] Interaction handlers mounted');
+
     // Clear position when article is finished (scrolled to bottom)
     const clearOnFinish = () => {
       const scrollTop = window.scrollY;
