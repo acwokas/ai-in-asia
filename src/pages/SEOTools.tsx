@@ -283,7 +283,7 @@ const SEOTools = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => navigate(`/admin/editor/${article.id}`)}
+                                  onClick={() => navigate(`/editor/${article.id}`)}
                                 >
                                   Edit
                                 </Button>
@@ -337,7 +337,7 @@ const SEOTools = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/admin/editor/${article.id}`)}
+                            onClick={() => navigate(`/editor/${article.id}`)}
                           >
                             Fix Issues
                           </Button>
