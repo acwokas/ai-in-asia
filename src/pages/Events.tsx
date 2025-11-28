@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet";
+import { EventStructuredData } from "@/components/StructuredData";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -157,6 +158,23 @@ const Events = () => {
         <meta name="twitter:title" content="AI Events & Conferences Calendar | AI in ASIA" />
         <meta name="twitter:description" content="Discover upcoming AI conferences and events across Asia Pacific." />
       </Helmet>
+      
+      {/* Event Structured Data for Featured Events */}
+      {featuredEvents && featuredEvents.map((event) => (
+        <EventStructuredData
+          key={event.id}
+          name={event.title}
+          description={event.description}
+          startDate={event.start_date}
+          endDate={event.end_date || undefined}
+          location={event.location}
+          city={event.city}
+          country={event.country}
+          organizer={event.organizer || undefined}
+          url={event.website_url || undefined}
+          eventType={event.event_type}
+        />
+      ))}
       
       <div className="min-h-screen flex flex-col">
         <Header />
