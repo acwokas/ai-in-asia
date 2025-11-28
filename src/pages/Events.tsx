@@ -328,7 +328,7 @@ const Events = () => {
                                   <Button variant="outline" size="sm" asChild>
                                     <a href={event.website_url} target="_blank" rel="noopener noreferrer">
                                       <ExternalLink className="w-4 h-4 mr-2" />
-                                      Learn More
+                                      Learn More about {event.title}
                                     </a>
                                   </Button>
                                 )}
