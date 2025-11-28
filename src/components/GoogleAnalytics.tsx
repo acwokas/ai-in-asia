@@ -95,3 +95,11 @@ export const trackShareClick = (
     platform: platform, // 'twitter', 'linkedin', 'facebook'
   });
 };
+
+export const track404Error = (path: string, errorType: "page_not_found" | "article_not_found") => {
+  trackEvent("404_error", {
+    error_type: errorType,
+    page_path: path,
+    page_title: errorType === "article_not_found" ? "Article Not Found - 404" : "Page Not Found - 404",
+  });
+};

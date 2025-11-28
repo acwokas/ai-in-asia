@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, memo } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import DOMPurify from "dompurify";
+import { track404Error } from "@/components/GoogleAnalytics";
 
 const Article = () => {
   const { category, slug } = useParams();
@@ -551,6 +552,25 @@ const Article = () => {
   }
 
   if (!article) {
+    // Track as error event instead of page view
+    useEffect(() => {
+      track404Error(window.location.pathname, "article_not_found");
+      
+      // Also log to database
+      const log404 = async () => {
+        try {
+          await supabase.from("page_not_found_log").insert({
+            path: window.location.pathname,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+          });
+        } catch (error) {
+          console.error("Failed to log article 404:", error);
+        }
+      };
+      log404();
+    }, []);
+
     return (
       <div className="min-h-screen flex flex-col">
         <Helmet>
