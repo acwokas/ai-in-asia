@@ -9,7 +9,7 @@ export const PromptAndGoBanner = () => {
         target="_blank"
         rel="noopener noreferrer sponsored"
         className="block relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 h-[100px] md:h-[140px]"
-        aria-label="Visit Prompt and Go AI - Better and faster AI results"
+        aria-label="Better and faster AI results, every time - Browse 3,000+ tested prompts at Prompt and Go AI"
       >
         {/* Gradient background */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600" />
