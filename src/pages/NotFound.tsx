@@ -9,6 +9,7 @@ import { Search, Home, FileText, TrendingUp, Compass } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { track404Error } from "@/components/GoogleAnalytics";
 
 const NotFound = () => {
   const location = useLocation();
@@ -17,6 +18,9 @@ const NotFound = () => {
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    
+    // Track 404 as an error event in Google Analytics (not a page view)
+    track404Error(location.pathname, "page_not_found");
     
     // Log 404 to database for tracking
     const log404 = async () => {
