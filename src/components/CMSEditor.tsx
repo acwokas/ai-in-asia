@@ -1139,6 +1139,22 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                         <Upload className="h-4 w-4" />
                       )}
                     </Button>
+                    {featuredImage && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setFeaturedImage('');
+                          setFeaturedImageAlt('');
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        title="Remove featured image"
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </div>
                   {featuredImage && (
                     <div className="mt-2">

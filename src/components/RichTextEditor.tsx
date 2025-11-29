@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video, Sparkles } from "lucide-react";
+import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video, Sparkles, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -968,6 +968,37 @@ const RichTextEditor = ({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {imageData.url && (
+              <div>
+                <img src={imageData.url} alt="Preview" className="w-full max-w-md h-48 object-cover rounded-lg border border-border" />
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="flex-1"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Change Image
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setImageData({ url: '', caption: '', alt: '', description: '', size: 'large' });
+                      if (imageInputRef.current) {
+                        imageInputRef.current.value = '';
+                      }
+                    }}
+                    className="flex-1"
+                  >
+                    Remove Image
+                  </Button>
+                </div>
+              </div>
+            )}
             <div>
               <Label htmlFor="image-size">Display Size</Label>
               <Select value={imageData.size} onValueChange={(value: 'small' | 'medium' | 'large') => setImageData({ ...imageData, size: value })}>
