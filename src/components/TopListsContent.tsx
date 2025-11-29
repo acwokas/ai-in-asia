@@ -32,6 +32,13 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
   const getHtmlContent = (content?: string) => {
     if (!content) return undefined;
 
+    // If content already contains HTML tags (e.g. <ul><li> from the rich text editor),
+    // use it as-is so browser/default prose styles control indentation and spacing.
+    const looksLikeHtml = /<\/?(ul|ol|li|p|h[1-6]|blockquote|table|strong|em|a)[\s>]/i.test(content);
+    if (looksLikeHtml) {
+      return { __html: content };
+    }
+
     // Normalise manual "•" bullets into proper markdown lists so intro/outro behave the same
     const normalised = content
       .split("\n")
@@ -43,7 +50,6 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
     const html = convertSimpleMarkdownToHtml(normalised);
     return { __html: html };
   };
-  // Filter items based on search query
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredItems(items);
