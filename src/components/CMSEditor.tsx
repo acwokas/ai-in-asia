@@ -140,6 +140,9 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [isGeneratingImagePrompts, setIsGeneratingImagePrompts] = useState(false);
   const [imagePrompts, setImagePrompts] = useState<Array<{ title: string; prompt: string; explanation: string }> | null>(null);
   
+  // Undo state for Scout Assist
+  const [undoStack, setUndoStack] = useState<Array<{ field: 'content' | 'excerpt'; value: string }>>([]);
+  
   // Policy article specific state
   const [region, setRegion] = useState(initialData?.region || "");
   const [country, setCountry] = useState(initialData?.country || "");
@@ -285,6 +288,13 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     // This is particularly useful for Scout operations on the excerpt field
     const shouldReplaceAll = (start === end) && textarea === excerptRef.current;
     
+    // Save current state for undo
+    if (textarea === contentRef.current) {
+      setUndoStack(prev => [...prev, { field: 'content', value: content }]);
+    } else {
+      setUndoStack(prev => [...prev, { field: 'excerpt', value: excerpt }]);
+    }
+    
     if (shouldReplaceAll) {
       setExcerpt(newText);
     } else {
@@ -299,6 +309,25 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
     
     setSelectedText("");
+  };
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+    
+    const lastState = undoStack[undoStack.length - 1];
+    
+    if (lastState.field === 'content') {
+      setContent(lastState.value);
+    } else {
+      setExcerpt(lastState.value);
+    }
+    
+    setUndoStack(prev => prev.slice(0, -1));
+    
+    toast({
+      title: "Undone",
+      description: "Scout changes have been reverted",
+    });
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1010,6 +1039,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     onReplace={replaceSelectedText}
                     fullFieldContent={excerpt}
                     context={{ title, fullContent: content }}
+                    canUndo={undoStack.length > 0}
+                    onUndo={handleUndo}
                   />
                 </div>
                 <Textarea
