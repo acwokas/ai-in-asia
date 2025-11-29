@@ -346,7 +346,9 @@ export type Database = {
           sticky: boolean | null
           title: string
           tldr_snapshot: Json | null
+          top_list_intro: string | null
           top_list_items: Json | null
+          top_list_outro: string | null
           topic_tags: string[] | null
           updated_at: string
           updated_by: string | null
@@ -411,7 +413,9 @@ export type Database = {
           sticky?: boolean | null
           title: string
           tldr_snapshot?: Json | null
+          top_list_intro?: string | null
           top_list_items?: Json | null
+          top_list_outro?: string | null
           topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
@@ -476,7 +480,9 @@ export type Database = {
           sticky?: boolean | null
           title?: string
           tldr_snapshot?: Json | null
+          top_list_intro?: string | null
           top_list_items?: Json | null
+          top_list_outro?: string | null
           topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null

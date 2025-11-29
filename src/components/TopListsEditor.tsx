@@ -29,6 +29,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TopListsPreview } from "./TopListsPreview";
+import RichTextEditor from "./RichTextEditor";
 
 export interface TopListItem {
   id: string;
@@ -46,11 +47,17 @@ export interface TopListItem {
     model: string;
     prompt: string;
   }>;
+  // Content box that can be inserted between items
+  contentBox?: string;
 }
 
 interface TopListsEditorProps {
   items: TopListItem[];
   onChange: (items: TopListItem[]) => void;
+  intro?: string;
+  onIntroChange?: (intro: string) => void;
+  outro?: string;
+  onOutroChange?: (outro: string) => void;
 }
 
 interface SortableItemProps {
@@ -445,13 +452,23 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               />
             </div>
           </div>
+
+          {/* Content Box Between Items */}
+          <div>
+            <Label>Content Box (Insert Between Items) - Optional</Label>
+            <RichTextEditor
+              value={item.contentBox || ''}
+              onChange={(value) => onUpdate(item.id, 'contentBox', value)}
+              placeholder="Add formatted content that will appear after this item..."
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
+export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, outro = '', onOutroChange }: TopListsEditorProps) => {
   const { toast } = useToast();
   const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -641,17 +658,19 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Article Content Live Preview at Top */}
-      {items.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Article Content (Live Preview)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TopListsPreview items={items} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Intro Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Introduction (Optional)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            value={intro}
+            onChange={onIntroChange || (() => {})}
+            placeholder="Add an introduction to your list..."
+          />
+        </CardContent>
+      </Card>
 
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Top List Items</h3>
@@ -715,6 +734,20 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
           ))}
         </SortableContext>
       </DndContext>
+
+      {/* Outro Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Conclusion (Optional)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            value={outro}
+            onChange={onOutroChange || (() => {})}
+            placeholder="Add a conclusion to your list..."
+          />
+        </CardContent>
+      </Card>
 
       {/* Article Content Live Preview at Bottom */}
       {items.length > 0 && (
