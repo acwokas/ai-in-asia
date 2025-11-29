@@ -51,6 +51,7 @@ const BulkImport = lazy(() => import("./pages/BulkImport"));
 const ImageMigration = lazy(() => import("./pages/ImageMigration"));
 const ExtractImageUrls = lazy(() => import("./pages/ExtractImageUrls"));
 const UpdateArticleImages = lazy(() => import("./pages/UpdateArticleImages"));
+const MigrateTopListImages = lazy(() => import("./pages/MigrateTopListImages"));
 const MigrationDashboard = lazy(() => import("./pages/MigrationDashboard"));
 const BulkRedirects = lazy(() => import("./pages/BulkRedirects"));
 const CsvUrlReplacer = lazy(() => import("./pages/CsvUrlReplacer"));
@@ -204,7 +205,8 @@ const App = () => (
               <Route path="/admin/bulk-import" element={<BulkImport />} />
               <Route path="/admin/extract-image-urls" element={<ExtractImageUrls />} />
               <Route path="/admin/image-migration" element={<ImageMigration />} />
-              <Route path="/admin/update-article-images" element={<UpdateArticleImages />} />
+          <Route path="/admin/update-article-images" element={<UpdateArticleImages />} />
+          <Route path="/admin/migrate-toplist-images" element={<MigrateTopListImages />} />
               <Route path="/admin/migration-dashboard" element={<MigrationDashboard />} />
               <Route path="/admin/bulk-redirects" element={<BulkRedirects />} />
               <Route path="/admin/csv-url-replacer" element={<CsvUrlReplacer />} />
