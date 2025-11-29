@@ -39,7 +39,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       return { __html: content };
     }
 
-    // Normalise manual "•" bullets into proper markdown lists so intro/outro behave the same
+    // Normalise manual "•" bullets into proper markdown lists
     const normalised = content
       .split("\n")
       .map((line) =>
@@ -179,7 +179,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Intro block above prompts list */}
       {introHtml && (
         <div
-          className="border-b pb-6 mb-6 prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4 [&_li]:ml-0"
+          className="border-b pb-6 mb-6 prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4 [&_li]:ml-0"
           dangerouslySetInnerHTML={getHtmlContent(introHtml)}
         />
       )}
@@ -277,7 +277,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
                 {item.description_top && (
                   <div
-                    className="prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4"
+                    className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.description_top)}
                   />
                 )}
@@ -285,7 +285,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {/* Optional rich content box between sections */}
                 {item.contentBox && (
                   <div
-                    className="prose prose-sm max-w-none my-4 [&_ul]:pl-4 [&_ol]:pl-4"
+                    className="prose prose-sm max-w-none my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.contentBox)}
                   />
                 )}
@@ -369,7 +369,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
                 {item.description_bottom && (
                   <div
-                    className="prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4"
+                    className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.description_bottom)}
                   />
                 )}
@@ -382,7 +382,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Outro block below prompts list */}
       {outroHtml && (
         <div
-          className="border-b pb-6 mb-6 prose prose-sm max-w-none [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:ml-0 [&_li]:my-1"
+          className="border-b pb-6 mb-6 prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
           dangerouslySetInnerHTML={getHtmlContent(outroHtml)}
         />
       )}
