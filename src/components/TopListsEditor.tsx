@@ -36,7 +36,7 @@ export interface TopListItem {
   description_top?: string;
   prompt: string;
   description_bottom?: string;
-  image_url?: string;
+  image_urls?: string[]; // Support multiple images
   // New metadata fields
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   ai_models?: string[]; // ['chatgpt', 'gemini', 'claude', 'all']
@@ -124,6 +124,26 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
     onUpdate(item.id, 'variations', current.filter((_, i) => i !== varIndex));
   };
 
+  const autoGenerateTags = () => {
+    // Auto-generate tags from title if empty
+    if (!item.tags || item.tags.length === 0) {
+      const words = item.title
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 3);
+      const uniqueWords = [...new Set(words)].slice(0, 5);
+      if (uniqueWords.length > 0) {
+        onUpdate(item.id, 'tags', uniqueWords);
+      }
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const current = item.image_urls || [];
+    onUpdate(item.id, 'image_urls', current.filter((_, i) => i !== index));
+  };
+
   return (
     <div ref={setNodeRef} style={style}>
       <Card className="mb-4">
@@ -160,11 +180,12 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor={`title-${item.id}`}>Title *</Label>
+            <Label htmlFor={`title-${item.id}`}>Title - Optional</Label>
             <Input
               id={`title-${item.id}`}
               value={item.title}
               onChange={(e) => onUpdate(item.id, 'title', e.target.value)}
+              onBlur={autoGenerateTags}
               placeholder="e.g., Astronaut Mascot Design"
             />
           </div>
@@ -207,7 +228,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
           </div>
 
           <div>
-            <Label>AI Model Compatibility</Label>
+            <Label>AI Model Compatibility - Optional</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {aiModelOptions.map(model => (
                 <Badge
@@ -223,30 +244,6 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
           </div>
 
           <div>
-            <Label>Tags</Label>
-            <div className="flex flex-wrap gap-2 mt-2 mb-2">
-              {item.tags?.map(tag => (
-                <Badge key={tag} variant="secondary" className="gap-1">
-                  {tag}
-                  <button onClick={() => removeTag(tag)} className="hover:text-destructive">×</button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add tag..."
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addTag(e.currentTarget.value);
-                    e.currentTarget.value = '';
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
             <Label htmlFor={`desc-top-${item.id}`}>Description (Top) - Optional</Label>
             <Textarea
               id={`desc-top-${item.id}`}
@@ -258,7 +255,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
           </div>
 
           <div>
-            <Label htmlFor={`prompt-${item.id}`}>Main Prompt *</Label>
+            <Label htmlFor={`prompt-${item.id}`}>Main Prompt - Optional</Label>
             <Textarea
               id={`prompt-${item.id}`}
               value={item.prompt}
@@ -311,18 +308,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
           </div>
 
           <div>
-            <Label htmlFor={`desc-bottom-${item.id}`}>Description (Bottom) - Optional</Label>
-            <Textarea
-              id={`desc-bottom-${item.id}`}
-              value={item.description_bottom || ''}
-              onChange={(e) => onUpdate(item.id, 'description_bottom', e.target.value)}
-              placeholder="Optional description text below the prompt..."
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor={`image-${item.id}`}>Image - Optional</Label>
+            <Label htmlFor={`image-${item.id}`}>Images - Optional</Label>
             <div className="flex gap-2 items-center">
               <Input
                 id={`image-${item.id}`}
@@ -338,23 +324,61 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
                 <span className="text-sm text-muted-foreground">Uploading...</span>
               )}
             </div>
-            {item.image_url && (
-              <div className="mt-2">
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="max-w-xs rounded-md"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => onUpdate(item.id, 'image_url', '')}
-                >
-                  Remove Image
-                </Button>
+            {item.image_urls && item.image_urls.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {item.image_urls.map((url, imgIndex) => (
+                  <div key={imgIndex} className="flex gap-2 items-start">
+                    <img
+                      src={url}
+                      alt={`${item.title} - Image ${imgIndex + 1}`}
+                      className="max-w-xs rounded-md"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeImage(imgIndex)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor={`desc-bottom-${item.id}`}>Description (Bottom) - Optional</Label>
+            <Textarea
+              id={`desc-bottom-${item.id}`}
+              value={item.description_bottom || ''}
+              onChange={(e) => onUpdate(item.id, 'description_bottom', e.target.value)}
+              placeholder="Optional description text below the prompt..."
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label>Tags - Optional</Label>
+            <div className="flex flex-wrap gap-2 mt-2 mb-2">
+              {item.tags?.map(tag => (
+                <Badge key={tag} variant="secondary" className="gap-1">
+                  {tag}
+                  <button onClick={() => removeTag(tag)} className="hover:text-destructive">×</button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add tag... (or leave empty for auto-generation)"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag(e.currentTarget.value);
+                    e.currentTarget.value = '';
+                  }
+                }}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -447,7 +471,10 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
         .from('article-images')
         .getPublicUrl(filePath);
 
-      updateItem(itemId, 'image_url', publicUrl);
+      // Support multiple images by adding to array
+      const item = items.find(i => i.id === itemId);
+      const currentImages = item?.image_urls || [];
+      updateItem(itemId, 'image_urls', [...currentImages, publicUrl]);
 
       toast({
         title: "Success",
@@ -495,7 +522,7 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
         prompt: item.prompt || "",
         description_top: item.description_top,
         description_bottom: item.description_bottom,
-        image_url: item.image_url,
+        image_urls: item.image_urls || (item.image_url ? [item.image_url] : []),
         difficulty: item.difficulty,
         ai_models: item.ai_models || ['all'],
         use_case: item.use_case,

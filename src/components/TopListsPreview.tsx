@@ -22,13 +22,16 @@ export const TopListsPreview = ({ items }: TopListsPreviewProps) => {
               </div>
             )}
 
-            {item.image_url && (
-              <div className="my-4">
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="rounded-lg max-w-full h-auto"
-                />
+            {item.image_urls && item.image_urls.length > 0 && (
+              <div className="my-4 space-y-2">
+                {item.image_urls.map((url, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={url}
+                    alt={`${item.title} - Image ${imgIndex + 1}`}
+                    className="rounded-lg max-w-full h-auto"
+                  />
+                ))}
               </div>
             )}
 
