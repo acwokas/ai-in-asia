@@ -31,13 +31,13 @@ const PolicyRegion = () => {
     queryFn: async () => {
       if (!region) return [];
 
-      // Special handling for Pan-Asia: show Pan-Asia, North Asia, and South Asia overviews
+      // Special handling for Pan-Asia: show Pan-Asia, North Asia, ASEAN, and South Asia overviews
       if (region === 'pan-asia') {
-        // Get category IDs for the three regional overviews
+        // Get category IDs for the four regional overviews
         const { data: panCategories, error: panCatError } = await supabase
           .from('categories')
           .select('id, slug')
-          .in('slug', ['pan-asia', 'north-asia', 'south-asia']);
+          .in('slug', ['pan-asia', 'north-asia', 'asean', 'south-asia']);
 
         if (panCatError) throw panCatError;
         if (!panCategories || panCategories.length === 0) return [];
