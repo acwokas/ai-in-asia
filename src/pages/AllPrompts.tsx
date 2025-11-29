@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { TopListItem } from "@/components/TopListsEditor";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
+import { PromptAndGoSponsor } from "@/components/PromptAndGoSponsor";
 
 const AllPrompts = () => {
   const { toast } = useToast();
@@ -131,8 +132,11 @@ const AllPrompts = () => {
             </p>
           </div>
 
-          {/* Filters */}
-          <Card className="mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Filters and Prompts */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Filters */}
+              <Card>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
@@ -202,10 +206,10 @@ const AllPrompts = () => {
             </CardContent>
           </Card>
 
-          {/* Prompts Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
+              {/* Prompts Grid */}
+              {isLoading ? (
+                <div className="grid grid-cols-1 gap-6">
+                  {[...Array(6)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="pt-6 space-y-4">
                     <Skeleton className="h-6 w-3/4" />
@@ -214,86 +218,93 @@ const AllPrompts = () => {
                       <Skeleton className="h-6 w-20" />
                       <Skeleton className="h-6 w-20" />
                     </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              ) : filteredPrompts.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    <p>No prompts match your filters. Try adjusting your search criteria.</p>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 gap-6">
+                  {filteredPrompts.map((prompt) => (
+                    <Card key={prompt.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-lg font-semibold flex-1">{prompt.title}</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyPrompt(prompt.prompt, prompt.id)}
+                          >
+                            {copiedId === prompt.id ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {prompt.difficulty && (
+                            <Badge variant="outline" className="capitalize">
+                              {prompt.difficulty}
+                            </Badge>
+                          )}
+                          {prompt.use_case && (
+                            <Badge variant="secondary" className="capitalize">
+                              {prompt.use_case}
+                            </Badge>
+                          )}
+                          {prompt.ai_models?.slice(0, 2).map(model => (
+                            <Badge key={model} variant="default" className="capitalize">
+                              {model}
+                            </Badge>
+                          ))}
+                          {prompt.tags?.slice(0, 3).map(tag => (
+                            <Badge key={tag} variant="outline">
+                              #{tag}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <pre className="whitespace-pre-wrap font-mono text-xs line-clamp-4">
+                            {prompt.prompt}
+                          </pre>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <Link
+                            to={`/${prompt.categorySlug}/${prompt.articleSlug}`}
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            From: {prompt.articleTitle}
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Prompt and Go Banner at Bottom */}
+              <div className="mt-12">
+                <div className="text-sm text-muted-foreground mb-2 text-center">
+                  In partnership with
+                </div>
+                <PromptAndGoBanner />
+              </div>
             </div>
-          ) : filteredPrompts.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                <p>No prompts match your filters. Try adjusting your search criteria.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredPrompts.map((prompt) => (
-                <Card key={prompt.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6 space-y-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-lg font-semibold flex-1">{prompt.title}</h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyPrompt(prompt.prompt, prompt.id)}
-                      >
-                        {copiedId === prompt.id ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {prompt.difficulty && (
-                        <Badge variant="outline" className="capitalize">
-                          {prompt.difficulty}
-                        </Badge>
-                      )}
-                      {prompt.use_case && (
-                        <Badge variant="secondary" className="capitalize">
-                          {prompt.use_case}
-                        </Badge>
-                      )}
-                      {prompt.ai_models?.slice(0, 2).map(model => (
-                        <Badge key={model} variant="default" className="capitalize">
-                          {model}
-                        </Badge>
-                      ))}
-                      {prompt.tags?.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <pre className="whitespace-pre-wrap font-mono text-xs line-clamp-4">
-                        {prompt.prompt}
-                      </pre>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <Link
-                        to={`/${prompt.categorySlug}/${prompt.articleSlug}`}
-                        className="text-sm text-primary hover:underline flex items-center gap-1"
-                      >
-                        From: {prompt.articleTitle}
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            {/* Right Column: Sponsor */}
+            <div className="lg:col-span-4">
+              <PromptAndGoSponsor />
             </div>
-          )}
-
-          {/* Prompt and Go Banner at Bottom */}
-          <div className="mt-12">
-            <div className="text-sm text-muted-foreground mb-2 text-center">
-              In partnership with
-            </div>
-            <PromptAndGoBanner />
           </div>
         </div>
       </main>
