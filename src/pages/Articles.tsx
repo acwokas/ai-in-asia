@@ -116,7 +116,8 @@ const Articles = () => {
 
       // Apply filters
       if (searchQuery) {
-        query = query.ilike("title", `%${searchQuery}%`);
+        const term = `%${searchQuery}%`;
+        query = query.or(`title.ilike.${term},slug.ilike.${term}`);
       }
 
       if (statusFilter !== "all") {
