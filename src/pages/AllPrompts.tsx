@@ -131,14 +131,6 @@ const AllPrompts = () => {
             </p>
           </div>
 
-          {/* Prompt and Go Banner */}
-          <div className="mb-8">
-            <div className="text-sm text-muted-foreground mb-2 text-center">
-              In partnership with
-            </div>
-            <PromptAndGoBanner />
-          </div>
-
           {/* Filters */}
           <Card className="mb-8">
             <CardContent className="pt-6">
@@ -295,6 +287,14 @@ const AllPrompts = () => {
               ))}
             </div>
           )}
+
+          {/* Prompt and Go Banner at Bottom */}
+          <div className="mt-12">
+            <div className="text-sm text-muted-foreground mb-2 text-center">
+              In partnership with
+            </div>
+            <PromptAndGoBanner />
+          </div>
         </div>
       </main>
 
