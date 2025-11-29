@@ -76,11 +76,13 @@ const SEOTools = () => {
     },
   });
 
-  // Poll queue status if job is running
-  const { data: queueStatus } = useQuery({
+  // Real-time queue status tracking
+  const [queueStatus, setQueueStatus] = useState<any>(null);
+
+  // Fetch initial queue status
+  const { data: initialQueueStatus } = useQuery({
     queryKey: ["seo-queue-status", queueJobId],
     enabled: !!queueJobId,
-    refetchInterval: 3000, // Poll every 3 seconds
     queryFn: async () => {
       if (!queueJobId) return null;
       const { data } = await supabase
@@ -91,6 +93,39 @@ const SEOTools = () => {
       return data;
     },
   });
+
+  // Update state when initial data loads
+  useEffect(() => {
+    if (initialQueueStatus) {
+      setQueueStatus(initialQueueStatus);
+    }
+  }, [initialQueueStatus]);
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!queueJobId) return;
+
+    const channel = supabase
+      .channel('bulk-queue-progress')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bulk_operation_queue',
+          filter: `id=eq.${queueJobId}`,
+        },
+        (payload) => {
+          console.log('Real-time queue update:', payload.new);
+          setQueueStatus(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queueJobId]);
 
   // Reset job ID when completed
   useEffect(() => {
