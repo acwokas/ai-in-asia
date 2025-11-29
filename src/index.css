@@ -193,6 +193,20 @@ All colors MUST be HSL.
     font-weight: 600;
     letter-spacing: 0.02em;
   }
+
+  /* Ensure clear visual hierarchy for headings inside article content,
+     including Top Lists intro/outro blocks rendered within .prose */
+  .prose h1 {
+    @apply text-4xl md:text-5xl mt-10 mb-6;
+  }
+
+  .prose h2 {
+    @apply text-3xl md:text-4xl mt-8 mb-4;
+  }
+
+  .prose h3 {
+    @apply text-2xl md:text-3xl mt-6 mb-3;
+  }
   
   .youtube-embed {
     position: relative;
