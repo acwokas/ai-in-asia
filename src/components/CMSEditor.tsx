@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
 import RichTextEditor from "@/components/RichTextEditor";
 import { PolicyArticleEditor } from "@/components/PolicyArticleEditor";
+import { TopListsEditor } from "@/components/TopListsEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
@@ -154,6 +155,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   );
   const [topicTags, setTopicTags] = useState<string[]>(
     Array.isArray(initialData?.topic_tags) ? initialData.topic_tags : []
+  );
+  
+  // Top Lists specific state
+  const [topListItems, setTopListItems] = useState(
+    Array.isArray(initialData?.top_list_items) ? initialData.top_list_items : []
   );
   
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -866,6 +872,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         local_resources: localResources,
         topic_tags: topicTags,
       }),
+      // Top Lists fields
+      ...(articleType === 'top_lists' && {
+        top_list_items: topListItems,
+      }),
     };
     onSave?.(data);
   };
@@ -873,10 +883,15 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   return (
     <div className="max-w-6xl mx-auto">
       <Tabs defaultValue="content" className="space-y-6">
-        <TabsList className={cn("grid w-full", articleType === 'policy_article' ? "grid-cols-4" : "grid-cols-3")}>
+        <TabsList className={cn("grid w-full", 
+          articleType === 'policy_article' || articleType === 'top_lists' ? "grid-cols-4" : "grid-cols-3"
+        )}>
           <TabsTrigger value="content">Content</TabsTrigger>
           {articleType === 'policy_article' && (
             <TabsTrigger value="policy">Policy Data</TabsTrigger>
+          )}
+          {articleType === 'top_lists' && (
+            <TabsTrigger value="toplists">Top Lists</TabsTrigger>
           )}
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -951,11 +966,12 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <SelectItem value="interview">Interview</SelectItem>
                     <SelectItem value="review">Review</SelectItem>
                     <SelectItem value="explainer">Explainer</SelectItem>
-                    <SelectItem value="podcast">Podcast</SelectItem>
-                    <SelectItem value="site_furniture">Site Furniture</SelectItem>
-                    <SelectItem value="policy_article">Policy Article</SelectItem>
-                  </SelectContent>
-                </Select>
+            <SelectItem value="podcast">Podcast</SelectItem>
+            <SelectItem value="site_furniture">Site Furniture</SelectItem>
+            <SelectItem value="policy_article">Policy Article</SelectItem>
+            <SelectItem value="top_lists">Top Lists</SelectItem>
+          </SelectContent>
+        </Select>
               </div>
 
               <div>
@@ -1227,6 +1243,29 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 Policy Data tab is only available for Policy Articles
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Top Lists Tab */}
+        <TabsContent value="toplists" className="space-y-6">
+          {articleType === 'top_lists' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Lists Items</CardTitle>
+                <CardDescription>
+                  Create a numbered list with copyable prompts and optional images
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TopListsEditor items={topListItems} onChange={setTopListItems} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-muted-foreground">
+                Top Lists tab is only available for Top Lists articles
               </CardContent>
             </Card>
           )}

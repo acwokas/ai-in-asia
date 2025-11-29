@@ -346,6 +346,7 @@ export type Database = {
           sticky: boolean | null
           title: string
           tldr_snapshot: Json | null
+          top_list_items: Json | null
           topic_tags: string[] | null
           updated_at: string
           updated_by: string | null
@@ -410,6 +411,7 @@ export type Database = {
           sticky?: boolean | null
           title: string
           tldr_snapshot?: Json | null
+          top_list_items?: Json | null
           topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
@@ -474,6 +476,7 @@ export type Database = {
           sticky?: boolean | null
           title?: string
           tldr_snapshot?: Json | null
+          top_list_items?: Json | null
           topic_tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
@@ -2404,6 +2407,7 @@ export type Database = {
         | "video"
         | "event"
         | "policy_article"
+        | "top_lists"
       newsletter_status: "draft" | "scheduled" | "sending" | "sent" | "failed"
       tool_prompt_category: "tool" | "prompt"
     }
@@ -2544,6 +2548,7 @@ export const Constants = {
         "video",
         "event",
         "policy_article",
+        "top_lists",
       ],
       newsletter_status: ["draft", "scheduled", "sending", "sent", "failed"],
       tool_prompt_category: ["tool", "prompt"],

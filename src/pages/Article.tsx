@@ -12,6 +12,7 @@ import GoogleAd, { InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
+import { TopListsContent } from "@/components/TopListsContent";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
@@ -1236,6 +1237,8 @@ const Article = () => {
             <div className="prose prose-lg max-w-none">
               {article.article_type === 'policy_article' ? (
                 <PolicyArticleContent article={article} />
+              ) : article.article_type === 'top_lists' && Array.isArray(article.top_list_items) ? (
+                <TopListsContent items={article.top_list_items as any} />
               ) : (
                 renderContent(article.content)
               )}
