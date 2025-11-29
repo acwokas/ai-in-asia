@@ -108,9 +108,18 @@ const MigrateTopListImages = () => {
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {result.imageUrls.map((url: string, idx: number) => (
                         <div key={idx} className="text-xs font-mono bg-muted p-2 rounded break-all">
-                          {idx + 1}. {url}
+                          <span className="mr-1">{idx + 1}.</span>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-primary hover:text-primary/80 break-all"
+                          >
+                            {url}
+                          </a>
                         </div>
                       ))}
+
                     </div>
                   </div>
                 )}
