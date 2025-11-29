@@ -31,10 +31,18 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
   const getHtmlContent = (content?: string) => {
     if (!content) return undefined;
-    const html = convertSimpleMarkdownToHtml(content);
+
+    // Normalise manual "•" bullets into proper markdown lists so intro/outro behave the same
+    const normalised = content
+      .split("\n")
+      .map((line) =>
+        line.trimStart().startsWith("• ") ? line.replace("• ", "- ") : line
+      )
+      .join("\n");
+
+    const html = convertSimpleMarkdownToHtml(normalised);
     return { __html: html };
   };
-
   // Filter items based on search query
   useEffect(() => {
     if (!searchQuery.trim()) {
