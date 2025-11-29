@@ -32,10 +32,15 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
   const getHtmlContent = (content?: string) => {
     if (!content) return undefined;
 
-    // Check if content is PURE HTML (all content wrapped in HTML tags, no loose markdown)
-    const isPureHtml = /<\/?(div|p|span|article|section|header|footer|main|aside)[\s>]/i.test(content) && 
-                       !/#+ /.test(content) && // No markdown headers
-                       !/^[-•]\s+/m.test(content); // No markdown bullets
+    // Check for markdown syntax (including inside HTML tags)
+    const hasMarkdownBullets = /(?:^|>)\s*[-•]\s+/m.test(content);
+    const hasMarkdownHeaders = /#+ /.test(content);
+    const hasHtmlTags = /<\/?(div|p|span|ul|ol|li|article|section|header|footer|main|aside)[\s>]/i.test(content);
+    
+    // If content has HTML tags AND markdown syntax, it's mixed - process through markdown
+    // If content has markdown syntax without HTML tags, process through markdown
+    // Only treat as pure HTML if it has HTML tags but NO markdown syntax
+    const isPureHtml = hasHtmlTags && !hasMarkdownBullets && !hasMarkdownHeaders;
     
     if (isPureHtml) {
       return { __html: content };
