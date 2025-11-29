@@ -375,19 +375,36 @@ const Admin = () => {
         return;
       }
 
-      const response = await supabase.functions.invoke('calculate-reading-times', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      let totalProcessed = 0;
+      let hasMore = true;
 
-      if (response.error) {
-        throw response.error;
+      // Process in batches until all done
+      while (hasMore) {
+        const response = await supabase.functions.invoke('calculate-reading-times', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.error) {
+          throw response.error;
+        }
+
+        totalProcessed += response.data.processed || 0;
+        hasMore = response.data.needsAnotherRun || false;
+
+        // Show progress
+        if (hasMore) {
+          toast({
+            title: "Processing...",
+            description: `Processed ${totalProcessed} articles. ${response.data.remaining} remaining...`,
+          });
+        }
       }
 
       toast({
-        title: "Success",
-        description: response.data.message || "Reading times calculated successfully",
+        title: "Complete!",
+        description: `Successfully calculated reading times for ${totalProcessed} articles`,
       });
       
       // Refresh the page data

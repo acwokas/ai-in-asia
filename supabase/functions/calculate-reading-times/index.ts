@@ -29,15 +29,25 @@ Deno.serve(async (req) => {
     
     await requireAdmin(supabase, user.id);
 
-    // Get all articles
+    // Get count of articles needing processing
+    const { count: totalCount } = await supabase
+      .from('articles')
+      .select('id', { count: 'exact', head: true })
+      .is('reading_time_minutes', null);
+
+    console.log(`Total articles needing processing: ${totalCount || 0}`);
+
+    // Process in batches of 50 to avoid timeout
+    const batchSize = 50;
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, content, title')
-      .is('reading_time_minutes', null);
+      .is('reading_time_minutes', null)
+      .limit(batchSize);
 
     if (fetchError) throw fetchError;
 
-    console.log(`Processing ${articles?.length || 0} articles`);
+    console.log(`Processing batch of ${articles?.length || 0} articles`);
 
     const results = [];
     
@@ -65,11 +75,16 @@ Deno.serve(async (req) => {
 
     const successCount = results.filter(r => r.status === 'success').length;
     const errorCount = results.filter(r => r.status === 'error').length;
+    const remaining = (totalCount || 0) - (articles?.length || 0);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Processed ${articles?.length || 0} articles. ${successCount} successful, ${errorCount} failed.`,
+        message: `Processed ${articles?.length || 0} articles in this batch. ${successCount} successful, ${errorCount} failed. ${remaining} articles remaining.`,
+        processed: articles?.length || 0,
+        remaining: remaining,
+        totalCount: totalCount || 0,
+        needsAnotherRun: remaining > 0,
         results
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
