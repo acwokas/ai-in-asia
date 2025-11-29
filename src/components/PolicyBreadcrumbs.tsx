@@ -9,10 +9,10 @@ interface PolicyBreadcrumbsProps {
 
 const PolicyBreadcrumbs = ({ regionName, regionSlug, articleTitle }: PolicyBreadcrumbsProps) => {
   return (
-    <nav className="mb-6 border-b flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+    <nav className="mb-6 pb-3 border-b flex items-center gap-2 text-sm relative z-30" aria-label="Breadcrumb">
       <Link 
         to="/ai-policy-atlas" 
-        className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline"
+        className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline py-1"
       >
         AI Policy Atlas
       </Link>
@@ -23,12 +23,12 @@ const PolicyBreadcrumbs = ({ regionName, regionSlug, articleTitle }: PolicyBread
           {articleTitle ? (
             <Link 
               to={`/ai-policy-atlas/${regionSlug}`}
-              className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline"
+              className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline py-1"
             >
               {regionName}
             </Link>
           ) : (
-            <span className="text-foreground font-semibold">{regionName}</span>
+            <span className="text-foreground font-semibold py-1">{regionName}</span>
           )}
         </>
       )}
