@@ -115,6 +115,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       : "09:00"
   );
   const [isTrending, setIsTrending] = useState(initialData?.is_trending ?? false);
+  const [homepageTrending, setHomepageTrending] = useState(initialData?.homepage_trending ?? false);
   const [selectedText, setSelectedText] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showAuthorDialog, setShowAuthorDialog] = useState(false);
@@ -905,6 +906,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       featured_on_homepage: featuredOnHomepage,
       sticky,
       is_trending: isTrending,
+      homepage_trending: homepageTrending,
       author_id: finalAuthorId || null,
       primary_category_id: primaryCategoryId || null,
       scheduled_for: scheduledDateTime,
@@ -1632,6 +1634,20 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   id="trending"
                   checked={isTrending}
                   onCheckedChange={setIsTrending}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="global-trending">Add to Global Trending</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Show this article in the global trending list (top left of homepage)
+                  </p>
+                </div>
+                <Switch
+                  id="global-trending"
+                  checked={homepageTrending}
+                  onCheckedChange={setHomepageTrending}
                 />
               </div>
 
