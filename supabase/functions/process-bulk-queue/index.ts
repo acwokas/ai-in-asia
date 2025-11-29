@@ -12,19 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    // SECURITY: Validate cron secret to prevent unauthorized access
-    const cronSecret = Deno.env.get("CRON_SECRET");
-    const providedSecret = req.headers.get("X-Cron-Secret");
-    
-    if (!cronSecret || providedSecret !== cronSecret) {
-      console.error("Unauthorized access attempt to process-bulk-queue");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
 
