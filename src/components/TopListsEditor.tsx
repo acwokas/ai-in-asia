@@ -756,7 +756,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
             <CardTitle>Article Content (Live Preview)</CardTitle>
           </CardHeader>
           <CardContent>
-            <TopListsPreview items={items} />
+          <TopListsPreview items={items} intro={intro} outro={outro} />
           </CardContent>
         </Card>
       )}
@@ -802,7 +802,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
               Preview how your top list will appear to readers
             </DialogDescription>
           </DialogHeader>
-          <TopListsPreview items={items} />
+          <TopListsPreview items={items} intro={intro} outro={outro} />
         </DialogContent>
       </Dialog>
     </div>
