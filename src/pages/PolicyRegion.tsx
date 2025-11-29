@@ -29,7 +29,55 @@ const PolicyRegion = () => {
   const { data: articles } = useQuery({
     queryKey: ['policy-articles', region],
     queryFn: async () => {
-      // First get the category ID for this region
+      if (!region) return [];
+
+      // Special handling for Pan-Asia: show Pan-Asia, North Asia, and South Asia overviews
+      if (region === 'pan-asia') {
+        // Get category IDs for the three regional overviews
+        const { data: panCategories, error: panCatError } = await supabase
+          .from('categories')
+          .select('id, slug')
+          .in('slug', ['pan-asia', 'north-asia', 'south-asia']);
+
+        if (panCatError) throw panCatError;
+        if (!panCategories || panCategories.length === 0) return [];
+
+        const categoryIds = panCategories.map(c => c.id);
+
+        // Get all article IDs linked to any of these categories via the junction table
+        const { data: articleCategories, error: acError } = await supabase
+          .from('article_categories')
+          .select('article_id, category_id')
+          .in('category_id', categoryIds);
+
+        if (acError) throw acError;
+        if (!articleCategories || articleCategories.length === 0) return [];
+
+        const articleIds = Array.from(new Set(articleCategories.map(ac => ac.article_id)));
+
+        const { data, error } = await supabase
+          .from('articles')
+          .select(`
+            *,
+            authors:author_id (
+              name,
+              slug
+            ),
+            categories:primary_category_id (
+              name,
+              slug
+            )
+          `)
+          .eq('article_type', 'policy_article')
+          .eq('status', 'published')
+          .in('id', articleIds)
+          .order('updated_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Default behaviour for other regions: articles linked to this region via junction table
       const { data: categoryData, error: categoryError } = await supabase
         .from('categories')
         .select('id')
@@ -39,7 +87,6 @@ const PolicyRegion = () => {
       if (categoryError) throw categoryError;
       if (!categoryData) return [];
       
-      // Get articles via the junction table to support multi-category assignments
       const { data: articleCategories, error: acError } = await supabase
         .from('article_categories')
         .select('article_id')
@@ -50,7 +97,6 @@ const PolicyRegion = () => {
       
       const articleIds = articleCategories.map(ac => ac.article_id);
       
-      // Then get the full article data
       const { data, error } = await supabase
         .from('articles')
         .select(`
