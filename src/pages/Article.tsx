@@ -1239,7 +1239,12 @@ const Article = () => {
               {article.article_type === 'policy_article' ? (
                 <PolicyArticleContent article={article} />
               ) : article.article_type === 'top_lists' && Array.isArray(article.top_list_items) ? (
-                <TopListsContent items={article.top_list_items as any} articleId={article.id} />
+                <TopListsContent
+                  items={article.top_list_items as any}
+                  articleId={article.id}
+                  introHtml={article.top_list_intro as string | undefined}
+                  outroHtml={article.top_list_outro as string | undefined}
+                />
               ) : (
                 renderContent(article.content)
               )}

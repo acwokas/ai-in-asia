@@ -11,9 +11,11 @@ import { TopListItem } from "./TopListsEditor";
 interface TopListsContentProps {
   items: TopListItem[];
   articleId?: string;
+  introHtml?: string;
+  outroHtml?: string;
 }
 
-export const TopListsContent = ({ items, articleId }: TopListsContentProps) => {
+export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopListsContentProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -148,6 +150,14 @@ export const TopListsContent = ({ items, articleId }: TopListsContentProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Intro block above prompts list */}
+      {introHtml && (
+        <div
+          className="prose prose-lg max-w-none border-b pb-4 mb-4"
+          dangerouslySetInnerHTML={{ __html: introHtml }}
+        />
+      )}
+
       {/* Search and Actions Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b pb-4">
         <div className="relative flex-1 max-w-md">
@@ -218,6 +228,14 @@ export const TopListsContent = ({ items, articleId }: TopListsContentProps) => {
                   <div className="prose prose-sm max-w-none">
                     <p>{item.description_top}</p>
                   </div>
+                )}
+
+                {/* Optional rich content box between sections */}
+                {item.contentBox && (
+                  <div
+                    className="prose prose-sm max-w-none my-4"
+                    dangerouslySetInnerHTML={{ __html: item.contentBox }}
+                  />
                 )}
 
                 {item.image_urls && item.image_urls.length > 0 && (
