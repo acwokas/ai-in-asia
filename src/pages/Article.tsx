@@ -127,59 +127,10 @@ const Article = () => {
     }
   }, [article?.id]);
 
-  // Reading position tracking
+  // Ensure page always loads at top
   useEffect(() => {
-    if (!article || !cleanSlug) return;
-
-    const READING_POSITION_KEY = `reading-position-${cleanSlug}`;
-    
-    // Scroll to top first on new page load
     window.scrollTo(0, 0);
-    
-    // Then restore reading position if exists (after a delay)
-    const savedPosition = localStorage.getItem(READING_POSITION_KEY);
-    if (savedPosition) {
-      const position = parseInt(savedPosition);
-      // Longer delay to ensure content is fully loaded
-      setTimeout(() => {
-        window.scrollTo({ top: position, behavior: 'smooth' });
-      }, 500);
-    }
-
-    // Save reading position on scroll
-    const savePosition = () => {
-      localStorage.setItem(READING_POSITION_KEY, window.scrollY.toString());
-    };
-
-    const throttledSave = (() => {
-      let timeout: NodeJS.Timeout;
-      return () => {
-        clearTimeout(timeout);
-        timeout = setTimeout(savePosition, 1000);
-      };
-    })();
-
-    window.addEventListener('scroll', throttledSave);
-    
-    // Debug log for article interaction handlers
-    console.log('[Article] Interaction handlers mounted');
-
-    // Clear position when article is finished (scrolled to bottom)
-    const clearOnFinish = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollTop >= docHeight - 100) {
-        localStorage.removeItem(READING_POSITION_KEY);
-      }
-    };
-    
-    window.addEventListener('scroll', clearOnFinish);
-
-    return () => {
-      window.removeEventListener('scroll', throttledSave);
-      window.removeEventListener('scroll', clearOnFinish);
-    };
-  }, [article, cleanSlug]);
+  }, [article?.id]);
 
   // Handle copy functionality for prompt boxes
   useEffect(() => {
