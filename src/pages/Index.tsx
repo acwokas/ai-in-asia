@@ -223,10 +223,27 @@ const Index = () => {
   // Combine trending featured pick with trending articles - ensure we have arrays
   const trendingArticles = (() => {
     if (!baseTrendingArticles || baseTrendingArticles.length === 0) return [];
-    if (trendingFeatured) {
-      return [trendingFeatured, ...baseTrendingArticles.filter((a: any) => a.id !== trendingFeatured.id)];
+
+    // Only allow published, homepage-trending articles into this block
+    const validBase = baseTrendingArticles.filter((a: any) => 
+      a && a.status === "published" && a.homepage_trending
+    );
+
+    const validTrendingFeatured =
+      trendingFeatured &&
+      (trendingFeatured as any).status === "published" &&
+      (trendingFeatured as any).homepage_trending
+        ? trendingFeatured
+        : null;
+
+    if (validTrendingFeatured) {
+      return [
+        validTrendingFeatured,
+        ...validBase.filter((a: any) => a.id !== (validTrendingFeatured as any).id),
+      ];
     }
-    return baseTrendingArticles;
+
+    return validBase;
   })();
 
 
