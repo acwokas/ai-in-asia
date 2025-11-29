@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Upload, Copy, FileJson, FileSpreadsheet } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Trash2, Upload, Copy, FileJson, FileSpreadsheet, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -75,6 +76,8 @@ interface SortableItemProps {
 }
 
 const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpload, uploadingImageFor }: SortableItemProps) => {
+  const [isContentBoxOpen, setIsContentBoxOpen] = useState(false);
+  
   const {
     attributes,
     listeners,
@@ -458,14 +461,25 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
           </div>
 
           {/* Content Box Between Items */}
-          <div>
-            <Label>Content Box (Insert Between Items) - Optional</Label>
-            <RichTextEditor
-              value={item.contentBox || ''}
-              onChange={(value) => onUpdate(item.id, 'contentBox', value)}
-              placeholder="Add formatted content that will appear after this item..."
-            />
-          </div>
+          <Collapsible open={isContentBoxOpen} onOpenChange={setIsContentBoxOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                <Label className="cursor-pointer">Content Box (Insert Between Items) - Optional</Label>
+                {isContentBoxOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <RichTextEditor
+                value={item.contentBox || ''}
+                onChange={(value) => onUpdate(item.id, 'contentBox', value)}
+                placeholder="Add formatted content that will appear after this item..."
+              />
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
     </div>
