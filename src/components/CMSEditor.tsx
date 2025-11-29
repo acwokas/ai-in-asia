@@ -1011,19 +1011,12 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="article">Article</SelectItem>
-                    <SelectItem value="voice">Voice</SelectItem>
-                    <SelectItem value="guide">Guide</SelectItem>
                     <SelectItem value="tool">Tool</SelectItem>
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="event">Event</SelectItem>
-                    <SelectItem value="interview">Interview</SelectItem>
-                    <SelectItem value="review">Review</SelectItem>
-                    <SelectItem value="explainer">Explainer</SelectItem>
-            <SelectItem value="podcast">Podcast</SelectItem>
-            <SelectItem value="site_furniture">Site Furniture</SelectItem>
-            <SelectItem value="policy_article">Policy Article</SelectItem>
-            <SelectItem value="top_lists">Top Lists</SelectItem>
-          </SelectContent>
+                    <SelectItem value="policy_article">Policy Article</SelectItem>
+                    <SelectItem value="top_lists">Top Lists</SelectItem>
+                  </SelectContent>
         </Select>
               </div>
 
