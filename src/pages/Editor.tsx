@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import CMSEditor from "@/components/CMSEditor";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Home } from "lucide-react";
+import { calculateReadingTime } from "@/lib/readingTime";
 
 const Editor = () => {
   const [searchParams] = useSearchParams();
@@ -74,6 +75,9 @@ const Editor = () => {
 
   const handleSave = async (data: any) => {
     try {
+      // Calculate reading time automatically
+      const readingTime = calculateReadingTime(data.content || [], data.title || '');
+      
       if (articleId) {
         // Check if status is changing to published
         const wasPublished = article?.status === 'published';
@@ -83,6 +87,7 @@ const Editor = () => {
           .from("articles")
           .update({
             ...data,
+            reading_time_minutes: readingTime,
             updated_by: user.id,
           })
           .eq("id", articleId);
@@ -151,6 +156,7 @@ const Editor = () => {
           .from("articles")
           .insert({
             ...data,
+            reading_time_minutes: readingTime,
             created_by: user.id,
             updated_by: user.id,
           })
