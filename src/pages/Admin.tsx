@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench, Link2, Activity, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
@@ -35,6 +36,7 @@ const Admin = () => {
   const [cleaningMarkup, setCleaningMarkup] = useState(false);
   const [refreshingContent, setRefreshingContent] = useState(false);
   const [calculatingReadingTimes, setCalculatingReadingTimes] = useState(false);
+  const [readingTimeProgress, setReadingTimeProgress] = useState({ current: 0, total: 0 });
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -364,6 +366,8 @@ const Admin = () => {
   const handleCalculateReadingTimes = async () => {
     try {
       setCalculatingReadingTimes(true);
+      setReadingTimeProgress({ current: 0, total: 0 });
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -377,6 +381,7 @@ const Admin = () => {
 
       let totalProcessed = 0;
       let hasMore = true;
+      let totalCount = 0;
 
       // Process in batches until all done
       while (hasMore) {
@@ -391,15 +396,17 @@ const Admin = () => {
         }
 
         totalProcessed += response.data.processed || 0;
+        totalCount = response.data.totalCount || totalProcessed;
         hasMore = response.data.needsAnotherRun || false;
 
-        // Show progress
-        if (hasMore) {
-          toast({
-            title: "Processing...",
-            description: `Processed ${totalProcessed} articles. ${response.data.remaining} remaining...`,
-          });
-        }
+        // Update progress bar
+        setReadingTimeProgress({
+          current: totalProcessed,
+          total: totalCount
+        });
+
+        // Brief pause to let UI update
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       toast({
@@ -409,6 +416,7 @@ const Admin = () => {
       
       // Refresh the page data
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      setReadingTimeProgress({ current: 0, total: 0 });
     } catch (error: any) {
       console.error('Error:', error);
       toast({
@@ -416,6 +424,7 @@ const Admin = () => {
         description: error.message || "Failed to calculate reading times",
         variant: "destructive",
       });
+      setReadingTimeProgress({ current: 0, total: 0 });
     } finally {
       setCalculatingReadingTimes(false);
     }
@@ -1217,24 +1226,38 @@ const Admin = () => {
                     <Button onClick={() => navigate("/admin/assign-categories")} variant="outline" className="justify-start">
                       Auto-Assign Categories
                     </Button>
-                    <Button 
-                      onClick={handleCalculateReadingTimes} 
-                      variant="outline" 
-                      className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
-                      disabled={calculatingReadingTimes}
-                    >
-                      {calculatingReadingTimes ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="h-4 w-4 mr-2" />
-                          Calculate Reading Times
-                        </>
+                    <div className="col-span-full">
+                      <Button 
+                        onClick={handleCalculateReadingTimes} 
+                        variant="outline" 
+                        className="w-full justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
+                        disabled={calculatingReadingTimes}
+                      >
+                        {calculatingReadingTimes ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Calculating...
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-4 w-4 mr-2" />
+                            Calculate Reading Times
+                          </>
+                        )}
+                      </Button>
+                      {calculatingReadingTimes && readingTimeProgress.total > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>Processing articles...</span>
+                            <span>{readingTimeProgress.current} / {readingTimeProgress.total}</span>
+                          </div>
+                          <Progress 
+                            value={(readingTimeProgress.current / readingTimeProgress.total) * 100} 
+                            className="h-2"
+                          />
+                        </div>
                       )}
-                    </Button>
+                    </div>
                   </div>
                 </div>
 
