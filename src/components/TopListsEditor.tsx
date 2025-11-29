@@ -641,6 +641,18 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Article Content Live Preview at Top */}
+      {items.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Article Content (Live Preview)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopListsPreview items={items} />
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Top List Items</h3>
         <div className="flex gap-2 flex-wrap">

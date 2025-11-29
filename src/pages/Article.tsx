@@ -1239,16 +1239,7 @@ const Article = () => {
               {article.article_type === 'policy_article' ? (
                 <PolicyArticleContent article={article} />
               ) : article.article_type === 'top_lists' && Array.isArray(article.top_list_items) ? (
-                <>
-                  {/* Prompt and Go Banner for Top Lists */}
-                  <div className="mb-8 not-prose">
-                    <div className="text-sm text-muted-foreground mb-2 text-center">
-                      In partnership with
-                    </div>
-                    <PromptAndGoBanner />
-                  </div>
-                  <TopListsContent items={article.top_list_items as any} articleId={article.id} />
-                </>
+                <TopListsContent items={article.top_list_items as any} articleId={article.id} />
               ) : (
                 renderContent(article.content)
               )}
@@ -1263,8 +1254,8 @@ const Article = () => {
               />
             )}
 
-            {/* Second Ad - After Content, Before Comments */}
-            <InArticleAd />
+            {/* Second Ad - After Content, Before Comments - Not for Top Lists */}
+            {article.article_type !== 'top_lists' && <InArticleAd />}
 
             {/* Article Footer */}
             <footer className="mt-12 pt-8 border-t border-border">
@@ -1403,6 +1394,16 @@ const Article = () => {
                   </a>
                 </div>
               </div>
+            </section>
+          )}
+
+          {/* Prompt and Go Banner for Top Lists - At the very bottom */}
+          {article.article_type === 'top_lists' && (
+            <section className="container mx-auto px-4 max-w-4xl mt-12">
+              <div className="text-sm text-muted-foreground mb-3 text-center">
+                In partnership with
+              </div>
+              <PromptAndGoBanner />
             </section>
           )}
         </main>
