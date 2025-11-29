@@ -1032,7 +1032,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                       .sort((a, b) => {
                         // Priority order for main categories
                         const priorityOrder = ['News', 'Business', 'Life', 'Learn', 'Create', 'Voices'];
-                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas'];
+                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas', 'Anglosphere', 'Global Comparison', 'Latin America', 'Pan-Asia', 'Pan-Pacific'];
                         
                         const aIndex = priorityOrder.indexOf(a.name);
                         const bIndex = priorityOrder.indexOf(b.name);
@@ -1055,7 +1055,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                       })
                       .reduce((acc, category, index, arr) => {
                         // Add separator before policy regions
-                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas'];
+                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas', 'Anglosphere', 'Global Comparison', 'Latin America', 'Pan-Asia', 'Pan-Pacific'];
                         const isFirstPolicy = policyRegions.includes(category.name) && 
                           (index === 0 || !policyRegions.includes(arr[index - 1].name));
                         
