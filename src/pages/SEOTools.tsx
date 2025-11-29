@@ -29,6 +29,8 @@ const SEOTools = () => {
   const [activeFilter, setActiveFilter] = useState<"all" | "need-attention" | "optimized">("all");
   const [isFixingBulk, setIsFixingBulk] = useState(false);
   const [queueJobId, setQueueJobId] = useState<string | null>(null);
+  const [isCalculatingReadingTimes, setIsCalculatingReadingTimes] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     checkAdminStatus();
@@ -201,6 +203,34 @@ const SEOTools = () => {
     }
   };
 
+  const handleCalculateReadingTimes = async () => {
+    try {
+      setIsCalculatingReadingTimes(true);
+      const { data, error } = await supabase.functions.invoke('calculate-reading-times');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Reading Times Calculated!",
+        description: data.message,
+      });
+      
+      // Refetch articles to show updated reading times
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error calculating reading times:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to calculate reading times",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCalculatingReadingTimes(false);
+    }
+  };
+
   if (isAdmin === null || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -245,7 +275,7 @@ const SEOTools = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">SEO Overview</TabsTrigger>
             <TabsTrigger value="issues">Issues & Warnings</TabsTrigger>
@@ -494,6 +524,41 @@ const SEOTools = () => {
                       </Card>
                     );
                   })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Optimization</CardTitle>
+                <CardDescription>Optimize content metadata and reading experience</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-2">Calculate Reading Times</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Automatically calculate and update reading times for all articles based on their content length.
+                        Currently showing "5 min read" as default for articles without calculated times.
+                      </p>
+                      <Button
+                        onClick={handleCalculateReadingTimes}
+                        disabled={isCalculatingReadingTimes}
+                      >
+                        {isCalculatingReadingTimes ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Calculating...
+                          </>
+                        ) : (
+                          'Calculate All Reading Times'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
