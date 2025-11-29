@@ -34,6 +34,7 @@ const Admin = () => {
   const [autoScheduling, setAutoScheduling] = useState(false);
   const [cleaningMarkup, setCleaningMarkup] = useState(false);
   const [refreshingContent, setRefreshingContent] = useState(false);
+  const [calculatingReadingTimes, setCalculatingReadingTimes] = useState(false);
   const [googleAdsSettings, setGoogleAdsSettings] = useState({
     enabled: true,
     client_id: "",
@@ -357,6 +358,49 @@ const Admin = () => {
       });
     } finally {
       setCleaningMarkup(false);
+    }
+  };
+
+  const handleCalculateReadingTimes = async () => {
+    try {
+      setCalculatingReadingTimes(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('calculate-reading-times', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Success",
+        description: response.data.message || "Reading times calculated successfully",
+      });
+      
+      // Refresh the page data
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to calculate reading times",
+        variant: "destructive",
+      });
+    } finally {
+      setCalculatingReadingTimes(false);
     }
   };
 
@@ -1155,6 +1199,24 @@ const Admin = () => {
                     </Button>
                     <Button onClick={() => navigate("/admin/assign-categories")} variant="outline" className="justify-start">
                       Auto-Assign Categories
+                    </Button>
+                    <Button 
+                      onClick={handleCalculateReadingTimes} 
+                      variant="outline" 
+                      className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20"
+                      disabled={calculatingReadingTimes}
+                    >
+                      {calculatingReadingTimes ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Calculating...
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="h-4 w-4 mr-2" />
+                          Calculate Reading Times
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
