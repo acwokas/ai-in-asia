@@ -393,10 +393,8 @@ const Articles = () => {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="unpublished">Unpublished</SelectItem>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="review">In Review</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
             </Select>
@@ -650,9 +648,7 @@ const Articles = () => {
                         <SelectContent>
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="scheduled">Scheduled</SelectItem>
-                          <SelectItem value="review">Review</SelectItem>
                           <SelectItem value="published">Published</SelectItem>
-                          <SelectItem value="unpublished">Unpublished</SelectItem>
                           <SelectItem value="archived">Archived</SelectItem>
                         </SelectContent>
                       </Select>
