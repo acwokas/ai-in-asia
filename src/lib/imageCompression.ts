@@ -50,8 +50,21 @@ export const compressImage = async (
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Draw image on canvas
+        // Detect if image has transparency
+        const isPNG = file.type === 'image/png';
+        const hasTransparency = isPNG; // Assume PNGs may have transparency
+        
+        // Draw image on canvas (preserve transparency)
+        if (!hasTransparency) {
+          // For non-transparent images, fill with white background
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+        }
         ctx.drawImage(img, 0, 0, width, height);
+
+        // Use PNG for transparent images, JPEG for others
+        const outputFormat = hasTransparency ? 'image/png' : 'image/jpeg';
+        const fileExtension = hasTransparency ? '.png' : '.jpg';
 
         // Convert to blob with compression
         canvas.toBlob(
@@ -73,20 +86,21 @@ export const compressImage = async (
               return;
             }
 
-            // Create new file from blob
+            // Create new file from blob, preserving original extension if PNG
+            const newFileName = file.name.replace(/\.[^/.]+$/, fileExtension);
             const compressedFile = new File(
               [blob],
-              file.name.replace(/\.[^/.]+$/, '.jpg'),
+              newFileName,
               {
-                type: 'image/jpeg',
+                type: outputFormat,
                 lastModified: Date.now(),
               }
             );
 
             resolve(compressedFile);
           },
-          'image/jpeg',
-          quality
+          outputFormat,
+          hasTransparency ? 1 : quality // PNG uses lossless compression, so quality doesn't matter
         );
       };
 

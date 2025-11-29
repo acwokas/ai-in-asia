@@ -9,6 +9,13 @@ interface TopListsPreviewProps {
 
 const getHtmlContent = (content?: string) => {
   if (!content) return undefined;
+  
+  // If content already contains HTML tags, use it as-is
+  const looksLikeHtml = /<\/?(ul|ol|li|p|h[1-6]|blockquote|table|strong|em|a)[\s>]/i.test(content);
+  if (looksLikeHtml) {
+    return { __html: content };
+  }
+  
   const html = convertSimpleMarkdownToHtml(content);
   return { __html: html };
 };
@@ -17,7 +24,7 @@ export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) =
   return (
     <div className="space-y-8 p-4">
       {intro && (
-        <div className="prose prose-sm max-w-none mb-8" dangerouslySetInnerHTML={getHtmlContent(intro)} />
+        <div className="prose prose-sm max-w-none mb-8 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4" dangerouslySetInnerHTML={getHtmlContent(intro)} />
       )}
       
       {items.length === 0 ? (
@@ -31,14 +38,14 @@ export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) =
 
             {item.description_top && (
               <div
-                className="prose prose-sm max-w-none"
+                className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                 dangerouslySetInnerHTML={getHtmlContent(item.description_top)}
               />
             )}
 
             {item.contentBox && (
               <div
-                className="prose prose-sm max-w-none my-4"
+                className="prose prose-sm max-w-none my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                 dangerouslySetInnerHTML={getHtmlContent(item.contentBox)}
               />
             )}
@@ -78,7 +85,7 @@ export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) =
 
             {item.description_bottom && (
               <div
-                className="prose prose-sm max-w-none"
+                className="prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4"
                 dangerouslySetInnerHTML={getHtmlContent(item.description_bottom)}
               />
             )}
@@ -87,7 +94,7 @@ export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) =
       )}
       
       {outro && (
-        <div className="prose prose-sm max-w-none mt-8" dangerouslySetInnerHTML={getHtmlContent(outro)} />
+        <div className="prose prose-sm max-w-none mt-8 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:ml-4" dangerouslySetInnerHTML={getHtmlContent(outro)} />
       )}
     </div>
   );
