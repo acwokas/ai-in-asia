@@ -1627,7 +1627,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <div>
                   <Label htmlFor="trending">Add to Trending</Label>
                   <p className="text-xs text-muted-foreground">
-                    Show this article in the trending section on homepage
+                    Show this article in the trending section on its category pages
                   </p>
                 </div>
                 <Switch
