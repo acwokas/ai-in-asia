@@ -173,6 +173,10 @@ ${rewrittenContent.substring(0, 500)}...`;
       if (excerptResponse.ok) {
         const excerptData = await excerptResponse.json();
         excerpt = excerptData.choices[0].message.content.trim();
+        // Enforce 160 character limit
+        if (excerpt.length > 160) {
+          excerpt = excerpt.substring(0, 157) + '...';
+        }
       }
     }
 
