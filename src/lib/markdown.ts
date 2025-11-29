@@ -24,8 +24,7 @@ export const convertSimpleMarkdownToHtml = (markdown: string): string => {
     .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<\/a>')
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1<\/a>')
     .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => `<ul>${match}<\/ul>`)
-    .replace(/\n{2,}/g, "</p><p>")
-    .replace(/\n/g, "<br>");
+    .replace(/\n{2,}/g, "</p><p>");
 
   if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
     html = `<p>${html}</p>`;
