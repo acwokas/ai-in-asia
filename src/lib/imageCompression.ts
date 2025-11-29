@@ -40,7 +40,7 @@ export const compressImage = async (
         canvas.width = width;
         canvas.height = height;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true });
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
@@ -50,16 +50,19 @@ export const compressImage = async (
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Detect if image has transparency
+        // Detect if image has transparency by checking file type
         const isPNG = file.type === 'image/png';
-        const hasTransparency = isPNG; // Assume PNGs may have transparency
+        const isGIF = file.type === 'image/gif';
+        const isWebP = file.type === 'image/webp';
+        const hasTransparency = isPNG || isGIF || isWebP;
         
-        // Draw image on canvas (preserve transparency)
+        // For non-transparent formats, fill with white background
         if (!hasTransparency) {
-          // For non-transparent images, fill with white background
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(0, 0, width, height);
         }
+        // For transparent formats, don't fill - let transparency be preserved
+        
         ctx.drawImage(img, 0, 0, width, height);
 
         // Use PNG for transparent images, JPEG for others

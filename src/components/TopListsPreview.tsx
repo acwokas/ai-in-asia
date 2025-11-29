@@ -10,12 +10,16 @@ interface TopListsPreviewProps {
 const getHtmlContent = (content?: string) => {
   if (!content) return undefined;
   
-  // If content already contains HTML tags, use it as-is
-  const looksLikeHtml = /<\/?(ul|ol|li|p|h[1-6]|blockquote|table|strong|em|a)[\s>]/i.test(content);
-  if (looksLikeHtml) {
+  // Check if content is PURE HTML (all content wrapped in HTML tags, no loose markdown)
+  const isPureHtml = /<\/?(div|p|span|article|section|header|footer|main|aside)[\s>]/i.test(content) && 
+                     !/#+ /.test(content) && // No markdown headers
+                     !/^[-•]\s+/m.test(content); // No markdown bullets
+  
+  if (isPureHtml) {
     return { __html: content };
   }
   
+  // For mixed or pure markdown content, process markdown
   const html = convertSimpleMarkdownToHtml(content);
   return { __html: html };
 };

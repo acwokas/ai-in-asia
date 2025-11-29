@@ -1,8 +1,14 @@
 export const convertSimpleMarkdownToHtml = (markdown: string): string => {
   if (!markdown) return "";
 
+  // Clean up unnecessary <div> wrappers that may come from rich text editors
+  // Keep the content inside, strip the <div> tags
+  let cleaned = markdown
+    .replace(/<div>\s*<\/div>/gi, '') // Remove empty divs
+    .replace(/<div>(.*?)<\/div>/gi, '$1\n'); // Unwrap div contents and add newline
+
   // Process line by line to build proper HTML structure
-  const lines = markdown.split(/\r?\n/);
+  const lines = cleaned.split(/\r?\n/);
   const processedLines: string[] = [];
   let inList = false;
   
