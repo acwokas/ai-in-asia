@@ -1194,8 +1194,11 @@ const Admin = () => {
                     <Button onClick={() => navigate("/admin/process-comments")} variant="outline" className="justify-start bg-green-500/10 border-green-500 text-green-700 hover:bg-green-500/20">
                       Process Pending Comments
                     </Button>
+                    <Button onClick={() => navigate("/admin/migrate-toplist-images")} variant="outline" className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20">
+                      Migrate Top List Images
+                    </Button>
                     <Button
-                      onClick={handleAutoScheduleComments} 
+                      onClick={handleAutoScheduleComments}
                       variant="outline" 
                       className="justify-start bg-primary/5"
                       disabled={autoScheduling}
