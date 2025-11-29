@@ -224,15 +224,12 @@ const Index = () => {
   const trendingArticles = (() => {
     if (!baseTrendingArticles || baseTrendingArticles.length === 0) return [];
 
-    // Only allow published, homepage-trending articles into this block
-    const validBase = baseTrendingArticles.filter((a: any) => 
-      a && a.status === "published" && a.homepage_trending
-    );
+    // baseTrendingArticles already filtered for published + homepage_trending by query
+    const validBase = baseTrendingArticles;
 
+    // Ensure trendingFeatured article also respects homepage_trending
     const validTrendingFeatured =
-      trendingFeatured &&
-      (trendingFeatured as any).status === "published" &&
-      (trendingFeatured as any).homepage_trending
+      trendingFeatured && (trendingFeatured as any).homepage_trending
         ? trendingFeatured
         : null;
 
