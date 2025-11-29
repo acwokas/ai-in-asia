@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { TopListItem } from "@/components/TopListsEditor";
+import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 
 const AllPrompts = () => {
   const { toast } = useToast();
@@ -128,6 +129,14 @@ const AllPrompts = () => {
             <p className="text-xl text-muted-foreground">
               Browse our complete collection of {allPrompts.length} AI prompts
             </p>
+          </div>
+
+          {/* Prompt and Go Banner */}
+          <div className="mb-8">
+            <div className="text-sm text-muted-foreground mb-2 text-center">
+              In partnership with
+            </div>
+            <PromptAndGoBanner />
           </div>
 
           {/* Filters */}

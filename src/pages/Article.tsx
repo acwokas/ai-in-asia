@@ -13,6 +13,7 @@ import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/St
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import { TopListsContent } from "@/components/TopListsContent";
+import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
@@ -1238,7 +1239,16 @@ const Article = () => {
               {article.article_type === 'policy_article' ? (
                 <PolicyArticleContent article={article} />
               ) : article.article_type === 'top_lists' && Array.isArray(article.top_list_items) ? (
-                <TopListsContent items={article.top_list_items as any} articleId={article.id} />
+                <>
+                  {/* Prompt and Go Banner for Top Lists */}
+                  <div className="mb-8 not-prose">
+                    <div className="text-sm text-muted-foreground mb-2 text-center">
+                      In partnership with
+                    </div>
+                    <PromptAndGoBanner />
+                  </div>
+                  <TopListsContent items={article.top_list_items as any} articleId={article.id} />
+                </>
               ) : (
                 renderContent(article.content)
               )}
