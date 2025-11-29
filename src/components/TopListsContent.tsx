@@ -153,7 +153,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Intro block above prompts list */}
       {introHtml && (
         <div
-          className="prose prose-lg max-w-none border-b pb-4 mb-4"
+          className="border-b pb-6 mb-6"
           dangerouslySetInnerHTML={{ __html: introHtml }}
         />
       )}
@@ -324,6 +324,14 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
             );
           })}
         </div>
+      )}
+
+      {/* Outro block below prompts list */}
+      {outroHtml && (
+        <div
+          className="border-t pt-6 mt-6"
+          dangerouslySetInnerHTML={{ __html: outroHtml }}
+        />
       )}
     </div>
   );
