@@ -355,7 +355,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Outro block below prompts list */}
       {outroHtml && (
         <div
-          className="border-t pt-6 mt-6"
+          className="prose prose-sm max-w-none border-t pt-6 mt-6"
           dangerouslySetInnerHTML={{ __html: outroHtml }}
         />
       )}
