@@ -42,7 +42,7 @@ const SEOTools = () => {
     const { data: runningJobs } = await supabase
       .from("bulk_operation_queue")
       .select("id, status")
-      .eq("operation_type", "generate_seo")
+      .in("operation_type", ["generate_seo", "update_seo"])
       .in("status", ["queued", "processing"])
       .order("created_at", { ascending: false })
       .limit(1);
@@ -245,8 +245,8 @@ const SEOTools = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const { data: queueEntry, error: queueError } = await supabase
         .from("bulk_operation_queue")
-        .insert({
-          operation_type: "generate_seo",
+         .insert({
+          operation_type: "update_seo",
           article_ids: articleIds,
           total_items: articleIds.length,
           status: "queued",
