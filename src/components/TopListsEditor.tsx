@@ -77,7 +77,7 @@ interface SortableItemProps {
 
 const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpload, uploadingImageFor }: SortableItemProps) => {
   const [isContentBoxOpen, setIsContentBoxOpen] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isItemOpen, setIsItemOpen] = useState(true);
   
   const {
     attributes,
@@ -237,7 +237,21 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
                   <div className="w-1 h-1 bg-muted-foreground rounded-full" />
                 </div>
               </div>
-              <CardTitle className="text-base">Item {index + 1}</CardTitle>
+              <CardTitle className="text-base cursor-pointer" onClick={() => setIsItemOpen(!isItemOpen)}>
+                Item {index + 1}
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsItemOpen(!isItemOpen)}
+                className="h-6 w-6 p-0"
+              >
+                {isItemOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
             </div>
             <div className="flex gap-2">
               <Button
@@ -258,7 +272,9 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <Collapsible open={isItemOpen} onOpenChange={setIsItemOpen}>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
           <div>
             <Label htmlFor={`title-${item.id}`}>Title - Optional</Label>
             <Input
@@ -482,6 +498,8 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
             </CollapsibleContent>
           </Collapsible>
         </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
     </div>
   );
