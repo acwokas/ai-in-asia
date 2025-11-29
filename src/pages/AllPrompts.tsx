@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
-import { Search, Copy, Check, ExternalLink } from "lucide-react";
+import { Search, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -24,6 +24,7 @@ const AllPrompts = () => {
   const [modelFilter, setModelFilter] = useState<string>('all');
   const [useCaseFilter, setUseCaseFilter] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(true);
 
   const { data: articles, isLoading } = useQuery({
     queryKey: ['all-prompts'],
@@ -115,6 +116,26 @@ const AllPrompts = () => {
     }
   };
 
+  const copyAllPrompts = async () => {
+    const allPromptsText = filteredPrompts.map((item, index) => 
+      `${index + 1}. ${item.title}\n${item.prompt}\n\nFrom: ${item.articleTitle}`
+    ).join('\n\n---\n\n');
+
+    try {
+      await navigator.clipboard.writeText(allPromptsText);
+      toast({
+        title: "All prompts copied!",
+        description: `${filteredPrompts.length} prompts copied to clipboard`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy all prompts",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
@@ -141,72 +162,109 @@ const AllPrompts = () => {
 
           {/* Filters */}
           <Card className="mb-8">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Search</label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder="Search prompts..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Search & Filter</h2>
+                <div className="flex items-center gap-2">
+                  {showFilters && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyAllPrompts}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy All
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="gap-2"
+                  >
+                    {showFilters ? (
+                      <>
+                        Hide <ChevronUp className="h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        Show <ChevronDown className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {showFilters && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Search</label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="search"
+                          placeholder="Search prompts..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Difficulty</label>
+                      <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Levels</SelectItem>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">AI Model</label>
+                      <Select value={modelFilter} onValueChange={setModelFilter}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Models</SelectItem>
+                          <SelectItem value="chatgpt">ChatGPT</SelectItem>
+                          <SelectItem value="gemini">Gemini</SelectItem>
+                          <SelectItem value="claude">Claude</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Use Case</label>
+                      <Select value={useCaseFilter} onValueChange={setUseCaseFilter}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Use Cases</SelectItem>
+                          <SelectItem value="business">Business</SelectItem>
+                          <SelectItem value="creative">Creative</SelectItem>
+                          <SelectItem value="technical">Technical</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Difficulty</label>
-                  <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Levels</SelectItem>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">AI Model</label>
-                  <Select value={modelFilter} onValueChange={setModelFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Models</SelectItem>
-                      <SelectItem value="chatgpt">ChatGPT</SelectItem>
-                      <SelectItem value="gemini">Gemini</SelectItem>
-                      <SelectItem value="claude">Claude</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Use Case</label>
-                  <Select value={useCaseFilter} onValueChange={setUseCaseFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Use Cases</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="creative">Creative</SelectItem>
-                      <SelectItem value="technical">Technical</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="mt-4 text-sm text-muted-foreground">
-                Showing {filteredPrompts.length} of {allPrompts.length} prompts
-              </div>
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    Showing {filteredPrompts.length} of {allPrompts.length} prompts
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
