@@ -61,8 +61,8 @@ const Article = () => {
         .from("articles")
         .select(`
           *,
-          authors:author_id (id, name, slug, bio, avatar_url, job_title),
-          categories:primary_category_id (name, slug, id)
+          authors!articles_author_id_fkey (id, name, slug, bio, avatar_url, job_title),
+          categories!articles_primary_category_id_fkey (name, slug, id)
         `)
         .eq("slug", cleanSlug);
       
