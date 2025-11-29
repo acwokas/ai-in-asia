@@ -133,14 +133,17 @@ const Article = () => {
 
     const READING_POSITION_KEY = `reading-position-${cleanSlug}`;
     
-    // Restore reading position
+    // Scroll to top first on new page load
+    window.scrollTo(0, 0);
+    
+    // Then restore reading position if exists (after a delay)
     const savedPosition = localStorage.getItem(READING_POSITION_KEY);
     if (savedPosition) {
       const position = parseInt(savedPosition);
-      // Small delay to ensure content is loaded
+      // Longer delay to ensure content is fully loaded
       setTimeout(() => {
         window.scrollTo({ top: position, behavior: 'smooth' });
-      }, 100);
+      }, 500);
     }
 
     // Save reading position on scroll
