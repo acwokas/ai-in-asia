@@ -293,21 +293,12 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {item.image_urls && item.image_urls.length > 0 && (
                   <div className="my-4 space-y-2">
                     {item.image_urls.map((url, imgIndex) => (
-                      <div key={imgIndex} className="space-y-1">
-                        <img
-                          src={url}
-                          alt={`${item.title} - Image ${imgIndex + 1}`}
-                          className="rounded-lg max-w-full h-auto"
-                        />
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline break-all block"
-                        >
-                          {url}
-                        </a>
-                      </div>
+                      <img
+                        key={imgIndex}
+                        src={url}
+                        alt={`${item.title} - Image ${imgIndex + 1}`}
+                        className="rounded-lg max-w-full h-auto"
+                      />
                     ))}
                   </div>
                 )}
