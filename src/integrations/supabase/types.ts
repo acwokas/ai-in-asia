@@ -1859,6 +1859,44 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_copies: {
+        Row: {
+          article_id: string
+          copied_at: string | null
+          created_at: string | null
+          id: string
+          prompt_item_id: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          article_id: string
+          copied_at?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_item_id: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string
+          copied_at?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_item_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_copies_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth: string

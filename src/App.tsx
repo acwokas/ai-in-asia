@@ -90,6 +90,7 @@ const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
 const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
+const AllPrompts = lazy(() => import("./pages/AllPrompts"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -186,6 +187,7 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
               <Route path="/tools" element={<Tools />} />
+              <Route path="/prompts" element={<AllPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
               <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />
               <Route path="/ai-policy-atlas/:region" element={<PolicyRegion />} />
