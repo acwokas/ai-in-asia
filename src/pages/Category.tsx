@@ -9,6 +9,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import { MPUAd } from "@/components/GoogleAds";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
+import { PromptAndGoSponsor } from "@/components/PromptAndGoSponsor";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -846,6 +847,11 @@ const Category = () => {
 
                 {/* Right Column: Latest + Ad */}
                 <div className="lg:col-span-4 space-y-6">
+                  {/* Prompt and Go Sponsor for Create category */}
+                  {category?.slug === 'create' && (
+                    <PromptAndGoSponsor />
+                  )}
+                  
                   <div>
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                       <Clock className="h-5 w-5 text-primary" />
