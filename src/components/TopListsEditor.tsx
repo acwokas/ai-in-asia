@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Upload, Copy, FileJson, FileSpreadsheet } from "lucide-react";
+import { Plus, Trash2, Upload, Copy, FileJson, FileSpreadsheet, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -474,6 +474,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [importText, setImportText] = useState('');
+  const [showSearchWidget, setShowSearchWidget] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -675,6 +676,24 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Top List Items</h3>
         <div className="flex gap-2 flex-wrap">
+          <Button 
+            onClick={() => setShowSearchWidget(!showSearchWidget)} 
+            variant="outline" 
+            size="sm"
+            title="Toggle search widget on article page"
+          >
+            {showSearchWidget ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-2" />
+                Hide Search Widget
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-2" />
+                Show Search Widget
+              </>
+            )}
+          </Button>
           <Button onClick={() => setShowPreview(true)} variant="outline" size="sm">
             <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
