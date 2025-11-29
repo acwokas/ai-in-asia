@@ -2,11 +2,17 @@ import { TopListItem } from "./TopListsEditor";
 
 interface TopListsPreviewProps {
   items: TopListItem[];
+  intro?: string;
+  outro?: string;
 }
 
-export const TopListsPreview = ({ items }: TopListsPreviewProps) => {
+export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) => {
   return (
     <div className="space-y-8 p-4">
+      {intro && (
+        <div className="prose prose-sm max-w-none mb-8" dangerouslySetInnerHTML={{ __html: intro }} />
+      )}
+      
       {items.length === 0 ? (
         <p className="text-center text-muted-foreground">No items to preview</p>
       ) : (
@@ -20,6 +26,10 @@ export const TopListsPreview = ({ items }: TopListsPreviewProps) => {
               <div className="prose prose-sm max-w-none">
                 <p>{item.description_top}</p>
               </div>
+            )}
+
+            {item.contentBox && (
+              <div className="prose prose-sm max-w-none my-4" dangerouslySetInnerHTML={{ __html: item.contentBox }} />
             )}
 
             {item.image_urls && item.image_urls.length > 0 && (
@@ -62,6 +72,10 @@ export const TopListsPreview = ({ items }: TopListsPreviewProps) => {
             )}
           </div>
         ))
+      )}
+      
+      {outro && (
+        <div className="prose prose-sm max-w-none mt-8" dangerouslySetInnerHTML={{ __html: outro }} />
       )}
     </div>
   );
