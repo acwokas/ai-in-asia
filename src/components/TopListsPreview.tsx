@@ -49,6 +49,8 @@ const getHtmlContent = (content?: string) => {
 };
 
 export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) => {
+  console.log('[TopListsPreview] intro:', intro);
+  console.log('[TopListsPreview] outro:', outro);
   return (
     <div className="space-y-8 p-4">
       {intro && (
