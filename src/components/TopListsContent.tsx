@@ -287,7 +287,10 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 )}
 
                 <div className="prompt-box bg-muted/50 border border-border rounded-lg p-4 relative group">
-                  <div className="flex items-center justify-end gap-2 mb-2">
+                  <pre className="whitespace-pre-wrap font-mono text-sm mb-2">
+                    {item.prompt}
+                  </pre>
+                  <div className="flex items-center justify-end gap-2">
                     {copyStats[item.id] > 0 && (
                       <span className="text-xs text-muted-foreground">
                         {copyStats[item.id]} {copyStats[item.id] === 1 ? 'copy' : 'copies'}
@@ -311,9 +314,6 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                       )}
                     </Button>
                   </div>
-                  <pre className="whitespace-pre-wrap font-mono text-sm">
-                    {item.prompt}
-                  </pre>
                 </div>
 
                 {/* Model-specific variations */}
@@ -322,8 +322,11 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                     <p className="text-sm font-semibold text-muted-foreground">Model-Specific Variations:</p>
                     {item.variations.map((variation, varIndex) => (
                       <div key={varIndex} className="prompt-box bg-muted/30 border border-border rounded-lg p-3 relative group">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <span className="text-xs font-semibold uppercase">{variation.model}</span>
+                        <span className="text-xs font-semibold uppercase block mb-2">{variation.model}</span>
+                        <pre className="whitespace-pre-wrap font-mono text-xs mb-2">
+                          {variation.prompt}
+                        </pre>
+                        <div className="flex items-start justify-end gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -342,9 +345,6 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                             )}
                           </Button>
                         </div>
-                        <pre className="whitespace-pre-wrap font-mono text-xs">
-                          {variation.prompt}
-                        </pre>
                       </div>
                     ))}
                   </div>
