@@ -72,7 +72,7 @@ const Index = () => {
           primary_category_id,
           comment_count,
           is_trending,
-          authors (name, slug),
+          authors:author_id (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
@@ -103,7 +103,7 @@ const Index = () => {
           primary_category_id,
           comment_count,
           homepage_trending,
-          authors (name, slug),
+          authors:author_id (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
@@ -196,7 +196,7 @@ const Index = () => {
           article_id,
           articles (
             *,
-            authors (name, slug),
+            authors:author_id (name, slug),
             categories:primary_category_id (name, slug)
           )
         `)
