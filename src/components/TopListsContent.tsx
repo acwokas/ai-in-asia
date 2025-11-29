@@ -252,9 +252,10 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 </div>
 
                 {item.description_top && (
-                  <div className="prose prose-sm max-w-none">
-                    <p>{item.description_top}</p>
-                  </div>
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: item.description_top }}
+                  />
                 )}
 
                 {/* Optional rich content box between sections */}
@@ -340,9 +341,10 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 )}
 
                 {item.description_bottom && (
-                  <div className="prose prose-sm max-w-none">
-                    <p>{item.description_bottom}</p>
-                  </div>
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: item.description_bottom }}
+                  />
                 )}
               </div>
             );
