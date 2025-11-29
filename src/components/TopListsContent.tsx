@@ -220,10 +220,10 @@ export const TopListsContent = ({ items, articleId }: TopListsContentProps) => {
                   </div>
                 )}
 
-                {item.image_url && (
+                {item.image_urls && item.image_urls.length > 0 && (
                   <div className="my-4">
                     <img
-                      src={item.image_url}
+                      src={item.image_urls[0]}
                       alt={item.title}
                       className="rounded-lg max-w-full h-auto"
                     />
