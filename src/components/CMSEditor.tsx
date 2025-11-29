@@ -1030,23 +1030,50 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     {categories
                       ?.filter((category) => category.name.toLowerCase() !== 'uncategorized')
                       .sort((a, b) => {
-                        // AI Policy Atlas categories (regions)
+                        // Priority order for main categories
+                        const priorityOrder = ['News', 'Business', 'Life', 'Learn', 'Create', 'Voices'];
                         const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas'];
+                        
+                        const aIndex = priorityOrder.indexOf(a.name);
+                        const bIndex = priorityOrder.indexOf(b.name);
                         const aIsPolicy = policyRegions.includes(a.name);
                         const bIsPolicy = policyRegions.includes(b.name);
                         
-                        // If one is policy and other isn't, policy goes to bottom
+                        // If both are in priority list, sort by priority order
+                        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                        
+                        // Priority categories come first
+                        if (aIndex !== -1) return -1;
+                        if (bIndex !== -1) return 1;
+                        
+                        // Policy regions come last
                         if (aIsPolicy && !bIsPolicy) return 1;
                         if (!aIsPolicy && bIsPolicy) return -1;
                         
-                        // Otherwise maintain alphabetical order
+                        // Everything else alphabetical
                         return a.name.localeCompare(b.name);
                       })
-                      .map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      .reduce((acc, category, index, arr) => {
+                        // Add separator before policy regions
+                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas'];
+                        const isFirstPolicy = policyRegions.includes(category.name) && 
+                          (index === 0 || !policyRegions.includes(arr[index - 1].name));
+                        
+                        if (isFirstPolicy) {
+                          acc.push(
+                            <SelectItem key="separator" value="separator" disabled>
+                              ──────────
+                            </SelectItem>
+                          );
+                        }
+                        
+                        acc.push(
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        );
+                        return acc;
+                      }, [] as JSX.Element[])}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
