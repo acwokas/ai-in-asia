@@ -89,7 +89,9 @@ const AllPrompts = () => {
 
     // Use case filter
     if (useCaseFilter !== 'all') {
-      filtered = filtered.filter(item => item.use_case === useCaseFilter);
+      filtered = filtered.filter(item => 
+        item.use_cases?.includes(useCaseFilter)
+      );
     }
 
     return filtered;
@@ -256,11 +258,11 @@ const AllPrompts = () => {
                           {prompt.difficulty}
                         </Badge>
                       )}
-                      {prompt.use_case && (
-                        <Badge variant="secondary" className="capitalize">
-                          {prompt.use_case}
+                      {prompt.use_cases?.map(useCase => (
+                        <Badge key={useCase} variant="secondary" className="capitalize">
+                          {useCase}
                         </Badge>
-                      )}
+                      ))}
                       {prompt.ai_models?.slice(0, 2).map(model => (
                         <Badge key={model} variant="default" className="capitalize">
                           {model}

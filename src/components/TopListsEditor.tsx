@@ -40,7 +40,7 @@ export interface TopListItem {
   // New metadata fields
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   ai_models?: string[]; // ['chatgpt', 'gemini', 'claude', 'all']
-  use_case?: string; // 'business' | 'creative' | 'technical' | 'education'
+  use_cases?: string[]; // ['business', 'creative', 'technical', 'education']
   tags?: string[];
   variations?: Array<{
     model: string;
@@ -86,12 +86,29 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
     { value: 'all', label: 'All Models' },
   ];
 
+  const useCaseOptions = [
+    { value: 'business', label: 'Business' },
+    { value: 'creative', label: 'Creative' },
+    { value: 'technical', label: 'Technical' },
+    { value: 'education', label: 'Education' },
+    { value: 'marketing', label: 'Marketing' },
+    { value: 'productivity', label: 'Productivity' },
+  ];
+
   const toggleAIModel = (model: string) => {
     const current = item.ai_models || [];
     const updated = current.includes(model)
       ? current.filter(m => m !== model)
       : [...current, model];
     onUpdate(item.id, 'ai_models', updated);
+  };
+
+  const toggleUseCase = (useCase: string) => {
+    const current = item.use_cases || [];
+    const updated = current.includes(useCase)
+      ? current.filter(uc => uc !== useCase)
+      : [...current, useCase];
+    onUpdate(item.id, 'use_cases', updated);
   };
 
   const addTag = (tag: string) => {
@@ -136,6 +153,54 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
       if (uniqueWords.length > 0) {
         onUpdate(item.id, 'tags', uniqueWords);
       }
+    }
+  };
+
+  const autoSuggestMetadata = () => {
+    const titleLower = item.title.toLowerCase();
+    const promptLower = item.prompt.toLowerCase();
+    const combined = `${titleLower} ${promptLower}`;
+
+    // Auto-suggest difficulty if not set
+    if (!item.difficulty) {
+      if (combined.includes('basic') || combined.includes('simple') || combined.includes('easy') || combined.includes('beginner')) {
+        onUpdate(item.id, 'difficulty', 'beginner');
+      } else if (combined.includes('advanced') || combined.includes('complex') || combined.includes('expert') || combined.includes('professional')) {
+        onUpdate(item.id, 'difficulty', 'advanced');
+      } else {
+        onUpdate(item.id, 'difficulty', 'intermediate');
+      }
+    }
+
+    // Auto-suggest use cases if empty
+    if (!item.use_cases || item.use_cases.length === 0) {
+      const suggestedCases: string[] = [];
+      
+      if (combined.includes('business') || combined.includes('company') || combined.includes('corporate') || combined.includes('strategy')) {
+        suggestedCases.push('business');
+      }
+      if (combined.includes('creative') || combined.includes('design') || combined.includes('art') || combined.includes('writing') || combined.includes('content')) {
+        suggestedCases.push('creative');
+      }
+      if (combined.includes('code') || combined.includes('programming') || combined.includes('technical') || combined.includes('developer') || combined.includes('software')) {
+        suggestedCases.push('technical');
+      }
+      if (combined.includes('education') || combined.includes('learning') || combined.includes('teach') || combined.includes('student') || combined.includes('tutorial')) {
+        suggestedCases.push('education');
+      }
+      if (combined.includes('marketing') || combined.includes('advertising') || combined.includes('campaign') || combined.includes('social media')) {
+        suggestedCases.push('marketing');
+      }
+      if (combined.includes('productivity') || combined.includes('workflow') || combined.includes('efficiency') || combined.includes('organize')) {
+        suggestedCases.push('productivity');
+      }
+
+      // Default to creative if nothing matches
+      if (suggestedCases.length === 0) {
+        suggestedCases.push('creative');
+      }
+
+      onUpdate(item.id, 'use_cases', suggestedCases);
     }
   };
 
@@ -185,45 +250,44 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               id={`title-${item.id}`}
               value={item.title}
               onChange={(e) => onUpdate(item.id, 'title', e.target.value)}
-              onBlur={autoGenerateTags}
+              onBlur={() => {
+                autoGenerateTags();
+                autoSuggestMetadata();
+              }}
               placeholder="e.g., Astronaut Mascot Design"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor={`difficulty-${item.id}`}>Difficulty Level</Label>
-              <Select 
-                value={item.difficulty || ''} 
-                onValueChange={(value) => onUpdate(item.id, 'difficulty', value)}
-              >
-                <SelectTrigger id={`difficulty-${item.id}`}>
-                  <SelectValue placeholder="Select difficulty..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor={`difficulty-${item.id}`}>Difficulty Level - Auto-suggested</Label>
+            <Select 
+              value={item.difficulty || ''} 
+              onValueChange={(value) => onUpdate(item.id, 'difficulty', value)}
+            >
+              <SelectTrigger id={`difficulty-${item.id}`}>
+                <SelectValue placeholder="Auto-suggested after title/prompt..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div>
-              <Label htmlFor={`use-case-${item.id}`}>Use Case</Label>
-              <Select 
-                value={item.use_case || ''} 
-                onValueChange={(value) => onUpdate(item.id, 'use_case', value)}
-              >
-                <SelectTrigger id={`use-case-${item.id}`}>
-                  <SelectValue placeholder="Select use case..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="creative">Creative</SelectItem>
-                  <SelectItem value="technical">Technical</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                </SelectContent>
-              </Select>
+          <div>
+            <Label>Use Cases - Auto-suggested (Multiple)</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {useCaseOptions.map(useCase => (
+                <Badge
+                  key={useCase.value}
+                  variant={item.use_cases?.includes(useCase.value) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => toggleUseCase(useCase.value)}
+                >
+                  {useCase.label}
+                </Badge>
+              ))}
             </div>
           </div>
 
@@ -260,6 +324,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               id={`prompt-${item.id}`}
               value={item.prompt}
               onChange={(e) => onUpdate(item.id, 'prompt', e.target.value)}
+              onBlur={autoSuggestMetadata}
               placeholder="Enter the AI prompt that users will copy..."
               rows={4}
               className="font-mono text-sm"
@@ -503,13 +568,13 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
         // If JSON parsing fails, try CSV format
         const lines = importText.trim().split('\n');
         parsed = lines.slice(1).map(line => {
-          const [title, prompt, difficulty, models, useCase, tags] = line.split(',').map(s => s.trim());
+          const [title, prompt, difficulty, models, useCases, tags] = line.split(',').map(s => s.trim());
           return {
             title,
             prompt,
             difficulty: difficulty || undefined,
             ai_models: models ? models.split(';') : ['all'],
-            use_case: useCase || undefined,
+            use_cases: useCases ? useCases.split(';') : [],
             tags: tags ? tags.split(';') : [],
           };
         });
@@ -525,7 +590,7 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
         image_urls: item.image_urls || (item.image_url ? [item.image_url] : []),
         difficulty: item.difficulty,
         ai_models: item.ai_models || ['all'],
-        use_case: item.use_case,
+        use_cases: item.use_cases || (item.use_case ? [item.use_case] : []),
         tags: item.tags || [],
         variations: item.variations || [],
       }));
@@ -556,9 +621,9 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
       link.download = 'top-lists-export.json';
       link.click();
     } else {
-      const headers = 'Title,Prompt,Difficulty,AI Models,Use Case,Tags\n';
+      const headers = 'Title,Prompt,Difficulty,AI Models,Use Cases,Tags\n';
       const rows = items.map(item => 
-        `"${item.title}","${item.prompt}","${item.difficulty || ''}","${item.ai_models?.join(';') || ''}","${item.use_case || ''}","${item.tags?.join(';') || ''}"`
+        `"${item.title}","${item.prompt}","${item.difficulty || ''}","${item.ai_models?.join(';') || ''}","${item.use_cases?.join(';') || ''}","${item.tags?.join(';') || ''}"`
       ).join('\n');
       const csv = headers + rows;
       const dataBlob = new Blob([csv], { type: 'text/csv' });

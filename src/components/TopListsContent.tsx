@@ -197,11 +197,11 @@ export const TopListsContent = ({ items, articleId }: TopListsContentProps) => {
                       {item.difficulty}
                     </Badge>
                   )}
-                  {item.use_case && (
-                    <Badge variant="secondary" className="capitalize">
-                      {item.use_case}
+                  {item.use_cases?.map(useCase => (
+                    <Badge key={useCase} variant="secondary" className="capitalize">
+                      {useCase}
                     </Badge>
-                  )}
+                  ))}
                   {item.ai_models?.map(model => (
                     <Badge key={model} variant="default" className="capitalize">
                       {model === 'all' ? '✨ All Models' : model}
