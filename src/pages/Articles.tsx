@@ -116,7 +116,13 @@ const Articles = () => {
 
       // Apply filters
       if (searchQuery) {
-        const term = `%${searchQuery}%`;
+        // Normalise search so full URLs like "create/slug" still match the slug column
+        let normalized = searchQuery.trim();
+        if (normalized.includes("/")) {
+          const parts = normalized.split("/");
+          normalized = parts[parts.length - 1];
+        }
+        const term = `%${normalized}%`;
         query = query.or(`title.ilike.${term},slug.ilike.${term}`);
       }
 
