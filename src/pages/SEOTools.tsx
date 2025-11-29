@@ -34,7 +34,25 @@ const SEOTools = () => {
 
   useEffect(() => {
     checkAdminStatus();
+    checkForRunningJobs();
   }, []);
+
+  // Check for any existing processing SEO jobs on page load
+  const checkForRunningJobs = async () => {
+    const { data: runningJobs } = await supabase
+      .from("bulk_operation_queue")
+      .select("id, status")
+      .eq("operation_type", "generate_seo")
+      .in("status", ["queued", "processing"])
+      .order("created_at", { ascending: false })
+      .limit(1);
+    
+    if (runningJobs && runningJobs.length > 0) {
+      console.log("Found running SEO job:", runningJobs[0].id);
+      setQueueJobId(runningJobs[0].id);
+      setIsFixingBulk(true);
+    }
+  };
 
   const checkAdminStatus = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -67,12 +85,29 @@ const SEOTools = () => {
     queryKey: ["seo-articles"],
     enabled: isAdmin === true,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("articles")
-        .select("id, title, slug, meta_title, meta_description, focus_keyphrase, status")
-        .eq("status", "published")
-        .order("published_at", { ascending: false });
-      return data || [];
+      // Fetch all articles with pagination to handle 1000+ articles
+      let allArticles: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("id, title, slug, meta_title, meta_description, focus_keyphrase, status")
+          .eq("status", "published")
+          .order("published_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allArticles = [...allArticles, ...data];
+        
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      
+      return allArticles;
     },
   });
 
