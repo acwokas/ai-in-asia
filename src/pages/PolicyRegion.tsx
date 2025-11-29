@@ -55,11 +55,11 @@ const PolicyRegion = () => {
         .from('articles')
         .select(`
           *,
-          authors!inner (
+          authors:author_id (
             name,
             slug
           ),
-          categories!primary_category_id (
+          categories:primary_category_id (
             name,
             slug
           )
