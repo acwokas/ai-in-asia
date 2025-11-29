@@ -77,6 +77,7 @@ interface SortableItemProps {
 
 const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpload, uploadingImageFor }: SortableItemProps) => {
   const [isContentBoxOpen, setIsContentBoxOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const {
     attributes,
@@ -492,6 +493,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [importText, setImportText] = useState('');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const sensors = useSensors(
 
@@ -782,11 +784,24 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       {items.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Article Content (Live Preview)</CardTitle>
+            <Collapsible open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                  <CardTitle className="cursor-pointer">Article Content (Live Preview)</CardTitle>
+                  {isPreviewOpen ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent>
+                  <TopListsPreview items={items} intro={intro} outro={outro} />
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
           </CardHeader>
-          <CardContent>
-          <TopListsPreview items={items} intro={intro} outro={outro} />
-          </CardContent>
         </Card>
       )}
 
