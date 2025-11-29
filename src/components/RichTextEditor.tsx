@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface RichTextEditorProps {
   value: string;
@@ -34,7 +35,7 @@ const RichTextEditor = ({
   const [showTableDialog, setShowTableDialog] = useState(false);
   const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
-  const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '' });
+  const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '', size: 'large' as 'small' | 'medium' | 'large' });
   const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -400,7 +401,7 @@ const RichTextEditor = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageUrl = event.target?.result as string;
-      setImageData({ url: imageUrl, caption: '', alt: '', description: '' });
+      setImageData({ url: imageUrl, caption: '', alt: '', description: '', size: 'large' });
       setShowImageDialog(true);
     };
     reader.readAsDataURL(file);
@@ -435,6 +436,11 @@ const RichTextEditor = ({
         
         if (imageData.alt) imgElement.setAttribute('alt', imageData.alt);
         if (imageData.description) imgElement.setAttribute('title', imageData.description);
+        if (imageData.size) imgElement.setAttribute('data-size', imageData.size);
+        
+        // Apply size class based on selection
+        const sizeClass = imageData.size === 'small' ? 'max-w-xs' : imageData.size === 'medium' ? 'max-w-md' : 'max-w-full';
+        imgElement.className = `rounded-lg h-auto ${sizeClass}`;
         
         // Add caption as a wrapper
         if (imageData.caption) {
@@ -454,7 +460,7 @@ const RichTextEditor = ({
     }, 100);
     
     setShowImageDialog(false);
-    setImageData({ url: '', caption: '', alt: '', description: '' });
+    setImageData({ url: '', caption: '', alt: '', description: '', size: 'large' });
     savedSelectionRef.current = null;
   };
 
@@ -962,6 +968,19 @@ const RichTextEditor = ({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="image-size">Display Size</Label>
+              <Select value={imageData.size} onValueChange={(value: 'small' | 'medium' | 'large') => setImageData({ ...imageData, size: value })}>
+                <SelectTrigger id="image-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="small">Small (320px)</SelectItem>
+                  <SelectItem value="medium">Medium (512px)</SelectItem>
+                  <SelectItem value="large">Large (Full Width)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="image-caption">Caption (optional)</Label>
               <Input
