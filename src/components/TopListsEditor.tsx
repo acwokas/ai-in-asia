@@ -58,6 +58,9 @@ interface TopListsEditorProps {
   onIntroChange?: (intro: string) => void;
   outro?: string;
   onOutroChange?: (outro: string) => void;
+  // Controls whether the Prompt Tools/search widget is shown on the article page
+  showPromptTools?: boolean;
+  onShowPromptToolsChange?: (value: boolean) => void;
 }
 
 interface SortableItemProps {
@@ -468,15 +471,15 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
   );
 };
 
-export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, outro = '', onOutroChange }: TopListsEditorProps) => {
+export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, outro = '', onOutroChange, showPromptTools = true, onShowPromptToolsChange }: TopListsEditorProps) => {
   const { toast } = useToast();
   const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [importText, setImportText] = useState('');
-  const [showSearchWidget, setShowSearchWidget] = useState(true);
 
   const sensors = useSensors(
+
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -677,12 +680,12 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
         <h3 className="text-lg font-semibold">Top List Items</h3>
         <div className="flex gap-2 flex-wrap">
           <Button 
-            onClick={() => setShowSearchWidget(!showSearchWidget)} 
+            onClick={() => onShowPromptToolsChange?.(!showPromptTools)} 
             variant="outline" 
             size="sm"
             title="Toggle search widget on article page"
           >
-            {showSearchWidget ? (
+            {showPromptTools ? (
               <>
                 <ChevronUp className="h-4 w-4 mr-2" />
                 Hide Search Widget

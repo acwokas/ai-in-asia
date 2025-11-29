@@ -166,6 +166,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   );
   const [topListIntro, setTopListIntro] = useState(initialData?.top_list_intro || "");
   const [topListOutro, setTopListOutro] = useState(initialData?.top_list_outro || "");
+  const [topListShowPromptTools, setTopListShowPromptTools] = useState<boolean>(() => {
+    const items = Array.isArray(initialData?.top_list_items) ? initialData.top_list_items : [];
+    if (items.length > 0 && typeof items[0]?.showPromptTools === "boolean") {
+      return items[0].showPromptTools;
+    }
+    return true;
+  });
+
   
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
@@ -914,10 +922,13 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       }),
       // Top Lists fields
       ...(articleType === 'top_lists' && {
-        top_list_items: topListItems,
+        top_list_items: topListItems.map((item, index) =>
+          index === 0 ? { ...item, showPromptTools: topListShowPromptTools } : item
+        ),
         top_list_intro: topListIntro,
         top_list_outro: topListOutro,
       }),
+
     };
     onSave?.(data);
   };
@@ -1310,7 +1321,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   onIntroChange={setTopListIntro}
                   outro={topListOutro}
                   onOutroChange={setTopListOutro}
+                  showPromptTools={topListShowPromptTools}
+                  onShowPromptToolsChange={setTopListShowPromptTools}
                 />
+
               </CardContent>
             </Card>
           ) : (
