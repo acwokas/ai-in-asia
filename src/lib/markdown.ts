@@ -23,8 +23,10 @@ export const convertSimpleMarkdownToHtml = (markdown: string): string => {
     .replace(/\*\*\*([^*]+)\*\*\*/g, "<strong>$1<\/strong>")
     .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<\/a>')
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1<\/a>')
+    // Auto-link bare URLs that aren't already inside an anchor tag
+    .replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2<\/a>')
     .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => `<ul>${match}<\/ul>`)
-    .replace(/\n{2,}/g, "</p><p>");
+    .replace(/\n{2,}/g, "<\/p><p>");
 
   if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
     html = `<p>${html}</p>`;
