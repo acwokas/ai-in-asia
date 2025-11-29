@@ -1238,7 +1238,7 @@ const Article = () => {
               {article.article_type === 'policy_article' ? (
                 <PolicyArticleContent article={article} />
               ) : article.article_type === 'top_lists' && Array.isArray(article.top_list_items) ? (
-                <TopListsContent items={article.top_list_items as any} />
+                <TopListsContent items={article.top_list_items as any} articleId={article.id} />
               ) : (
                 renderContent(article.content)
               )}

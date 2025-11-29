@@ -57,6 +57,7 @@ const Header = memo(() => {
               <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">AI Policy Atlas</Link>
               <div className="h-4 w-px bg-primary mx-2" />
+              <Link to="/prompts" className="text-sm font-medium hover:text-primary transition-colors">Prompts</Link>
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
             </nav>
