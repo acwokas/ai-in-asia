@@ -1027,11 +1027,26 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <SelectValue placeholder="Select category..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
+                    {categories
+                      ?.filter((category) => category.name.toLowerCase() !== 'uncategorized')
+                      .sort((a, b) => {
+                        // AI Policy Atlas categories (regions)
+                        const policyRegions = ['MENA', 'Africa', 'North Asia', 'ASEAN', 'Greater China', 'South Asia', 'Oceania', 'Europe', 'Americas'];
+                        const aIsPolicy = policyRegions.includes(a.name);
+                        const bIsPolicy = policyRegions.includes(b.name);
+                        
+                        // If one is policy and other isn't, policy goes to bottom
+                        if (aIsPolicy && !bIsPolicy) return 1;
+                        if (!aIsPolicy && bIsPolicy) return -1;
+                        
+                        // Otherwise maintain alphabetical order
+                        return a.name.localeCompare(b.name);
+                      })
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
