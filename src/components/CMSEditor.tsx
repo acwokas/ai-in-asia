@@ -164,6 +164,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [topListItems, setTopListItems] = useState(
     Array.isArray(initialData?.top_list_items) ? initialData.top_list_items : []
   );
+  const [topListIntro, setTopListIntro] = useState(initialData?.top_list_intro || "");
+  const [topListOutro, setTopListOutro] = useState(initialData?.top_list_outro || "");
   
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
@@ -913,6 +915,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       // Top Lists fields
       ...(articleType === 'top_lists' && {
         top_list_items: topListItems,
+        top_list_intro: topListIntro,
+        top_list_outro: topListOutro,
       }),
     };
     onSave?.(data);
@@ -1299,7 +1303,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TopListsEditor items={topListItems} onChange={setTopListItems} />
+                <TopListsEditor 
+                  items={topListItems} 
+                  onChange={setTopListItems}
+                  intro={topListIntro}
+                  onIntroChange={setTopListIntro}
+                  outro={topListOutro}
+                  onOutroChange={setTopListOutro}
+                />
               </CardContent>
             </Card>
           ) : (
