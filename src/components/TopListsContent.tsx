@@ -165,7 +165,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Intro block above prompts list */}
       {introHtml && (
         <div
-          className="border-b pb-6 mb-6 prose prose-sm max-w-none"
+          className="border-b pb-6 mb-6 prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4"
           dangerouslySetInnerHTML={getHtmlContent(introHtml)}
         />
       )}
@@ -263,7 +263,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
                 {item.description_top && (
                   <div
-                    className="prose prose-sm max-w-none"
+                    className="prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.description_top)}
                   />
                 )}
@@ -271,7 +271,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {/* Optional rich content box between sections */}
                 {item.contentBox && (
                   <div
-                    className="prose prose-sm max-w-none my-4"
+                    className="prose prose-sm max-w-none my-4 [&_ul]:pl-4 [&_ol]:pl-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.contentBox)}
                   />
                 )}
@@ -352,7 +352,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
                 {item.description_bottom && (
                   <div
-                    className="prose prose-sm max-w-none"
+                    className="prose prose-sm max-w-none [&_ul]:pl-4 [&_ol]:pl-4"
                     dangerouslySetInnerHTML={getHtmlContent(item.description_bottom)}
                   />
                 )}
@@ -365,7 +365,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Outro block below prompts list */}
       {outroHtml && (
         <div
-          className="prose prose-sm max-w-none border-t pt-6 mt-6"
+          className="prose prose-sm max-w-none border-t pt-6 mt-6 [&_ul]:pl-4 [&_ol]:pl-4"
           dangerouslySetInnerHTML={getHtmlContent(outroHtml)}
         />
       )}
