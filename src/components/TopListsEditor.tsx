@@ -716,6 +716,18 @@ export const TopListsEditor = ({ items, onChange }: TopListsEditorProps) => {
         </SortableContext>
       </DndContext>
 
+      {/* Article Content Live Preview at Bottom */}
+      {items.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Article Content (Live Preview)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopListsPreview items={items} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Bulk Import Dialog */}
       <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
         <DialogContent className="max-w-2xl">
