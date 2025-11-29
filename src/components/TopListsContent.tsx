@@ -276,32 +276,29 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 )}
 
                 <div className="prompt-box bg-muted/50 border border-border rounded-lg p-4 relative group">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">Main Prompt</span>
-                    <div className="flex items-center gap-2">
-                      {copyStats[item.id] > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          {copyStats[item.id]} {copyStats[item.id] === 1 ? 'copy' : 'copies'}
-                        </span>
+                  <div className="flex items-center justify-end gap-2 mb-2">
+                    {copyStats[item.id] > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {copyStats[item.id]} {copyStats[item.id] === 1 ? 'copy' : 'copies'}
+                      </span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyPrompt(item.prompt, item.id)}
+                    >
+                      {copiedId === item.id ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy Prompt
+                        </>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyPrompt(item.prompt, item.id)}
-                      >
-                        {copiedId === item.id ? (
-                          <>
-                            <Check className="h-4 w-4 mr-2" />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                    </Button>
                   </div>
                   <pre className="whitespace-pre-wrap font-mono text-sm">
                     {item.prompt}
