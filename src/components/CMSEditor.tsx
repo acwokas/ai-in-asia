@@ -280,13 +280,22 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const currentValue = textarea.value;
-    const newValue = currentValue.substring(0, start) + newText + currentValue.substring(end);
     
-    if (textarea === contentRef.current) {
-      setContent(newValue);
+    // If no text is selected (start === end), replace the entire field content
+    // This is particularly useful for Scout operations on the excerpt field
+    const shouldReplaceAll = (start === end) && textarea === excerptRef.current;
+    
+    if (shouldReplaceAll) {
+      setExcerpt(newText);
     } else {
-      setExcerpt(newValue);
+      const currentValue = textarea.value;
+      const newValue = currentValue.substring(0, start) + newText + currentValue.substring(end);
+      
+      if (textarea === contentRef.current) {
+        setContent(newValue);
+      } else {
+        setExcerpt(newValue);
+      }
     }
     
     setSelectedText("");
