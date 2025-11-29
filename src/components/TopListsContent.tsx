@@ -22,6 +22,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
   const [searchQuery, setSearchQuery] = useState('');
   const [copyStats, setCopyStats] = useState<Record<string, number>>({});
   const [filteredItems, setFilteredItems] = useState(items);
+  const showPromptTools = (items[0] as any)?.showPromptTools ?? true;
   const [showSearchWidget, setShowSearchWidget] = useState(true);
 
   // Filter items based on search query
@@ -160,46 +161,47 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       )}
 
       {/* Search and Actions Bar */}
-      <div className="border-b pb-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase">Prompt Tools</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowSearchWidget(!showSearchWidget)}
-            className="gap-2"
-          >
-            {showSearchWidget ? (
-              <>
-                Hide <ChevronUp className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Show <ChevronDown className="h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {showSearchWidget && (
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search prompts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button onClick={copyAllPrompts} variant="outline" size="sm">
-              <Copy className="h-4 w-4 mr-2" />
-              Copy All Prompts
+      {showPromptTools && (
+        <div className="border-b pb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase">Prompt Tools</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSearchWidget(!showSearchWidget)}
+              className="gap-2"
+            >
+              {showSearchWidget ? (
+                <>
+                  Hide <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Show <ChevronDown className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
-        )}
-      </div>
+          {showSearchWidget && (
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search prompts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button onClick={copyAllPrompts} variant="outline" size="sm">
+                <Copy className="h-4 w-4 mr-2" />
+                Copy All Prompts
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {filteredItems.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">
