@@ -1011,9 +1011,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="article">Article</SelectItem>
-                    <SelectItem value="tool">Tool</SelectItem>
                     <SelectItem value="video">Video</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
                     <SelectItem value="policy_article">Policy Article</SelectItem>
                     <SelectItem value="top_lists">Top Lists</SelectItem>
                   </SelectContent>
