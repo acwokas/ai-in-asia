@@ -25,6 +25,48 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
   const showPromptTools = (items[0] as any)?.showPromptTools ?? true;
   const [showSearchWidget, setShowSearchWidget] = useState(true);
 
+  const convertMarkdownToHtml = (markdown: string): string => {
+    if (!markdown) return '';
+
+    const lines = markdown.split(/\r?\n/);
+    const htmlLines = lines.map((line) => {
+      const trimmed = line.trim();
+
+      if (/^###\s+/.test(trimmed)) return `<h3>${trimmed.replace(/^###\s+/, "")}</h3>`;
+      if (/^##\s+/.test(trimmed)) return `<h2>${trimmed.replace(/^##\s+/, "")}</h2>`;
+      if (/^#\s+/.test(trimmed)) return `<h1>${trimmed.replace(/^#\s+/, "")}</h1>`;
+      if (/^>\s+/.test(trimmed)) return `<blockquote>${trimmed.replace(/^>\s+/, "")}</blockquote>`;
+      if (/^-\s+/.test(trimmed)) return `<li>${trimmed.replace(/^-\s+/, "")}</li>`;
+      if (/^\d+\.\s+/.test(trimmed)) return `<li>${trimmed.replace(/^\d+\.\s+/, "")}</li>`;
+      if (trimmed === '') return '';
+      return trimmed;
+    });
+
+    let html = htmlLines.join('\n');
+
+    html = html
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1<\/strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1<\/em>')
+      .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<\/a>')
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1<\/a>')
+      .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => `<ul>${match}<\/ul>`)
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+
+    if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
+      html = `<p>${html}</p>`;
+    }
+
+    return html;
+  };
+
+  const getHtmlContent = (content?: string) => {
+    if (!content) return undefined;
+    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+    const html = looksLikeHtml ? content : convertMarkdownToHtml(content);
+    return { __html: html };
+  };
+
   // Filter items based on search query
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -155,8 +197,8 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {/* Intro block above prompts list */}
       {introHtml && (
         <div
-          className="border-b pb-6 mb-6"
-          dangerouslySetInnerHTML={{ __html: introHtml }}
+          className="border-b pb-6 mb-6 prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={getHtmlContent(introHtml)}
         />
       )}
 
@@ -254,7 +296,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {item.description_top && (
                   <div
                     className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: item.description_top }}
+                    dangerouslySetInnerHTML={getHtmlContent(item.description_top)}
                   />
                 )}
 
@@ -262,7 +304,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {item.contentBox && (
                   <div
                     className="prose prose-sm max-w-none my-4"
-                    dangerouslySetInnerHTML={{ __html: item.contentBox }}
+                    dangerouslySetInnerHTML={getHtmlContent(item.contentBox)}
                   />
                 )}
 
@@ -343,7 +385,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                 {item.description_bottom && (
                   <div
                     className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: item.description_bottom }}
+                    dangerouslySetInnerHTML={getHtmlContent(item.description_bottom)}
                   />
                 )}
               </div>
@@ -356,7 +398,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       {outroHtml && (
         <div
           className="prose prose-sm max-w-none border-t pt-6 mt-6"
-          dangerouslySetInnerHTML={{ __html: outroHtml }}
+          dangerouslySetInnerHTML={getHtmlContent(outroHtml)}
         />
       )}
     </div>
