@@ -1,4 +1,5 @@
 import { TopListItem } from "./TopListsEditor";
+import { convertSimpleMarkdownToHtml } from "@/lib/markdown";
 
 interface TopListsPreviewProps {
   items: TopListItem[];
@@ -6,51 +7,13 @@ interface TopListsPreviewProps {
   outro?: string;
 }
 
-const convertMarkdownToHtml = (markdown: string): string => {
-  if (!markdown) return "";
-
-  const lines = markdown.split(/\r?\n/);
-  const htmlLines = lines.map((line) => {
-    const trimmed = line.trim();
-
-    if (/^###\s+/.test(trimmed)) return `<h3>${trimmed.replace(/^###\s+/, "")}</h3>`;
-    if (/^##\s+/.test(trimmed)) return `<h2>${trimmed.replace(/^##\s+/, "")}</h2>`;
-    if (/^#\s+/.test(trimmed)) return `<h1>${trimmed.replace(/^#\s+/, "")}</h1>`;
-    if (/^>\s+/.test(trimmed)) return `<blockquote>${trimmed.replace(/^>\s+/, "")}</blockquote>`;
-    if (/^-\s+/.test(trimmed)) return `<li>${trimmed.replace(/^-\s+/, "")}</li>`;
-    if (/^\d+\.\s+/.test(trimmed)) return `<li>${trimmed.replace(/^\d+\.\s+/, "")}</li>`;
-    if (trimmed === "") return "";
-    return trimmed;
-  });
-
-  let html = htmlLines.join("\n");
-
-  html = html
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1<\/strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1<\/em>")
-    .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<\/a>')
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1<\/a>')
-    .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => `<ul>${match}<\/ul>`)
-    .replace(/\n{2,}/g, "</p><p>")
-    .replace(/\n/g, "<br>");
-
-  if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
-    html = `<p>${html}</p>`;
-  }
-
-  return html;
-};
-
 const getHtmlContent = (content?: string) => {
   if (!content) return undefined;
-  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content);
-  const html = looksLikeHtml ? content : convertMarkdownToHtml(content);
+  const html = convertSimpleMarkdownToHtml(content);
   return { __html: html };
 };
 
 export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) => {
-  console.log('[TopListsPreview] intro:', intro);
-  console.log('[TopListsPreview] outro:', outro);
   return (
     <div className="space-y-8 p-4">
       {intro && (
