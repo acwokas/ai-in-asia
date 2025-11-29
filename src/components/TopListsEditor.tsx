@@ -423,19 +423,29 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
             {item.image_urls && item.image_urls.length > 0 && (
               <div className="mt-2 space-y-2">
                 {item.image_urls.map((url, imgIndex) => (
-                  <div key={imgIndex} className="flex gap-2 items-start">
-                    <img
-                      src={url}
-                      alt={`${item.title} - Image ${imgIndex + 1}`}
-                      className="max-w-xs rounded-md"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeImage(imgIndex)}
+                  <div key={imgIndex} className="space-y-2">
+                    <div className="flex gap-2 items-start">
+                      <img
+                        src={url}
+                        alt={`${item.title} - Image ${imgIndex + 1}`}
+                        className="max-w-xs rounded-md"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeImage(imgIndex)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline break-all block"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                      {url}
+                    </a>
                   </div>
                 ))}
               </div>
