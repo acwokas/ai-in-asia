@@ -33,13 +33,18 @@ import { CSS } from '@dnd-kit/utilities';
 import { TopListsPreview } from "./TopListsPreview";
 import RichTextEditor from "./RichTextEditor";
 
+export interface ImageWithSize {
+  url: string;
+  size: 'small' | 'medium' | 'large';
+}
+
 export interface TopListItem {
   id: string;
   title: string;
   description_top?: string;
   prompt: string;
   description_bottom?: string;
-  image_urls?: string[]; // Support multiple images
+  image_urls?: (string | ImageWithSize)[]; // Support multiple images with optional size
   // New metadata fields
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   ai_models?: string[]; // ['chatgpt', 'gemini', 'claude', 'all']
@@ -421,33 +426,58 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               )}
             </div>
             {item.image_urls && item.image_urls.length > 0 && (
-              <div className="mt-2 space-y-2">
-                {item.image_urls.map((url, imgIndex) => (
-                  <div key={imgIndex} className="space-y-2">
-                    <div className="flex gap-2 items-start">
-                      <img
-                        src={url}
-                        alt={`${item.title} - Image ${imgIndex + 1}`}
-                        className="max-w-xs rounded-md"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeImage(imgIndex)}
+              <div className="mt-2 space-y-3">
+                {item.image_urls.map((imageData, imgIndex) => {
+                  const url = typeof imageData === 'string' ? imageData : imageData.url;
+                  const size = typeof imageData === 'string' ? 'large' : imageData.size;
+                  
+                  return (
+                    <div key={imgIndex} className="space-y-2 border rounded-lg p-3">
+                      <div className="flex gap-2 items-start">
+                        <img
+                          src={url}
+                          alt={`${item.title} - Image ${imgIndex + 1}`}
+                          className="max-w-xs rounded-md"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeImage(imgIndex)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Display Size</Label>
+                        <Select
+                          value={size}
+                          onValueChange={(newSize: 'small' | 'medium' | 'large') => {
+                            const newImageUrls = [...(item.image_urls || [])];
+                            newImageUrls[imgIndex] = { url, size: newSize };
+                            onUpdate(item.id, 'image_urls', newImageUrls);
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="small">Small (320px)</SelectItem>
+                            <SelectItem value="medium">Medium (512px)</SelectItem>
+                            <SelectItem value="large">Large (Full Width)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline break-all block"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                        {url}
+                      </a>
                     </div>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline break-all block"
-                    >
-                      {url}
-                    </a>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -602,10 +632,10 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
         .from('article-images')
         .getPublicUrl(filePath);
 
-      // Support multiple images by adding to array
+      // Support multiple images by adding to array with default large size
       const item = items.find(i => i.id === itemId);
       const currentImages = item?.image_urls || [];
-      updateItem(itemId, 'image_urls', [...currentImages, publicUrl]);
+      updateItem(itemId, 'image_urls', [...currentImages, { url: publicUrl, size: 'large' }]);
 
       toast({
         title: "Success",
