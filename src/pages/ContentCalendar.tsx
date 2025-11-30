@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay, addDays, addWeeks, addMonths } from "date-fns";
@@ -9,7 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, CalendarRange, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, CalendarRange, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
@@ -88,6 +91,10 @@ const ContentCalendar = () => {
   const queryClient = useQueryClient();
   const [view, setView] = useState<View>("week");
   const [date, setDate] = useState(new Date());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [authorFilter, setAuthorFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data: articles, isLoading } = useQuery({
     queryKey: ["calendar-articles"],
@@ -179,7 +186,39 @@ const ContentCalendar = () => {
     },
   });
 
-  const events: CalendarEvent[] = (articles || []).map((article) => {
+  // Get unique categories and authors for filters
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set(articles?.map(a => a.categories?.name).filter(Boolean));
+    return Array.from(cats).sort();
+  }, [articles]);
+
+  const uniqueAuthors = useMemo(() => {
+    const authors = new Set(articles?.map(a => a.authors?.name).filter(Boolean));
+    return Array.from(authors).sort();
+  }, [articles]);
+
+  // Filter articles based on search and filters
+  const filteredArticles = useMemo(() => {
+    if (!articles) return [];
+    
+    return articles.filter(article => {
+      const matchesSearch = searchQuery === "" || 
+        article.title.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = categoryFilter === "all" || 
+        article.categories?.name === categoryFilter;
+      
+      const matchesAuthor = authorFilter === "all" || 
+        article.authors?.name === authorFilter;
+      
+      const matchesStatus = statusFilter === "all" || 
+        article.status === statusFilter;
+      
+      return matchesSearch && matchesCategory && matchesAuthor && matchesStatus;
+    });
+  }, [articles, searchQuery, categoryFilter, authorFilter, statusFilter]);
+
+  const events: CalendarEvent[] = (filteredArticles || []).map((article) => {
     const eventDate = article.status === "scheduled" 
       ? new Date(article.scheduled_for!) 
       : new Date(article.published_at!);
@@ -272,12 +311,150 @@ const ContentCalendar = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-16">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold mb-2 text-foreground">Content Calendar</h1>
-          <p className="text-muted-foreground">
-            View and manage your scheduled articles
-          </p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 text-foreground">Content Calendar</h1>
+            <p className="text-muted-foreground">
+              View and manage your scheduled articles
+            </p>
+          </div>
+          <Button onClick={() => navigate("/editor")} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Article
+          </Button>
         </div>
+
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4 bg-card border-border">
+            <div className="text-sm text-muted-foreground">Total Articles</div>
+            <div className="text-2xl font-bold">{filteredArticles?.length || 0}</div>
+          </Card>
+          <Card className="p-4 bg-card border-border">
+            <div className="text-sm text-muted-foreground">Scheduled</div>
+            <div className="text-2xl font-bold">
+              {filteredArticles?.filter(a => a.status === "scheduled").length || 0}
+            </div>
+          </Card>
+          <Card className="p-4 bg-card border-border">
+            <div className="text-sm text-muted-foreground">Published (30d)</div>
+            <div className="text-2xl font-bold">
+              {filteredArticles?.filter(a => a.status === "published").length || 0}
+            </div>
+          </Card>
+          <Card className="p-4 bg-card border-border">
+            <div className="text-sm text-muted-foreground">Active Filters</div>
+            <div className="text-2xl font-bold">
+              {[categoryFilter !== "all", authorFilter !== "all", statusFilter !== "all", searchQuery !== ""].filter(Boolean).length}
+            </div>
+          </Card>
+        </div>
+
+        {/* Filters and Search */}
+        <Card className="p-4 mb-6 bg-card border-border">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {uniqueCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={authorFilter} onValueChange={setAuthorFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Authors" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Authors</SelectItem>
+                {uniqueAuthors.map(author => (
+                  <SelectItem key={author} value={author}>{author}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="scheduled">Scheduled</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {(searchQuery || categoryFilter !== "all" || authorFilter !== "all" || statusFilter !== "all") && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Active filters:</span>
+              {searchQuery && (
+                <Badge variant="secondary" className="gap-1">
+                  Search: {searchQuery}
+                </Badge>
+              )}
+              {categoryFilter !== "all" && (
+                <Badge variant="secondary">Category: {categoryFilter}</Badge>
+              )}
+              {authorFilter !== "all" && (
+                <Badge variant="secondary">Author: {authorFilter}</Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="secondary">Status: {statusFilter}</Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setCategoryFilter("all");
+                  setAuthorFilter("all");
+                  setStatusFilter("all");
+                }}
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* Category Legend */}
+        <Card className="p-4 mb-6 bg-card border-border">
+          <div className="text-sm font-medium mb-3">Category Colors:</div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { name: "News", color: "hsl(0, 85%, 45%)" },
+              { name: "Business", color: "hsl(210, 85%, 40%)" },
+              { name: "Life", color: "hsl(280, 65%, 50%)" },
+              { name: "Learn", color: "hsl(45, 90%, 45%)" },
+              { name: "Create", color: "hsl(340, 75%, 45%)" },
+              { name: "AI Policy Atlas", color: "hsl(160, 60%, 35%)" },
+              { name: "Voices", color: "hsl(25, 75%, 50%)" },
+            ].map(cat => (
+              <div key={cat.name} className="flex items-center gap-2">
+                <div 
+                  className="w-4 h-4 rounded" 
+                  style={{ backgroundColor: cat.color }}
+                />
+                <span className="text-sm">{cat.name}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         <Card className="p-6 bg-card border-border">
           <div className="flex flex-wrap gap-4 mb-6">
