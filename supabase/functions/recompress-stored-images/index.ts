@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
       // Extract image URLs from content
       const content = JSON.stringify(article.content);
-      const imageUrlRegex = /https:\/\/[^"\s]+\/storage\/v1\/object\/public\/article-images\/[^"\s]+/g;
+      const imageUrlRegex = /https:\/\/[^"\s]+\/storage\/v1\/object\/public\/article-images\/[^"?\s]+/g;
       const imageUrls = content.match(imageUrlRegex) || [];
       const uniqueUrls = [...new Set(imageUrls)];
 
@@ -95,38 +95,19 @@ Deno.serve(async (req) => {
 
       for (const imageUrl of uniqueUrls) {
         try {
-          // Extract the file path from the URL - handle both formats
-          let filePath: string;
+          // Extract the file path from the URL (remove query params first)
+          const urlWithoutParams = imageUrl.split('?')[0];
           
-          if (imageUrl.includes('/storage/v1/object/public/article-images/')) {
-            const urlParts = imageUrl.split('/storage/v1/object/public/article-images/');
-            if (urlParts.length !== 2) {
-              continue; // Skip silently
-            }
-            filePath = decodeURIComponent(urlParts[1]);
-          } else if (imageUrl.includes('/article-images/')) {
-            const urlParts = imageUrl.split('/article-images/');
-            if (urlParts.length !== 2) {
-              continue; // Skip silently
-            }
-            filePath = decodeURIComponent(urlParts[1]);
-          } else {
-            continue; // Skip silently
+          // Extract path after '/article-images/'
+          const pathMatch = urlWithoutParams.match(/\/article-images\/(.+)$/);
+          if (!pathMatch) {
+            console.log(`Could not extract path from: ${imageUrl}`);
+            continue;
           }
-
-          // Check if file exists first
-          const { data: fileCheck, error: checkError } = await supabase.storage
-            .from('article-images')
-            .list(filePath.substring(0, filePath.lastIndexOf('/')), {
-              search: filePath.substring(filePath.lastIndexOf('/') + 1)
-            });
-
-          if (checkError || !fileCheck || fileCheck.length === 0) {
-            console.log(`File does not exist, skipping: ${filePath}`);
-            continue; // Skip silently if file doesn't exist
-          }
-
-          console.log(`Downloading: ${filePath}`);
+          
+          const filePath = decodeURIComponent(pathMatch[1]);
+          
+          console.log(`Processing: ${filePath}`);
 
           // Download the image from Supabase storage
           const { data: imageData, error: downloadError } = await supabase.storage
