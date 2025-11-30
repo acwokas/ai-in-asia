@@ -163,7 +163,7 @@ const AllPrompts = () => {
               <img
                 src={promptAndGoLogo}
                 alt="Prompt and Go AI"
-                className="h-5 object-contain"
+                className="h-7 object-contain"
               />
               <span className="italic">Your AI prompt companion</span>
             </a>
