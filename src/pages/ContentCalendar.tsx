@@ -93,7 +93,7 @@ const ContentCalendar = () => {
             name
           ),
           primary_category_id,
-          categories (
+          categories:categories!articles_primary_category_id_fkey (
             id,
             name,
             color
@@ -122,7 +122,7 @@ const ContentCalendar = () => {
             name
           ),
           primary_category_id,
-          categories (
+          categories:categories!articles_primary_category_id_fkey (
             id,
             name,
             color
