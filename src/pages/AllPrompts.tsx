@@ -174,35 +174,22 @@ const AllPrompts = () => {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Search & Filter</h2>
-                <div className="flex items-center gap-2">
-                  {showFilters && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={copyAllPrompts}
-                      className="gap-2"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy All
-                    </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="gap-2"
+                >
+                  {showFilters ? (
+                    <>
+                      Hide <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      Show <ChevronDown className="h-4 w-4" />
+                    </>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="gap-2"
-                  >
-                    {showFilters ? (
-                      <>
-                        Hide <ChevronUp className="h-4 w-4" />
-                      </>
-                    ) : (
-                      <>
-                        Show <ChevronDown className="h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </div>
+                </Button>
               </div>
 
               {showFilters && (
