@@ -1865,6 +1865,78 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_bookmarks: {
+        Row: {
+          article_id: string
+          collection_id: string | null
+          created_at: string | null
+          id: string
+          prompt_item_id: string
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          collection_id?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_item_id: string
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          collection_id?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_bookmarks_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompt_bookmarks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_collections: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       prompt_copies: {
         Row: {
           article_id: string
@@ -1934,6 +2006,91 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "prompt_ratings_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_variations: {
+        Row: {
+          created_at: string | null
+          explanation: string | null
+          id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          original_article_id: string
+          original_prompt_id: string
+          points_awarded: boolean | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          variation_text: string
+        }
+        Insert: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          original_article_id: string
+          original_prompt_id: string
+          points_awarded?: boolean | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          variation_text: string
+        }
+        Update: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          original_article_id?: string
+          original_prompt_id?: string
+          points_awarded?: boolean | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          variation_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_variations_original_article_id_fkey"
+            columns: ["original_article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_views: {
+        Row: {
+          article_id: string
+          id: string
+          prompt_item_id: string
+          user_id: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          article_id: string
+          id?: string
+          prompt_item_id: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          article_id?: string
+          id?: string
+          prompt_item_id?: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_views_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: false
             referencedRelation: "articles"
