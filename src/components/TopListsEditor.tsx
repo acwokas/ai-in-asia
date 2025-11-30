@@ -162,8 +162,9 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
   };
 
   const autoGenerateTags = () => {
-    // Auto-generate tags from title if empty
-    if (!item.tags || item.tags.length === 0) {
+    // Auto-generate tags from title whenever it changes
+    // Only generate if title is not empty
+    if (item.title && item.title.trim().length > 0) {
       const words = item.title
         .toLowerCase()
         .replace(/[^\w\s]/g, '')
@@ -285,10 +286,13 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
             <Input
               id={`title-${item.id}`}
               value={item.title}
-              onChange={(e) => onUpdate(item.id, 'title', e.target.value)}
-              onBlur={() => {
-                autoGenerateTags();
-                autoSuggestMetadata();
+              onChange={(e) => {
+                onUpdate(item.id, 'title', e.target.value);
+                // Auto-generate tags immediately as title changes
+                setTimeout(() => {
+                  autoGenerateTags();
+                  autoSuggestMetadata();
+                }, 300); // Debounce slightly to avoid too many updates
               }}
               placeholder="e.g., Astronaut Mascot Design"
             />
