@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,10 +16,39 @@ interface ImageOptimizationResult {
   optimizedSizeKB: number;
 }
 
-async function compressImage(imageBuffer: ArrayBuffer, format: string): Promise<Blob> {
-  // For now, just return the buffer as-is
-  // In production, you'd use a proper image compression library
-  return new Blob([imageBuffer], { type: format });
+async function compressImage(imageBuffer: ArrayBuffer, format: string, originalSize: number): Promise<{ buffer: Uint8Array; format: string }> {
+  try {
+    // Skip compression for small images (under 100KB)
+    if (originalSize < 100 * 1024) {
+      return { buffer: new Uint8Array(imageBuffer), format };
+    }
+
+    const image = await Image.decode(new Uint8Array(imageBuffer));
+    
+    // Resize if too large (max 1920x1080)
+    const maxWidth = 1920;
+    const maxHeight = 1080;
+    
+    if (image.width > maxWidth || image.height > maxHeight) {
+      const ratio = Math.min(maxWidth / image.width, maxHeight / image.height);
+      const newWidth = Math.floor(image.width * ratio);
+      const newHeight = Math.floor(image.height * ratio);
+      image.resize(newWidth, newHeight);
+    }
+    
+    // Encode as JPEG for compression (quality 85)
+    const compressedBuffer = await image.encodeJPEG(85);
+    
+    // If compressed size is larger than original, use original
+    if (compressedBuffer.length > originalSize) {
+      return { buffer: new Uint8Array(imageBuffer), format };
+    }
+    
+    return { buffer: compressedBuffer, format: 'jpeg' };
+  } catch (error) {
+    console.error('Compression failed, using original:', error);
+    return { buffer: new Uint8Array(imageBuffer), format };
+  }
 }
 
 async function extractAndOptimizeImages(
@@ -60,20 +90,20 @@ async function extractAndOptimizeImages(
       
       console.log(`Processing image ${imageCount}: ${(originalSize / 1024).toFixed(2)}KB`);
       
-      // For images larger than 100KB, try to compress
-      let finalBuffer = bytes.buffer;
-      if (originalSize > 100 * 1024) {
-        // Simple compression: convert to WebP if possible
-        // In a real implementation, you'd use a proper image processing library
-        finalBuffer = bytes.buffer; // Placeholder
-      }
+      // Compress the image
+      const { buffer: finalBuffer, format: outputFormat } = await compressImage(
+        bytes.buffer,
+        format,
+        originalSize
+      );
       
       const optimizedSize = finalBuffer.byteLength;
+      console.log(`Compressed to: ${(optimizedSize / 1024).toFixed(2)}KB (${Math.round((1 - optimizedSize / originalSize) * 100)}% reduction)`);
       totalOptimizedSize += optimizedSize;
       
       // Generate filename
       const timestamp = Date.now();
-      const fileExt = format === 'jpeg' ? 'jpg' : format;
+      const fileExt = outputFormat === 'jpeg' ? 'jpg' : outputFormat;
       const fileName = `optimized-${articleId}-${imageCount}-${timestamp}.${fileExt}`;
       const filePath = `content/${fileName}`;
       
@@ -81,7 +111,7 @@ async function extractAndOptimizeImages(
       const { error: uploadError } = await supabase.storage
         .from('article-images')
         .upload(filePath, finalBuffer, {
-          contentType: `image/${format}`,
+          contentType: `image/${outputFormat}`,
           upsert: false,
         });
       
