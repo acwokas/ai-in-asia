@@ -34,14 +34,15 @@ const OptimizeArticleImages = () => {
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
-  // Fetch articles with potential base64 images
+  // Fetch articles with potential base64 images (limit to recent 100)
   const { data: articles, isLoading } = useQuery({
     queryKey: ['articles-with-images'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
         .select('id, title, content, status')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100); // Only fetch last 100 articles to prevent hanging
 
       if (error) throw error;
 
@@ -53,8 +54,10 @@ const OptimizeArticleImages = () => {
         return contentStr.includes('data:image/');
       });
 
+      console.log(`Found ${articlesWithImages.length} articles with base64 images out of ${data.length} scanned`);
       return articlesWithImages;
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   const handleOptimizeAll = async () => {
