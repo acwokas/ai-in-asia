@@ -101,20 +101,29 @@ Deno.serve(async (req) => {
           if (imageUrl.includes('/storage/v1/object/public/article-images/')) {
             const urlParts = imageUrl.split('/storage/v1/object/public/article-images/');
             if (urlParts.length !== 2) {
-              errors.push(`Invalid URL format: ${imageUrl}`);
-              continue;
+              continue; // Skip silently
             }
             filePath = decodeURIComponent(urlParts[1]);
           } else if (imageUrl.includes('/article-images/')) {
             const urlParts = imageUrl.split('/article-images/');
             if (urlParts.length !== 2) {
-              errors.push(`Invalid URL format: ${imageUrl}`);
-              continue;
+              continue; // Skip silently
             }
             filePath = decodeURIComponent(urlParts[1]);
           } else {
-            errors.push(`Unrecognized URL format: ${imageUrl}`);
-            continue;
+            continue; // Skip silently
+          }
+
+          // Check if file exists first
+          const { data: fileCheck, error: checkError } = await supabase.storage
+            .from('article-images')
+            .list(filePath.substring(0, filePath.lastIndexOf('/')), {
+              search: filePath.substring(filePath.lastIndexOf('/') + 1)
+            });
+
+          if (checkError || !fileCheck || fileCheck.length === 0) {
+            console.log(`File does not exist, skipping: ${filePath}`);
+            continue; // Skip silently if file doesn't exist
           }
 
           console.log(`Downloading: ${filePath}`);
