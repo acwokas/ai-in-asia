@@ -94,6 +94,7 @@ const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 const AllPrompts = lazy(() => import("./pages/AllPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
+const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -186,6 +187,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/articles" element={<Articles />} />
+              <Route path="/admin/calendar" element={<ContentCalendar />} />
               <Route path="/editor" element={<Editor />} />
               <Route path="/editor/:id" element={<Editor />} />
               <Route path="/about" element={<About />} />
