@@ -36,33 +36,55 @@ const OptimizeArticleImages = () => {
   const [articlesProcessed, setArticlesProcessed] = useState(0);
   const [imagesProcessed, setImagesProcessed] = useState(0);
   const [totalArticles, setTotalArticles] = useState(0);
+  const [shouldScan, setShouldScan] = useState(false);
   const { toast } = useToast();
 
-  // Fetch articles with potential base64 images (limit to recent 100)
-  const { data: articles, isLoading } = useQuery({
+  // Only fetch articles when user clicks "Scan for Images"
+  const { data: articles, isLoading, refetch } = useQuery({
     queryKey: ['articles-with-images'],
     queryFn: async () => {
+      console.log('Starting article scan...');
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, content, status')
+        .select('id, title, created_at')
         .order('created_at', { ascending: false })
-        .limit(100); // Only fetch last 100 articles to prevent hanging
+        .limit(50); // Scan last 50 articles only
 
       if (error) throw error;
 
-      // Filter articles that likely contain base64 images
-      const articlesWithImages = data.filter((article) => {
-        const contentStr = typeof article.content === 'string' 
-          ? article.content 
-          : JSON.stringify(article.content);
-        return contentStr.includes('data:image/');
-      });
+      console.log(`Fetched ${data.length} articles, checking for base64 images...`);
 
-      console.log(`Found ${articlesWithImages.length} articles with base64 images out of ${data.length} scanned`);
+      // Fetch content only for articles we need to check
+      const articlesWithImages = [];
+      for (const article of data) {
+        const { data: fullArticle, error: contentError } = await supabase
+          .from('articles')
+          .select('content')
+          .eq('id', article.id)
+          .single();
+
+        if (!contentError && fullArticle) {
+          const contentStr = typeof fullArticle.content === 'string' 
+            ? fullArticle.content 
+            : JSON.stringify(fullArticle.content);
+          
+          if (contentStr.includes('data:image/')) {
+            articlesWithImages.push(article);
+          }
+        }
+      }
+
+      console.log(`Found ${articlesWithImages.length} articles with base64 images`);
       return articlesWithImages;
     },
+    enabled: shouldScan, // Only run when user triggers it
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
+
+  const handleScanArticles = () => {
+    setShouldScan(true);
+    refetch();
+  };
 
   const handleOptimizeAll = async () => {
     if (!articles || articles.length === 0) {
@@ -170,28 +192,58 @@ const OptimizeArticleImages = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold mb-1">Articles Found</h2>
+                <h2 className="text-xl font-semibold mb-1">Scan Articles</h2>
                 <p className="text-sm text-muted-foreground">
-                  {isLoading ? 'Scanning...' : `${articles?.length || 0} articles with base64 images`}
+                  {!shouldScan && !articles ? (
+                    'Click "Scan for Images" to find articles with base64-encoded images (last 50 articles)'
+                  ) : isLoading ? (
+                    'Scanning articles for base64 images...'
+                  ) : (
+                    `${articles?.length || 0} articles with base64 images found`
+                  )}
                 </p>
               </div>
-              <Button
-                onClick={handleOptimizeAll}
-                disabled={isProcessing || isLoading || !articles || articles.length === 0}
-                size="lg"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Optimize All Images
-                  </>
+              <div className="flex gap-2">
+                {!shouldScan && !articles && (
+                  <Button
+                    onClick={handleScanArticles}
+                    disabled={isLoading}
+                    size="lg"
+                    variant="outline"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Scanning...
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Scan for Images
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
+                {articles && articles.length > 0 && (
+                  <Button
+                    onClick={handleOptimizeAll}
+                    disabled={isProcessing || isLoading}
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Optimize All Images
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {isProcessing && (
