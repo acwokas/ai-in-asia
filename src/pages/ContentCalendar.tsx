@@ -223,6 +223,12 @@ const ContentCalendar = () => {
       ? new Date(article.scheduled_for!) 
       : new Date(article.published_at!);
     
+    // Randomize minutes to non-round numbers (e.g., 7, 13, 22, 37, 43, 52)
+    const randomMinutes = [7, 13, 22, 37, 43, 52];
+    const randomMinute = randomMinutes[Math.floor(Math.random() * randomMinutes.length)];
+    eventDate.setMinutes(randomMinute);
+    eventDate.setSeconds(0);
+    
     return {
       id: article.id,
       title: article.title,
@@ -542,8 +548,8 @@ const ContentCalendar = () => {
                 resizable
                 min={new Date(2024, 0, 1, 7, 0, 0)}
                 max={new Date(2024, 0, 1, 19, 0, 0)}
-                step={60}
-                timeslots={1}
+                step={5}
+                timeslots={12}
                 components={{
                   event: ({ event }: { event: CalendarEvent }) => (
                     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
