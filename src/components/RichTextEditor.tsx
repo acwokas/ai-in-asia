@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { compressImage } from "@/lib/imageCompression";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface RichTextEditorProps {
   value: string;
@@ -43,6 +46,15 @@ const RichTextEditor = ({
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
   const [lastExternalValue, setLastExternalValue] = useState(value);
+  const { toast } = useToast();
+
+  // Helper function to generate URL-safe slugs
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
 
   // Initial content load
   useEffect(() => {
@@ -394,20 +406,68 @@ const RichTextEditor = ({
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string;
-      setImageData({ url: imageUrl, caption: '', alt: '', description: '', size: 'large' });
+    try {
+      toast({
+        title: "Optimizing image...",
+        description: "Compressing and uploading image for best performance",
+      });
+
+      // Compress image before upload
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.85,
+        maxSizeMB: 1,
+      });
+
+      const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      const compressedSizeMB = (compressedFile.size / (1024 * 1024)).toFixed(2);
+      
+      console.log(`Image compressed: ${originalSizeMB}MB → ${compressedSizeMB}MB`);
+
+      // Generate filename
+      const timestamp = Date.now();
+      const fileExt = compressedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const sanitizedBaseName = generateSlug(baseName);
+      const fileName = `${sanitizedBaseName}-${timestamp}.${fileExt}`;
+      const filePath = `content/${fileName}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, compressedFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      // Show dialog with the uploaded URL
+      setImageData({ url: publicUrl, caption: '', alt: '', description: '', size: 'large' });
       setShowImageDialog(true);
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input so the same file can be selected again
-    e.target.value = '';
+
+      toast({
+        title: "Image uploaded",
+        description: `Optimized and uploaded (${originalSizeMB}MB → ${compressedSizeMB}MB)`,
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      // Reset input so the same file can be selected again
+      e.target.value = '';
+    }
   };
 
   const handleInsertImage = () => {
