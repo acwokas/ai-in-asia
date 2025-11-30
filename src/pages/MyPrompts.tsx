@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
 import { Navigate } from "react-router-dom";
 
-export const MyPrompts = () => {
+const MyPrompts = () => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/auth" />;
@@ -120,3 +120,5 @@ export const MyPrompts = () => {
     </div>
   );
 };
+
+export default MyPrompts;
