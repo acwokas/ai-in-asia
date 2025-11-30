@@ -40,12 +40,17 @@ const OptimizeArticleImages = () => {
   const [shouldScan, setShouldScan] = useState(false);
   const [recompressProcessing, setRecompressProcessing] = useState(false);
   const [recompressResults, setRecompressResults] = useState<any[]>([]);
+  const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
+  const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
 
   // Only fetch articles when user clicks "Scan for Images"
   const { data: articles, isLoading, refetch } = useQuery({
     queryKey: ['articles-with-images'],
     queryFn: async () => {
+      setIsScanning(true);
+      setScanProgress({ current: 0, total: 0 });
+      
       console.log('Starting full article scan...');
       const { data, error } = await supabase
         .from('articles')
@@ -55,33 +60,50 @@ const OptimizeArticleImages = () => {
       if (error) throw error;
 
       console.log(`Fetched ${data.length} articles, checking for images in content...`);
+      setScanProgress({ current: 0, total: data.length });
 
-      // Fetch content only for articles we need to check
       const articlesWithImages = [];
-      for (const article of data) {
-        const { data: fullArticle, error: contentError } = await supabase
-          .from('articles')
-          .select('content')
-          .eq('id', article.id)
-          .single();
+      const BATCH_SIZE = 20; // Process 20 articles at a time
+      
+      for (let i = 0; i < data.length; i += BATCH_SIZE) {
+        const batch = data.slice(i, Math.min(i + BATCH_SIZE, data.length));
+        
+        // Process batch in parallel
+        const batchResults = await Promise.all(
+          batch.map(async (article) => {
+            const { data: fullArticle, error: contentError } = await supabase
+              .from('articles')
+              .select('content')
+              .eq('id', article.id)
+              .single();
 
-        if (!contentError && fullArticle) {
-          const contentStr = typeof fullArticle.content === 'string' 
-            ? fullArticle.content 
-            : JSON.stringify(fullArticle.content);
-          
-          // Check for images from article-images bucket (uploaded via editor)
-          if (contentStr.includes('article-images')) {
-            articlesWithImages.push(article);
-          }
-        }
+            if (!contentError && fullArticle) {
+              const contentStr = typeof fullArticle.content === 'string' 
+                ? fullArticle.content 
+                : JSON.stringify(fullArticle.content);
+              
+              // Check for images from article-images bucket (uploaded via editor)
+              if (contentStr.includes('article-images')) {
+                return article;
+              }
+            }
+            return null;
+          })
+        );
+        
+        // Add non-null results
+        articlesWithImages.push(...batchResults.filter(a => a !== null));
+        
+        // Update progress
+        setScanProgress({ current: Math.min(i + BATCH_SIZE, data.length), total: data.length });
       }
 
       console.log(`Found ${articlesWithImages.length} articles with uploaded images`);
+      setIsScanning(false);
       return articlesWithImages;
     },
-    enabled: shouldScan, // Only run when user triggers it
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    enabled: shouldScan,
+    staleTime: 1000 * 60 * 5,
   });
 
   const handleScanArticles = () => {
@@ -192,38 +214,61 @@ const OptimizeArticleImages = () => {
 
     setRecompressProcessing(true);
     setRecompressResults([]);
+    setProgress(0);
+    setArticlesProcessed(0);
 
     try {
-      const articleIds = articles.map(a => a.id);
+      const allResults: any[] = [];
       
       toast({
-        title: "Starting re-compression",
-        description: `Processing ${articleIds.length} articles...`,
+        title: "Starting compression",
+        description: `Processing ${articles.length} articles...`,
       });
 
-      const { data, error } = await supabase.functions.invoke('recompress-stored-images', {
-        body: { articleIds }
-      });
+      // Process one article at a time for real-time updates
+      for (let i = 0; i < articles.length; i++) {
+        const article = articles[i];
+        setCurrentArticle(article.title);
+        setArticlesProcessed(i + 1);
+        setProgress(Math.round(((i + 1) / articles.length) * 100));
 
-      if (error) throw error;
-
-      setRecompressResults(data.results || []);
-      
-      if (data.summary) {
-        toast({
-          title: "Re-compression complete!",
-          description: `Compressed ${data.summary.totalImagesProcessed} images, saved ${data.summary.totalSavingsKB}KB total`,
+        const { data, error } = await supabase.functions.invoke('recompress-stored-images', {
+          body: { articleIds: [article.id] }
         });
+
+        if (error) {
+          console.error('Recompression error:', error);
+          allResults.push({
+            articleId: article.id,
+            articleTitle: article.title,
+            status: 'error',
+            error: error.message,
+          });
+        } else if (data?.results) {
+          allResults.push(...data.results);
+        }
+
+        setRecompressResults([...allResults]);
       }
+      
+      const totalSaved = allResults.reduce((sum, r) => sum + (r.totalSavingsKB || 0), 0);
+      const totalProcessed = allResults.reduce((sum, r) => sum + (r.imagesProcessed || 0), 0);
+      
+      toast({
+        title: "Compression complete!",
+        description: `Compressed ${totalProcessed} images, saved ${totalSaved}KB total`,
+      });
     } catch (error: any) {
       console.error('Re-compression error:', error);
       toast({
-        title: "Re-compression failed",
+        title: "Compression failed",
         description: error.message,
         variant: "destructive",
       });
     } finally {
       setRecompressProcessing(false);
+      setCurrentArticle('');
+      setProgress(100);
     }
   };
 
@@ -244,7 +289,9 @@ const OptimizeArticleImages = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-1">Scan Articles</h2>
                 <p className="text-sm text-muted-foreground">
-                  {!shouldScan && !articles ? (
+                  {isScanning ? (
+                    `Scanning... ${scanProgress.current} / ${scanProgress.total} articles checked`
+                  ) : !shouldScan && !articles ? (
                     'Click "Scan for Images" to find all articles with uploaded images'
                   ) : isLoading ? (
                     'Scanning all articles for uploaded images...'
@@ -256,11 +303,11 @@ const OptimizeArticleImages = () => {
               <div className="flex gap-2">
                 <Button
                   onClick={handleScanArticles}
-                  disabled={isLoading}
+                  disabled={isLoading || isScanning}
                   size="lg"
                   variant="outline"
                 >
-                  {isLoading ? (
+                  {isLoading || isScanning ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Scanning...
@@ -275,7 +322,7 @@ const OptimizeArticleImages = () => {
                 {articles && articles.length > 0 && (
                   <Button
                     onClick={handleOptimizeAll}
-                    disabled={isProcessing || isLoading}
+                    disabled={isProcessing || isLoading || isScanning}
                     size="lg"
                   >
                     {isProcessing ? (
@@ -293,6 +340,15 @@ const OptimizeArticleImages = () => {
                 )}
               </div>
             </div>
+
+            {(isScanning || isLoading) && scanProgress.total > 0 && (
+              <div className="space-y-2">
+                <Progress value={(scanProgress.current / scanProgress.total) * 100} className="h-2" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Scanning articles: {scanProgress.current} / {scanProgress.total}
+                </p>
+              </div>
+            )}
 
             {isProcessing && (
               <div className="space-y-3">
@@ -439,15 +495,30 @@ const OptimizeArticleImages = () => {
               {recompressProcessing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Re-compressing...
+                  Compressing...
                 </>
               ) : (
                 <>
                   <ImageIcon className="mr-2 h-4 w-4" />
-                  Re-compress All Images ({articles?.length || 0} articles)
+                  Compress All Images ({articles?.length || 0} articles)
                 </>
               )}
             </Button>
+
+            {recompressProcessing && (
+              <div className="space-y-2 mt-4">
+                <Progress value={progress} className="h-2" />
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Progress:</span>
+                  <span className="font-medium">{articlesProcessed} / {articles?.length || 0} articles</span>
+                </div>
+                {currentArticle && (
+                  <p className="text-sm text-muted-foreground">
+                    Processing: <span className="font-medium">{currentArticle}</span>
+                  </p>
+                )}
+              </div>
+            )}
 
             {recompressResults.length > 0 && (
               <div className="space-y-4 mt-6">
