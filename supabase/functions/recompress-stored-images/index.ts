@@ -95,13 +95,29 @@ Deno.serve(async (req) => {
 
       for (const imageUrl of uniqueUrls) {
         try {
-          // Extract the file path from the URL
-          const urlParts = imageUrl.split('/article-images/');
-          if (urlParts.length !== 2) {
-            errors.push(`Invalid URL format: ${imageUrl}`);
+          // Extract the file path from the URL - handle both formats
+          let filePath: string;
+          
+          if (imageUrl.includes('/storage/v1/object/public/article-images/')) {
+            const urlParts = imageUrl.split('/storage/v1/object/public/article-images/');
+            if (urlParts.length !== 2) {
+              errors.push(`Invalid URL format: ${imageUrl}`);
+              continue;
+            }
+            filePath = decodeURIComponent(urlParts[1]);
+          } else if (imageUrl.includes('/article-images/')) {
+            const urlParts = imageUrl.split('/article-images/');
+            if (urlParts.length !== 2) {
+              errors.push(`Invalid URL format: ${imageUrl}`);
+              continue;
+            }
+            filePath = decodeURIComponent(urlParts[1]);
+          } else {
+            errors.push(`Unrecognized URL format: ${imageUrl}`);
             continue;
           }
-          const filePath = decodeURIComponent(urlParts[1]);
+
+          console.log(`Downloading: ${filePath}`);
 
           // Download the image from Supabase storage
           const { data: imageData, error: downloadError } = await supabase.storage
@@ -109,7 +125,8 @@ Deno.serve(async (req) => {
             .download(filePath);
 
           if (downloadError || !imageData) {
-            errors.push(`Failed to download ${filePath}: ${downloadError?.message}`);
+            console.error(`Download error for ${filePath}:`, downloadError);
+            errors.push(`Failed to download ${filePath.substring(0, 50)}...: ${downloadError?.message || 'No data'}`);
             continue;
           }
 
