@@ -1274,6 +1274,9 @@ const Admin = () => {
                     <Button onClick={() => navigate("/admin/fix-broken-image")} variant="outline" className="justify-start">
                       Fix Broken Images
                     </Button>
+                    <Button onClick={() => navigate("/admin/optimize-images")} variant="outline" className="justify-start">
+                      Optimize Article Images
+                    </Button>
                   </div>
                 </div>
 

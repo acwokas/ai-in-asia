@@ -93,6 +93,7 @@ const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 const AllPrompts = lazy(() => import("./pages/AllPrompts"));
+const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -208,8 +209,9 @@ const App = () => (
               <Route path="/admin/bulk-import" element={<BulkImport />} />
               <Route path="/admin/extract-image-urls" element={<ExtractImageUrls />} />
               <Route path="/admin/image-migration" element={<ImageMigration />} />
-          <Route path="/admin/update-article-images" element={<UpdateArticleImages />} />
-          <Route path="/admin/migrate-toplist-images" element={<MigrateTopListImages />} />
+              <Route path="/admin/update-article-images" element={<UpdateArticleImages />} />
+              <Route path="/admin/migrate-toplist-images" element={<MigrateTopListImages />} />
+              <Route path="/admin/optimize-images" element={<OptimizeArticleImages />} />
               <Route path="/admin/migration-dashboard" element={<MigrationDashboard />} />
               <Route path="/admin/bulk-redirects" element={<BulkRedirects />} />
               <Route path="/admin/csv-url-replacer" element={<CsvUrlReplacer />} />
