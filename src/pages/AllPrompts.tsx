@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,6 +18,11 @@ import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import promptAndGoLogo from "@/assets/promptandgo-logo.png";
 import { StarRating } from "@/components/StarRating";
 import { useAuth } from "@/contexts/AuthContext";
+import { PromptBookmarkButton } from "@/components/PromptBookmarkButton";
+import { PromptVariationDialog } from "@/components/PromptVariationDialog";
+import { PromptQuickActions } from "@/components/PromptQuickActions";
+import { RelatedPrompts } from "@/components/RelatedPrompts";
+import { Slider } from "@/components/ui/slider";
 
 const AllPrompts = () => {
   const { toast } = useToast();
@@ -29,8 +34,12 @@ const AllPrompts = () => {
   const [modelFilter, setModelFilter] = useState<string>('all');
   const [useCaseFilter, setUseCaseFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('relevance');
+  const [minRating, setMinRating] = useState<number[]>([0]);
+  const [minCopies, setMinCopies] = useState<number[]>([0]);
+  const [showUnrated, setShowUnrated] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(true);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
   const { data: articles, isLoading } = useQuery({
     queryKey: ['all-prompts'],
@@ -60,7 +69,35 @@ const AllPrompts = () => {
     },
   });
 
-  // Rating mutation
+  // Fetch copy counts
+  const { data: copyCountsData } = useQuery({
+    queryKey: ['prompt-copy-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('prompt_copies')
+        .select('prompt_item_id');
+
+      if (error) throw error;
+
+      // Count copies per prompt
+      const counts: Record<string, number> = {};
+      data.forEach(copy => {
+        counts[copy.prompt_item_id] = (counts[copy.prompt_item_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
+  // Track prompt view
+  useEffect(() => {
+    if (selectedPrompt && user) {
+      supabase.from('prompt_views').insert({
+        user_id: user.id,
+        prompt_item_id: selectedPrompt,
+        article_id: allPrompts.find(p => p.id === selectedPrompt)?.articleId || '',
+      });
+    }
+  }, [selectedPrompt, user]);
   const ratingMutation = useMutation({
     mutationFn: async ({ promptItemId, articleId, rating }: { promptItemId: string; articleId: string; rating: number }) => {
       if (!user) {
@@ -134,6 +171,7 @@ const AllPrompts = () => {
       avgRating: number;
       ratingCount: number;
       userRating?: number;
+      copyCount: number;
     }> = [];
 
     articles.forEach(article => {
@@ -145,6 +183,7 @@ const AllPrompts = () => {
             ? promptRatings.reduce((sum, r) => sum + r.rating, 0) / promptRatings.length
             : 0;
           const userRating = user ? promptRatings.find(r => r.user_id === user.id)?.rating : undefined;
+          const copyCount = copyCountsData?.[item.id] || 0;
 
           prompts.push({
             ...item,
@@ -156,13 +195,14 @@ const AllPrompts = () => {
             avgRating,
             ratingCount: promptRatings.length,
             userRating,
+            copyCount,
           });
         });
       }
     });
 
     return prompts;
-  }, [articles, ratingsData, user]);
+  }, [articles, ratingsData, user, copyCountsData]);
 
   const filteredPrompts = useMemo(() => {
     let filtered = allPrompts;
@@ -197,6 +237,19 @@ const AllPrompts = () => {
       );
     }
 
+    // Advanced filters
+    if (minRating[0] > 0) {
+      filtered = filtered.filter(item => item.avgRating >= minRating[0]);
+    }
+
+    if (minCopies[0] > 0) {
+      filtered = filtered.filter(item => item.copyCount >= minCopies[0]);
+    }
+
+    if (showUnrated && user) {
+      filtered = filtered.filter(item => !item.userRating);
+    }
+
     // Sorting
     if (sortBy === 'popular') {
       filtered = [...filtered].sort((a, b) => {
@@ -210,15 +263,27 @@ const AllPrompts = () => {
       filtered = [...filtered].sort((a, b) => 
         new Date(b.articleCreatedAt).getTime() - new Date(a.articleCreatedAt).getTime()
       );
+    } else if (sortBy === 'most-copied') {
+      filtered = [...filtered].sort((a, b) => b.copyCount - a.copyCount);
     }
 
     return filtered;
-  }, [allPrompts, searchQuery, difficultyFilter, modelFilter, useCaseFilter, sortBy]);
+  }, [allPrompts, searchQuery, difficultyFilter, modelFilter, useCaseFilter, sortBy, minRating, minCopies, showUnrated, user]);
 
-  const copyPrompt = async (prompt: string, itemId: string) => {
+  const copyPrompt = async (prompt: string, itemId: string, articleId: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
       setCopiedId(itemId);
+      
+      // Track copy
+      await supabase.from('prompt_copies').insert({
+        prompt_item_id: itemId,
+        article_id: articleId,
+        user_id: user?.id || null,
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['prompt-copy-counts'] });
+      
       toast({
         title: "Copied!",
         description: "Prompt copied to clipboard",
@@ -335,6 +400,7 @@ const AllPrompts = () => {
                         <SelectContent>
                           <SelectItem value="relevance">Relevance</SelectItem>
                           <SelectItem value="popular">Most Popular</SelectItem>
+                          <SelectItem value="most-copied">Most Copied</SelectItem>
                           <SelectItem value="newest">Newest</SelectItem>
                         </SelectContent>
                       </Select>
@@ -385,6 +451,54 @@ const AllPrompts = () => {
                     </div>
                   </div>
 
+                  {/* Advanced Filters */}
+                  <div className="mt-6 pt-6 border-t space-y-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Advanced Filters</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="text-sm font-medium mb-3 block">
+                          Minimum Rating: {minRating[0]} stars
+                        </label>
+                        <Slider
+                          value={minRating}
+                          onValueChange={setMinRating}
+                          max={5}
+                          step={0.5}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-3 block">
+                          Minimum Copies: {minCopies[0]}
+                        </label>
+                        <Slider
+                          value={minCopies}
+                          onValueChange={setMinCopies}
+                          max={500}
+                          step={10}
+                          className="w-full"
+                        />
+                      </div>
+
+                      {user && (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="unrated"
+                            checked={showUnrated}
+                            onChange={(e) => setShowUnrated(e.target.checked)}
+                            className="h-4 w-4"
+                          />
+                          <label htmlFor="unrated" className="text-sm font-medium">
+                            Show only prompts I haven't rated
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="mt-4 text-sm text-muted-foreground">
                     Showing {filteredPrompts.length} of {allPrompts.length} prompts
                   </div>
@@ -416,92 +530,131 @@ const AllPrompts = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredPrompts.map((prompt) => (
-                <Card key={prompt.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6 space-y-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-lg font-semibold flex-1">{prompt.title}</h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyPrompt(prompt.prompt, prompt.id)}
-                      >
-                        {copiedId === prompt.id ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {prompt.difficulty && (
-                        <Badge variant="outline" className="capitalize">
-                          {prompt.difficulty}
-                        </Badge>
-                      )}
-                      {prompt.use_cases?.map(useCase => (
-                        <Badge key={useCase} variant="secondary" className="capitalize">
-                          {useCase}
-                        </Badge>
-                      ))}
-                      {prompt.ai_models?.slice(0, 2).map(model => (
-                        <Badge key={model} variant="default" className="capitalize">
-                          {model}
-                        </Badge>
-                      ))}
-                      {prompt.tags?.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Rating Section */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <StarRating
-                          rating={prompt.avgRating}
-                          size={18}
-                          interactive={!!user}
-                          onRatingChange={(rating) => handleRating(prompt.id, prompt.articleId, rating)}
-                          userRating={prompt.userRating}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {prompt.avgRating > 0 ? `${prompt.avgRating.toFixed(1)} (${prompt.ratingCount})` : 'No ratings yet'}
-                        </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main prompts - 2/3 width */}
+              <div className="lg:col-span-2 space-y-6">
+                {filteredPrompts.map((prompt) => (
+                  <Card 
+                    key={prompt.id} 
+                    className="hover:shadow-lg transition-shadow"
+                    onClick={() => setSelectedPrompt(prompt.id)}
+                  >
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold mb-2">{prompt.title}</h3>
+                          {prompt.copyCount > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              📋 Copied {prompt.copyCount} times
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <PromptBookmarkButton 
+                            promptItemId={prompt.id}
+                            articleId={prompt.articleId}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyPrompt(prompt.prompt, prompt.id, prompt.articleId);
+                            }}
+                          >
+                            {copiedId === prompt.id ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                      {!user && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/auth')}
-                          className="text-xs"
+
+                      <div className="flex flex-wrap gap-2">
+                        {prompt.difficulty && (
+                          <Badge variant="outline" className="capitalize">
+                            {prompt.difficulty}
+                          </Badge>
+                        )}
+                        {prompt.use_cases?.map(useCase => (
+                          <Badge key={useCase} variant="secondary" className="capitalize">
+                            {useCase}
+                          </Badge>
+                        ))}
+                        {prompt.ai_models?.slice(0, 2).map(model => (
+                          <Badge key={model} variant="default" className="capitalize">
+                            {model}
+                          </Badge>
+                        ))}
+                        {prompt.tags?.slice(0, 3).map(tag => (
+                          <Badge key={tag} variant="outline">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Rating Section */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <StarRating
+                            rating={prompt.avgRating}
+                            size={18}
+                            interactive={!!user}
+                            onRatingChange={(rating) => handleRating(prompt.id, prompt.articleId, rating)}
+                            userRating={prompt.userRating}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {prompt.avgRating > 0 ? `${prompt.avgRating.toFixed(1)} (${prompt.ratingCount})` : 'No ratings yet'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-muted/50 rounded-lg p-3">
+                        <pre className="whitespace-pre-wrap font-mono text-xs line-clamp-4">
+                          {prompt.prompt}
+                        </pre>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
+                        <Link
+                          to={`/${prompt.categorySlug}/${prompt.articleSlug}`}
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
                         >
-                          Sign in to rate
-                        </Button>
-                      )}
-                    </div>
+                          From: {prompt.articleTitle}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
 
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <pre className="whitespace-pre-wrap font-mono text-xs line-clamp-4">
-                        {prompt.prompt}
-                      </pre>
-                    </div>
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap gap-2">
+                        <PromptVariationDialog
+                          promptItemId={prompt.id}
+                          articleId={prompt.articleId}
+                          originalPrompt={prompt.prompt}
+                        />
+                        <PromptQuickActions
+                          prompt={prompt.prompt}
+                          title={prompt.title}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <Link
-                        to={`/${prompt.categorySlug}/${prompt.articleSlug}`}
-                        className="text-sm text-primary hover:underline flex items-center gap-1"
-                      >
-                        From: {prompt.articleTitle}
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {/* Related Prompts Sidebar - 1/3 width */}
+              {selectedPrompt && (
+                <div className="hidden lg:block">
+                  <div className="sticky top-24">
+                    <RelatedPrompts
+                      currentPromptId={selectedPrompt}
+                      allPrompts={allPrompts}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
