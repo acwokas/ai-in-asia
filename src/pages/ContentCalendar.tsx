@@ -186,7 +186,7 @@ const ContentCalendar = () => {
     
     return {
       id: article.id,
-      title: `${article.title}\n👤 ${article.authors?.name || "Unknown"}`,
+      title: article.title,
       start: eventDate,
       end: new Date(eventDate.getTime() + 3 * 60 * 60 * 1000), // 3 hour duration
       author: article.authors?.name || "Unknown Author",
@@ -313,6 +313,18 @@ const ContentCalendar = () => {
                 max={new Date(2024, 0, 1, 19, 0, 0)}
                 step={60}
                 timeslots={1}
+                components={{
+                  event: ({ event }: { event: CalendarEvent }) => (
+                    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                      <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                        {event.title}
+                      </div>
+                      <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
+                        👤 {event.author}
+                      </div>
+                    </div>
+                  ),
+                }}
               />
             </div>
           )}
