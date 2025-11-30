@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Image as ImageIcon, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Header from "@/components/Header";
 
 interface OptimizationResult {
@@ -37,6 +38,8 @@ const OptimizeArticleImages = () => {
   const [imagesProcessed, setImagesProcessed] = useState(0);
   const [totalArticles, setTotalArticles] = useState(0);
   const [shouldScan, setShouldScan] = useState(false);
+  const [recompressProcessing, setRecompressProcessing] = useState(false);
+  const [recompressResults, setRecompressResults] = useState<any[]>([]);
   const { toast } = useToast();
 
   // Only fetch articles when user clicks "Scan for Images"
@@ -175,6 +178,53 @@ const OptimizeArticleImages = () => {
   const formatSize = (kb: number) => {
     if (kb < 1024) return `${kb}KB`;
     return `${(kb / 1024).toFixed(2)}MB`;
+  };
+
+  const handleRecompressAll = async () => {
+    if (!articles?.length) {
+      toast({
+        title: "No articles found",
+        description: "Please scan for articles first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRecompressProcessing(true);
+    setRecompressResults([]);
+
+    try {
+      const articleIds = articles.map(a => a.id);
+      
+      toast({
+        title: "Starting re-compression",
+        description: `Processing ${articleIds.length} articles...`,
+      });
+
+      const { data, error } = await supabase.functions.invoke('recompress-stored-images', {
+        body: { articleIds }
+      });
+
+      if (error) throw error;
+
+      setRecompressResults(data.results || []);
+      
+      if (data.summary) {
+        toast({
+          title: "Re-compression complete!",
+          description: `Compressed ${data.summary.totalImagesProcessed} images, saved ${data.summary.totalSavingsKB}KB total`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Re-compression error:', error);
+      toast({
+        title: "Re-compression failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRecompressProcessing(false);
+    }
   };
 
   return (
@@ -365,6 +415,87 @@ const OptimizeArticleImages = () => {
             ))}
           </div>
         )}
+
+        {/* Re-compress Existing Images Section */}
+        <Card className="p-6 mt-6">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Re-compress Stored Images</h2>
+              <p className="text-sm text-muted-foreground">
+                Compress images that are already in storage to reduce file sizes
+              </p>
+            </div>
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                This will re-compress all images found in the scanned articles, potentially reducing file sizes by 30-70%.
+                Images will be overwritten with compressed versions.
+              </AlertDescription>
+            </Alert>
+
+            <Button
+              onClick={handleRecompressAll}
+              disabled={!articles?.length || recompressProcessing}
+              size="lg"
+            >
+              {recompressProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Re-compressing...
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Re-compress All Images ({articles?.length || 0} articles)
+                </>
+              )}
+            </Button>
+
+            {recompressResults.length > 0 && (
+              <div className="space-y-4 mt-6">
+                <Alert>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="font-semibold mb-1">Re-compression Complete</div>
+                    <div>Processed {recompressResults.length} articles</div>
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-2">
+                  {recompressResults.map((result) => (
+                    <Card key={result.articleId} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold mb-2">{result.articleTitle}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            {result.imagesFound} images found • {result.imagesProcessed} compressed • 
+                            Saved {result.totalSavingsKB}KB
+                          </div>
+                          {result.errors && result.errors.length > 0 && (
+                            <div className="text-sm text-destructive mt-2 space-y-1">
+                              {result.errors.map((err: string, i: number) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <XCircle className="h-3 w-3" />
+                                  {err}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {result.status === 'success' && result.imagesProcessed > 0 ? (
+                          <CheckCircle2 className="h-6 w-6 text-green-500" />
+                        ) : (
+                          <XCircle className="h-6 w-6 text-gray-400" />
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );
