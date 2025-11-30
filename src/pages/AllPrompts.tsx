@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,18 +11,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
 import { Search, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { TopListItem } from "@/components/TopListsEditor";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import promptAndGoLogo from "@/assets/promptandgo-logo.png";
+import { StarRating } from "@/components/StarRating";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AllPrompts = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   const [modelFilter, setModelFilter] = useState<string>('all');
   const [useCaseFilter, setUseCaseFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('relevance');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(true);
 
@@ -31,7 +37,7 @@ const AllPrompts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, slug, top_list_items, categories:primary_category_id(name, slug)')
+        .select('id, title, slug, top_list_items, created_at, categories:primary_category_id(name, slug)')
         .eq('article_type', 'top_lists')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
@@ -41,26 +47,122 @@ const AllPrompts = () => {
     },
   });
 
+  // Fetch all ratings
+  const { data: ratingsData } = useQuery({
+    queryKey: ['prompt-ratings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('prompt_ratings')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Rating mutation
+  const ratingMutation = useMutation({
+    mutationFn: async ({ promptItemId, articleId, rating }: { promptItemId: string; articleId: string; rating: number }) => {
+      if (!user) {
+        throw new Error("Must be logged in to rate");
+      }
+
+      const { data, error } = await supabase
+        .from('prompt_ratings')
+        .upsert({
+          user_id: user.id,
+          prompt_item_id: promptItemId,
+          article_id: articleId,
+          rating,
+        }, {
+          onConflict: 'user_id,prompt_item_id'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Award points for rating (5 points)
+      await supabase.rpc('award_points', {
+        _user_id: user.id,
+        _points: 5
+      });
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prompt-ratings'] });
+      toast({
+        title: "Rating submitted!",
+        description: "You earned 5 points for rating this prompt.",
+      });
+    },
+    onError: (error: Error) => {
+      if (error.message === "Must be logged in to rate") {
+        toast({
+          title: "Sign in required",
+          description: "Please sign in to rate prompts.",
+          action: (
+            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+              Sign In
+            </Button>
+          ),
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit rating",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const handleRating = (promptItemId: string, articleId: string, rating: number) => {
+    ratingMutation.mutate({ promptItemId, articleId, rating });
+  };
+
   const allPrompts = useMemo(() => {
     if (!articles) return [];
 
-    const prompts: Array<TopListItem & { articleTitle: string; articleSlug: string; categorySlug: string }> = [];
+    const prompts: Array<TopListItem & { 
+      articleTitle: string; 
+      articleSlug: string; 
+      categorySlug: string;
+      articleId: string;
+      articleCreatedAt: string;
+      avgRating: number;
+      ratingCount: number;
+      userRating?: number;
+    }> = [];
 
     articles.forEach(article => {
       if (Array.isArray(article.top_list_items)) {
         article.top_list_items.forEach((item: any) => {
+          // Calculate ratings for this prompt
+          const promptRatings = ratingsData?.filter(r => r.prompt_item_id === item.id) || [];
+          const avgRating = promptRatings.length > 0
+            ? promptRatings.reduce((sum, r) => sum + r.rating, 0) / promptRatings.length
+            : 0;
+          const userRating = user ? promptRatings.find(r => r.user_id === user.id)?.rating : undefined;
+
           prompts.push({
             ...item,
             articleTitle: article.title,
             articleSlug: article.slug,
             categorySlug: (article.categories as any)?.slug || 'uncategorized',
+            articleId: article.id,
+            articleCreatedAt: article.created_at,
+            avgRating,
+            ratingCount: promptRatings.length,
+            userRating,
           });
         });
       }
     });
 
     return prompts;
-  }, [articles]);
+  }, [articles, ratingsData, user]);
 
   const filteredPrompts = useMemo(() => {
     let filtered = allPrompts;
@@ -95,8 +197,23 @@ const AllPrompts = () => {
       );
     }
 
+    // Sorting
+    if (sortBy === 'popular') {
+      filtered = [...filtered].sort((a, b) => {
+        // Sort by average rating first, then by rating count
+        if (b.avgRating !== a.avgRating) {
+          return b.avgRating - a.avgRating;
+        }
+        return b.ratingCount - a.ratingCount;
+      });
+    } else if (sortBy === 'newest') {
+      filtered = [...filtered].sort((a, b) => 
+        new Date(b.articleCreatedAt).getTime() - new Date(a.articleCreatedAt).getTime()
+      );
+    }
+
     return filtered;
-  }, [allPrompts, searchQuery, difficultyFilter, modelFilter, useCaseFilter]);
+  }, [allPrompts, searchQuery, difficultyFilter, modelFilter, useCaseFilter, sortBy]);
 
   const copyPrompt = async (prompt: string, itemId: string) => {
     try {
@@ -194,7 +311,7 @@ const AllPrompts = () => {
 
               {showFilters && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Search</label>
                       <div className="relative">
@@ -207,6 +324,20 @@ const AllPrompts = () => {
                           className="pl-10"
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Sort By</label>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="relevance">Relevance</SelectItem>
+                          <SelectItem value="popular">Most Popular</SelectItem>
+                          <SelectItem value="newest">Newest</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
@@ -325,6 +456,32 @@ const AllPrompts = () => {
                           #{tag}
                         </Badge>
                       ))}
+                    </div>
+
+                    {/* Rating Section */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <StarRating
+                          rating={prompt.avgRating}
+                          size={18}
+                          interactive={!!user}
+                          onRatingChange={(rating) => handleRating(prompt.id, prompt.articleId, rating)}
+                          userRating={prompt.userRating}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {prompt.avgRating > 0 ? `${prompt.avgRating.toFixed(1)} (${prompt.ratingCount})` : 'No ratings yet'}
+                        </span>
+                      </div>
+                      {!user && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate('/auth')}
+                          className="text-xs"
+                        >
+                          Sign in to rate
+                        </Button>
+                      )}
                     </div>
 
                     <div className="bg-muted/50 rounded-lg p-3">
