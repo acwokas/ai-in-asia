@@ -548,7 +548,7 @@ const ContentCalendar = () => {
                 resizable
                 min={new Date(2024, 0, 1, 7, 0, 0)}
                 max={new Date(2024, 0, 1, 19, 0, 0)}
-                step={60}
+                step={5}
                 timeslots={12}
                 components={{
                   event: ({ event }: { event: CalendarEvent }) => (
