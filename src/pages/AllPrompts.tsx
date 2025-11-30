@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { TopListItem } from "@/components/TopListsEditor";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
-import { PromptAndGoSponsor } from "@/components/PromptAndGoSponsor";
+import promptAndGoLogo from "@/assets/promptandgo-logo.png";
 
 const AllPrompts = () => {
   const { toast } = useToast();
@@ -150,14 +150,23 @@ const AllPrompts = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-4">All AI Prompts</h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mb-2">
               Browse our complete collection of {allPrompts.length} AI prompts
             </p>
-          </div>
-
-          {/* Sponsor Box */}
-          <div className="mb-8">
-            <PromptAndGoSponsor />
+            <a
+              href="https://www.promptandgo.ai"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span>In partnership with</span>
+              <img
+                src={promptAndGoLogo}
+                alt="Prompt and Go AI"
+                className="h-5 object-contain"
+              />
+              <span className="italic">Your AI prompt companion</span>
+            </a>
           </div>
 
           {/* Filters */}
