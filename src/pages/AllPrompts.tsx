@@ -157,13 +157,13 @@ const AllPrompts = () => {
               href="https://www.promptandgo.ai"
               target="_blank"
               rel="noopener noreferrer sponsored"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="inline-flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <span>In partnership with</span>
               <img
                 src={promptAndGoLogo}
                 alt="Prompt and Go AI"
-                className="h-7 object-contain"
+                className="h-9 object-contain"
               />
               <span className="italic">Your AI prompt companion</span>
             </a>
