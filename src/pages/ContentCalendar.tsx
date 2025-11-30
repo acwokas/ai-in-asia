@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import { format, parse, startOfWeek, getDay, addDays, addWeeks, addMonths } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, CalendarRange, Calendar as CalendarIcon } from "lucide-react";
+import { CalendarDays, CalendarRange, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
@@ -216,6 +216,33 @@ const ContentCalendar = () => {
     });
   };
 
+  const navigateCalendar = (direction: 'prev' | 'next' | 'today') => {
+    if (direction === 'today') {
+      setDate(new Date());
+      return;
+    }
+
+    const multiplier = direction === 'next' ? 1 : -1;
+    let newDate = date;
+
+    switch (view) {
+      case 'day':
+        newDate = addDays(date, multiplier);
+        break;
+      case 'week':
+        newDate = addWeeks(date, multiplier);
+        break;
+      case 'month':
+        newDate = addMonths(date, multiplier);
+        break;
+      case 'agenda':
+        newDate = addWeeks(date, multiplier);
+        break;
+    }
+
+    setDate(newDate);
+  };
+
   const eventStyleGetter = (event: CalendarEvent) => {
     const categoryColor = getCategoryColor(event.categoryName);
     const authorColor = getAuthorColor(event.authorId);
@@ -253,39 +280,66 @@ const ContentCalendar = () => {
         </div>
 
         <Card className="p-6 bg-card border-border">
-          <div className="flex flex-wrap gap-2 mb-6">
-            <Button
-              variant={view === "month" ? "default" : "outline"}
-              onClick={() => setView("month")}
-              className="gap-2"
-            >
-              <CalendarIcon className="h-4 w-4" />
-              Month
-            </Button>
-            <Button
-              variant={view === "week" ? "default" : "outline"}
-              onClick={() => setView("week")}
-              className="gap-2"
-            >
-              <CalendarRange className="h-4 w-4" />
-              Week
-            </Button>
-            <Button
-              variant={view === "day" ? "default" : "outline"}
-              onClick={() => setView("day")}
-              className="gap-2"
-            >
-              <CalendarDays className="h-4 w-4" />
-              Day
-            </Button>
-            <Button
-              variant={view === "agenda" ? "default" : "outline"}
-              onClick={() => setView("agenda")}
-              className="gap-2"
-            >
-              <CalendarDays className="h-4 w-4" />
-              Schedule
-            </Button>
+          <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigateCalendar('prev')}
+                className="gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigateCalendar('today')}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigateCalendar('next')}
+                className="gap-2"
+              >
+                Forward
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant={view === "month" ? "default" : "outline"}
+                onClick={() => setView("month")}
+                className="gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Month
+              </Button>
+              <Button
+                variant={view === "week" ? "default" : "outline"}
+                onClick={() => setView("week")}
+                className="gap-2"
+              >
+                <CalendarRange className="h-4 w-4" />
+                Week
+              </Button>
+              <Button
+                variant={view === "day" ? "default" : "outline"}
+                onClick={() => setView("day")}
+                className="gap-2"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Day
+              </Button>
+              <Button
+                variant={view === "agenda" ? "default" : "outline"}
+                onClick={() => setView("agenda")}
+                className="gap-2"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Schedule
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (
