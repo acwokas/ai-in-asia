@@ -93,6 +93,7 @@ const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 const AllPrompts = lazy(() => import("./pages/AllPrompts"));
+const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 
