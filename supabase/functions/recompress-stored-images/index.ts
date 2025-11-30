@@ -95,14 +95,25 @@ Deno.serve(async (req) => {
 
       for (const imageUrl of uniqueUrls) {
         try {
-          // Download the image
-          const imageResponse = await fetch(imageUrl);
-          if (!imageResponse.ok) {
-            errors.push(`Failed to download: ${imageUrl}`);
+          // Extract the file path from the URL
+          const urlParts = imageUrl.split('/article-images/');
+          if (urlParts.length !== 2) {
+            errors.push(`Invalid URL format: ${imageUrl}`);
+            continue;
+          }
+          const filePath = decodeURIComponent(urlParts[1]);
+
+          // Download the image from Supabase storage
+          const { data: imageData, error: downloadError } = await supabase.storage
+            .from('article-images')
+            .download(filePath);
+
+          if (downloadError || !imageData) {
+            errors.push(`Failed to download ${filePath}: ${downloadError?.message}`);
             continue;
           }
 
-          const imageBuffer = await imageResponse.arrayBuffer();
+          const imageBuffer = await imageData.arrayBuffer();
           const originalSize = imageBuffer.byteLength;
           
           console.log(`Processing image: ${(originalSize / 1024).toFixed(2)}KB`);
@@ -111,14 +122,6 @@ Deno.serve(async (req) => {
           const { buffer: compressedBuffer, sizeReduction } = await compressImage(imageBuffer, originalSize);
 
           if (sizeReduction > 0) {
-            // Extract the file path from the URL
-            const urlParts = imageUrl.split('/article-images/');
-            if (urlParts.length !== 2) {
-              errors.push(`Invalid URL format: ${imageUrl}`);
-              continue;
-            }
-            const filePath = urlParts[1];
-
             // Upload the compressed version (overwrite the original)
             const { error: uploadError } = await supabase.storage
               .from('article-images')
