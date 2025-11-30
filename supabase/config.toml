@@ -116,3 +116,6 @@ verify_jwt = false
 
 [functions.analyze-comment-quality]
 verify_jwt = true
+
+[functions.generate-top-list-tags]
+verify_jwt = true
