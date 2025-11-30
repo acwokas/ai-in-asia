@@ -57,21 +57,29 @@ self.addEventListener('fetch', (event) => {
     }
   }
 
-  // Cache images from Supabase storage
+  // Cache images from Supabase storage with optimized strategy
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/storage/')) {
     event.respondWith(
       caches.open(IMAGE_CACHE).then(async (cache) => {
         const cached = await cache.match(request);
         
         if (cached) {
-          // Return cached image immediately
+          // Return cached image immediately, but update cache in background
+          event.waitUntil(
+            fetch(request).then(response => {
+              if (response.ok) {
+                cache.put(request, response.clone());
+              }
+            }).catch(() => {})
+          );
           return cached;
         }
 
-        // Fetch and cache new image
+        // Fetch and cache new image with optimizations
         try {
           const response = await fetch(request);
-          if (response.ok) {
+          if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+            // Only cache successful image responses
             cache.put(request, response.clone());
           }
           return response;

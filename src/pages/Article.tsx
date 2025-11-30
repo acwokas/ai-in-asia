@@ -28,6 +28,7 @@ import { useState, useEffect, memo } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import DOMPurify from "dompurify";
 import { track404Error } from "@/components/GoogleAnalytics";
+import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 
 const Article = () => {
   const { category, slug } = useParams();
@@ -1158,9 +1159,17 @@ const Article = () => {
             {article.featured_image_url && (
               <div className="relative aspect-video overflow-hidden rounded-lg mb-8">
                 <img 
-                  src={article.featured_image_url} 
+                  src={getOptimizedHeroImage(article.featured_image_url, 1280)} 
+                  srcSet={article.featured_image_url.includes('supabase.co/storage') 
+                    ? generateResponsiveSrcSet(article.featured_image_url, [640, 960, 1280, 1920]) 
+                    : undefined}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1280px"
                   alt={article.featured_image_alt || article.title}
                   className="w-full h-full object-cover"
+                  loading="eager"
+                  fetchPriority="high"
+                  width={1280}
+                  height={720}
                 />
                 {article.featured_image_caption && (
                   <p className="text-sm text-muted-foreground text-center mt-2">
