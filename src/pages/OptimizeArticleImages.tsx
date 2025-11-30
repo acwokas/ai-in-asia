@@ -46,16 +46,15 @@ const OptimizeArticleImages = () => {
   const { data: articles, isLoading, refetch } = useQuery({
     queryKey: ['articles-with-images'],
     queryFn: async () => {
-      console.log('Starting article scan...');
+      console.log('Starting full article scan...');
       const { data, error } = await supabase
         .from('articles')
         .select('id, title, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50); // Scan last 50 articles only
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      console.log(`Fetched ${data.length} articles, checking for images...`);
+      console.log(`Fetched ${data.length} articles, checking for images in content...`);
 
       // Fetch content only for articles we need to check
       const articlesWithImages = [];
@@ -71,14 +70,14 @@ const OptimizeArticleImages = () => {
             ? fullArticle.content 
             : JSON.stringify(fullArticle.content);
           
-          // Check for either base64 images OR stored images from article-images bucket
-          if (contentStr.includes('data:image/') || contentStr.includes('article-images')) {
+          // Check for images from article-images bucket (uploaded via editor)
+          if (contentStr.includes('article-images')) {
             articlesWithImages.push(article);
           }
         }
       }
 
-      console.log(`Found ${articlesWithImages.length} articles with images`);
+      console.log(`Found ${articlesWithImages.length} articles with uploaded images`);
       return articlesWithImages;
     },
     enabled: shouldScan, // Only run when user triggers it
@@ -235,7 +234,7 @@ const OptimizeArticleImages = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Optimize Article Images</h1>
           <p className="text-muted-foreground">
-            Scan articles for base64 images to upload to storage, or re-compress existing stored images
+            Scan all articles to find and compress images uploaded into article content
           </p>
         </div>
 
@@ -246,11 +245,11 @@ const OptimizeArticleImages = () => {
                 <h2 className="text-xl font-semibold mb-1">Scan Articles</h2>
                 <p className="text-sm text-muted-foreground">
                   {!shouldScan && !articles ? (
-                    'Click "Scan for Images" to find articles with images (last 50 articles)'
+                    'Click "Scan for Images" to find all articles with uploaded images'
                   ) : isLoading ? (
-                    'Scanning articles for images...'
+                    'Scanning all articles for uploaded images...'
                   ) : (
-                    `${articles?.length || 0} articles with images found`
+                    `${articles?.length || 0} articles with uploaded images found`
                   )}
                 </p>
               </div>
@@ -428,8 +427,7 @@ const OptimizeArticleImages = () => {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                This will re-compress all images found in the scanned articles, potentially reducing file sizes by 30-70%.
-                Images will be overwritten with compressed versions.
+                This will compress all images found in the scanned articles. Images are resized to max 1920x1080 and encoded as JPEG at 85% quality, potentially reducing file sizes by 30-70%. Original images will be overwritten.
               </AlertDescription>
             </Alert>
 
