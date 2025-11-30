@@ -17,6 +17,7 @@ import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReadingStreakTracker from "@/components/ReadingStreakTracker";
+import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -910,6 +911,11 @@ const Index = () => {
         }>
           <YouMayAlsoLike />
         </Suspense>
+
+        {/* Google Discover Follow Promo */}
+        <section className="container mx-auto px-4 py-8">
+          <GoogleDiscoverFollow />
+        </section>
 
         {/* Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
