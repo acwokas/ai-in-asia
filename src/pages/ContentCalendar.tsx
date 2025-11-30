@@ -68,6 +68,21 @@ const getAuthorColor = (authorId: string): string => {
   return colors[Math.abs(hash) % colors.length];
 };
 
+// Category-specific colors
+const getCategoryColor = (categoryName: string): string => {
+  const categoryColors: Record<string, string> = {
+    "News": "hsl(0, 85%, 45%)",      // Red
+    "Business": "hsl(210, 85%, 40%)", // Blue
+    "Life": "hsl(280, 65%, 50%)",     // Purple
+    "Learn": "hsl(45, 90%, 45%)",     // Yellow/Gold
+    "Create": "hsl(340, 75%, 45%)",   // Pink/Magenta
+    "AI Policy Atlas": "hsl(160, 60%, 35%)", // Teal/Green
+    "Voices": "hsl(25, 75%, 50%)",    // Orange
+  };
+  
+  return categoryColors[categoryName] || "hsl(220, 15%, 50%)"; // Default gray
+};
+
 const ContentCalendar = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -202,16 +217,17 @@ const ContentCalendar = () => {
   };
 
   const eventStyleGetter = (event: CalendarEvent) => {
+    const categoryColor = getCategoryColor(event.categoryName);
     const authorColor = getAuthorColor(event.authorId);
     const isPublished = event.status === "published";
     
     return {
       style: {
-        backgroundColor: authorColor,
+        backgroundColor: categoryColor,
         color: "white",
         borderRadius: "6px",
-        border: `3px solid ${event.categoryColor}`,
-        borderLeft: `8px solid ${event.categoryColor}`,
+        border: `2px solid ${authorColor}`,
+        borderLeft: `6px solid ${authorColor}`,
         display: "flex",
         flexDirection: "column" as const,
         fontSize: "0.8rem",
