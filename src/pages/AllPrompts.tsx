@@ -451,8 +451,8 @@ const AllPrompts = () => {
                     </div>
                   </div>
 
-                  {/* Advanced Filters */}
-                  <div className="mt-6 pt-6 border-t space-y-4">
+                  {/* Advanced Filters - Hidden for now */}
+                  {/* <div className="mt-6 pt-6 border-t space-y-4">
                     <h3 className="text-sm font-semibold text-muted-foreground">Advanced Filters</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -476,32 +476,25 @@ const AllPrompts = () => {
                         <Slider
                           value={minCopies}
                           onValueChange={setMinCopies}
-                          max={500}
-                          step={10}
+                          max={100}
+                          step={5}
                           className="w-full"
                         />
                       </div>
 
-                      {user && (
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-end">
+                        <label className="flex items-center gap-2 text-sm cursor-pointer">
                           <input
                             type="checkbox"
-                            id="unrated"
                             checked={showUnrated}
                             onChange={(e) => setShowUnrated(e.target.checked)}
-                            className="h-4 w-4"
+                            className="rounded"
                           />
-                          <label htmlFor="unrated" className="text-sm font-medium">
-                            Show only prompts I haven't rated
-                          </label>
-                        </div>
-                      )}
+                          Show only prompts I haven't rated
+                        </label>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    Showing {filteredPrompts.length} of {allPrompts.length} prompts
-                  </div>
+                  </div> */}
                 </>
               )}
             </CardContent>
