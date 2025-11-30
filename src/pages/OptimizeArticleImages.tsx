@@ -55,7 +55,7 @@ const OptimizeArticleImages = () => {
 
       if (error) throw error;
 
-      console.log(`Fetched ${data.length} articles, checking for base64 images...`);
+      console.log(`Fetched ${data.length} articles, checking for images...`);
 
       // Fetch content only for articles we need to check
       const articlesWithImages = [];
@@ -71,13 +71,14 @@ const OptimizeArticleImages = () => {
             ? fullArticle.content 
             : JSON.stringify(fullArticle.content);
           
-          if (contentStr.includes('data:image/')) {
+          // Check for either base64 images OR stored images from article-images bucket
+          if (contentStr.includes('data:image/') || contentStr.includes('article-images')) {
             articlesWithImages.push(article);
           }
         }
       }
 
-      console.log(`Found ${articlesWithImages.length} articles with base64 images`);
+      console.log(`Found ${articlesWithImages.length} articles with images`);
       return articlesWithImages;
     },
     enabled: shouldScan, // Only run when user triggers it
@@ -234,7 +235,7 @@ const OptimizeArticleImages = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Optimize Article Images</h1>
           <p className="text-muted-foreground">
-            Find and optimize base64-encoded images in articles by uploading them to cloud storage
+            Scan articles for base64 images to upload to storage, or re-compress existing stored images
           </p>
         </div>
 
@@ -245,11 +246,11 @@ const OptimizeArticleImages = () => {
                 <h2 className="text-xl font-semibold mb-1">Scan Articles</h2>
                 <p className="text-sm text-muted-foreground">
                   {!shouldScan && !articles ? (
-                    'Click "Scan for Images" to find articles with base64-encoded images (last 50 articles)'
+                    'Click "Scan for Images" to find articles with images (last 50 articles)'
                   ) : isLoading ? (
-                    'Scanning articles for base64 images...'
+                    'Scanning articles for images...'
                   ) : (
-                    `${articles?.length || 0} articles with base64 images found`
+                    `${articles?.length || 0} articles with images found`
                   )}
                 </p>
               </div>
