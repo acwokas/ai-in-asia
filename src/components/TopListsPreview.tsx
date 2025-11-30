@@ -1,6 +1,8 @@
 import { TopListItem } from "./TopListsEditor";
 import type { ImageWithSize } from "./TopListsEditor";
 import { convertSimpleMarkdownToHtml } from "@/lib/markdown";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 
 interface TopListsPreviewProps {
   items: TopListItem[];
@@ -66,13 +68,19 @@ export const TopListsPreview = ({ items, intro, outro }: TopListsPreviewProps) =
                   const url = typeof imageData === 'string' ? imageData : imageData.url;
                   const size = typeof imageData === 'string' ? 'large' : imageData.size;
                   const sizeClass = size === 'small' ? 'max-w-xs' : size === 'medium' ? 'max-w-md' : 'max-w-full';
+                  const widthPx = size === 'small' ? 320 : size === 'medium' ? 512 : 1024;
                   
                   return (
-                    <img
+                    <ProgressiveImage
                       key={imgIndex}
-                      src={url}
+                      src={getOptimizedThumbnail(url, widthPx, Math.round(widthPx * 0.75))}
+                      srcSet={url.includes('supabase.co/storage') ? generateResponsiveSrcSet(url, [widthPx, widthPx * 1.5, widthPx * 2]) : undefined}
+                      sizes={size === 'small' ? '320px' : size === 'medium' ? '512px' : '(max-width: 768px) 100vw, 1024px'}
                       alt={`${item.title} - Image ${imgIndex + 1}`}
                       className={`rounded-lg h-auto ${sizeClass}`}
+                      loading="lazy"
+                      width={widthPx}
+                      height={Math.round(widthPx * 0.75)}
                     />
                   );
                 })}
