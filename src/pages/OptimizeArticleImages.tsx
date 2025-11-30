@@ -255,26 +255,24 @@ const OptimizeArticleImages = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                {!shouldScan && !articles && (
-                  <Button
-                    onClick={handleScanArticles}
-                    disabled={isLoading}
-                    size="lg"
-                    variant="outline"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Scanning...
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon className="mr-2 h-4 w-4" />
-                        Scan for Images
-                      </>
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={handleScanArticles}
+                  disabled={isLoading}
+                  size="lg"
+                  variant="outline"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="mr-2 h-4 w-4" />
+                      Scan for Images
+                    </>
+                  )}
+                </Button>
                 {articles && articles.length > 0 && (
                   <Button
                     onClick={handleOptimizeAll}
