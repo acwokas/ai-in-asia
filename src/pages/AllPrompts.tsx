@@ -333,7 +333,7 @@ const AllPrompts = () => {
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-4">All AI Prompts</h1>
             <p className="text-xl text-muted-foreground mb-2">
-              Browse our complete collection of {allPrompts.length} AI prompts
+              Browse our complete collection of AI prompts
             </p>
             <a
               href="https://www.promptandgo.ai"
