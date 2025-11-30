@@ -77,7 +77,8 @@ const ContentCalendar = () => {
   const { data: articles, isLoading } = useQuery({
     queryKey: ["calendar-articles"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch scheduled articles
+      const { data: scheduledData, error: scheduledError } = await supabase
         .from("articles")
         .select(`
           id,
@@ -98,17 +99,50 @@ const ContentCalendar = () => {
             color
           )
         `)
-        .in("status", ["scheduled", "published"])
-        .order("created_at", { ascending: false });
+        .eq("status", "scheduled")
+        .not("scheduled_for", "is", null)
+        .order("scheduled_for", { ascending: true });
 
-      if (error) throw error;
+      // Fetch recently published articles (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      // Filter to only include articles with valid dates
-      return data?.filter(article => {
-        if (article.status === "scheduled" && article.scheduled_for) return true;
-        if (article.status === "published" && article.published_at) return true;
-        return false;
-      }) || [];
+      const { data: publishedData, error: publishedError } = await supabase
+        .from("articles")
+        .select(`
+          id,
+          title,
+          slug,
+          status,
+          scheduled_for,
+          published_at,
+          author_id,
+          authors (
+            id,
+            name
+          ),
+          primary_category_id,
+          categories (
+            id,
+            name,
+            color
+          )
+        `)
+        .eq("status", "published")
+        .not("published_at", "is", null)
+        .gte("published_at", thirtyDaysAgo.toISOString())
+        .order("published_at", { ascending: false });
+
+      if (scheduledError) {
+        console.error("Error fetching scheduled articles:", scheduledError);
+        throw scheduledError;
+      }
+      if (publishedError) {
+        console.error("Error fetching published articles:", publishedError);
+        throw publishedError;
+      }
+
+      return [...(scheduledData || []), ...(publishedData || [])];
     },
   });
 
