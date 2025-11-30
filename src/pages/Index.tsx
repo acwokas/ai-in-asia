@@ -920,7 +920,7 @@ const Index = () => {
         {/* Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="font-serif text-4xl font-bold mb-4">
+            <h2 className="font-display text-4xl font-bold mb-4">
               Never Miss an AI Breakthrough
             </h2>
             <p className="text-lg mb-8 opacity-90">
