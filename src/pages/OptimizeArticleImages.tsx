@@ -52,21 +52,42 @@ const OptimizeArticleImages = () => {
       setScanProgress({ current: 0, total: 0 });
       
       console.log('Starting full article scan...');
-      const { data, error } = await supabase
-        .from('articles')
-        .select('id, title, created_at')
-        .order('created_at', { ascending: false });
+      
+      // Fetch ALL articles using pagination (Supabase default limit is 1000)
+      let allArticles: any[] = [];
+      let offset = 0;
+      const FETCH_SIZE = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('id, title, created_at')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + FETCH_SIZE - 1);
 
-      console.log(`Fetched ${data.length} articles, checking for images in content...`);
-      setScanProgress({ current: 0, total: data.length });
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allArticles.push(...data);
+          offset += FETCH_SIZE;
+          
+          if (data.length < FETCH_SIZE) {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      console.log(`Fetched ${allArticles.length} articles, checking for images in content...`);
+      setScanProgress({ current: 0, total: allArticles.length });
 
       const articlesWithImages = [];
       const BATCH_SIZE = 20; // Process 20 articles at a time
       
-      for (let i = 0; i < data.length; i += BATCH_SIZE) {
-        const batch = data.slice(i, Math.min(i + BATCH_SIZE, data.length));
+      for (let i = 0; i < allArticles.length; i += BATCH_SIZE) {
+        const batch = allArticles.slice(i, Math.min(i + BATCH_SIZE, allArticles.length));
         
         // Process batch in parallel
         const batchResults = await Promise.all(
@@ -95,7 +116,7 @@ const OptimizeArticleImages = () => {
         articlesWithImages.push(...batchResults.filter(a => a !== null));
         
         // Update progress
-        setScanProgress({ current: Math.min(i + BATCH_SIZE, data.length), total: data.length });
+        setScanProgress({ current: Math.min(i + BATCH_SIZE, allArticles.length), total: allArticles.length });
       }
 
       console.log(`Found ${articlesWithImages.length} articles with uploaded images`);
