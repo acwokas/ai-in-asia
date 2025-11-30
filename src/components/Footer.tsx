@@ -143,6 +143,9 @@ const Footer = memo(() => {
           <div>
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/prompts" className="hover:text-primary transition-colors">Prompts</Link></li>
+              <li><Link to="/tools" className="hover:text-primary transition-colors">Tools</Link></li>
+              <li><Link to="/events" className="hover:text-primary transition-colors">Events</Link></li>
               <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Advertise</Link></li>
