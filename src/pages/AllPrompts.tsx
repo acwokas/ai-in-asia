@@ -262,8 +262,6 @@ const AllPrompts = () => {
                           <SelectItem value="all">All Use Cases</SelectItem>
                           <SelectItem value="business">Business</SelectItem>
                           <SelectItem value="creative">Creative</SelectItem>
-                          <SelectItem value="technical">Technical</SelectItem>
-                          <SelectItem value="education">Education</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
