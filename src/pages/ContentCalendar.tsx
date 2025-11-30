@@ -99,10 +99,16 @@ const ContentCalendar = () => {
           )
         `)
         .in("status", ["scheduled", "published"])
-        .order("scheduled_for", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Filter to only include articles with valid dates
+      return data?.filter(article => {
+        if (article.status === "scheduled" && article.scheduled_for) return true;
+        if (article.status === "published" && article.published_at) return true;
+        return false;
+      }) || [];
     },
   });
 
@@ -131,9 +137,9 @@ const ContentCalendar = () => {
     
     return {
       id: article.id,
-      title: article.title,
+      title: `${article.title}\n👤 ${article.authors?.name || "Unknown"}`,
       start: eventDate,
-      end: new Date(eventDate.getTime() + 3 * 60 * 60 * 1000), // 3 hour duration for display
+      end: new Date(eventDate.getTime() + 3 * 60 * 60 * 1000), // 3 hour duration
       author: article.authors?.name || "Unknown Author",
       authorId: article.author_id || "unknown",
       categoryName: article.categories?.name || "Uncategorized",
@@ -172,11 +178,15 @@ const ContentCalendar = () => {
         borderRadius: "6px",
         border: `3px solid ${event.categoryColor}`,
         borderLeft: `8px solid ${event.categoryColor}`,
-        display: "block",
-        fontSize: "0.875rem",
+        display: "flex",
+        flexDirection: "column" as const,
+        fontSize: "0.8rem",
         fontWeight: "500",
         opacity: isPublished ? 0.7 : 1,
-        padding: "4px 8px",
+        padding: "6px 10px",
+        overflow: "visible",
+        whiteSpace: "normal" as const,
+        lineHeight: "1.3",
       },
     };
   };
@@ -239,7 +249,7 @@ const ContentCalendar = () => {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 700 }}
+                style={{ height: 800 }}
                 view={view}
                 onView={setView}
                 date={date}
@@ -251,8 +261,8 @@ const ContentCalendar = () => {
                 resizable
                 min={new Date(2024, 0, 1, 7, 0, 0)}
                 max={new Date(2024, 0, 1, 19, 0, 0)}
-                step={30}
-                timeslots={2}
+                step={60}
+                timeslots={1}
               />
             </div>
           )}
