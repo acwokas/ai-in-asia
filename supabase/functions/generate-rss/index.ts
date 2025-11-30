@@ -52,7 +52,8 @@ serve(async (req) => {
     rss += "    <description>Stay informed about AI developments, innovations, and insights from across Asia. Features, news, tools and expert opinions on artificial intelligence.</description>\n";
     rss += "    <language>en-us</language>\n";
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
-    rss += `    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+     rss += `    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml" />\n`;
+     rss += `    <atom:link href="${baseUrl}/feed" rel="alternate" type="application/rss+xml" />\n`;
 
     // Add articles
     articles?.forEach((article: any) => {

@@ -30,6 +30,7 @@ const Tag = lazy(() => import("./pages/Tag"));
 const AuthorProfile = lazy(() => import("./pages/AuthorProfile"));
 const SitemapRedirect = lazy(() => import("./pages/SitemapRedirect"));
 const RssRedirect = lazy(() => import("./pages/RssRedirect"));
+const FeedRedirect = lazy(() => import("./pages/RssRedirect")); // Same as RSS
 const Search = lazy(() => import("./pages/Search"));
 const ConnectionTest = lazy(() => import("./pages/ConnectionTest"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -175,6 +176,8 @@ const App = () => (
               <Route path="/author/:slug" element={<AuthorProfile />} />
               <Route path="/sitemap.xml" element={<SitemapRedirect />} />
               <Route path="/rss.xml" element={<RssRedirect />} />
+              <Route path="/rss" element={<RssRedirect />} />
+              <Route path="/feed" element={<FeedRedirect />} />
               <Route path="/search" element={<Search />} />
               <Route path="/connection-test" element={<ConnectionTest />} />
               <Route path="/auth" element={<Auth />} />
