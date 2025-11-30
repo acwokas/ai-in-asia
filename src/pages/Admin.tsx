@@ -973,6 +973,10 @@ const Admin = () => {
                 <Button onClick={() => navigate("/admin/bulk-operations")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
                   Bulk Operations
                 </Button>
+                <Button onClick={() => navigate("/admin/calendar")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Content Calendar
+                </Button>
                 <Button 
                   onClick={handleScrapeEvents} 
                   variant="outline" 
