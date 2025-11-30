@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock, User, TrendingUp, BookOpen, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 interface ArticleCardProps {
   title: string;
@@ -40,18 +41,18 @@ const ArticleCard = ({
   return (
     <article className={`article-card ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
       <Link to={`/${categorySlug}/${slug}`} className="block">
-        <div className="relative aspect-video overflow-hidden">
-          <img 
+        <div className="relative aspect-video overflow-hidden group">
+          <ProgressiveImage
             src={getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 600 : 300)} 
             srcSet={image.includes('supabase.co/storage') ? generateResponsiveSrcSet(image, featured ? [400, 800, 1200] : [200, 400, 600]) : undefined}
             sizes={featured ? "(max-width: 768px) 100vw, 800px" : "(max-width: 768px) 100vw, 400px"}
             alt={title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            className="transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
             width={featured ? 800 : 400}
             height={featured ? 600 : 300}
           />
-          <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
+          <div className="absolute top-4 left-4 flex gap-2 flex-wrap z-10">
             <Badge className="bg-primary text-primary-foreground">
               {category}
             </Badge>

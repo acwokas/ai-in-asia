@@ -29,6 +29,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import DOMPurify from "dompurify";
 import { track404Error } from "@/components/GoogleAnalytics";
 import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
 
 const Article = () => {
   const { category, slug } = useParams();
@@ -1157,20 +1158,21 @@ const Article = () => {
 
             {/* Hero Image - Featured image displayed above article content */}
             {article.featured_image_url && (
-              <div className="relative aspect-video overflow-hidden rounded-lg mb-8">
-                <img 
-                  src={getOptimizedHeroImage(article.featured_image_url, 1280)} 
-                  srcSet={article.featured_image_url.includes('supabase.co/storage') 
-                    ? generateResponsiveSrcSet(article.featured_image_url, [640, 960, 1280, 1920]) 
-                    : undefined}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1280px"
-                  alt={article.featured_image_alt || article.title}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  fetchPriority="high"
-                  width={1280}
-                  height={720}
-                />
+              <div className="mb-8">
+                <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <ProgressiveImage
+                    src={getOptimizedHeroImage(article.featured_image_url, 1280)} 
+                    srcSet={article.featured_image_url.includes('supabase.co/storage') 
+                      ? generateResponsiveSrcSet(article.featured_image_url, [640, 960, 1280, 1920]) 
+                      : undefined}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1280px"
+                    alt={article.featured_image_alt || article.title}
+                    loading="eager"
+                    fetchPriority="high"
+                    width={1280}
+                    height={720}
+                  />
+                </div>
                 {article.featured_image_caption && (
                   <p className="text-sm text-muted-foreground text-center mt-2">
                     {article.featured_image_caption}
