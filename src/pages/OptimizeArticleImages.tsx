@@ -32,6 +32,10 @@ const OptimizeArticleImages = () => {
   const [results, setResults] = useState<OptimizationResult[]>([]);
   const [summary, setSummary] = useState<OptimizationSummary | null>(null);
   const [progress, setProgress] = useState(0);
+  const [currentArticle, setCurrentArticle] = useState<string>('');
+  const [articlesProcessed, setArticlesProcessed] = useState(0);
+  const [imagesProcessed, setImagesProcessed] = useState(0);
+  const [totalArticles, setTotalArticles] = useState(0);
   const { toast } = useToast();
 
   // Fetch articles with potential base64 images (limit to recent 100)
@@ -74,33 +78,46 @@ const OptimizeArticleImages = () => {
     setResults([]);
     setSummary(null);
     setProgress(0);
+    setCurrentArticle('');
+    setArticlesProcessed(0);
+    setImagesProcessed(0);
+    setTotalArticles(articles.length);
 
     try {
-      const articleIds = articles.map((a) => a.id);
-      const batchSize = 5; // Process 5 articles at a time
-      const batches = [];
-
-      for (let i = 0; i < articleIds.length; i += batchSize) {
-        batches.push(articleIds.slice(i, i + batchSize));
-      }
-
       const allResults: OptimizationResult[] = [];
+      let totalImagesFound = 0;
 
-      for (let i = 0; i < batches.length; i++) {
-        const batch = batches[i];
-        console.log(`Processing batch ${i + 1}/${batches.length}`);
+      // Process one article at a time for real-time updates
+      for (let i = 0; i < articles.length; i++) {
+        const article = articles[i];
+        setCurrentArticle(article.title);
+        setArticlesProcessed(i + 1);
+        
+        console.log(`Processing article ${i + 1}/${articles.length}: ${article.title}`);
 
         const { data, error } = await supabase.functions.invoke('optimize-article-images', {
-          body: { articleIds: batch },
+          body: { articleIds: [article.id] },
         });
 
-        if (error) throw error;
-
-        if (data?.results) {
+        if (error) {
+          console.error(`Error processing article ${article.id}:`, error);
+          allResults.push({
+            articleId: article.id,
+            articleTitle: article.title,
+            imagesFound: 0,
+            imagesOptimized: 0,
+            errors: [error.message],
+            originalSizeKB: 0,
+            optimizedSizeKB: 0,
+          });
+        } else if (data?.results) {
           allResults.push(...data.results);
+          const result = data.results[0];
+          totalImagesFound += result.imagesOptimized;
+          setImagesProcessed(totalImagesFound);
         }
 
-        setProgress(Math.round(((i + 1) / batches.length) * 100));
+        setProgress(Math.round(((i + 1) / articles.length) * 100));
         setResults([...allResults]);
       }
 
@@ -178,11 +195,34 @@ const OptimizeArticleImages = () => {
             </div>
 
             {isProcessing && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Progress value={progress} className="h-2" />
-                <p className="text-sm text-muted-foreground text-center">
-                  {progress}% complete
-                </p>
+                
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Progress:</span>
+                    <span className="font-medium">{progress}% complete</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Articles:</span>
+                    <span className="font-medium">{articlesProcessed} / {totalArticles}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Images Optimized:</span>
+                    <span className="font-medium text-green-600">{imagesProcessed}</span>
+                  </div>
+                  
+                  {currentArticle && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">Currently processing:</p>
+                      <p className="text-sm font-medium truncate" title={currentArticle}>
+                        {currentArticle}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
