@@ -135,6 +135,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isGeneratingHeadline, setIsGeneratingHeadline] = useState(false);
+  const [headlineOptions, setHeadlineOptions] = useState<{ best: string; alternatives: string[] } | null>(null);
+  const [showHeadlineDialog, setShowHeadlineDialog] = useState(false);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isRewritingArticle, setIsRewritingArticle] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
@@ -643,14 +645,33 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       if (error) throw error;
 
       if (data?.result) {
-        setTitle(data.result);
-        if (!initialData) {
-          setSlug(generateSlug(data.result));
+        // Parse the response format: BEST: ..., ALT1: ..., ALT2: ..., ALT3: ...
+        const result = data.result as string;
+        const lines = result.split('\n').filter((l: string) => l.trim());
+        
+        let best = "";
+        const alternatives: string[] = [];
+        
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('BEST:')) {
+            best = trimmed.replace('BEST:', '').trim();
+          } else if (trimmed.startsWith('ALT1:')) {
+            alternatives.push(trimmed.replace('ALT1:', '').trim());
+          } else if (trimmed.startsWith('ALT2:')) {
+            alternatives.push(trimmed.replace('ALT2:', '').trim());
+          } else if (trimmed.startsWith('ALT3:')) {
+            alternatives.push(trimmed.replace('ALT3:', '').trim());
+          }
         }
-        toast({
-          title: "Headline Generated!",
-          description: "Scout created a catchy headline from your content",
-        });
+        
+        // Fallback if parsing fails
+        if (!best && lines.length > 0) {
+          best = lines[0].replace(/^(BEST:|ALT\d:)\s*/i, '').trim();
+        }
+        
+        setHeadlineOptions({ best, alternatives });
+        setShowHeadlineDialog(true);
       }
     } catch (error: any) {
       toast({
@@ -661,6 +682,19 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     } finally {
       setIsGeneratingHeadline(false);
     }
+  };
+
+  const handleSelectHeadline = (headline: string) => {
+    setTitle(headline);
+    if (!initialData) {
+      setSlug(generateSlug(headline));
+    }
+    setShowHeadlineDialog(false);
+    setHeadlineOptions(null);
+    toast({
+      title: "Headline Selected",
+      description: "Title and slug have been updated",
+    });
   };
 
   const handleGenerateSEO = async () => {
@@ -1876,6 +1910,53 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             </Button>
             <Button onClick={handleSaveAuthor} disabled={!authorForm.name.trim()}>
               {isEditingAuthor ? 'Update Author' : 'Create Author'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Headline Selection Dialog */}
+      <Dialog open={showHeadlineDialog} onOpenChange={setShowHeadlineDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Select Your Headline</DialogTitle>
+            <DialogDescription>
+              Choose the headline that works best. Your selection will update the title and slug.
+            </DialogDescription>
+          </DialogHeader>
+          {headlineOptions && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-muted-foreground">Recommended</Label>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary"
+                  onClick={() => handleSelectHeadline(headlineOptions.best)}
+                >
+                  <span className="text-base">{headlineOptions.best}</span>
+                </Button>
+              </div>
+              
+              {headlineOptions.alternatives.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Alternatives</Label>
+                  {headlineOptions.alternatives.map((alt, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-muted"
+                      onClick={() => handleSelectHeadline(alt)}
+                    >
+                      <span className="text-base">{alt}</span>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowHeadlineDialog(false)}>
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

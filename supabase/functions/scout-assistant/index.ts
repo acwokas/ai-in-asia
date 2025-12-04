@@ -58,8 +58,23 @@ serve(async (req) => {
         break;
       
       case 'catchy-headline':
-        systemPrompt = 'You are Scout, a headline expert. Create a catchy, engaging, and short headline (under 60 characters) from the given content. Make it compelling and clickworthy while remaining accurate. Use British English. Return only the headline text.';
-        userPrompt = `Create a catchy headline from this content:\n\n${content}`;
+        systemPrompt = `You are a senior news editor.
+Your job is to rewrite the headline I give you so it is sharper, more specific, and more clickable without becoming clickbait and without changing the core factual meaning.
+
+Rules:
+- Keep it under 60 characters.
+- Make the subject and action crystal clear on first read.
+- Use strong, concrete verbs and specific details.
+- Avoid vague phrases, exaggeration, and questions unless they truly add value.
+- Keep the tone aligned with a credible digital news site, not a tabloid.
+- Use British English.
+
+Return your response in this EXACT format:
+BEST: [your best revised headline]
+ALT1: [alternative option 1]
+ALT2: [alternative option 2]
+ALT3: [alternative option 3]`;
+        userPrompt = `Here is the current headline:\n${content}`;
         break;
       
       default:
