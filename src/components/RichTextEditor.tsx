@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video, Sparkles, Upload } from "lucide-react";
+import { Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Link as LinkIcon, Minus, Image, Type, Table as TableIcon, Video, Sparkles, Upload, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -38,11 +38,13 @@ const RichTextEditor = ({
   const [showTableDialog, setShowTableDialog] = useState(false);
   const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
+  const [showSocialEmbedDialog, setShowSocialEmbedDialog] = useState(false);
   const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '', size: 'large' as 'small' | 'medium' | 'large' });
   const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [promptData, setPromptData] = useState({ title: '', content: '' });
+  const [socialEmbedUrl, setSocialEmbedUrl] = useState('');
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
   const [lastExternalValue, setLastExternalValue] = useState(value);
@@ -103,6 +105,13 @@ const RichTextEditor = ({
 
     // Preserve YouTube embeds
     processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    });
+
+    // Preserve social media embeds (Twitter, Instagram, TikTok)
+    processed = processed.replace(/<div class="social-embed[^"]*"[^>]*>.*?<\/div>/gs, (match) => {
       const index = preservedMatches.length;
       preservedMatches.push(match);
       return `__PRESERVED_${index}__`;
@@ -215,6 +224,13 @@ const RichTextEditor = ({
     
     // Preserve YouTube embeds
     processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    });
+
+    // Preserve social media embeds (Twitter, Instagram, TikTok)
+    processed = processed.replace(/<div class="social-embed[^"]*"[^>]*>.*?<\/div>/gs, (match) => {
       const index = preservedMatches.length;
       preservedMatches.push(match);
       return `__PRESERVED_${index}__`;
@@ -353,6 +369,14 @@ const RichTextEditor = ({
           savedSelectionRef.current = promptSel.getRangeAt(0);
         }
         setShowPromptDialog(true);
+        break;
+      case 'social':
+        // Save the current selection before opening dialog
+        const socialSel = window.getSelection();
+        if (socialSel && socialSel.rangeCount > 0) {
+          savedSelectionRef.current = socialSel.getRangeAt(0);
+        }
+        setShowSocialEmbedDialog(true);
         break;
       case 'image':
         // Save the current selection before opening dialog
@@ -730,6 +754,83 @@ const RichTextEditor = ({
     savedSelectionRef.current = null;
   };
 
+  const handleInsertSocialEmbed = () => {
+    if (!socialEmbedUrl) return;
+    
+    let embedHtml = '';
+    const url = socialEmbedUrl.trim();
+    
+    // Detect platform and generate appropriate embed
+    if (url.includes('twitter.com') || url.includes('x.com')) {
+      // Twitter/X embed
+      const tweetId = url.match(/status\/(\d+)/)?.[1];
+      if (tweetId) {
+        embedHtml = `<div class="social-embed twitter-embed" data-url="${url}" style="margin: 2rem 0;">
+          <blockquote class="twitter-tweet" data-dnt="true">
+            <a href="${url}">Loading tweet...</a>
+          </blockquote>
+          <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div><p><br></p>`;
+      } else {
+        alert('Invalid Twitter/X URL. Please enter a valid tweet URL.');
+        return;
+      }
+    } else if (url.includes('instagram.com')) {
+      // Instagram embed
+      const postMatch = url.match(/instagram\.com\/(p|reel|reels)\/([A-Za-z0-9_-]+)/);
+      if (postMatch) {
+        const embedUrl = `https://www.instagram.com/${postMatch[1]}/${postMatch[2]}/embed`;
+        embedHtml = `<div class="social-embed instagram-embed" data-url="${url}" style="margin: 2rem 0; max-width: 540px;">
+          <iframe src="${embedUrl}" width="100%" height="600" frameborder="0" scrolling="no" allowtransparency="true" style="border-radius: 12px;"></iframe>
+        </div><p><br></p>`;
+      } else {
+        alert('Invalid Instagram URL. Please enter a valid Instagram post or reel URL.');
+        return;
+      }
+    } else if (url.includes('tiktok.com')) {
+      // TikTok embed
+      const videoMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/) || url.match(/tiktok\.com\/t\/([A-Za-z0-9]+)/);
+      if (videoMatch) {
+        embedHtml = `<div class="social-embed tiktok-embed" data-url="${url}" style="margin: 2rem 0; max-width: 325px;">
+          <blockquote class="tiktok-embed" cite="${url}" data-video-id="${videoMatch[1]}" style="max-width: 325px; min-width: 325px;">
+            <section><a target="_blank" href="${url}">Loading TikTok...</a></section>
+          </blockquote>
+          <script async src="https://www.tiktok.com/embed.js"></script>
+        </div><p><br></p>`;
+      } else {
+        alert('Invalid TikTok URL. Please enter a valid TikTok video URL.');
+        return;
+      }
+    } else {
+      alert('Unsupported URL. Please enter a Twitter/X, Instagram, or TikTok URL.');
+      return;
+    }
+    
+    // Restore the saved selection
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedSelectionRef.current);
+      }
+    }
+    
+    // Focus the editor before inserting
+    editorRef.current?.focus();
+    
+    // Insert the embed
+    execCommand('insertHTML', embedHtml);
+    
+    // Trigger input event to update the markdown
+    setTimeout(() => {
+      handleInput();
+    }, 100);
+    
+    setShowSocialEmbedDialog(false);
+    setSocialEmbedUrl('');
+    savedSelectionRef.current = null;
+  };
+
   const handleInput = () => {
     if (!editorRef.current) return;
     
@@ -973,6 +1074,15 @@ const RichTextEditor = ({
         >
           <Sparkles className="h-4 w-4" />
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => handleFormat('social')}
+          title="Embed Social Media (Twitter/X, Instagram, TikTok)"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Scrollable editor content */}
@@ -1010,7 +1120,8 @@ const RichTextEditor = ({
               "[&_table]:w-full [&_table]:border-collapse [&_table]:my-4",
               "[&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold",
               "[&_td]:border [&_td]:border-border [&_td]:px-4 [&_td]:py-2",
-              "[&_.youtube-embed]:my-8"
+              "[&_.youtube-embed]:my-8",
+              "[&_.social-embed]:my-8"
             )}
             suppressContentEditableWarning
           />
@@ -1304,6 +1415,55 @@ const RichTextEditor = ({
             <Button onClick={handleInsertPrompt} disabled={!promptData.content}>
               <Sparkles className="h-4 w-4 mr-2" />
               Insert Prompt
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Social Media Embed Dialog */}
+      <Dialog open={showSocialEmbedDialog} onOpenChange={setShowSocialEmbedDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Embed Social Media Post
+            </DialogTitle>
+            <DialogDescription>
+              Paste a URL from Twitter/X, Instagram, or TikTok to embed
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="social-url">Post URL</Label>
+              <Input
+                id="social-url"
+                placeholder="https://twitter.com/... or https://instagram.com/... or https://tiktok.com/..."
+                value={socialEmbedUrl}
+                onChange={(e) => setSocialEmbedUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleInsertSocialEmbed();
+                  }
+                }}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="font-medium">Supported platforms:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Twitter/X: https://twitter.com/.../status/... or https://x.com/.../status/...</li>
+                <li>Instagram: https://instagram.com/p/... or https://instagram.com/reel/...</li>
+                <li>TikTok: https://tiktok.com/@.../video/...</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSocialEmbedDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInsertSocialEmbed} disabled={!socialEmbedUrl}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Embed Post
             </Button>
           </DialogFooter>
         </DialogContent>
