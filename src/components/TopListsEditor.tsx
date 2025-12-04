@@ -289,11 +289,14 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               onChange={(e) => {
                 const newTitle = e.target.value;
                 onUpdate(item.id, 'title', newTitle);
-                // Auto-generate tags immediately as title changes - pass current value to avoid stale closure
-                setTimeout(() => {
-                  autoGenerateTags(newTitle);
-                  autoSuggestMetadata(newTitle, item.prompt);
-                }, 300);
+              }}
+              onBlur={(e) => {
+                // Auto-generate tags on blur to avoid race conditions during typing
+                const currentTitle = e.target.value;
+                if (currentTitle && currentTitle.trim().length > 0) {
+                  autoGenerateTags(currentTitle);
+                  autoSuggestMetadata(currentTitle, item.prompt);
+                }
               }}
               placeholder="e.g., Astronaut Mascot Design"
             />
