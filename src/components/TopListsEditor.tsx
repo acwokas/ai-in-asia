@@ -161,11 +161,11 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
     onUpdate(item.id, 'variations', current.filter((_, i) => i !== varIndex));
   };
 
-  const autoGenerateTags = () => {
+  const autoGenerateTags = (currentTitle: string) => {
     // Auto-generate tags from title whenever it changes
     // Only generate if title is not empty
-    if (item.title && item.title.trim().length > 0) {
-      const words = item.title
+    if (currentTitle && currentTitle.trim().length > 0) {
+      const words = currentTitle
         .toLowerCase()
         .replace(/[^\w\s]/g, '')
         .split(/\s+/)
@@ -177,9 +177,9 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
     }
   };
 
-  const autoSuggestMetadata = () => {
-    const titleLower = item.title.toLowerCase();
-    const promptLower = item.prompt.toLowerCase();
+  const autoSuggestMetadata = (currentTitle: string, currentPrompt: string) => {
+    const titleLower = currentTitle.toLowerCase();
+    const promptLower = currentPrompt.toLowerCase();
     const combined = `${titleLower} ${promptLower}`;
 
     // Auto-suggest difficulty if not set
@@ -287,12 +287,13 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               id={`title-${item.id}`}
               value={item.title}
               onChange={(e) => {
-                onUpdate(item.id, 'title', e.target.value);
-                // Auto-generate tags immediately as title changes
+                const newTitle = e.target.value;
+                onUpdate(item.id, 'title', newTitle);
+                // Auto-generate tags immediately as title changes - pass current value to avoid stale closure
                 setTimeout(() => {
-                  autoGenerateTags();
-                  autoSuggestMetadata();
-                }, 300); // Debounce slightly to avoid too many updates
+                  autoGenerateTags(newTitle);
+                  autoSuggestMetadata(newTitle, item.prompt);
+                }, 300);
               }}
               placeholder="e.g., Astronaut Mascot Design"
             />
@@ -364,7 +365,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               id={`prompt-${item.id}`}
               value={item.prompt}
               onChange={(e) => onUpdate(item.id, 'prompt', e.target.value)}
-              onBlur={autoSuggestMetadata}
+              onBlur={() => autoSuggestMetadata(item.title, item.prompt)}
               placeholder="Enter the AI prompt that users will copy..."
               rows={4}
               className="font-mono text-sm"
