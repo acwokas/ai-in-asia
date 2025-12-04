@@ -44,7 +44,7 @@ const RichTextEditor = ({
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [promptData, setPromptData] = useState({ title: '', content: '' });
-  const [socialEmbedUrl, setSocialEmbedUrl] = useState('');
+  const [socialEmbedCode, setSocialEmbedCode] = useState('');
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
   const [lastExternalValue, setLastExternalValue] = useState(value);
@@ -755,55 +755,74 @@ const RichTextEditor = ({
   };
 
   const handleInsertSocialEmbed = () => {
-    if (!socialEmbedUrl) return;
+    if (!socialEmbedCode) return;
     
+    const code = socialEmbedCode.trim();
     let embedHtml = '';
-    const url = socialEmbedUrl.trim();
     
-    // Detect platform and generate appropriate embed
-    if (url.includes('twitter.com') || url.includes('x.com')) {
-      // Twitter/X embed
-      const tweetId = url.match(/status\/(\d+)/)?.[1];
-      if (tweetId) {
-        embedHtml = `<div class="social-embed twitter-embed" data-url="${url}" style="margin: 2rem 0;">
-          <blockquote class="twitter-tweet" data-dnt="true">
-            <a href="${url}">Loading tweet...</a>
-          </blockquote>
-          <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-        </div><p><br></p>`;
-      } else {
-        alert('Invalid Twitter/X URL. Please enter a valid tweet URL.');
-        return;
+    // Detect if this is raw embed code (contains HTML tags) or a URL
+    const isEmbedCode = code.includes('<') && code.includes('>');
+    
+    if (isEmbedCode) {
+      // Detect platform from embed code and wrap appropriately
+      let platform = 'generic';
+      if (code.includes('twitter-tweet') || code.includes('twitter.com') || code.includes('x.com')) {
+        platform = 'twitter';
+      } else if (code.includes('instagram.com') || code.includes('instagram-media')) {
+        platform = 'instagram';
+      } else if (code.includes('tiktok.com') || code.includes('tiktok-embed')) {
+        platform = 'tiktok';
       }
-    } else if (url.includes('instagram.com')) {
-      // Instagram embed
-      const postMatch = url.match(/instagram\.com\/(p|reel|reels)\/([A-Za-z0-9_-]+)/);
-      if (postMatch) {
-        const embedUrl = `https://www.instagram.com/${postMatch[1]}/${postMatch[2]}/embed`;
-        embedHtml = `<div class="social-embed instagram-embed" data-url="${url}" style="margin: 2rem 0; max-width: 540px;">
-          <iframe src="${embedUrl}" width="100%" height="600" frameborder="0" scrolling="no" allowtransparency="true" style="border-radius: 12px;"></iframe>
-        </div><p><br></p>`;
-      } else {
-        alert('Invalid Instagram URL. Please enter a valid Instagram post or reel URL.');
-        return;
-      }
-    } else if (url.includes('tiktok.com')) {
-      // TikTok embed
-      const videoMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/) || url.match(/tiktok\.com\/t\/([A-Za-z0-9]+)/);
-      if (videoMatch) {
-        embedHtml = `<div class="social-embed tiktok-embed" data-url="${url}" style="margin: 2rem 0; max-width: 325px;">
-          <blockquote class="tiktok-embed" cite="${url}" data-video-id="${videoMatch[1]}" style="max-width: 325px; min-width: 325px;">
-            <section><a target="_blank" href="${url}">Loading TikTok...</a></section>
-          </blockquote>
-          <script async src="https://www.tiktok.com/embed.js"></script>
-        </div><p><br></p>`;
-      } else {
-        alert('Invalid TikTok URL. Please enter a valid TikTok video URL.');
-        return;
-      }
+      
+      // Wrap the embed code in our container div
+      embedHtml = `<div class="social-embed ${platform}-embed" style="margin: 2rem 0;">
+        ${code}
+      </div><p><br></p>`;
     } else {
-      alert('Unsupported URL. Please enter a Twitter/X, Instagram, or TikTok URL.');
-      return;
+      // Handle as URL (backward compatibility)
+      const url = code;
+      
+      if (url.includes('twitter.com') || url.includes('x.com')) {
+        const tweetId = url.match(/status\/(\d+)/)?.[1];
+        if (tweetId) {
+          embedHtml = `<div class="social-embed twitter-embed" data-url="${url}" style="margin: 2rem 0;">
+            <blockquote class="twitter-tweet" data-dnt="true">
+              <a href="${url}">Loading tweet...</a>
+            </blockquote>
+            <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+          </div><p><br></p>`;
+        } else {
+          alert('Invalid Twitter/X URL. Please enter a valid tweet URL or paste embed code.');
+          return;
+        }
+      } else if (url.includes('instagram.com')) {
+        const postMatch = url.match(/instagram\.com\/(p|reel|reels)\/([A-Za-z0-9_-]+)/);
+        if (postMatch) {
+          const embedUrl = `https://www.instagram.com/${postMatch[1]}/${postMatch[2]}/embed`;
+          embedHtml = `<div class="social-embed instagram-embed" data-url="${url}" style="margin: 2rem 0; max-width: 540px;">
+            <iframe src="${embedUrl}" width="100%" height="600" frameborder="0" scrolling="no" allowtransparency="true" style="border-radius: 12px;"></iframe>
+          </div><p><br></p>`;
+        } else {
+          alert('Invalid Instagram URL. Please enter a valid Instagram post or reel URL, or paste embed code.');
+          return;
+        }
+      } else if (url.includes('tiktok.com')) {
+        const videoMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/) || url.match(/tiktok\.com\/t\/([A-Za-z0-9]+)/);
+        if (videoMatch) {
+          embedHtml = `<div class="social-embed tiktok-embed" data-url="${url}" style="margin: 2rem 0; max-width: 325px;">
+            <blockquote class="tiktok-embed" cite="${url}" data-video-id="${videoMatch[1]}" style="max-width: 325px; min-width: 325px;">
+              <section><a target="_blank" href="${url}">Loading TikTok...</a></section>
+            </blockquote>
+            <script async src="https://www.tiktok.com/embed.js"></script>
+          </div><p><br></p>`;
+        } else {
+          alert('Invalid TikTok URL. Please enter a valid TikTok video URL, or paste embed code.');
+          return;
+        }
+      } else {
+        alert('Unsupported format. Please paste embed code from Twitter/X, Instagram, or TikTok, or enter a valid URL.');
+        return;
+      }
     }
     
     // Restore the saved selection
@@ -827,7 +846,7 @@ const RichTextEditor = ({
     }, 100);
     
     setShowSocialEmbedDialog(false);
-    setSocialEmbedUrl('');
+    setSocialEmbedCode('');
     savedSelectionRef.current = null;
   };
 
@@ -1422,38 +1441,34 @@ const RichTextEditor = ({
 
       {/* Social Media Embed Dialog */}
       <Dialog open={showSocialEmbedDialog} onOpenChange={setShowSocialEmbedDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Share2 className="h-5 w-5" />
               Embed Social Media Post
             </DialogTitle>
             <DialogDescription>
-              Paste a URL from Twitter/X, Instagram, or TikTok to embed
+              Paste embed code or URL from Twitter/X, Instagram, or TikTok
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="social-url">Post URL</Label>
-              <Input
-                id="social-url"
-                placeholder="https://twitter.com/... or https://instagram.com/... or https://tiktok.com/..."
-                value={socialEmbedUrl}
-                onChange={(e) => setSocialEmbedUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleInsertSocialEmbed();
-                  }
-                }}
+              <Label htmlFor="social-embed">Embed Code or URL</Label>
+              <Textarea
+                id="social-embed"
+                placeholder={'Paste embed code (e.g., <blockquote class="twitter-tweet">...) or URL'}
+                value={socialEmbedCode}
+                onChange={(e) => setSocialEmbedCode(e.target.value)}
+                rows={6}
+                className="font-mono text-xs"
               />
             </div>
             <div className="text-sm text-muted-foreground space-y-1">
-              <p className="font-medium">Supported platforms:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Twitter/X: https://twitter.com/.../status/... or https://x.com/.../status/...</li>
-                <li>Instagram: https://instagram.com/p/... or https://instagram.com/reel/...</li>
-                <li>TikTok: https://tiktok.com/@.../video/...</li>
+              <p className="font-medium">How to get embed code:</p>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li>Twitter/X: Click "..." → "Embed post" → Copy code</li>
+                <li>Instagram: Click "..." → "Embed" → Copy code</li>
+                <li>TikTok: Click "Share" → "Embed" → Copy code</li>
               </ul>
             </div>
           </div>
@@ -1461,7 +1476,7 @@ const RichTextEditor = ({
             <Button variant="outline" onClick={() => setShowSocialEmbedDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleInsertSocialEmbed} disabled={!socialEmbedUrl}>
+            <Button onClick={handleInsertSocialEmbed} disabled={!socialEmbedCode}>
               <Share2 className="h-4 w-4 mr-2" />
               Embed Post
             </Button>
