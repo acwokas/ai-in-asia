@@ -1930,10 +1930,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <Label className="text-sm font-medium text-muted-foreground">Recommended</Label>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary"
+                  className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary whitespace-normal"
                   onClick={() => handleSelectHeadline(headlineOptions.best)}
                 >
-                  <span className="text-base">{headlineOptions.best}</span>
+                  <span className="text-sm">{headlineOptions.best}</span>
                 </Button>
               </div>
               
@@ -1944,10 +1944,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <Button
                       key={index}
                       variant="ghost"
-                      className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-muted"
+                      className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-muted whitespace-normal"
                       onClick={() => handleSelectHeadline(alt)}
                     >
-                      <span className="text-base">{alt}</span>
+                      <span className="text-sm">{alt}</span>
                     </Button>
                   ))}
                 </div>
