@@ -645,29 +645,31 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       if (error) throw error;
 
       if (data?.result) {
-        // Parse the response format: BEST: ..., ALT1: ..., ALT2: ..., ALT3: ...
+        // Parse the response format using regex to handle both newline-separated and inline formats
         const result = data.result as string;
-        const lines = result.split('\n').filter((l: string) => l.trim());
         
         let best = "";
         const alternatives: string[] = [];
         
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('BEST:')) {
-            best = trimmed.replace('BEST:', '').trim();
-          } else if (trimmed.startsWith('ALT1:')) {
-            alternatives.push(trimmed.replace('ALT1:', '').trim());
-          } else if (trimmed.startsWith('ALT2:')) {
-            alternatives.push(trimmed.replace('ALT2:', '').trim());
-          } else if (trimmed.startsWith('ALT3:')) {
-            alternatives.push(trimmed.replace('ALT3:', '').trim());
-          }
+        // Try to extract BEST headline
+        const bestMatch = result.match(/BEST:\s*([^A][^L][^T].*?)(?=ALT1:|$)/i) || 
+                          result.match(/BEST:\s*(.+?)(?=ALT1:|ALT2:|ALT3:|$)/i);
+        if (bestMatch) {
+          best = bestMatch[1].trim();
         }
         
-        // Fallback if parsing fails
-        if (!best && lines.length > 0) {
-          best = lines[0].replace(/^(BEST:|ALT\d:)\s*/i, '').trim();
+        // Extract alternatives using regex
+        const alt1Match = result.match(/ALT1:\s*(.+?)(?=ALT2:|ALT3:|$)/i);
+        const alt2Match = result.match(/ALT2:\s*(.+?)(?=ALT3:|$)/i);
+        const alt3Match = result.match(/ALT3:\s*(.+?)$/i);
+        
+        if (alt1Match) alternatives.push(alt1Match[1].trim());
+        if (alt2Match) alternatives.push(alt2Match[1].trim());
+        if (alt3Match) alternatives.push(alt3Match[1].trim());
+        
+        // Fallback if parsing fails - just use the whole result
+        if (!best) {
+          best = result.replace(/^(BEST:|ALT\d:)\s*/gi, '').split(/ALT\d:/i)[0].trim();
         }
         
         setHeadlineOptions({ best, alternatives });
