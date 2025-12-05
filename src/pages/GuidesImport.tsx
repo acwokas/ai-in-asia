@@ -155,9 +155,14 @@ const GuidesImport = () => {
     );
   }
 
-  // Normalize header: lowercase, replace spaces with underscores, trim
+  // Normalize header: lowercase, replace spaces with underscores, trim, remove BOM and special chars
   const normalizeHeader = (header: string): string => {
-    return header.trim().toLowerCase().replace(/\s+/g, "_");
+    return header
+      .trim()
+      .replace(/^\uFEFF/, "") // Remove BOM
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^\w_]/g, ""); // Remove non-word chars except underscore
   };
 
   // Create a mapping from normalized expected fields to original expected fields
@@ -167,7 +172,9 @@ const GuidesImport = () => {
   });
 
   const parseCSV = (text: string): Record<string, string>[] => {
-    const lines = text.split(/\r?\n/);
+    // Remove BOM if present at start of file
+    const cleanText = text.replace(/^\uFEFF/, "");
+    const lines = cleanText.split(/\r?\n/);
     if (lines.length < 2) return [];
 
     const rawHeaders = parseCSVLine(lines[0]);
@@ -379,12 +386,20 @@ const GuidesImport = () => {
       }
 
       const firstRow = rows[0];
+      const detectedFields = Object.keys(firstRow);
       const missingFields = EXPECTED_FIELDS.filter(
         (field) => !(field in firstRow)
       );
 
       if (missingFields.length > 0) {
-        toast.error(`Missing required fields: ${missingFields.slice(0, 5).join(", ")}${missingFields.length > 5 ? "..." : ""}`);
+        console.log("Expected fields:", EXPECTED_FIELDS);
+        console.log("Detected fields:", detectedFields);
+        console.log("Missing fields:", missingFields);
+        
+        toast.error(
+          `Missing ${missingFields.length} required fields. Detected: ${detectedFields.slice(0, 3).join(", ")}... Check console for details.`,
+          { duration: 8000 }
+        );
         return;
       }
 
