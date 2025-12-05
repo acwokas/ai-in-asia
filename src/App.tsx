@@ -97,7 +97,7 @@ const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 const Guides = lazy(() => import("./pages/Guides"));
-const GuideDetail = lazy(() => import("./pages/GuideDetail"));
+import GuideDetail from "./pages/GuideDetail";
 const GuidesImport = lazy(() => import("./pages/GuidesImport"));
 
 // Lightweight skeleton loader for instant display
