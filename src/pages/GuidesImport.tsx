@@ -1,12 +1,25 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Download, Trash2, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 
@@ -15,6 +28,15 @@ interface ImportResult {
   title: string;
   slug: string;
   error?: string;
+}
+
+interface Guide {
+  id: string;
+  title: string;
+  slug: string;
+  guide_category: string;
+  primary_platform: string;
+  created_at: string;
 }
 
 const EXPECTED_FIELDS = [
@@ -66,13 +88,39 @@ const GuidesImport = () => {
   const { user } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useAdminRole();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentItem, setCurrentItem] = useState<string>("");
   const [results, setResults] = useState<ImportResult[]>([]);
   const [parsedRows, setParsedRows] = useState<Record<string, string>[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Fetch existing guides
+  const { data: existingGuides = [], isLoading: isLoadingGuides } = useQuery({
+    queryKey: ["ai-guides-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, guide_category, primary_platform, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as Guide[];
+    },
+  });
+
+  const filteredGuides = existingGuides.filter(
+    (guide) =>
+      guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      guide.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      guide.guide_category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isAdminLoading) {
     return (
@@ -111,7 +159,6 @@ const GuidesImport = () => {
     const lines = text.split(/\r?\n/);
     if (lines.length < 2) return [];
 
-    // Parse header
     const headers = parseCSVLine(lines[0]);
     const rows: Record<string, string>[] = [];
 
@@ -165,6 +212,129 @@ const GuidesImport = () => {
     return result;
   };
 
+  const escapeCSVField = (field: string | null | undefined): string => {
+    if (field == null) return "";
+    const str = String(field);
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const downloadGuidesAsCSV = async () => {
+    setIsDownloading(true);
+    try {
+      const { data, error } = await supabase.from("ai_guides").select("*");
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        toast.error("No guides to download");
+        return;
+      }
+
+      const headers = EXPECTED_FIELDS;
+      const csvRows = [headers.join(",")];
+
+      data.forEach((guide) => {
+        const row = [
+          escapeCSVField(guide.title),
+          escapeCSVField(guide.slug),
+          escapeCSVField(guide.guide_category),
+          escapeCSVField(guide.level),
+          escapeCSVField(guide.primary_platform),
+          escapeCSVField(guide.audience_role),
+          escapeCSVField(guide.geo),
+          escapeCSVField(guide.excerpt),
+          escapeCSVField(guide.seo_title),
+          escapeCSVField(guide.meta_title),
+          escapeCSVField(guide.meta_description),
+          escapeCSVField(guide.focus_keyphrase),
+          escapeCSVField(guide.keyphrase_synonyms),
+          escapeCSVField(guide.tags),
+          escapeCSVField(guide.tldr_bullet_1),
+          escapeCSVField(guide.tldr_bullet_2),
+          escapeCSVField(guide.tldr_bullet_3),
+          escapeCSVField(guide.perfect_for),
+          escapeCSVField(guide.body_intro),
+          escapeCSVField(guide.body_section_1_heading),
+          escapeCSVField(guide.body_section_1_text),
+          escapeCSVField(guide.body_section_2_heading),
+          escapeCSVField(guide.body_section_2_text),
+          escapeCSVField(guide.body_section_3_heading),
+          escapeCSVField(guide.body_section_3_text),
+          escapeCSVField(guide.prompt_1_label),
+          escapeCSVField(guide.prompt_1_headline),
+          escapeCSVField(guide.prompt_1_text),
+          escapeCSVField(guide.prompt_2_label),
+          escapeCSVField(guide.prompt_2_headline),
+          escapeCSVField(guide.prompt_2_text),
+          escapeCSVField(guide.prompt_3_label),
+          escapeCSVField(guide.prompt_3_headline),
+          escapeCSVField(guide.prompt_3_text),
+          escapeCSVField(guide.faq_q1),
+          escapeCSVField(guide.faq_a1),
+          escapeCSVField(guide.faq_q2),
+          escapeCSVField(guide.faq_a2),
+          escapeCSVField(guide.faq_q3),
+          escapeCSVField(guide.faq_a3),
+          escapeCSVField(guide.image_prompt),
+          escapeCSVField(guide.closing_cta),
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ai-guides-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Downloaded ${data.length} guide(s)`);
+    } catch (error) {
+      console.error("Error downloading guides:", error);
+      toast.error("Failed to download guides");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const deleteGuide = async (id: string, title: string) => {
+    try {
+      const { error } = await supabase.from("ai_guides").delete().eq("id", id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success(`Deleted "${title}"`);
+    } catch (error) {
+      console.error("Error deleting guide:", error);
+      toast.error("Failed to delete guide");
+    }
+  };
+
+  const deleteAllGuides = async () => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from("ai_guides").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success("All guides deleted");
+    } catch (error) {
+      console.error("Error deleting all guides:", error);
+      toast.error("Failed to delete guides");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -183,7 +353,6 @@ const GuidesImport = () => {
         return;
       }
 
-      // Validate headers
       const firstRow = rows[0];
       const missingFields = EXPECTED_FIELDS.filter(
         (field) => !(field in firstRow)
@@ -209,10 +378,12 @@ const GuidesImport = () => {
 
     setIsProcessing(true);
     setProgress(0);
+    setCurrentItem("");
     const importResults: ImportResult[] = [];
 
     for (let i = 0; i < parsedRows.length; i++) {
       const row = parsedRows[i];
+      setCurrentItem(row.Title);
 
       try {
         const guideData = {
@@ -286,6 +457,8 @@ const GuidesImport = () => {
     }
 
     setIsProcessing(false);
+    setCurrentItem("");
+    queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
 
     const successCount = importResults.filter((r) => r.success).length;
     const failCount = importResults.filter((r) => !r.success).length;
@@ -302,6 +475,7 @@ const GuidesImport = () => {
     setShowPreview(false);
     setResults([]);
     setProgress(0);
+    setCurrentItem("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -312,7 +486,6 @@ const GuidesImport = () => {
       <Header />
       <main className="min-h-screen bg-background py-8">
         <div className="container mx-auto max-w-4xl px-4">
-          {/* Back link */}
           <Button
             variant="ghost"
             className="mb-6"
@@ -322,11 +495,149 @@ const GuidesImport = () => {
             Back to Admin
           </Button>
 
-          <h1 className="mb-2 text-3xl font-bold">Import AI Guides</h1>
+          <h1 className="mb-2 text-3xl font-bold">Manage AI Guides</h1>
           <p className="mb-8 text-muted-foreground">
-            Upload a CSV file to import AI Guides. The CSV headers must match the
-            expected field names exactly.
+            Import, export, and manage AI Guides.
           </p>
+
+          {/* Quick Actions */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>
+                Export or delete all guides at once
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={downloadGuidesAsCSV}
+                  disabled={isDownloading || existingGuides.length === 0}
+                >
+                  {isDownloading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  Download All ({existingGuides.length})
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      disabled={isDeleting || existingGuides.length === 0}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      )}
+                      Delete All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete all guides?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all {existingGuides.length} guides. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteAllGuides}>
+                        Delete All
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Existing Guides */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Existing Guides ({existingGuides.length})</CardTitle>
+              <CardDescription>
+                Search and manage individual guides
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search by title, slug, or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {isLoadingGuides ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : filteredGuides.length === 0 ? (
+                <p className="py-8 text-center text-muted-foreground">
+                  {searchQuery ? "No guides match your search" : "No guides yet"}
+                </p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto rounded border">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-muted">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Title</th>
+                        <th className="px-3 py-2 text-left">Category</th>
+                        <th className="px-3 py-2 text-left">Platform</th>
+                        <th className="px-3 py-2 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredGuides.map((guide) => (
+                        <tr key={guide.id} className="border-t">
+                          <td className="px-3 py-2">
+                            <div>
+                              <p className="font-medium">{guide.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {guide.slug}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">{guide.guide_category}</td>
+                          <td className="px-3 py-2">{guide.primary_platform}</td>
+                          <td className="px-3 py-2 text-right">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete guide?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently delete "{guide.title}". This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteGuide(guide.id, guide.title)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Upload Card */}
           <Card className="mb-8">
@@ -411,22 +722,43 @@ const GuidesImport = () => {
             </Card>
           )}
 
-          {/* Progress */}
+          {/* Progress with real-time status */}
           {isProcessing && (
-            <Card className="mb-8">
+            <Card className="mb-8 border-primary">
               <CardContent className="py-6">
-                <div className="mb-2 flex justify-between text-sm">
-                  <span>Importing guides...</span>
-                  <span>{Math.round(progress)}%</span>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Importing guides...
+                  </span>
+                  <span className="font-medium">{Math.round(progress)}%</span>
                 </div>
-                <Progress value={progress} />
+                <Progress value={progress} className="mb-3" />
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {results.length} of {parsedRows.length} processed
+                  </span>
+                  {currentItem && (
+                    <span className="truncate max-w-[200px]">
+                      Current: {currentItem}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 flex gap-4 text-xs">
+                  <span className="text-green-600">
+                    ✓ {results.filter((r) => r.success).length} success
+                  </span>
+                  <span className="text-red-600">
+                    ✗ {results.filter((r) => !r.success).length} failed
+                  </span>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {/* Results */}
-          {results.length > 0 && (
-            <Card>
+          {results.length > 0 && !isProcessing && (
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Import Results</CardTitle>
               </CardHeader>
