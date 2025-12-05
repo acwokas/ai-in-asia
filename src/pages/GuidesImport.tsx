@@ -804,21 +804,23 @@ const GuidesImport = () => {
           {/* Expected Fields Reference */}
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Expected CSV Fields</CardTitle>
+              <CardTitle>Expected CSV Fields ({EXPECTED_FIELDS.length} columns)</CardTitle>
               <CardDescription>
-                Your CSV file must include these column headers
+                Your CSV file must include these exact column headers (case-sensitive)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {EXPECTED_FIELDS.map((field) => (
-                  <code
-                    key={field}
-                    className="rounded bg-muted px-2 py-1 text-xs"
-                  >
-                    {field}
-                  </code>
-                ))}
+              <div className="max-h-64 overflow-y-auto rounded border border-border p-3">
+                <div className="flex flex-wrap gap-2">
+                  {EXPECTED_FIELDS.map((field, index) => (
+                    <code
+                      key={field}
+                      className="rounded bg-muted px-2 py-1 text-xs"
+                    >
+                      {index + 1}. {field}
+                    </code>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
