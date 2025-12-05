@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Download, Trash2, Search, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Download, Trash2, Search, Loader2, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -785,6 +785,15 @@ const GuidesImport = () => {
                           <p className="text-sm text-red-600">{result.error}</p>
                         )}
                       </div>
+                      {result.success && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/guides/${result.slug}`, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
