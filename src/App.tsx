@@ -96,6 +96,9 @@ const AllPrompts = lazy(() => import("./pages/AllPrompts"));
 const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
+const Guides = lazy(() => import("./pages/Guides"));
+const GuideDetail = lazy(() => import("./pages/GuideDetail"));
+const GuidesImport = lazy(() => import("./pages/GuidesImport"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -247,6 +250,9 @@ const App = () => (
               <Route path="/admin/bulk-seo" element={<BulkSEOGeneration />} />
               <Route path="/admin/category-sponsors" element={<CategorySponsorsManager />} />
               <Route path="/admin/404-analytics" element={<NotFoundAnalytics />} />
+              <Route path="/admin/guides-import" element={<GuidesImport />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/:slug" element={<GuideDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CollectiveFooter />

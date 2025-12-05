@@ -122,6 +122,153 @@ export type Database = {
           },
         ]
       }
+      ai_guides: {
+        Row: {
+          audience_role: string | null
+          body_intro: string | null
+          body_section_1_heading: string | null
+          body_section_1_text: string | null
+          body_section_2_heading: string | null
+          body_section_2_text: string | null
+          body_section_3_heading: string | null
+          body_section_3_text: string | null
+          closing_cta: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          faq_a1: string | null
+          faq_a2: string | null
+          faq_a3: string | null
+          faq_q1: string | null
+          faq_q2: string | null
+          faq_q3: string | null
+          focus_keyphrase: string | null
+          geo: string | null
+          guide_category: string
+          id: string
+          image_prompt: string | null
+          keyphrase_synonyms: string | null
+          level: string
+          meta_description: string | null
+          meta_title: string | null
+          perfect_for: string | null
+          primary_platform: string
+          prompt_1_headline: string | null
+          prompt_1_label: string | null
+          prompt_1_text: string | null
+          prompt_2_headline: string | null
+          prompt_2_label: string | null
+          prompt_2_text: string | null
+          prompt_3_headline: string | null
+          prompt_3_label: string | null
+          prompt_3_text: string | null
+          seo_title: string | null
+          slug: string
+          tags: string | null
+          title: string
+          tldr_bullet_1: string | null
+          tldr_bullet_2: string | null
+          tldr_bullet_3: string | null
+          updated_at: string
+        }
+        Insert: {
+          audience_role?: string | null
+          body_intro?: string | null
+          body_section_1_heading?: string | null
+          body_section_1_text?: string | null
+          body_section_2_heading?: string | null
+          body_section_2_text?: string | null
+          body_section_3_heading?: string | null
+          body_section_3_text?: string | null
+          closing_cta?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          faq_a1?: string | null
+          faq_a2?: string | null
+          faq_a3?: string | null
+          faq_q1?: string | null
+          faq_q2?: string | null
+          faq_q3?: string | null
+          focus_keyphrase?: string | null
+          geo?: string | null
+          guide_category: string
+          id?: string
+          image_prompt?: string | null
+          keyphrase_synonyms?: string | null
+          level: string
+          meta_description?: string | null
+          meta_title?: string | null
+          perfect_for?: string | null
+          primary_platform: string
+          prompt_1_headline?: string | null
+          prompt_1_label?: string | null
+          prompt_1_text?: string | null
+          prompt_2_headline?: string | null
+          prompt_2_label?: string | null
+          prompt_2_text?: string | null
+          prompt_3_headline?: string | null
+          prompt_3_label?: string | null
+          prompt_3_text?: string | null
+          seo_title?: string | null
+          slug: string
+          tags?: string | null
+          title: string
+          tldr_bullet_1?: string | null
+          tldr_bullet_2?: string | null
+          tldr_bullet_3?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audience_role?: string | null
+          body_intro?: string | null
+          body_section_1_heading?: string | null
+          body_section_1_text?: string | null
+          body_section_2_heading?: string | null
+          body_section_2_text?: string | null
+          body_section_3_heading?: string | null
+          body_section_3_text?: string | null
+          closing_cta?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          faq_a1?: string | null
+          faq_a2?: string | null
+          faq_a3?: string | null
+          faq_q1?: string | null
+          faq_q2?: string | null
+          faq_q3?: string | null
+          focus_keyphrase?: string | null
+          geo?: string | null
+          guide_category?: string
+          id?: string
+          image_prompt?: string | null
+          keyphrase_synonyms?: string | null
+          level?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          perfect_for?: string | null
+          primary_platform?: string
+          prompt_1_headline?: string | null
+          prompt_1_label?: string | null
+          prompt_1_text?: string | null
+          prompt_2_headline?: string | null
+          prompt_2_label?: string | null
+          prompt_2_text?: string | null
+          prompt_3_headline?: string | null
+          prompt_3_label?: string | null
+          prompt_3_text?: string | null
+          seo_title?: string | null
+          slug?: string
+          tags?: string | null
+          title?: string
+          tldr_bullet_1?: string | null
+          tldr_bullet_2?: string | null
+          tldr_bullet_3?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_tools: {
         Row: {
           category: string | null
