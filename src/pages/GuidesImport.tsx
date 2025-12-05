@@ -155,11 +155,35 @@ const GuidesImport = () => {
     );
   }
 
+  // Normalize header: lowercase, replace spaces with underscores, trim
+  const normalizeHeader = (header: string): string => {
+    return header.trim().toLowerCase().replace(/\s+/g, "_");
+  };
+
+  // Create a mapping from normalized expected fields to original expected fields
+  const normalizedFieldMap: Record<string, string> = {};
+  EXPECTED_FIELDS.forEach((field) => {
+    normalizedFieldMap[normalizeHeader(field)] = field;
+  });
+
   const parseCSV = (text: string): Record<string, string>[] => {
     const lines = text.split(/\r?\n/);
     if (lines.length < 2) return [];
 
-    const headers = parseCSVLine(lines[0]);
+    const rawHeaders = parseCSVLine(lines[0]);
+    
+    // Map CSV headers to expected field names (case-insensitive, space-to-underscore)
+    const headerMapping: Record<number, string> = {};
+    rawHeaders.forEach((header, idx) => {
+      const normalized = normalizeHeader(header);
+      if (normalizedFieldMap[normalized]) {
+        headerMapping[idx] = normalizedFieldMap[normalized];
+      } else {
+        // Keep original header if no match found
+        headerMapping[idx] = header.trim();
+      }
+    });
+
     const rows: Record<string, string>[] = [];
 
     for (let i = 1; i < lines.length; i++) {
@@ -169,8 +193,9 @@ const GuidesImport = () => {
       const values = parseCSVLine(line);
       const row: Record<string, string> = {};
 
-      headers.forEach((header, idx) => {
-        row[header.trim()] = values[idx]?.trim() || "";
+      Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
+        const idx = parseInt(idxStr, 10);
+        row[fieldName] = values[idx]?.trim() || "";
       });
 
       rows.push(row);
@@ -806,7 +831,7 @@ const GuidesImport = () => {
             <CardHeader>
               <CardTitle>Expected CSV Fields ({EXPECTED_FIELDS.length} columns)</CardTitle>
               <CardDescription>
-                Your CSV file must include these exact column headers (case-sensitive)
+                Your CSV file should include these column headers. Matching is flexible: case-insensitive and spaces are converted to underscores (e.g., "title", "TITLE", "Guide Category" all work).
               </CardDescription>
             </CardHeader>
             <CardContent>
