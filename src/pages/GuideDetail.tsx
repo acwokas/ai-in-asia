@@ -42,7 +42,7 @@ const GuideDetail = () => {
       setCopiedPrompt(promptIndex);
       toast.success("Prompt copied to clipboard");
       setTimeout(() => setCopiedPrompt(null), 2000);
-    } catch {
+    } catch (err) {
       toast.error("Failed to copy prompt");
     }
   };
@@ -127,6 +127,8 @@ const GuideDetail = () => {
     guide.tldr_bullet_3,
   ].filter(Boolean);
 
+  const tags = guide.tags ? guide.tags.split(",") : [];
+
   return (
     <>
       <Helmet>
@@ -139,7 +141,6 @@ const GuideDetail = () => {
       <Header />
 
       <main className="min-h-screen bg-background">
-        {/* Back navigation */}
         <div className="border-b border-border bg-muted/30">
           <div className="container mx-auto max-w-4xl px-4 py-4">
             <Link
@@ -154,9 +155,7 @@ const GuideDetail = () => {
 
         <article className="py-8">
           <div className="container mx-auto max-w-4xl px-4">
-            {/* Header */}
             <header className="mb-8">
-              {/* Meta badges */}
               <div className="mb-4 flex flex-wrap gap-2">
                 <Badge variant="outline">{guide.guide_category}</Badge>
                 <Badge className={getLevelColor(guide.level)}>{guide.level}</Badge>
@@ -182,10 +181,9 @@ const GuideDetail = () => {
                 {guide.title}
               </h1>
 
-              {/* Tags */}
-              {guide.tags && (
+              {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {guide.tags.split(",").map((tag, i) => (
+                  {tags.map((tag: string, i: number) => (
                     <span
                       key={i}
                       className="inline-flex items-center text-sm text-muted-foreground"
@@ -198,7 +196,6 @@ const GuideDetail = () => {
               )}
             </header>
 
-            {/* TLDR Section */}
             {tldrBullets.length > 0 && (
               <Card className="mb-8 border-primary/20 bg-primary/5">
                 <CardHeader className="pb-2">
@@ -217,7 +214,6 @@ const GuideDetail = () => {
               </Card>
             )}
 
-            {/* Perfect For Section */}
             {guide.perfect_for && (
               <Card className="mb-8 border-l-4 border-l-primary">
                 <CardHeader className="pb-2">
@@ -231,16 +227,13 @@ const GuideDetail = () => {
               </Card>
             )}
 
-            {/* Body Content */}
             <div className="prose prose-slate dark:prose-invert max-w-none">
-              {/* Intro */}
               {guide.body_intro && (
                 <p className="lead mb-8 text-lg text-muted-foreground">
                   {guide.body_intro}
                 </p>
               )}
 
-              {/* Body Sections */}
               {bodySections.map((section, i) => (
                 <section key={i} className="mb-8">
                   <h2 className="mb-4 text-2xl font-semibold tracking-tight">
@@ -253,7 +246,6 @@ const GuideDetail = () => {
               ))}
             </div>
 
-            {/* Prompts Section */}
             {prompts.length > 0 && (
               <section className="mb-8">
                 <h2 className="mb-6 text-2xl font-semibold tracking-tight">
@@ -305,7 +297,6 @@ const GuideDetail = () => {
               </section>
             )}
 
-            {/* FAQ Section */}
             {faqs.length > 0 && (
               <section className="mb-8">
                 <h2 className="mb-6 text-2xl font-semibold tracking-tight">
@@ -326,7 +317,6 @@ const GuideDetail = () => {
               </section>
             )}
 
-            {/* Closing CTA */}
             {guide.closing_cta && (
               <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                 <CardContent className="py-6">
