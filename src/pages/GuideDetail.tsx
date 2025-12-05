@@ -1,9 +1,8 @@
-// Guide detail page component
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BarChart3, BookOpen } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
