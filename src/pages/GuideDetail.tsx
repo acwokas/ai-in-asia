@@ -317,15 +317,29 @@ const GuideDetail = () => {
               </section>
             )}
 
-            {guide.closing_cta && (
-              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-                <CardContent className="py-6">
-                  <p className="text-center text-lg font-medium text-foreground">
-                    {guide.closing_cta}
+            {/* Closing Section */}
+            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+              <CardContent className="py-8">
+                <h2 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
+                  Ready to experiment?
+                </h2>
+                <div className="space-y-4 text-foreground/90">
+                  <p>
+                    Pick one of these prompts and see where it takes you. The interesting bit isn't just getting results—it's discovering what happens when you tweak the parameters or combine different approaches. If you end up with something unexpected (whether that's brilliantly unexpected or amusingly terrible), we'd genuinely love to see it.
                   </p>
-                </CardContent>
-              </Card>
-            )}
+                  <p>
+                    Share your results, your variations, or the weird tangents you went down trying to get things just right. That's often where the best insights come from: the collective trial and error of people actually using these tools in practice.
+                  </p>
+                  <p>
+                    And if you found this useful, we've got plenty more{" "}
+                    <Link to="/guides" className="font-medium text-primary hover:underline">
+                      practical how-to guides
+                    </Link>{" "}
+                    covering everything from creating images for your blog to helping you automate boring work tasks. Each one's built the same way: real techniques, actual examples, no fluff.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </article>
       </main>
