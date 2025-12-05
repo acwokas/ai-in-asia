@@ -177,7 +177,12 @@ const GuidesImport = () => {
     const lines = cleanText.split(/\r?\n/);
     if (lines.length < 2) return [];
 
-    const rawHeaders = parseCSVLine(lines[0]);
+    // Auto-detect delimiter from first line
+    const delimiter = detectDelimiter(lines[0]);
+    console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
+
+    const rawHeaders = parseCSVLine(lines[0], delimiter);
+    console.log("Raw headers parsed:", rawHeaders);
     
     // Map CSV headers to expected field names (case-insensitive, space-to-underscore)
     const headerMapping: Record<number, string> = {};
@@ -197,7 +202,7 @@ const GuidesImport = () => {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = parseCSVLine(line);
+      const values = parseCSVLine(line, delimiter);
       const row: Record<string, string> = {};
 
       Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
@@ -211,7 +216,23 @@ const GuidesImport = () => {
     return rows;
   };
 
-  const parseCSVLine = (line: string): string[] => {
+  // Auto-detect CSV delimiter from first line
+  const detectDelimiter = (line: string): string => {
+    const delimiters = [",", "\t", ";", "|"];
+    let maxCount = 0;
+    let bestDelimiter = ",";
+    
+    for (const delimiter of delimiters) {
+      const count = (line.match(new RegExp(delimiter === "|" ? "\\|" : delimiter, "g")) || []).length;
+      if (count > maxCount) {
+        maxCount = count;
+        bestDelimiter = delimiter;
+      }
+    }
+    return bestDelimiter;
+  };
+
+  const parseCSVLine = (line: string, delimiter: string = ","): string[] => {
     const result: string[] = [];
     let current = "";
     let inQuotes = false;
@@ -232,7 +253,7 @@ const GuidesImport = () => {
       } else {
         if (char === '"') {
           inQuotes = true;
-        } else if (char === ",") {
+        } else if (char === delimiter) {
           result.push(current);
           current = "";
         } else {
