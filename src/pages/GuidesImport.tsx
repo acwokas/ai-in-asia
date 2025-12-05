@@ -171,51 +171,6 @@ const GuidesImport = () => {
     normalizedFieldMap[normalizeHeader(field)] = field;
   });
 
-  const parseCSV = (text: string): Record<string, string>[] => {
-    // Remove BOM if present at start of file
-    const cleanText = text.replace(/^\uFEFF/, "");
-    const lines = cleanText.split(/\r?\n/);
-    if (lines.length < 2) return [];
-
-    // Auto-detect delimiter from first line
-    const delimiter = detectDelimiter(lines[0]);
-    console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
-
-    const rawHeaders = parseCSVLine(lines[0], delimiter);
-    console.log("Raw headers parsed:", rawHeaders);
-    
-    // Map CSV headers to expected field names (case-insensitive, space-to-underscore)
-    const headerMapping: Record<number, string> = {};
-    rawHeaders.forEach((header, idx) => {
-      const normalized = normalizeHeader(header);
-      if (normalizedFieldMap[normalized]) {
-        headerMapping[idx] = normalizedFieldMap[normalized];
-      } else {
-        // Keep original header if no match found
-        headerMapping[idx] = header.trim();
-      }
-    });
-
-    const rows: Record<string, string>[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      const values = parseCSVLine(line, delimiter);
-      const row: Record<string, string> = {};
-
-      Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
-        const idx = parseInt(idxStr, 10);
-        row[fieldName] = values[idx]?.trim() || "";
-      });
-
-      rows.push(row);
-    }
-
-    return rows;
-  };
-
   // Auto-detect CSV delimiter from first line
   const detectDelimiter = (line: string): string => {
     const delimiters = [",", "\t", ";", "|"];
@@ -263,6 +218,51 @@ const GuidesImport = () => {
     }
     result.push(current);
     return result;
+  };
+
+  const parseCSV = (text: string): Record<string, string>[] => {
+    // Remove BOM if present at start of file
+    const cleanText = text.replace(/^\uFEFF/, "");
+    const lines = cleanText.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    // Auto-detect delimiter from first line
+    const delimiter = detectDelimiter(lines[0]);
+    console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
+
+    const rawHeaders = parseCSVLine(lines[0], delimiter);
+    console.log("Raw headers parsed:", rawHeaders);
+    
+    // Map CSV headers to expected field names (case-insensitive, space-to-underscore)
+    const headerMapping: Record<number, string> = {};
+    rawHeaders.forEach((header, idx) => {
+      const normalized = normalizeHeader(header);
+      if (normalizedFieldMap[normalized]) {
+        headerMapping[idx] = normalizedFieldMap[normalized];
+      } else {
+        // Keep original header if no match found
+        headerMapping[idx] = header.trim();
+      }
+    });
+
+    const rows: Record<string, string>[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = parseCSVLine(line, delimiter);
+      const row: Record<string, string> = {};
+
+      Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
+        const idx = parseInt(idxStr, 10);
+        row[fieldName] = values[idx]?.trim() || "";
+      });
+
+      rows.push(row);
+    }
+
+    return rows;
   };
 
   const escapeCSVField = (field: string | null | undefined): string => {
