@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createIDBPersister } from "@/lib/queryPersister";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
@@ -92,7 +92,6 @@ const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
 const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
-const AllPrompts = lazy(() => import("./pages/AllPrompts"));
 const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
@@ -198,7 +197,7 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
               <Route path="/tools" element={<Tools />} />
-              <Route path="/prompts" element={<AllPrompts />} />
+              <Route path="/prompts" element={<Navigate to="/guides?category=prompts" replace />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
               <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />

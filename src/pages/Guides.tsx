@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { 
   Search, BookOpen, Cpu, Sparkles, ArrowRight, 
@@ -13,9 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PromptsGrid from "@/components/PromptsGrid";
 
 const GUIDE_CATEGORIES = [
-  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", link: "/prompts" },
+  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", isPrompts: true },
   { value: "Tutorial", label: "Tutorials", icon: BookMarked, color: "from-blue-500 to-cyan-500" },
   { value: "Framework", label: "Frameworks", icon: Layers, color: "from-green-500 to-emerald-500" },
   { value: "Use Case", label: "Use Cases", icon: Target, color: "from-orange-500 to-amber-500" },
@@ -43,11 +44,22 @@ const LEVELS = [
 ];
 
 const Guides = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [showAllCategories, setShowAllCategories] = useState(false);
+
+  // Read category from URL on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam === "prompts") {
+      setSelectedCategory("Prompt List");
+    }
+  }, [searchParams]);
+
+  const isPromptsView = selectedCategory === "Prompt List";
 
   const { data: guides, isLoading } = useQuery({
     queryKey: ["ai-guides"],
@@ -77,7 +89,7 @@ const Guides = () => {
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = !selectedCategory || guide.guide_category === selectedCategory;
+    const matchesCategory = !selectedCategory || selectedCategory === "Prompt List" || guide.guide_category === selectedCategory;
     const matchesPlatform = !selectedPlatform || guide.primary_platform === selectedPlatform;
     const matchesLevel = !selectedLevel || guide.level === selectedLevel;
 
@@ -107,7 +119,7 @@ const Guides = () => {
   return (
     <>
       <Helmet>
-        <title>AI Guides - Master AI Tools with Practical Tutorials | AIinASIA</title>
+        <title>AI Guides & Prompts - Master AI Tools with Practical Tutorials | AIinASIA</title>
         <meta
           name="description"
           content="Explore our collection of AI guides, tutorials, prompt packs, and frameworks. Learn to master ChatGPT, Claude, Gemini, Midjourney and more."
@@ -133,19 +145,22 @@ const Guides = () => {
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
                 Master AI with
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                  Practical Guides
+                  {isPromptsView ? "Ready-to-Use Prompts" : "Practical Guides"}
                 </span>
               </h1>
               
               <p className="text-xl text-muted-foreground md:text-2xl leading-relaxed max-w-2xl">
-                From beginner tutorials to advanced frameworks. Real techniques, actual examples, no fluff.
+                {isPromptsView 
+                  ? "Browse our complete collection of AI prompts for ChatGPT, Claude, Gemini, and more."
+                  : "From beginner tutorials to advanced frameworks. Real techniques, actual examples, no fluff."
+                }
               </p>
 
               {/* Quick Search in Hero */}
               <div className="mt-10 relative max-w-xl">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search for prompts, tutorials, frameworks..."
+                  placeholder={isPromptsView ? "Search prompts..." : "Search for prompts, tutorials, frameworks..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-12 h-14 text-lg rounded-xl border-2 border-border bg-background/80 backdrop-blur-sm focus:border-primary transition-colors"
@@ -173,28 +188,6 @@ const Guides = () => {
                 const isSelected = selectedCategory === category.value;
                 const count = categoryCounts[category.value] || 0;
                 
-                // If category has a link, render as Link
-                if (category.link) {
-                  return (
-                    <Link
-                      key={category.value}
-                      to={category.link}
-                      className="group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden border-border bg-card hover:border-primary/50 hover:shadow-md"
-                    >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
-                      
-                      <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${category.color} mb-4`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <h3 className="font-semibold text-foreground mb-1">{category.label}</h3>
-                      <p className="text-sm text-muted-foreground">Browse all prompts</p>
-                      
-                      <ArrowRight className="absolute top-4 right-4 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link>
-                  );
-                }
-                
                 return (
                   <button
                     key={category.value}
@@ -212,7 +205,9 @@ const Guides = () => {
                     </div>
                     
                     <h3 className="font-semibold text-foreground mb-1">{category.label}</h3>
-                    <p className="text-sm text-muted-foreground">{count} guide{count !== 1 ? "s" : ""}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {category.isPrompts ? "Browse all prompts" : `${count} guide${count !== 1 ? "s" : ""}`}
+                    </p>
                     
                     {isSelected && (
                       <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary" />
@@ -234,168 +229,180 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* Platform & Level Filters - Pill buttons */}
-        <section className="py-6 border-b border-border bg-background sticky top-0 z-40">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground mr-2">Platform:</span>
-              <div className="flex flex-wrap gap-2">
-                {PLATFORMS.slice(1, 5).map((platform) => (
-                  <button
-                    key={platform.value}
-                    onClick={() => setSelectedPlatform(selectedPlatform === platform.value ? null : platform.value)}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedPlatform === platform.value
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${platform.accent}`} />
-                    {platform.label}
-                  </button>
-                ))}
-              </div>
-              
-              <span className="text-border mx-4 hidden md:block">|</span>
-              
-              <span className="text-sm font-medium text-muted-foreground mr-2">Level:</span>
-              <div className="flex flex-wrap gap-2">
-                {LEVELS.slice(0, 3).map((level) => (
-                  <button
-                    key={level.value}
-                    onClick={() => setSelectedLevel(selectedLevel === level.value ? null : level.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedLevel === level.value
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : `${level.bg} ${level.color} hover:opacity-80`
-                    }`}
-                  >
-                    {level.value}
-                  </button>
-                ))}
-              </div>
+        {/* Conditional content based on category */}
+        {isPromptsView ? (
+          /* Prompts Grid */
+          <section className="py-8">
+            <div className="container mx-auto px-4">
+              <PromptsGrid searchQuery={searchQuery} />
             </div>
-          </div>
-        </section>
-
-        {/* Results Header */}
-        <section className="pt-8 pb-4">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between">
-              <p className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{filteredGuides?.length ?? 0}</span>
-                {" "}guide{filteredGuides?.length !== 1 ? "s" : ""} 
-                {hasActiveFilters && " matching your filters"}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Guides Grid - Mixed layout for visual interest */}
-        <section className="pb-16">
-          <div className="container mx-auto px-4">
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="animate-pulse rounded-2xl bg-muted h-64" />
-                ))}
-              </div>
-            ) : filteredGuides?.length === 0 ? (
-              <div className="py-24 text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
-                  <BookOpen className="h-10 w-10 text-muted-foreground" />
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">No guides found</h3>
-                <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                  Try adjusting your search or filters to find what you are looking for.
-                </p>
-                <Button onClick={clearFilters} variant="outline">
-                  Clear all filters
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredGuides?.map((guide, index) => {
-                  const levelStyle = getLevelStyle(guide.level);
-                  const platformAccent = getPlatformAccent(guide.primary_platform);
-                  const categoryConfig = GUIDE_CATEGORIES.find(c => c.value === guide.guide_category);
-                  const isFeature = index === 0 && !hasActiveFilters;
+          </section>
+        ) : (
+          <>
+            {/* Platform & Level Filters - Pill buttons */}
+            <section className="py-6 border-b border-border bg-background sticky top-0 z-40">
+              <div className="container mx-auto px-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-medium text-muted-foreground mr-2">Platform:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {PLATFORMS.slice(1, 5).map((platform) => (
+                      <button
+                        key={platform.value}
+                        onClick={() => setSelectedPlatform(selectedPlatform === platform.value ? null : platform.value)}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedPlatform === platform.value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${platform.accent}`} />
+                        {platform.label}
+                      </button>
+                    ))}
+                  </div>
                   
-                  return (
-                    <Link 
-                      key={guide.id} 
-                      to={`/guides/${guide.slug}`}
-                      className={`group relative ${isFeature ? "md:col-span-2 lg:col-span-2" : ""}`}
-                    >
-                      <div className={`relative h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden ${
-                        isFeature ? "md:flex md:items-center md:gap-8" : ""
-                      }`}>
-                        {/* Gradient overlay on hover */}
-                        <div className={`absolute inset-0 bg-gradient-to-br ${categoryConfig?.color || "from-primary to-accent"} opacity-0 group-hover:opacity-[0.03] transition-opacity`} />
-                        
-                        {/* Platform accent bar */}
-                        <div className={`absolute top-0 left-0 right-0 h-1 ${platformAccent} opacity-60`} />
-                        
-                        <div className={`relative ${isFeature ? "md:flex-1" : ""}`}>
-                          {/* Meta badges */}
-                          <div className="flex flex-wrap items-center gap-2 mb-4">
-                            <Badge variant="secondary" className="text-xs font-medium">
-                              {guide.guide_category}
-                            </Badge>
-                            <Badge variant="outline" className={`text-xs ${levelStyle.color}`}>
-                              {guide.level}
-                            </Badge>
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Cpu className="h-3 w-3" />
-                              {guide.primary_platform}
-                            </span>
-                          </div>
-                          
-                          {/* Title */}
-                          <h3 className={`font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2 ${
-                            isFeature ? "text-2xl md:text-3xl" : "text-lg"
-                          }`}>
-                            {guide.title}
-                          </h3>
-                          
-                          {/* Excerpt */}
-                          {guide.excerpt && (
-                            <p className={`text-muted-foreground mb-4 ${isFeature ? "text-base line-clamp-3" : "text-sm line-clamp-2"}`}>
-                              {guide.excerpt}
-                            </p>
-                          )}
-                          
-                          {/* Tags */}
-                          {guide.tags && (
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {guide.tags
-                                .split(",")
-                                .slice(0, isFeature ? 5 : 3)
-                                .map((tag, i) => (
-                                  <span
-                                    key={i}
-                                    className="inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground"
-                                  >
-                                    {tag.trim()}
-                                  </span>
-                                ))}
-                            </div>
-                          )}
-                          
-                          {/* CTA */}
-                          <div className="flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
-                            <span>Read guide</span>
-                            <ArrowRight className="h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+                  <span className="text-border mx-4 hidden md:block">|</span>
+                  
+                  <span className="text-sm font-medium text-muted-foreground mr-2">Level:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {LEVELS.slice(0, 3).map((level) => (
+                      <button
+                        key={level.value}
+                        onClick={() => setSelectedLevel(selectedLevel === level.value ? null : level.value)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedLevel === level.value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : `${level.bg} ${level.color} hover:opacity-80`
+                        }`}
+                      >
+                        {level.value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        </section>
+            </section>
+
+            {/* Results Header */}
+            <section className="pt-8 pb-4">
+              <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">{filteredGuides?.length ?? 0}</span>
+                    {" "}guide{filteredGuides?.length !== 1 ? "s" : ""} 
+                    {hasActiveFilters && " matching your filters"}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Guides Grid - Mixed layout for visual interest */}
+            <section className="pb-16">
+              <div className="container mx-auto px-4">
+                {isLoading ? (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="animate-pulse rounded-2xl bg-muted h-64" />
+                    ))}
+                  </div>
+                ) : filteredGuides?.length === 0 ? (
+                  <div className="py-24 text-center">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+                      <BookOpen className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-semibold">No guides found</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                      Try adjusting your search or filters to find what you are looking for.
+                    </p>
+                    <Button onClick={clearFilters} variant="outline">
+                      Clear all filters
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredGuides?.map((guide, index) => {
+                      const levelStyle = getLevelStyle(guide.level);
+                      const platformAccent = getPlatformAccent(guide.primary_platform);
+                      const categoryConfig = GUIDE_CATEGORIES.find(c => c.value === guide.guide_category);
+                      const isFeature = index === 0 && !hasActiveFilters;
+                      
+                      return (
+                        <Link 
+                          key={guide.id} 
+                          to={`/guides/${guide.slug}`}
+                          className={`group relative ${isFeature ? "md:col-span-2 lg:col-span-2" : ""}`}
+                        >
+                          <div className={`relative h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden ${
+                            isFeature ? "md:flex md:items-center md:gap-8" : ""
+                          }`}>
+                            {/* Gradient overlay on hover */}
+                            <div className={`absolute inset-0 bg-gradient-to-br ${categoryConfig?.color || "from-primary to-accent"} opacity-0 group-hover:opacity-[0.03] transition-opacity`} />
+                            
+                            {/* Platform accent bar */}
+                            <div className={`absolute top-0 left-0 right-0 h-1 ${platformAccent} opacity-60`} />
+                            
+                            <div className={`relative ${isFeature ? "md:flex-1" : ""}`}>
+                              {/* Meta badges */}
+                              <div className="flex flex-wrap items-center gap-2 mb-4">
+                                <Badge variant="secondary" className="text-xs font-medium">
+                                  {guide.guide_category}
+                                </Badge>
+                                <Badge variant="outline" className={`text-xs ${levelStyle.color}`}>
+                                  {guide.level}
+                                </Badge>
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Cpu className="h-3 w-3" />
+                                  {guide.primary_platform}
+                                </span>
+                              </div>
+                              
+                              {/* Title */}
+                              <h3 className={`font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2 ${
+                                isFeature ? "text-2xl md:text-3xl" : "text-lg"
+                              }`}>
+                                {guide.title}
+                              </h3>
+                              
+                              {/* Excerpt */}
+                              {guide.excerpt && (
+                                <p className={`text-muted-foreground mb-4 ${isFeature ? "text-base line-clamp-3" : "text-sm line-clamp-2"}`}>
+                                  {guide.excerpt}
+                                </p>
+                              )}
+                              
+                              {/* Tags */}
+                              {guide.tags && (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                  {guide.tags
+                                    .split(",")
+                                    .slice(0, isFeature ? 5 : 3)
+                                    .map((tag, i) => (
+                                      <span
+                                        key={i}
+                                        className="inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground"
+                                      >
+                                        {tag.trim()}
+                                      </span>
+                                    ))}
+                                </div>
+                              )}
+                              
+                              {/* CTA */}
+                              <div className="flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
+                                <span>Read guide</span>
+                                <ArrowRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
       <Footer />
