@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import GuideComments from "@/components/GuideComments";
 
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -461,6 +462,9 @@ const GuideDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Comments Section */}
+            <GuideComments guideId={guide.id} />
           </div>
         </article>
       </main>
