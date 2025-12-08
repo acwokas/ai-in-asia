@@ -66,7 +66,8 @@ const Guides = () => {
   const isToolsView = selectedCategory === "Tools";
 
   const { data: guides, isLoading } = useQuery({
-    queryKey: ["ai-guides"],
+    queryKey: ["ai-guides-list"],
+    staleTime: 0, // Always fetch fresh data
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
