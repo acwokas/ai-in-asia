@@ -79,6 +79,36 @@ const hasUnactionableContent = (text: string | null | undefined, slug: string | 
   );
 };
 
+// Format step-based content as a list (e.g., "Sub-step A: ... Sub-step B: ...")
+const formatStepContent = (text: string): { isSteps: boolean; items: string[] } => {
+  // Check for patterns like "Sub-step A:", "Step 1:", "1.", "•", etc.
+  const stepPatterns = [
+    /Sub-step\s+[A-Z]:/gi,
+    /Step\s+\d+:/gi,
+    /^\d+\.\s/gm,
+  ];
+  
+  const hasStepPattern = stepPatterns.some(pattern => pattern.test(text));
+  
+  if (hasStepPattern) {
+    // Split on step markers
+    const items = text
+      .split(/(?=Sub-step\s+[A-Z]:|Step\s+\d+:)/gi)
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+    
+    return { isSteps: true, items };
+  }
+  
+  // Also check for sentence-separated steps (sentences starting with action verbs)
+  const sentences = text.split(/\.\s+/).filter(s => s.trim().length > 0);
+  if (sentences.length >= 3) {
+    return { isSteps: true, items: sentences.map(s => s.trim() + (s.endsWith('.') ? '' : '.')) };
+  }
+  
+  return { isSteps: false, items: [text] };
+};
+
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
@@ -96,6 +126,8 @@ const GuideDetail = () => {
       return data;
     },
     enabled: !!slug,
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
   });
 
   const copyPrompt = async (promptText: string, promptIndex: number) => {
@@ -405,24 +437,41 @@ const GuideDetail = () => {
                   {extendedSections.length > 0 && (
                     <section className="mb-8">
                       <div className="space-y-6">
-                        {extendedSections.map((section, i) => (
-                          <Card key={i}>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">{section.heading}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="whitespace-pre-line text-foreground">
-                                {section.text}
-                              </div>
-                              {/* Show seasoning matrix download if this section mentions it */}
-                              {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
-                                <div className="mt-4 pt-4 border-t border-border">
-                                  <SeasoningMatrixDownload />
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
+                        {extendedSections.map((section, i) => {
+                          const formattedContent = formatStepContent(section.text);
+                          
+                          return (
+                            <Card key={i}>
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-lg">{section.heading}</CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                {formattedContent.isSteps ? (
+                                  <ul className="space-y-3">
+                                    {formattedContent.items.map((item, idx) => (
+                                      <li key={idx} className="flex items-start gap-3">
+                                        <span className="flex-shrink-0 mt-1 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
+                                          {idx + 1}
+                                        </span>
+                                        <span className="text-foreground">{item}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <div className="whitespace-pre-line text-foreground">
+                                    {section.text}
+                                  </div>
+                                )}
+                                {/* Show seasoning matrix download if this section mentions it */}
+                                {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
+                                  <div className="mt-4 pt-4 border-t border-border">
+                                    <SeasoningMatrixDownload />
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
                       </div>
                     </section>
                   )}
