@@ -170,6 +170,8 @@ const App = () => (
             <GoogleAnalytics />
             <Suspense fallback={null}>
               <ConsentBanner />
+            </Suspense>
+            <Suspense fallback={null}>
               <WelcomePopup />
             </Suspense>
             <Suspense fallback={<HomepageSkeleton />}>
