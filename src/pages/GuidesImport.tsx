@@ -84,6 +84,22 @@ const EXPECTED_FIELDS = [
   "Closing_CTA",
 ];
 
+// Helper function to normalize headers - defined outside component
+const normalizeHeader = (header: string): string => {
+  return header
+    .trim()
+    .replace(/^\uFEFF/, "") // Remove BOM
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^\w_]/g, ""); // Remove non-word chars except underscore
+};
+
+// Create mapping outside component for efficiency
+const NORMALIZED_FIELD_MAP: Record<string, string> = {};
+EXPECTED_FIELDS.forEach((field) => {
+  NORMALIZED_FIELD_MAP[normalizeHeader(field)] = field;
+});
+
 const GuidesImport = () => {
   const { user } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useAdminRole();
@@ -155,21 +171,7 @@ const GuidesImport = () => {
     );
   }
 
-  // Normalize header: lowercase, replace spaces with underscores, trim, remove BOM and special chars
-  const normalizeHeader = (header: string): string => {
-    return header
-      .trim()
-      .replace(/^\uFEFF/, "") // Remove BOM
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^\w_]/g, ""); // Remove non-word chars except underscore
-  };
-
-  // Create a mapping from normalized expected fields to original expected fields
-  const normalizedFieldMap: Record<string, string> = {};
-  EXPECTED_FIELDS.forEach((field) => {
-    normalizedFieldMap[normalizeHeader(field)] = field;
-  });
+  // Use the external NORMALIZED_FIELD_MAP for header mapping
 
   // Auto-detect CSV delimiter from first line
   const detectDelimiter = (line: string): string => {
@@ -243,9 +245,9 @@ const GuidesImport = () => {
     const headerMapping: Record<number, string> = {};
     rawHeaders.forEach((header, idx) => {
       const normalized = normalizeHeader(header);
-      console.log(`Header ${idx}: "${header}" -> normalized: "${normalized}" -> maps to: "${normalizedFieldMap[normalized] || 'NOT FOUND'}"`);
-      if (normalizedFieldMap[normalized]) {
-        headerMapping[idx] = normalizedFieldMap[normalized];
+      console.log(`Header ${idx}: "${header}" -> normalized: "${normalized}" -> maps to: "${NORMALIZED_FIELD_MAP[normalized] || 'NOT FOUND'}"`);
+      if (NORMALIZED_FIELD_MAP[normalized]) {
+        headerMapping[idx] = NORMALIZED_FIELD_MAP[normalized];
       } else {
         // Keep original header if no match found
         headerMapping[idx] = header.trim();
