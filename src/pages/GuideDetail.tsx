@@ -443,16 +443,16 @@ const GuideDetail = () => {
                               </CardHeader>
                               <CardContent>
                                 {formattedContent.isSteps ? (
-                                  <ul className="space-y-3">
+                                  <div className="space-y-4">
                                     {formattedContent.items.map((item, idx) => (
-                                      <li key={idx} className="flex items-start gap-3">
-                                        <span className="flex-shrink-0 mt-1 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
+                                      <div key={idx} className="flex items-start gap-3">
+                                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">
                                           {idx + 1}
                                         </span>
-                                        <span className="text-foreground">{item}</span>
-                                      </li>
+                                        <p className="text-foreground pt-0.5 flex-1">{item}</p>
+                                      </div>
                                     ))}
-                                  </ul>
+                                  </div>
                                 ) : (
                                   <div className="whitespace-pre-line text-foreground">
                                     {section.text}
