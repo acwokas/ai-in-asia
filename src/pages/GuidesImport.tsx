@@ -225,11 +225,25 @@ const GuidesImport = () => {
   const parseCSV = (text: string): Record<string, string>[] => {
     // Remove BOM if present at start of file
     const cleanText = text.replace(/^\uFEFF/, "");
-    const lines = cleanText.split(/\r?\n/);
+    
+    // Split into lines and filter out empty lines at the start
+    const allLines = cleanText.split(/\r?\n/);
+    const lines = allLines.filter((line, idx) => {
+      // Keep all non-empty lines, but for leading empty lines, skip them
+      if (idx === 0 && line.trim() === "") return false;
+      return true;
+    });
+    
+    // Also filter any remaining leading empty lines
+    while (lines.length > 0 && lines[0].trim() === "") {
+      lines.shift();
+    }
+    
     if (lines.length < 2) return [];
 
     console.log("=== DETAILED LINE DEBUG ===");
-    console.log("lines.length:", lines.length);
+    console.log("Original lines.length:", allLines.length);
+    console.log("Cleaned lines.length:", lines.length);
     console.log("lines[0] length:", lines[0].length);
     console.log("lines[0] first 100 chars:", JSON.stringify(lines[0].substring(0, 100)));
     console.log("lines[0] char codes (first 20):", Array.from(lines[0].substring(0, 20)).map(c => c.charCodeAt(0)));
@@ -239,7 +253,7 @@ const GuidesImport = () => {
     console.log("Direct comma split result length:", directSplit.length);
     console.log("Direct comma split first 3:", directSplit.slice(0, 3));
 
-    // Auto-detect delimiter from first line
+    // Auto-detect delimiter from first non-empty line
     const delimiter = detectDelimiter(lines[0]);
     console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : JSON.stringify(delimiter));
     console.log("Delimiter char code:", delimiter.charCodeAt(0));
