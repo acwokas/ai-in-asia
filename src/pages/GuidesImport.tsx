@@ -232,10 +232,8 @@ const GuidesImport = () => {
     const delimiter = detectDelimiter(lines[0]);
     console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
 
-    // For tab-separated files, simple split works better
-    const rawHeaders = delimiter === "\t" 
-      ? lines[0].split("\t").map(h => h.trim().replace(/^\uFEFF/, ""))
-      : parseCSVLine(lines[0], delimiter);
+    // ALWAYS use simple split for headers - headers should never have quotes
+    const rawHeaders = lines[0].split(delimiter).map(h => h.trim().replace(/^\uFEFF/, "").replace(/^"|"$/g, ""));
     
     console.log("Raw headers parsed:", rawHeaders);
     console.log("Number of headers:", rawHeaders.length);
@@ -262,11 +260,7 @@ const GuidesImport = () => {
       const line = lines[i].trim();
       if (!line) continue;
 
-      // For tab-separated files, simple split works better
-      const values = delimiter === "\t" 
-        ? line.split("\t").map(v => v.trim())
-        : parseCSVLine(line, delimiter);
-      
+      const values = parseCSVLine(line, delimiter);
       const row: Record<string, string> = {};
 
       Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
