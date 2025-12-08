@@ -84,6 +84,54 @@ const EXPECTED_FIELDS = [
   "Closing_CTA",
 ];
 
+// Tutorial CSV schema - different structure from Guides
+const TUTORIAL_FIELDS = [
+  "Title",
+  "Slug",
+  "Tutorial_Category",
+  "Skill_Level",
+  "Primary_Platform",
+  "Audience_Role",
+  "Geo",
+  "Excerpt",
+  "SEO_Title",
+  "Meta_Title",
+  "Meta_Description",
+  "Focus_Keyword",
+  "Keyword_Synonyms",
+  "Tags",
+  "TLDR_Bullet_1",
+  "TLDR_Bullet_2",
+  "TLDR_Bullet_3",
+  "Perfect_For",
+  "Estimated_Time_to_Complete",
+  "Learning_Outcomes",
+  "Introduction",
+  "Step_1_Heading",
+  "Step_1_Text",
+  "Step_2_Heading",
+  "Step_2_Text",
+  "Step_3_Heading",
+  "Step_3_Text",
+  "Step_4_Heading",
+  "Step_4_Text",
+  "Tips_Heading",
+  "Tips_Text",
+  "Activities_Heading_1",
+  "Activities_Text_1",
+  "Activities_Heading_2",
+  "Activities_Text_2",
+  "FAQ_Q1",
+  "FAQ_A1",
+  "FAQ_Q2",
+  "FAQ_A2",
+  "FAQ_Q3",
+  "FAQ_A3",
+  "Visual_Prompt",
+  "Conclusion_CTA",
+  "Extra_Resources",
+];
+
 // Helper function to normalize headers - defined outside component
 const normalizeHeader = (header: string): string => {
   return header
@@ -98,6 +146,12 @@ const normalizeHeader = (header: string): string => {
 const NORMALIZED_FIELD_MAP: Record<string, string> = {};
 EXPECTED_FIELDS.forEach((field) => {
   NORMALIZED_FIELD_MAP[normalizeHeader(field)] = field;
+});
+
+// Create mapping for tutorial fields
+const NORMALIZED_TUTORIAL_FIELD_MAP: Record<string, string> = {};
+TUTORIAL_FIELDS.forEach((field) => {
+  NORMALIZED_TUTORIAL_FIELD_MAP[normalizeHeader(field)] = field;
 });
 
 // Sanitize text content to remove corrupted file paths and invalid URLs
@@ -120,11 +174,20 @@ const GuidesImport = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tutorialFileInputRef = useRef<HTMLInputElement>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentItem, setCurrentItem] = useState<string>("");
   const [results, setResults] = useState<ImportResult[]>([]);
+  
+  // Tutorial import state
+  const [isTutorialProcessing, setIsTutorialProcessing] = useState(false);
+  const [tutorialProgress, setTutorialProgress] = useState(0);
+  const [tutorialCurrentItem, setTutorialCurrentItem] = useState<string>("");
+  const [tutorialResults, setTutorialResults] = useState<ImportResult[]>([]);
+  const [parsedTutorialRows, setParsedTutorialRows] = useState<Record<string, string>[]>([]);
+  const [showTutorialPreview, setShowTutorialPreview] = useState(false);
   const [parsedRows, setParsedRows] = useState<Record<string, string>[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -669,6 +732,240 @@ const GuidesImport = () => {
     }
   };
 
+  // Tutorial CSV parsing with flexible header matching
+  const parseTutorialCSV = (text: string): Record<string, string>[] => {
+    const cleanText = text.replace(/^\uFEFF/, "");
+    const allLines = cleanText.split(/\r?\n/);
+    const lines = allLines.filter((line, idx) => {
+      if (idx === 0 && line.trim() === "") return false;
+      return true;
+    });
+    
+    while (lines.length > 0 && lines[0].trim() === "") {
+      lines.shift();
+    }
+    
+    if (lines.length < 2) return [];
+
+    const delimiter = detectDelimiter(lines[0]);
+    const rawHeaders = lines[0].split(delimiter).map(h => h.trim().replace(/^\uFEFF/, "").replace(/^"|"$/g, ""));
+    
+    // Map CSV headers to expected tutorial field names
+    const headerMapping: Record<number, string> = {};
+    rawHeaders.forEach((header, idx) => {
+      const normalized = normalizeHeader(header);
+      if (NORMALIZED_TUTORIAL_FIELD_MAP[normalized]) {
+        headerMapping[idx] = NORMALIZED_TUTORIAL_FIELD_MAP[normalized];
+      } else {
+        headerMapping[idx] = header.trim();
+      }
+    });
+
+    const rows: Record<string, string>[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = parseCSVLine(line, delimiter);
+      const row: Record<string, string> = {};
+
+      Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
+        const idx = parseInt(idxStr, 10);
+        row[fieldName] = values[idx]?.trim() || "";
+      });
+
+      rows.push(row);
+    }
+
+    return rows;
+  };
+
+  const handleTutorialFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".csv")) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const rows = parseTutorialCSV(text);
+
+      if (rows.length === 0) {
+        toast.error("No data found in CSV file");
+        return;
+      }
+
+      const firstRow = rows[0];
+      const detectedFields = Object.keys(firstRow);
+      
+      // Create a normalized lookup for detected fields
+      const normalizedDetected: Record<string, string> = {};
+      detectedFields.forEach(f => {
+        normalizedDetected[normalizeHeader(f)] = f;
+      });
+      
+      // Check for missing fields using normalized comparison
+      const missingFields = TUTORIAL_FIELDS.filter((field) => {
+        const normalizedExpected = normalizeHeader(field);
+        const found = normalizedExpected in normalizedDetected || field in firstRow;
+        return !found;
+      });
+
+      if (missingFields.length > 0) {
+        console.log("Expected tutorial fields:", TUTORIAL_FIELDS);
+        console.log("Detected fields:", detectedFields);
+        console.log("Missing fields:", missingFields);
+        
+        toast.error(
+          `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
+          { duration: 8000 }
+        );
+        return;
+      }
+
+      setParsedTutorialRows(rows);
+      setShowTutorialPreview(true);
+      setTutorialResults([]);
+      toast.success(`Parsed ${rows.length} tutorial(s) from CSV`);
+    } catch (error) {
+      console.error("Error parsing tutorial CSV:", error);
+      toast.error("Failed to parse CSV file");
+    }
+  };
+
+  const importTutorials = async () => {
+    if (parsedTutorialRows.length === 0) return;
+
+    setIsTutorialProcessing(true);
+    setTutorialProgress(0);
+    setTutorialCurrentItem("");
+    const importResults: ImportResult[] = [];
+
+    // Valid platforms for tutorials
+    const validPlatforms = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'ElevenLabs', 'TikTok', 'Other', 'Generic'];
+    const platformMapping: Record<string, string> = {
+      'google': 'Gemini',
+      'gpt': 'ChatGPT',
+      'openai': 'ChatGPT',
+      'anthropic': 'Claude',
+    };
+
+    for (let i = 0; i < parsedTutorialRows.length; i++) {
+      const row = parsedTutorialRows[i];
+      setTutorialCurrentItem(row.Title);
+
+      try {
+        // Map platform
+        let mappedPlatform = row.Primary_Platform;
+        const lowerPlatform = (row.Primary_Platform || '').toLowerCase().trim();
+        
+        if (!validPlatforms.includes(mappedPlatform)) {
+          mappedPlatform = platformMapping[lowerPlatform] || 'Generic';
+        }
+
+        // Build tutorial data - map to ai_guides table structure
+        // Tutorial content maps to body sections
+        const tutorialData = {
+          title: row.Title,
+          slug: row.Slug,
+          guide_category: 'Tutorial', // Always Tutorial for this import
+          level: row.Skill_Level || 'Beginner',
+          primary_platform: mappedPlatform,
+          audience_role: sanitizeContent(row.Audience_Role),
+          geo: sanitizeContent(row.Geo),
+          excerpt: sanitizeContent(row.Excerpt),
+          seo_title: sanitizeContent(row.SEO_Title),
+          meta_title: sanitizeContent(row.Meta_Title),
+          meta_description: sanitizeContent(row.Meta_Description),
+          focus_keyphrase: sanitizeContent(row.Focus_Keyword),
+          keyphrase_synonyms: sanitizeContent(row.Keyword_Synonyms),
+          tags: sanitizeContent(row.Tags),
+          tldr_bullet_1: sanitizeContent(row.TLDR_Bullet_1),
+          tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
+          tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
+          perfect_for: sanitizeContent(row.Perfect_For),
+          // Map tutorial structure to guide structure
+          body_intro: sanitizeContent(row.Introduction),
+          body_section_1_heading: sanitizeContent(row.Step_1_Heading),
+          body_section_1_text: sanitizeContent(row.Step_1_Text),
+          body_section_2_heading: sanitizeContent(row.Step_2_Heading),
+          body_section_2_text: sanitizeContent(row.Step_2_Text),
+          body_section_3_heading: sanitizeContent(row.Step_3_Heading),
+          body_section_3_text: sanitizeContent(row.Step_3_Text),
+          // Map remaining steps and tips to prompt fields for storage
+          prompt_1_label: sanitizeContent(row.Step_4_Heading),
+          prompt_1_headline: sanitizeContent(row.Estimated_Time_to_Complete),
+          prompt_1_text: sanitizeContent(row.Step_4_Text),
+          prompt_2_label: sanitizeContent(row.Tips_Heading),
+          prompt_2_headline: sanitizeContent(row.Learning_Outcomes),
+          prompt_2_text: sanitizeContent(row.Tips_Text),
+          prompt_3_label: sanitizeContent(row.Activities_Heading_1),
+          prompt_3_headline: sanitizeContent(row.Activities_Heading_2),
+          prompt_3_text: sanitizeContent(`${row.Activities_Text_1 || ''}\n\n${row.Activities_Text_2 || ''}`.trim()),
+          faq_q1: sanitizeContent(row.FAQ_Q1),
+          faq_a1: sanitizeContent(row.FAQ_A1),
+          faq_q2: sanitizeContent(row.FAQ_Q2),
+          faq_a2: sanitizeContent(row.FAQ_A2),
+          faq_q3: sanitizeContent(row.FAQ_Q3),
+          faq_a3: sanitizeContent(row.FAQ_A3),
+          image_prompt: sanitizeContent(row.Visual_Prompt),
+          closing_cta: sanitizeContent(`${row.Conclusion_CTA || ''}\n\n${row.Extra_Resources || ''}`.trim()),
+          created_by: user.id,
+        };
+
+        const { error } = await supabase.from("ai_guides").upsert(tutorialData, {
+          onConflict: "slug",
+        });
+
+        if (error) throw error;
+
+        importResults.push({
+          success: true,
+          title: row.Title,
+          slug: row.Slug,
+        });
+      } catch (error: any) {
+        importResults.push({
+          success: false,
+          title: row.Title,
+          slug: row.Slug,
+          error: error.message || "Unknown error",
+        });
+      }
+
+      setTutorialProgress(((i + 1) / parsedTutorialRows.length) * 100);
+      setTutorialResults([...importResults]);
+    }
+
+    setIsTutorialProcessing(false);
+    setTutorialCurrentItem("");
+    queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+
+    const successCount = importResults.filter((r) => r.success).length;
+    const failCount = importResults.filter((r) => !r.success).length;
+
+    if (failCount === 0) {
+      toast.success(`Successfully imported ${successCount} tutorial(s)`);
+    } else {
+      toast.warning(`Imported ${successCount}, failed ${failCount}`);
+    }
+  };
+
+  const resetTutorialImport = () => {
+    setParsedTutorialRows([]);
+    setShowTutorialPreview(false);
+    setTutorialResults([]);
+    setTutorialProgress(0);
+    setTutorialCurrentItem("");
+    if (tutorialFileInputRef.current) {
+      tutorialFileInputRef.current.value = "";
+    }
+  };
+
   return (
     <>
       <Header />
@@ -989,12 +1286,209 @@ const GuidesImport = () => {
             </Card>
           )}
 
-          {/* Expected Fields Reference */}
+          {/* ========== TUTORIAL IMPORT SECTION ========== */}
+          <div className="mt-12 border-t-4 border-primary/30 pt-8">
+            <h2 className="mb-2 text-2xl font-bold text-primary">Import Tutorials CSV</h2>
+            <p className="mb-6 text-muted-foreground">
+              Upload a tutorial CSV file generated by ChatGPT. Tutorials will appear under the "Tutorial" filter on the /guides page.
+            </p>
+
+            {/* Tutorial Upload Card */}
+            <Card className="mb-8 border-primary/50 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  Upload Tutorials CSV
+                </CardTitle>
+                <CardDescription>
+                  Select a CSV file with tutorial data. The CSV should be generated by ChatGPT using the tutorial schema. Existing tutorials with matching slugs will be updated.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <input
+                    ref={tutorialFileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleTutorialFileSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => tutorialFileInputRef.current?.click()}
+                    disabled={isTutorialProcessing}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Select Tutorials CSV
+                  </Button>
+                  {parsedTutorialRows.length > 0 && (
+                    <Button variant="outline" onClick={resetTutorialImport}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tutorial Preview */}
+            {showTutorialPreview && parsedTutorialRows.length > 0 && (
+              <Card className="mb-8 border-primary/50">
+                <CardHeader>
+                  <CardTitle>Preview ({parsedTutorialRows.length} tutorials)</CardTitle>
+                  <CardDescription>
+                    Review the tutorials before importing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 max-h-64 overflow-y-auto rounded border">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-muted">
+                        <tr>
+                          <th className="px-3 py-2 text-left">#</th>
+                          <th className="px-3 py-2 text-left">Title</th>
+                          <th className="px-3 py-2 text-left">Slug</th>
+                          <th className="px-3 py-2 text-left">Skill Level</th>
+                          <th className="px-3 py-2 text-left">Platform</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedTutorialRows.map((row, i) => (
+                          <tr key={i} className="border-t">
+                            <td className="px-3 py-2">{i + 1}</td>
+                            <td className="px-3 py-2 font-medium">{row.Title}</td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {row.Slug}
+                            </td>
+                            <td className="px-3 py-2">{row.Skill_Level}</td>
+                            <td className="px-3 py-2">{row.Primary_Platform}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <Button
+                    onClick={importTutorials}
+                    disabled={isTutorialProcessing}
+                    className="w-full bg-primary hover:bg-primary/90"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Import {parsedTutorialRows.length} Tutorial(s)
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tutorial Progress */}
+            {isTutorialProcessing && (
+              <Card className="mb-8 border-primary">
+                <CardContent className="py-6">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Importing tutorials...
+                    </span>
+                    <span className="font-medium">{Math.round(tutorialProgress)}%</span>
+                  </div>
+                  <Progress value={tutorialProgress} className="mb-3" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      {tutorialResults.length} of {parsedTutorialRows.length} processed
+                    </span>
+                    {tutorialCurrentItem && (
+                      <span className="truncate max-w-[200px]">
+                        Current: {tutorialCurrentItem}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex gap-4 text-xs">
+                    <span className="text-green-600">
+                      ✓ {tutorialResults.filter((r) => r.success).length} success
+                    </span>
+                    <span className="text-red-600">
+                      ✗ {tutorialResults.filter((r) => !r.success).length} failed
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tutorial Results */}
+            {tutorialResults.length > 0 && !isTutorialProcessing && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Tutorial Import Results</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {tutorialResults.map((result, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-3 rounded p-2 ${
+                          result.success ? "bg-green-50 dark:bg-green-950" : "bg-red-50 dark:bg-red-950"
+                        }`}
+                      >
+                        {result.success ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{result.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {result.slug}
+                          </p>
+                          {result.error && (
+                            <p className="text-sm text-red-600">{result.error}</p>
+                          )}
+                        </div>
+                        {result.success && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/guides/${result.slug}`, '_blank')}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tutorial Expected Fields Reference */}
+            <Card className="mt-8 border-primary/30">
+              <CardHeader>
+                <CardTitle>Tutorial CSV Fields ({TUTORIAL_FIELDS.length} columns)</CardTitle>
+                <CardDescription>
+                  Your tutorial CSV file should include these column headers. Matching is flexible: case-insensitive and spaces are converted to underscores.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-64 overflow-y-auto rounded border border-primary/30 p-3">
+                  <div className="flex flex-wrap gap-2">
+                    {TUTORIAL_FIELDS.map((field, index) => (
+                      <code
+                        key={field}
+                        className="rounded bg-primary/10 px-2 py-1 text-xs text-primary"
+                      >
+                        {index + 1}. {field}
+                      </code>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Expected Fields Reference for Guides */}
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Expected CSV Fields ({EXPECTED_FIELDS.length} columns)</CardTitle>
+              <CardTitle>Guide CSV Fields ({EXPECTED_FIELDS.length} columns)</CardTitle>
               <CardDescription>
-                Your CSV file should include these column headers. Matching is flexible: case-insensitive and spaces are converted to underscores (e.g., "title", "TITLE", "Guide Category" all work).
+                Your guide CSV file should include these column headers. Matching is flexible: case-insensitive and spaces are converted to underscores (e.g., "title", "TITLE", "Guide Category" all work).
               </CardDescription>
             </CardHeader>
             <CardContent>
