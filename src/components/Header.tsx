@@ -11,6 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useState, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,89 +70,116 @@ const Header = memo(() => {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Mobile search button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/search')}
-              aria-label="Search"
-              className="flex lg:hidden h-12 w-12"
-            >
-              <Search className="h-6 w-6" />
-            </Button>
+          <TooltipProvider delayDuration={300}>
+            <div className="flex items-center gap-1">
+              {/* Mobile search button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate('/search')}
+                    aria-label="Search"
+                    className="flex lg:hidden h-10 w-10"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Search</TooltipContent>
+              </Tooltip>
 
-            {/* Desktop search button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/search')}
-              aria-label="Search"
-              className="hidden lg:flex h-12 w-12 md:h-16 md:w-16"
-            >
-              <Search className="h-6 w-6 md:h-8 md:w-8" />
-            </Button>
+              {/* Desktop search button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate('/search')}
+                    aria-label="Search"
+                    className="hidden lg:flex h-10 w-10"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Search</TooltipContent>
+              </Tooltip>
 
-            <div className="hidden md:flex items-center gap-2 ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-                className="h-12 w-12 md:h-16 md:w-16"
-              >
-                {isDark ? <Sun className="h-6 w-6 md:h-8 md:w-8" /> : <Moon className="h-6 w-6 md:h-8 md:w-8" />}
-              </Button>
-              
-              <NotificationPreferences />
-              <ReadingQueue />
-              
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16" aria-label="User menu">
-                      <User className="h-6 w-6 md:h-8 md:w-8" />
+              <div className="hidden md:flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTheme}
+                      aria-label="Toggle theme"
+                      className="h-10 w-10"
+                    >
+                      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="cursor-pointer">
-                        Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="cursor-pointer text-destructive">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="default" asChild>
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-              )}
-            </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{isDark ? "Light mode" : "Dark mode"}</TooltipContent>
+                </Tooltip>
+                
+                <NotificationPreferences />
+                <ReadingQueue />
+                
+                {user ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="User menu">
+                            <User className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link to="/profile" className="cursor-pointer">
+                              Profile
+                            </Link>
+                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <DropdownMenuItem asChild>
+                              <Link to="/admin" className="cursor-pointer text-destructive">
+                                <Shield className="mr-2 h-4 w-4" />
+                                Admin
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Sign Out
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TooltipTrigger>
+                    <TooltipContent>Account</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button variant="default" size="sm" asChild>
+                    <Link to="/auth">Sign In</Link>
+                  </Button>
+                )}
+              </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden h-12 w-12"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
-          </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden h-10 w-10"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle menu"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Menu</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {isMenuOpen && (
