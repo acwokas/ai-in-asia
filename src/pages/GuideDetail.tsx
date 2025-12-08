@@ -131,21 +131,21 @@ const GuideDetail = () => {
     { heading: guide.body_section_1_text, text: guide.body_section_1_heading },
     { heading: guide.body_section_2_text, text: guide.body_section_2_heading },
     { heading: guide.body_section_3_text, text: guide.body_section_3_heading },
-    // Step 4 is stored in prompt_1 fields
-    { heading: guide.prompt_1_label, text: guide.prompt_1_text },
+    // Step 4: prompt_1_text has heading, prompt_1_label has text
+    { heading: guide.prompt_1_text, text: guide.prompt_1_label },
   ].filter((s) => s.heading && s.text) : [];
 
-  // Tutorial Tips section (stored in prompt_2)
-  const tutorialTips = isTutorial && guide.prompt_2_text ? {
-    heading: guide.prompt_2_label || 'Tips',
-    text: guide.prompt_2_text,
+  // Tutorial Tips section (stored in prompt_2) - swapped: text field has heading, label has content
+  const tutorialTips = isTutorial && guide.prompt_2_label ? {
+    heading: guide.prompt_2_text || 'Tips',
+    text: guide.prompt_2_label,
   } : null;
 
-  // Tutorial Activities (stored in prompt_3)
-  const tutorialActivities = isTutorial && guide.prompt_3_text ? {
-    heading1: guide.prompt_3_label,
-    heading2: guide.prompt_3_headline,
-    text: guide.prompt_3_text,
+  // Tutorial Activities (stored in prompt_3) - swapped: text field has heading, label/headline have content
+  const tutorialActivities = isTutorial && (guide.prompt_3_label || guide.prompt_3_headline) ? {
+    heading: guide.prompt_3_text || 'Activities',
+    text1: guide.prompt_3_label,
+    text2: guide.prompt_3_headline,
   } : null;
 
   // Tutorial extended content sections
@@ -323,16 +323,13 @@ const GuideDetail = () => {
                   {/* Tutorial Activities */}
                   {tutorialActivities && (
                     <section className="mb-8">
-                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">Activities</h2>
-                      {tutorialActivities.heading1 && (
-                        <h3 className="mb-2 text-lg font-medium">{tutorialActivities.heading1}</h3>
+                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">{tutorialActivities.heading}</h2>
+                      {tutorialActivities.text1 && (
+                        <p className="mb-4 whitespace-pre-line text-foreground">{tutorialActivities.text1}</p>
                       )}
-                      {tutorialActivities.heading2 && (
-                        <h3 className="mb-2 text-lg font-medium">{tutorialActivities.heading2}</h3>
+                      {tutorialActivities.text2 && (
+                        <p className="whitespace-pre-line text-foreground">{tutorialActivities.text2}</p>
                       )}
-                      <div className="whitespace-pre-line text-foreground">
-                        {tutorialActivities.text}
-                      </div>
                     </section>
                   )}
 
