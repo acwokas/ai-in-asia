@@ -105,11 +105,12 @@ const GuideDetail = () => {
 
   const isTutorial = guide.guide_category === 'Tutorial';
 
-  const prompts = [
+  // For regular guides - prompts are copyable text blocks
+  const regularPrompts = !isTutorial ? [
     { label: guide.prompt_1_label, headline: guide.prompt_1_headline, text: guide.prompt_1_text },
     { label: guide.prompt_2_label, headline: guide.prompt_2_headline, text: guide.prompt_2_text },
     { label: guide.prompt_3_label, headline: guide.prompt_3_headline, text: guide.prompt_3_text },
-  ].filter((p) => p.text);
+  ].filter((p) => p.text) : [];
 
   const faqs = [
     { q: guide.faq_q1, a: guide.faq_a1 },
@@ -124,23 +125,43 @@ const GuideDetail = () => {
     { heading: guide.body_section_3_heading, text: guide.body_section_3_text },
   ].filter((s) => s.heading && s.text);
 
-  // For tutorials - use step fields with proper type casting
-  const guideData = guide as Record<string, string | null>;
-  const tutorialSteps = [
-    { heading: guideData.body_section_1_heading, text: guideData.body_section_1_text },
-    { heading: guideData.body_section_2_heading, text: guideData.body_section_2_text },
-    { heading: guideData.body_section_3_heading, text: guideData.body_section_3_text },
-    { heading: guideData.context_and_background ? 'Context and Background' : null, text: guideData.context_and_background },
-  ].filter((s) => s.heading && s.text);
+  // For tutorials - NOTE: in tutorials, heading contains text and text contains heading name (swapped in import)
+  // So we swap them back for proper display
+  const tutorialSteps = isTutorial ? [
+    { heading: guide.body_section_1_text, text: guide.body_section_1_heading },
+    { heading: guide.body_section_2_text, text: guide.body_section_2_heading },
+    { heading: guide.body_section_3_text, text: guide.body_section_3_heading },
+    // Step 4 is stored in prompt_1 fields
+    { heading: guide.prompt_1_label, text: guide.prompt_1_text },
+  ].filter((s) => s.heading && s.text) : [];
 
-  // Tutorial activities
-  const activities = [
-    { heading: guideData.expanded_steps ? 'Expanded Steps' : null, text: guideData.expanded_steps },
-    { heading: guideData.deeper_explanations ? 'Deeper Explanations' : null, text: guideData.deeper_explanations },
-    { heading: guideData.variations_and_alternatives ? 'Variations and Alternatives' : null, text: guideData.variations_and_alternatives },
-    { heading: guideData.interactive_elements ? 'Interactive Elements' : null, text: guideData.interactive_elements },
-    { heading: guideData.troubleshooting_and_advanced_tips ? 'Troubleshooting and Advanced Tips' : null, text: guideData.troubleshooting_and_advanced_tips },
-  ].filter((a) => a.heading && a.text);
+  // Tutorial Tips section (stored in prompt_2)
+  const tutorialTips = isTutorial && guide.prompt_2_text ? {
+    heading: guide.prompt_2_label || 'Tips',
+    text: guide.prompt_2_text,
+  } : null;
+
+  // Tutorial Activities (stored in prompt_3)
+  const tutorialActivities = isTutorial && guide.prompt_3_text ? {
+    heading1: guide.prompt_3_label,
+    heading2: guide.prompt_3_headline,
+    text: guide.prompt_3_text,
+  } : null;
+
+  // Tutorial extended content sections
+  const guideData = guide as Record<string, string | null>;
+  const extendedSections = isTutorial ? [
+    { heading: 'Context and Background', text: guideData.context_and_background },
+    { heading: 'Expanded Steps', text: guideData.expanded_steps },
+    { heading: 'Deeper Explanations', text: guideData.deeper_explanations },
+    { heading: 'Variations and Alternatives', text: guideData.variations_and_alternatives },
+    { heading: 'Interactive Elements', text: guideData.interactive_elements },
+    { heading: 'Troubleshooting and Advanced Tips', text: guideData.troubleshooting_and_advanced_tips },
+  ].filter((s) => s.text) : [];
+
+  // Tutorial learning outcomes and estimated time (stored in prompt_2_headline and prompt_1_headline)
+  const learningOutcomes = isTutorial ? guide.prompt_2_headline : null;
+  const estimatedTime = isTutorial ? guide.prompt_1_headline : null;
 
   const tldrBullets = [
     guide.tldr_bullet_1,
@@ -257,6 +278,23 @@ const GuideDetail = () => {
 
               {isTutorial ? (
                 <>
+                  {/* Tutorial metadata */}
+                  {(estimatedTime || learningOutcomes) && (
+                    <div className="mb-8 flex flex-wrap gap-4">
+                      {estimatedTime && (
+                        <Badge variant="outline" className="text-sm">
+                          ⏱️ {estimatedTime}
+                        </Badge>
+                      )}
+                      {learningOutcomes && (
+                        <p className="text-sm text-muted-foreground">
+                          <strong>You'll learn:</strong> {learningOutcomes}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tutorial Steps */}
                   {tutorialSteps.map((section, i) => (
                     <section key={i} className="mb-8">
                       <h2 className="mb-4 text-2xl font-semibold tracking-tight">
@@ -268,20 +306,48 @@ const GuideDetail = () => {
                     </section>
                   ))}
 
-                  {activities.length > 0 && (
+                  {/* Tutorial Tips */}
+                  {tutorialTips && (
+                    <Card className="mb-8 border-l-4 border-l-amber-500">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">{tutorialTips.heading}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="whitespace-pre-line text-foreground">
+                          {tutorialTips.text}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Tutorial Activities */}
+                  {tutorialActivities && (
                     <section className="mb-8">
-                      <h2 className="mb-6 text-2xl font-semibold tracking-tight">
-                        Additional Content
-                      </h2>
+                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">Activities</h2>
+                      {tutorialActivities.heading1 && (
+                        <h3 className="mb-2 text-lg font-medium">{tutorialActivities.heading1}</h3>
+                      )}
+                      {tutorialActivities.heading2 && (
+                        <h3 className="mb-2 text-lg font-medium">{tutorialActivities.heading2}</h3>
+                      )}
+                      <div className="whitespace-pre-line text-foreground">
+                        {tutorialActivities.text}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Extended Tutorial Sections */}
+                  {extendedSections.length > 0 && (
+                    <section className="mb-8">
                       <div className="space-y-6">
-                        {activities.map((activity, i) => (
+                        {extendedSections.map((section, i) => (
                           <Card key={i}>
                             <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">{activity.heading}</CardTitle>
+                              <CardTitle className="text-lg">{section.heading}</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <div className="whitespace-pre-line text-foreground">
-                                {activity.text}
+                                {section.text}
                               </div>
                             </CardContent>
                           </Card>
@@ -304,13 +370,13 @@ const GuideDetail = () => {
               )}
             </div>
 
-            {prompts.length > 0 && (
+            {regularPrompts.length > 0 && (
               <section className="mb-8">
                 <h2 className="mb-6 text-2xl font-semibold tracking-tight">
                   Prompts
                 </h2>
                 <div className="space-y-6">
-                  {prompts.map((prompt, i) => (
+                  {regularPrompts.map((prompt, i) => (
                     <Card key={i}>
                       <CardHeader className="pb-2">
                         {prompt.label && (
