@@ -79,14 +79,30 @@ const Guides = () => {
     },
   });
 
+  // Fetch tools count for the Tools category card
+  const { data: toolsCount } = useQuery({
+    queryKey: ["ai-tools-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("ai_tools")
+        .select("*", { count: "exact", head: true });
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   // Count guides per category
   const categoryCounts = useMemo(() => {
     if (!guides) return {};
-    return guides.reduce((acc, guide) => {
+    const counts = guides.reduce((acc, guide) => {
       acc[guide.guide_category] = (acc[guide.guide_category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-  }, [guides]);
+    // Add tools count
+    counts["Tools"] = toolsCount || 0;
+    return counts;
+  }, [guides, toolsCount]);
 
   const filteredGuides = guides?.filter((guide) => {
     const matchesSearch =
@@ -213,7 +229,7 @@ const Guides = () => {
                     
                     <h3 className="font-semibold text-foreground mb-1">{category.label}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {category.isPrompts ? "Browse all prompts" : `${count} guide${count !== 1 ? "s" : ""}`}
+                      {category.isPrompts ? "Browse all prompts" : category.isTools ? `${categoryCounts["Tools"] || 0} tool${categoryCounts["Tools"] !== 1 ? "s" : ""}` : `${count} guide${count !== 1 ? "s" : ""}`}
                     </p>
                     
                     {isSelected && (
