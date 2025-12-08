@@ -103,6 +103,8 @@ const GuideDetail = () => {
     );
   }
 
+  const isTutorial = guide.guide_category === 'Tutorial';
+
   const prompts = [
     { label: guide.prompt_1_label, headline: guide.prompt_1_headline, text: guide.prompt_1_text },
     { label: guide.prompt_2_label, headline: guide.prompt_2_headline, text: guide.prompt_2_text },
@@ -115,11 +117,30 @@ const GuideDetail = () => {
     { q: guide.faq_q3, a: guide.faq_a3 },
   ].filter((f) => f.q && f.a);
 
+  // For regular guides
   const bodySections = [
     { heading: guide.body_section_1_heading, text: guide.body_section_1_text },
     { heading: guide.body_section_2_heading, text: guide.body_section_2_text },
     { heading: guide.body_section_3_heading, text: guide.body_section_3_text },
   ].filter((s) => s.heading && s.text);
+
+  // For tutorials - use step fields with proper type casting
+  const guideData = guide as Record<string, string | null>;
+  const tutorialSteps = [
+    { heading: guideData.body_section_1_heading, text: guideData.body_section_1_text },
+    { heading: guideData.body_section_2_heading, text: guideData.body_section_2_text },
+    { heading: guideData.body_section_3_heading, text: guideData.body_section_3_text },
+    { heading: guideData.context_and_background ? 'Context and Background' : null, text: guideData.context_and_background },
+  ].filter((s) => s.heading && s.text);
+
+  // Tutorial activities
+  const activities = [
+    { heading: guideData.expanded_steps ? 'Expanded Steps' : null, text: guideData.expanded_steps },
+    { heading: guideData.deeper_explanations ? 'Deeper Explanations' : null, text: guideData.deeper_explanations },
+    { heading: guideData.variations_and_alternatives ? 'Variations and Alternatives' : null, text: guideData.variations_and_alternatives },
+    { heading: guideData.interactive_elements ? 'Interactive Elements' : null, text: guideData.interactive_elements },
+    { heading: guideData.troubleshooting_and_advanced_tips ? 'Troubleshooting and Advanced Tips' : null, text: guideData.troubleshooting_and_advanced_tips },
+  ].filter((a) => a.heading && a.text);
 
   const tldrBullets = [
     guide.tldr_bullet_1,
@@ -234,16 +255,53 @@ const GuideDetail = () => {
                 </p>
               )}
 
-              {bodySections.map((section, i) => (
-                <section key={i} className="mb-8">
-                  <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-                    {section.heading}
-                  </h2>
-                  <div className="whitespace-pre-line text-foreground">
-                    {section.text}
-                  </div>
-                </section>
-              ))}
+              {isTutorial ? (
+                <>
+                  {tutorialSteps.map((section, i) => (
+                    <section key={i} className="mb-8">
+                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">
+                        {section.heading}
+                      </h2>
+                      <div className="whitespace-pre-line text-foreground">
+                        {section.text}
+                      </div>
+                    </section>
+                  ))}
+
+                  {activities.length > 0 && (
+                    <section className="mb-8">
+                      <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+                        Additional Content
+                      </h2>
+                      <div className="space-y-6">
+                        {activities.map((activity, i) => (
+                          <Card key={i}>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-lg">{activity.heading}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="whitespace-pre-line text-foreground">
+                                {activity.text}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </>
+              ) : (
+                bodySections.map((section, i) => (
+                  <section key={i} className="mb-8">
+                    <h2 className="mb-4 text-2xl font-semibold tracking-tight">
+                      {section.heading}
+                    </h2>
+                    <div className="whitespace-pre-line text-foreground">
+                      {section.text}
+                    </div>
+                  </section>
+                ))
+              )}
             </div>
 
             {prompts.length > 0 && (
