@@ -76,19 +76,16 @@ const Header = memo(() => {
               <Search className="h-6 w-6" />
             </Button>
 
-            {/* Desktop search form */}
-            <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 ml-8">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search articles..."
-                  className="w-48 pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </form>
+            {/* Desktop search button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/search')}
+              aria-label="Search"
+              className="hidden lg:flex h-12 w-12 md:h-16 md:w-16"
+            >
+              <Search className="h-6 w-6 md:h-8 md:w-8" />
+            </Button>
 
             <div className="hidden md:flex items-center gap-2 ml-auto">
               <Button
