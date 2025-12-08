@@ -181,6 +181,9 @@ const GuidesImport = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tutorialFileInputRef = useRef<HTMLInputElement>(null);
+  const platformGuideFileInputRef = useRef<HTMLInputElement>(null);
+  const roleGuideFileInputRef = useRef<HTMLInputElement>(null);
+  const promptPackFileInputRef = useRef<HTMLInputElement>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -194,6 +197,34 @@ const GuidesImport = () => {
   const [tutorialResults, setTutorialResults] = useState<ImportResult[]>([]);
   const [parsedTutorialRows, setParsedTutorialRows] = useState<Record<string, string>[]>([]);
   const [showTutorialPreview, setShowTutorialPreview] = useState(false);
+  
+  // Platform Guide import state
+  const [isPlatformGuideProcessing, setIsPlatformGuideProcessing] = useState(false);
+  const [platformGuideProgress, setPlatformGuideProgress] = useState(0);
+  const [platformGuideCurrentItem, setPlatformGuideCurrentItem] = useState<string>("");
+  const [platformGuideResults, setPlatformGuideResults] = useState<ImportResult[]>([]);
+  const [parsedPlatformGuideRows, setParsedPlatformGuideRows] = useState<Record<string, string>[]>([]);
+  const [showPlatformGuidePreview, setShowPlatformGuidePreview] = useState(false);
+  const [isDeletingPlatformGuides, setIsDeletingPlatformGuides] = useState(false);
+  
+  // Role Guide import state
+  const [isRoleGuideProcessing, setIsRoleGuideProcessing] = useState(false);
+  const [roleGuideProgress, setRoleGuideProgress] = useState(0);
+  const [roleGuideCurrentItem, setRoleGuideCurrentItem] = useState<string>("");
+  const [roleGuideResults, setRoleGuideResults] = useState<ImportResult[]>([]);
+  const [parsedRoleGuideRows, setParsedRoleGuideRows] = useState<Record<string, string>[]>([]);
+  const [showRoleGuidePreview, setShowRoleGuidePreview] = useState(false);
+  const [isDeletingRoleGuides, setIsDeletingRoleGuides] = useState(false);
+  
+  // Prompt Pack import state
+  const [isPromptPackProcessing, setIsPromptPackProcessing] = useState(false);
+  const [promptPackProgress, setPromptPackProgress] = useState(0);
+  const [promptPackCurrentItem, setPromptPackCurrentItem] = useState<string>("");
+  const [promptPackResults, setPromptPackResults] = useState<ImportResult[]>([]);
+  const [parsedPromptPackRows, setParsedPromptPackRows] = useState<Record<string, string>[]>([]);
+  const [showPromptPackPreview, setShowPromptPackPreview] = useState(false);
+  const [isDeletingPromptPacks, setIsDeletingPromptPacks] = useState(false);
+  
   const [parsedRows, setParsedRows] = useState<Record<string, string>[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -999,6 +1030,585 @@ const GuidesImport = () => {
     }
   };
 
+  // ========== PLATFORM GUIDES ==========
+  const deleteAllPlatformGuides = async () => {
+    setIsDeletingPlatformGuides(true);
+    try {
+      const { error } = await supabase
+        .from("ai_guides")
+        .delete()
+        .eq("guide_category", "Platform Guide");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success("All Platform Guides deleted");
+    } catch (error) {
+      console.error("Error deleting Platform Guides:", error);
+      toast.error("Failed to delete Platform Guides");
+    } finally {
+      setIsDeletingPlatformGuides(false);
+    }
+  };
+
+  const handlePlatformGuideFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".csv")) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+
+      if (rows.length === 0) {
+        toast.error("No data found in CSV file");
+        return;
+      }
+
+      const firstRow = rows[0];
+      const detectedFields = Object.keys(firstRow);
+      
+      const normalizedDetected: Record<string, string> = {};
+      detectedFields.forEach(f => {
+        normalizedDetected[normalizeHeader(f)] = f;
+      });
+      
+      const missingFields = EXPECTED_FIELDS.filter((field) => {
+        const normalizedExpected = normalizeHeader(field);
+        return !(normalizedExpected in normalizedDetected || field in firstRow);
+      });
+
+      if (missingFields.length > 0) {
+        toast.error(
+          `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
+          { duration: 8000 }
+        );
+        return;
+      }
+
+      setParsedPlatformGuideRows(rows);
+      setShowPlatformGuidePreview(true);
+      setPlatformGuideResults([]);
+      toast.success(`Parsed ${rows.length} Platform Guide(s) from CSV`);
+    } catch (error) {
+      console.error("Error parsing CSV:", error);
+      toast.error("Failed to parse CSV file");
+    }
+  };
+
+  const importPlatformGuides = async () => {
+    if (parsedPlatformGuideRows.length === 0) return;
+
+    setIsPlatformGuideProcessing(true);
+    setPlatformGuideProgress(0);
+    setPlatformGuideCurrentItem("");
+    const importResults: ImportResult[] = [];
+
+    const validPlatforms = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'ElevenLabs', 'TikTok', 'Other', 'Generic'];
+    const platformMapping: Record<string, string> = {
+      'google': 'Gemini',
+      'gpt': 'ChatGPT',
+      'openai': 'ChatGPT',
+      'anthropic': 'Claude',
+    };
+
+    for (let i = 0; i < parsedPlatformGuideRows.length; i++) {
+      const row = parsedPlatformGuideRows[i];
+      setPlatformGuideCurrentItem(row.Title);
+
+      try {
+        let mappedPlatform = row.Primary_Platform;
+        const lowerPlatform = (row.Primary_Platform || '').toLowerCase().trim();
+        
+        if (!validPlatforms.includes(mappedPlatform)) {
+          mappedPlatform = platformMapping[lowerPlatform] || 'Generic';
+        }
+
+        const guideData = {
+          title: row.Title,
+          slug: row.Slug,
+          guide_category: 'Platform Guide',
+          level: row.Level,
+          primary_platform: mappedPlatform,
+          audience_role: sanitizeContent(row.Audience_Role),
+          geo: sanitizeContent(row.Geo),
+          excerpt: sanitizeContent(row.Excerpt),
+          seo_title: sanitizeContent(row.SEO_Title),
+          meta_title: sanitizeContent(row.Meta_Title),
+          meta_description: sanitizeContent(row.Meta_Description),
+          focus_keyphrase: sanitizeContent(row.Focus_Keyphrase),
+          keyphrase_synonyms: sanitizeContent(row.Keyphrase_Synonyms),
+          tags: sanitizeContent(row.Tags),
+          tldr_bullet_1: sanitizeContent(row.TLDR_Bullet_1),
+          tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
+          tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
+          perfect_for: sanitizeContent(row.Perfect_For),
+          body_intro: sanitizeContent(row.Body_Intro),
+          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
+          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
+          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
+          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
+          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
+          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
+          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
+          prompt_1_text: sanitizeContent(row.Prompt_1_Text),
+          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
+          prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
+          prompt_2_text: sanitizeContent(row.Prompt_2_Text),
+          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
+          prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
+          prompt_3_text: sanitizeContent(row.Prompt_3_Text),
+          faq_q1: sanitizeContent(row.FAQ_Q1),
+          faq_a1: sanitizeContent(row.FAQ_A1),
+          faq_q2: sanitizeContent(row.FAQ_Q2),
+          faq_a2: sanitizeContent(row.FAQ_A2),
+          faq_q3: sanitizeContent(row.FAQ_Q3),
+          faq_a3: sanitizeContent(row.FAQ_A3),
+          image_prompt: sanitizeContent(row.Image_Prompt),
+          closing_cta: sanitizeContent(row.Closing_CTA),
+          created_by: user.id,
+        };
+
+        const { error } = await supabase.from("ai_guides").upsert(guideData, {
+          onConflict: "slug",
+        });
+
+        if (error) throw error;
+
+        importResults.push({
+          success: true,
+          title: row.Title,
+          slug: row.Slug,
+        });
+      } catch (error: any) {
+        importResults.push({
+          success: false,
+          title: row.Title,
+          slug: row.Slug,
+          error: error.message || "Unknown error",
+        });
+      }
+
+      setPlatformGuideProgress(((i + 1) / parsedPlatformGuideRows.length) * 100);
+      setPlatformGuideResults([...importResults]);
+    }
+
+    setIsPlatformGuideProcessing(false);
+    setPlatformGuideCurrentItem("");
+    queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+
+    const successCount = importResults.filter((r) => r.success).length;
+    const failCount = importResults.filter((r) => !r.success).length;
+
+    if (failCount === 0) {
+      toast.success(`Successfully imported ${successCount} Platform Guide(s)`);
+    } else {
+      toast.warning(`Imported ${successCount}, failed ${failCount}`);
+    }
+  };
+
+  const resetPlatformGuideImport = () => {
+    setParsedPlatformGuideRows([]);
+    setShowPlatformGuidePreview(false);
+    setPlatformGuideResults([]);
+    setPlatformGuideProgress(0);
+    setPlatformGuideCurrentItem("");
+    if (platformGuideFileInputRef.current) {
+      platformGuideFileInputRef.current.value = "";
+    }
+  };
+
+  // ========== ROLE GUIDES ==========
+  const deleteAllRoleGuides = async () => {
+    setIsDeletingRoleGuides(true);
+    try {
+      const { error } = await supabase
+        .from("ai_guides")
+        .delete()
+        .eq("guide_category", "Role Guide");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success("All Role Guides deleted");
+    } catch (error) {
+      console.error("Error deleting Role Guides:", error);
+      toast.error("Failed to delete Role Guides");
+    } finally {
+      setIsDeletingRoleGuides(false);
+    }
+  };
+
+  const handleRoleGuideFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".csv")) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+
+      if (rows.length === 0) {
+        toast.error("No data found in CSV file");
+        return;
+      }
+
+      const firstRow = rows[0];
+      const detectedFields = Object.keys(firstRow);
+      
+      const normalizedDetected: Record<string, string> = {};
+      detectedFields.forEach(f => {
+        normalizedDetected[normalizeHeader(f)] = f;
+      });
+      
+      const missingFields = EXPECTED_FIELDS.filter((field) => {
+        const normalizedExpected = normalizeHeader(field);
+        return !(normalizedExpected in normalizedDetected || field in firstRow);
+      });
+
+      if (missingFields.length > 0) {
+        toast.error(
+          `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
+          { duration: 8000 }
+        );
+        return;
+      }
+
+      setParsedRoleGuideRows(rows);
+      setShowRoleGuidePreview(true);
+      setRoleGuideResults([]);
+      toast.success(`Parsed ${rows.length} Role Guide(s) from CSV`);
+    } catch (error) {
+      console.error("Error parsing CSV:", error);
+      toast.error("Failed to parse CSV file");
+    }
+  };
+
+  const importRoleGuides = async () => {
+    if (parsedRoleGuideRows.length === 0) return;
+
+    setIsRoleGuideProcessing(true);
+    setRoleGuideProgress(0);
+    setRoleGuideCurrentItem("");
+    const importResults: ImportResult[] = [];
+
+    const validPlatforms = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'ElevenLabs', 'TikTok', 'Other', 'Generic'];
+    const platformMapping: Record<string, string> = {
+      'google': 'Gemini',
+      'gpt': 'ChatGPT',
+      'openai': 'ChatGPT',
+      'anthropic': 'Claude',
+    };
+
+    for (let i = 0; i < parsedRoleGuideRows.length; i++) {
+      const row = parsedRoleGuideRows[i];
+      setRoleGuideCurrentItem(row.Title);
+
+      try {
+        let mappedPlatform = row.Primary_Platform;
+        const lowerPlatform = (row.Primary_Platform || '').toLowerCase().trim();
+        
+        if (!validPlatforms.includes(mappedPlatform)) {
+          mappedPlatform = platformMapping[lowerPlatform] || 'Generic';
+        }
+
+        const guideData = {
+          title: row.Title,
+          slug: row.Slug,
+          guide_category: 'Role Guide',
+          level: row.Level,
+          primary_platform: mappedPlatform,
+          audience_role: sanitizeContent(row.Audience_Role),
+          geo: sanitizeContent(row.Geo),
+          excerpt: sanitizeContent(row.Excerpt),
+          seo_title: sanitizeContent(row.SEO_Title),
+          meta_title: sanitizeContent(row.Meta_Title),
+          meta_description: sanitizeContent(row.Meta_Description),
+          focus_keyphrase: sanitizeContent(row.Focus_Keyphrase),
+          keyphrase_synonyms: sanitizeContent(row.Keyphrase_Synonyms),
+          tags: sanitizeContent(row.Tags),
+          tldr_bullet_1: sanitizeContent(row.TLDR_Bullet_1),
+          tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
+          tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
+          perfect_for: sanitizeContent(row.Perfect_For),
+          body_intro: sanitizeContent(row.Body_Intro),
+          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
+          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
+          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
+          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
+          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
+          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
+          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
+          prompt_1_text: sanitizeContent(row.Prompt_1_Text),
+          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
+          prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
+          prompt_2_text: sanitizeContent(row.Prompt_2_Text),
+          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
+          prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
+          prompt_3_text: sanitizeContent(row.Prompt_3_Text),
+          faq_q1: sanitizeContent(row.FAQ_Q1),
+          faq_a1: sanitizeContent(row.FAQ_A1),
+          faq_q2: sanitizeContent(row.FAQ_Q2),
+          faq_a2: sanitizeContent(row.FAQ_A2),
+          faq_q3: sanitizeContent(row.FAQ_Q3),
+          faq_a3: sanitizeContent(row.FAQ_A3),
+          image_prompt: sanitizeContent(row.Image_Prompt),
+          closing_cta: sanitizeContent(row.Closing_CTA),
+          created_by: user.id,
+        };
+
+        const { error } = await supabase.from("ai_guides").upsert(guideData, {
+          onConflict: "slug",
+        });
+
+        if (error) throw error;
+
+        importResults.push({
+          success: true,
+          title: row.Title,
+          slug: row.Slug,
+        });
+      } catch (error: any) {
+        importResults.push({
+          success: false,
+          title: row.Title,
+          slug: row.Slug,
+          error: error.message || "Unknown error",
+        });
+      }
+
+      setRoleGuideProgress(((i + 1) / parsedRoleGuideRows.length) * 100);
+      setRoleGuideResults([...importResults]);
+    }
+
+    setIsRoleGuideProcessing(false);
+    setRoleGuideCurrentItem("");
+    queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+
+    const successCount = importResults.filter((r) => r.success).length;
+    const failCount = importResults.filter((r) => !r.success).length;
+
+    if (failCount === 0) {
+      toast.success(`Successfully imported ${successCount} Role Guide(s)`);
+    } else {
+      toast.warning(`Imported ${successCount}, failed ${failCount}`);
+    }
+  };
+
+  const resetRoleGuideImport = () => {
+    setParsedRoleGuideRows([]);
+    setShowRoleGuidePreview(false);
+    setRoleGuideResults([]);
+    setRoleGuideProgress(0);
+    setRoleGuideCurrentItem("");
+    if (roleGuideFileInputRef.current) {
+      roleGuideFileInputRef.current.value = "";
+    }
+  };
+
+  // ========== PROMPT PACKS ==========
+  const deleteAllPromptPacks = async () => {
+    setIsDeletingPromptPacks(true);
+    try {
+      const { error } = await supabase
+        .from("ai_guides")
+        .delete()
+        .eq("guide_category", "Prompt Pack");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success("All Prompt Packs deleted");
+    } catch (error) {
+      console.error("Error deleting Prompt Packs:", error);
+      toast.error("Failed to delete Prompt Packs");
+    } finally {
+      setIsDeletingPromptPacks(false);
+    }
+  };
+
+  const handlePromptPackFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".csv")) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+
+      if (rows.length === 0) {
+        toast.error("No data found in CSV file");
+        return;
+      }
+
+      const firstRow = rows[0];
+      const detectedFields = Object.keys(firstRow);
+      
+      const normalizedDetected: Record<string, string> = {};
+      detectedFields.forEach(f => {
+        normalizedDetected[normalizeHeader(f)] = f;
+      });
+      
+      const missingFields = EXPECTED_FIELDS.filter((field) => {
+        const normalizedExpected = normalizeHeader(field);
+        return !(normalizedExpected in normalizedDetected || field in firstRow);
+      });
+
+      if (missingFields.length > 0) {
+        toast.error(
+          `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
+          { duration: 8000 }
+        );
+        return;
+      }
+
+      setParsedPromptPackRows(rows);
+      setShowPromptPackPreview(true);
+      setPromptPackResults([]);
+      toast.success(`Parsed ${rows.length} Prompt Pack(s) from CSV`);
+    } catch (error) {
+      console.error("Error parsing CSV:", error);
+      toast.error("Failed to parse CSV file");
+    }
+  };
+
+  const importPromptPacks = async () => {
+    if (parsedPromptPackRows.length === 0) return;
+
+    setIsPromptPackProcessing(true);
+    setPromptPackProgress(0);
+    setPromptPackCurrentItem("");
+    const importResults: ImportResult[] = [];
+
+    const validPlatforms = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'ElevenLabs', 'TikTok', 'Other', 'Generic'];
+    const platformMapping: Record<string, string> = {
+      'google': 'Gemini',
+      'gpt': 'ChatGPT',
+      'openai': 'ChatGPT',
+      'anthropic': 'Claude',
+    };
+
+    for (let i = 0; i < parsedPromptPackRows.length; i++) {
+      const row = parsedPromptPackRows[i];
+      setPromptPackCurrentItem(row.Title);
+
+      try {
+        let mappedPlatform = row.Primary_Platform;
+        const lowerPlatform = (row.Primary_Platform || '').toLowerCase().trim();
+        
+        if (!validPlatforms.includes(mappedPlatform)) {
+          mappedPlatform = platformMapping[lowerPlatform] || 'Generic';
+        }
+
+        const guideData = {
+          title: row.Title,
+          slug: row.Slug,
+          guide_category: 'Prompt Pack',
+          level: row.Level,
+          primary_platform: mappedPlatform,
+          audience_role: sanitizeContent(row.Audience_Role),
+          geo: sanitizeContent(row.Geo),
+          excerpt: sanitizeContent(row.Excerpt),
+          seo_title: sanitizeContent(row.SEO_Title),
+          meta_title: sanitizeContent(row.Meta_Title),
+          meta_description: sanitizeContent(row.Meta_Description),
+          focus_keyphrase: sanitizeContent(row.Focus_Keyphrase),
+          keyphrase_synonyms: sanitizeContent(row.Keyphrase_Synonyms),
+          tags: sanitizeContent(row.Tags),
+          tldr_bullet_1: sanitizeContent(row.TLDR_Bullet_1),
+          tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
+          tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
+          perfect_for: sanitizeContent(row.Perfect_For),
+          body_intro: sanitizeContent(row.Body_Intro),
+          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
+          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
+          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
+          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
+          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
+          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
+          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
+          prompt_1_text: sanitizeContent(row.Prompt_1_Text),
+          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
+          prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
+          prompt_2_text: sanitizeContent(row.Prompt_2_Text),
+          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
+          prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
+          prompt_3_text: sanitizeContent(row.Prompt_3_Text),
+          faq_q1: sanitizeContent(row.FAQ_Q1),
+          faq_a1: sanitizeContent(row.FAQ_A1),
+          faq_q2: sanitizeContent(row.FAQ_Q2),
+          faq_a2: sanitizeContent(row.FAQ_A2),
+          faq_q3: sanitizeContent(row.FAQ_Q3),
+          faq_a3: sanitizeContent(row.FAQ_A3),
+          image_prompt: sanitizeContent(row.Image_Prompt),
+          closing_cta: sanitizeContent(row.Closing_CTA),
+          created_by: user.id,
+        };
+
+        const { error } = await supabase.from("ai_guides").upsert(guideData, {
+          onConflict: "slug",
+        });
+
+        if (error) throw error;
+
+        importResults.push({
+          success: true,
+          title: row.Title,
+          slug: row.Slug,
+        });
+      } catch (error: any) {
+        importResults.push({
+          success: false,
+          title: row.Title,
+          slug: row.Slug,
+          error: error.message || "Unknown error",
+        });
+      }
+
+      setPromptPackProgress(((i + 1) / parsedPromptPackRows.length) * 100);
+      setPromptPackResults([...importResults]);
+    }
+
+    setIsPromptPackProcessing(false);
+    setPromptPackCurrentItem("");
+    queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+
+    const successCount = importResults.filter((r) => r.success).length;
+    const failCount = importResults.filter((r) => !r.success).length;
+
+    if (failCount === 0) {
+      toast.success(`Successfully imported ${successCount} Prompt Pack(s)`);
+    } else {
+      toast.warning(`Imported ${successCount}, failed ${failCount}`);
+    }
+  };
+
+  const resetPromptPackImport = () => {
+    setParsedPromptPackRows([]);
+    setShowPromptPackPreview(false);
+    setPromptPackResults([]);
+    setPromptPackProgress(0);
+    setPromptPackCurrentItem("");
+    if (promptPackFileInputRef.current) {
+      promptPackFileInputRef.current.value = "";
+    }
+  };
+
   return (
     <>
       <Header />
@@ -1546,7 +2156,540 @@ const GuidesImport = () => {
             </Card>
           </div>
 
-          {/* Expected Fields Reference for Guides */}
+          {/* ========== PLATFORM GUIDES IMPORT SECTION ========== */}
+          <div className="mt-12 border-t-4 border-indigo-500/30 pt-8">
+            <h2 className="mb-2 text-2xl font-bold text-indigo-600 dark:text-indigo-400">Import Platform Guides CSV</h2>
+            <p className="mb-6 text-muted-foreground">
+              Upload a Platform Guide CSV file. Platform Guides help users master specific AI tools like ChatGPT, Claude, or Midjourney.
+            </p>
+
+            <Card className="mb-8 border-indigo-500/50 bg-indigo-50/50 dark:bg-indigo-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  Upload Platform Guides CSV
+                </CardTitle>
+                <CardDescription>
+                  Select a CSV file with Platform Guide data. Uses the same schema as Guides. Existing entries with matching slugs will be updated.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-4">
+                  <input
+                    ref={platformGuideFileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handlePlatformGuideFileSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => platformGuideFileInputRef.current?.click()}
+                    disabled={isPlatformGuideProcessing}
+                    className="bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Select Platform Guides CSV
+                  </Button>
+                  {parsedPlatformGuideRows.length > 0 && (
+                    <Button variant="outline" onClick={resetPlatformGuideImport}>
+                      Clear
+                    </Button>
+                  )}
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        disabled={isDeletingPlatformGuides}
+                      >
+                        {isDeletingPlatformGuides ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Delete All Platform Guides
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all Platform Guides?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all guides with category "Platform Guide". Other guides will not be affected.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllPlatformGuides}>
+                          Delete All Platform Guides
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {showPlatformGuidePreview && parsedPlatformGuideRows.length > 0 && (
+              <Card className="mb-8 border-indigo-500/50">
+                <CardHeader>
+                  <CardTitle>Preview ({parsedPlatformGuideRows.length} Platform Guides)</CardTitle>
+                  <CardDescription>Review the Platform Guides before importing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 max-h-64 overflow-y-auto rounded border">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-muted">
+                        <tr>
+                          <th className="px-3 py-2 text-left">#</th>
+                          <th className="px-3 py-2 text-left">Title</th>
+                          <th className="px-3 py-2 text-left">Slug</th>
+                          <th className="px-3 py-2 text-left">Level</th>
+                          <th className="px-3 py-2 text-left">Platform</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedPlatformGuideRows.map((row, i) => (
+                          <tr key={i} className="border-t">
+                            <td className="px-3 py-2">{i + 1}</td>
+                            <td className="px-3 py-2 font-medium">{row.Title}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{row.Slug}</td>
+                            <td className="px-3 py-2">{row.Level}</td>
+                            <td className="px-3 py-2">{row.Primary_Platform}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Button
+                    onClick={importPlatformGuides}
+                    disabled={isPlatformGuideProcessing}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Import {parsedPlatformGuideRows.length} Platform Guide(s)
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {isPlatformGuideProcessing && (
+              <Card className="mb-8 border-indigo-500">
+                <CardContent className="py-6">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Importing Platform Guides...
+                    </span>
+                    <span className="font-medium">{Math.round(platformGuideProgress)}%</span>
+                  </div>
+                  <Progress value={platformGuideProgress} className="mb-3" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{platformGuideResults.length} of {parsedPlatformGuideRows.length} processed</span>
+                    {platformGuideCurrentItem && (
+                      <span className="truncate max-w-[200px]">Current: {platformGuideCurrentItem}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex gap-4 text-xs">
+                    <span className="text-green-600">✓ {platformGuideResults.filter((r) => r.success).length} success</span>
+                    <span className="text-red-600">✗ {platformGuideResults.filter((r) => !r.success).length} failed</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {platformGuideResults.length > 0 && !isPlatformGuideProcessing && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Platform Guide Import Results</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {platformGuideResults.map((result, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-3 rounded p-2 ${
+                          result.success ? "bg-green-50 dark:bg-green-950" : "bg-red-50 dark:bg-red-950"
+                        }`}
+                      >
+                        {result.success ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{result.title}</p>
+                          <p className="text-sm text-muted-foreground">{result.slug}</p>
+                          {result.error && <p className="text-sm text-red-600">{result.error}</p>}
+                        </div>
+                        {result.success && (
+                          <Button variant="outline" size="sm" onClick={() => window.open(`/guides/${result.slug}`, '_blank')}>
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* ========== ROLE GUIDES IMPORT SECTION ========== */}
+          <div className="mt-12 border-t-4 border-rose-500/30 pt-8">
+            <h2 className="mb-2 text-2xl font-bold text-rose-600 dark:text-rose-400">Import Role Guides CSV</h2>
+            <p className="mb-6 text-muted-foreground">
+              Upload a Role Guide CSV file. Role Guides help professionals in specific roles (marketers, developers, writers) leverage AI effectively.
+            </p>
+
+            <Card className="mb-8 border-rose-500/50 bg-rose-50/50 dark:bg-rose-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+                  Upload Role Guides CSV
+                </CardTitle>
+                <CardDescription>
+                  Select a CSV file with Role Guide data. Uses the same schema as Guides. Existing entries with matching slugs will be updated.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-4">
+                  <input
+                    ref={roleGuideFileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleRoleGuideFileSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => roleGuideFileInputRef.current?.click()}
+                    disabled={isRoleGuideProcessing}
+                    className="bg-rose-600 hover:bg-rose-700"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Select Role Guides CSV
+                  </Button>
+                  {parsedRoleGuideRows.length > 0 && (
+                    <Button variant="outline" onClick={resetRoleGuideImport}>
+                      Clear
+                    </Button>
+                  )}
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        disabled={isDeletingRoleGuides}
+                      >
+                        {isDeletingRoleGuides ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Delete All Role Guides
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all Role Guides?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all guides with category "Role Guide". Other guides will not be affected.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllRoleGuides}>
+                          Delete All Role Guides
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {showRoleGuidePreview && parsedRoleGuideRows.length > 0 && (
+              <Card className="mb-8 border-rose-500/50">
+                <CardHeader>
+                  <CardTitle>Preview ({parsedRoleGuideRows.length} Role Guides)</CardTitle>
+                  <CardDescription>Review the Role Guides before importing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 max-h-64 overflow-y-auto rounded border">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-muted">
+                        <tr>
+                          <th className="px-3 py-2 text-left">#</th>
+                          <th className="px-3 py-2 text-left">Title</th>
+                          <th className="px-3 py-2 text-left">Slug</th>
+                          <th className="px-3 py-2 text-left">Level</th>
+                          <th className="px-3 py-2 text-left">Platform</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedRoleGuideRows.map((row, i) => (
+                          <tr key={i} className="border-t">
+                            <td className="px-3 py-2">{i + 1}</td>
+                            <td className="px-3 py-2 font-medium">{row.Title}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{row.Slug}</td>
+                            <td className="px-3 py-2">{row.Level}</td>
+                            <td className="px-3 py-2">{row.Primary_Platform}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Button
+                    onClick={importRoleGuides}
+                    disabled={isRoleGuideProcessing}
+                    className="w-full bg-rose-600 hover:bg-rose-700"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Import {parsedRoleGuideRows.length} Role Guide(s)
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {isRoleGuideProcessing && (
+              <Card className="mb-8 border-rose-500">
+                <CardContent className="py-6">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Importing Role Guides...
+                    </span>
+                    <span className="font-medium">{Math.round(roleGuideProgress)}%</span>
+                  </div>
+                  <Progress value={roleGuideProgress} className="mb-3" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{roleGuideResults.length} of {parsedRoleGuideRows.length} processed</span>
+                    {roleGuideCurrentItem && (
+                      <span className="truncate max-w-[200px]">Current: {roleGuideCurrentItem}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex gap-4 text-xs">
+                    <span className="text-green-600">✓ {roleGuideResults.filter((r) => r.success).length} success</span>
+                    <span className="text-red-600">✗ {roleGuideResults.filter((r) => !r.success).length} failed</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {roleGuideResults.length > 0 && !isRoleGuideProcessing && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Role Guide Import Results</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {roleGuideResults.map((result, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-3 rounded p-2 ${
+                          result.success ? "bg-green-50 dark:bg-green-950" : "bg-red-50 dark:bg-red-950"
+                        }`}
+                      >
+                        {result.success ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{result.title}</p>
+                          <p className="text-sm text-muted-foreground">{result.slug}</p>
+                          {result.error && <p className="text-sm text-red-600">{result.error}</p>}
+                        </div>
+                        {result.success && (
+                          <Button variant="outline" size="sm" onClick={() => window.open(`/guides/${result.slug}`, '_blank')}>
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* ========== PROMPT PACKS IMPORT SECTION ========== */}
+          <div className="mt-12 border-t-4 border-teal-500/30 pt-8">
+            <h2 className="mb-2 text-2xl font-bold text-teal-600 dark:text-teal-400">Import Prompt Packs CSV</h2>
+            <p className="mb-6 text-muted-foreground">
+              Upload a Prompt Pack CSV file. Prompt Packs are curated collections of ready-to-use prompts for specific use cases.
+            </p>
+
+            <Card className="mb-8 border-teal-500/50 bg-teal-50/50 dark:bg-teal-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                  Upload Prompt Packs CSV
+                </CardTitle>
+                <CardDescription>
+                  Select a CSV file with Prompt Pack data. Uses the same schema as Guides. Existing entries with matching slugs will be updated.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-4">
+                  <input
+                    ref={promptPackFileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handlePromptPackFileSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => promptPackFileInputRef.current?.click()}
+                    disabled={isPromptPackProcessing}
+                    className="bg-teal-600 hover:bg-teal-700"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Select Prompt Packs CSV
+                  </Button>
+                  {parsedPromptPackRows.length > 0 && (
+                    <Button variant="outline" onClick={resetPromptPackImport}>
+                      Clear
+                    </Button>
+                  )}
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        disabled={isDeletingPromptPacks}
+                      >
+                        {isDeletingPromptPacks ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Delete All Prompt Packs
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all Prompt Packs?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all guides with category "Prompt Pack". Other guides will not be affected.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllPromptPacks}>
+                          Delete All Prompt Packs
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            {showPromptPackPreview && parsedPromptPackRows.length > 0 && (
+              <Card className="mb-8 border-teal-500/50">
+                <CardHeader>
+                  <CardTitle>Preview ({parsedPromptPackRows.length} Prompt Packs)</CardTitle>
+                  <CardDescription>Review the Prompt Packs before importing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 max-h-64 overflow-y-auto rounded border">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-muted">
+                        <tr>
+                          <th className="px-3 py-2 text-left">#</th>
+                          <th className="px-3 py-2 text-left">Title</th>
+                          <th className="px-3 py-2 text-left">Slug</th>
+                          <th className="px-3 py-2 text-left">Level</th>
+                          <th className="px-3 py-2 text-left">Platform</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedPromptPackRows.map((row, i) => (
+                          <tr key={i} className="border-t">
+                            <td className="px-3 py-2">{i + 1}</td>
+                            <td className="px-3 py-2 font-medium">{row.Title}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{row.Slug}</td>
+                            <td className="px-3 py-2">{row.Level}</td>
+                            <td className="px-3 py-2">{row.Primary_Platform}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Button
+                    onClick={importPromptPacks}
+                    disabled={isPromptPackProcessing}
+                    className="w-full bg-teal-600 hover:bg-teal-700"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Import {parsedPromptPackRows.length} Prompt Pack(s)
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {isPromptPackProcessing && (
+              <Card className="mb-8 border-teal-500">
+                <CardContent className="py-6">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Importing Prompt Packs...
+                    </span>
+                    <span className="font-medium">{Math.round(promptPackProgress)}%</span>
+                  </div>
+                  <Progress value={promptPackProgress} className="mb-3" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{promptPackResults.length} of {parsedPromptPackRows.length} processed</span>
+                    {promptPackCurrentItem && (
+                      <span className="truncate max-w-[200px]">Current: {promptPackCurrentItem}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex gap-4 text-xs">
+                    <span className="text-green-600">✓ {promptPackResults.filter((r) => r.success).length} success</span>
+                    <span className="text-red-600">✗ {promptPackResults.filter((r) => !r.success).length} failed</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {promptPackResults.length > 0 && !isPromptPackProcessing && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Prompt Pack Import Results</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {promptPackResults.map((result, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-3 rounded p-2 ${
+                          result.success ? "bg-green-50 dark:bg-green-950" : "bg-red-50 dark:bg-red-950"
+                        }`}
+                      >
+                        {result.success ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">{result.title}</p>
+                          <p className="text-sm text-muted-foreground">{result.slug}</p>
+                          {result.error && <p className="text-sm text-red-600">{result.error}</p>}
+                        </div>
+                        {result.success && (
+                          <Button variant="outline" size="sm" onClick={() => window.open(`/guides/${result.slug}`, '_blank')}>
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
           <Card className="mt-8">
             <CardHeader>
               <CardTitle>Guide CSV Fields ({EXPECTED_FIELDS.length} columns)</CardTitle>
