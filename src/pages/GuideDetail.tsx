@@ -18,6 +18,44 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GuideComments from "@/components/GuideComments";
 
+// Sanitize corrupted content from CSV imports
+const sanitizeContent = (text: string | null | undefined): string => {
+  if (!text) return '';
+  
+  let sanitized = text;
+  
+  // Decode URL-encoded strings
+  try {
+    // Check if text contains URL-encoded characters
+    if (sanitized.includes('%20') || sanitized.includes('%3A') || sanitized.includes('%2F')) {
+      sanitized = decodeURIComponent(sanitized);
+    }
+  } catch {
+    // If decoding fails, continue with original
+  }
+  
+  // Remove corrupted file paths
+  sanitized = sanitized
+    .replace(/onlinefile:\/\/[^\s]*/gi, '')
+    .replace(/file:\/\/\/[^\s]*/gi, '')
+    .replace(/[A-Z]:\\[^\s]*/gi, '')
+    .replace(/\/home\/[^\s]*redirect\.html[^\s]*/gi, '');
+  
+  // Fix broken URLs embedded in text (like "2025https://..." -> proper link handling)
+  // Remove URLs that are concatenated directly to text without spaces
+  sanitized = sanitized.replace(/(\d{4})(https?:\/\/[^\s]+)/g, '$1');
+  
+  // Remove orphaned URL fragments
+  sanitized = sanitized.replace(/#:~:text=[^\s]*/g, '');
+  
+  // Clean up any leftover artifacts
+  sanitized = sanitized
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  return sanitized;
+};
+
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
@@ -108,67 +146,67 @@ const GuideDetail = () => {
 
   // For regular guides - prompts are copyable text blocks
   const regularPrompts = !isTutorial ? [
-    { label: guide.prompt_1_label, headline: guide.prompt_1_headline, text: guide.prompt_1_text },
-    { label: guide.prompt_2_label, headline: guide.prompt_2_headline, text: guide.prompt_2_text },
-    { label: guide.prompt_3_label, headline: guide.prompt_3_headline, text: guide.prompt_3_text },
+    { label: sanitizeContent(guide.prompt_1_label), headline: sanitizeContent(guide.prompt_1_headline), text: sanitizeContent(guide.prompt_1_text) },
+    { label: sanitizeContent(guide.prompt_2_label), headline: sanitizeContent(guide.prompt_2_headline), text: sanitizeContent(guide.prompt_2_text) },
+    { label: sanitizeContent(guide.prompt_3_label), headline: sanitizeContent(guide.prompt_3_headline), text: sanitizeContent(guide.prompt_3_text) },
   ].filter((p) => p.text) : [];
 
   const faqs = [
-    { q: guide.faq_q1, a: guide.faq_a1 },
-    { q: guide.faq_q2, a: guide.faq_a2 },
-    { q: guide.faq_q3, a: guide.faq_a3 },
+    { q: sanitizeContent(guide.faq_q1), a: sanitizeContent(guide.faq_a1) },
+    { q: sanitizeContent(guide.faq_q2), a: sanitizeContent(guide.faq_a2) },
+    { q: sanitizeContent(guide.faq_q3), a: sanitizeContent(guide.faq_a3) },
   ].filter((f) => f.q && f.a);
 
   // For regular guides
   const bodySections = [
-    { heading: guide.body_section_1_heading, text: guide.body_section_1_text },
-    { heading: guide.body_section_2_heading, text: guide.body_section_2_text },
-    { heading: guide.body_section_3_heading, text: guide.body_section_3_text },
+    { heading: sanitizeContent(guide.body_section_1_heading), text: sanitizeContent(guide.body_section_1_text) },
+    { heading: sanitizeContent(guide.body_section_2_heading), text: sanitizeContent(guide.body_section_2_text) },
+    { heading: sanitizeContent(guide.body_section_3_heading), text: sanitizeContent(guide.body_section_3_text) },
   ].filter((s) => s.heading && s.text);
 
   // For tutorials - NOTE: in tutorials, heading contains text and text contains heading name (swapped in import)
   // So we swap them back for proper display
   const tutorialSteps = isTutorial ? [
-    { heading: guide.body_section_1_text, text: guide.body_section_1_heading },
-    { heading: guide.body_section_2_text, text: guide.body_section_2_heading },
-    { heading: guide.body_section_3_text, text: guide.body_section_3_heading },
+    { heading: sanitizeContent(guide.body_section_1_text), text: sanitizeContent(guide.body_section_1_heading) },
+    { heading: sanitizeContent(guide.body_section_2_text), text: sanitizeContent(guide.body_section_2_heading) },
+    { heading: sanitizeContent(guide.body_section_3_text), text: sanitizeContent(guide.body_section_3_heading) },
     // Step 4: prompt_1_text has heading, prompt_1_label has text
-    { heading: guide.prompt_1_text, text: guide.prompt_1_label },
+    { heading: sanitizeContent(guide.prompt_1_text), text: sanitizeContent(guide.prompt_1_label) },
   ].filter((s) => s.heading && s.text) : [];
 
   // Tutorial Tips section (stored in prompt_2) - swapped: text field has heading, label has content
   const tutorialTips = isTutorial && guide.prompt_2_label ? {
-    heading: guide.prompt_2_text || 'Tips',
-    text: guide.prompt_2_label,
+    heading: sanitizeContent(guide.prompt_2_text) || 'Tips',
+    text: sanitizeContent(guide.prompt_2_label),
   } : null;
 
   // Tutorial Activities (stored in prompt_3) - swapped: text field has heading, label/headline have content
   const tutorialActivities = isTutorial && (guide.prompt_3_label || guide.prompt_3_headline) ? {
-    heading: guide.prompt_3_text || 'Activities',
-    text1: guide.prompt_3_label,
-    text2: guide.prompt_3_headline,
+    heading: sanitizeContent(guide.prompt_3_text) || 'Activities',
+    text1: sanitizeContent(guide.prompt_3_label),
+    text2: sanitizeContent(guide.prompt_3_headline),
   } : null;
 
   // Tutorial extended content sections
   const guideData = guide as Record<string, string | null>;
   const extendedSections = isTutorial ? [
-    { heading: 'Context and Background', text: guideData.context_and_background },
-    { heading: 'Expanded Steps', text: guideData.expanded_steps },
-    { heading: 'Deeper Explanations', text: guideData.deeper_explanations },
-    { heading: 'Variations and Alternatives', text: guideData.variations_and_alternatives },
-    { heading: 'Interactive Elements', text: guideData.interactive_elements },
-    { heading: 'Troubleshooting and Advanced Tips', text: guideData.troubleshooting_and_advanced_tips },
+    { heading: 'Context and Background', text: sanitizeContent(guideData.context_and_background) },
+    { heading: 'Expanded Steps', text: sanitizeContent(guideData.expanded_steps) },
+    { heading: 'Deeper Explanations', text: sanitizeContent(guideData.deeper_explanations) },
+    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives) },
+    { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements) },
+    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips) },
   ].filter((s) => s.text) : [];
 
   // Tutorial learning outcomes and estimated time (stored in prompt_2_headline and prompt_1_headline)
-  const learningOutcomes = isTutorial ? guide.prompt_2_headline : null;
+  const learningOutcomes = isTutorial ? sanitizeContent(guide.prompt_2_headline) : null;
   const estimatedTime = isTutorial ? guide.prompt_1_headline : null;
 
   const tldrBullets = [
     guide.tldr_bullet_1,
     guide.tldr_bullet_2,
     guide.tldr_bullet_3,
-  ].filter(Boolean);
+  ].filter(Boolean).map(sanitizeContent);
 
   const tags = guide.tags ? guide.tags.split(",") : [];
 
@@ -264,7 +302,7 @@ const GuideDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="whitespace-pre-line text-muted-foreground">
-                    {guide.perfect_for}
+                    {sanitizeContent(guide.perfect_for)}
                   </p>
                 </CardContent>
               </Card>
@@ -273,7 +311,7 @@ const GuideDetail = () => {
             <div className="prose prose-slate dark:prose-invert max-w-none">
               {guide.body_intro && (
                 <p className="lead mb-8 text-lg text-muted-foreground">
-                  {guide.body_intro}
+                  {sanitizeContent(guide.body_intro)}
                 </p>
               )}
 
