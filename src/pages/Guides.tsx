@@ -17,10 +17,10 @@ import PromptsGrid from "@/components/PromptsGrid";
 import ToolsGrid from "@/components/ToolsGrid";
 
 const GUIDE_CATEGORIES = [
-  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", isPrompts: true },
+  { value: "Guide", label: "Guides", icon: Target, color: "from-orange-500 to-amber-500" },
   { value: "Tutorial", label: "Tutorials", icon: BookMarked, color: "from-blue-500 to-cyan-500" },
   { value: "Tools", label: "Tools", icon: Wrench, color: "from-green-500 to-emerald-500", isTools: true },
-  { value: "Guide", label: "Guides", icon: Target, color: "from-orange-500 to-amber-500" },
+  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", isPrompts: true },
   { value: "Platform Guide", label: "Platform Guides", icon: Code, color: "from-indigo-500 to-violet-500" },
   { value: "Role Guide", label: "Role Guides", icon: UserCog, color: "from-rose-500 to-red-500" },
   { value: "Prompt Pack", label: "Prompt Packs", icon: Package, color: "from-teal-500 to-cyan-500" },
