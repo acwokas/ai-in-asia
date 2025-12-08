@@ -1334,6 +1334,57 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_comments: {
+        Row: {
+          approved: boolean | null
+          author_email: string | null
+          author_name: string | null
+          content: string
+          created_at: string
+          guide_id: string
+          id: string
+          parent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          author_email?: string | null
+          author_name?: string | null
+          content: string
+          created_at?: string
+          guide_id: string
+          id?: string
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          author_email?: string | null
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          guide_id?: string
+          id?: string
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_comments_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "ai_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "guide_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       migration_logs: {
         Row: {
           batch_id: string
