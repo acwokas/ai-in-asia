@@ -561,6 +561,59 @@ const GuideDetail = () => {
               </section>
             )}
 
+            {/* Custom Closing CTA with prompt if available */}
+            {guide.closing_cta && guide.closing_cta.includes('Try This Prompt') ? (
+              <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                <CardContent className="py-8">
+                  <h2 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
+                    Try This Prompt
+                  </h2>
+                  {(() => {
+                    // Extract the prompt from closing_cta
+                    const ctaText = sanitizeContent(guide.closing_cta) || '';
+                    const promptMatch = ctaText.match(/"([^"]+)"/);
+                    const prompt = promptMatch ? promptMatch[1] : '';
+                    const afterPrompt = ctaText.split('"').slice(-1)[0]?.trim() || '';
+                    
+                    return (
+                      <>
+                        {prompt && (
+                          <div className="relative mb-4">
+                            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                              <code className="whitespace-pre-wrap break-words text-foreground">
+                                {prompt}
+                              </code>
+                            </pre>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="absolute right-2 top-2"
+                              onClick={() => copyPrompt(prompt, 99)}
+                            >
+                              {copiedPrompt === 99 ? (
+                                <>
+                                  <Check className="mr-1 h-3 w-3" />
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="mr-1 h-3 w-3" />
+                                  Copy
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                        {afterPrompt && (
+                          <p className="text-foreground/90">{afterPrompt}</p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            ) : null}
+
             {/* Closing Section */}
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
               <CardContent className="py-8">
