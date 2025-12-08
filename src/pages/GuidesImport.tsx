@@ -100,6 +100,20 @@ EXPECTED_FIELDS.forEach((field) => {
   NORMALIZED_FIELD_MAP[normalizeHeader(field)] = field;
 });
 
+// Sanitize text content to remove corrupted file paths and invalid URLs
+const sanitizeContent = (text: string | null | undefined): string | null => {
+  if (!text) return null;
+  
+  // Remove corrupted local file paths (like onlinefile:///home/... or file:///)
+  let cleaned = text
+    .replace(/\s*onlinefile:\/\/[^\s]*/gi, '')
+    .replace(/\s*file:\/\/\/[^\s]*/gi, '')
+    .replace(/\s*C:\\[^\s]*/g, '')
+    .replace(/\s*\/home\/[^\s]*redirect\.html[^\s]*/gi, '');
+  
+  return cleaned.trim();
+};
+
 const GuidesImport = () => {
   const { user } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useAdminRole();
@@ -566,43 +580,43 @@ const GuidesImport = () => {
           guide_category: mappedCategory,
           level: row.Level,
           primary_platform: mappedPlatform,
-          audience_role: row.Audience_Role || null,
-          geo: row.Geo || null,
-          excerpt: row.Excerpt || null,
-          seo_title: row.SEO_Title || null,
-          meta_title: row.Meta_Title || null,
-          meta_description: row.Meta_Description || null,
-          focus_keyphrase: row.Focus_Keyphrase || null,
-          keyphrase_synonyms: row.Keyphrase_Synonyms || null,
-          tags: row.Tags || null,
-          tldr_bullet_1: row.TLDR_Bullet_1 || null,
-          tldr_bullet_2: row.TLDR_Bullet_2 || null,
-          tldr_bullet_3: row.TLDR_Bullet_3 || null,
-          perfect_for: row.Perfect_For || null,
-          body_intro: row.Body_Intro || null,
-          body_section_1_heading: row.Body_Section_1_Heading || null,
-          body_section_1_text: row.Body_Section_1_Text || null,
-          body_section_2_heading: row.Body_Section_2_Heading || null,
-          body_section_2_text: row.Body_Section_2_Text || null,
-          body_section_3_heading: row.Body_Section_3_Heading || null,
-          body_section_3_text: row.Body_Section_3_Text || null,
-          prompt_1_label: row.Prompt_1_Label || null,
-          prompt_1_headline: row.Prompt_1_Headline || null,
-          prompt_1_text: row.Prompt_1_Text || null,
-          prompt_2_label: row.Prompt_2_Label || null,
-          prompt_2_headline: row.Prompt_2_Headline || null,
-          prompt_2_text: row.Prompt_2_Text || null,
-          prompt_3_label: row.Prompt_3_Label || null,
-          prompt_3_headline: row.Prompt_3_Headline || null,
-          prompt_3_text: row.Prompt_3_Text || null,
-          faq_q1: row.FAQ_Q1 || null,
-          faq_a1: row.FAQ_A1 || null,
-          faq_q2: row.FAQ_Q2 || null,
-          faq_a2: row.FAQ_A2 || null,
-          faq_q3: row.FAQ_Q3 || null,
-          faq_a3: row.FAQ_A3 || null,
-          image_prompt: row.Image_Prompt || null,
-          closing_cta: row.Closing_CTA || null,
+          audience_role: sanitizeContent(row.Audience_Role),
+          geo: sanitizeContent(row.Geo),
+          excerpt: sanitizeContent(row.Excerpt),
+          seo_title: sanitizeContent(row.SEO_Title),
+          meta_title: sanitizeContent(row.Meta_Title),
+          meta_description: sanitizeContent(row.Meta_Description),
+          focus_keyphrase: sanitizeContent(row.Focus_Keyphrase),
+          keyphrase_synonyms: sanitizeContent(row.Keyphrase_Synonyms),
+          tags: sanitizeContent(row.Tags),
+          tldr_bullet_1: sanitizeContent(row.TLDR_Bullet_1),
+          tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
+          tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
+          perfect_for: sanitizeContent(row.Perfect_For),
+          body_intro: sanitizeContent(row.Body_Intro),
+          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
+          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
+          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
+          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
+          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
+          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
+          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
+          prompt_1_text: sanitizeContent(row.Prompt_1_Text),
+          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
+          prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
+          prompt_2_text: sanitizeContent(row.Prompt_2_Text),
+          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
+          prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
+          prompt_3_text: sanitizeContent(row.Prompt_3_Text),
+          faq_q1: sanitizeContent(row.FAQ_Q1),
+          faq_a1: sanitizeContent(row.FAQ_A1),
+          faq_q2: sanitizeContent(row.FAQ_Q2),
+          faq_a2: sanitizeContent(row.FAQ_A2),
+          faq_q3: sanitizeContent(row.FAQ_Q3),
+          faq_a3: sanitizeContent(row.FAQ_A3),
+          image_prompt: sanitizeContent(row.Image_Prompt),
+          closing_cta: sanitizeContent(row.Closing_CTA),
           created_by: user.id,
         };
 
