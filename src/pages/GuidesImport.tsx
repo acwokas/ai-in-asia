@@ -130,6 +130,12 @@ const TUTORIAL_FIELDS = [
   "Visual_Prompt",
   "Conclusion_CTA",
   "Extra_Resources",
+  "Context_and_Background",
+  "Expanded_Steps",
+  "Deeper_Explanations",
+  "Variations_and_Alternatives",
+  "Interactive_Elements",
+  "Troubleshooting_and_Advanced_Tips",
 ];
 
 // Helper function to normalize headers - defined outside component
@@ -935,6 +941,12 @@ const GuidesImport = () => {
           faq_a3: sanitizeContent(row.FAQ_A3),
           image_prompt: sanitizeContent(row.Visual_Prompt),
           closing_cta: sanitizeContent(`${row.Conclusion_CTA || ''}\n\n${row.Extra_Resources || ''}`.trim()),
+          context_and_background: sanitizeContent(row.Context_and_Background),
+          expanded_steps: sanitizeContent(row.Expanded_Steps),
+          deeper_explanations: sanitizeContent(row.Deeper_Explanations),
+          variations_and_alternatives: sanitizeContent(row.Variations_and_Alternatives),
+          interactive_elements: sanitizeContent(row.Interactive_Elements),
+          troubleshooting_and_advanced_tips: sanitizeContent(row.Troubleshooting_and_Advanced_Tips),
           created_by: user.id,
         };
 
