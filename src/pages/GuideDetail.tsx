@@ -56,6 +56,16 @@ const sanitizeContent = (text: string | null | undefined): string => {
   return sanitized;
 };
 
+// Check if content references non-existent downloads/resources
+const hasUnactionableContent = (text: string | null | undefined): boolean => {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return (
+    (lowerText.includes('download') && (lowerText.includes('template') || lowerText.includes('matrix') || lowerText.includes('worksheet') || lowerText.includes('pdf'))) ||
+    (lowerText.includes('use the provided') && lowerText.includes('template'))
+  );
+};
+
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
@@ -193,15 +203,16 @@ const GuideDetail = () => {
   } : null;
 
   // Tutorial extended content sections
+  // Filter out sections that reference non-existent downloads/templates
   const guideData = guide as Record<string, string | null>;
   const extendedSections = isTutorial ? [
-    { heading: 'Context and Background', text: sanitizeContent(guideData.context_and_background) },
-    { heading: 'Expanded Steps', text: sanitizeContent(guideData.expanded_steps) },
-    { heading: 'Deeper Explanations', text: sanitizeContent(guideData.deeper_explanations) },
-    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives) },
-    { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements) },
-    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips) },
-  ].filter((s) => s.text) : [];
+    { heading: 'Context and Background', text: sanitizeContent(guideData.context_and_background), raw: guideData.context_and_background },
+    { heading: 'Expanded Steps', text: sanitizeContent(guideData.expanded_steps), raw: guideData.expanded_steps },
+    { heading: 'Deeper Explanations', text: sanitizeContent(guideData.deeper_explanations), raw: guideData.deeper_explanations },
+    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives), raw: guideData.variations_and_alternatives },
+    { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements), raw: guideData.interactive_elements },
+    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips },
+  ].filter((s) => s.text && !hasUnactionableContent(s.raw)) : [];
 
   // Tutorial learning outcomes and estimated time (stored in prompt_2_headline and prompt_1_headline)
   const learningOutcomes = isTutorial ? sanitizeContent(guide.prompt_2_headline) : null;
