@@ -206,12 +206,8 @@ const GuideDetail = () => {
     { label: sanitizeContent(guide.prompt_3_label), headline: sanitizeContent(guide.prompt_3_headline), text: sanitizeContent(guide.prompt_3_text) },
   ].filter((p) => p.text) : [];
 
-  // For tutorials, FAQ fields are swapped in the database (like body sections)
-  const faqs = isTutorial ? [
-    { q: sanitizeContent(guide.faq_a1), a: sanitizeContent(guide.faq_q1) },
-    { q: sanitizeContent(guide.faq_a2), a: sanitizeContent(guide.faq_q2) },
-    { q: sanitizeContent(guide.faq_a3), a: sanitizeContent(guide.faq_q3) },
-  ].filter((f) => f.q && f.a) : [
+  // FAQs - use standard q/a mapping (database has been corrected)
+  const faqs = [
     { q: sanitizeContent(guide.faq_q1), a: sanitizeContent(guide.faq_a1) },
     { q: sanitizeContent(guide.faq_q2), a: sanitizeContent(guide.faq_a2) },
     { q: sanitizeContent(guide.faq_q3), a: sanitizeContent(guide.faq_a3) },
