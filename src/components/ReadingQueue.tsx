@@ -9,6 +9,11 @@ import { Badge } from "./ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { BookmarkCheck, Clock, Flame, Zap, X, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ReadingQueue = () => {
   const { user } = useAuth();
@@ -127,19 +132,24 @@ const ReadingQueue = () => {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" title="Reading Queue">
-          <BookmarkCheck className="h-5 w-5" />
-          {queueCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {queueCount}
-            </Badge>
-          )}
-        </Button>
-      </SheetTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative h-10 w-10" aria-label="Reading Queue">
+              <BookmarkCheck className="h-5 w-5" />
+              {queueCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                >
+                  {queueCount}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Reading Queue</TooltipContent>
+      </Tooltip>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

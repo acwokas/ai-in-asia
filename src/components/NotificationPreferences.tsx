@@ -8,6 +8,11 @@ import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const NotificationPreferences = () => {
   const { user } = useAuth();
@@ -64,11 +69,16 @@ const NotificationPreferences = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" title="Notification preferences">
-          <Bell className="h-5 w-5" />
-        </Button>
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Notification preferences">
+              <Bell className="h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Notifications</TooltipContent>
+      </Tooltip>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Notification Preferences</DialogTitle>
