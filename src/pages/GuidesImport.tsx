@@ -415,7 +415,12 @@ const GuidesImport = () => {
 
     try {
       const text = await file.text();
+      console.log("=== CSV IMPORT DEBUG ===");
+      console.log("File text length:", text.length);
+      console.log("First 500 chars:", text.substring(0, 500));
+      
       const rows = parseCSV(text);
+      console.log("Parsed rows count:", rows.length);
 
       if (rows.length === 0) {
         toast.error("No data found in CSV file");
@@ -424,9 +429,25 @@ const GuidesImport = () => {
 
       const firstRow = rows[0];
       const detectedFields = Object.keys(firstRow);
-      const missingFields = EXPECTED_FIELDS.filter(
-        (field) => !(field in firstRow)
-      );
+      console.log("First row keys:", detectedFields);
+      console.log("First row sample values:", Object.entries(firstRow).slice(0, 5));
+      
+      // Create a normalized lookup for detected fields
+      const normalizedDetected: Record<string, string> = {};
+      detectedFields.forEach(f => {
+        normalizedDetected[normalizeHeader(f)] = f;
+      });
+      console.log("Normalized detected fields:", Object.keys(normalizedDetected));
+      
+      // Check for missing fields using normalized comparison
+      const missingFields = EXPECTED_FIELDS.filter((field) => {
+        const normalizedExpected = normalizeHeader(field);
+        const found = normalizedExpected in normalizedDetected || field in firstRow;
+        if (!found) {
+          console.log(`Missing field: "${field}" (normalized: "${normalizedExpected}")`);
+        }
+        return !found;
+      });
 
       if (missingFields.length > 0) {
         console.log("Expected fields:", EXPECTED_FIELDS);
