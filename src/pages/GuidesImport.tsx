@@ -192,6 +192,7 @@ const GuidesImport = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingTutorials, setIsDeletingTutorials] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch existing guides
@@ -498,6 +499,26 @@ const GuidesImport = () => {
       toast.error("Failed to delete guides");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const deleteAllTutorials = async () => {
+    setIsDeletingTutorials(true);
+    try {
+      const { error } = await supabase
+        .from("ai_guides")
+        .delete()
+        .eq("guide_category", "Tutorial");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["ai-guides-admin"] });
+      toast.success("All tutorials deleted");
+    } catch (error) {
+      console.error("Error deleting tutorials:", error);
+      toast.error("Failed to delete tutorials");
+    } finally {
+      setIsDeletingTutorials(false);
     }
   };
 
@@ -1326,6 +1347,36 @@ const GuidesImport = () => {
                       Clear
                     </Button>
                   )}
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        disabled={isDeletingTutorials}
+                      >
+                        {isDeletingTutorials ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Delete All Tutorials
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all tutorials?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all guides with category "Tutorial". Other guides will not be affected. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllTutorials}>
+                          Delete All Tutorials
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
