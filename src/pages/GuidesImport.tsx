@@ -228,9 +228,21 @@ const GuidesImport = () => {
     const lines = cleanText.split(/\r?\n/);
     if (lines.length < 2) return [];
 
+    console.log("=== DETAILED LINE DEBUG ===");
+    console.log("lines.length:", lines.length);
+    console.log("lines[0] length:", lines[0].length);
+    console.log("lines[0] first 100 chars:", JSON.stringify(lines[0].substring(0, 100)));
+    console.log("lines[0] char codes (first 20):", Array.from(lines[0].substring(0, 20)).map(c => c.charCodeAt(0)));
+    
+    // Try direct comma split first
+    const directSplit = lines[0].split(",");
+    console.log("Direct comma split result length:", directSplit.length);
+    console.log("Direct comma split first 3:", directSplit.slice(0, 3));
+
     // Auto-detect delimiter from first line
     const delimiter = detectDelimiter(lines[0]);
-    console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
+    console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : JSON.stringify(delimiter));
+    console.log("Delimiter char code:", delimiter.charCodeAt(0));
 
     // ALWAYS use simple split for headers - headers should never have quotes
     const rawHeaders = lines[0].split(delimiter).map(h => h.trim().replace(/^\uFEFF/, "").replace(/^"|"$/g, ""));
