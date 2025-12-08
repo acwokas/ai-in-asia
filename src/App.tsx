@@ -196,7 +196,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/tools" element={<Tools />} />
+              <Route path="/tools" element={<Navigate to="/guides?category=tools" replace />} />
               <Route path="/prompts" element={<Navigate to="/guides?category=prompts" replace />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
