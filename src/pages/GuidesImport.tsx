@@ -504,10 +504,39 @@ const GuidesImport = () => {
       setCurrentItem(row.Title);
 
       try {
+        // Map CSV categories to valid database values
+        const validCategories = ['Prompt List', 'Tutorial', 'Framework', 'Use Case', 'Platform Guide', 'Role Guide', 'Prompt Pack'];
+        const categoryMapping: Record<string, string> = {
+          'content marketing': 'Use Case',
+          'content strategy': 'Framework',
+          'marketing': 'Use Case',
+          'strategy': 'Framework',
+          'writing': 'Use Case',
+          'copywriting': 'Use Case',
+          'seo': 'Use Case',
+          'social media': 'Use Case',
+          'email': 'Use Case',
+          'research': 'Use Case',
+          'analysis': 'Framework',
+          'productivity': 'Use Case',
+          'coding': 'Use Case',
+          'development': 'Platform Guide',
+        };
+        
+        let mappedCategory = row.Guide_Category;
+        const lowerCategory = (row.Guide_Category || '').toLowerCase().trim();
+        
+        // Check if it's already a valid category
+        if (!validCategories.includes(mappedCategory)) {
+          // Try to map it
+          mappedCategory = categoryMapping[lowerCategory] || 'Use Case'; // Default to 'Use Case'
+          console.log(`Mapped category "${row.Guide_Category}" -> "${mappedCategory}"`);
+        }
+
         const guideData = {
           title: row.Title,
           slug: row.Slug,
-          guide_category: row.Guide_Category,
+          guide_category: mappedCategory,
           level: row.Level,
           primary_platform: row.Primary_Platform,
           audience_role: row.Audience_Role || null,
