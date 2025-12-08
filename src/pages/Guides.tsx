@@ -15,7 +15,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const GUIDE_CATEGORIES = [
-  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500" },
+  { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", link: "/prompts" },
   { value: "Tutorial", label: "Tutorials", icon: BookMarked, color: "from-blue-500 to-cyan-500" },
   { value: "Framework", label: "Frameworks", icon: Layers, color: "from-green-500 to-emerald-500" },
   { value: "Use Case", label: "Use Cases", icon: Target, color: "from-orange-500 to-amber-500" },
@@ -172,6 +172,28 @@ const Guides = () => {
                 const Icon = category.icon;
                 const isSelected = selectedCategory === category.value;
                 const count = categoryCounts[category.value] || 0;
+                
+                // If category has a link, render as Link
+                if (category.link) {
+                  return (
+                    <Link
+                      key={category.value}
+                      to={category.link}
+                      className="group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden border-border bg-card hover:border-primary/50 hover:shadow-md"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
+                      
+                      <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${category.color} mb-4`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      
+                      <h3 className="font-semibold text-foreground mb-1">{category.label}</h3>
+                      <p className="text-sm text-muted-foreground">Browse all prompts</p>
+                      
+                      <ArrowRight className="absolute top-4 right-4 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  );
+                }
                 
                 return (
                   <button
