@@ -230,13 +230,20 @@ const GuidesImport = () => {
     const delimiter = detectDelimiter(lines[0]);
     console.log("Detected delimiter:", delimiter === "\t" ? "TAB" : delimiter);
 
-    const rawHeaders = parseCSVLine(lines[0], delimiter);
+    // For tab-separated files, simple split works better
+    const rawHeaders = delimiter === "\t" 
+      ? lines[0].split("\t").map(h => h.trim().replace(/^\uFEFF/, ""))
+      : parseCSVLine(lines[0], delimiter);
+    
     console.log("Raw headers parsed:", rawHeaders);
+    console.log("Number of headers:", rawHeaders.length);
+    console.log("First 5 headers:", rawHeaders.slice(0, 5));
     
     // Map CSV headers to expected field names (case-insensitive, space-to-underscore)
     const headerMapping: Record<number, string> = {};
     rawHeaders.forEach((header, idx) => {
       const normalized = normalizeHeader(header);
+      console.log(`Header ${idx}: "${header}" -> normalized: "${normalized}" -> maps to: "${normalizedFieldMap[normalized] || 'NOT FOUND'}"`);
       if (normalizedFieldMap[normalized]) {
         headerMapping[idx] = normalizedFieldMap[normalized];
       } else {
@@ -245,13 +252,19 @@ const GuidesImport = () => {
       }
     });
 
+    console.log("Header mapping result:", headerMapping);
+
     const rows: Record<string, string>[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = parseCSVLine(line, delimiter);
+      // For tab-separated files, simple split works better
+      const values = delimiter === "\t" 
+        ? line.split("\t").map(v => v.trim())
+        : parseCSVLine(line, delimiter);
+      
       const row: Record<string, string> = {};
 
       Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
@@ -262,6 +275,7 @@ const GuidesImport = () => {
       rows.push(row);
     }
 
+    console.log("First row keys:", rows.length > 0 ? Object.keys(rows[0]) : []);
     return rows;
   };
 
