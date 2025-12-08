@@ -133,9 +133,12 @@ export type Database = {
           body_section_3_heading: string | null
           body_section_3_text: string | null
           closing_cta: string | null
+          context_and_background: string | null
           created_at: string
           created_by: string | null
+          deeper_explanations: string | null
           excerpt: string | null
+          expanded_steps: string | null
           faq_a1: string | null
           faq_a2: string | null
           faq_a3: string | null
@@ -147,6 +150,7 @@ export type Database = {
           guide_category: string
           id: string
           image_prompt: string | null
+          interactive_elements: string | null
           keyphrase_synonyms: string | null
           level: string
           meta_description: string | null
@@ -169,7 +173,9 @@ export type Database = {
           tldr_bullet_1: string | null
           tldr_bullet_2: string | null
           tldr_bullet_3: string | null
+          troubleshooting_and_advanced_tips: string | null
           updated_at: string
+          variations_and_alternatives: string | null
         }
         Insert: {
           audience_role?: string | null
@@ -181,9 +187,12 @@ export type Database = {
           body_section_3_heading?: string | null
           body_section_3_text?: string | null
           closing_cta?: string | null
+          context_and_background?: string | null
           created_at?: string
           created_by?: string | null
+          deeper_explanations?: string | null
           excerpt?: string | null
+          expanded_steps?: string | null
           faq_a1?: string | null
           faq_a2?: string | null
           faq_a3?: string | null
@@ -195,6 +204,7 @@ export type Database = {
           guide_category: string
           id?: string
           image_prompt?: string | null
+          interactive_elements?: string | null
           keyphrase_synonyms?: string | null
           level: string
           meta_description?: string | null
@@ -217,7 +227,9 @@ export type Database = {
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          troubleshooting_and_advanced_tips?: string | null
           updated_at?: string
+          variations_and_alternatives?: string | null
         }
         Update: {
           audience_role?: string | null
@@ -229,9 +241,12 @@ export type Database = {
           body_section_3_heading?: string | null
           body_section_3_text?: string | null
           closing_cta?: string | null
+          context_and_background?: string | null
           created_at?: string
           created_by?: string | null
+          deeper_explanations?: string | null
           excerpt?: string | null
+          expanded_steps?: string | null
           faq_a1?: string | null
           faq_a2?: string | null
           faq_a3?: string | null
@@ -243,6 +258,7 @@ export type Database = {
           guide_category?: string
           id?: string
           image_prompt?: string | null
+          interactive_elements?: string | null
           keyphrase_synonyms?: string | null
           level?: string
           meta_description?: string | null
@@ -265,7 +281,9 @@ export type Database = {
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          troubleshooting_and_advanced_tips?: string | null
           updated_at?: string
+          variations_and_alternatives?: string | null
         }
         Relationships: []
       }
