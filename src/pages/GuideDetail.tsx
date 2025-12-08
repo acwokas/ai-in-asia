@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GuideComments from "@/components/GuideComments";
+import SeasoningMatrixDownload from "@/components/SeasoningMatrixDownload";
 
 // Sanitize corrupted content from CSV imports
 const sanitizeContent = (text: string | null | undefined): string => {
@@ -56,9 +57,21 @@ const sanitizeContent = (text: string | null | undefined): string => {
   return sanitized;
 };
 
-// Check if content references non-existent downloads/resources
-const hasUnactionableContent = (text: string | null | undefined): boolean => {
+// Check if content references downloads/resources that we now provide
+const hasSeasoningMatrixContent = (text: string | null | undefined): boolean => {
   if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return lowerText.includes('seasoning matrix') || 
+         (lowerText.includes('download') && lowerText.includes('matrix'));
+};
+
+// Check if content references non-existent downloads/resources (excluding seasoning matrix which we now have)
+const hasUnactionableContent = (text: string | null | undefined, slug: string | undefined): boolean => {
+  if (!text) return false;
+  // Don't filter out seasoning matrix content for the hot honey guide - we have that resource now
+  if (slug === 'ai-viral-recipe-hot-honey-cottage-cheese-ext' && hasSeasoningMatrixContent(text)) {
+    return false;
+  }
   const lowerText = text.toLowerCase();
   return (
     (lowerText.includes('download') && (lowerText.includes('template') || lowerText.includes('matrix') || lowerText.includes('worksheet') || lowerText.includes('pdf'))) ||
@@ -211,8 +224,8 @@ const GuideDetail = () => {
     { heading: 'Deeper Explanations', text: sanitizeContent(guideData.deeper_explanations), raw: guideData.deeper_explanations },
     { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives), raw: guideData.variations_and_alternatives },
     { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements), raw: guideData.interactive_elements },
-    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips },
-  ].filter((s) => s.text && !hasUnactionableContent(s.raw)) : [];
+    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips, hasSeasoningMatrix: hasSeasoningMatrixContent(guideData.troubleshooting_and_advanced_tips) },
+  ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
 
   // Tutorial learning outcomes and estimated time (stored in prompt_2_headline and prompt_1_headline)
   const learningOutcomes = isTutorial ? sanitizeContent(guide.prompt_2_headline) : null;
@@ -401,6 +414,12 @@ const GuideDetail = () => {
                               <div className="whitespace-pre-line text-foreground">
                                 {section.text}
                               </div>
+                              {/* Show seasoning matrix download if this section mentions it */}
+                              {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
+                                <div className="mt-4 pt-4 border-t border-border">
+                                  <SeasoningMatrixDownload />
+                                </div>
+                              )}
                             </CardContent>
                           </Card>
                         ))}
