@@ -533,12 +533,39 @@ const GuidesImport = () => {
           console.log(`Mapped category "${row.Guide_Category}" -> "${mappedCategory}"`);
         }
 
+        // Map CSV platforms to valid database values
+        const validPlatforms = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'ElevenLabs', 'TikTok', 'Other', 'Generic'];
+        const platformMapping: Record<string, string> = {
+          'google': 'Gemini',
+          'gpt': 'ChatGPT',
+          'openai': 'ChatGPT',
+          'gpt-4': 'ChatGPT',
+          'gpt4': 'ChatGPT',
+          'anthropic': 'Claude',
+          'dall-e': 'Other',
+          'dalle': 'Other',
+          'stable diffusion': 'Other',
+          'stablediffusion': 'Other',
+          'leonardo': 'Other',
+          'canva': 'Other',
+        };
+        
+        let mappedPlatform = row.Primary_Platform;
+        const lowerPlatform = (row.Primary_Platform || '').toLowerCase().trim();
+        
+        // Check if it's already a valid platform
+        if (!validPlatforms.includes(mappedPlatform)) {
+          // Try to map it
+          mappedPlatform = platformMapping[lowerPlatform] || 'Generic'; // Default to 'Generic'
+          console.log(`Mapped platform "${row.Primary_Platform}" -> "${mappedPlatform}"`);
+        }
+
         const guideData = {
           title: row.Title,
           slug: row.Slug,
           guide_category: mappedCategory,
           level: row.Level,
-          primary_platform: row.Primary_Platform,
+          primary_platform: mappedPlatform,
           audience_role: row.Audience_Role || null,
           geo: row.Geo || null,
           excerpt: row.Excerpt || null,
