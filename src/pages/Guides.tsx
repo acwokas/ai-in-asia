@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { 
   Search, BookOpen, Cpu, Sparkles, ArrowRight, 
-  Zap, Target, Layers, BookMarked, Code, UserCog,
+  Zap, Target, Wrench, BookMarked, Code, UserCog,
   Package, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,12 +14,13 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PromptsGrid from "@/components/PromptsGrid";
+import ToolsGrid from "@/components/ToolsGrid";
 
 const GUIDE_CATEGORIES = [
   { value: "Prompt List", label: "Prompt Lists", icon: Sparkles, color: "from-purple-500 to-pink-500", isPrompts: true },
   { value: "Tutorial", label: "Tutorials", icon: BookMarked, color: "from-blue-500 to-cyan-500" },
-  { value: "Framework", label: "Frameworks", icon: Layers, color: "from-green-500 to-emerald-500" },
-  { value: "Use Case", label: "Use Cases", icon: Target, color: "from-orange-500 to-amber-500" },
+  { value: "Tools", label: "Tools", icon: Wrench, color: "from-green-500 to-emerald-500", isTools: true },
+  { value: "Guide", label: "Guides", icon: Target, color: "from-orange-500 to-amber-500" },
   { value: "Platform Guide", label: "Platform Guides", icon: Code, color: "from-indigo-500 to-violet-500" },
   { value: "Role Guide", label: "Role Guides", icon: UserCog, color: "from-rose-500 to-red-500" },
   { value: "Prompt Pack", label: "Prompt Packs", icon: Package, color: "from-teal-500 to-cyan-500" },
@@ -56,10 +57,13 @@ const Guides = () => {
     const categoryParam = searchParams.get("category");
     if (categoryParam === "prompts") {
       setSelectedCategory("Prompt List");
+    } else if (categoryParam === "tools") {
+      setSelectedCategory("Tools");
     }
   }, [searchParams]);
 
   const isPromptsView = selectedCategory === "Prompt List";
+  const isToolsView = selectedCategory === "Tools";
 
   const { data: guides, isLoading } = useQuery({
     queryKey: ["ai-guides"],
@@ -89,7 +93,7 @@ const Guides = () => {
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = !selectedCategory || selectedCategory === "Prompt List" || guide.guide_category === selectedCategory;
+    const matchesCategory = !selectedCategory || selectedCategory === "Prompt List" || selectedCategory === "Tools" || guide.guide_category === selectedCategory;
     const matchesPlatform = !selectedPlatform || guide.primary_platform === selectedPlatform;
     const matchesLevel = !selectedLevel || guide.level === selectedLevel;
 
@@ -145,13 +149,15 @@ const Guides = () => {
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
                 Master AI with
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                  {isPromptsView ? "Ready-to-Use Prompts" : "Practical Guides"}
+                  {isPromptsView ? "Ready-to-Use Prompts" : isToolsView ? "AI Tools" : "Practical Guides"}
                 </span>
               </h1>
               
               <p className="text-xl text-muted-foreground md:text-2xl leading-relaxed max-w-2xl">
                 {isPromptsView 
                   ? "Browse our complete collection of AI prompts for ChatGPT, Claude, Gemini, and more."
+                  : isToolsView 
+                  ? "Discover powerful AI tools and platforms that are transforming how we work, create, and innovate."
                   : "From beginner tutorials to advanced frameworks. Real techniques, actual examples, no fluff."
                 }
               </p>
@@ -235,6 +241,13 @@ const Guides = () => {
           <section className="py-8">
             <div className="container mx-auto px-4">
               <PromptsGrid searchQuery={searchQuery} />
+            </div>
+          </section>
+        ) : isToolsView ? (
+          /* Tools Grid */
+          <section className="py-8">
+            <div className="container mx-auto px-4">
+              <ToolsGrid searchQuery={searchQuery} />
             </div>
           </section>
         ) : (
