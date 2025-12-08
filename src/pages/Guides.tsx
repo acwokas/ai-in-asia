@@ -92,6 +92,29 @@ const Guides = () => {
     },
   });
 
+  // Fetch prompts count from top_list articles
+  const { data: promptsCount } = useQuery({
+    queryKey: ["prompts-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("top_list_items")
+        .eq("article_type", "top_lists")
+        .eq("status", "published");
+
+      if (error) throw error;
+      
+      // Count total prompts across all top_list articles
+      let total = 0;
+      data?.forEach(article => {
+        if (Array.isArray(article.top_list_items)) {
+          total += article.top_list_items.length;
+        }
+      });
+      return total;
+    },
+  });
+
   // Count guides per category
   const categoryCounts = useMemo(() => {
     if (!guides) return {};
@@ -229,7 +252,7 @@ const Guides = () => {
                     
                     <h3 className="font-semibold text-foreground mb-1">{category.label}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {category.isPrompts ? "Browse all prompts" : category.isTools ? `${categoryCounts["Tools"] || 0} tool${categoryCounts["Tools"] !== 1 ? "s" : ""}` : `${count} guide${count !== 1 ? "s" : ""}`}
+                      {category.isPrompts ? `${promptsCount || 0} prompt${promptsCount !== 1 ? "s" : ""}` : category.isTools ? `${categoryCounts["Tools"] || 0} tool${categoryCounts["Tools"] !== 1 ? "s" : ""}` : `${count} guide${count !== 1 ? "s" : ""}`}
                     </p>
                     
                     {isSelected && (
