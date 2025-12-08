@@ -138,6 +138,52 @@ const TUTORIAL_FIELDS = [
   "Troubleshooting_and_Advanced_Tips",
 ];
 
+// Role Guide / Platform Guide / Prompt Pack CSV schema (shared structure)
+const ROLE_GUIDE_FIELDS = [
+  "Title",
+  "Slug",
+  "Guide_Category",
+  "Role",
+  "Level",
+  "Primary_Platform",
+  "Geo",
+  "Excerpt",
+  "SEO_Title",
+  "Meta_Title",
+  "Meta_Description",
+  "Focus_Keyphrase",
+  "Keyphrase_Synonyms",
+  "Tags",
+  "TLDR_Bullet_1",
+  "TLDR_Bullet_2",
+  "TLDR_Bullet_3",
+  "Perfect_For",
+  "Context_and_Background",
+  "Learning_Objectives",
+  "Role_Challenges_Overview",
+  "How_AI_Helps_This_Role",
+  "Step_by_Step_Section_1_Heading",
+  "Step_by_Step_Section_1_Text",
+  "Step_by_Step_Section_2_Heading",
+  "Step_by_Step_Section_2_Text",
+  "Step_by_Step_Section_3_Heading",
+  "Step_by_Step_Section_3_Text",
+  "Variations_and_Alternatives",
+  "Applied_Examples",
+  "Interactive_Exercises",
+  "Troubleshooting_and_Common_Mistakes",
+  "Advanced_Tips_and_Optimisation",
+  "Prompt_1_Headline",
+  "Prompt_1_Text",
+  "Prompt_2_Headline",
+  "Prompt_2_Text",
+  "Prompt_3_Headline",
+  "Prompt_3_Text",
+  "Recommended_Tools_For_This_Role",
+  "Further_Reading",
+  "Closing_Encouragement",
+];
+
 // Helper function to normalize headers - defined outside component
 const normalizeHeader = (header: string): string => {
   return header
@@ -158,6 +204,12 @@ EXPECTED_FIELDS.forEach((field) => {
 const NORMALIZED_TUTORIAL_FIELD_MAP: Record<string, string> = {};
 TUTORIAL_FIELDS.forEach((field) => {
   NORMALIZED_TUTORIAL_FIELD_MAP[normalizeHeader(field)] = field;
+});
+
+// Create mapping for role guide fields (used by Platform Guides, Role Guides, Prompt Packs)
+const NORMALIZED_ROLE_GUIDE_FIELD_MAP: Record<string, string> = {};
+ROLE_GUIDE_FIELDS.forEach((field) => {
+  NORMALIZED_ROLE_GUIDE_FIELD_MAP[normalizeHeader(field)] = field;
 });
 
 // Sanitize text content to remove corrupted file paths and invalid URLs
@@ -1051,6 +1103,55 @@ const GuidesImport = () => {
     }
   };
 
+  // Role Guide CSV parsing with flexible header matching
+  const parseRoleGuideCSV = (text: string): Record<string, string>[] => {
+    const cleanText = text.replace(/^\uFEFF/, "");
+    const allLines = cleanText.split(/\r?\n/);
+    const lines = allLines.filter((line, idx) => {
+      if (idx === 0 && line.trim() === "") return false;
+      return true;
+    });
+    
+    while (lines.length > 0 && lines[0].trim() === "") {
+      lines.shift();
+    }
+    
+    if (lines.length < 2) return [];
+
+    const delimiter = detectDelimiter(lines[0]);
+    const rawHeaders = lines[0].split(delimiter).map(h => h.trim().replace(/^\uFEFF/, "").replace(/^"|"$/g, ""));
+    
+    // Map CSV headers to expected role guide field names
+    const headerMapping: Record<number, string> = {};
+    rawHeaders.forEach((header, idx) => {
+      const normalized = normalizeHeader(header);
+      if (NORMALIZED_ROLE_GUIDE_FIELD_MAP[normalized]) {
+        headerMapping[idx] = NORMALIZED_ROLE_GUIDE_FIELD_MAP[normalized];
+      } else {
+        headerMapping[idx] = header.trim();
+      }
+    });
+
+    const rows: Record<string, string>[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = parseCSVLine(line, delimiter);
+      const row: Record<string, string> = {};
+
+      Object.entries(headerMapping).forEach(([idxStr, fieldName]) => {
+        const idx = parseInt(idxStr, 10);
+        row[fieldName] = values[idx]?.trim() || "";
+      });
+
+      rows.push(row);
+    }
+
+    return rows;
+  };
+
   const handlePlatformGuideFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1062,7 +1163,7 @@ const GuidesImport = () => {
 
     try {
       const text = await file.text();
-      const rows = parseCSV(text);
+      const rows = parseRoleGuideCSV(text);
 
       if (rows.length === 0) {
         toast.error("No data found in CSV file");
@@ -1077,12 +1178,15 @@ const GuidesImport = () => {
         normalizedDetected[normalizeHeader(f)] = f;
       });
       
-      const missingFields = EXPECTED_FIELDS.filter((field) => {
+      const missingFields = ROLE_GUIDE_FIELDS.filter((field) => {
         const normalizedExpected = normalizeHeader(field);
         return !(normalizedExpected in normalizedDetected || field in firstRow);
       });
 
       if (missingFields.length > 0) {
+        console.log("Expected role guide fields:", ROLE_GUIDE_FIELDS);
+        console.log("Detected fields:", detectedFields);
+        console.log("Missing fields:", missingFields);
         toast.error(
           `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
           { duration: 8000 }
@@ -1134,7 +1238,7 @@ const GuidesImport = () => {
           guide_category: 'Platform Guide',
           level: row.Level,
           primary_platform: mappedPlatform,
-          audience_role: sanitizeContent(row.Audience_Role),
+          role: sanitizeContent(row.Role),
           geo: sanitizeContent(row.Geo),
           excerpt: sanitizeContent(row.Excerpt),
           seo_title: sanitizeContent(row.SEO_Title),
@@ -1147,30 +1251,30 @@ const GuidesImport = () => {
           tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
           tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
           perfect_for: sanitizeContent(row.Perfect_For),
-          body_intro: sanitizeContent(row.Body_Intro),
-          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
-          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
-          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
-          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
-          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
-          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
-          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          context_and_background: sanitizeContent(row.Context_and_Background),
+          learning_objectives: sanitizeContent(row.Learning_Objectives),
+          role_challenges_overview: sanitizeContent(row.Role_Challenges_Overview),
+          how_ai_helps_this_role: sanitizeContent(row.How_AI_Helps_This_Role),
+          step_by_step_section_1_heading: sanitizeContent(row.Step_by_Step_Section_1_Heading),
+          step_by_step_section_1_text: sanitizeContent(row.Step_by_Step_Section_1_Text),
+          step_by_step_section_2_heading: sanitizeContent(row.Step_by_Step_Section_2_Heading),
+          step_by_step_section_2_text: sanitizeContent(row.Step_by_Step_Section_2_Text),
+          step_by_step_section_3_heading: sanitizeContent(row.Step_by_Step_Section_3_Heading),
+          step_by_step_section_3_text: sanitizeContent(row.Step_by_Step_Section_3_Text),
+          variations_and_alternatives: sanitizeContent(row.Variations_and_Alternatives),
+          applied_examples: sanitizeContent(row.Applied_Examples),
+          interactive_exercises: sanitizeContent(row.Interactive_Exercises),
+          troubleshooting_and_common_mistakes: sanitizeContent(row.Troubleshooting_and_Common_Mistakes),
+          advanced_tips_and_optimisation: sanitizeContent(row.Advanced_Tips_and_Optimisation),
           prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
           prompt_1_text: sanitizeContent(row.Prompt_1_Text),
-          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
           prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
           prompt_2_text: sanitizeContent(row.Prompt_2_Text),
-          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
           prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
           prompt_3_text: sanitizeContent(row.Prompt_3_Text),
-          faq_q1: sanitizeContent(row.FAQ_Q1),
-          faq_a1: sanitizeContent(row.FAQ_A1),
-          faq_q2: sanitizeContent(row.FAQ_Q2),
-          faq_a2: sanitizeContent(row.FAQ_A2),
-          faq_q3: sanitizeContent(row.FAQ_Q3),
-          faq_a3: sanitizeContent(row.FAQ_A3),
-          image_prompt: sanitizeContent(row.Image_Prompt),
-          closing_cta: sanitizeContent(row.Closing_CTA),
+          recommended_tools_for_this_role: sanitizeContent(row.Recommended_Tools_For_This_Role),
+          further_reading: sanitizeContent(row.Further_Reading),
+          closing_encouragement: sanitizeContent(row.Closing_Encouragement),
           created_by: user.id,
         };
 
@@ -1255,7 +1359,7 @@ const GuidesImport = () => {
 
     try {
       const text = await file.text();
-      const rows = parseCSV(text);
+      const rows = parseRoleGuideCSV(text);
 
       if (rows.length === 0) {
         toast.error("No data found in CSV file");
@@ -1270,12 +1374,15 @@ const GuidesImport = () => {
         normalizedDetected[normalizeHeader(f)] = f;
       });
       
-      const missingFields = EXPECTED_FIELDS.filter((field) => {
+      const missingFields = ROLE_GUIDE_FIELDS.filter((field) => {
         const normalizedExpected = normalizeHeader(field);
         return !(normalizedExpected in normalizedDetected || field in firstRow);
       });
 
       if (missingFields.length > 0) {
+        console.log("Expected role guide fields:", ROLE_GUIDE_FIELDS);
+        console.log("Detected fields:", detectedFields);
+        console.log("Missing fields:", missingFields);
         toast.error(
           `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
           { duration: 8000 }
@@ -1327,7 +1434,7 @@ const GuidesImport = () => {
           guide_category: 'Role Guide',
           level: row.Level,
           primary_platform: mappedPlatform,
-          audience_role: sanitizeContent(row.Audience_Role),
+          role: sanitizeContent(row.Role),
           geo: sanitizeContent(row.Geo),
           excerpt: sanitizeContent(row.Excerpt),
           seo_title: sanitizeContent(row.SEO_Title),
@@ -1340,30 +1447,30 @@ const GuidesImport = () => {
           tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
           tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
           perfect_for: sanitizeContent(row.Perfect_For),
-          body_intro: sanitizeContent(row.Body_Intro),
-          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
-          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
-          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
-          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
-          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
-          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
-          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          context_and_background: sanitizeContent(row.Context_and_Background),
+          learning_objectives: sanitizeContent(row.Learning_Objectives),
+          role_challenges_overview: sanitizeContent(row.Role_Challenges_Overview),
+          how_ai_helps_this_role: sanitizeContent(row.How_AI_Helps_This_Role),
+          step_by_step_section_1_heading: sanitizeContent(row.Step_by_Step_Section_1_Heading),
+          step_by_step_section_1_text: sanitizeContent(row.Step_by_Step_Section_1_Text),
+          step_by_step_section_2_heading: sanitizeContent(row.Step_by_Step_Section_2_Heading),
+          step_by_step_section_2_text: sanitizeContent(row.Step_by_Step_Section_2_Text),
+          step_by_step_section_3_heading: sanitizeContent(row.Step_by_Step_Section_3_Heading),
+          step_by_step_section_3_text: sanitizeContent(row.Step_by_Step_Section_3_Text),
+          variations_and_alternatives: sanitizeContent(row.Variations_and_Alternatives),
+          applied_examples: sanitizeContent(row.Applied_Examples),
+          interactive_exercises: sanitizeContent(row.Interactive_Exercises),
+          troubleshooting_and_common_mistakes: sanitizeContent(row.Troubleshooting_and_Common_Mistakes),
+          advanced_tips_and_optimisation: sanitizeContent(row.Advanced_Tips_and_Optimisation),
           prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
           prompt_1_text: sanitizeContent(row.Prompt_1_Text),
-          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
           prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
           prompt_2_text: sanitizeContent(row.Prompt_2_Text),
-          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
           prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
           prompt_3_text: sanitizeContent(row.Prompt_3_Text),
-          faq_q1: sanitizeContent(row.FAQ_Q1),
-          faq_a1: sanitizeContent(row.FAQ_A1),
-          faq_q2: sanitizeContent(row.FAQ_Q2),
-          faq_a2: sanitizeContent(row.FAQ_A2),
-          faq_q3: sanitizeContent(row.FAQ_Q3),
-          faq_a3: sanitizeContent(row.FAQ_A3),
-          image_prompt: sanitizeContent(row.Image_Prompt),
-          closing_cta: sanitizeContent(row.Closing_CTA),
+          recommended_tools_for_this_role: sanitizeContent(row.Recommended_Tools_For_This_Role),
+          further_reading: sanitizeContent(row.Further_Reading),
+          closing_encouragement: sanitizeContent(row.Closing_Encouragement),
           created_by: user.id,
         };
 
@@ -1448,7 +1555,7 @@ const GuidesImport = () => {
 
     try {
       const text = await file.text();
-      const rows = parseCSV(text);
+      const rows = parseRoleGuideCSV(text);
 
       if (rows.length === 0) {
         toast.error("No data found in CSV file");
@@ -1463,12 +1570,15 @@ const GuidesImport = () => {
         normalizedDetected[normalizeHeader(f)] = f;
       });
       
-      const missingFields = EXPECTED_FIELDS.filter((field) => {
+      const missingFields = ROLE_GUIDE_FIELDS.filter((field) => {
         const normalizedExpected = normalizeHeader(field);
         return !(normalizedExpected in normalizedDetected || field in firstRow);
       });
 
       if (missingFields.length > 0) {
+        console.log("Expected role guide fields:", ROLE_GUIDE_FIELDS);
+        console.log("Detected fields:", detectedFields);
+        console.log("Missing fields:", missingFields);
         toast.error(
           `Missing ${missingFields.length} required fields: ${missingFields.slice(0, 3).join(", ")}${missingFields.length > 3 ? '...' : ''}`,
           { duration: 8000 }
@@ -1520,7 +1630,7 @@ const GuidesImport = () => {
           guide_category: 'Prompt Pack',
           level: row.Level,
           primary_platform: mappedPlatform,
-          audience_role: sanitizeContent(row.Audience_Role),
+          role: sanitizeContent(row.Role),
           geo: sanitizeContent(row.Geo),
           excerpt: sanitizeContent(row.Excerpt),
           seo_title: sanitizeContent(row.SEO_Title),
@@ -1533,30 +1643,30 @@ const GuidesImport = () => {
           tldr_bullet_2: sanitizeContent(row.TLDR_Bullet_2),
           tldr_bullet_3: sanitizeContent(row.TLDR_Bullet_3),
           perfect_for: sanitizeContent(row.Perfect_For),
-          body_intro: sanitizeContent(row.Body_Intro),
-          body_section_1_heading: sanitizeContent(row.Body_Section_1_Heading),
-          body_section_1_text: sanitizeContent(row.Body_Section_1_Text),
-          body_section_2_heading: sanitizeContent(row.Body_Section_2_Heading),
-          body_section_2_text: sanitizeContent(row.Body_Section_2_Text),
-          body_section_3_heading: sanitizeContent(row.Body_Section_3_Heading),
-          body_section_3_text: sanitizeContent(row.Body_Section_3_Text),
-          prompt_1_label: sanitizeContent(row.Prompt_1_Label),
+          context_and_background: sanitizeContent(row.Context_and_Background),
+          learning_objectives: sanitizeContent(row.Learning_Objectives),
+          role_challenges_overview: sanitizeContent(row.Role_Challenges_Overview),
+          how_ai_helps_this_role: sanitizeContent(row.How_AI_Helps_This_Role),
+          step_by_step_section_1_heading: sanitizeContent(row.Step_by_Step_Section_1_Heading),
+          step_by_step_section_1_text: sanitizeContent(row.Step_by_Step_Section_1_Text),
+          step_by_step_section_2_heading: sanitizeContent(row.Step_by_Step_Section_2_Heading),
+          step_by_step_section_2_text: sanitizeContent(row.Step_by_Step_Section_2_Text),
+          step_by_step_section_3_heading: sanitizeContent(row.Step_by_Step_Section_3_Heading),
+          step_by_step_section_3_text: sanitizeContent(row.Step_by_Step_Section_3_Text),
+          variations_and_alternatives: sanitizeContent(row.Variations_and_Alternatives),
+          applied_examples: sanitizeContent(row.Applied_Examples),
+          interactive_exercises: sanitizeContent(row.Interactive_Exercises),
+          troubleshooting_and_common_mistakes: sanitizeContent(row.Troubleshooting_and_Common_Mistakes),
+          advanced_tips_and_optimisation: sanitizeContent(row.Advanced_Tips_and_Optimisation),
           prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
           prompt_1_text: sanitizeContent(row.Prompt_1_Text),
-          prompt_2_label: sanitizeContent(row.Prompt_2_Label),
           prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
           prompt_2_text: sanitizeContent(row.Prompt_2_Text),
-          prompt_3_label: sanitizeContent(row.Prompt_3_Label),
           prompt_3_headline: sanitizeContent(row.Prompt_3_Headline),
           prompt_3_text: sanitizeContent(row.Prompt_3_Text),
-          faq_q1: sanitizeContent(row.FAQ_Q1),
-          faq_a1: sanitizeContent(row.FAQ_A1),
-          faq_q2: sanitizeContent(row.FAQ_Q2),
-          faq_a2: sanitizeContent(row.FAQ_A2),
-          faq_q3: sanitizeContent(row.FAQ_Q3),
-          faq_a3: sanitizeContent(row.FAQ_A3),
-          image_prompt: sanitizeContent(row.Image_Prompt),
-          closing_cta: sanitizeContent(row.Closing_CTA),
+          recommended_tools_for_this_role: sanitizeContent(row.Recommended_Tools_For_This_Role),
+          further_reading: sanitizeContent(row.Further_Reading),
+          closing_encouragement: sanitizeContent(row.Closing_Encouragement),
           created_by: user.id,
         };
 
