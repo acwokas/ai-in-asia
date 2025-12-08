@@ -639,10 +639,16 @@ const Index = () => {
                 </>
               ) : (() => {
                 const trendingIds = trendingArticles?.map((a: any) => a.id) || [];
+                // Get the IDs of the 2 medium articles shown in the center column
+                const centerMediumArticleIds = latestArticles?.filter((a: any) => 
+                  a.slug && a.id !== featuredArticle?.id
+                ).slice(0, 2).map((a: any) => a.id) || [];
+                
                 const filteredLatest = latestArticles?.filter((article: any) => 
                   article.slug && 
                   article.id !== featuredArticle?.id &&
-                  !trendingIds.includes(article.id)
+                  !trendingIds.includes(article.id) &&
+                  !centerMediumArticleIds.includes(article.id)
                 ) || [];
                 const rightColumnCount = Math.min(6, filteredLatest.length);
                 
