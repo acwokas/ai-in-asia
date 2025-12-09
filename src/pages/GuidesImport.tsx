@@ -107,6 +107,10 @@ const TUTORIAL_FIELDS = [
   "Troubleshooting_and_Advanced_Tips",
   "Final_Notes",
   "Closing_Encouragement",
+  "Prompt_1_Headline",
+  "Prompt_1_Text",
+  "Prompt_2_Headline",
+  "Prompt_2_Text",
 ];
 
 // Role Guide / Platform Guide / Prompt Pack CSV schema (shared structure)
@@ -981,6 +985,11 @@ const GuidesImport = () => {
           // Map Final_Notes to body_intro (main content area)
           body_intro: sanitizeContent(row.Final_Notes),
           closing_encouragement: sanitizeContent(row.Closing_Encouragement),
+          // Prompt sections for tutorials
+          prompt_1_headline: sanitizeContent(row.Prompt_1_Headline),
+          prompt_1_text: sanitizeContent(row.Prompt_1_Text),
+          prompt_2_headline: sanitizeContent(row.Prompt_2_Headline),
+          prompt_2_text: sanitizeContent(row.Prompt_2_Text),
           created_by: user.id,
         };
 
