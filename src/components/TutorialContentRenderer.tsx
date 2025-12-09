@@ -93,17 +93,22 @@ const shouldShowAsSteps = (sectionHeading: string | undefined): boolean => {
          heading.includes('explanation');
 };
 
-// Format step content with numbered badges - preserves double line breaks
+// Format step content with numbered badges - handles "Step X:" patterns in text
 const formatStepContent = (text: string) => {
-  // Split by numbered patterns like "1.", "Step 1:", etc.
-  const stepPattern = /(?:^|\n)(?:Step\s+)?(\d+)[.:]\s*/gi;
-  const parts = text.split(stepPattern);
+  // Match "Step X:" patterns (with optional space variations)
+  const stepPattern = /Step\s+(\d+)[.:]\s*/gi;
   
-  if (parts.length <= 1) {
-    // No numbered steps found, render as paragraphs with double line breaks
+  // Check if content has step patterns
+  const hasSteps = stepPattern.test(text);
+  stepPattern.lastIndex = 0; // Reset regex
+  
+  if (!hasSteps) {
+    // No steps found, render as paragraphs
+    // Split by double newlines OR periods followed by space and capital letter for paragraph breaks
+    const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
     return (
       <div className="space-y-6">
-        {text.split(/\n\n+/).map((paragraph, i) => (
+        {paragraphs.map((paragraph, i) => (
           <p key={i} className="text-foreground/85 leading-relaxed">
             {paragraph.trim()}
           </p>
@@ -112,25 +117,30 @@ const formatStepContent = (text: string) => {
     );
   }
   
+  // Split by "Step X:" pattern, keeping the step numbers
+  const parts = text.split(/Step\s+(\d+)[.:]\s*/gi);
+  
   // Extract steps
   const steps: { number: string; content: string }[] = [];
+  
+  // First part is leading content (before first step)
+  const leadingContent = parts[0]?.trim();
+  
+  // Remaining parts alternate: step number, content, step number, content...
   for (let i = 1; i < parts.length; i += 2) {
     const number = parts[i];
     const content = parts[i + 1]?.trim() || '';
-    if (content) {
+    if (number && content) {
       steps.push({ number, content });
     }
   }
-  
-  // Leading content before first step
-  const leadingContent = parts[0]?.trim();
   
   return (
     <div className="space-y-6">
       {leadingContent && (
         <p className="text-foreground/85 leading-relaxed mb-4">{leadingContent}</p>
       )}
-      <div className="space-y-4">
+      <div className="space-y-5">
         {steps.map((step, i) => (
           <div key={i} className="flex items-start gap-4">
             <Badge 
@@ -140,11 +150,9 @@ const formatStepContent = (text: string) => {
               {step.number}
             </Badge>
             <div className="flex-1 pt-0.5">
-              {step.content.split(/\n\n+/).map((paragraph, pi) => (
-                <p key={pi} className={`text-foreground/85 leading-relaxed ${pi > 0 ? 'mt-4' : ''}`}>
-                  {paragraph.trim()}
-                </p>
-              ))}
+              <p className="text-foreground/85 leading-relaxed">
+                {step.content}
+              </p>
             </div>
           </div>
         ))}
@@ -153,9 +161,30 @@ const formatStepContent = (text: string) => {
   );
 };
 
-// Format prose content (non-step sections) - preserves double line breaks
+// Format prose content (non-step sections) - creates paragraph breaks for readability
 const formatProseContent = (text: string) => {
-  const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  // First try double newlines
+  let paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  
+  // If no double newlines found and text is long, create paragraph breaks
+  // Break on sentences that end with period followed by capital letter patterns
+  if (paragraphs.length === 1 && text.length > 400) {
+    // Split into sentences, then group every 2-3 sentences into paragraphs
+    const sentences = text.split(/(?<=\.)\s+(?=[A-Z])/).filter(s => s.trim());
+    paragraphs = [];
+    
+    for (let i = 0; i < sentences.length; i += 3) {
+      const chunk = sentences.slice(i, i + 3).join(' ');
+      if (chunk.trim()) {
+        paragraphs.push(chunk.trim());
+      }
+    }
+  }
+  
+  // If still just one paragraph, just render it
+  if (paragraphs.length === 0) {
+    paragraphs = [text];
+  }
   
   return (
     <div className="space-y-6">
