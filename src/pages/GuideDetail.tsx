@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen } from "lucide-react";
+import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen, FileText, Target, Lightbulb, RefreshCw, PenTool, Wrench, Pin, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,16 +115,51 @@ const formatStepContent = (text: string): string[] => {
   return sentences.map(s => s.trim() + (s.endsWith('.') ? '' : '.'));
 };
 
-// Get section icon based on heading
+// Get section icon based on heading - returns Lucide icon component
 const getSectionIcon = (heading: string) => {
   const headingLower = heading.toLowerCase();
-  if (headingLower.includes('context') || headingLower.includes('background')) return '📖';
-  if (headingLower.includes('step') || headingLower.includes('expanded')) return '🎯';
-  if (headingLower.includes('explanation') || headingLower.includes('deeper')) return '💡';
-  if (headingLower.includes('variation') || headingLower.includes('alternative')) return '🔄';
-  if (headingLower.includes('interactive') || headingLower.includes('exercise')) return '✍️';
-  if (headingLower.includes('troubleshoot') || headingLower.includes('tip')) return '🔧';
-  return '📌';
+  if (headingLower.includes('context') || headingLower.includes('background')) return FileText;
+  if (headingLower.includes('step') || headingLower.includes('expanded')) return Target;
+  if (headingLower.includes('explanation') || headingLower.includes('deeper')) return Lightbulb;
+  if (headingLower.includes('variation') || headingLower.includes('alternative')) return RefreshCw;
+  if (headingLower.includes('interactive') || headingLower.includes('exercise')) return PenTool;
+  if (headingLower.includes('troubleshoot') || headingLower.includes('tip')) return Wrench;
+  return Pin;
+};
+
+// Format prose content with paragraph breaks for readability
+const formatProseContent = (text: string): string[] => {
+  // Split on double newlines or periods followed by sentences starting with capital letters
+  const paragraphs = text
+    .split(/\n\n+/)
+    .flatMap(p => {
+      // If paragraph is very long (>400 chars), try to split it further
+      if (p.length > 400) {
+        // Split on sentence boundaries where a new thought begins
+        const sentences = p.split(/(?<=[.!?])\s+(?=[A-Z])/);
+        const chunks: string[] = [];
+        let currentChunk = '';
+        
+        sentences.forEach(sentence => {
+          if (currentChunk.length + sentence.length > 350 && currentChunk.length > 0) {
+            chunks.push(currentChunk.trim());
+            currentChunk = sentence;
+          } else {
+            currentChunk += (currentChunk ? ' ' : '') + sentence;
+          }
+        });
+        
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+        }
+        
+        return chunks.length > 0 ? chunks : [p];
+      }
+      return [p];
+    })
+    .filter(p => p.trim().length > 0);
+  
+  return paragraphs;
 };
 
 const GuideDetail = () => {
@@ -397,7 +432,8 @@ const GuideDetail = () => {
                     <div className="mb-8 flex flex-wrap gap-4">
                       {estimatedTime && (
                         <Badge variant="outline" className="text-sm">
-                          ⏱️ {estimatedTime}
+                          <Clock className="mr-1 h-3 w-3" />
+                          {estimatedTime}
                         </Badge>
                       )}
                       {learningOutcomes && (
@@ -450,10 +486,11 @@ const GuideDetail = () => {
                   {/* Extended Tutorial Sections - World Class Design */}
                   {extendedSections.length > 0 && (
                     <section className="mb-12 space-y-8">
-                      {extendedSections.map((section, i) => {
+                  {extendedSections.map((section, i) => {
                         const isStepSection = shouldShowAsSteps(section.heading, section.text);
                         const items = isStepSection ? formatStepContent(section.text) : [];
-                        const sectionIcon = getSectionIcon(section.heading);
+                        const SectionIcon = getSectionIcon(section.heading);
+                        const paragraphs = !isStepSection ? formatProseContent(section.text) : [];
                         
                         return (
                           <div 
@@ -462,7 +499,9 @@ const GuideDetail = () => {
                           >
                             {/* Section Header */}
                             <div className="flex items-center gap-3 mb-6">
-                              <span className="text-2xl">{sectionIcon}</span>
+                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <SectionIcon className="h-5 w-5 text-primary" />
+                              </div>
                               <h2 className="text-2xl font-bold tracking-tight text-foreground">
                                 {section.heading}
                               </h2>
@@ -482,11 +521,13 @@ const GuideDetail = () => {
                                 ))}
                               </div>
                             ) : (
-                              // Flowing prose for context/background sections
-                              <div className="prose prose-slate dark:prose-invert max-w-none">
-                                <p className="text-foreground/85 leading-relaxed text-[1.05rem]">
-                                  {section.text}
-                                </p>
+                              // Flowing prose with paragraph breaks for better readability
+                              <div className="space-y-4">
+                                {paragraphs.map((paragraph, pIdx) => (
+                                  <p key={pIdx} className="text-foreground/85 leading-relaxed text-[1.05rem]">
+                                    {paragraph}
+                                  </p>
+                                ))}
                               </div>
                             )}
                             
