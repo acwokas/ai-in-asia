@@ -320,12 +320,117 @@ const GuideDetail = () => {
 
   const tags = guide.tags ? guide.tags.split(",") : [];
 
+  // Build structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": isTutorial ? "HowTo" : "Article",
+    "headline": guide.title,
+    "description": guide.meta_description || guide.excerpt || '',
+    "author": {
+      "@type": "Organization",
+      "name": "AIinASIA",
+      "url": "https://aiinasia.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "AIinASIA",
+      "url": "https://aiinasia.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://aiinasia.com/logos/aiinasia-logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://aiinasia.com/guides/${guide.slug}`
+    },
+    "datePublished": guide.created_at,
+    "dateModified": guide.updated_at,
+    ...(isTutorial && {
+      "step": tutorialSteps.map((step, idx) => ({
+        "@type": "HowToStep",
+        "position": idx + 1,
+        "name": step.heading,
+        "text": step.text
+      }))
+    }),
+    ...(tags.length > 0 && {
+      "keywords": tags.join(", ")
+    }),
+    ...(guide.primary_platform && {
+      "about": {
+        "@type": "SoftwareApplication",
+        "name": guide.primary_platform
+      }
+    })
+  };
+
+  // FAQ structured data if FAQs exist
+  const faqStructuredData = faqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  } : null;
+
+  const pageTitle = guide.seo_title || guide.meta_title || guide.title;
+  const pageDescription = guide.meta_description || guide.excerpt || `Learn ${guide.title} with our comprehensive ${guide.guide_category.toLowerCase()} for ${guide.level.toLowerCase()} users.`;
+  const canonicalUrl = `https://aiinasia.com/guides/${guide.slug}`;
+
   return (
     <>
       <Helmet>
-        <title>{guide.seo_title || guide.title} | AIinASIA</title>
-        {guide.meta_description && (
-          <meta name="description" content={guide.meta_description} />
+        {/* Primary Meta Tags */}
+        <title>{pageTitle} | AIinASIA</title>
+        <meta name="title" content={`${pageTitle} | AIinASIA`} />
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* Keywords */}
+        {guide.focus_keyphrase && (
+          <meta name="keywords" content={`${guide.focus_keyphrase}${guide.keyphrase_synonyms ? `, ${guide.keyphrase_synonyms}` : ''}${tags.length > 0 ? `, ${tags.join(', ')}` : ''}`} />
+        )}
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:site_name" content="AIinASIA" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="article:published_time" content={guide.created_at} />
+        <meta property="article:modified_time" content={guide.updated_at} />
+        <meta property="article:section" content={guide.guide_category} />
+        {tags.map((tag, i) => (
+          <meta key={i} property="article:tag" content={tag.trim()} />
+        ))}
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:site" content="@aiaborhood" />
+        
+        {/* Additional SEO */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="author" content="AIinASIA" />
+        <meta name="geo.region" content={guide.geo || 'APAC'} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        {faqStructuredData && (
+          <script type="application/ld+json">
+            {JSON.stringify(faqStructuredData)}
+          </script>
         )}
       </Helmet>
 
