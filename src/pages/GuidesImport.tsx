@@ -948,13 +948,21 @@ const GuidesImport = () => {
           mappedPlatform = platformMapping[lowerPlatform] || 'Generic';
         }
 
+        // Normalize level to valid enum values
+        const validLevels = ['Beginner', 'Intermediate', 'Advanced', 'Mixed'];
+        let normalizedLevel = 'Beginner';
+        const rawLevel = (row.Level || '').trim();
+        if (validLevels.some(v => v.toLowerCase() === rawLevel.toLowerCase())) {
+          normalizedLevel = validLevels.find(v => v.toLowerCase() === rawLevel.toLowerCase()) || 'Beginner';
+        }
+
         // Build tutorial data - map to ai_guides table structure
         // Use the exact CSV fields provided by user
         const tutorialData = {
           title: row.Title,
           slug: row.Slug,
           guide_category: 'Tutorial', // Always 'Tutorial' for tutorial imports (CSV field is ignored)
-          level: row.Level || 'Beginner',
+          level: normalizedLevel,
           primary_platform: mappedPlatform,
           geo: sanitizeContent(row.Geo),
           excerpt: sanitizeContent(row.Excerpt),
