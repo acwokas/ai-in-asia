@@ -953,7 +953,7 @@ const GuidesImport = () => {
         const tutorialData = {
           title: row.Title,
           slug: row.Slug,
-          guide_category: row.Tutorial_Category || 'Tutorial',
+          guide_category: 'Tutorial', // Always 'Tutorial' for tutorial imports (CSV field is ignored)
           level: row.Level || 'Beginner',
           primary_platform: mappedPlatform,
           geo: sanitizeContent(row.Geo),
