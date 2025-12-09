@@ -79,34 +79,52 @@ const hasUnactionableContent = (text: string | null | undefined, slug: string | 
   );
 };
 
-// Format step-based content as a list (e.g., "Sub-step A: ... Sub-step B: ...")
-const formatStepContent = (text: string): { isSteps: boolean; items: string[] } => {
-  // Check for patterns like "Sub-step A:", "Step 1:", "1.", "•", etc.
-  const stepPatterns = [
-    /Sub-step\s+[A-Z]:/gi,
-    /Step\s+\d+:/gi,
-    /^\d+\.\s/gm,
+// Determine if a section should use numbered steps based on heading AND content
+const shouldShowAsSteps = (heading: string, text: string): boolean => {
+  const stepHeadings = ['expanded steps', 'step-by-step', 'how to', 'instructions', 'process'];
+  const headingLower = heading.toLowerCase();
+  
+  // Only show as steps if heading explicitly indicates steps
+  if (stepHeadings.some(h => headingLower.includes(h))) {
+    return true;
+  }
+  
+  // Check for explicit step patterns in content
+  const explicitStepPatterns = [
+    /^Step\s+\d+:/gm,
+    /^Sub-step\s+[A-Z]:/gm,
   ];
   
-  const hasStepPattern = stepPatterns.some(pattern => pattern.test(text));
+  return explicitStepPatterns.some(pattern => pattern.test(text));
+};
+
+// Format step-based content as a list
+const formatStepContent = (text: string): string[] => {
+  // Split on explicit step markers
+  const items = text
+    .split(/(?=Step\s+\d+:|Sub-step\s+[A-Z]:)/gi)
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
   
-  if (hasStepPattern) {
-    // Split on step markers
-    const items = text
-      .split(/(?=Sub-step\s+[A-Z]:|Step\s+\d+:)/gi)
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
-    
-    return { isSteps: true, items };
+  if (items.length > 1) {
+    return items;
   }
   
-  // Also check for sentence-separated steps (sentences starting with action verbs)
+  // Fall back to sentence splitting for step content
   const sentences = text.split(/\.\s+/).filter(s => s.trim().length > 0);
-  if (sentences.length >= 3) {
-    return { isSteps: true, items: sentences.map(s => s.trim() + (s.endsWith('.') ? '' : '.')) };
-  }
-  
-  return { isSteps: false, items: [text] };
+  return sentences.map(s => s.trim() + (s.endsWith('.') ? '' : '.'));
+};
+
+// Get section icon based on heading
+const getSectionIcon = (heading: string) => {
+  const headingLower = heading.toLowerCase();
+  if (headingLower.includes('context') || headingLower.includes('background')) return '📖';
+  if (headingLower.includes('step') || headingLower.includes('expanded')) return '🎯';
+  if (headingLower.includes('explanation') || headingLower.includes('deeper')) return '💡';
+  if (headingLower.includes('variation') || headingLower.includes('alternative')) return '🔄';
+  if (headingLower.includes('interactive') || headingLower.includes('exercise')) return '✍️';
+  if (headingLower.includes('troubleshoot') || headingLower.includes('tip')) return '🔧';
+  return '📌';
 };
 
 const GuideDetail = () => {
@@ -429,46 +447,63 @@ const GuideDetail = () => {
                     </section>
                   )}
 
-                  {/* Extended Tutorial Sections */}
+                  {/* Extended Tutorial Sections - World Class Design */}
                   {extendedSections.length > 0 && (
-                    <section className="mb-8">
-                      <div className="space-y-6">
-                        {extendedSections.map((section, i) => {
-                          const formattedContent = formatStepContent(section.text);
-                          
-                          return (
-                            <Card key={i}>
-                              <CardHeader className="pb-2">
-                                <CardTitle className="text-lg">{section.heading}</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                {formattedContent.isSteps ? (
-                                  <div className="space-y-4">
-                                    {formattedContent.items.map((item, idx) => (
-                                      <div key={idx} className="flex items-start gap-3">
-                                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">
-                                          {idx + 1}
-                                        </span>
-                                        <p className="text-foreground pt-0.5 flex-1">{item}</p>
-                                      </div>
-                                    ))}
+                    <section className="mb-12 space-y-8">
+                      {extendedSections.map((section, i) => {
+                        const isStepSection = shouldShowAsSteps(section.heading, section.text);
+                        const items = isStepSection ? formatStepContent(section.text) : [];
+                        const sectionIcon = getSectionIcon(section.heading);
+                        
+                        return (
+                          <div 
+                            key={i} 
+                            className="relative"
+                          >
+                            {/* Section Header */}
+                            <div className="flex items-center gap-3 mb-6">
+                              <span className="text-2xl">{sectionIcon}</span>
+                              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                                {section.heading}
+                              </h2>
+                            </div>
+                            
+                            {/* Content */}
+                            {isStepSection ? (
+                              // Numbered steps for step-based content
+                              <div className="space-y-4 pl-2">
+                                {items.map((item, idx) => (
+                                  <div key={idx} className="flex items-start gap-4 group">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-sm font-bold flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                      {idx + 1}
+                                    </div>
+                                    <p className="text-foreground/90 leading-relaxed pt-1 flex-1">{item}</p>
                                   </div>
-                                ) : (
-                                  <div className="whitespace-pre-line text-foreground">
-                                    {section.text}
-                                  </div>
-                                )}
-                                {/* Show seasoning matrix download if this section mentions it */}
-                                {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
-                                  <div className="mt-4 pt-4 border-t border-border">
-                                    <SeasoningMatrixDownload />
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
+                                ))}
+                              </div>
+                            ) : (
+                              // Flowing prose for context/background sections
+                              <div className="prose prose-slate dark:prose-invert max-w-none">
+                                <p className="text-foreground/85 leading-relaxed text-[1.05rem]">
+                                  {section.text}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {/* Show seasoning matrix download if this section mentions it */}
+                            {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
+                              <div className="mt-6 pt-6 border-t border-border">
+                                <SeasoningMatrixDownload />
+                              </div>
+                            )}
+                            
+                            {/* Subtle divider between sections */}
+                            {i < extendedSections.length - 1 && (
+                              <div className="mt-8 border-b border-border/50" />
+                            )}
+                          </div>
+                        );
+                      })}
                     </section>
                   )}
                 </>
