@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen, FileText, Target, Lightbulb, RefreshCw, PenTool, Wrench, Pin, Clock } from "lucide-react";
+import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen, FileText, Target, Lightbulb, RefreshCw, PenTool, Wrench, Pin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GuideComments from "@/components/GuideComments";
 import SeasoningMatrixDownload from "@/components/SeasoningMatrixDownload";
+import TutorialContentRenderer from "@/components/TutorialContentRenderer";
 
 // Sanitize corrupted content from CSV imports
 const sanitizeContent = (text: string | null | undefined): string => {
@@ -79,42 +80,6 @@ const hasUnactionableContent = (text: string | null | undefined, slug: string | 
   );
 };
 
-// Determine if a section should use numbered steps based on heading AND content
-const shouldShowAsSteps = (heading: string, text: string): boolean => {
-  const stepHeadings = ['expanded steps', 'step-by-step', 'how to', 'instructions', 'process'];
-  const headingLower = heading.toLowerCase();
-  
-  // Only show as steps if heading explicitly indicates steps
-  if (stepHeadings.some(h => headingLower.includes(h))) {
-    return true;
-  }
-  
-  // Check for explicit step patterns in content
-  const explicitStepPatterns = [
-    /^Step\s+\d+:/gm,
-    /^Sub-step\s+[A-Z]:/gm,
-  ];
-  
-  return explicitStepPatterns.some(pattern => pattern.test(text));
-};
-
-// Format step-based content as a list
-const formatStepContent = (text: string): string[] => {
-  // Split on explicit step markers
-  const items = text
-    .split(/(?=Step\s+\d+:|Sub-step\s+[A-Z]:)/gi)
-    .map(item => item.trim())
-    .filter(item => item.length > 0);
-  
-  if (items.length > 1) {
-    return items;
-  }
-  
-  // Fall back to sentence splitting for step content
-  const sentences = text.split(/\.\s+/).filter(s => s.trim().length > 0);
-  return sentences.map(s => s.trim() + (s.endsWith('.') ? '' : '.'));
-};
-
 // Get section icon based on heading - returns Lucide icon component
 const getSectionIcon = (heading: string) => {
   const headingLower = heading.toLowerCase();
@@ -124,42 +89,8 @@ const getSectionIcon = (heading: string) => {
   if (headingLower.includes('variation') || headingLower.includes('alternative')) return RefreshCw;
   if (headingLower.includes('interactive') || headingLower.includes('exercise')) return PenTool;
   if (headingLower.includes('troubleshoot') || headingLower.includes('tip')) return Wrench;
+  if (headingLower.includes('final') || headingLower.includes('note')) return FileText;
   return Pin;
-};
-
-// Format prose content with paragraph breaks for readability
-const formatProseContent = (text: string): string[] => {
-  // Split on double newlines or periods followed by sentences starting with capital letters
-  const paragraphs = text
-    .split(/\n\n+/)
-    .flatMap(p => {
-      // If paragraph is very long (>400 chars), try to split it further
-      if (p.length > 400) {
-        // Split on sentence boundaries where a new thought begins
-        const sentences = p.split(/(?<=[.!?])\s+(?=[A-Z])/);
-        const chunks: string[] = [];
-        let currentChunk = '';
-        
-        sentences.forEach(sentence => {
-          if (currentChunk.length + sentence.length > 350 && currentChunk.length > 0) {
-            chunks.push(currentChunk.trim());
-            currentChunk = sentence;
-          } else {
-            currentChunk += (currentChunk ? ' ' : '') + sentence;
-          }
-        });
-        
-        if (currentChunk.trim()) {
-          chunks.push(currentChunk.trim());
-        }
-        
-        return chunks.length > 0 ? chunks : [p];
-      }
-      return [p];
-    })
-    .filter(p => p.trim().length > 0);
-  
-  return paragraphs;
 };
 
 const GuideDetail = () => {
@@ -279,7 +210,7 @@ const GuideDetail = () => {
     { heading: sanitizeContent(guide.body_section_3_heading), text: sanitizeContent(guide.body_section_3_text) },
   ].filter((s) => s.heading && s.text);
 
-  // Tutorial extended content sections
+  // Tutorial extended content sections - only render fields with content
   // Filter out sections that reference non-existent downloads/templates
   const guideData = guide as Record<string, string | null>;
   const extendedSections = isTutorial ? [
@@ -291,9 +222,9 @@ const GuideDetail = () => {
     { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips, hasSeasoningMatrix: hasSeasoningMatrixContent(guideData.troubleshooting_and_advanced_tips) },
   ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
 
-  // No longer using these fields for tutorials - prompts now have proper headline/text structure
-  const learningOutcomes = null;
-  const estimatedTime = null;
+  // Final Notes and Closing Encouragement for tutorials (rendered after extended sections)
+  const finalNotes = isTutorial ? sanitizeContent(guideData.body_intro) : null; // body_intro stores Final_Notes from CSV
+  const closingEncouragement = isTutorial ? sanitizeContent(guideData.closing_encouragement) : null;
 
   const tldrBullets = [
     guide.tldr_bullet_1,
@@ -515,23 +446,6 @@ const GuideDetail = () => {
 
               {isTutorial ? (
                 <>
-                  {/* Tutorial metadata */}
-                  {(estimatedTime || learningOutcomes) && (
-                    <div className="mb-8 flex flex-wrap gap-4">
-                      {estimatedTime && (
-                        <Badge variant="outline" className="text-sm">
-                          <Clock className="mr-1 h-3 w-3" />
-                          {estimatedTime}
-                        </Badge>
-                      )}
-                      {learningOutcomes && (
-                        <p className="text-sm text-muted-foreground">
-                          <strong>You'll learn:</strong> {learningOutcomes}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
                   {/* Tutorial Prompts Section */}
                   {tutorialPrompts.length > 0 && (
                     <section className="mb-8">
@@ -579,14 +493,11 @@ const GuideDetail = () => {
                     </section>
                   )}
 
-                  {/* Extended Tutorial Sections - World Class Design */}
+                  {/* Extended Tutorial Sections - Renders inline structured elements */}
                   {extendedSections.length > 0 && (
                     <section className="mb-12 space-y-8">
-                  {extendedSections.map((section, i) => {
-                        const isStepSection = shouldShowAsSteps(section.heading, section.text);
-                        const items = isStepSection ? formatStepContent(section.text) : [];
+                      {extendedSections.map((section, i) => {
                         const SectionIcon = getSectionIcon(section.heading);
-                        const paragraphs = !isStepSection ? formatProseContent(section.text) : [];
                         
                         return (
                           <div 
@@ -603,29 +514,8 @@ const GuideDetail = () => {
                               </h2>
                             </div>
                             
-                            {/* Content */}
-                            {isStepSection ? (
-                              // Numbered steps for step-based content
-                              <div className="space-y-4 pl-2">
-                                {items.map((item, idx) => (
-                                  <div key={idx} className="flex items-start gap-4 group">
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-sm font-bold flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                      {idx + 1}
-                                    </div>
-                                    <p className="text-foreground/90 leading-relaxed pt-1 flex-1">{item}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              // Flowing prose with paragraph breaks for better readability
-                              <div className="space-y-4">
-                                {paragraphs.map((paragraph, pIdx) => (
-                                  <p key={pIdx} className="text-foreground/85 leading-relaxed text-[1.05rem]">
-                                    {paragraph}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
+                            {/* Content - Uses TutorialContentRenderer for inline structured elements */}
+                            <TutorialContentRenderer content={section.text} sectionHeading={section.heading} />
                             
                             {/* Show seasoning matrix download if this section mentions it */}
                             {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
@@ -642,6 +532,30 @@ const GuideDetail = () => {
                         );
                       })}
                     </section>
+                  )}
+
+                  {/* Final Notes Section */}
+                  {finalNotes && (
+                    <section className="mb-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                          Final Notes
+                        </h2>
+                      </div>
+                      <TutorialContentRenderer content={finalNotes} sectionHeading="Final Notes" />
+                    </section>
+                  )}
+
+                  {/* Closing Encouragement */}
+                  {closingEncouragement && (
+                    <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                      <CardContent className="py-6">
+                        <TutorialContentRenderer content={closingEncouragement} sectionHeading="Closing" />
+                      </CardContent>
+                    </Card>
                   )}
                 </>
               ) : (
