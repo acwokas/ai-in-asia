@@ -7,7 +7,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain } from "lucide-react";
+import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AdminDashboard = () => {
@@ -100,6 +100,57 @@ const AdminDashboard = () => {
       
       if (error) throw error;
       return data || [];
+    },
+    enabled: isAdmin,
+  });
+
+  // Fetch recent comments (both user and AI)
+  const { data: recentComments, isLoading: isLoadingComments } = useQuery({
+    queryKey: ["admin-recent-comments"],
+    queryFn: async () => {
+      // Fetch user comments
+      const { data: userComments, error: userError } = await supabase
+        .from("comments")
+        .select("id, content, author_name, created_at, approved, articles(title, slug)")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      
+      if (userError) throw userError;
+
+      // Fetch AI comments
+      const { data: aiComments, error: aiError } = await supabase
+        .from("ai_generated_comments")
+        .select("id, content, comment_date, ai_comment_authors(name), articles(title, slug)")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      
+      if (aiError) throw aiError;
+
+      // Combine and sort by date
+      const combined = [
+        ...(userComments || []).map((c: any) => ({
+          id: c.id,
+          content: c.content,
+          author: c.author_name || "Anonymous",
+          date: c.created_at,
+          type: "user" as const,
+          approved: c.approved,
+          articleTitle: c.articles?.title,
+          articleSlug: c.articles?.slug,
+        })),
+        ...(aiComments || []).map((c: any) => ({
+          id: c.id,
+          content: c.content,
+          author: c.ai_comment_authors?.name || "AI Author",
+          date: c.comment_date,
+          type: "ai" as const,
+          approved: true,
+          articleTitle: c.articles?.title,
+          articleSlug: c.articles?.slug,
+        })),
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+
+      return combined;
     },
     enabled: isAdmin,
   });
@@ -278,7 +329,7 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Recent Articles */}
-            <Card className="md:col-span-2 lg:col-span-3 hover:shadow-lg transition-shadow">
+            <Card className="lg:col-span-2 hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <FileText className="h-6 w-6 text-primary" />
@@ -317,6 +368,61 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Comments */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                  <CardTitle>Recent Comments</CardTitle>
+                </div>
+                <CardDescription>Latest user and AI comments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingComments ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {recentComments?.map((comment) => (
+                      <div key={`${comment.type}-${comment.id}`} className="p-3 rounded-lg border border-border hover:bg-accent transition-colors">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{comment.author}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            comment.type === "ai" 
+                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" 
+                              : comment.approved 
+                                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                          }`}>
+                            {comment.type === "ai" ? "AI" : comment.approved ? "Approved" : "Pending"}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
+                          {comment.content}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          {comment.articleSlug ? (
+                            <Link to={`/article/${comment.articleSlug}`} className="hover:text-primary truncate max-w-[180px]">
+                              {comment.articleTitle}
+                            </Link>
+                          ) : (
+                            <span>Unknown article</span>
+                          )}
+                          <span>{new Date(comment.date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {(!recentComments || recentComments.length === 0) && (
+                      <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
+                    )}
                   </div>
                 )}
               </CardContent>
