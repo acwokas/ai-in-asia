@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, Check, Wrench, FileText, Lightbulb, Target, Sparkles, Users, ListChecks, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 interface InlineBlock {
@@ -80,6 +81,91 @@ const parseListItems = (content: string): string[] => {
   return lines.map(line => 
     line.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '').trim()
   ).filter(Boolean);
+};
+
+// Check if section should render as numbered steps
+const shouldShowAsSteps = (sectionHeading: string | undefined): boolean => {
+  if (!sectionHeading) return false;
+  const heading = sectionHeading.toLowerCase();
+  return heading.includes('step') || 
+         heading.includes('expanded') || 
+         heading.includes('deeper') || 
+         heading.includes('explanation');
+};
+
+// Format step content with numbered badges - preserves double line breaks
+const formatStepContent = (text: string) => {
+  // Split by numbered patterns like "1.", "Step 1:", etc.
+  const stepPattern = /(?:^|\n)(?:Step\s+)?(\d+)[.:]\s*/gi;
+  const parts = text.split(stepPattern);
+  
+  if (parts.length <= 1) {
+    // No numbered steps found, render as paragraphs with double line breaks
+    return (
+      <div className="space-y-6">
+        {text.split(/\n\n+/).map((paragraph, i) => (
+          <p key={i} className="text-foreground/85 leading-relaxed">
+            {paragraph.trim()}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  
+  // Extract steps
+  const steps: { number: string; content: string }[] = [];
+  for (let i = 1; i < parts.length; i += 2) {
+    const number = parts[i];
+    const content = parts[i + 1]?.trim() || '';
+    if (content) {
+      steps.push({ number, content });
+    }
+  }
+  
+  // Leading content before first step
+  const leadingContent = parts[0]?.trim();
+  
+  return (
+    <div className="space-y-6">
+      {leadingContent && (
+        <p className="text-foreground/85 leading-relaxed mb-4">{leadingContent}</p>
+      )}
+      <div className="space-y-4">
+        {steps.map((step, i) => (
+          <div key={i} className="flex items-start gap-4">
+            <Badge 
+              variant="outline" 
+              className="flex-shrink-0 h-7 w-7 rounded-full p-0 flex items-center justify-center font-semibold bg-primary/10 text-primary border-primary/30"
+            >
+              {step.number}
+            </Badge>
+            <div className="flex-1 pt-0.5">
+              {step.content.split(/\n\n+/).map((paragraph, pi) => (
+                <p key={pi} className={`text-foreground/85 leading-relaxed ${pi > 0 ? 'mt-4' : ''}`}>
+                  {paragraph.trim()}
+                </p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Format prose content (non-step sections) - preserves double line breaks
+const formatProseContent = (text: string) => {
+  const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  
+  return (
+    <div className="space-y-6">
+      {paragraphs.map((paragraph, i) => (
+        <p key={i} className="text-foreground/85 leading-relaxed">
+          {paragraph.trim()}
+        </p>
+      ))}
+    </div>
+  );
 };
 
 interface CopyablePromptBlockProps {
@@ -186,17 +272,15 @@ interface TutorialContentRendererProps {
 export const TutorialContentRenderer = ({ content, sectionHeading }: TutorialContentRendererProps) => {
   const blocks = parseInlineBlocks(content);
   
-  // If no structured blocks found, render as plain text
+  // Check if this should be rendered as numbered steps based on section heading
+  const isStepsSection = shouldShowAsSteps(sectionHeading);
+  
+  // If no structured blocks found (no markdown headers), use the appropriate formatter
   if (blocks.length === 0 || (blocks.length === 1 && blocks[0].type === 'text' && !blocks[0].heading)) {
-    return (
-      <div className="space-y-4">
-        {content.split(/\n\n+/).map((paragraph, i) => (
-          <p key={i} className="text-foreground/85 leading-relaxed">
-            {paragraph.trim()}
-          </p>
-        ))}
-      </div>
-    );
+    if (isStepsSection) {
+      return formatStepContent(content);
+    }
+    return formatProseContent(content);
   }
   
   return (
@@ -207,16 +291,11 @@ export const TutorialContentRenderer = ({ content, sectionHeading }: TutorialCon
         }
         
         if (block.type === 'text' && !block.heading) {
-          // Plain text without header
-          return (
-            <div key={i} className="space-y-4">
-              {block.content.split(/\n\n+/).map((paragraph, pi) => (
-                <p key={pi} className="text-foreground/85 leading-relaxed">
-                  {paragraph.trim()}
-                </p>
-              ))}
-            </div>
-          );
+          // Plain text without header - check if it should be steps
+          if (isStepsSection) {
+            return <div key={i}>{formatStepContent(block.content)}</div>;
+          }
+          return <div key={i}>{formatProseContent(block.content)}</div>;
         }
         
         // Structured blocks (templates, tools, use-cases, tips, examples, or text with heading)
