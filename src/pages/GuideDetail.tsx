@@ -259,6 +259,12 @@ const GuideDetail = () => {
     { label: sanitizeContent(guide.prompt_3_label), headline: sanitizeContent(guide.prompt_3_headline), text: sanitizeContent(guide.prompt_3_text) },
   ].filter((p) => p.text) : [];
 
+  // Tutorial prompts - simplified structure with headline and text
+  const tutorialPrompts = isTutorial ? [
+    { headline: sanitizeContent(guide.prompt_1_headline), text: sanitizeContent(guide.prompt_1_text) },
+    { headline: sanitizeContent(guide.prompt_2_headline), text: sanitizeContent(guide.prompt_2_text) },
+  ].filter((p) => p.text) : [];
+
   // FAQs - use standard q/a mapping (database has been corrected)
   const faqs = [
     { q: sanitizeContent(guide.faq_q1), a: sanitizeContent(guide.faq_a1) },
@@ -273,29 +279,6 @@ const GuideDetail = () => {
     { heading: sanitizeContent(guide.body_section_3_heading), text: sanitizeContent(guide.body_section_3_text) },
   ].filter((s) => s.heading && s.text);
 
-  // For tutorials - NOTE: in tutorials, heading contains text and text contains heading name (swapped in import)
-  // So we swap them back for proper display
-  const tutorialSteps = isTutorial ? [
-    { heading: sanitizeContent(guide.body_section_1_text), text: sanitizeContent(guide.body_section_1_heading) },
-    { heading: sanitizeContent(guide.body_section_2_text), text: sanitizeContent(guide.body_section_2_heading) },
-    { heading: sanitizeContent(guide.body_section_3_text), text: sanitizeContent(guide.body_section_3_heading) },
-    // Step 4: prompt_1_text has heading, prompt_1_label has text
-    { heading: sanitizeContent(guide.prompt_1_text), text: sanitizeContent(guide.prompt_1_label) },
-  ].filter((s) => s.heading && s.text) : [];
-
-  // Tutorial Tips section (stored in prompt_2) - swapped: text field has heading, label has content
-  const tutorialTips = isTutorial && guide.prompt_2_label ? {
-    heading: sanitizeContent(guide.prompt_2_text) || 'Tips',
-    text: sanitizeContent(guide.prompt_2_label),
-  } : null;
-
-  // Tutorial Activities (stored in prompt_3) - swapped: text field has heading, label/headline have content
-  const tutorialActivities = isTutorial && (guide.prompt_3_label || guide.prompt_3_headline) ? {
-    heading: sanitizeContent(guide.prompt_3_text) || 'Activities',
-    text1: sanitizeContent(guide.prompt_3_label),
-    text2: sanitizeContent(guide.prompt_3_headline),
-  } : null;
-
   // Tutorial extended content sections
   // Filter out sections that reference non-existent downloads/templates
   const guideData = guide as Record<string, string | null>;
@@ -308,9 +291,9 @@ const GuideDetail = () => {
     { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips, hasSeasoningMatrix: hasSeasoningMatrixContent(guideData.troubleshooting_and_advanced_tips) },
   ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
 
-  // Tutorial learning outcomes and estimated time (stored in prompt_2_headline and prompt_1_headline)
-  const learningOutcomes = isTutorial ? sanitizeContent(guide.prompt_2_headline) : null;
-  const estimatedTime = isTutorial ? guide.prompt_1_headline : null;
+  // No longer using these fields for tutorials - prompts now have proper headline/text structure
+  const learningOutcomes = null;
+  const estimatedTime = null;
 
   const tldrBullets = [
     guide.tldr_bullet_1,
@@ -346,12 +329,12 @@ const GuideDetail = () => {
     },
     "datePublished": guide.created_at,
     "dateModified": guide.updated_at,
-    ...(isTutorial && {
-      "step": tutorialSteps.map((step, idx) => ({
+    ...(isTutorial && tutorialPrompts.length > 0 && {
+      "step": tutorialPrompts.map((prompt, idx) => ({
         "@type": "HowToStep",
         "position": idx + 1,
-        "name": step.heading,
-        "text": step.text
+        "name": prompt.headline || `Step ${idx + 1}`,
+        "text": prompt.text
       }))
     }),
     ...(tags.length > 0 && {
@@ -549,42 +532,50 @@ const GuideDetail = () => {
                     </div>
                   )}
 
-                  {/* Tutorial Steps */}
-                  {tutorialSteps.map((section, i) => (
-                    <section key={i} className="mb-8">
-                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-                        {section.heading}
-                      </h2>
-                      <div className="whitespace-pre-line text-foreground">
-                        {section.text}
-                      </div>
-                    </section>
-                  ))}
-
-                  {/* Tutorial Tips */}
-                  {tutorialTips && (
-                    <Card className="mb-8 border-l-4 border-l-amber-500">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">{tutorialTips.heading}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="whitespace-pre-line text-foreground">
-                          {tutorialTips.text}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Tutorial Activities */}
-                  {tutorialActivities && (
+                  {/* Tutorial Prompts Section */}
+                  {tutorialPrompts.length > 0 && (
                     <section className="mb-8">
-                      <h2 className="mb-4 text-2xl font-semibold tracking-tight">{tutorialActivities.heading}</h2>
-                      {tutorialActivities.text1 && (
-                        <p className="mb-4 whitespace-pre-line text-foreground">{tutorialActivities.text1}</p>
-                      )}
-                      {tutorialActivities.text2 && (
-                        <p className="whitespace-pre-line text-foreground">{tutorialActivities.text2}</p>
-                      )}
+                      <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+                        Try These Prompts
+                      </h2>
+                      <div className="space-y-6">
+                        {tutorialPrompts.map((prompt, i) => (
+                          <Card key={i}>
+                            <CardHeader className="pb-2">
+                              {prompt.headline && (
+                                <CardTitle className="text-lg">{prompt.headline}</CardTitle>
+                              )}
+                            </CardHeader>
+                            <CardContent>
+                              <div className="relative">
+                                <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                                  <code className="whitespace-pre-wrap break-words text-foreground">
+                                    {prompt.text}
+                                  </code>
+                                </pre>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="absolute right-2 top-2"
+                                  onClick={() => copyPrompt(prompt.text!, i)}
+                                >
+                                  {copiedPrompt === i ? (
+                                    <>
+                                      <Check className="mr-1 h-3 w-3" />
+                                      Copied
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="mr-1 h-3 w-3" />
+                                      Copy
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </section>
                   )}
 
