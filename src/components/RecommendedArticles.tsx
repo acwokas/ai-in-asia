@@ -94,7 +94,7 @@ const RecommendedArticles = () => {
             excerpt={article.excerpt || ""}
             category={article.categories?.name || ""}
             categorySlug={article.categories?.slug || "uncategorized"}
-            author="AI in ASIA"
+            author={article.authors?.name || "Intelligence Desk"}
             readTime={`${article.reading_time_minutes || 5} min read`}
             image={article.featured_image_url || ""}
             slug={article.slug}
