@@ -312,9 +312,12 @@ export const TutorialContentRenderer = ({ content, sectionHeading }: TutorialCon
     return formatProseContent(content);
   }
   
+  // Filter out template blocks since templates don't exist in tutorials
+  const filteredBlocks = blocks.filter(block => block.type !== 'template');
+  
   return (
     <div className="space-y-6">
-      {blocks.map((block, i) => {
+      {filteredBlocks.map((block, i) => {
         if (block.type === 'prompt') {
           return <CopyablePromptBlock key={i} heading={block.heading} content={block.content} index={i} />;
         }
@@ -327,7 +330,7 @@ export const TutorialContentRenderer = ({ content, sectionHeading }: TutorialCon
           return <div key={i}>{formatProseContent(block.content)}</div>;
         }
         
-        // Structured blocks (templates, tools, use-cases, tips, examples, or text with heading)
+        // Structured blocks (tools, use-cases, tips, examples, or text with heading)
         return <SimpleBlock key={i} type={block.type} heading={block.heading} content={block.content} />;
       })}
     </div>
