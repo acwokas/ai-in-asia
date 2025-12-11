@@ -460,4 +460,63 @@ All colors MUST be HSL.
   .calendar-wrapper .rbc-agenda-event-cell:hover {
     background: hsl(var(--accent) / 0.5);
   }
+
+  /* Social Media Embeds - Native Styling */
+  /* Prevent prose styles from affecting Twitter/X embeds */
+  .twitter-tweet,
+  .twitter-tweet-rendered,
+  blockquote.twitter-tweet,
+  .twitter-embed blockquote,
+  [data-tweet-id] {
+    border: none !important;
+    border-left: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 1.5rem 0 !important;
+    font-style: normal !important;
+    color: inherit !important;
+  }
+
+  /* Instagram embeds */
+  .instagram-media,
+  blockquote.instagram-media,
+  .instagram-embed {
+    border: none !important;
+    border-left: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 1.5rem auto !important;
+    max-width: 540px !important;
+  }
+
+  /* TikTok embeds */
+  .tiktok-embed,
+  blockquote.tiktok-embed {
+    border: none !important;
+    border-left: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 1.5rem auto !important;
+    max-width: 325px !important;
+  }
+
+  /* Social embed wrapper */
+  .social-embed {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .social-embed blockquote {
+    border: none !important;
+    border-left: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-style: normal !important;
+  }
+
+  /* Hide the loading text once Twitter widget loads */
+  .twitter-tweet iframe {
+    border-radius: 12px;
+  }
 }
