@@ -17,6 +17,7 @@ import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import { MPUAd } from "@/components/GoogleAds";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReadingStreakTracker from "@/components/ReadingStreakTracker";
+import RecommendedGuides from "@/components/RecommendedGuides";
 import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 
 // Lazy load below-the-fold components for faster initial page load
@@ -723,6 +724,9 @@ const Index = () => {
         <section className="container mx-auto px-4 py-8">
           <PromptAndGoBanner />
         </section>
+
+        {/* Recommended Guides & Tutorials */}
+        <RecommendedGuides />
 
         {/* Reading Streak Tracker - Only for logged in users */}
         {user && (
