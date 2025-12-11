@@ -61,14 +61,21 @@ serve(async (req) => {
 
 CRITICAL REQUIREMENTS:
 - Write in British English spelling (colour, organisation, analyse, etc.)
-- Use a chatty, engaging tone - think intelligent conversation over coffee, not academic paper
 - NEVER use em dashes (—) - use commas, full stops, or semicolons instead
 - Avoid AI writing tell-tales: no "delve", "tapestry", "realm", "unlock", "leverage", "dive into", "embark", or overly flowery language
-- Be conversational and personable - imagine you're explaining to a smart friend who's interested
-- Use contractions naturally (it's, that's, you'll, we're) - this is how people actually talk
+- Use contractions naturally (it's, that's, you'll, we're)
 - Vary sentence structure - mix short punchy sentences with longer flowing ones
 - Include specific examples and concrete details
 - Keep it concise and punchy - get to the point without waffle
+
+TONE AND STYLE:
+- Professional but approachable - informed, confident, and accessible
+- Avoid overly chatty openings like "Right, let me tell you..." or "So, here's the thing..."
+- NEVER end sentences with rhetorical questions like "isn't it?" or "right?"
+- Start articles directly with the substance - lead with what matters
+- Be engaging without being casual or flip
+- Write as a knowledgeable journalist, not a social media influencer
+- The opening should match the tone of the excerpt and body - consistent voice throughout
 
 INTERNAL & EXTERNAL LINKING:
 - Naturally integrate 2-4 internal links to our existing articles using relevant anchor text
