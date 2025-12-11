@@ -364,17 +364,39 @@ const Category = () => {
     },
   });
 
-  // Defer: Trending articles
+  // Defer: Trending articles - fills with recent articles if not enough trending
   const { data: trendingArticles } = useQuery({
-    queryKey: ["category-trending", slug],
+    queryKey: ["category-trending", slug, articles],
     enabled: enableSecondaryQueries && !!category?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
       if (!category?.id) return [];
 
+      // Calculate 6 months ago date
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      const sixMonthsAgoISO = sixMonthsAgo.toISOString();
+
+      // Get IDs already shown on page to exclude
+      const excludeIds = [
+        ...(articles?.slice(0, 5).map(a => a.id) || []),
+        editorsPick?.id,
+        ...(mostReadArticles?.map(a => a.id) || [])
+      ].filter(Boolean);
+
+      // Filter function to exclude articles with "2025" in title and older than 6 months
+      const filterArticle = (article: any) => {
+        if (!article) return false;
+        if (article.title?.includes('2025')) return false;
+        if (article.published_at && new Date(article.published_at) < sixMonthsAgo) return false;
+        if (excludeIds.includes(article.id)) return false;
+        return true;
+      };
+
       // Special handling for Voices - fetch from article_categories and exclude Intelligence Desk
       if (slug === 'voices') {
-        const { data, error } = await supabase
+        // First get trending articles
+        const { data: trendingData, error: trendingError } = await supabase
           .from("article_categories")
           .select(`
             articles!inner (
@@ -387,19 +409,51 @@ const Category = () => {
           .eq("articles.status", "published")
           .eq("articles.is_trending", true);
         
-        if (error) throw error;
+        if (trendingError) throw trendingError;
         
-        // Extract articles, filter out Intelligence Desk, and sort by view count in JavaScript
-        const articles = data
+        let voicesTrending = trendingData
           ?.map(item => item.articles)
-          .filter(article => article && article.authors?.name !== 'Intelligence Desk') || [];
+          .filter(article => article && article.authors?.name !== 'Intelligence Desk' && filterArticle(article)) || [];
         
-        return articles
-          .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
-          .slice(0, 5);
+        voicesTrending = voicesTrending.sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0));
+
+        // If we have enough, return them
+        if (voicesTrending.length >= 5) {
+          return voicesTrending.slice(0, 5);
+        }
+
+        // Otherwise, fill with recent articles
+        const { data: recentData, error: recentError } = await supabase
+          .from("article_categories")
+          .select(`
+            articles!inner (
+              id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
+              authors (name, slug),
+              categories:primary_category_id (name, slug)
+            )
+          `)
+          .eq("category_id", category.id)
+          .eq("articles.status", "published")
+          .gte("articles.published_at", sixMonthsAgoISO)
+          .order("articles.published_at", { ascending: false });
+        
+        if (recentError) throw recentError;
+
+        const recentArticles = recentData
+          ?.map(item => item.articles)
+          .filter(article => 
+            article && 
+            article.authors?.name !== 'Intelligence Desk' && 
+            filterArticle(article) &&
+            !voicesTrending.some((t: any) => t.id === article.id)
+          ) || [];
+
+        const combined = [...voicesTrending, ...recentArticles];
+        return combined.slice(0, 5);
       }
 
-      const { data, error } = await supabase
+      // Regular categories - first get trending articles
+      const { data: trendingData, error: trendingError } = await supabase
         .from("articles")
         .select(`
           id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
@@ -409,11 +463,44 @@ const Category = () => {
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .eq("is_trending", true)
+        .gte("published_at", sixMonthsAgoISO)
         .order("view_count", { ascending: false })
-        .limit(5);
+        .limit(10);
       
-      if (error) throw error;
-      return data;
+      if (trendingError) throw trendingError;
+      
+      const filteredTrending = (trendingData || []).filter(filterArticle);
+
+      // If we have enough trending, return them
+      if (filteredTrending.length >= 5) {
+        return filteredTrending.slice(0, 5);
+      }
+
+      // Otherwise, fill with recent articles
+      const neededCount = 5 - filteredTrending.length;
+      const trendingIds = filteredTrending.map(a => a.id);
+      const allExcludeIds = [...excludeIds, ...trendingIds].filter(Boolean);
+
+      const { data: recentData, error: recentError } = await supabase
+        .from("articles")
+        .select(`
+          id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes,
+          authors (name, slug),
+          categories:primary_category_id (name, slug)
+        `)
+        .eq("primary_category_id", category.id)
+        .eq("status", "published")
+        .gte("published_at", sixMonthsAgoISO)
+        .order("published_at", { ascending: false })
+        .limit(20);
+      
+      if (recentError) throw recentError;
+
+      const recentFiltered = (recentData || [])
+        .filter(article => filterArticle(article) && !allExcludeIds.includes(article.id))
+        .slice(0, neededCount);
+
+      return [...filteredTrending, ...recentFiltered];
     },
   });
 
