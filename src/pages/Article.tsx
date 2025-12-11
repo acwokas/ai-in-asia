@@ -30,6 +30,7 @@ import DOMPurify from "dompurify";
 import { track404Error } from "@/components/GoogleAnalytics";
 import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { useTwitterWidgets } from "@/components/TwitterEmbed";
 
 const Article = () => {
   const { category, slug } = useParams();
@@ -87,6 +88,9 @@ const Article = () => {
       return data;
     },
   });
+
+  // Load Twitter widgets for any embedded tweets after article content loads
+  useTwitterWidgets([article?.content]);
 
   // Fetch sponsor for article's category
   const { data: sponsor } = useQuery({
@@ -628,7 +632,7 @@ const Article = () => {
         
         const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
           ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
-          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type']
+          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir']
         });
         return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
       }
@@ -638,6 +642,11 @@ const Article = () => {
       
       // Process each block
       const htmlBlocks = blocks.map(block => {
+        // Preserve Twitter embeds as-is (don't wrap in paragraph)
+        if (block.includes('twitter-tweet') || block.includes('class="twitter-tweet"')) {
+          return block;
+        }
+        
         // Check for headings (must be at start of block)
         if (block.startsWith('### ')) {
           return `<h3 class="text-2xl font-semibold mt-8 mb-4">${block.substring(4)}</h3>`;
@@ -649,8 +658,8 @@ const Article = () => {
           return `<h1 class="text-4xl font-bold mt-8 mb-4">${block.substring(2)}</h1>`;
         }
         
-        // Check for blockquotes
-        if (block.startsWith('> ')) {
+        // Check for blockquotes (but not Twitter blockquotes which have class)
+        if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
           const quoteContent = block.substring(2);
           return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8">
             <p class="italic text-lg text-foreground/90 leading-relaxed">${quoteContent}</p>
@@ -685,8 +694,8 @@ const Article = () => {
       });
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type']
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'polyline', 'line'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'points', 'x1', 'x2', 'y1', 'y2']
       });
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
