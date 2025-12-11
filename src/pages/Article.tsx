@@ -16,6 +16,7 @@ import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+import FloatingNewsletterPopup from "@/components/FloatingNewsletterPopup";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
@@ -1424,6 +1425,7 @@ const Article = () => {
           )}
         </main>
 
+        <FloatingNewsletterPopup />
         <Footer />
       </div>
     </>
