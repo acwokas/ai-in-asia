@@ -93,6 +93,35 @@ const getSectionIcon = (heading: string) => {
   return Pin;
 };
 
+// Helper to render text with clickable URLs
+const TextWithLinks = ({ text }: { text: string }) => {
+  // URL regex pattern
+  const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
+  
+  const parts = text.split(urlPattern);
+  
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (/(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/.test(part)) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline break-all"
+            >
+              {part}
+            </a>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+};
+
 const GuideDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
@@ -183,31 +212,94 @@ const GuideDetail = () => {
 
   const isTutorial = guide.guide_category === 'Tutorial';
 
-  // For regular guides - prompts are copyable text blocks
+  // Smart field detection - some CSVs have columns inverted
+  // Headings should be short (< 80 chars), body text should be longer
+  // Questions should end with ? or be shorter than answers
+  const smartSwap = (a: string | null, b: string | null): [string, string] => {
+    const aText = sanitizeContent(a) || '';
+    const bText = sanitizeContent(b) || '';
+    // If both empty or only one exists, return as-is
+    if (!aText || !bText) return [aText, bText];
+    // If 'a' (heading) is longer than 'b' (text), they're probably swapped
+    if (aText.length > bText.length * 1.5 && bText.length < 100) {
+      return [bText, aText]; // Swap them
+    }
+    return [aText, bText];
+  };
+
+  const smartSwapQA = (q: string | null, a: string | null): [string, string] => {
+    const qText = sanitizeContent(q) || '';
+    const aText = sanitizeContent(a) || '';
+    if (!qText || !aText) return [qText, aText];
+    // Questions usually end with ? or are shorter than answers
+    // If 'q' doesn't end with ? but 'a' does, they're swapped
+    // Or if 'q' is much longer than 'a', they're probably swapped
+    const qEndsWithQuestion = qText.trim().endsWith('?');
+    const aEndsWithQuestion = aText.trim().endsWith('?');
+    if (!qEndsWithQuestion && aEndsWithQuestion) {
+      return [aText, qText]; // Swap
+    }
+    if (qText.length > aText.length * 2 && !qEndsWithQuestion) {
+      return [aText, qText]; // Swap - q is too long to be a question
+    }
+    return [qText, aText];
+  };
+
+  const smartSwapPrompt = (label: string | null, headline: string | null, text: string | null): { label: string; headline: string; text: string } => {
+    const labelText = sanitizeContent(label) || '';
+    const headlineText = sanitizeContent(headline) || '';
+    const textText = sanitizeContent(text) || '';
+    
+    // The prompt text should be the longest, headline should be short
+    // If label is the longest, it's probably the prompt text
+    // If text is very short, it might be the headline
+    const lengths = [
+      { field: 'label', value: labelText, len: labelText.length },
+      { field: 'headline', value: headlineText, len: headlineText.length },
+      { field: 'text', value: textText, len: textText.length },
+    ].filter(f => f.len > 0);
+    
+    if (lengths.length < 2) {
+      return { label: labelText, headline: headlineText, text: textText };
+    }
+    
+    // Sort by length - shortest should be headline, longest should be text
+    lengths.sort((a, b) => a.len - b.len);
+    
+    // If text is shorter than label, they're likely swapped
+    if (textText.length < 50 && labelText.length > 100) {
+      // label has the prompt, text has the headline
+      return { label: '', headline: textText, text: labelText };
+    }
+    
+    return { label: labelText, headline: headlineText, text: textText };
+  };
+
+  // For regular guides - prompts are copyable text blocks with smart detection
   const regularPrompts = !isTutorial ? [
-    { label: sanitizeContent(guide.prompt_1_label), headline: sanitizeContent(guide.prompt_1_headline), text: sanitizeContent(guide.prompt_1_text) },
-    { label: sanitizeContent(guide.prompt_2_label), headline: sanitizeContent(guide.prompt_2_headline), text: sanitizeContent(guide.prompt_2_text) },
-    { label: sanitizeContent(guide.prompt_3_label), headline: sanitizeContent(guide.prompt_3_headline), text: sanitizeContent(guide.prompt_3_text) },
+    smartSwapPrompt(guide.prompt_1_label, guide.prompt_1_headline, guide.prompt_1_text),
+    smartSwapPrompt(guide.prompt_2_label, guide.prompt_2_headline, guide.prompt_2_text),
+    smartSwapPrompt(guide.prompt_3_label, guide.prompt_3_headline, guide.prompt_3_text),
   ].filter((p) => p.text) : [];
 
   // Tutorial prompts - simplified structure with headline and text
   const tutorialPrompts = isTutorial ? [
-    { headline: sanitizeContent(guide.prompt_1_headline), text: sanitizeContent(guide.prompt_1_text) },
-    { headline: sanitizeContent(guide.prompt_2_headline), text: sanitizeContent(guide.prompt_2_text) },
+    (() => { const [h, t] = smartSwap(guide.prompt_1_headline, guide.prompt_1_text); return { headline: h, text: t }; })(),
+    (() => { const [h, t] = smartSwap(guide.prompt_2_headline, guide.prompt_2_text); return { headline: h, text: t }; })(),
   ].filter((p) => p.text) : [];
 
-  // FAQs - use standard q/a mapping (database has been corrected)
+  // FAQs - with smart Q/A detection
   const faqs = [
-    { q: sanitizeContent(guide.faq_q1), a: sanitizeContent(guide.faq_a1) },
-    { q: sanitizeContent(guide.faq_q2), a: sanitizeContent(guide.faq_a2) },
-    { q: sanitizeContent(guide.faq_q3), a: sanitizeContent(guide.faq_a3) },
+    (() => { const [q, a] = smartSwapQA(guide.faq_q1, guide.faq_a1); return { q, a }; })(),
+    (() => { const [q, a] = smartSwapQA(guide.faq_q2, guide.faq_a2); return { q, a }; })(),
+    (() => { const [q, a] = smartSwapQA(guide.faq_q3, guide.faq_a3); return { q, a }; })(),
   ].filter((f) => f.q && f.a);
 
-  // For regular guides
+  // For regular guides - with smart heading/text detection
   const bodySections = [
-    { heading: sanitizeContent(guide.body_section_1_heading), text: sanitizeContent(guide.body_section_1_text) },
-    { heading: sanitizeContent(guide.body_section_2_heading), text: sanitizeContent(guide.body_section_2_text) },
-    { heading: sanitizeContent(guide.body_section_3_heading), text: sanitizeContent(guide.body_section_3_text) },
+    (() => { const [h, t] = smartSwap(guide.body_section_1_heading, guide.body_section_1_text); return { heading: h, text: t }; })(),
+    (() => { const [h, t] = smartSwap(guide.body_section_2_heading, guide.body_section_2_text); return { heading: h, text: t }; })(),
+    (() => { const [h, t] = smartSwap(guide.body_section_3_heading, guide.body_section_3_text); return { heading: h, text: t }; })(),
   ].filter((s) => s.heading && s.text);
 
   // Tutorial extended content sections - only render fields with content
@@ -416,7 +508,7 @@ const GuideDetail = () => {
                     {tldrBullets.map((bullet, i) => (
                       <li key={i} className="flex items-start">
                         <span className="mr-3 mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
-                        <span className="text-foreground">{bullet}</span>
+                        <span className="text-foreground"><TextWithLinks text={bullet} /></span>
                       </li>
                     ))}
                   </ul>
@@ -431,7 +523,7 @@ const GuideDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="whitespace-pre-line text-muted-foreground">
-                    {sanitizeContent(guide.perfect_for)}
+                    <TextWithLinks text={sanitizeContent(guide.perfect_for) || ''} />
                   </p>
                 </CardContent>
               </Card>
@@ -440,7 +532,7 @@ const GuideDetail = () => {
             <div className="prose prose-slate dark:prose-invert max-w-none">
               {guide.body_intro && (
                 <p className="lead mb-8 text-lg text-muted-foreground">
-                  {sanitizeContent(guide.body_intro)}
+                  <TextWithLinks text={sanitizeContent(guide.body_intro) || ''} />
                 </p>
               )}
 
@@ -565,7 +657,7 @@ const GuideDetail = () => {
                       {section.heading}
                     </h2>
                     <div className="whitespace-pre-line text-foreground">
-                      {section.text}
+                      <TextWithLinks text={section.text} />
                     </div>
                   </section>
                 ))
