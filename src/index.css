@@ -461,62 +461,76 @@ All colors MUST be HSL.
     background: hsl(var(--accent) / 0.5);
   }
 
-  /* Social Media Embeds - Native Styling */
-  /* Prevent prose styles from affecting Twitter/X embeds */
-  .twitter-tweet,
-  .twitter-tweet-rendered,
-  blockquote.twitter-tweet,
-  .twitter-embed blockquote,
-  [data-tweet-id] {
-    border: none !important;
-    border-left: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 1.5rem 0 !important;
-    font-style: normal !important;
-    color: inherit !important;
-  }
+}
 
-  /* Instagram embeds */
-  .instagram-media,
-  blockquote.instagram-media,
-  .instagram-embed {
-    border: none !important;
-    border-left: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 1.5rem auto !important;
-    max-width: 540px !important;
-  }
+/* Social Media Embeds - Native Styling - MUST be outside @layer to override prose */
+/* Twitter/X embeds - high specificity to override prose blockquote styles */
+.prose .twitter-tweet,
+.prose blockquote.twitter-tweet,
+article .twitter-tweet,
+article blockquote.twitter-tweet,
+.twitter-tweet,
+blockquote.twitter-tweet {
+  all: revert !important;
+  border: none !important;
+  border-left: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 1.5rem 0 !important;
+  font-style: normal !important;
+  color: inherit !important;
+  quotes: none !important;
+}
 
-  /* TikTok embeds */
-  .tiktok-embed,
-  blockquote.tiktok-embed {
-    border: none !important;
-    border-left: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 1.5rem auto !important;
-    max-width: 325px !important;
-  }
+.prose .twitter-tweet::before,
+.prose .twitter-tweet::after,
+.prose blockquote.twitter-tweet::before,
+.prose blockquote.twitter-tweet::after {
+  content: none !important;
+}
 
-  /* Social embed wrapper */
-  .social-embed {
-    margin: 2rem 0;
-    display: flex;
-    justify-content: center;
-  }
+/* Instagram embeds */
+.prose .instagram-media,
+.prose blockquote.instagram-media,
+article .instagram-media,
+.instagram-media,
+blockquote.instagram-media {
+  all: revert !important;
+  border: none !important;
+  border-left: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 1.5rem auto !important;
+  max-width: 540px !important;
+}
 
-  .social-embed blockquote {
-    border: none !important;
-    border-left: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    font-style: normal !important;
-  }
+/* TikTok embeds */
+.prose .tiktok-embed,
+.prose blockquote.tiktok-embed,
+article .tiktok-embed,
+.tiktok-embed,
+blockquote.tiktok-embed {
+  all: revert !important;
+  border: none !important;
+  border-left: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 1.5rem auto !important;
+  max-width: 325px !important;
+}
 
-  /* Hide the loading text once Twitter widget loads */
-  .twitter-tweet iframe {
-    border-radius: 12px;
-  }
+/* Social embed wrapper */
+.social-embed {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.social-embed blockquote {
+  all: revert !important;
+}
+
+/* Twitter widget iframe styling */
+.twitter-tweet iframe {
+  border-radius: 12px;
 }
