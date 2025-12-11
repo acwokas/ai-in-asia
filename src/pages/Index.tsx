@@ -742,61 +742,6 @@ const Index = () => {
           </section>
         )}
 
-        {/* Featured Voices Section */}
-        {(featuredAuthors && featuredAuthors.length > 0) && (
-        <section className="bg-muted/30 py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="headline text-4xl font-bold mb-3">
-                Featured Voices
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                Meet the experts shaping AI discourse in Asia
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredAuthors?.map((author) => (
-                <Link 
-                  key={author.id} 
-                  to={`/author/${author.slug}`}
-                  className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                >
-                  {author.avatar_url ? (
-                    <img 
-                      src={getOptimizedAvatar(author.avatar_url, 160)} 
-                      srcSet={author.avatar_url.includes('supabase.co/storage') ? generateResponsiveSrcSet(author.avatar_url, [80, 160, 240]) : undefined}
-                      sizes="(max-width: 768px) 96px, 160px"
-                      alt={author.name}
-                      className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                      loading="lazy"
-                      width={96}
-                      height={96}
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                      {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                    </div>
-                  )}
-                  <h3 className="font-semibold text-xl mb-1">{author.name}</h3>
-                  {author.job_title && (
-                    <p className="text-sm text-muted-foreground mb-3">{author.job_title}</p>
-                  )}
-                  {author.bio && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{author.bio}</p>
-                  )}
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                    {author.article_count || 0} Articles
-                  </div>
-                  {author.twitter_handle && (
-                    <p className="text-xs text-muted-foreground mt-2">@{author.twitter_handle}</p>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-        )}
 
 
         {/* Trending Tools Section */}
@@ -921,6 +866,62 @@ const Index = () => {
         }>
           <YouMayAlsoLike />
         </Suspense>
+
+        {/* Featured Voices Section - Moved above Google Discover */}
+        {(featuredAuthors && featuredAuthors.length > 0) && (
+        <section className="bg-muted/30 py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="headline text-4xl font-bold mb-3">
+                Featured Voices
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Meet the experts shaping AI discourse in Asia
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredAuthors?.map((author) => (
+                <Link 
+                  key={author.id} 
+                  to={`/author/${author.slug}`}
+                  className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  {author.avatar_url ? (
+                    <img 
+                      src={getOptimizedAvatar(author.avatar_url, 160)} 
+                      srcSet={author.avatar_url.includes('supabase.co/storage') ? generateResponsiveSrcSet(author.avatar_url, [80, 160, 240]) : undefined}
+                      sizes="(max-width: 768px) 96px, 160px"
+                      alt={author.name}
+                      className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+                      loading="lazy"
+                      width={96}
+                      height={96}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-primary-foreground">
+                      {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                  )}
+                  <h3 className="font-semibold text-xl mb-1">{author.name}</h3>
+                  {author.job_title && (
+                    <p className="text-sm text-muted-foreground mb-3">{author.job_title}</p>
+                  )}
+                  {author.bio && (
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{author.bio}</p>
+                  )}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                    {author.article_count || 0} Articles
+                  </div>
+                  {author.twitter_handle && (
+                    <p className="text-xs text-muted-foreground mt-2">@{author.twitter_handle}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+        )}
 
         {/* Google Discover Follow Promo */}
         <section className="container mx-auto px-4 py-8">
