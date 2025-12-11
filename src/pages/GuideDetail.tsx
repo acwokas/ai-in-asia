@@ -45,9 +45,9 @@ const sanitizeContent = (text: string | null | undefined): string => {
     .replace(/[A-Z]:\\[^\s]*/gi, '')
     .replace(/\/home\/[^\s]*redirect\.html[^\s]*/gi, '');
   
-  // Fix broken URLs embedded in text (like "2025https://..." -> proper link handling)
-  // Remove URLs that are concatenated directly to text without spaces
-  sanitized = sanitized.replace(/(\d{4})(https?:\/\/[^\s]+)/g, '$1');
+  // Remove URLs that are concatenated directly to text without proper spacing
+  // This catches cases like "audienceshttps://..." or "2025https://..."
+  sanitized = sanitized.replace(/([a-zA-Z0-9])(https?:\/\/[^\s]+)/g, '$1');
   
   // Remove orphaned URL fragments
   sanitized = sanitized.replace(/#:~:text=[^\s]*/g, '');
