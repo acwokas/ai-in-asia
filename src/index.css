@@ -480,7 +480,7 @@ blockquote.twitter-tweet {
   border-left: none !important;
   background: transparent !important;
   padding: 0 !important;
-  margin: 1.5rem 0 !important;
+  margin: 1.5rem auto !important;
   font-style: normal !important;
   color: inherit !important;
   quotes: none !important;
