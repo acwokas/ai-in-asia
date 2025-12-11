@@ -16,7 +16,6 @@ import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
-import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
@@ -712,10 +711,29 @@ const Article = () => {
         return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
       });
       
+      // Insert newsletter signup placeholder mid-content (around 50%)
+      const midPoint = Math.floor(htmlBlocks.length / 2);
+      if (htmlBlocks.length >= 6) {
+        htmlBlocks.splice(midPoint, 0, '<div id="mid-content-newsletter-placeholder"></div>');
+      }
+      
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'polyline', 'line', 'section', 'time'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'points', 'x1', 'x2', 'y1', 'y2', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime']
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'points', 'x1', 'x2', 'y1', 'y2', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'id']
       });
+      
+      // Split by placeholder and render with actual newsletter component
+      const parts = sanitizedHtml.split('<div id="mid-content-newsletter-placeholder"></div>');
+      if (parts.length === 2) {
+        return (
+          <div className="prose">
+            <div dangerouslySetInnerHTML={{ __html: parts[0] }} />
+            <InlineNewsletterSignup />
+            <div dangerouslySetInnerHTML={{ __html: parts[1] }} />
+          </div>
+        );
+      }
+      
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
     
@@ -1252,9 +1270,6 @@ const Article = () => {
               />
             )}
 
-            {/* Mid-content Newsletter Signup */}
-            <InlineNewsletterSignup />
-
             {/* Second Ad - After Content, Before Comments - Not for Top Lists */}
             {article.article_type !== 'top_lists' && <InArticleAd />}
 
@@ -1338,11 +1353,6 @@ const Article = () => {
               </div>
             )}
           </article>
-
-          {/* End of Content Newsletter CTA */}
-          <section className="container mx-auto px-4 max-w-4xl">
-            <EndOfContentNewsletter />
-          </section>
 
           {/* Comments Section */}
           <section className="container mx-auto px-4 max-w-4xl mt-12">
