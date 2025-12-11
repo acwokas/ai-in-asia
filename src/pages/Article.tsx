@@ -30,7 +30,7 @@ import DOMPurify from "dompurify";
 import { track404Error } from "@/components/GoogleAnalytics";
 import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
-import { useTwitterWidgets } from "@/components/TwitterEmbed";
+import { useSocialEmbeds } from "@/components/SocialEmbeds";
 
 const Article = () => {
   const { category, slug } = useParams();
@@ -89,8 +89,8 @@ const Article = () => {
     },
   });
 
-  // Load Twitter widgets for any embedded tweets after article content loads
-  useTwitterWidgets([article?.content]);
+  // Load social embed widgets (Twitter, Instagram, TikTok) after article content loads
+  useSocialEmbeds([article?.content]);
 
   // Fetch sponsor for article's category
   const { data: sponsor } = useQuery({
@@ -622,8 +622,12 @@ const Article = () => {
         // Join back with proper spacing but don't process blocks individually
         // This preserves the exact layout with prompt cards
         const htmlBlocks = blocks.map(block => {
-          // If it's a prompt-box, return as-is
-          if (block.includes('prompt-box')) {
+          // If it's a prompt-box or social embed, return as-is
+          if (block.includes('prompt-box') || 
+              block.includes('twitter-tweet') || 
+              block.includes('instagram-media') || 
+              block.includes('tiktok-embed') ||
+              block.includes('youtube.com/embed')) {
             return block;
           }
           // Otherwise wrap in paragraph
@@ -631,8 +635,8 @@ const Article = () => {
         });
         
         const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
-          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path'],
-          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir']
+          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time'],
+          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime']
         });
         return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
       }
@@ -642,8 +646,21 @@ const Article = () => {
       
       // Process each block
       const htmlBlocks = blocks.map(block => {
-        // Preserve Twitter embeds as-is (don't wrap in paragraph)
+        // Preserve social media embeds as-is (don't wrap in paragraph)
+        // Twitter/X embeds
         if (block.includes('twitter-tweet') || block.includes('class="twitter-tweet"')) {
+          return block;
+        }
+        // Instagram embeds
+        if (block.includes('instagram-media') || block.includes('class="instagram-media"')) {
+          return block;
+        }
+        // TikTok embeds
+        if (block.includes('tiktok-embed') || block.includes('class="tiktok-embed"')) {
+          return block;
+        }
+        // YouTube embeds (iframe)
+        if (block.includes('youtube.com/embed') || block.includes('youtu.be')) {
           return block;
         }
         
@@ -694,8 +711,8 @@ const Article = () => {
       });
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'polyline', 'line'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'points', 'x1', 'x2', 'y1', 'y2']
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'polyline', 'line', 'section', 'time'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'points', 'x1', 'x2', 'y1', 'y2', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime']
       });
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
