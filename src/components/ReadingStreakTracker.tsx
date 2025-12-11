@@ -1,14 +1,31 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, TrendingUp, Trophy, Calendar } from "lucide-react";
+import { Flame, TrendingUp, Trophy, Calendar, Mail, ArrowRight } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { z } from "zod";
+
+const emailSchema = z.string().trim().email().max(255);
 
 const ReadingStreakTracker = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewsletter, setShowNewsletter] = useState(false);
+
+  useEffect(() => {
+    // Show newsletter prompt if not subscribed
+    const subscribed = localStorage.getItem("newsletter-subscribed");
+    setShowNewsletter(subscribed !== "true");
+  }, []);
 
   const { data: streak } = useQuery({
     queryKey: ["reading-streak", user?.id],
@@ -42,6 +59,35 @@ const ReadingStreakTracker = () => {
       updateStreak.mutate();
     }
   }, [user]);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const validatedEmail = emailSchema.parse(email);
+      const { error } = await supabase
+        .from("newsletter_subscribers")
+        .insert([{ email: validatedEmail }]);
+
+      if (error && error.code !== "23505") throw error;
+
+      localStorage.setItem("newsletter-subscribed", "true");
+      setShowNewsletter(false);
+      toast({
+        title: "Subscribed!",
+        description: "You'll get our weekly AI digest.",
+      });
+    } catch {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!user || !streak) return null;
 
@@ -85,6 +131,29 @@ const ReadingStreakTracker = () => {
           <div className="text-xs text-muted-foreground">Total</div>
         </div>
       </div>
+
+      {/* Newsletter integration */}
+      {showNewsletter && (
+        <div className="mt-4 pt-4 border-t border-primary/20">
+          <p className="text-xs text-muted-foreground mb-2">
+            Keep your streak going with our weekly digest
+          </p>
+          <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+            <Input
+              type="email"
+              placeholder="Your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="flex-1 h-8 text-xs"
+              required
+              disabled={isSubmitting}
+            />
+            <Button type="submit" size="sm" className="h-8 px-2" disabled={isSubmitting}>
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </form>
+        </div>
+      )}
     </Card>
   );
 };

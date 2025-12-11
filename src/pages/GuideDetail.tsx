@@ -19,6 +19,8 @@ import Footer from "@/components/Footer";
 import GuideComments from "@/components/GuideComments";
 import SeasoningMatrixDownload from "@/components/SeasoningMatrixDownload";
 import TutorialContentRenderer from "@/components/TutorialContentRenderer";
+import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 
 // Sanitize corrupted content from CSV imports
 const sanitizeContent = (text: string | null | undefined): string => {
@@ -585,6 +587,9 @@ const GuideDetail = () => {
                     </section>
                   )}
 
+                  {/* Mid-content Newsletter Signup for Tutorials */}
+                  <InlineNewsletterSignup variant="compact" />
+
                   {/* Extended Tutorial Sections - Renders inline structured elements */}
                   {extendedSections.length > 0 && (
                     <section className="mb-12 space-y-8">
@@ -663,6 +668,9 @@ const GuideDetail = () => {
                 ))
               )}
             </div>
+
+            {/* Mid-content Newsletter Signup for non-Tutorial guides */}
+            {!isTutorial && <InlineNewsletterSignup />}
 
             {regularPrompts.length > 0 && (
               <section className="mb-8">
@@ -811,6 +819,9 @@ const GuideDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* End of Content Newsletter CTA */}
+            <EndOfContentNewsletter />
 
             {/* Comments Section */}
             <GuideComments guideId={guide.id} />

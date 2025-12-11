@@ -15,6 +15,8 @@ import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
+import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
@@ -1250,6 +1252,9 @@ const Article = () => {
               />
             )}
 
+            {/* Mid-content Newsletter Signup */}
+            <InlineNewsletterSignup />
+
             {/* Second Ad - After Content, Before Comments - Not for Top Lists */}
             {article.article_type !== 'top_lists' && <InArticleAd />}
 
@@ -1333,6 +1338,11 @@ const Article = () => {
               </div>
             )}
           </article>
+
+          {/* End of Content Newsletter CTA */}
+          <section className="container mx-auto px-4 max-w-4xl">
+            <EndOfContentNewsletter />
+          </section>
 
           {/* Comments Section */}
           <section className="container mx-auto px-4 max-w-4xl mt-12">
