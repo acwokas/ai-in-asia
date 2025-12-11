@@ -471,7 +471,11 @@ article .twitter-tweet,
 article blockquote.twitter-tweet,
 .twitter-tweet,
 blockquote.twitter-tweet {
-  all: revert !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 550px !important;
+  clear: both !important;
+  float: none !important;
   border: none !important;
   border-left: none !important;
   background: transparent !important;
@@ -495,13 +499,16 @@ blockquote.twitter-tweet {
 article .instagram-media,
 .instagram-media,
 blockquote.instagram-media {
-  all: revert !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 540px !important;
+  clear: both !important;
+  float: none !important;
   border: none !important;
   border-left: none !important;
   background: transparent !important;
   padding: 0 !important;
   margin: 1.5rem auto !important;
-  max-width: 540px !important;
 }
 
 /* TikTok embeds */
@@ -510,24 +517,31 @@ blockquote.instagram-media {
 article .tiktok-embed,
 .tiktok-embed,
 blockquote.tiktok-embed {
-  all: revert !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 325px !important;
+  clear: both !important;
+  float: none !important;
   border: none !important;
   border-left: none !important;
   background: transparent !important;
   padding: 0 !important;
   margin: 1.5rem auto !important;
-  max-width: 325px !important;
 }
 
 /* Social embed wrapper */
 .social-embed {
+  display: block !important;
+  width: 100% !important;
+  clear: both !important;
+  float: none !important;
   margin: 2rem 0;
-  display: flex;
-  justify-content: center;
 }
 
 .social-embed blockquote {
-  all: revert !important;
+  border: none !important;
+  border-left: none !important;
+  background: transparent !important;
 }
 
 /* Twitter widget iframe styling */
