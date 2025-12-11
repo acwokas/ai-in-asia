@@ -728,12 +728,7 @@ const Index = () => {
         {/* Recommended Guides & Tutorials */}
         <RecommendedGuides />
 
-        {/* Reading Streak Tracker - Only for logged in users */}
-        {user && (
-          <section className="container mx-auto px-4 pb-4">
-            <ReadingStreakTracker />
-          </section>
-        )}
+
 
         {/* Editor's Pick */}
         {editorsPick && (
@@ -921,6 +916,13 @@ const Index = () => {
             </div>
           </div>
         </section>
+        )}
+
+        {/* Reading Streak Tracker - Only for logged in users */}
+        {user && (
+          <section className="container mx-auto px-4 py-8">
+            <ReadingStreakTracker />
+          </section>
         )}
 
         {/* Google Discover Follow Promo */}
