@@ -42,6 +42,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 
 // Category icon mapping
 const categoryIcons: Record<string, LucideIcon> = {
@@ -972,6 +973,9 @@ const Category = () => {
               </div>
             </section>
           )}
+
+          {/* Inline Newsletter Signup */}
+          <InlineNewsletterSignup />
 
           {/* Trending Articles - Horizontal Scroll */}
           {trendingArticles && trendingArticles.length > 0 && (
