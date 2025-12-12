@@ -596,33 +596,31 @@ const GuideDetail = () => {
                                 <CardTitle className="text-lg">{prompt.headline}</CardTitle>
                               )}
                             </CardHeader>
-                            <CardContent>
-                              <div className="relative">
-                                <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-                                  <code className="whitespace-pre-wrap break-words text-foreground">
-                                    {prompt.text}
-                                  </code>
-                                </pre>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="absolute right-2 top-2"
-                                  onClick={() => copyPrompt(prompt.text!, i)}
-                                >
-                                  {copiedPrompt === i ? (
-                                    <>
-                                      <Check className="mr-1 h-3 w-3" />
-                                      Copied
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="mr-1 h-3 w-3" />
-                                      Copy
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                            </CardContent>
+                          <CardContent className="space-y-3">
+                            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                              <code className="whitespace-pre-wrap break-words text-foreground">
+                                {prompt.text}
+                              </code>
+                            </pre>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyPrompt(prompt.text!, i)}
+                              className="w-full sm:w-auto"
+                            >
+                              {copiedPrompt === i ? (
+                                <>
+                                  <Check className="mr-1 h-3 w-3" />
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="mr-1 h-3 w-3" />
+                                  Copy
+                                </>
+                              )}
+                            </Button>
+                          </CardContent>
                           </Card>
                         ))}
                       </div>
@@ -718,32 +716,30 @@ const GuideDetail = () => {
                           <CardTitle className="text-lg">{prompt.headline}</CardTitle>
                         )}
                       </CardHeader>
-                      <CardContent>
-                        <div className="relative">
-                          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-                            <code className="whitespace-pre-wrap break-words text-foreground">
-                              {prompt.text}
-                            </code>
-                          </pre>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="absolute right-2 top-2"
-                            onClick={() => copyPrompt(prompt.text!, i)}
-                          >
-                            {copiedPrompt === i ? (
-                              <>
-                                <Check className="mr-1 h-3 w-3" />
-                                Copied
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="mr-1 h-3 w-3" />
-                                Copy
-                              </>
-                            )}
-                          </Button>
-                        </div>
+                      <CardContent className="space-y-3">
+                        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                          <code className="whitespace-pre-wrap break-words text-foreground">
+                            {prompt.text}
+                          </code>
+                        </pre>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyPrompt(prompt.text!, i)}
+                          className="w-full sm:w-auto"
+                        >
+                          {copiedPrompt === i ? (
+                            <>
+                              <Check className="mr-1 h-3 w-3" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="mr-1 h-3 w-3" />
+                              Copy
+                            </>
+                          )}
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -788,8 +784,8 @@ const GuideDetail = () => {
                     return (
                       <>
                         {prompt && (
-                          <div className="relative mb-4">
-                            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                          <>
+                            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm mb-3">
                               <code className="whitespace-pre-wrap break-words text-foreground">
                                 {prompt}
                               </code>
@@ -797,8 +793,8 @@ const GuideDetail = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="absolute right-2 top-2"
                               onClick={() => copyPrompt(prompt, 99)}
+                              className="w-full sm:w-auto"
                             >
                               {copiedPrompt === 99 ? (
                                 <>
@@ -812,10 +808,10 @@ const GuideDetail = () => {
                                 </>
                               )}
                             </Button>
-                          </div>
+                          </>
                         )}
                         {afterPrompt && (
-                          <p className="text-foreground/90">{afterPrompt}</p>
+                          <p className="text-foreground/90 mt-4">{afterPrompt}</p>
                         )}
                       </>
                     );
