@@ -106,7 +106,7 @@ const ReadingStreakTracker = () => {
   const BadgeIcon = badge.icon;
 
   return (
-    <Card className="p-4 bg-gradient-to-br from-primary/5 to-background border-primary/20">
+    <Card className="p-4 h-full bg-gradient-to-br from-primary/5 to-background border-primary/20">
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-full bg-background ${badge.color}`}>
           <BadgeIcon className="h-5 w-5" />

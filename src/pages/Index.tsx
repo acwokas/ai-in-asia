@@ -925,16 +925,18 @@ const Index = () => {
         </section>
         )}
 
-        {/* Reading Streak Tracker - Only for logged in users */}
-        {user && (
-          <section className="container mx-auto px-4 py-8">
-            <ReadingStreakTracker />
-          </section>
-        )}
-
-        {/* Google Discover Follow Promo */}
+        {/* Reading Streak & Google Discover Follow */}
         <section className="container mx-auto px-4 py-8">
-          <GoogleDiscoverFollow />
+          <div className={`grid gap-6 ${user ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
+            {user && (
+              <div className="h-full">
+                <ReadingStreakTracker />
+              </div>
+            )}
+            <div className="h-full">
+              <GoogleDiscoverFollow />
+            </div>
+          </div>
         </section>
 
         {/* Newsletter CTA */}
