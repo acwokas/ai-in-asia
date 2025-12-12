@@ -89,9 +89,12 @@ const getSectionIcon = (heading: string) => {
   if (headingLower.includes('step') || headingLower.includes('expanded')) return Target;
   if (headingLower.includes('explanation') || headingLower.includes('deeper')) return Lightbulb;
   if (headingLower.includes('variation') || headingLower.includes('alternative')) return RefreshCw;
-  if (headingLower.includes('interactive') || headingLower.includes('exercise')) return PenTool;
+  if (headingLower.includes('exercise')) return PenTool;
+  if (headingLower.includes('interactive')) return PenTool;
   if (headingLower.includes('troubleshoot') || headingLower.includes('tip')) return Wrench;
   if (headingLower.includes('final') || headingLower.includes('note')) return FileText;
+  if (headingLower.includes('tool')) return Wrench;
+  if (headingLower.includes('use case')) return Target;
   return Pin;
 };
 
@@ -212,7 +215,8 @@ const GuideDetail = () => {
     );
   }
 
-  const isTutorial = guide.guide_category === 'Tutorial';
+const isTutorial = guide.guide_category === 'Tutorial';
+  const isGuide = guide.guide_category === 'Guide';
 
   // Smart field detection - some CSVs have columns inverted
   // Headings should be short (< 80 chars), body text should be longer
@@ -315,6 +319,26 @@ const GuideDetail = () => {
     { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements), raw: guideData.interactive_elements },
     { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips, hasSeasoningMatrix: hasSeasoningMatrixContent(guideData.troubleshooting_and_advanced_tips) },
   ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
+
+  // Guide extended content sections - specific order for guide_category === 'Guide'
+  // Order: Intro (body_intro), Context & Background, Use Cases (applied_examples), Deeper Explanation, Expanded Steps,
+  // Try these prompts (handled separately), Variations and Alternatives, Try this exercise (interactive_exercises),
+  // Tools used (recommended_tools_for_this_role), Final Notes (closing_encouragement)
+  // HIDDEN: second Use cases, tip, Interactive elements, second Tools Used
+  const guideExtendedSections = isGuide ? [
+    { heading: 'Context and Background', text: sanitizeContent(guideData.context_and_background), raw: guideData.context_and_background, icon: 'context' },
+    { heading: 'Use Cases', text: sanitizeContent(guideData.applied_examples), raw: guideData.applied_examples, icon: 'usecases' },
+    { heading: 'Deeper Explanation', text: sanitizeContent(guideData.deeper_explanations), raw: guideData.deeper_explanations, icon: 'explanation' },
+    { heading: 'Expanded Steps', text: sanitizeContent(guideData.expanded_steps), raw: guideData.expanded_steps, icon: 'steps' },
+  ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
+
+  const guidePostPromptSections = isGuide ? [
+    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives), raw: guideData.variations_and_alternatives, icon: 'variations' },
+    { heading: 'Try This Exercise', text: sanitizeContent(guideData.interactive_exercises), raw: guideData.interactive_exercises, icon: 'exercise' },
+    { heading: 'Tools Used', text: sanitizeContent(guideData.recommended_tools_for_this_role), raw: guideData.recommended_tools_for_this_role, icon: 'tools' },
+  ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
+
+  const guideFinalNotes = isGuide ? sanitizeContent(guideData.closing_encouragement) : null;
 
   // Final Notes and Closing Encouragement for tutorials (rendered after extended sections)
   const finalNotes = isTutorial ? sanitizeContent(guideData.body_intro) : null; // body_intro stores Final_Notes from CSV
@@ -655,6 +679,139 @@ const GuideDetail = () => {
                     </Card>
                   )}
                 </>
+              ) : isGuide ? (
+                <>
+                  {/* Guide Intro (body_intro) - directly under heading */}
+                  {guide.body_intro && (
+                    <p className="lead mb-8 text-lg text-muted-foreground">
+                      <TextWithLinks text={sanitizeContent(guide.body_intro) || ''} />
+                    </p>
+                  )}
+
+                  {/* Guide Extended Sections - before prompts */}
+                  {guideExtendedSections.length > 0 && (
+                    <section className="mb-12 space-y-8">
+                      {guideExtendedSections.map((section, i) => {
+                        const SectionIcon = getSectionIcon(section.heading);
+                        
+                        return (
+                          <div key={i} className="relative">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <SectionIcon className="h-5 w-5 text-primary" />
+                              </div>
+                              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                                {section.heading}
+                              </h2>
+                            </div>
+                            <TutorialContentRenderer content={section.text} sectionHeading={section.heading} />
+                            {i < guideExtendedSections.length - 1 && (
+                              <div className="mt-8 border-b border-border/50" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </section>
+                  )}
+
+                  {/* Try These Prompts Section for Guides */}
+                  {regularPrompts.length > 0 && (
+                    <section className="mb-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Copy className="h-5 w-5 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                          Try These Prompts
+                        </h2>
+                      </div>
+                      <div className="space-y-6">
+                        {regularPrompts.map((prompt, i) => (
+                          <Card key={i}>
+                            <CardHeader className="pb-2">
+                              {prompt.label && (
+                                <p className="text-sm font-medium text-primary">
+                                  {prompt.label}
+                                </p>
+                              )}
+                              {prompt.headline && (
+                                <CardTitle className="text-lg">{prompt.headline}</CardTitle>
+                              )}
+                            </CardHeader>
+                            <CardContent>
+                              <div className="relative">
+                                <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+                                  <code className="whitespace-pre-wrap break-words text-foreground">
+                                    {prompt.text}
+                                  </code>
+                                </pre>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="absolute right-2 top-2"
+                                  onClick={() => copyPrompt(prompt.text!, i)}
+                                >
+                                  {copiedPrompt === i ? (
+                                    <>
+                                      <Check className="mr-1 h-3 w-3" />
+                                      Copied
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="mr-1 h-3 w-3" />
+                                      Copy
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Guide Post-Prompt Sections - Variations, Exercise, Tools */}
+                  {guidePostPromptSections.length > 0 && (
+                    <section className="mb-12 space-y-8">
+                      {guidePostPromptSections.map((section, i) => {
+                        const SectionIcon = getSectionIcon(section.heading);
+                        
+                        return (
+                          <div key={i} className="relative">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <SectionIcon className="h-5 w-5 text-primary" />
+                              </div>
+                              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                                {section.heading}
+                              </h2>
+                            </div>
+                            <TutorialContentRenderer content={section.text} sectionHeading={section.heading} />
+                            {i < guidePostPromptSections.length - 1 && (
+                              <div className="mt-8 border-b border-border/50" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </section>
+                  )}
+
+                  {/* Final Notes for Guides */}
+                  {guideFinalNotes && (
+                    <section className="mb-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                          Final Notes
+                        </h2>
+                      </div>
+                      <TutorialContentRenderer content={guideFinalNotes} sectionHeading="Final Notes" />
+                    </section>
+                  )}
+                </>
               ) : (
                 bodySections.map((section, i) => (
                   <section key={i} className="mb-8">
@@ -669,10 +826,11 @@ const GuideDetail = () => {
               )}
             </div>
 
-            {/* Mid-content Newsletter Signup for non-Tutorial guides */}
-            {!isTutorial && <InlineNewsletterSignup />}
+            {/* Mid-content Newsletter Signup for non-Tutorial and non-Guide types */}
+            {!isTutorial && !isGuide && <InlineNewsletterSignup />}
 
-            {regularPrompts.length > 0 && (
+            {/* Regular prompts section only for non-Guide types (Guides handle prompts inline above) */}
+            {!isGuide && regularPrompts.length > 0 && (
               <section className="mb-8">
                 <h2 className="mb-6 text-2xl font-semibold tracking-tight">
                   Prompts
