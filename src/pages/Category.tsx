@@ -313,13 +313,19 @@ const Category = () => {
     },
   });
 
-  // Defer: Most read articles
+  // Defer: Most read articles - excludes hero section articles
   const { data: mostReadArticles } = useQuery({
-    queryKey: ["category-most-read", slug],
-    enabled: enableSecondaryQueries && !!category?.id,
+    queryKey: ["category-most-read", slug, articles?.[0]?.id],
+    enabled: enableSecondaryQueries && !!category?.id && !!articles,
     staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      if (!category?.id) return [];
+      if (!category?.id || !articles) return [];
+
+      // Get IDs to exclude (featured + latest articles)
+      const excludeIds = [
+        articles[0]?.id,
+        ...(articles.slice(1, 5).map(a => a.id))
+      ].filter(Boolean);
 
       // Special handling for Voices - fetch from article_categories and exclude Intelligence Desk
       if (slug === 'voices') {
@@ -337,14 +343,18 @@ const Category = () => {
         
         if (error) throw error;
         
-        // Extract articles, filter out Intelligence Desk, and sort by view count in JavaScript
-        const articles = data
+        // Extract articles, filter out Intelligence Desk and excluded IDs, and sort by view count
+        const filteredArticles = data
           ?.map(item => item.articles)
-          .filter(article => article && article.authors?.name !== 'Intelligence Desk') || [];
+          .filter(article => 
+            article && 
+            article.authors?.name !== 'Intelligence Desk' &&
+            !excludeIds.includes(article.id)
+          ) || [];
         
-        return articles
+        return filteredArticles
           .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
-          .slice(0, 6);
+          .slice(0, 4);
       }
 
       const { data, error } = await supabase
@@ -356,8 +366,9 @@ const Category = () => {
         `)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
+        .not("id", "in", `(${excludeIds.join(",")})`)
         .order("view_count", { ascending: false })
-        .limit(6);
+        .limit(4);
       
       if (error) throw error;
       return data;
@@ -635,7 +646,23 @@ const Category = () => {
 
   const featuredArticle = articles?.[0];
   const latestArticles = category?.slug === 'voices' ? articles?.slice(1, 5) || [] : articles?.slice(1, 5) || [];
-  const moreArticles = category?.slug === 'voices' ? articles?.slice(5) || [] : articles?.slice(5) || [];
+  
+  // Collect IDs shown in hero section (featured + latest)
+  const heroSectionIds = [
+    featuredArticle?.id,
+    ...(latestArticles?.map((a: any) => a.id) || [])
+  ].filter(Boolean) as string[];
+  
+  // Collect all IDs shown in any section to exclude from "More Articles"
+  const allShownIds = new Set([
+    ...heroSectionIds,
+    editorsPick?.id,
+    ...(mostReadArticles?.map((a: any) => a.id) || []),
+    ...(trendingArticles?.map((a: any) => a.id) || [])
+  ].filter(Boolean));
+  
+  // Compute "more articles" excluding all previously shown articles
+  const moreArticles = (articles?.slice(5) || []).filter((a: any) => !allShownIds.has(a.id));
 
   return (
     <div className="min-h-screen flex flex-col">
