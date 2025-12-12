@@ -225,32 +225,30 @@ const CopyablePromptBlock = ({ heading, content, index }: CopyablePromptBlockPro
           {heading || 'Try This Prompt'}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="relative">
-          <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-            <code className="whitespace-pre-wrap break-words text-foreground">
-              {content}
-            </code>
-          </pre>
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute right-2 top-2"
-            onClick={handleCopy}
-          >
-            {copied ? (
-              <>
-                <Check className="mr-1 h-3 w-3" />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy className="mr-1 h-3 w-3" />
-                Copy
-              </>
-            )}
-          </Button>
-        </div>
+      <CardContent className="space-y-3">
+        <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+          <code className="whitespace-pre-wrap break-words text-foreground">
+            {content}
+          </code>
+        </pre>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopy}
+          className="w-full sm:w-auto"
+        >
+          {copied ? (
+            <>
+              <Check className="mr-1 h-3 w-3" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="mr-1 h-3 w-3" />
+              Copy
+            </>
+          )}
+        </Button>
       </CardContent>
     </Card>
   );
