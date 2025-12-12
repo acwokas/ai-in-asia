@@ -161,15 +161,54 @@ const formatStepContent = (text: string) => {
   );
 };
 
+// Parse inline markdown like **bold** into JSX
+const parseInlineMarkdown = (text: string) => {
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  const boldRegex = /\*\*([^*]+)\*\*/g;
+  let match;
+  
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(<strong key={match.index} className="font-semibold text-foreground">{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  return parts.length > 0 ? parts : [text];
+};
+
 // Format prose content (non-step sections) - creates paragraph breaks for readability
 const formatProseContent = (text: string) => {
+  // Split on **Header:** patterns to create separate paragraphs
+  const sections = text.split(/(?=\*\*[^*]+:\*\*)/).filter(s => s.trim());
+  
+  if (sections.length > 1) {
+    // Multiple sections found - render each as a paragraph
+    return (
+      <div className="space-y-4">
+        {sections.map((section, i) => (
+          <p key={i} className="text-foreground/85 leading-relaxed">
+            {parseInlineMarkdown(section.trim())}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  
   // First try double newlines
   let paragraphs = text.split(/\n\n+/).filter(p => p.trim());
   
   // If no double newlines found and text is long, create paragraph breaks
-  // Break on sentences that end with period followed by capital letter patterns
   if (paragraphs.length === 1 && text.length > 400) {
-    // Split into sentences, then group every 2-3 sentences into paragraphs
     const sentences = text.split(/(?<=\.)\s+(?=[A-Z])/).filter(s => s.trim());
     paragraphs = [];
     
@@ -181,7 +220,6 @@ const formatProseContent = (text: string) => {
     }
   }
   
-  // If still just one paragraph, just render it
   if (paragraphs.length === 0) {
     paragraphs = [text];
   }
@@ -190,7 +228,7 @@ const formatProseContent = (text: string) => {
     <div className="space-y-6">
       {paragraphs.map((paragraph, i) => (
         <p key={i} className="text-foreground/85 leading-relaxed">
-          {paragraph.trim()}
+          {parseInlineMarkdown(paragraph.trim())}
         </p>
       ))}
     </div>
