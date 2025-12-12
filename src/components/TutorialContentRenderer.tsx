@@ -93,6 +93,31 @@ const shouldShowAsSteps = (sectionHeading: string | undefined): boolean => {
          heading.includes('explanation');
 };
 
+// Parse inline markdown like **bold** into JSX
+const parseInlineMarkdown = (text: string) => {
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  const boldRegex = /\*\*([^*]+)\*\*/g;
+  let match;
+  
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(<strong key={match.index} className="font-semibold text-foreground">{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  return parts.length > 0 ? parts : [text];
+};
+
 // Format step content with numbered badges - handles "Step X:" patterns in text
 const formatStepContent = (text: string) => {
   // Match "Step X:" patterns (with optional space variations)
@@ -103,14 +128,13 @@ const formatStepContent = (text: string) => {
   stepPattern.lastIndex = 0; // Reset regex
   
   if (!hasSteps) {
-    // No steps found, render as paragraphs
-    // Split by double newlines OR periods followed by space and capital letter for paragraph breaks
+    // No steps found, render as paragraphs with markdown parsing
     const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
     return (
       <div className="space-y-6">
         {paragraphs.map((paragraph, i) => (
           <p key={i} className="text-foreground/85 leading-relaxed">
-            {paragraph.trim()}
+            {parseInlineMarkdown(paragraph.trim())}
           </p>
         ))}
       </div>
@@ -138,7 +162,7 @@ const formatStepContent = (text: string) => {
   return (
     <div className="space-y-6">
       {leadingContent && (
-        <p className="text-foreground/85 leading-relaxed mb-4">{leadingContent}</p>
+        <p className="text-foreground/85 leading-relaxed mb-4">{parseInlineMarkdown(leadingContent)}</p>
       )}
       <div className="space-y-5">
         {steps.map((step, i) => (
@@ -151,7 +175,7 @@ const formatStepContent = (text: string) => {
             </Badge>
             <div className="flex-1 pt-0.5">
               <p className="text-foreground/85 leading-relaxed">
-                {step.content}
+                {parseInlineMarkdown(step.content)}
               </p>
             </div>
           </div>
@@ -160,33 +184,6 @@ const formatStepContent = (text: string) => {
     </div>
   );
 };
-
-// Parse inline markdown like **bold** into JSX
-const parseInlineMarkdown = (text: string) => {
-  const parts: (string | JSX.Element)[] = [];
-  let lastIndex = 0;
-  const boldRegex = /\*\*([^*]+)\*\*/g;
-  let match;
-  
-  while ((match = boldRegex.exec(text)) !== null) {
-    // Add text before the match
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    // Add the bold text
-    parts.push(<strong key={match.index} className="font-semibold text-foreground">{match[1]}</strong>);
-    lastIndex = match.index + match[0].length;
-  }
-  
-  // Add remaining text
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-  
-  return parts.length > 0 ? parts : [text];
-};
-
-// Format prose content (non-step sections) - creates paragraph breaks for readability
 const formatProseContent = (text: string) => {
   // Split on **Header:** patterns to create separate paragraphs
   const sections = text.split(/(?=\*\*[^*]+:\*\*)/).filter(s => s.trim());
