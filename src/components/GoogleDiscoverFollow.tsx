@@ -3,7 +3,7 @@ import { Bell, Chrome } from "lucide-react";
 
 export const GoogleDiscoverFollow = () => {
   return (
-    <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+    <Card className="p-6 h-full bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
       <div className="flex items-start gap-4">
         <div className="flex gap-2">
           <Chrome className="h-8 w-8 text-primary flex-shrink-0" />
