@@ -1,161 +1,55 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
 import { memo, Fragment } from "react";
 import { MPUAd } from "./GoogleAds";
 
-const YouMayAlsoLikeComponent = () => {
-  const { user } = useAuth();
+interface YouMayAlsoLikeProps {
+  excludeIds?: string[];
+  skipCount?: number;
+}
 
+const YouMayAlsoLikeComponent = ({ excludeIds = [], skipCount = 0 }: YouMayAlsoLikeProps) => {
   const { data: articles, isLoading } = useQuery({
-    queryKey: ["you-may-also-like", user?.id],
-    staleTime: 10 * 60 * 1000, // 10 minutes - "you may also like" relatively stable
+    queryKey: ["you-may-also-like", excludeIds, skipCount],
+    staleTime: 5 * 60 * 1000, // 5 minutes
     queryFn: async () => {
-      let selectedArticles: any[] = [];
+      let query = supabase
+        .from("articles")
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          featured_image_url,
+          reading_time_minutes,
+          primary_category_id,
+          comment_count,
+          published_at,
+          is_trending,
+          authors:author_id (name, slug),
+          categories:primary_category_id (name, slug)
+        `)
+        .eq("status", "published")
+        .order("published_at", { ascending: false, nullsFirst: false });
 
-      if (user) {
-        // For logged-in users, try to get articles based on their interests
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("interests")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profile?.interests && profile.interests.length > 0) {
-          // Get categories matching user interests
-          const { data: categories } = await supabase
-            .from("categories")
-            .select("id")
-            .in("slug", profile.interests.map((i: string) => i.toLowerCase()));
-
-          if (categories && categories.length > 0) {
-            const categoryIds = categories.map((c) => c.id);
-            
-            // Get articles from user's interested categories - only needed fields
-            const { data: interestedArticles } = await supabase
-              .from("articles")
-              .select(`
-                id,
-                title,
-                slug,
-                excerpt,
-                featured_image_url,
-                reading_time_minutes,
-                primary_category_id,
-                comment_count,
-                published_at,
-                is_trending,
-                authors (name, slug),
-                categories:primary_category_id (name, slug)
-              `)
-              .eq("status", "published")
-              .in("primary_category_id", categoryIds)
-              .order("view_count", { ascending: false })
-              .limit(13);
-
-            if (interestedArticles && interestedArticles.length > 0) {
-              selectedArticles = interestedArticles;
-            }
-          }
-        }
+      // Exclude articles already shown in previous sections
+      if (excludeIds.length > 0) {
+        query = query.not("id", "in", `(${excludeIds.join(",")})`);
       }
 
-      // If no personalized articles or not logged in, get popular from each category
-      if (selectedArticles.length === 0) {
-        const mainCategories = ["news", "business", "life", "voices", "create", "learn"];
-        
-        // Get category IDs
-        const { data: categories } = await supabase
-          .from("categories")
-          .select("id, slug")
-          .in("slug", mainCategories);
-
-        if (!categories) return [];
-
-        const categoryMap = new Map(categories.map((c) => [c.slug, c.id]));
-        
-        // Get 2 popular articles from each category - optimized to only fetch needed fields
-        const articlePromises = mainCategories.map(async (slug) => {
-          const categoryId = categoryMap.get(slug);
-          if (!categoryId) return [];
-
-          const { data } = await supabase
-            .from("articles")
-            .select(`
-              id,
-              title,
-              slug,
-              excerpt,
-              featured_image_url,
-              reading_time_minutes,
-              primary_category_id,
-              comment_count,
-              published_at,
-              is_trending,
-              authors (name, slug),
-              categories:primary_category_id (name, slug)
-            `)
-            .eq("status", "published")
-            .eq("primary_category_id", categoryId)
-            .order("view_count", { ascending: false })
-            .limit(slug === "voices" ? 2 : 1);
-
-          return data || [];
-        });
-
-        const results = await Promise.all(articlePromises);
-        selectedArticles = results.flat();
+      // Skip articles already shown in "You May Like" section
+      if (skipCount > 0) {
+        query = query.range(skipCount, skipCount + 12);
+      } else {
+        query = query.limit(13);
       }
 
-      // Ensure at least 2 Voices articles
-      const voicesArticles = selectedArticles.filter(
-        (a) => a.categories?.slug === "voices"
-      );
-      
-      if (voicesArticles.length < 2) {
-        // Get Voices category ID
-        const { data: voicesCategory } = await supabase
-          .from("categories")
-          .select("id")
-          .eq("slug", "voices")
-          .maybeSingle();
+      const { data, error } = await query;
 
-        if (voicesCategory) {
-          const { data: additionalVoices } = await supabase
-            .from("articles")
-            .select(`
-              id,
-              title,
-              slug,
-              excerpt,
-              featured_image_url,
-              reading_time_minutes,
-              primary_category_id,
-              comment_count,
-              published_at,
-              is_trending,
-              authors (name, slug),
-              categories:primary_category_id (name, slug)
-            `)
-            .eq("status", "published")
-            .eq("primary_category_id", voicesCategory.id)
-            .order("view_count", { ascending: false })
-            .limit(2);
-
-          if (additionalVoices) {
-            // Remove existing voices articles and add the new ones
-            selectedArticles = selectedArticles.filter(
-              (a) => a.categories?.slug !== "voices"
-            );
-            selectedArticles = [...additionalVoices, ...selectedArticles];
-          }
-        }
-      }
-
-      // Return max 13 articles
-      return selectedArticles.slice(0, 13);
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -185,7 +79,7 @@ const YouMayAlsoLikeComponent = () => {
               excerpt={article.excerpt || ""}
               category={article.categories?.name || "Uncategorized"}
               categorySlug={article.categories?.slug || "news"}
-              author={article.authors?.name || "Unknown"}
+              author={article.authors?.name || "Intelligence Desk"}
               readTime={`${article.reading_time_minutes || 5} min read`}
               image={article.featured_image_url || "/placeholder.svg"}
               slug={article.slug}
