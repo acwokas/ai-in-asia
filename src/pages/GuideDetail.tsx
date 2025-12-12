@@ -307,21 +307,26 @@ const GuideDetail = () => {
     (() => { const [h, t] = smartSwap(guide.body_section_3_heading, guide.body_section_3_text); return { heading: h, text: t }; })(),
   ].filter((s) => s.heading && s.text);
 
-  // Tutorial extended content sections - only render fields with content
-  // Filter out sections that reference non-existent downloads/templates
+  // Tutorial extended content sections - BEFORE prompts (per memory requirement)
+  // Order: Context & Background, Use Cases, Deeper Explanation, Expanded Steps
   const guideData = guide as Record<string, string | null>;
-  const extendedSections = isTutorial ? [
+  const tutorialPrePromptSections = isTutorial ? [
     { heading: 'Context and Background', text: sanitizeContent(guideData.context_and_background), raw: guideData.context_and_background },
+    { heading: 'Use Cases', text: sanitizeContent(guideData.applied_examples), raw: guideData.applied_examples },
+    { heading: 'Deeper Explanation', text: sanitizeContent(guideData.deeper_explanations), raw: guideData.deeper_explanations },
     { heading: 'Expanded Steps', text: sanitizeContent(guideData.expanded_steps), raw: guideData.expanded_steps },
-    { heading: 'Deeper Explanations', text: sanitizeContent(guideData.deeper_explanations), raw: guideData.deeper_explanations },
-    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives), raw: guideData.variations_and_alternatives },
-    { heading: 'Interactive Elements', text: sanitizeContent(guideData.interactive_elements), raw: guideData.interactive_elements },
-    { heading: 'Troubleshooting and Advanced Tips', text: sanitizeContent(guideData.troubleshooting_and_advanced_tips), raw: guideData.troubleshooting_and_advanced_tips, hasSeasoningMatrix: hasSeasoningMatrixContent(guideData.troubleshooting_and_advanced_tips) },
   ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
 
-  // Final Notes and Closing Encouragement for tutorials (rendered after extended sections)
-  const finalNotes = isTutorial ? sanitizeContent(guideData.body_intro) : null; // body_intro stores Final_Notes from CSV
-  const closingEncouragement = isTutorial ? sanitizeContent(guideData.closing_encouragement) : null;
+  // Tutorial sections AFTER prompts
+  // Order: Variations and Alternatives, Try this exercise, Tools used
+  const tutorialPostPromptSections = isTutorial ? [
+    { heading: 'Variations and Alternatives', text: sanitizeContent(guideData.variations_and_alternatives), raw: guideData.variations_and_alternatives },
+    { heading: 'Try this exercise', text: sanitizeContent(guideData.interactive_exercises), raw: guideData.interactive_exercises },
+    { heading: 'Tools used', text: sanitizeContent(guideData.recommended_tools_for_this_role), raw: guideData.recommended_tools_for_this_role },
+  ].filter((s) => s.text && !hasUnactionableContent(s.raw, slug)) : [];
+
+  // Final Notes for tutorials (closing_encouragement field)
+  const tutorialFinalNotes = isTutorial ? sanitizeContent(guideData.closing_encouragement) : null;
 
   const tldrBullets = [
     guide.tldr_bullet_1,
@@ -543,7 +548,41 @@ const GuideDetail = () => {
 
               {isTutorial ? (
                 <>
-                  {/* Tutorial Prompts Section */}
+                  {/* Pre-prompt Tutorial Sections: Context, Use Cases, Deeper Explanation, Expanded Steps */}
+                  {tutorialPrePromptSections.length > 0 && (
+                    <section className="mb-12 space-y-8">
+                      {tutorialPrePromptSections.map((section, i) => {
+                        const SectionIcon = getSectionIcon(section.heading);
+                        
+                        return (
+                          <div 
+                            key={i} 
+                            className="relative"
+                          >
+                            {/* Section Header */}
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <SectionIcon className="h-5 w-5 text-primary" />
+                              </div>
+                              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                                {section.heading}
+                              </h2>
+                            </div>
+                            
+                            {/* Content - Uses TutorialContentRenderer for inline structured elements */}
+                            <TutorialContentRenderer content={section.text} sectionHeading={section.heading} />
+                            
+                            {/* Subtle divider between sections */}
+                            {i < tutorialPrePromptSections.length - 1 && (
+                              <div className="mt-8 border-b border-border/50" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </section>
+                  )}
+
+                  {/* Tutorial Prompts Section - comes AFTER pre-prompt sections */}
                   {tutorialPrompts.length > 0 && (
                     <section className="mb-8">
                       <h2 className="mb-6 text-2xl font-semibold tracking-tight">
@@ -593,10 +632,10 @@ const GuideDetail = () => {
                   {/* Mid-content Newsletter Signup for Tutorials */}
                   <InlineNewsletterSignup variant="compact" />
 
-                  {/* Extended Tutorial Sections - Renders inline structured elements */}
-                  {extendedSections.length > 0 && (
+                  {/* Post-prompt Tutorial Sections: Variations, Exercise, Tools */}
+                  {tutorialPostPromptSections.length > 0 && (
                     <section className="mb-12 space-y-8">
-                      {extendedSections.map((section, i) => {
+                      {tutorialPostPromptSections.map((section, i) => {
                         const SectionIcon = getSectionIcon(section.heading);
                         
                         return (
@@ -617,15 +656,8 @@ const GuideDetail = () => {
                             {/* Content - Uses TutorialContentRenderer for inline structured elements */}
                             <TutorialContentRenderer content={section.text} sectionHeading={section.heading} />
                             
-                            {/* Show seasoning matrix download if this section mentions it */}
-                            {(section as { hasSeasoningMatrix?: boolean }).hasSeasoningMatrix && (
-                              <div className="mt-6 pt-6 border-t border-border">
-                                <SeasoningMatrixDownload />
-                              </div>
-                            )}
-                            
                             {/* Subtle divider between sections */}
-                            {i < extendedSections.length - 1 && (
+                            {i < tutorialPostPromptSections.length - 1 && (
                               <div className="mt-8 border-b border-border/50" />
                             )}
                           </div>
@@ -635,25 +667,18 @@ const GuideDetail = () => {
                   )}
 
                   {/* Final Notes Section */}
-                  {finalNotes && (
-                    <section className="mb-8">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-primary" />
-                        </div>
-                        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                          Final Notes
-                        </h2>
-                      </div>
-                      <TutorialContentRenderer content={finalNotes} sectionHeading="Final Notes" />
-                    </section>
-                  )}
-
-                  {/* Closing Encouragement */}
-                  {closingEncouragement && (
+                  {tutorialFinalNotes && (
                     <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                       <CardContent className="py-6">
-                        <TutorialContentRenderer content={closingEncouragement} sectionHeading="Closing" />
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                            Final Notes
+                          </h2>
+                        </div>
+                        <TutorialContentRenderer content={tutorialFinalNotes} sectionHeading="Final Notes" />
                       </CardContent>
                     </Card>
                   )}
