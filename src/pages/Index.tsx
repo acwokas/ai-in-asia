@@ -127,6 +127,13 @@ const Index = () => {
   const latestArticles = homepageData?.latest;
   const baseTrendingArticles = homepageData?.trending;
 
+  // Collect all article IDs shown in hero/latest sections for exclusion in subsequent sections
+  const heroLatestIds = [
+    featuredArticle?.id,
+    ...(latestArticles?.map((a: any) => a.id) || []),
+    ...(baseTrendingArticles?.map((a: any) => a.id) || [])
+  ].filter(Boolean) as string[];
+
   // Get today's date as cache key for daily refresh
   const todayKey = format(new Date(), 'yyyy-MM-dd');
 
@@ -824,7 +831,7 @@ const Index = () => {
             </div>
           </div>
         }>
-          <RecommendedArticles />
+          <RecommendedArticles excludeIds={heroLatestIds} />
         </Suspense>
 
         {/* Upcoming Events */}
@@ -859,7 +866,7 @@ const Index = () => {
             </div>
           </div>
         }>
-          <YouMayAlsoLike />
+          <YouMayAlsoLike excludeIds={heroLatestIds} skipCount={6} />
         </Suspense>
 
         {/* Featured Voices Section - Moved above Google Discover */}
