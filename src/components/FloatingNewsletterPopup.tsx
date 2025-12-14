@@ -25,10 +25,11 @@ const FloatingNewsletterPopup = () => {
     }
 
     // Track page visits - only show on second+ page load
-    const visitCount = parseInt(localStorage.getItem("page-visit-count") || "0", 10);
-    localStorage.setItem("page-visit-count", (visitCount + 1).toString());
+    const visitCount = parseInt(sessionStorage.getItem("page-visit-count") || "0", 10);
+    const newCount = visitCount + 1;
+    sessionStorage.setItem("page-visit-count", newCount.toString());
     
-    if (visitCount < 1) {
+    if (newCount < 2) {
       // First page load - don't show popup
       return;
     }
