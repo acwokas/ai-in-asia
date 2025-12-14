@@ -394,23 +394,25 @@ const SiteAnalytics = () => {
         )}
 
         <Tabs defaultValue="charts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="charts" className="gap-1">
-              <LineChartIcon className="h-4 w-4" />
-              Charts
-            </TabsTrigger>
-            <TabsTrigger value="sponsors" className="gap-1">
-              <DollarSign className="h-4 w-4" />
-              Sponsors
-            </TabsTrigger>
-            <TabsTrigger value="traffic">Traffic</TabsTrigger>
-            <TabsTrigger value="pages">Pages</TabsTrigger>
-            <TabsTrigger value="journeys">User Journeys</TabsTrigger>
-            <TabsTrigger value="sources">Sources</TabsTrigger>
-            <TabsTrigger value="technology">Technology</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="errors">Errors</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:grid md:grid-cols-9">
+              <TabsTrigger value="charts" className="gap-1 text-xs md:text-sm px-2 md:px-3">
+                <LineChartIcon className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Charts</span>
+              </TabsTrigger>
+              <TabsTrigger value="sponsors" className="gap-1 text-xs md:text-sm px-2 md:px-3">
+                <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Sponsors</span>
+              </TabsTrigger>
+              <TabsTrigger value="traffic" className="text-xs md:text-sm px-2 md:px-3">Traffic</TabsTrigger>
+              <TabsTrigger value="pages" className="text-xs md:text-sm px-2 md:px-3">Pages</TabsTrigger>
+              <TabsTrigger value="journeys" className="text-xs md:text-sm px-2 md:px-3">Journeys</TabsTrigger>
+              <TabsTrigger value="sources" className="text-xs md:text-sm px-2 md:px-3">Sources</TabsTrigger>
+              <TabsTrigger value="technology" className="text-xs md:text-sm px-2 md:px-3">Tech</TabsTrigger>
+              <TabsTrigger value="events" className="text-xs md:text-sm px-2 md:px-3">Events</TabsTrigger>
+              <TabsTrigger value="errors" className="text-xs md:text-sm px-2 md:px-3">Errors</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Interactive Charts Tab */}
           <TabsContent value="charts" className="space-y-6">

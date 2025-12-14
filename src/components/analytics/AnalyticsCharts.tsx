@@ -15,6 +15,7 @@ import {
 import { CalendarIcon, Download, Filter, RefreshCw, Search } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CHART_COLORS = [
   'hsl(var(--primary))', 
@@ -44,6 +45,7 @@ interface AnalyticsChartsProps {
 }
 
 export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoading }: AnalyticsChartsProps) => {
+  const isMobile = useIsMobile();
   const [chartType, setChartType] = useState<'area' | 'line' | 'bar'>('area');
   const [metric, setMetric] = useState<'all' | 'sessions' | 'pageviews' | 'bounces'>('all');
   const [groupBy, setGroupBy] = useState<'day' | 'hour' | 'week'>('day');
@@ -52,6 +54,12 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
     to: new Date()
   });
   const [searchFilter, setSearchFilter] = useState('');
+  
+  // Responsive chart heights
+  const mainChartHeight = isMobile ? 250 : 350;
+  const secondaryChartHeight = isMobile ? 220 : 300;
+  const yAxisWidth = isMobile ? 80 : 150;
+  const truncateLength = isMobile ? 10 : 20;
 
   // Process data for time-series charts
   const timeSeriesData = useMemo(() => {
@@ -333,9 +341,9 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-2 mb-6">
             <Select value={chartType} onValueChange={(v: 'area' | 'line' | 'bar') => setChartType(v)}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[110px] md:w-[130px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -346,19 +354,19 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
             </Select>
 
             <Select value={metric} onValueChange={(v: 'all' | 'sessions' | 'pageviews' | 'bounces') => setMetric(v)}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[110px] md:w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Metrics</SelectItem>
-                <SelectItem value="sessions">Sessions Only</SelectItem>
-                <SelectItem value="pageviews">Pageviews Only</SelectItem>
-                <SelectItem value="bounces">Bounces Only</SelectItem>
+                <SelectItem value="sessions">Sessions</SelectItem>
+                <SelectItem value="pageviews">Pageviews</SelectItem>
+                <SelectItem value="bounces">Bounces</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={groupBy} onValueChange={(v: 'day' | 'hour' | 'week') => setGroupBy(v)}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[100px] md:w-[130px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -367,7 +375,7 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
               </SelectContent>
             </Select>
 
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="hidden md:flex items-center gap-2 ml-auto">
               <Badge variant="outline" className="gap-1">
                 <span className="h-2 w-2 rounded-full bg-primary" />
                 Sessions
@@ -379,71 +387,80 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
             </div>
           </div>
 
-          <ResponsiveContainer width="100%" height={350}>
-            {renderChart()}
-          </ResponsiveContainer>
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="min-w-[300px]">
+              <ResponsiveContainer width="100%" height={mainChartHeight}>
+                {renderChart()}
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Secondary Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Page Performance Chart */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
-                <CardTitle>Page Performance</CardTitle>
-                <CardDescription>Views, time on page, and exit rates</CardDescription>
+                <CardTitle className="text-base md:text-lg">Page Performance</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Views, time on page, and exit rates</CardDescription>
               </div>
-              <div className="relative w-48">
+              <div className="relative w-full md:w-48">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Filter pages..."
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 h-9"
                 />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={pagePerformanceData.slice(0, 8)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis type="number" />
-                <YAxis 
-                  dataKey="path" 
-                  type="category" 
-                  width={150} 
-                  className="text-xs"
-                  tickFormatter={(value) => value.length > 20 ? value.slice(0, 20) + '...' : value}
-                />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Views" />
-                <Scatter dataKey="avgTime" fill="#10b981" name="Avg Time (s)" />
-              </ComposedChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="min-w-[280px]">
+                <ResponsiveContainer width="100%" height={secondaryChartHeight}>
+                  <ComposedChart data={pagePerformanceData.slice(0, isMobile ? 5 : 8)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <YAxis 
+                      dataKey="path" 
+                      type="category" 
+                      width={yAxisWidth} 
+                      className="text-xs"
+                      tick={{ fontSize: isMobile ? 9 : 12 }}
+                      tickFormatter={(value) => value.length > truncateLength ? value.slice(0, truncateLength) + '...' : value}
+                    />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Views" />
+                    <Scatter dataKey="avgTime" fill="#10b981" name="Avg Time (s)" />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Traffic Sources Pie */}
         <Card>
-          <CardHeader>
-            <CardTitle>Traffic Sources</CardTitle>
-            <CardDescription>Where your visitors come from</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Traffic Sources</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Where your visitors come from</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={secondaryChartHeight}>
               <PieChart>
                 <Pie
                   data={referrerData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={isMobile ? 40 : 60}
+                  outerRadius={isMobile ? 70 : 100}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }) => `${name.slice(0, 15)} ${(percent * 100).toFixed(0)}%`}
+                  label={isMobile ? false : ({ name, percent }) => `${name.slice(0, 12)} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {referrerData.map((_, index) => (
@@ -451,6 +468,10 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
                   ))}
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />
+                <Legend 
+                  wrapperStyle={{ fontSize: isMobile ? 10 : 12 }}
+                  formatter={(value: string) => value.length > 12 ? value.slice(0, 12) + '...' : value}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -458,84 +479,102 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
 
         {/* Event Funnel */}
         <Card>
-          <CardHeader>
-            <CardTitle>Event Funnel</CardTitle>
-            <CardDescription>Top tracked events by frequency</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Event Funnel</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Top tracked events by frequency</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={eventFunnelData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis type="number" />
-                <YAxis 
-                  dataKey="name" 
-                  type="category" 
-                  width={120} 
-                  className="text-xs"
-                  tickFormatter={(value) => value.length > 15 ? value.slice(0, 15) + '...' : value}
-                />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="count" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]}>
-                  {eventFunnelData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="min-w-[280px]">
+                <ResponsiveContainer width="100%" height={secondaryChartHeight}>
+                  <BarChart data={eventFunnelData.slice(0, isMobile ? 5 : 10)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      width={yAxisWidth} 
+                      className="text-xs"
+                      tick={{ fontSize: isMobile ? 9 : 12 }}
+                      tickFormatter={(value) => value.length > truncateLength ? value.slice(0, truncateLength) + '...' : value}
+                    />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="count" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]}>
+                      {eventFunnelData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Hourly Traffic Heatmap */}
         <Card>
-          <CardHeader>
-            <CardTitle>Hourly Traffic Pattern</CardTitle>
-            <CardDescription>When your visitors are most active</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Hourly Traffic Pattern</CardTitle>
+            <CardDescription className="text-xs md:text-sm">When your visitors are most active</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={hourlyData}>
-                <defs>
-                  <linearGradient id="hourly-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="hour" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Area 
-                  type="monotone" 
-                  dataKey="sessions" 
-                  stroke="hsl(var(--primary))" 
-                  fill="url(#hourly-gradient)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="min-w-[280px]">
+                <ResponsiveContainer width="100%" height={secondaryChartHeight}>
+                  <AreaChart data={hourlyData}>
+                    <defs>
+                      <linearGradient id="hourly-gradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="hour" 
+                      className="text-xs" 
+                      tick={{ fontSize: isMobile ? 9 : 12 }}
+                      interval={isMobile ? 3 : 1}
+                    />
+                    <YAxis className="text-xs" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="sessions" 
+                      stroke="hsl(var(--primary))" 
+                      fill="url(#hourly-gradient)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Comparison Charts */}
       <Card>
-        <CardHeader>
-          <CardTitle>Session Duration vs Pageviews</CardTitle>
-          <CardDescription>Correlation between engagement metrics</CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base md:text-lg">Session Duration vs Pageviews</CardTitle>
+          <CardDescription className="text-xs md:text-sm">Correlation between engagement metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={timeSeriesData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="date" className="text-xs" />
-              <YAxis yAxisId="left" className="text-xs" />
-              <YAxis yAxisId="right" orientation="right" className="text-xs" />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar yAxisId="left" dataKey="pageviews" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Pageviews" />
-              <Line yAxisId="right" type="monotone" dataKey="avgDuration" stroke="#10b981" strokeWidth={2} name="Avg Duration (s)" />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="min-w-[300px]">
+              <ResponsiveContainer width="100%" height={secondaryChartHeight}>
+                <ComposedChart data={timeSeriesData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" tick={{ fontSize: isMobile ? 9 : 12 }} />
+                  <YAxis yAxisId="left" className="text-xs" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                  <YAxis yAxisId="right" orientation="right" className="text-xs" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
+                  <Bar yAxisId="left" dataKey="pageviews" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Pageviews" />
+                  <Line yAxisId="right" type="monotone" dataKey="avgDuration" stroke="#10b981" strokeWidth={2} name="Avg Duration (s)" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
