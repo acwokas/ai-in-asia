@@ -125,6 +125,7 @@ const Footer = memo(() => {
               <li><Link to="/category/learn" className="hover:text-primary transition-colors">Learn</Link></li>
               <li><Link to="/category/create" className="hover:text-primary transition-colors">Create</Link></li>
               <li><Link to="/category/voices" className="hover:text-primary transition-colors">Voices</Link></li>
+              <li><Link to="/guides" className="hover:text-primary transition-colors">Guides</Link></li>
             </ul>
           </div>
 
