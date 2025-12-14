@@ -121,8 +121,8 @@ const FloatingNewsletterPopup = () => {
   if (!isVisible || isDismissed) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-5 slide-in-from-right-5 duration-300">
-      <div className="bg-card border border-border rounded-xl shadow-2xl p-5 w-[380px] max-w-[calc(100vw-2rem)] relative">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 animate-in slide-in-from-bottom-5 duration-300">
+      <div className="bg-card border border-border rounded-xl shadow-2xl p-4 sm:p-5 w-full sm:w-[380px] relative">
         {/* Close button */}
         <button
           onClick={handleDismiss}
