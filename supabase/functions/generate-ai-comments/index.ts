@@ -739,7 +739,12 @@ Deno.serve(async (req) => {
         } else if (selectedAuthor.region === 'france') {
           regionalInstruction = `Maybe drop a French word (voilà, en fait). Slightly French phrasing is ok. Not perfect English`;
         } else if (selectedAuthor.region === 'singapore' || selectedAuthor.region === 'malaysia') {
-          regionalInstruction = `Use Singlish naturally - "lah", "lor", "sia", "can" at end. "This one quite good lah" or "Cannot work one lor"`;
+          // Only 20% chance to actually use Singlish particles - most comments should be normal English
+          if (Math.random() < 0.20) {
+            regionalInstruction = `You MAY use ONE Singlish particle like "lah", "lor", "sia" - but only if it fits naturally. Most Singaporeans/Malaysians type normal English online. Dont force it.`;
+          } else {
+            regionalInstruction = `Write in normal casual English. You're from Singapore/Malaysia but most people there type standard English online, not Singlish.`;
+          }
         } else if (selectedAuthor.region === 'india') {
           regionalInstruction = `Indian English patterns - "only" for emphasis, "actually" often, "na" or "yaar". "This is actually very good only" or "We should try na"`;
         }
