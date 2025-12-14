@@ -372,6 +372,17 @@ const addEmojis = (text: string, emojiChance: number, sentiment: 'positive' | 'n
   }
 };
 
+// Hard sanitization to remove overused regional fillers
+// We completely strip "wah" and "lah" so they never appear in stored comments
+const sanitizeComment = (text: string): string => {
+  let result = text;
+  result = result.replace(/\bwah\b[,!?.]*/gi, '');
+  result = result.replace(/\blah\b[,!?.]*/gi, '');
+  // Collapse extra whitespace and trim
+  result = result.replace(/\s{2,}/g, ' ').trim();
+  return result;
+};
+
 // Main function to add all natural variations
 const addNaturalVariations = (text: string, region: string): string => {
   const patterns = regionalPatterns[region] || regionalPatterns.west;
@@ -559,7 +570,7 @@ Deno.serve(async (req) => {
         'this is wild', 'this is crazy', 'this is huge', 'this is interesting',
         'this is insane', 'this is big', "i'm starting", "i'm trying",
         'the implications', 'game changer', 'the fact that',
-        'wah', 'waah', 'fascinating read', 'interesting read', 'great read',
+        'wah', 'waah', 'lah', 'fascinating read', 'interesting read', 'great read',
         'great article', 'nice article', 'good article', 'excellent article',
         'what a read', 'must read', 'amazing read', 'brilliant read',
         'isnt it', "isn't it", 'right?', 'dont you think', "don't you think",
@@ -739,12 +750,7 @@ Deno.serve(async (req) => {
         } else if (selectedAuthor.region === 'france') {
           regionalInstruction = `Maybe drop a French word (voilà, en fait). Slightly French phrasing is ok. Not perfect English`;
         } else if (selectedAuthor.region === 'singapore' || selectedAuthor.region === 'malaysia') {
-          // Only 20% chance to actually use Singlish particles - most comments should be normal English
-          if (Math.random() < 0.20) {
-            regionalInstruction = `You MAY use ONE Singlish particle like "lah", "lor", "sia" - but only if it fits naturally. Most Singaporeans/Malaysians type normal English online. Dont force it.`;
-          } else {
-            regionalInstruction = `Write in normal casual English. You're from Singapore/Malaysia but most people there type standard English online, not Singlish.`;
-          }
+          regionalInstruction = `Write in normal casual English. Do NOT use "wah" or "lah" at all. If you add any local flavour, keep it subtle and vary it across comments.`;
         } else if (selectedAuthor.region === 'india') {
           regionalInstruction = `Indian English patterns - "only" for emphasis, "actually" often, "na" or "yaar". "This is actually very good only" or "We should try na"`;
         }
@@ -826,13 +832,16 @@ Write ONLY the comment. nothing else.`;
           let commentText = aiData.choices[0].message.content.trim();
 
           // Remove any quotes the AI might have added
-          commentText = commentText.replace(/^["']|["']$/g, '');
+          commentText = commentText.replace(/^['"]|['"]$/g, '');
           
           // Remove any "Comment:" prefix if AI added it
           commentText = commentText.replace(/^(Comment|Response|Reply):\s*/i, '');
 
           // Add natural variations based on region
           commentText = addNaturalVariations(commentText, selectedAuthor.region);
+
+          // Final hard sanitization for banned fillers like "wah" and "lah"
+          commentText = sanitizeComment(commentText);
 
           // Track the opening to avoid repetition
           const opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
