@@ -86,6 +86,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_ai: boolean | null
+          published: boolean | null
         }
         Insert: {
           article_id: string
@@ -95,6 +96,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_ai?: boolean | null
+          published?: boolean | null
         }
         Update: {
           article_id?: string
@@ -104,6 +106,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_ai?: boolean | null
+          published?: boolean | null
         }
         Relationships: [
           {

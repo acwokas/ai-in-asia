@@ -4,9 +4,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, User, ChevronDown, Check, X } from "lucide-react";
+import { 
+  MessageCircle, User, ChevronDown, Check, X, 
+  Sparkles, RefreshCw, Trash2, Edit2, Eye, EyeOff,
+  Loader2, AlertTriangle
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Comment {
   id: string;
@@ -17,6 +39,7 @@ interface Comment {
   created_at: string;
   approved: boolean;
   is_ai?: boolean;
+  published?: boolean;
 }
 
 interface CommentsProps {
@@ -25,22 +48,25 @@ interface CommentsProps {
 
 // Helper to wrap emojis in teal-colored spans
 const formatCommentWithEmojis = (content: string): string => {
-  // Emoji regex pattern
   const emojiRegex = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
   return content.replace(emojiRegex, '<span class="text-primary">$1</span>');
 };
 
 const Comments = ({ articleId }: CommentsProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [aiComments, setAiComments] = useState<Comment[]>([]);
   const [pendingComments, setPendingComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authorName, setAuthorName] = useState("");
   const [authorEmail, setAuthorEmail] = useState("");
   const [content, setContent] = useState("");
   const [isNotRobot, setIsNotRobot] = useState(false);
-  const [isOpen, setIsOpen] = useState(true); // Open by default
+  const [isOpen, setIsOpen] = useState(true);
+  const [editingComment, setEditingComment] = useState<Comment | null>(null);
+  const [editContent, setEditContent] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,13 +104,14 @@ const Comments = ({ articleId }: CommentsProps) => {
 
       if (approvedError) throw approvedError;
 
-      // Fetch AI generated comments
-      const { data: aiComments, error: aiError } = await supabase
+      // Fetch AI generated comments - admins see all, users see only published
+      const aiQuery = supabase
         .from("ai_generated_comments")
         .select(`
           id,
           content,
           comment_date,
+          published,
           ai_comment_authors (
             name,
             handle,
@@ -94,25 +121,36 @@ const Comments = ({ articleId }: CommentsProps) => {
         .eq("article_id", articleId)
         .order("comment_date", { ascending: false });
 
+      // Non-admins only see published comments
+      if (!isAdmin) {
+        aiQuery.eq("published", true);
+      }
+
+      const { data: aiCommentsData, error: aiError } = await aiQuery;
+
       if (aiError) throw aiError;
 
       // Transform AI comments to match Comment interface
-      const transformedAiComments: Comment[] = (aiComments || []).map((aiComment: any) => ({
+      const transformedAiComments: Comment[] = (aiCommentsData || []).map((aiComment: any) => ({
         id: aiComment.id,
         content: aiComment.content,
-        author_name: aiComment.ai_comment_authors.name,
-        author_handle: aiComment.ai_comment_authors.handle,
-        avatar_url: aiComment.ai_comment_authors.avatar_url,
+        author_name: aiComment.ai_comment_authors?.name || "Unknown",
+        author_handle: aiComment.ai_comment_authors?.handle,
+        avatar_url: aiComment.ai_comment_authors?.avatar_url,
         created_at: aiComment.comment_date,
         approved: true,
         is_ai: true,
+        published: aiComment.published,
       }));
 
-      // Combine and sort all comments by date
-      const allComments = [...(approvedData || []), ...transformedAiComments];
-      allComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setAiComments(transformedAiComments);
 
-      setComments(allComments);
+      // Combine published AI comments with real comments for display
+      const publishedAiComments = transformedAiComments.filter(c => c.published);
+      const allDisplayComments = [...(approvedData || []), ...publishedAiComments];
+      allDisplayComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setComments(allDisplayComments);
 
       // Fetch pending comments if admin
       if (isAdmin) {
@@ -130,6 +168,220 @@ const Comments = ({ articleId }: CommentsProps) => {
       console.error("Error fetching comments:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateComments = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-ai-comments", {
+        body: { articleIds: [articleId] },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Comments generated",
+        description: `Generated ${data.commentsGenerated} comments. They are unpublished by default.`,
+      });
+
+      fetchComments();
+    } catch (error) {
+      console.error("Error generating comments:", error);
+      toast({
+        title: "Failed to generate comments",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleRegenerateAll = async () => {
+    setGenerating(true);
+    try {
+      // Delete existing AI comments first
+      await supabase
+        .from("ai_generated_comments")
+        .delete()
+        .eq("article_id", articleId);
+
+      // Generate new ones
+      const { data, error } = await supabase.functions.invoke("generate-ai-comments", {
+        body: { articleIds: [articleId] },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Comments regenerated",
+        description: `Generated ${data.commentsGenerated} new comments.`,
+      });
+
+      fetchComments();
+    } catch (error) {
+      console.error("Error regenerating comments:", error);
+      toast({
+        title: "Failed to regenerate comments",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleDeleteAllAiComments = async () => {
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .delete()
+        .eq("article_id", articleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "All AI comments deleted",
+        description: "AI comments have been removed from this article.",
+      });
+
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to delete comments",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePublishComment = async (commentId: string, publish: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .update({ published: publish })
+        .eq("id", commentId);
+
+      if (error) throw error;
+
+      toast({
+        title: publish ? "Comment published" : "Comment unpublished",
+        description: publish ? "The comment is now visible to everyone." : "The comment is now hidden.",
+      });
+
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to update comment",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePublishAll = async () => {
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .update({ published: true })
+        .eq("article_id", articleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "All comments published",
+        description: "All AI comments are now visible to everyone.",
+      });
+
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to publish comments",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnpublishAll = async () => {
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .update({ published: false })
+        .eq("article_id", articleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "All comments unpublished",
+        description: "All AI comments are now hidden.",
+      });
+
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to unpublish comments",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAiComment = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .delete()
+        .eq("id", commentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Comment deleted",
+        description: "The comment has been removed.",
+      });
+
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to delete comment",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setEditingComment(comment);
+    setEditContent(comment.content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingComment) return;
+
+    try {
+      const { error } = await supabase
+        .from("ai_generated_comments")
+        .update({ content: editContent })
+        .eq("id", editingComment.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Comment updated",
+        description: "The comment has been saved.",
+      });
+
+      setEditingComment(null);
+      setEditContent("");
+      fetchComments();
+    } catch (error) {
+      toast({
+        title: "Failed to update comment",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -194,7 +446,7 @@ const Comments = ({ articleId }: CommentsProps) => {
             author_name: authorName,
             author_email: authorEmail,
             content: content,
-            approved: false, // Requires moderation
+            approved: false,
           },
         ])
         .select()
@@ -202,7 +454,6 @@ const Comments = ({ articleId }: CommentsProps) => {
 
       if (error) throw error;
 
-      // Send email notification
       try {
         await supabase.functions.invoke("notify-new-comment", {
           body: {
@@ -215,7 +466,6 @@ const Comments = ({ articleId }: CommentsProps) => {
         });
       } catch (emailError) {
         console.error("Failed to send notification email:", emailError);
-        // Don't fail the whole operation if email fails
       }
 
       toast({
@@ -238,6 +488,9 @@ const Comments = ({ articleId }: CommentsProps) => {
     }
   };
 
+  const unpublishedCount = aiComments.filter(c => !c.published).length;
+  const publishedCount = aiComments.filter(c => c.published).length;
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-12 pt-8 border-t border-border">
       <CollapsibleTrigger className="flex items-center justify-between w-full group mb-8">
@@ -249,176 +502,383 @@ const Comments = ({ articleId }: CommentsProps) => {
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        {/* Comments List */}
-      {loading ? (
-        <div className="text-center text-muted-foreground py-8">Loading comments...</div>
-      ) : (
-        <>
-          {/* Pending Comments (Admin Only) */}
-          {isAdmin && pendingComments.length > 0 && (
-            <div className="mb-8 space-y-4">
-              <h3 className="font-semibold text-lg text-destructive">Pending Approval ({pendingComments.length})</h3>
-              {pendingComments.map((comment) => (
-                <div key={comment.id} className="flex gap-4 bg-destructive/10 p-4 rounded-lg border-2 border-destructive">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-destructive to-destructive/70 flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-destructive">
-                        {comment.author_name || "Anonymous"}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(comment.created_at).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-foreground mb-3">{comment.content}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => handleApprove(comment.id)}
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleReject(comment.id)}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* Admin AI Comment Controls */}
+        {isAdmin && (
+          <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-lg">AI Comment Controls</h3>
+              <span className="text-sm text-muted-foreground ml-auto">
+                {publishedCount} published / {unpublishedCount} unpublished
+              </span>
             </div>
-          )}
+            
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                size="sm"
+                onClick={handleGenerateComments}
+                disabled={generating}
+              >
+                {generating ? (
+                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-1" /> Generate Comments</>
+                )}
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="outline" disabled={generating || aiComments.length === 0}>
+                    <RefreshCw className="h-4 w-4 mr-1" /> Regenerate All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Regenerate all AI comments?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will delete all existing AI comments for this article and generate new ones.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRegenerateAll}>Regenerate</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
-          {/* Latest Comments */}
-          {comments.length === 0 && pendingComments.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No comments yet. Be the first to share your thoughts!</p>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={handlePublishAll}
+                disabled={unpublishedCount === 0}
+              >
+                <Eye className="h-4 w-4 mr-1" /> Publish All
+              </Button>
+
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={handleUnpublishAll}
+                disabled={publishedCount === 0}
+              >
+                <EyeOff className="h-4 w-4 mr-1" /> Unpublish All
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" disabled={aiComments.length === 0}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete all AI comments?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all AI-generated comments for this article.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAllAiComments} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-          ) : comments.length > 0 && (
-            <div className="space-y-6 mb-8">
-              {comments.length > 0 && <h3 className="font-semibold text-lg">Latest Comments ({comments.length})</h3>}
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-4">
-                  {comment.avatar_url ? (
-                    <img 
-                      src={comment.avatar_url} 
-                      alt={comment.author_name || "User"} 
-                      className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+
+            {/* AI Comments List for Admin */}
+            {aiComments.length > 0 && (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                <h4 className="text-sm font-medium text-muted-foreground">AI Comments ({aiComments.length})</h4>
+                {aiComments.map((comment) => (
+                  <div 
+                    key={comment.id} 
+                    className={`flex gap-3 p-3 rounded-lg border ${
+                      comment.published 
+                        ? 'bg-background border-border' 
+                        : 'bg-muted/50 border-dashed border-muted-foreground/30'
+                    }`}
+                  >
+                    {comment.avatar_url ? (
+                      <img 
+                        src={comment.avatar_url} 
+                        alt={comment.author_name || "User"} 
+                        className="w-8 h-8 rounded-full flex-shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm truncate">
+                          {comment.author_name}
+                        </span>
+                        {comment.author_handle && (
+                          <span className="text-xs text-muted-foreground">
+                            @{comment.author_handle}
+                          </span>
+                        )}
+                        {!comment.published && (
+                          <span className="text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                            Unpublished
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => handlePublishComment(comment.id, !comment.published)}
+                        title={comment.published ? "Unpublish" : "Publish"}
+                      >
+                        {comment.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => handleEditComment(comment)}
+                        title="Edit"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this AI-generated comment.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteAiComment(comment.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Comments List */}
+        {loading ? (
+          <div className="text-center text-muted-foreground py-8">Loading comments...</div>
+        ) : (
+          <>
+            {/* Pending Comments (Admin Only) */}
+            {isAdmin && pendingComments.length > 0 && (
+              <div className="mb-8 space-y-4">
+                <h3 className="font-semibold text-lg text-destructive">Pending Approval ({pendingComments.length})</h3>
+                {pendingComments.map((comment) => (
+                  <div key={comment.id} className="flex gap-4 bg-destructive/10 p-4 rounded-lg border-2 border-destructive">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-destructive to-destructive/70 flex items-center justify-center flex-shrink-0">
                       <User className="h-5 w-5 text-white" />
                     </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold">
-                        {comment.author_name || "Anonymous"}
-                      </span>
-                      {comment.author_handle && (
-                        <span className="text-sm text-muted-foreground">
-                          @{comment.author_handle}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-destructive">
+                          {comment.author_name || "Anonymous"}
                         </span>
-                      )}
-                      <span className="text-sm text-muted-foreground">
-                        •
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(comment.created_at).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(comment.created_at).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-foreground mb-3">{comment.content}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleApprove(comment.id)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReject(comment.id)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Latest Comments */}
+            {comments.length === 0 && pendingComments.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>No comments yet. Be the first to share your thoughts!</p>
+              </div>
+            ) : comments.length > 0 && (
+              <div className="space-y-6 mb-8">
+                {comments.length > 0 && <h3 className="font-semibold text-lg">Latest Comments ({comments.length})</h3>}
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-4">
+                    {comment.avatar_url ? (
+                      <img 
+                        src={comment.avatar_url} 
+                        alt={comment.author_name || "User"} 
+                        className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold">
+                          {comment.author_name || "Anonymous"}
+                        </span>
+                        {comment.author_handle && (
+                          <span className="text-sm text-muted-foreground">
+                            @{comment.author_handle}
+                          </span>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          •
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(comment.created_at).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Comment Form */}
+            <div className="bg-muted/30 rounded-lg p-6 mt-8">
+              <h3 className="font-semibold text-lg mb-4">Leave a Comment</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium mb-2">
+                      Name *
+                    </label>
+                    <Input
+                      id="name"
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      required
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium mb-2">
+                      Email *
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={authorEmail}
+                      onChange={(e) => setAuthorEmail(e.target.value)}
+                      required
+                      placeholder="your@email.com"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your email will not be published
+                    </p>
                   </div>
                 </div>
-              ))}
+                <div>
+                  <label htmlFor="comment" className="block text-sm font-medium mb-2">
+                    Comment *
+                  </label>
+                  <Textarea
+                    id="comment"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    required
+                    placeholder="Share your thoughts..."
+                    className="min-h-[120px]"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="robot-check"
+                    checked={isNotRobot}
+                    onCheckedChange={(checked) => setIsNotRobot(checked as boolean)}
+                    required
+                  />
+                  <label
+                    htmlFor="robot-check"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I'm not a robot *
+                  </label>
+                </div>
+                <Button type="submit" disabled={submitting || !isNotRobot}>
+                  {submitting ? "Submitting..." : "Post Comment"}
+                </Button>
+              </form>
             </div>
-          )}
+          </>
+        )}
 
-          {/* Comment Form */}
-          <div className="bg-muted/30 rounded-lg p-6 mt-8">
-            <h3 className="font-semibold text-lg mb-4">Leave a Comment</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">
-                    Name *
-                  </label>
-                  <Input
-                    id="name"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    required
-                    placeholder="Your name"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Email *
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={authorEmail}
-                    onChange={(e) => setAuthorEmail(e.target.value)}
-                    required
-                    placeholder="your@email.com"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your email will not be published
-                  </p>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="comment" className="block text-sm font-medium mb-2">
-                  Comment *
-                </label>
-                <Textarea
-                  id="comment"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  required
-                  placeholder="Share your thoughts..."
-                  className="min-h-[120px]"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="robot-check"
-                  checked={isNotRobot}
-                  onCheckedChange={(checked) => setIsNotRobot(checked as boolean)}
-                  required
-                />
-                <label
-                  htmlFor="robot-check"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  I'm not a robot *
-                </label>
-              </div>
-              <Button type="submit" disabled={submitting || !isNotRobot}>
-                {submitting ? "Submitting..." : "Post Comment"}
+        {/* Edit Comment Dialog */}
+        <Dialog open={!!editingComment} onOpenChange={() => setEditingComment(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Comment</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[150px]"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditingComment(null)}>
+                Cancel
               </Button>
-            </form>
-          </div>
-        </>
-      )}
+              <Button onClick={handleSaveEdit}>
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CollapsibleContent>
     </Collapsible>
   );
