@@ -386,6 +386,180 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_category: string | null
+          event_data: Json | null
+          event_name: string
+          id: string
+          page_path: string | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string | null
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          page_path?: string | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_category?: string | null
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          page_path?: string | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      analytics_pageviews: {
+        Row: {
+          article_id: string | null
+          category_slug: string | null
+          guide_id: string | null
+          id: string
+          is_exit: boolean | null
+          page_path: string
+          page_title: string | null
+          referrer_path: string | null
+          scroll_depth_percent: number | null
+          session_id: string
+          time_on_page_seconds: number | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          article_id?: string | null
+          category_slug?: string | null
+          guide_id?: string | null
+          id?: string
+          is_exit?: boolean | null
+          page_path: string
+          page_title?: string | null
+          referrer_path?: string | null
+          scroll_depth_percent?: number | null
+          session_id: string
+          time_on_page_seconds?: number | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          article_id?: string | null
+          category_slug?: string | null
+          guide_id?: string | null
+          id?: string
+          is_exit?: boolean | null
+          page_path?: string
+          page_title?: string | null
+          referrer_path?: string | null
+          scroll_depth_percent?: number | null
+          session_id?: string
+          time_on_page_seconds?: number | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_pageviews_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_pageviews_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "ai_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_sessions: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          exit_page: string | null
+          id: string
+          is_bounce: boolean | null
+          landing_page: string | null
+          os: string | null
+          page_count: number | null
+          referrer: string | null
+          referrer_domain: string | null
+          session_id: string
+          started_at: string
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          exit_page?: string | null
+          id?: string
+          is_bounce?: boolean | null
+          landing_page?: string | null
+          os?: string | null
+          page_count?: number | null
+          referrer?: string | null
+          referrer_domain?: string | null
+          session_id: string
+          started_at?: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          exit_page?: string | null
+          id?: string
+          is_bounce?: boolean | null
+          landing_page?: string | null
+          os?: string | null
+          page_count?: number | null
+          referrer?: string | null
+          referrer_domain?: string | null
+          session_id?: string
+          started_at?: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       article_categories: {
         Row: {
           article_id: string

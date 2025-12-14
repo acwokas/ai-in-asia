@@ -15,6 +15,7 @@ import { CollectiveFooter } from "./components/CollectiveFooter";
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { Skeleton } from "./components/ui/skeleton";
+import AnalyticsProvider from "./components/AnalyticsProvider";
 
 // Lazy load Index page to reduce initial bundle
 const Index = lazy(() => import("./pages/Index"));
@@ -100,6 +101,7 @@ const Guides = lazy(() => import("./pages/Guides"));
 const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 const GuidesImport = lazy(() => import("./pages/GuidesImport"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
+const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -168,6 +170,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <AnalyticsProvider>
             <ScrollToTop />
             <GoogleAnalytics />
             <Suspense fallback={null}>
@@ -258,12 +261,14 @@ const App = () => (
               <Route path="/admin/404-analytics" element={<NotFoundAnalytics />} />
               <Route path="/admin/guides-import" element={<GuidesImport />} />
               <Route path="/admin/newsletter-analytics" element={<NewsletterAnalytics />} />
+              <Route path="/admin/site-analytics" element={<SiteAnalytics />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CollectiveFooter />
           </Suspense>
+          </AnalyticsProvider>
         </BrowserRouter>
         </DatabaseErrorBoundary>
       </TooltipProvider>
