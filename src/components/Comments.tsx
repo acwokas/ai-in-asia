@@ -23,6 +23,13 @@ interface CommentsProps {
   articleId: string;
 }
 
+// Helper to wrap emojis in teal-colored spans
+const formatCommentWithEmojis = (content: string): string => {
+  // Emoji regex pattern
+  const emojiRegex = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
+  return content.replace(emojiRegex, '<span class="text-primary">$1</span>');
+};
+
 const Comments = ({ articleId }: CommentsProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [pendingComments, setPendingComments] = useState<Comment[]>([]);
@@ -337,7 +344,7 @@ const Comments = ({ articleId }: CommentsProps) => {
                         })}
                       </span>
                     </div>
-                    <p className="text-muted-foreground">{comment.content}</p>
+                    <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
                   </div>
                 </div>
               ))}
