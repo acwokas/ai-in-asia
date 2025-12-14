@@ -105,7 +105,7 @@ const Comments = ({ articleId }: CommentsProps) => {
 
       if (approvedError) throw approvedError;
 
-      // Fetch AI generated comments - admins see all, users see only published
+      // Fetch AI generated comments - admins see all, users see only published AND where comment_date has passed
       const aiQuery = supabase
         .from("ai_generated_comments")
         .select(`
@@ -122,9 +122,10 @@ const Comments = ({ articleId }: CommentsProps) => {
         .eq("article_id", articleId)
         .order("comment_date", { ascending: false });
 
-      // Non-admins only see published comments
+      // Non-admins only see published comments where the comment_date has passed
       if (!isAdmin) {
         aiQuery.eq("published", true);
+        aiQuery.lte("comment_date", new Date().toISOString());
       }
 
       const { data: aiCommentsData, error: aiError } = await aiQuery;
