@@ -74,16 +74,17 @@ const AIComments = () => {
         .from('ai_comment_authors')
         .select('*');
       if (error) throw error;
+      
+      // Group by region dynamically
+      const byRegion: Record<string, number> = {};
+      data.forEach(a => {
+        byRegion[a.region] = (byRegion[a.region] || 0) + 1;
+      });
+      
       return {
         total: data.length,
         powerUsers: data.filter(a => a.is_power_user).length,
-        byRegion: {
-          singapore: data.filter(a => a.region === 'singapore').length,
-          india: data.filter(a => a.region === 'india').length,
-          philippines: data.filter(a => a.region === 'philippines').length,
-          china_hk: data.filter(a => a.region === 'china_hk').length,
-          west: data.filter(a => a.region === 'west').length,
-        }
+        byRegion,
       };
     },
     enabled: isAdmin,
@@ -161,6 +162,39 @@ const AIComments = () => {
         description: `${data.count} authors created (${data.powerUsers} power users)`,
       });
       queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['all-ai-authors'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reseed authors mutation (delete all + seed new)
+  const reseedAuthorsMutation = useMutation({
+    mutationFn: async () => {
+      // First delete all existing authors
+      const { error: deleteError } = await supabase
+        .from('ai_comment_authors')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+      if (deleteError) throw deleteError;
+      
+      // Then seed new authors
+      const { data, error } = await supabase.functions.invoke('seed-ai-authors');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Authors Reseeded",
+        description: `${data.count} authors created (${data.powerUsers} power users)`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['all-ai-authors'] });
     },
     onError: (error: Error) => {
       toast({
@@ -726,7 +760,7 @@ const AIComments = () => {
         <CardContent>
           {authorStats && authorStats.total > 0 ? (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-4">
                 <div>
                   <div className="text-2xl font-bold">{authorStats.total}</div>
                   <div className="text-sm text-muted-foreground">Total Authors</div>
@@ -736,20 +770,25 @@ const AIComments = () => {
                   <div className="text-sm text-muted-foreground">Power Users</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{authorStats.byRegion.singapore}</div>
-                  <div className="text-sm text-muted-foreground">Singapore</div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.china || 0}</div>
+                  <div className="text-sm text-muted-foreground">China</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{authorStats.byRegion.india}</div>
-                  <div className="text-sm text-muted-foreground">India</div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.usa || 0}</div>
+                  <div className="text-sm text-muted-foreground">USA</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{authorStats.byRegion.philippines}</div>
-                  <div className="text-sm text-muted-foreground">Philippines</div>
+                  <div className="text-2xl font-bold">{authorStats.byRegion.france || 0}</div>
+                  <div className="text-sm text-muted-foreground">France</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{authorStats.byRegion.china_hk + authorStats.byRegion.west}</div>
-                  <div className="text-sm text-muted-foreground">CN/HK/West</div>
+                  <div className="text-2xl font-bold">
+                    {(authorStats.byRegion.singapore || 0) + 
+                     (authorStats.byRegion.india || 0) + 
+                     (authorStats.byRegion.hong_kong || 0) +
+                     (authorStats.byRegion.uk || 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Other</div>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
@@ -763,14 +802,34 @@ const AIComments = () => {
                     Manage Author Pool
                   </Button>
                   <Button
+                    variant="secondary"
+                    onClick={() => {
+                      if (confirm('This will delete all existing authors and create the new expanded pool (~300 authors). Continue?')) {
+                        reseedAuthorsMutation.mutate();
+                      }
+                    }}
+                    disabled={reseedAuthorsMutation.isPending}
+                    className="flex-1"
+                  >
+                    {reseedAuthorsMutation.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                    )}
+                    Reseed Authors
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button
                     variant="destructive"
                     onClick={() => {
-                      if (confirm('Are you sure you want to delete ALL AI comments and regenerate? This cannot be undone. Use this when comments need more variety.')) {
+                      if (confirm('Are you sure you want to delete ALL AI comments? This cannot be undone.')) {
                         deleteAllCommentsMutation.mutate();
                       }
                     }}
                     disabled={deleteAllCommentsMutation.isPending}
                     className="flex-1"
+                    size="sm"
                   >
                     {deleteAllCommentsMutation.isPending ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -779,20 +838,21 @@ const AIComments = () => {
                     )}
                     Delete All AI Comments
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete ALL legacy comments? This cannot be undone.')) {
+                        deleteLegacyComments.mutate();
+                      }
+                    }}
+                    disabled={deleteLegacyComments.isPending}
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Legacy Comments
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete ALL legacy comments? This cannot be undone.')) {
-                      deleteLegacyComments.mutate();
-                    }
-                  }}
-                  disabled={deleteLegacyComments.isPending}
-                  size="sm"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete All Legacy Comments
-                </Button>
               </div>
             </>
           ) : (
