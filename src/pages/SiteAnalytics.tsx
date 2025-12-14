@@ -392,12 +392,14 @@ const SiteAnalytics = () => {
         )}
 
         <Tabs defaultValue="traffic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="traffic">Traffic</TabsTrigger>
             <TabsTrigger value="pages">Pages</TabsTrigger>
             <TabsTrigger value="journeys">User Journeys</TabsTrigger>
             <TabsTrigger value="sources">Sources</TabsTrigger>
             <TabsTrigger value="technology">Technology</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
           </TabsList>
 
           {/* Traffic Tab */}
@@ -697,6 +699,323 @@ const SiteAnalytics = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MousePointer className="h-5 w-5" />
+                    Top Events
+                  </CardTitle>
+                  <CardDescription>Most triggered events by type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                  ) : topEvents.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      No events tracked yet. Events will appear as users interact with the site.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {topEvents.map((event, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{idx + 1}</span>
+                            <p className="font-medium truncate">{event.name}</p>
+                          </div>
+                          <Badge variant="secondary">{event.count}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Events by Category
+                  </CardTitle>
+                  <CardDescription>Event distribution by category</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[250px] w-full" />
+                  ) : (
+                    (() => {
+                      const categoryStats = eventsData?.reduce((acc: Record<string, number>, event) => {
+                        const cat = event.event_category || 'uncategorized';
+                        acc[cat] = (acc[cat] || 0) + 1;
+                        return acc;
+                      }, {}) || {};
+                      const categoryData = Object.entries(categoryStats).map(([name, value]) => ({ name, value }));
+                      
+                      return categoryData.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-8">No event categories yet.</p>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={250}>
+                          <PieChart>
+                            <Pie
+                              data={categoryData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {categoryData.map((_, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      );
+                    })()
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Events Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Events</CardTitle>
+                <CardDescription>Latest tracked events with details</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                  </div>
+                ) : eventsData && eventsData.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2 font-medium">Event</th>
+                          <th className="text-left p-2 font-medium">Category</th>
+                          <th className="text-left p-2 font-medium">Page</th>
+                          <th className="text-left p-2 font-medium">Time</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventsData.slice(0, 20).map((event) => (
+                          <tr key={event.id} className="border-b hover:bg-muted/50">
+                            <td className="p-2 font-medium">{event.event_name}</td>
+                            <td className="p-2">
+                              <Badge variant="outline">{event.event_category || 'none'}</Badge>
+                            </td>
+                            <td className="p-2 text-muted-foreground truncate max-w-[200px]">{event.page_path}</td>
+                            <td className="p-2 text-muted-foreground">
+                              {format(new Date(event.created_at), 'MMM d, HH:mm')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No events recorded yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Errors Tab */}
+          <TabsContent value="errors" className="space-y-6">
+            {(() => {
+              const errorEvents = eventsData?.filter(e => e.event_category === 'error') || [];
+              const errorsBySource = errorEvents.reduce((acc: Record<string, number>, event) => {
+                const data = event.event_data as Record<string, unknown> | null;
+                const source = (data?.source as string) || 'unknown';
+                acc[source] = (acc[source] || 0) + 1;
+                return acc;
+              }, {});
+              const errorSourceData = Object.entries(errorsBySource)
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value);
+
+              return (
+                <>
+                  {/* Error Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className={errorEvents.length > 0 ? 'border-destructive/50' : ''}>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <AlertTriangle className={`h-4 w-4 ${errorEvents.length > 0 ? 'text-destructive' : ''}`} />
+                          <span className="text-sm">Total Errors</span>
+                        </div>
+                        <p className={`text-2xl font-bold ${errorEvents.length > 0 ? 'text-destructive' : ''}`}>
+                          {errorEvents.length}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Target className="h-4 w-4" />
+                          <span className="text-sm">Error Sources</span>
+                        </div>
+                        <p className="text-2xl font-bold">{Object.keys(errorsBySource).length}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Zap className="h-4 w-4" />
+                          <span className="text-sm">Error Rate</span>
+                        </div>
+                        <p className="text-2xl font-bold">
+                          {totalPageviews > 0 ? ((errorEvents.length / totalPageviews) * 100).toFixed(2) : 0}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-destructive" />
+                          Errors by Source
+                        </CardTitle>
+                        <CardDescription>Where errors are occurring</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {isLoading ? (
+                          <Skeleton className="h-[250px] w-full" />
+                        ) : errorSourceData.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
+                              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+                            </div>
+                            <p className="font-medium text-green-600 dark:text-green-400">No errors detected!</p>
+                            <p className="text-muted-foreground text-sm mt-1">Your site is running smoothly.</p>
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={errorSourceData}>
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                              <XAxis dataKey="name" className="text-xs" />
+                              <YAxis />
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: 'hsl(var(--card))', 
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px'
+                                }} 
+                              />
+                              <Bar dataKey="value" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Globe className="h-5 w-5" />
+                          Error Pages
+                        </CardTitle>
+                        <CardDescription>Pages with most errors</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                          </div>
+                        ) : (() => {
+                          const errorsByPage = errorEvents.reduce((acc: Record<string, number>, event) => {
+                            const page = event.page_path || 'unknown';
+                            acc[page] = (acc[page] || 0) + 1;
+                            return acc;
+                          }, {});
+                          const errorPageData = Object.entries(errorsByPage)
+                            .map(([path, count]) => ({ path, count }))
+                            .sort((a, b) => b.count - a.count)
+                            .slice(0, 10);
+
+                          return errorPageData.length === 0 ? (
+                            <p className="text-muted-foreground text-center py-8">No error pages.</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {errorPageData.map((page, idx) => (
+                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                                  <p className="font-medium truncate flex-1 text-sm">{page.path}</p>
+                                  <Badge variant="destructive">{page.count}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Recent Errors Table */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recent Errors</CardTitle>
+                      <CardDescription>Latest error details for debugging</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {isLoading ? (
+                        <div className="space-y-3">
+                          {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+                        </div>
+                      ) : errorEvents.length > 0 ? (
+                        <div className="space-y-4">
+                          {errorEvents.slice(0, 15).map((event) => {
+                            const data = event.event_data as Record<string, unknown> | null;
+                            return (
+                              <div key={event.id} className="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-destructive truncate">
+                                      {(data?.message as string) || 'Unknown error'}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      Source: {(data?.source as string) || 'unknown'} • Page: {event.page_path}
+                                    </p>
+                                    {data?.stack && (
+                                      <pre className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded overflow-x-auto max-h-20">
+                                        {(data.stack as string).slice(0, 300)}...
+                                      </pre>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {format(new Date(event.created_at), 'MMM d, HH:mm')}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+                            <Target className="h-8 w-8 text-green-600 dark:text-green-400" />
+                          </div>
+                          <p className="font-semibold text-lg text-green-600 dark:text-green-400">No errors recorded!</p>
+                          <p className="text-muted-foreground mt-1">Your site is running without JavaScript errors.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              );
+            })()}
           </TabsContent>
         </Tabs>
       </div>

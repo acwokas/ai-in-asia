@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 const SESSION_KEY = 'aiia_session_id';
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
@@ -63,6 +64,92 @@ const getReferrerDomain = (referrer: string) => {
   } catch {
     return null;
   }
+};
+
+// Global event tracking function (can be used outside React components)
+export const trackAnalyticsEvent = async (
+  eventName: string, 
+  eventCategory?: string, 
+  eventData?: Record<string, unknown>
+) => {
+  const stored = localStorage.getItem(SESSION_KEY);
+  if (!stored) return;
+
+  try {
+    const sessionData: SessionData = JSON.parse(stored);
+    await supabase.from('analytics_events').insert([{
+      session_id: sessionData.sessionId,
+      user_id: null,
+      event_name: eventName,
+      event_category: eventCategory || null,
+      event_data: (eventData || {}) as Json,
+      page_path: window.location.pathname,
+    }]);
+  } catch {
+    // Silent fail
+  }
+};
+
+// Track errors globally
+export const trackError = async (
+  errorMessage: string,
+  errorSource: string,
+  errorStack?: string,
+  additionalData?: Record<string, unknown>
+) => {
+  await trackAnalyticsEvent('error', 'error', {
+    message: errorMessage,
+    source: errorSource,
+    stack: errorStack?.slice(0, 1000), // Limit stack trace length
+    url: window.location.href,
+    userAgent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+    ...additionalData,
+  });
+};
+
+// Setup global error handlers
+export const setupGlobalErrorTracking = () => {
+  // Track uncaught JavaScript errors
+  window.addEventListener('error', (event) => {
+    trackError(
+      event.message || 'Unknown error',
+      'window.onerror',
+      event.error?.stack,
+      {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      }
+    );
+  });
+
+  // Track unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    const message = reason?.message || reason?.toString() || 'Unhandled promise rejection';
+    trackError(
+      message,
+      'unhandledrejection',
+      reason?.stack,
+      { reason: String(reason) }
+    );
+  });
+
+  // Track console errors (optional - can be noisy)
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    
+    // Only track if it looks like a real error (not React dev warnings)
+    if (!message.includes('Warning:') && !message.includes('ReactDOM')) {
+      trackError(message.slice(0, 500), 'console.error');
+    }
+    
+    originalConsoleError.apply(console, args);
+  };
 };
 
 export const useAnalyticsTracking = () => {
@@ -228,21 +315,21 @@ export const useAnalyticsTracking = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [location.pathname]);
 
-  // Track custom events
-  const trackEvent = useCallback(async (eventName: string, eventCategory?: string, eventData?: Record<string, any>) => {
+  // Track custom events with user context
+  const trackEvent = useCallback(async (eventName: string, eventCategory?: string, eventData?: Record<string, unknown>) => {
     const stored = localStorage.getItem(SESSION_KEY);
     if (!stored) return;
 
     try {
       const sessionData: SessionData = JSON.parse(stored);
-      await supabase.from('analytics_events').insert({
+      await supabase.from('analytics_events').insert([{
         session_id: sessionData.sessionId,
         user_id: user?.id || null,
         event_name: eventName,
-        event_category: eventCategory,
-        event_data: eventData || {},
+        event_category: eventCategory || null,
+        event_data: (eventData || {}) as Json,
         page_path: location.pathname,
-      });
+      }]);
     } catch {
       // Silent fail
     }
