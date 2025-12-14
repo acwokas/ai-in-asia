@@ -24,6 +24,15 @@ const FloatingNewsletterPopup = () => {
       return;
     }
 
+    // Track page visits - only show on second+ page load
+    const visitCount = parseInt(localStorage.getItem("page-visit-count") || "0", 10);
+    localStorage.setItem("page-visit-count", (visitCount + 1).toString());
+    
+    if (visitCount < 1) {
+      // First page load - don't show popup
+      return;
+    }
+
     // Show popup after scrolling 40% of the page or after 15 seconds
     const handleScroll = () => {
       const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
