@@ -542,8 +542,8 @@ const ContentCalendar = () => {
                 resizable={false}
                 min={new Date(2024, 0, 1, 0, 0, 0)}
                 max={new Date(2024, 0, 1, 23, 59, 59)}
-                step={30}
-                timeslots={2}
+                step={60}
+                timeslots={1}
                 formats={{
                   eventTimeRangeFormat: () => '', // Hide end time in events
                 }}
