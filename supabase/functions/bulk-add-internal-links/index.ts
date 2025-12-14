@@ -6,6 +6,55 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to validate if a URL is accessible
+async function validateUrl(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; AIinASIA/1.0; +https://aiinasia.com)'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    return response.ok || response.status === 301 || response.status === 302;
+  } catch (error) {
+    console.log(`URL validation failed for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
+    return false;
+  }
+}
+
+// Extract external URLs from markdown content
+function extractExternalUrls(content: string): string[] {
+  const externalLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)\^?/g;
+  const urls: string[] = [];
+  let match;
+  
+  while ((match = externalLinkPattern.exec(content)) !== null) {
+    urls.push(match[2]);
+  }
+  
+  return urls;
+}
+
+// Remove invalid external links from content
+function removeInvalidExternalLinks(content: string, invalidUrls: string[]): string {
+  let updatedContent = content;
+  
+  for (const url of invalidUrls) {
+    // Match the full markdown link with this URL and remove it, replacing with just the anchor text
+    const escapedUrl = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const linkPattern = new RegExp(`\\[([^\\]]+)\\]\\(${escapedUrl}\\)\\^?`, 'g');
+    updatedContent = updatedContent.replace(linkPattern, '$1');
+  }
+  
+  return updatedContent;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -22,7 +71,7 @@ serve(async (req) => {
     }
 
     // Limit batch size to prevent timeouts (edge functions have ~150s limit)
-    const MAX_BATCH_SIZE = 50;
+    const MAX_BATCH_SIZE = 25; // Reduced due to URL validation overhead
     if (articleIds.length > MAX_BATCH_SIZE) {
       return new Response(
         JSON.stringify({ 
@@ -71,7 +120,7 @@ serve(async (req) => {
     let updated = 0;
     let failed = 0;
 
-    console.log(`Processing ${articleIds.length} articles...`);
+    console.log(`Processing ${articleIds.length} articles with URL validation...`);
 
     for (const articleId of articleIds) {
       try {
@@ -127,7 +176,13 @@ serve(async (req) => {
 
 CRITICAL RULES:
 - Add 2-4 internal links from our article list using natural anchor text
-- Add at least 1 authoritative external link (research papers, official reports, major publications)
+- Add 1-2 authoritative external links ONLY from well-known, stable sources:
+  * Major news outlets: Reuters, BBC, Bloomberg, CNBC, TechCrunch, The Verge, Wired, Ars Technica
+  * Academic/research: arXiv.org, Nature, Science, IEEE, ACM
+  * Official company blogs: Google AI Blog, OpenAI Blog, Microsoft Research, Meta AI
+  * Government/international: WHO, UN, EU official sites, .gov domains
+  * Wikipedia for factual references
+- NEVER use URLs you're unsure about - only use domains you know are stable
 - External links MUST use markdown format with ^ indicator: [anchor text](url)^
 - Internal links MUST use markdown with EXACT URL from list including /category/slug format: [text](/category/article-slug)
 - NEVER use [text](/article-slug) format for internal links - always include the category
@@ -167,7 +222,7 @@ Return ONLY the updated content with links added. Do not change any other aspect
         }
 
         const aiData = await aiResponse.json();
-        const updatedContent = aiData.choices?.[0]?.message?.content;
+        let updatedContent = aiData.choices?.[0]?.message?.content;
 
         if (!updatedContent) {
           results.push({
@@ -179,6 +234,29 @@ Return ONLY the updated content with links added. Do not change any other aspect
           failed++;
           processed++;
           continue;
+        }
+
+        // Extract and validate external URLs
+        const externalUrls = extractExternalUrls(updatedContent);
+        const invalidUrls: string[] = [];
+        const validatedUrls: string[] = [];
+        
+        console.log(`Validating ${externalUrls.length} external URLs for article: ${article.title}`);
+        
+        for (const url of externalUrls) {
+          const isValid = await validateUrl(url);
+          if (isValid) {
+            validatedUrls.push(url);
+          } else {
+            invalidUrls.push(url);
+            console.log(`Invalid URL removed: ${url}`);
+          }
+        }
+        
+        // Remove invalid links from content
+        if (invalidUrls.length > 0) {
+          updatedContent = removeInvalidExternalLinks(updatedContent, invalidUrls);
+          console.log(`Removed ${invalidUrls.length} invalid external links from article: ${article.title}`);
         }
 
         // Update the article if not a dry run
@@ -201,7 +279,10 @@ Return ONLY the updated content with links added. Do not change any other aspect
               articleId: article.id,
               title: article.title,
               status: "updated",
-              preview: updatedContent.substring(0, 200) + "..."
+              preview: updatedContent.substring(0, 200) + "...",
+              validatedUrls: validatedUrls.length,
+              removedUrls: invalidUrls.length,
+              removedUrlsList: invalidUrls
             });
             updated++;
           }
@@ -210,12 +291,15 @@ Return ONLY the updated content with links added. Do not change any other aspect
             articleId: article.id,
             title: article.title,
             status: "preview",
-            preview: updatedContent.substring(0, 200) + "..."
+            preview: updatedContent.substring(0, 200) + "...",
+            validatedUrls: validatedUrls.length,
+            removedUrls: invalidUrls.length,
+            removedUrlsList: invalidUrls
           });
         }
 
         processed++;
-        console.log(`Processed ${processed}/${articleIds.length}: ${article.title}`);
+        console.log(`Processed ${processed}/${articleIds.length}: ${article.title} (valid: ${validatedUrls.length}, removed: ${invalidUrls.length})`);
 
         // Add a small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -253,7 +337,9 @@ Return ONLY the updated content with links added. Do not change any other aspect
           processed,
           updated,
           failed,
-          skipped: results.filter(r => r.status === "skipped").length
+          skipped: results.filter(r => r.status === "skipped").length,
+          totalUrlsValidated: results.reduce((sum, r) => sum + (r.validatedUrls || 0), 0),
+          totalUrlsRemoved: results.reduce((sum, r) => sum + (r.removedUrls || 0), 0)
         },
         results,
         dryRun
