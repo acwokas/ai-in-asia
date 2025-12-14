@@ -554,11 +554,17 @@ Deno.serve(async (req) => {
         'pain.', 'RIP', 'gg', 'lets go', 'W take', 'hard agree', 'nah'
       ];
 
-      // Opening variations to AVOID repetition
+      // Opening variations to AVOID repetition - EXPANDED LIST
       const bannedPhrases = [
         'this is wild', 'this is crazy', 'this is huge', 'this is interesting',
         'this is insane', 'this is big', "i'm starting", "i'm trying",
-        'the implications', 'game changer', 'the fact that'
+        'the implications', 'game changer', 'the fact that',
+        'wah', 'waah', 'fascinating read', 'interesting read', 'great read',
+        'great article', 'nice article', 'good article', 'excellent article',
+        'what a read', 'must read', 'amazing read', 'brilliant read',
+        'isnt it', "isn't it", 'right?', 'dont you think', "don't you think",
+        'would you agree', 'wouldnt you say', "wouldn't you say", 'no?',
+        'this is a', 'this was a', 'this has been',
       ];
 
       // Determine sentiment skew for this article (not always balanced)
@@ -758,12 +764,20 @@ TIME CONTEXT: ${timeStyle.instruction}
 
 CRITICAL VARIATION RULES - READ CAREFULLY:
 ${bannedOpeningsStr}
-- NEVER start with: ${bannedPhrases.join(', ')}
+- ABSOLUTELY NEVER use these words/phrases: wah, waah, fascinating, "great read", "interesting read", "nice article", "brilliant"
+- NEVER end sentences with rhetorical questions like: "right?", "isn't it?", "don't you think?", "wouldn't you say?", "no?"
 - NEVER say "this is wild/crazy/huge/interesting/insane" - be more creative
+- NEVER start with generic praise like "This is a great/interesting/fascinating..."
 - NEVER mention starting a company unless directly relevant
-- Each comment MUST feel completely different from others
-- Vary your opening word - dont start with "This" or "I" every time
-- Try starting with: verbs, reactions, questions, lowercase words, single words
+- Each comment MUST have a completely UNIQUE structure and opening
+- Vary your opening word dramatically - dont start with "This" or "I" every time
+- Try starting with: verbs, reactions, questions, lowercase words, single words, specific references
+
+STRUCTURAL DIVERSITY - CRITICAL:
+- If other comments ask questions, this one should make statements
+- If other comments are positive, this one can be skeptical
+- If other comments are long, this one should be short
+- AVOID similar sentence patterns within the same article
 
 WRITE LIKE A REAL PERSON NOT AN AI:
 - Real people dont write perfectly. Sentences run together sometimes or break off
@@ -773,7 +787,7 @@ WRITE LIKE A REAL PERSON NOT AN AI:
 - Some sentences just trail off...
 - Typos happen. dont fix them all
 - NO em dashes ever. NO semicolons. minimal commas
-- NEVER end with "right?" or "isn't it?" or "don't you think?"
+- ABSOLUTELY NO rhetorical questions at the end. End with statements, not questions seeking agreement.
 
 LENGTH: ${targetLength}
 SENTIMENT: ${commentSentiment}
@@ -781,7 +795,7 @@ ${regionalInstruction}
 ${temporalInstruction}
 ${specialBehavior ? `SPECIAL BEHAVIOR: ${specialBehavior}` : ''}
 
-Comment ${i + 1} of ${numComments} - MUST be DIFFERENT from all others.
+Comment ${i + 1} of ${numComments} - MUST be STRUCTURALLY DIFFERENT from all others. Different opening, different length, different tone.
 
 Write ONLY the comment. nothing else.`;
 
