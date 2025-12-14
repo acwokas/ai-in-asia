@@ -107,7 +107,15 @@ CONTENT APPROACH:
 - Include relevant context where helpful
 - Get to the point quickly - avoid unnecessary preamble
 
-Return ONLY the rewritten markdown content with embedded links, nothing else.`;
+COMMENT CTA (REQUIRED):
+- End every article with a bold and italic call-to-action encouraging reader engagement
+- Format: ***Your CTA text here***
+- Vary the CTAs - use proactive questions or invitations to share thoughts, examples, experiences, opinions, predictions
+- Examples: "***What's your take on this development? Share your thoughts in the comments below.***", "***Have you experienced something similar? We'd love to hear your story in the comments.***", "***Do you agree with this approach? Drop your perspective in the comments.***"
+- Make it feel natural and relevant to the article's topic
+- Place it as the final line of the article
+
+Return ONLY the rewritten markdown content with embedded links and CTA, nothing else.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
