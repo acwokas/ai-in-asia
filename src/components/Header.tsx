@@ -184,7 +184,7 @@ const Header = memo(() => {
         </div>
 
         {isMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border">
+          <nav className="md:hidden py-4 border-t border-border max-h-[calc(100vh-6rem)] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
             <div className="flex flex-col space-y-3">
               <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
               <Link to="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</Link>
