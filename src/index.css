@@ -548,3 +548,19 @@ blockquote.tiktok-embed {
 .twitter-tweet iframe {
   border-radius: 12px;
 }
+
+/* Comment emoji styling - render in brand teal color */
+.comment-content {
+  /* Use CSS filter to colorize emojis */
+}
+
+.comment-content .emoji,
+.comment-content span[role="img"] {
+  color: hsl(var(--primary));
+}
+
+/* Target emojis in comments using a wrapper approach */
+.emoji-teal {
+  color: hsl(var(--primary));
+  font-style: normal;
+}

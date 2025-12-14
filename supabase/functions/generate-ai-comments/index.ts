@@ -5,46 +5,359 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper to add natural typos and shorthand
-const addNaturalVariations = (text: string): string => {
-  const variations = [
-    { from: /\bvery\b/gi, to: 'rly', chance: 0.1 },
-    { from: /\bthough\b/gi, to: 'tho', chance: 0.15 },
-    { from: /\byou\b/gi, to: 'u', chance: 0.05 },
-    { from: /\bwith\b/gi, to: 'w/', chance: 0.1 },
-    { from: /\bthanks\b/gi, to: 'thx', chance: 0.15 },
-    { from: /\bbecause\b/gi, to: 'bc', chance: 0.1 },
-    { from: /\bthrough\b/gi, to: 'thru', chance: 0.1 },
-    { from: /\band\b/gi, to: '&', chance: 0.15 },
-    { from: /\bdefinitely\b/gi, to: 'def', chance: 0.1 },
-    { from: /\bprobably\b/gi, to: 'prob', chance: 0.1 },
-  ];
+// Regional expressions and patterns
+const regionalPatterns: Record<string, { expressions: string[]; typoChance: number; shorthandChance: number; lowercaseChance: number; emojiChance: number }> = {
+  singapore: {
+    expressions: ['lah', 'lor', 'sia', 'hor', 'leh', 'meh', 'one', 'can'],
+    typoChance: 0.15,
+    shorthandChance: 0.25,
+    lowercaseChance: 0.2,
+    emojiChance: 0.3,
+  },
+  india: {
+    expressions: ['yaar', 'na', 'actually', 'basically', 'only'],
+    typoChance: 0.1,
+    shorthandChance: 0.2,
+    lowercaseChance: 0.15,
+    emojiChance: 0.25,
+  },
+  philippines: {
+    expressions: ['po', 'naman', 'talaga', 'grabe'],
+    typoChance: 0.12,
+    shorthandChance: 0.3,
+    lowercaseChance: 0.25,
+    emojiChance: 0.4,
+  },
+  hong_kong: {
+    expressions: ['la', 'ga', 'ah'],
+    typoChance: 0.15,
+    shorthandChance: 0.15,
+    lowercaseChance: 0.1,
+    emojiChance: 0.2,
+  },
+  china: {
+    expressions: [], // Less native expressions, more literal translations
+    typoChance: 0.25, // Higher typo chance for non-native speakers
+    shorthandChance: 0.1,
+    lowercaseChance: 0.3,
+    emojiChance: 0.35,
+  },
+  usa: {
+    expressions: ['like', 'literally', 'honestly', 'lowkey', 'ngl', 'fr'],
+    typoChance: 0.12,
+    shorthandChance: 0.35,
+    lowercaseChance: 0.3,
+    emojiChance: 0.25,
+  },
+  france: {
+    expressions: ['en fait', 'quand même', 'voilà', 'c\'est'],
+    typoChance: 0.18,
+    shorthandChance: 0.15,
+    lowercaseChance: 0.2,
+    emojiChance: 0.3,
+  },
+  uk: {
+    expressions: ['quite', 'rather', 'proper', 'brilliant', 'cheers', 'mate'],
+    typoChance: 0.1,
+    shorthandChance: 0.2,
+    lowercaseChance: 0.15,
+    emojiChance: 0.2,
+  },
+  japan: {
+    expressions: [],
+    typoChance: 0.2,
+    shorthandChance: 0.1,
+    lowercaseChance: 0.25,
+    emojiChance: 0.45,
+  },
+  korea: {
+    expressions: [],
+    typoChance: 0.18,
+    shorthandChance: 0.15,
+    lowercaseChance: 0.2,
+    emojiChance: 0.4,
+  },
+  indonesia: {
+    expressions: ['dong', 'sih', 'nih', 'deh'],
+    typoChance: 0.15,
+    shorthandChance: 0.25,
+    lowercaseChance: 0.25,
+    emojiChance: 0.35,
+  },
+  thailand: {
+    expressions: ['krub', 'ka', 'na'],
+    typoChance: 0.2,
+    shorthandChance: 0.2,
+    lowercaseChance: 0.25,
+    emojiChance: 0.4,
+  },
+  vietnam: {
+    expressions: [],
+    typoChance: 0.22,
+    shorthandChance: 0.15,
+    lowercaseChance: 0.2,
+    emojiChance: 0.3,
+  },
+  malaysia: {
+    expressions: ['lah', 'mah', 'kan', 'one'],
+    typoChance: 0.15,
+    shorthandChance: 0.25,
+    lowercaseChance: 0.2,
+    emojiChance: 0.3,
+  },
+  west: {
+    expressions: ['honestly', 'literally', 'basically'],
+    typoChance: 0.1,
+    shorthandChance: 0.2,
+    lowercaseChance: 0.2,
+    emojiChance: 0.2,
+  },
+};
 
+// Common typo patterns
+const typoPatterns = [
+  { correct: 'the', typo: 'teh' },
+  { correct: 'and', typo: 'adn' },
+  { correct: 'that', typo: 'taht' },
+  { correct: 'with', typo: 'wiht' },
+  { correct: 'have', typo: 'ahve' },
+  { correct: 'this', typo: 'tihs' },
+  { correct: 'from', typo: 'form' },
+  { correct: 'just', typo: 'jsut' },
+  { correct: 'about', typo: 'baout' },
+  { correct: 'think', typo: 'thikn' },
+  { correct: 'would', typo: 'woudl' },
+  { correct: 'could', typo: 'coudl' },
+  { correct: 'really', typo: 'realy' },
+  { correct: 'because', typo: 'becuase' },
+  { correct: 'people', typo: 'poeple' },
+];
+
+// Shorthand replacements
+const shorthandReplacements = [
+  { from: /\bvery\b/gi, to: 'rly', chance: 0.3 },
+  { from: /\bthough\b/gi, to: 'tho', chance: 0.4 },
+  { from: /\byou\b/gi, to: 'u', chance: 0.2 },
+  { from: /\byour\b/gi, to: 'ur', chance: 0.2 },
+  { from: /\byou're\b/gi, to: 'ur', chance: 0.25 },
+  { from: /\bwith\b/gi, to: 'w/', chance: 0.15 },
+  { from: /\bthanks\b/gi, to: 'thx', chance: 0.35 },
+  { from: /\bbecause\b/gi, to: 'bc', chance: 0.25 },
+  { from: /\bthrough\b/gi, to: 'thru', chance: 0.3 },
+  { from: /\band\b/gi, to: '&', chance: 0.2 },
+  { from: /\bdefinitely\b/gi, to: 'def', chance: 0.3 },
+  { from: /\bprobably\b/gi, to: 'prob', chance: 0.3 },
+  { from: /\bto be honest\b/gi, to: 'tbh', chance: 0.4 },
+  { from: /\bin my opinion\b/gi, to: 'imo', chance: 0.4 },
+  { from: /\bi don't know\b/gi, to: 'idk', chance: 0.35 },
+  { from: /\bnot gonna lie\b/gi, to: 'ngl', chance: 0.4 },
+  { from: /\bright now\b/gi, to: 'rn', chance: 0.3 },
+  { from: /\bpeople\b/gi, to: 'ppl', chance: 0.2 },
+  { from: /\bsomething\b/gi, to: 'sth', chance: 0.15 },
+  { from: /\bwithout\b/gi, to: 'w/o', chance: 0.2 },
+  { from: /\bpretty much\b/gi, to: 'p much', chance: 0.25 },
+  { from: /\bfor real\b/gi, to: 'fr', chance: 0.3 },
+];
+
+// Missing apostrophe patterns
+const apostrophePatterns = [
+  { from: /\bdon't\b/gi, to: 'dont', chance: 0.35 },
+  { from: /\bcan't\b/gi, to: 'cant', chance: 0.35 },
+  { from: /\bwon't\b/gi, to: 'wont', chance: 0.35 },
+  { from: /\bdidn't\b/gi, to: 'didnt', chance: 0.3 },
+  { from: /\bisn't\b/gi, to: 'isnt', chance: 0.3 },
+  { from: /\baren't\b/gi, to: 'arent', chance: 0.3 },
+  { from: /\bwasn't\b/gi, to: 'wasnt', chance: 0.3 },
+  { from: /\bweren't\b/gi, to: 'werent', chance: 0.3 },
+  { from: /\bit's\b/gi, to: 'its', chance: 0.25 },
+  { from: /\bthat's\b/gi, to: 'thats', chance: 0.25 },
+  { from: /\bwhat's\b/gi, to: 'whats', chance: 0.25 },
+  { from: /\bI'm\b/gi, to: 'im', chance: 0.35 },
+  { from: /\bI've\b/gi, to: 'ive', chance: 0.3 },
+  { from: /\bI'll\b/gi, to: 'ill', chance: 0.3 },
+];
+
+// Emoji sets by sentiment
+const positiveEmojis = ['👍', '🙌', '💯', '🔥', '✨', '👏', '🎯', '💪', '🚀', '⭐'];
+const neutralEmojis = ['🤔', '💭', '📌', '👀', '💡', '📊', '🧐', '📝'];
+const negativeEmojis = ['😬', '🙄', '😅', '🤷', '😤'];
+
+// Helper to add natural typos
+const addTypos = (text: string, typoChance: number): string => {
+  if (Math.random() > typoChance) return text;
+  
   let result = text;
-  for (const variation of variations) {
-    if (Math.random() < variation.chance) {
-      result = result.replace(variation.from, variation.to as string);
-    }
-  }
-
-  // Add occasional typos (doubled letters, missing letters)
-  if (Math.random() < 0.1) {
-    const words = result.split(' ');
-    const randomIndex = Math.floor(Math.random() * words.length);
-    const word = words[randomIndex];
-    if (word.length > 4) {
-      const pos = Math.floor(Math.random() * word.length);
-      if (Math.random() < 0.5) {
-        // Double a letter
-        words[randomIndex] = word.slice(0, pos) + word[pos] + word.slice(pos);
-      } else {
-        // Skip a letter
+  const numTypos = Math.random() < 0.7 ? 1 : 2;
+  
+  for (let i = 0; i < numTypos; i++) {
+    // Random typo type
+    const typoType = Math.random();
+    
+    if (typoType < 0.4) {
+      // Use predefined typo patterns
+      const pattern = typoPatterns[Math.floor(Math.random() * typoPatterns.length)];
+      const regex = new RegExp(`\\b${pattern.correct}\\b`, 'i');
+      if (regex.test(result)) {
+        result = result.replace(regex, pattern.typo);
+      }
+    } else if (typoType < 0.7) {
+      // Double a letter
+      const words = result.split(' ');
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const word = words[randomIndex];
+      if (word.length > 4) {
+        const pos = Math.floor(Math.random() * (word.length - 1)) + 1;
+        words[randomIndex] = word.slice(0, pos) + word[pos - 1] + word.slice(pos);
+        result = words.join(' ');
+      }
+    } else {
+      // Skip a letter
+      const words = result.split(' ');
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const word = words[randomIndex];
+      if (word.length > 5) {
+        const pos = Math.floor(Math.random() * (word.length - 2)) + 1;
         words[randomIndex] = word.slice(0, pos) + word.slice(pos + 1);
+        result = words.join(' ');
       }
     }
-    result = words.join(' ');
   }
+  
+  return result;
+};
 
+// Helper to add shorthand
+const addShorthand = (text: string, shorthandChance: number): string => {
+  if (Math.random() > shorthandChance) return text;
+  
+  let result = text;
+  const numReplacements = Math.random() < 0.6 ? 1 : Math.random() < 0.9 ? 2 : 3;
+  const shuffled = [...shorthandReplacements].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < Math.min(numReplacements, shuffled.length); i++) {
+    const replacement = shuffled[i];
+    if (Math.random() < replacement.chance) {
+      result = result.replace(replacement.from, replacement.to as string);
+    }
+  }
+  
+  return result;
+};
+
+// Helper to remove apostrophes
+const removeApostrophes = (text: string): string => {
+  let result = text;
+  for (const pattern of apostrophePatterns) {
+    if (Math.random() < pattern.chance) {
+      result = result.replace(pattern.from, pattern.to as string);
+    }
+  }
+  return result;
+};
+
+// Helper to make text lowercase
+const makeLowercase = (text: string, lowercaseChance: number): string => {
+  if (Math.random() > lowercaseChance) return text;
+  
+  // Different levels of lowercase
+  const level = Math.random();
+  if (level < 0.5) {
+    // Full lowercase
+    return text.toLowerCase();
+  } else if (level < 0.8) {
+    // Lowercase except first letter
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  } else {
+    // Random capitalization dropped
+    return text.split('').map(char => 
+      Math.random() < 0.3 ? char.toLowerCase() : char
+    ).join('');
+  }
+};
+
+// Helper to add punctuation variations
+const addPunctuationVariations = (text: string): string => {
+  let result = text;
+  
+  // Double punctuation
+  if (Math.random() < 0.15) {
+    result = result.replace(/!$/, '!!');
+  }
+  if (Math.random() < 0.1) {
+    result = result.replace(/\?$/, '??');
+  }
+  
+  // Trailing ellipsis
+  if (Math.random() < 0.12 && !result.endsWith('...') && !result.endsWith('!') && !result.endsWith('?')) {
+    result = result.replace(/\.$/, '...');
+  }
+  
+  // Missing final punctuation
+  if (Math.random() < 0.2) {
+    result = result.replace(/[.!?]$/, '');
+  }
+  
+  return result;
+};
+
+// Helper to add emojis
+const addEmojis = (text: string, emojiChance: number, sentiment: 'positive' | 'neutral' | 'negative'): string => {
+  if (Math.random() > emojiChance) return text;
+  
+  const emojiSet = sentiment === 'positive' ? positiveEmojis : 
+                   sentiment === 'negative' ? negativeEmojis : neutralEmojis;
+  
+  const numEmojis = Math.random() < 0.7 ? 1 : 2;
+  const selectedEmojis = [];
+  
+  for (let i = 0; i < numEmojis; i++) {
+    selectedEmojis.push(emojiSet[Math.floor(Math.random() * emojiSet.length)]);
+  }
+  
+  // Position: end, beginning, or inline
+  const position = Math.random();
+  if (position < 0.7) {
+    return text + ' ' + selectedEmojis.join('');
+  } else if (position < 0.85) {
+    return selectedEmojis.join('') + ' ' + text;
+  } else {
+    // Inline
+    const sentences = text.split('. ');
+    if (sentences.length > 1) {
+      const insertPos = Math.floor(Math.random() * (sentences.length - 1));
+      sentences[insertPos] = sentences[insertPos] + ' ' + selectedEmojis[0];
+      return sentences.join('. ');
+    }
+    return text + ' ' + selectedEmojis.join('');
+  }
+};
+
+// Main function to add all natural variations
+const addNaturalVariations = (text: string, region: string): string => {
+  const patterns = regionalPatterns[region] || regionalPatterns.west;
+  
+  let result = text;
+  
+  // Apply variations in order
+  result = addTypos(result, patterns.typoChance);
+  result = addShorthand(result, patterns.shorthandChance);
+  result = removeApostrophes(result);
+  result = makeLowercase(result, patterns.lowercaseChance);
+  result = addPunctuationVariations(result);
+  
+  // Determine sentiment for emoji selection
+  const lowerText = text.toLowerCase();
+  let sentiment: 'positive' | 'neutral' | 'negative' = 'neutral';
+  if (lowerText.includes('great') || lowerText.includes('love') || lowerText.includes('amazing') || 
+      lowerText.includes('excellent') || lowerText.includes('helpful') || lowerText.includes('thanks')) {
+    sentiment = 'positive';
+  } else if (lowerText.includes('problem') || lowerText.includes('issue') || lowerText.includes('bad') ||
+             lowerText.includes('disagree') || lowerText.includes('wrong') || lowerText.includes('concern')) {
+    sentiment = 'negative';
+  }
+  
+  result = addEmojis(result, patterns.emojiChance, sentiment);
+  
   return result;
 };
 
@@ -56,23 +369,19 @@ const generateTimestamp = (publishDate: string, updatedDate: string | null): Dat
   const articleAgeMonths = (now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24 * 30);
 
   if (articleAgeMonths > 6) {
-    // Old article: mix of old comments near publish date and recent ones
     if (Math.random() < 0.3) {
-      // Recent comment (within last 60 days)
       const daysAgo = Math.floor(Math.random() * 60);
       const timestamp = new Date(now);
       timestamp.setDate(timestamp.getDate() - daysAgo);
       return timestamp;
     } else {
-      // Old comment (weeks after publish)
-      const weeksAfter = Math.floor(Math.random() * 12) + 1; // 1-12 weeks
+      const weeksAfter = Math.floor(Math.random() * 12) + 1;
       const timestamp = new Date(published);
       timestamp.setDate(timestamp.getDate() + (weeksAfter * 7));
       return timestamp;
     }
   } else {
-    // Recent article: comments in days after publish
-    const daysAfter = Math.floor(Math.random() * 30) + 1; // 1-30 days
+    const daysAfter = Math.floor(Math.random() * 30) + 1;
     const timestamp = new Date(published);
     timestamp.setDate(timestamp.getDate() + daysAfter);
     return timestamp;
@@ -119,7 +428,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch all authors grouped by region and power user status
+    // Fetch all authors
     const { data: authors, error: authorsError } = await supabase
       .from('ai_comment_authors')
       .select('*');
@@ -133,26 +442,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authorsByRegion = {
-      singapore: authors.filter(a => a.region === 'singapore'),
-      india: authors.filter(a => a.region === 'india'),
-      philippines: authors.filter(a => a.region === 'philippines'),
-      china_hk: authors.filter(a => a.region === 'china_hk'),
-      west: authors.filter(a => a.region === 'west'),
-    };
+    // Group authors by region
+    const authorsByRegion: Record<string, typeof authors> = {};
+    for (const author of authors) {
+      if (!authorsByRegion[author.region]) {
+        authorsByRegion[author.region] = [];
+      }
+      authorsByRegion[author.region].push(author);
+    }
 
     const powerUsers = authors.filter(a => a.is_power_user);
-    
-    // Validate that we have authors in all regions
-    const allAuthors = [...authorsByRegion.singapore, ...authorsByRegion.india, 
-                       ...authorsByRegion.philippines, ...authorsByRegion.china_hk, 
-                       ...authorsByRegion.west];
-    if (allAuthors.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'No AI comment authors available in any region.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const allAuthors = authors;
 
     let totalGenerated = 0;
 
@@ -165,10 +465,22 @@ Deno.serve(async (req) => {
 
       // Determine number of comments (2-4 default, with 20% chance of 5-6)
       const numComments = Math.random() < 0.2 
-        ? Math.floor(Math.random() * 2) + 5  // 5-6
-        : Math.floor(Math.random() * 3) + 2; // 2-4
+        ? Math.floor(Math.random() * 2) + 5
+        : Math.floor(Math.random() * 3) + 2;
 
       const commentsToGenerate = [];
+
+      // Comment personas for variety
+      const personas = [
+        { type: 'enthusiast', tone: 'excited and supportive' },
+        { type: 'skeptic', tone: 'questioning and analytical' },
+        { type: 'insider', tone: 'knowledgeable, shares industry experience' },
+        { type: 'newcomer', tone: 'curious, asks basic questions' },
+        { type: 'critic', tone: 'constructive criticism, points out issues' },
+        { type: 'storyteller', tone: 'shares personal anecdotes' },
+        { type: 'joker', tone: 'light-hearted, uses humor' },
+        { type: 'pragmatist', tone: 'practical, focuses on applications' },
+      ];
 
       for (let i = 0; i < numComments; i++) {
         // 30% chance to use power user
@@ -178,18 +490,26 @@ Deno.serve(async (req) => {
         if (usePowerUser) {
           selectedAuthor = powerUsers[Math.floor(Math.random() * powerUsers.length)];
         } else {
-          // Select author based on regional distribution
+          // Select author based on regional distribution weighted toward Asia
           const rand = Math.random();
-          let region: keyof typeof authorsByRegion;
-          if (rand < 0.4) region = 'singapore';
-          else if (rand < 0.6) region = 'india';
-          else if (rand < 0.7) region = 'philippines';
-          else if (rand < 0.8) region = 'china_hk';
-          else region = 'west';
+          let region: string;
+          if (rand < 0.15) region = 'singapore';
+          else if (rand < 0.25) region = 'india';
+          else if (rand < 0.32) region = 'philippines';
+          else if (rand < 0.40) region = 'hong_kong';
+          else if (rand < 0.52) region = 'china';
+          else if (rand < 0.62) region = 'usa';
+          else if (rand < 0.70) region = 'france';
+          else if (rand < 0.76) region = 'uk';
+          else if (rand < 0.82) region = 'japan';
+          else if (rand < 0.87) region = 'korea';
+          else if (rand < 0.91) region = 'indonesia';
+          else if (rand < 0.94) region = 'thailand';
+          else if (rand < 0.97) region = 'vietnam';
+          else region = 'malaysia';
 
-          const regionAuthors = authorsByRegion[region];
+          const regionAuthors = authorsByRegion[region] || [];
           if (regionAuthors.length === 0) {
-            // Fallback to any available author if region is empty
             selectedAuthor = allAuthors[Math.floor(Math.random() * allAuthors.length)];
           } else {
             selectedAuthor = regionAuthors[Math.floor(Math.random() * regionAuthors.length)];
@@ -201,70 +521,81 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Determine comment length (20% short, 60% medium, 20% long)
+        // Select random persona
+        const persona = personas[Math.floor(Math.random() * personas.length)];
+
+        // Determine comment length (25% short, 50% medium, 25% long)
         const lengthRand = Math.random();
         let targetLength: string;
-        if (lengthRand < 0.2) targetLength = '15-40 words';
-        else if (lengthRand < 0.8) targetLength = '40-80 words';
-        else targetLength = '80-120 words';
+        if (lengthRand < 0.25) targetLength = '10-30 words, can be a fragment or one-liner';
+        else if (lengthRand < 0.75) targetLength = '30-60 words';
+        else targetLength = '60-100 words';
 
         // Check if article is old
         const articleAge = (new Date().getTime() - new Date(article.published_at).getTime()) / (1000 * 60 * 60 * 24 * 30);
         const isOldArticle = articleAge > 12;
 
-        // Add variety to comment angles
-        const commentAngles = [
-          'Share a personal experience or observation',
-          'Ask a thoughtful question about the topic',
-          'Add a contrarian or alternative perspective',
-          'Connect this to a broader trend or issue',
-          'Share how this relates to your region or industry',
-          'Question or expand on a specific point',
-          'Express agreement and add supporting context',
-          'Be mildly skeptical about one aspect',
-        ];
-        const selectedAngle = commentAngles[Math.floor(Math.random() * commentAngles.length)];
+        // Build regional language instruction
+        const regionPatterns = regionalPatterns[selectedAuthor.region] || regionalPatterns.west;
+        let regionalInstruction = '';
+        
+        if (selectedAuthor.region === 'china') {
+          regionalInstruction = `Write with slightly awkward English phrasing typical of non-native speakers. May use literal translations, occasionally miss articles (a/the), or have unusual word order. Examples: "This technology is very useful for my work situation" or "I have concern about this approach"`;
+        } else if (selectedAuthor.region === 'france') {
+          regionalInstruction = `Occasionally include a French word or expression (en fait, voilà, c'est vrai). May have slight French-influenced phrasing.`;
+        } else if (selectedAuthor.region === 'singapore' || selectedAuthor.region === 'malaysia') {
+          regionalInstruction = `May naturally use Singlish expressions like "lah", "lor", "sia" at end of sentences. Example: "This one quite good lah" or "Not sure if can work lor"`;
+        } else if (selectedAuthor.region === 'india') {
+          regionalInstruction = `May use Indian English patterns like "only" for emphasis, "actually" frequently, or expressions like "yaar". Example: "This is actually very good only" or "We should try this na"`;
+        }
 
         // Vary temporal handling for old articles
         let temporalInstruction = '';
         if (isOldArticle) {
           const temporalVariations = [
-            'Subtly reference that some time has passed but avoid clichés like "still relevant" or "even after"',
-            'Don\'t mention the article age at all, just engage with the content naturally',
-            'Casually note that you\'re coming back to this topic or just discovered it',
-            '', // Sometimes no instruction at all
+            'Subtly reference that some time has passed but avoid clichés',
+            "Don't mention the article age at all",
+            'Casually note you just discovered this topic',
+            '',
           ];
           temporalInstruction = temporalVariations[Math.floor(Math.random() * temporalVariations.length)];
         }
 
         // Generate comment using Lovable AI
-        const prompt = `You are ${selectedAuthor.name}, a reader from ${selectedAuthor.region.replace('_', ' ')}. Write a natural, authentic comment on this article.
+        const prompt = `You are ${selectedAuthor.name}, a ${persona.type} reader from ${selectedAuthor.region.replace('_', ' ')}. Your tone is ${persona.tone}.
 
-Article: "${article.title}"
+Write a comment on this article:
+Title: "${article.title}"
 Summary: "${article.excerpt || 'No summary available'}"
 
-CRITICAL VARIETY REQUIREMENTS (this article will have ${numComments} comments):
-- Comment ${i + 1} of ${numComments} - MUST be completely different in structure and ending from the others
-- NEVER end with question tags like "isn't it", "right?", "don't you think?", "no?", etc.
-- VARY sentence structures: some simple, some complex, some fragments
-- VARY endings: statement, question, ellipsis, exclamation (but NOT question tags)
-- AVOID repetitive patterns or phrases that might appear in other comments
-- Each comment should have a unique voice and style
+CRITICAL AUTHENTICITY REQUIREMENTS:
+- Write like a REAL person typing quickly online, NOT a polished essay
+- Use casual, conversational language with natural imperfections
+- Sentence fragments are OK. Run-on sentences happen too.
+- Don't always use perfect grammar or punctuation
+- Some comments can be just reactions like "wow this is huge" or "finally someone talking about this"
+- Mix short punchy sentences with longer rambling ones
+- Can start sentences with "And", "But", "So", "Like"
+- DON'T sound like ChatGPT or formal writing
+- NO em dashes, NO semicolons, minimal commas
+- NEVER end with question tags like "isn't it?", "right?", "don't you think?"
 
-Style Requirements:
+${regionalInstruction}
+
+Style:
 - Length: ${targetLength}
-- Focus: ${selectedAngle}
+- Persona: ${persona.type} - ${persona.tone}
 ${temporalInstruction ? `- ${temporalInstruction}` : ''}
-- Be specific and relevant to the article topic
-- Use ${selectedAuthor.region === 'west' ? 'British or American' : 'a mix of British and American'} English spelling
-- Sound natural and conversational
-- Include regional phrasing if appropriate (subtle, not stereotypical)
-- NO em rules, NO hyphens for emphasis, NO formulaic phrases
-- NO promotional content
-- NO contradicting the article's facts
-- Mix of constructive, neutral, or mildly critical tone
 
-Write ONLY the comment text, no metadata.`;
+VARIETY (comment ${i + 1} of ${numComments}):
+- Each comment must feel like a different person wrote it
+- Vary: sentence structure, vocabulary, formality level, punctuation style
+- Some people use all lowercase
+- Some people dont use apostrophes  
+- Some people use abbreviations like "tbh" "imo" "ngl" "rn"
+- Some people add emojis 🔥 or 👍
+
+Write ONLY the comment text, nothing else.`;
 
         try {
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -276,7 +607,6 @@ Write ONLY the comment text, no metadata.`;
             body: JSON.stringify({
               model: 'google/gemini-2.5-flash',
               messages: [{ role: 'user', content: prompt }],
-              temperature: 0.9,
             }),
           });
 
@@ -288,8 +618,11 @@ Write ONLY the comment text, no metadata.`;
           const aiData = await aiResponse.json();
           let commentText = aiData.choices[0].message.content.trim();
 
-          // Add natural variations
-          commentText = addNaturalVariations(commentText);
+          // Remove any quotes the AI might have added
+          commentText = commentText.replace(/^["']|["']$/g, '');
+
+          // Add natural variations based on region
+          commentText = addNaturalVariations(commentText, selectedAuthor.region);
 
           // Generate timestamp
           const commentDate = generateTimestamp(article.published_at, article.updated_at);
@@ -302,7 +635,7 @@ Write ONLY the comment text, no metadata.`;
           });
 
           // Small delay to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 150));
         } catch (error) {
           console.error('Error generating comment:', error);
           continue;
