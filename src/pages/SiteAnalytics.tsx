@@ -11,7 +11,7 @@ import {
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
   MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon, DollarSign,
-  Activity, Scroll, FileText, ArrowUpRight, ArrowDownRight, Minus
+  Activity, Scroll, FileText, ArrowUpRight, ArrowDownRight, Minus, Bug
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -32,6 +32,7 @@ import {
 } from "recharts";
 import { AnalyticsCharts } from "@/components/analytics/AnalyticsCharts";
 import { SponsorAnalytics } from "@/components/analytics/SponsorAnalytics";
+import { ErrorTracking } from "@/components/analytics/ErrorTracking";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
 
@@ -551,7 +552,10 @@ const SiteAnalytics = () => {
               <TabsTrigger value="sources" className="text-xs md:text-sm px-2 md:px-3">Sources</TabsTrigger>
               <TabsTrigger value="technology" className="text-xs md:text-sm px-2 md:px-3">Tech</TabsTrigger>
               <TabsTrigger value="events" className="text-xs md:text-sm px-2 md:px-3">Events</TabsTrigger>
-              <TabsTrigger value="errors" className="text-xs md:text-sm px-2 md:px-3">Errors</TabsTrigger>
+              <TabsTrigger value="errors" className="gap-1 text-xs md:text-sm px-2 md:px-3">
+                <Bug className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Errors</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -1219,189 +1223,11 @@ const SiteAnalytics = () => {
 
           {/* Errors Tab */}
           <TabsContent value="errors" className="space-y-6">
-            {(() => {
-              const errorEvents = eventsData?.filter(e => e.event_category === 'error') || [];
-              const errorsBySource = errorEvents.reduce((acc: Record<string, number>, event) => {
-                const data = event.event_data as Record<string, unknown> | null;
-                const source = (data?.source as string) || 'unknown';
-                acc[source] = (acc[source] || 0) + 1;
-                return acc;
-              }, {});
-              const errorSourceData = Object.entries(errorsBySource)
-                .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => b.value - a.value);
-
-              return (
-                <>
-                  {/* Error Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className={errorEvents.length > 0 ? 'border-destructive/50' : ''}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                          <AlertTriangle className={`h-4 w-4 ${errorEvents.length > 0 ? 'text-destructive' : ''}`} />
-                          <span className="text-sm">Total Errors</span>
-                        </div>
-                        <p className={`text-2xl font-bold ${errorEvents.length > 0 ? 'text-destructive' : ''}`}>
-                          {errorEvents.length}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                          <Target className="h-4 w-4" />
-                          <span className="text-sm">Error Sources</span>
-                        </div>
-                        <p className="text-2xl font-bold">{Object.keys(errorsBySource).length}</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                          <Zap className="h-4 w-4" />
-                          <span className="text-sm">Error Rate</span>
-                        </div>
-                        <p className="text-2xl font-bold">
-                          {totalPageviews > 0 ? ((errorEvents.length / totalPageviews) * 100).toFixed(2) : 0}%
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <AlertTriangle className="h-5 w-5 text-destructive" />
-                          Errors by Source
-                        </CardTitle>
-                        <CardDescription>Where errors are occurring</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {isLoading ? (
-                          <Skeleton className="h-[250px] w-full" />
-                        ) : errorSourceData.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
-                              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
-                            </div>
-                            <p className="font-medium text-green-600 dark:text-green-400">No errors detected!</p>
-                            <p className="text-muted-foreground text-sm mt-1">Your site is running smoothly.</p>
-                          </div>
-                        ) : (
-                          <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={errorSourceData}>
-                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                              <XAxis dataKey="name" className="text-xs" />
-                              <YAxis />
-                              <Tooltip 
-                                contentStyle={{ 
-                                  backgroundColor: 'hsl(var(--card))', 
-                                  border: '1px solid hsl(var(--border))',
-                                  borderRadius: '8px'
-                                }} 
-                              />
-                              <Bar dataKey="value" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Globe className="h-5 w-5" />
-                          Error Pages
-                        </CardTitle>
-                        <CardDescription>Pages with most errors</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {isLoading ? (
-                          <div className="space-y-3">
-                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-                          </div>
-                        ) : (() => {
-                          const errorsByPage = errorEvents.reduce((acc: Record<string, number>, event) => {
-                            const page = event.page_path || 'unknown';
-                            acc[page] = (acc[page] || 0) + 1;
-                            return acc;
-                          }, {});
-                          const errorPageData = Object.entries(errorsByPage)
-                            .map(([path, count]) => ({ path, count }))
-                            .sort((a, b) => b.count - a.count)
-                            .slice(0, 10);
-
-                          return errorPageData.length === 0 ? (
-                            <p className="text-muted-foreground text-center py-8">No error pages.</p>
-                          ) : (
-                            <div className="space-y-3">
-                              {errorPageData.map((page, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                                  <p className="font-medium truncate flex-1 text-sm">{page.path}</p>
-                                  <Badge variant="destructive">{page.count}</Badge>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Recent Errors Table */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Errors</CardTitle>
-                      <CardDescription>Latest error details for debugging</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {isLoading ? (
-                        <div className="space-y-3">
-                          {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-                        </div>
-                      ) : errorEvents.length > 0 ? (
-                        <div className="space-y-4">
-                          {errorEvents.slice(0, 15).map((event) => {
-                            const data = event.event_data as Record<string, unknown> | null;
-                            return (
-                              <div key={event.id} className="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-destructive truncate">
-                                      {(data?.message as string) || 'Unknown error'}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                      Source: {(data?.source as string) || 'unknown'} • Page: {event.page_path}
-                                    </p>
-                                    {data?.stack && (
-                                      <pre className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded overflow-x-auto max-h-20">
-                                        {(data.stack as string).slice(0, 300)}...
-                                      </pre>
-                                    )}
-                                  </div>
-                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                    {format(new Date(event.created_at), 'MMM d, HH:mm')}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                          <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
-                            <Target className="h-8 w-8 text-green-600 dark:text-green-400" />
-                          </div>
-                          <p className="font-semibold text-lg text-green-600 dark:text-green-400">No errors recorded!</p>
-                          <p className="text-muted-foreground mt-1">Your site is running without JavaScript errors.</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </>
-              );
-            })()}
+            <ErrorTracking 
+              eventsData={eventsData || []} 
+              isLoading={isLoading} 
+              dateRange={dateRange}
+            />
           </TabsContent>
         </Tabs>
       </div>
