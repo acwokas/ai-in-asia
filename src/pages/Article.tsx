@@ -1152,6 +1152,9 @@ const Article = () => {
                           year: "numeric",
                         })}
                       </span>
+                      <span>•</span>
+                      <MessageCircle className="h-3 w-3 flex-shrink-0" />
+                      <span className="whitespace-nowrap">{article.comment_count || 0} comments</span>
                     </div>
                   </div>
                 </div>
