@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
-  MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon
+  MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon, DollarSign
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -30,6 +30,7 @@ import {
   Area,
 } from "recharts";
 import { AnalyticsCharts } from "@/components/analytics/AnalyticsCharts";
+import { SponsorAnalytics } from "@/components/analytics/SponsorAnalytics";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
 
@@ -393,10 +394,14 @@ const SiteAnalytics = () => {
         )}
 
         <Tabs defaultValue="charts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 lg:w-auto lg:inline-grid">
             <TabsTrigger value="charts" className="gap-1">
               <LineChartIcon className="h-4 w-4" />
               Charts
+            </TabsTrigger>
+            <TabsTrigger value="sponsors" className="gap-1">
+              <DollarSign className="h-4 w-4" />
+              Sponsors
             </TabsTrigger>
             <TabsTrigger value="traffic">Traffic</TabsTrigger>
             <TabsTrigger value="pages">Pages</TabsTrigger>
@@ -412,6 +417,14 @@ const SiteAnalytics = () => {
             <AnalyticsCharts
               sessionsData={sessionsData || []}
               pageviewsData={pageviewsData || []}
+              eventsData={eventsData || []}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Sponsor Analytics Tab */}
+          <TabsContent value="sponsors" className="space-y-6">
+            <SponsorAnalytics
               eventsData={eventsData || []}
               isLoading={isLoading}
             />

@@ -1,12 +1,24 @@
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Sparkles } from "lucide-react";
+import { trackSponsorClick, trackSponsorImpression } from "@/hooks/useSponsorTracking";
 
 interface PerplexityCometPromoProps {
   variant?: 'homepage' | 'tools';
 }
 
 const PerplexityCometPromo = ({ variant = 'homepage' }: PerplexityCometPromoProps) => {
+  const placement = variant === 'homepage' ? 'perplexity_comet_homepage' : 'perplexity_comet_tools';
+
+  useEffect(() => {
+    trackSponsorImpression(placement, 'Perplexity Comet');
+  }, [placement]);
+
+  const handleClick = () => {
+    trackSponsorClick(placement, 'Perplexity Comet', 'https://pplx.ai/me55304');
+  };
+
   const cardClasses = variant === 'homepage' 
     ? "p-6 border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-background to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
     : "p-6 border-2 border-accent/40 bg-gradient-to-br from-accent/15 via-background to-accent/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]";
@@ -33,6 +45,7 @@ const PerplexityCometPromo = ({ variant = 'homepage' }: PerplexityCometPromoProp
         <Button
           className="w-full gap-2 font-semibold" 
           asChild
+          onClick={handleClick}
         >
           <a 
             href="https://pplx.ai/me55304" 
