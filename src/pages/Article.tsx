@@ -1297,14 +1297,6 @@ const Article = () => {
               )}
             </div>
 
-            {/* Related Articles - Mid Article */}
-            {article.categories?.id && (
-              <InlineRelatedArticles
-                currentArticleId={article.id}
-                categoryId={article.categories.id}
-                categorySlug={article.categories.slug}
-              />
-            )}
 
 
             {/* Article Footer */}
@@ -1393,7 +1385,18 @@ const Article = () => {
             <Comments articleId={article.id} />
           </section>
 
-          {/* Related Articles - Directly after comments */}
+          {/* Related Articles Box - Above You May Also Like */}
+          {article.categories?.id && (
+            <section className="container mx-auto px-4 max-w-4xl mt-12">
+              <InlineRelatedArticles
+                currentArticleId={article.id}
+                categoryId={article.categories.id}
+                categorySlug={article.categories.slug}
+              />
+            </section>
+          )}
+
+          {/* You May Also Like - After Related Articles */}
           {relatedArticles && relatedArticles.length > 0 && (
             <section className="bg-muted/30 py-12 mt-8">
               <div className="container mx-auto px-4 max-w-6xl">
