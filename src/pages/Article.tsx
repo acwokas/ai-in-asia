@@ -1299,35 +1299,27 @@ const Article = () => {
 
 
 
-            {/* Article Footer */}
-            <footer className="mt-12 pt-8 border-t border-border">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="font-semibold text-lg">Share this article</h3>
-                <div className="flex gap-2 flex-wrap">
-                  <Button variant="outline" size="icon" onClick={handleTwitterShare} title="Share on Twitter">
-                    <Twitter className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleLinkedInShare} title="Share on LinkedIn">
-                    <Linkedin className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleFacebookShare} title="Share on Facebook">
-                    <Facebook className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleRedditShare} title="Share on Reddit">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleWhatsAppShare} title="Share on WhatsApp">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleEmailShare} title="Share via Email">
-                    <Mail className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleInstagramShare} title="Copy link for Instagram">
-                    <Instagram className="h-4 w-4" />
-                  </Button>
-                </div>
+            {/* Article Footer - Compact Share */}
+            <div className="mt-8 pt-4 border-t border-border flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Share:</span>
+              <div className="flex gap-1.5">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleTwitterShare} title="Share on Twitter">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleLinkedInShare} title="Share on LinkedIn">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFacebookShare} title="Share on Facebook">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleWhatsAppShare} title="Share on WhatsApp">
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleEmailShare} title="Share via Email">
+                  <Mail className="h-4 w-4" />
+                </Button>
               </div>
-            </footer>
+            </div>
 
             {/* Author Bio - Hide for Intelligence Desk */}
             {article.authors && article.authors.name !== 'Intelligence Desk' && (
