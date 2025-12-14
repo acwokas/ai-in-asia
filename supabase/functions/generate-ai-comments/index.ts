@@ -512,6 +512,7 @@ Deno.serve(async (req) => {
 
       const commentsToGenerate: any[] = [];
       const usedAuthors: string[] = [];
+      const usedOpenings: string[] = []; // Track used openings to avoid repetition
 
       // Personas with messy, realistic styles
       const personas = [
@@ -529,6 +530,8 @@ Deno.serve(async (req) => {
         { type: 'disagree-er', tone: 'politely pushes back', style: 'respectful disagreement with reasoning' },
         { type: 'sharer', tone: 'wants others to see this too', style: 'mentions sharing or forwarding' },
         { type: 'anecdote-r', tone: 'has a relevant story', style: 'personal experience that connects' },
+        { type: 'reactor', tone: 'just here to react', style: 'ultra brief, gut reaction only' },
+        { type: 'quoter', tone: 'highlights specific parts', style: 'paraphrases and responds' },
       ];
 
       // Industry jargon for AI/tech articles
@@ -538,6 +541,24 @@ Deno.serve(async (req) => {
         'multimodal', 'embeddings', 'vector db', 'GPU costs', 'scaling laws',
         'RLHF', 'few-shot', 'zero-shot', 'foundation models', 'LLMs',
         'transformer architecture', 'diffusion models', 'compute', 'throughput'
+      ];
+
+      // Ultra-short reaction options (1-3 words)
+      const ultraShortReactions = [
+        'Boom.', 'Oof.', 'Yikes.', 'Finally!', 'Big if true.', 'Called it.', 
+        'lol what', 'oh no', 'nice', 'W', 'L', 'huge.', 'wild.', 'damn.', 
+        'insane', 'no way', 'this.', 'real.', 'facts.', 'bruh.', 'yep.', 
+        'nope.', 'interesting.', 'huh.', 'hmm', 'wait', 'whoa', '💀', 
+        'lmaooo', 'sheesh', 'ayo?', 'bout time', 'peak', 'mid', 'massive',
+        'underrated take', 'spicy', 'based', 'cap', 'no cap', 'fr fr',
+        'pain.', 'RIP', 'gg', 'lets go', 'W take', 'hard agree', 'nah'
+      ];
+
+      // Opening variations to AVOID repetition
+      const bannedPhrases = [
+        'this is wild', 'this is crazy', 'this is huge', 'this is interesting',
+        'this is insane', 'this is big', "i'm starting", "i'm trying",
+        'the implications', 'game changer', 'the fact that'
       ];
 
       // Determine sentiment skew for this article (not always balanced)
@@ -604,18 +625,32 @@ Deno.serve(async (req) => {
         const persona = personas[Math.floor(Math.random() * personas.length)];
         const timeStyle = getTimeOfDayStyle();
 
-        // Variable lengths - more short ones
+        // More varied lengths - heavier on short and ultra-short
         const lengthRand = Math.random();
         let targetLength: string;
-        if (lengthRand < 0.35) targetLength = '5-20 words, can be super short like "this is huge" or "finally" or just a question';
-        else if (lengthRand < 0.75) targetLength = '20-50 words, conversational';
-        else targetLength = '50-90 words, more detailed but still casual';
+        let isUltraShort = false;
+        if (lengthRand < 0.20) {
+          isUltraShort = true;
+          const reaction = ultraShortReactions[Math.floor(Math.random() * ultraShortReactions.length)];
+          targetLength = `ULTRA SHORT: Just write 1-3 words max like "${reaction}" - pure gut reaction`;
+        } else if (lengthRand < 0.45) {
+          targetLength = '4-15 words. Very brief. "love this" "wait really?" "not sure about that" "hmm interesting point"';
+        } else if (lengthRand < 0.75) {
+          targetLength = '15-35 words, one thought, conversational';
+        } else if (lengthRand < 0.92) {
+          targetLength = '35-60 words, bit more detail but still casual';
+        } else {
+          targetLength = '60-100 words, more detailed story or explanation';
+        }
 
         // Build special behaviors
         let specialBehavior = '';
         const behaviorRand = Math.random();
         
-        if (useRepeatAuthor) {
+        if (isUltraShort) {
+          // Ultra short doesn't need special behavior
+          specialBehavior = '';
+        } else if (useRepeatAuthor) {
           const repeatStyles = [
             'This is a FOLLOW-UP comment. Start with "oh also" or "forgot to say" or "wait" or just add another thought',
             'This is a CORRECTION to your earlier comment. Start with "actually wait" or "nvm" or correct yourself',
@@ -624,11 +659,9 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = repeatStyles[Math.floor(Math.random() * repeatStyles.length)];
         } else if (behaviorRand < 0.10 && previousComments.length > 0) {
-          // Reply to previous comment
           const prevComment = previousComments[Math.floor(Math.random() * previousComments.length)];
           specialBehavior = `Reference or reply to a previous commenter. You can say things like "@${prevComment.author} totally" or "agree with above" or "what ${prevComment.author.split(' ')[0]} said" - keep it natural`;
         } else if (behaviorRand < 0.18) {
-          // Credential drop
           const credentials = [
             'Mention you work in tech/AI casually like "at my company we..."',
             'Drop that youve been in the industry X years without being braggy',
@@ -637,13 +670,10 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = credentials[Math.floor(Math.random() * credentials.length)];
         } else if (behaviorRand < 0.25) {
-          // Lurker declaration
           specialBehavior = 'Mention that you usually just read/lurk but had to comment on this one. Be natural about it, not formulaic';
         } else if (behaviorRand < 0.32) {
-          // Incomplete thought
           specialBehavior = 'Trail off or change direction mid-thought. Like you started saying something then went somewhere else. Real people do this';
         } else if (behaviorRand < 0.40) {
-          // Healthy AI skepticism / polite disagreement
           const skepticStyles = [
             'Express some skepticism about AI hype or this specific claim. Not hostile, just... youve seen promises before',
             'Politely disagree with a point in the article. "interesting but I think..." or "not sure I agree about..."',
@@ -651,10 +681,8 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = skepticStyles[Math.floor(Math.random() * skepticStyles.length)];
         } else if (behaviorRand < 0.48) {
-          // Topic drift
           specialBehavior = 'Go slightly off-topic or connect this to something tangentially related. Real comments wander';
         } else if (behaviorRand < 0.55) {
-          // Genuine question
           const questionStyles = [
             'Ask a genuine question you want answered. "does anyone know if..." or "curious how this works with..."',
             'Ask for clarification or more details. "wait so does this mean..." or "so basically..."',
@@ -662,7 +690,6 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = questionStyles[Math.floor(Math.random() * questionStyles.length)];
         } else if (behaviorRand < 0.62) {
-          // Personal anecdote
           const anecdoteStyles = [
             'Share a brief personal experience that relates. "this happened at my company last month..."',
             'Mention trying something similar. "we tested something like this and..."',
@@ -670,7 +697,6 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = anecdoteStyles[Math.floor(Math.random() * anecdoteStyles.length)];
         } else if (behaviorRand < 0.68) {
-          // Social proof actions
           const socialStyles = [
             'Mention sharing. "just sent this to my team" or "forwarding to my manager lol"',
             'Reference saving/bookmarking. "bookmarking this" or "saving for later"',
@@ -678,10 +704,8 @@ Deno.serve(async (req) => {
           ];
           specialBehavior = socialStyles[Math.floor(Math.random() * socialStyles.length)];
         } else if (behaviorRand < 0.73) {
-          // Quote the article
           specialBehavior = `Reference a specific part of the article naturally. Like "the part about [topic from title] really stood out" or "when they said [paraphrase]...". Dont use actual quotes just paraphrase`;
         } else if (behaviorRand < 0.78) {
-          // Use industry jargon naturally
           const jargonWord = industryJargon[Math.floor(Math.random() * industryJargon.length)];
           specialBehavior = `Work in "${jargonWord}" naturally like you actually know what youre talking about. Dont explain it, just use it`;
         }
@@ -719,6 +743,11 @@ Deno.serve(async (req) => {
           temporalInstruction = 'Can mention just finding this or coming back to it, but dont be formulaic about it';
         }
 
+        // Build banned openings string from used ones
+        const bannedOpeningsStr = usedOpenings.length > 0 
+          ? `ALREADY USED (DO NOT START WITH): ${usedOpenings.slice(-5).join(', ')}`
+          : '';
+
         const prompt = `You are ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}. Write a comment on this article.
 
 Article: "${article.title}"
@@ -727,18 +756,24 @@ Summary: "${article.excerpt || ''}"
 YOUR STYLE: ${persona.type} - ${persona.tone}. ${persona.style}
 TIME CONTEXT: ${timeStyle.instruction}
 
-CRITICAL - WRITE LIKE A REAL PERSON NOT AN AI:
+CRITICAL VARIATION RULES - READ CAREFULLY:
+${bannedOpeningsStr}
+- NEVER start with: ${bannedPhrases.join(', ')}
+- NEVER say "this is wild/crazy/huge/interesting/insane" - be more creative
+- NEVER mention starting a company unless directly relevant
+- Each comment MUST feel completely different from others
+- Vary your opening word - dont start with "This" or "I" every time
+- Try starting with: verbs, reactions, questions, lowercase words, single words
+
+WRITE LIKE A REAL PERSON NOT AN AI:
 - Real people dont write perfectly. Sentences run together sometimes or break off
 - Start with lowercase sometimes. or dont use periods
 - Fragments are fine. "Love this." "Wait what." "Hmm not sure about that part" "finally!"
 - Use filler: "like", "honestly", "I mean", "so basically", "wait", "ok but", "idk"
 - Some sentences just trail off...
-- Double check urself mid-sentence "wait no I mean"
 - Typos happen. dont fix them all
 - NO em dashes ever. NO semicolons. minimal commas
 - NEVER end with "right?" or "isn't it?" or "don't you think?"
-- Dont sound like youre writing an essay. this is a comment section
-- Its ok to just have a reaction. not every comment needs a point
 
 LENGTH: ${targetLength}
 SENTIMENT: ${commentSentiment}
@@ -746,7 +781,7 @@ ${regionalInstruction}
 ${temporalInstruction}
 ${specialBehavior ? `SPECIAL BEHAVIOR: ${specialBehavior}` : ''}
 
-Comment ${i + 1} of ${numComments} - make it DIFFERENT from others. vary everything.
+Comment ${i + 1} of ${numComments} - MUST be DIFFERENT from all others.
 
 Write ONLY the comment. nothing else.`;
 
@@ -779,6 +814,10 @@ Write ONLY the comment. nothing else.`;
 
           // Add natural variations based on region
           commentText = addNaturalVariations(commentText, selectedAuthor.region);
+
+          // Track the opening to avoid repetition
+          const opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+          usedOpenings.push(opening);
 
           // Store for potential threading
           previousComments.push({
