@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
 import { PromptAndGoBanner } from "./PromptAndGoBanner";
+import { trackSponsorImpression, SponsorPlacement } from "@/hooks/useSponsorTracking";
 
 interface GoogleAdProps {
   slot: string;
@@ -8,6 +9,7 @@ interface GoogleAdProps {
   responsive?: boolean;
   className?: string;
   houseAdType?: "mpu" | "banner" | "none";
+  placement?: SponsorPlacement;
 }
 
 // Google Ads Publisher ID
@@ -19,10 +21,20 @@ const GoogleAd = ({
   responsive = true,
   className = "",
   houseAdType = "mpu",
+  placement,
 }: GoogleAdProps) => {
   const [showHouseAd, setShowHouseAd] = useState(false);
   const adRef = useRef<HTMLElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const impressionTracked = useRef(false);
+
+  // Track Google Ad impression when ad loads successfully
+  useEffect(() => {
+    if (!showHouseAd && placement && !impressionTracked.current) {
+      impressionTracked.current = true;
+      trackSponsorImpression(placement, 'Google AdSense', { slot });
+    }
+  }, [showHouseAd, placement, slot]);
 
   useEffect(() => {
     // Only load in production
@@ -127,6 +139,7 @@ export const SidebarAd = ({ className = "" }: { className?: string }) => (
       slot="1044321413"
       format="vertical"
       houseAdType="mpu"
+      placement="google_ad_sidebar"
     />
   </div>
 );
@@ -137,6 +150,7 @@ export const InArticleAd = () => (
       slot="3478913062"
       format="rectangle"
       houseAdType="mpu"
+      placement="google_ad_in_article"
     />
   </div>
 );
@@ -147,6 +161,7 @@ export const FooterAd = () => (
       slot="8539668053"
       format="horizontal"
       houseAdType="banner"
+      placement="google_ad_footer"
     />
   </div>
 );
@@ -159,6 +174,7 @@ export const MPUAd = ({ className = "" }: { className?: string }) => (
       format="rectangle"
       responsive={false}
       houseAdType="mpu"
+      placement="google_ad_mpu"
     />
   </div>
 );
