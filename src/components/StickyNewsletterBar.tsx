@@ -95,7 +95,7 @@ const StickyNewsletterBar = () => {
   if (isDismissed || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground shadow-lg animate-in slide-in-from-bottom duration-300">
+    <div className="hidden sm:block fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground shadow-lg animate-in slide-in-from-bottom duration-300">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
