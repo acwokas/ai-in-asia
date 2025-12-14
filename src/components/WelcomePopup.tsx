@@ -34,6 +34,16 @@ const WelcomePopup = () => {
     
     if (hasSeenPopup || dontShow === "true") return;
 
+    // Only show from the second page load onwards (per session)
+    const visitCount = parseInt(sessionStorage.getItem("page-visit-count") || "0", 10);
+    const newCount = visitCount + 1;
+    sessionStorage.setItem("page-visit-count", newCount.toString());
+
+    if (newCount < 2) {
+      // First visit in this session - skip popup
+      return;
+    }
+
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 3000); // Show after 3 seconds
@@ -142,7 +152,7 @@ const WelcomePopup = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black/70 backdrop-blur-sm px-4 py-6 pt-[env(safe-area-inset-top)] overflow-y-auto">
       <div className="relative w-full max-w-lg bg-background border border-border rounded-xl shadow-2xl overflow-hidden">
         <Button
           variant="ghost"
