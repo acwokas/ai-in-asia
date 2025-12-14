@@ -201,6 +201,18 @@ const Header = memo(() => {
               <div className="h-px bg-primary my-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
+              <form onSubmit={handleSearch} className="pt-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search articles..."
+                    className="w-full pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </form>
               {!user && (
                 <div className="pt-2">
                   <Button variant="default" className="w-full" asChild>
@@ -233,18 +245,6 @@ const Header = memo(() => {
                   </div>
                 </>
               )}
-              <form onSubmit={handleSearch} className="pt-2">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search articles..."
-                    className="w-full pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </form>
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <NotificationPreferences />
                 <ReadingQueue />
