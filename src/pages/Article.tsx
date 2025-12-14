@@ -1185,8 +1185,13 @@ const Article = () => {
                         })}
                       </span>
                       <span>•</span>
-                      <MessageCircle className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap">{commentCount} comments</span>
+                      <button 
+                        onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        <MessageCircle className="h-3 w-3 flex-shrink-0" />
+                        <span className="whitespace-nowrap">{commentCount} comments</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1373,7 +1378,7 @@ const Article = () => {
           </article>
 
           {/* Comments Section */}
-          <section className="container mx-auto px-4 max-w-4xl mt-12">
+          <section id="comments-section" className="container mx-auto px-4 max-w-4xl mt-12">
             <Comments articleId={article.id} />
           </section>
 
