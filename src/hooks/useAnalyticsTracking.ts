@@ -11,6 +11,7 @@ interface SessionData {
   sessionId: string;
   startedAt: number;
   lastActivity: number;
+  pageCount: number;
 }
 
 const generateSessionId = () => {
@@ -159,20 +160,23 @@ export const useAnalyticsTracking = () => {
   const pageViewIdRef = useRef<string | null>(null);
   const pageStartTimeRef = useRef<number>(Date.now());
   const scrollDepthRef = useRef<number>(0);
+  const sessionDataRef = useRef<SessionData | null>(null);
 
-  // Update session duration
-  const updateSessionDuration = useCallback(async (sessionId: string, startedAt: number) => {
-    const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
+  // Update session in database
+  const updateSessionInDb = useCallback(async (sessionId: string, updates: {
+    duration_seconds?: number;
+    ended_at?: string;
+    page_count?: number;
+    is_bounce?: boolean;
+    exit_page?: string;
+  }) => {
     await supabase
       .from('analytics_sessions')
-      .update({ 
-        duration_seconds: durationSeconds,
-        ended_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('session_id', sessionId);
   }, []);
 
-  const getOrCreateSession = useCallback(async (): Promise<{ sessionId: string; startedAt: number }> => {
+  const getOrCreateSession = useCallback(async (): Promise<string> => {
     const stored = localStorage.getItem(SESSION_KEY);
     let sessionData: SessionData | null = null;
 
@@ -181,8 +185,12 @@ export const useAnalyticsTracking = () => {
         sessionData = JSON.parse(stored);
         // Check if session is still valid (within timeout)
         if (Date.now() - sessionData.lastActivity > SESSION_TIMEOUT) {
-          // Update final duration of old session before creating new one
-          await updateSessionDuration(sessionData.sessionId, sessionData.startedAt);
+          // Finalize old session
+          await updateSessionInDb(sessionData.sessionId, {
+            duration_seconds: Math.round((sessionData.lastActivity - sessionData.startedAt) / 1000),
+            ended_at: new Date(sessionData.lastActivity).toISOString(),
+            is_bounce: sessionData.pageCount <= 1,
+          });
           sessionData = null;
         }
       } catch {
@@ -191,28 +199,26 @@ export const useAnalyticsTracking = () => {
     }
 
     if (sessionData) {
-      // Update last activity and session duration
+      // Update last activity
       sessionData.lastActivity = Date.now();
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-      
-      // Update session duration in database
-      await updateSessionDuration(sessionData.sessionId, sessionData.startedAt);
-      
-      return { sessionId: sessionData.sessionId, startedAt: sessionData.startedAt };
+      sessionDataRef.current = sessionData;
+      return sessionData.sessionId;
     }
 
     // Create new session
     const sessionId = generateSessionId();
     const utmParams = getUTMParams();
     const referrer = document.referrer;
-    const startedAt = Date.now();
 
     const newSession: SessionData = {
       sessionId,
-      startedAt,
+      startedAt: Date.now(),
       lastActivity: Date.now(),
+      pageCount: 0,
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+    sessionDataRef.current = newSession;
 
     // Insert session to database
     await supabase.from('analytics_sessions').insert({
@@ -230,16 +236,18 @@ export const useAnalyticsTracking = () => {
       os: getOS(),
       landing_page: location.pathname,
       duration_seconds: 0,
+      page_count: 0,
+      is_bounce: true, // Assume bounce until proven otherwise
     });
 
-    return { sessionId, startedAt };
-  }, [user?.id, location.pathname, updateSessionDuration]);
+    return sessionId;
+  }, [user?.id, location.pathname, updateSessionInDb]);
 
   const trackPageView = useCallback(async () => {
-    const { sessionId } = await getOrCreateSession();
+    const sessionId = await getOrCreateSession();
     const currentPath = location.pathname + location.search;
 
-    // Update previous pageview with time spent and exit status
+    // Update previous pageview with time spent and scroll depth
     if (pageViewIdRef.current && lastPathRef.current) {
       const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
       await supabase
@@ -249,6 +257,29 @@ export const useAnalyticsTracking = () => {
           scroll_depth_percent: scrollDepthRef.current,
         })
         .eq('id', pageViewIdRef.current);
+    }
+
+    // Increment page count in session
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (stored) {
+      try {
+        const sessionData: SessionData = JSON.parse(stored);
+        sessionData.pageCount = (sessionData.pageCount || 0) + 1;
+        sessionData.lastActivity = Date.now();
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        sessionDataRef.current = sessionData;
+
+        // Update session in database
+        const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+        await updateSessionInDb(sessionId, {
+          page_count: sessionData.pageCount,
+          duration_seconds: durationSeconds,
+          is_bounce: sessionData.pageCount <= 1,
+          exit_page: currentPath,
+        });
+      } catch {
+        // Silent fail
+      }
     }
 
     // Extract article/guide/category info from path
@@ -274,6 +305,7 @@ export const useAnalyticsTracking = () => {
         article_id: articleId,
         guide_id: guideId,
         category_slug: categorySlug,
+        is_exit: false, // Will be updated on next navigation or page close
       }])
       .select('id')
       .single();
@@ -282,11 +314,15 @@ export const useAnalyticsTracking = () => {
       pageViewIdRef.current = data.id;
     }
 
-    // Update session page count (simple increment via raw SQL would need function, skip for now)
+    // Mark previous page as not an exit
+    if (lastPathRef.current && pageViewIdRef.current) {
+      // The previous page wasn't the exit since we're still navigating
+    }
+
     lastPathRef.current = currentPath;
     pageStartTimeRef.current = Date.now();
     scrollDepthRef.current = 0;
-  }, [getOrCreateSession, location.pathname, location.search, user?.id]);
+  }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb]);
 
   // Track scroll depth
   useEffect(() => {
@@ -306,25 +342,83 @@ export const useAnalyticsTracking = () => {
     trackPageView();
   }, [location.pathname, location.search]);
 
+  // Handle page visibility changes (tab switching, minimizing)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        // Update current pageview and session when tab becomes hidden
+        const stored = localStorage.getItem(SESSION_KEY);
+        if (stored && pageViewIdRef.current) {
+          try {
+            const sessionData: SessionData = JSON.parse(stored);
+            const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
+            const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+
+            // Update pageview
+            await supabase
+              .from('analytics_pageviews')
+              .update({
+                time_on_page_seconds: timeSpent,
+                scroll_depth_percent: scrollDepthRef.current,
+                is_exit: true,
+              })
+              .eq('id', pageViewIdRef.current);
+
+            // Update session
+            await updateSessionInDb(sessionData.sessionId, {
+              duration_seconds: durationSeconds,
+              exit_page: location.pathname,
+            });
+          } catch {
+            // Silent fail
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [location.pathname, updateSessionInDb]);
+
   // Mark exit page on unload
   useEffect(() => {
-    const handleBeforeUnload = async () => {
+    const handleBeforeUnload = () => {
       const stored = localStorage.getItem(SESSION_KEY);
       if (stored && pageViewIdRef.current) {
         try {
           const sessionData: SessionData = JSON.parse(stored);
           const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
-          
-          // Use sendBeacon for reliable exit tracking
-          const payload = JSON.stringify({
-            pageViewId: pageViewIdRef.current,
-            sessionId: sessionData.sessionId,
-            timeSpent,
-            scrollDepth: scrollDepthRef.current,
-            exitPage: location.pathname,
-          });
-          
-          navigator.sendBeacon('/api/track-exit', payload);
+          const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+
+          // Use synchronous XHR for exit tracking (sendBeacon doesn't work with Supabase)
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+          // Update pageview with is_exit = true
+          const pageviewXhr = new XMLHttpRequest();
+          pageviewXhr.open('PATCH', `${supabaseUrl}/rest/v1/analytics_pageviews?id=eq.${pageViewIdRef.current}`, false);
+          pageviewXhr.setRequestHeader('Content-Type', 'application/json');
+          pageviewXhr.setRequestHeader('apikey', supabaseKey);
+          pageviewXhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
+          pageviewXhr.setRequestHeader('Prefer', 'return=minimal');
+          pageviewXhr.send(JSON.stringify({
+            time_on_page_seconds: timeSpent,
+            scroll_depth_percent: scrollDepthRef.current,
+            is_exit: true,
+          }));
+
+          // Update session with final duration
+          const sessionXhr = new XMLHttpRequest();
+          sessionXhr.open('PATCH', `${supabaseUrl}/rest/v1/analytics_sessions?session_id=eq.${sessionData.sessionId}`, false);
+          sessionXhr.setRequestHeader('Content-Type', 'application/json');
+          sessionXhr.setRequestHeader('apikey', supabaseKey);
+          sessionXhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
+          sessionXhr.setRequestHeader('Prefer', 'return=minimal');
+          sessionXhr.send(JSON.stringify({
+            duration_seconds: durationSeconds,
+            ended_at: new Date().toISOString(),
+            exit_page: location.pathname,
+          }));
         } catch {
           // Silent fail
         }
@@ -334,6 +428,42 @@ export const useAnalyticsTracking = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [location.pathname]);
+
+  // Periodic session update (every 30 seconds while active)
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const stored = localStorage.getItem(SESSION_KEY);
+      if (stored && pageViewIdRef.current) {
+        try {
+          const sessionData: SessionData = JSON.parse(stored);
+          const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+          const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
+
+          // Update session duration
+          await updateSessionInDb(sessionData.sessionId, {
+            duration_seconds: durationSeconds,
+          });
+
+          // Update current pageview time
+          await supabase
+            .from('analytics_pageviews')
+            .update({
+              time_on_page_seconds: timeSpent,
+              scroll_depth_percent: scrollDepthRef.current,
+            })
+            .eq('id', pageViewIdRef.current);
+
+          // Update lastActivity in localStorage
+          sessionData.lastActivity = Date.now();
+          localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        } catch {
+          // Silent fail
+        }
+      }
+    }, 30000); // Every 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [updateSessionInDb]);
 
   // Track custom events with user context
   const trackEvent = useCallback(async (eventName: string, eventCategory?: string, eventData?: Record<string, unknown>) => {
