@@ -766,19 +766,18 @@ const Comments = ({ articleId }: CommentsProps) => {
                         <User className="h-5 w-5 text-white" />
                       </div>
                     )}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold">
-                          {comment.author_name || "Anonymous"}
-                        </span>
-                        {comment.author_handle && (
-                          <span className="text-sm text-muted-foreground">
-                            @{comment.author_handle}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold truncate">
+                            {comment.author_name || "Anonymous"}
                           </span>
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          •
-                        </span>
+                          {comment.author_handle && (
+                            <span className="text-sm text-muted-foreground">
+                              @{comment.author_handle}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-sm text-muted-foreground">
                           {new Date(comment.created_at).toLocaleDateString("en-GB", {
                             day: "numeric",
