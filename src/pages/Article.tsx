@@ -51,6 +51,38 @@ const Article = () => {
   const previewCode = urlParams.get('preview');
   const isPreview = !!previewCode;
 
+// Fetch live comment count (approved real comments + published AI comments)
+  const { data: commentCount = 0 } = useQuery({
+    queryKey: ["article-comment-count", cleanSlug],
+    staleTime: 30 * 1000, // 30 seconds
+    queryFn: async () => {
+      // Get article ID first
+      const { data: articleData } = await supabase
+        .from("articles")
+        .select("id")
+        .eq("slug", cleanSlug)
+        .maybeSingle();
+      
+      if (!articleData?.id) return 0;
+      
+      // Count approved real comments
+      const { count: realCount } = await supabase
+        .from("comments")
+        .select("*", { count: "exact", head: true })
+        .eq("article_id", articleData.id)
+        .eq("approved", true);
+      
+      // Count published AI comments
+      const { count: aiCount } = await supabase
+        .from("ai_generated_comments")
+        .select("*", { count: "exact", head: true })
+        .eq("article_id", articleData.id)
+        .eq("published", true);
+      
+      return (realCount || 0) + (aiCount || 0);
+    },
+  });
+
   const { data: article, isLoading } = useQuery({
     queryKey: ["article", cleanSlug, previewCode],
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -1154,7 +1186,7 @@ const Article = () => {
                       </span>
                       <span>•</span>
                       <MessageCircle className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap">{article.comment_count || 0} comments</span>
+                      <span className="whitespace-nowrap">{commentCount} comments</span>
                     </div>
                   </div>
                 </div>
