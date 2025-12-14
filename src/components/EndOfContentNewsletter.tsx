@@ -23,7 +23,7 @@ const EndOfContentNewsletter = () => {
 
       const { error } = await supabase
         .from("newsletter_subscribers")
-        .insert([{ email: validatedEmail }]);
+        .insert([{ email: validatedEmail, signup_source: "end_of_content" }]);
 
       if (error) {
         if (error.code === "23505") {

@@ -99,7 +99,7 @@ const WelcomePopup = () => {
         // Also subscribe to newsletter
         await supabase
           .from("newsletter_subscribers")
-          .insert([{ email: validatedEmail }])
+          .insert([{ email: validatedEmail, signup_source: "welcome_popup_account" }])
           .throwOnError();
 
         toast({
@@ -110,7 +110,7 @@ const WelcomePopup = () => {
         // Newsletter only
         const { error } = await supabase
           .from("newsletter_subscribers")
-          .insert([{ email: validatedEmail }]);
+          .insert([{ email: validatedEmail, signup_source: "welcome_popup" }]);
 
         if (error) {
           if (error.code === "23505") {
