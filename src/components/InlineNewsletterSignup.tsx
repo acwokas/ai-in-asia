@@ -77,17 +77,17 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
   if (variant === "compact") {
     return (
       <div className="my-6 p-4 rounded-lg bg-muted/50 border border-border">
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
           <Input
             type="email"
             placeholder="Your email for weekly AI insights"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1"
+            className="flex-1 min-w-0"
             required
             disabled={isSubmitting}
           />
-          <Button type="submit" size="sm" disabled={isSubmitting}>
+          <Button type="submit" size="sm" disabled={isSubmitting} className="flex-none">
             {isSubmitting ? "..." : "Subscribe"}
           </Button>
         </form>
@@ -107,13 +107,13 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
             <p className="text-xs text-muted-foreground">Weekly AI news & insights from Asia.</p>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="flex gap-2 w-full sm:w-auto sm:shrink-0">
+        <form onSubmit={handleSubmit} className="flex flex-wrap gap-2 w-full sm:w-auto sm:shrink-0">
           <Input
             type="email"
             placeholder="Your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 sm:w-40 h-9 text-sm"
+            className="flex-1 min-w-0 sm:w-40 h-9 text-sm"
             required
             disabled={isSubmitting}
           />
