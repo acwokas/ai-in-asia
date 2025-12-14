@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { trackSponsorClick, trackSponsorImpression } from "@/hooks/useSponsorTracking";
 import {
   Loader2, 
   TrendingUp, 
@@ -56,6 +57,58 @@ const categoryIcons: Record<string, LucideIcon> = {
   'industry': Building2,
   'innovation': Rocket,
   'global': Globe,
+};
+
+// Category Sponsor Card with tracking
+interface CategorySponsorData {
+  sponsor_name: string;
+  sponsor_logo_url: string;
+  sponsor_website_url: string;
+  sponsor_tagline?: string | null;
+}
+
+const CategorySponsorCard = ({ sponsor, categoryName }: { sponsor: CategorySponsorData; categoryName: string }) => {
+  useEffect(() => {
+    trackSponsorImpression('category_sponsor', sponsor.sponsor_name, { category: categoryName });
+  }, [sponsor.sponsor_name, categoryName]);
+
+  const handleClick = () => {
+    trackSponsorClick('category_sponsor', sponsor.sponsor_name, sponsor.sponsor_website_url, { category: categoryName });
+  };
+
+  return (
+    <div className="lg:col-span-4">
+      <Card className="!bg-white dark:!bg-white border-primary/20 hover:border-primary/40 transition-all shadow-md">
+        <CardContent className="p-4">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 text-center">
+            In partnership with
+          </p>
+          <a
+            href={sponsor.sponsor_website_url}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="block group"
+            onClick={handleClick}
+          >
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-full flex items-center justify-center">
+                <img
+                  src={sponsor.sponsor_logo_url}
+                  alt={sponsor.sponsor_name}
+                  className="h-20 w-auto max-w-full object-contain group-hover:scale-105 transition-transform"
+                />
+              </div>
+              {sponsor.sponsor_tagline && (
+                <p className="text-xs text-gray-600 italic leading-relaxed">
+                  {sponsor.sponsor_tagline}
+                </p>
+              )}
+            </div>
+          </a>
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
 
 const Category = () => {
@@ -739,36 +792,10 @@ const Category = () => {
 
               {/* Right side - Sponsor Card */}
               {sponsor && (
-                <div className="lg:col-span-4">
-                  <Card className="!bg-white dark:!bg-white border-primary/20 hover:border-primary/40 transition-all shadow-md">
-                    <CardContent className="p-4">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 text-center">
-                        In partnership with
-                      </p>
-                      <a
-                        href={sponsor.sponsor_website_url}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                        className="block group"
-                      >
-                        <div className="flex flex-col items-center gap-3 text-center">
-                          <div className="w-full flex items-center justify-center">
-                            <img
-                              src={sponsor.sponsor_logo_url}
-                              alt={sponsor.sponsor_name}
-                              className="h-20 w-auto max-w-full object-contain group-hover:scale-105 transition-transform"
-                            />
-                          </div>
-                          {sponsor.sponsor_tagline && (
-                            <p className="text-xs text-gray-600 italic leading-relaxed">
-                              {sponsor.sponsor_tagline}
-                            </p>
-                          )}
-                        </div>
-                      </a>
-                    </CardContent>
-                  </Card>
-                </div>
+                <CategorySponsorCard 
+                  sponsor={sponsor} 
+                  categoryName={category?.name || ''} 
+                />
               )}
             </div>
           </div>
