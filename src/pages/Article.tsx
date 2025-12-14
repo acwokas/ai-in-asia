@@ -1306,8 +1306,6 @@ const Article = () => {
               />
             )}
 
-            {/* Second Ad - After Content, Before Comments - Not for Top Lists */}
-            {article.article_type !== 'top_lists' && <InArticleAd />}
 
             {/* Article Footer */}
             <footer className="mt-12 pt-8 border-t border-border">
@@ -1395,9 +1393,9 @@ const Article = () => {
             <Comments articleId={article.id} />
           </section>
 
-          {/* Related Articles */}
+          {/* Related Articles - Directly after comments */}
           {relatedArticles && relatedArticles.length > 0 && (
-            <section className="bg-muted/30 py-12 mt-12">
+            <section className="bg-muted/30 py-12 mt-8">
               <div className="container mx-auto px-4 max-w-6xl">
                 <h2 className="headline text-3xl mb-8">You may also like:</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1448,6 +1446,7 @@ const Article = () => {
               </div>
             </section>
           )}
+
 
           {/* Prompt and Go Banner for Top Lists - At the very bottom */}
           {article.article_type === 'top_lists' && (
