@@ -6,111 +6,126 @@ const corsHeaders = {
 };
 
 // Regional expressions and patterns
-const regionalPatterns: Record<string, { expressions: string[]; typoChance: number; shorthandChance: number; lowercaseChance: number; emojiChance: number }> = {
+const regionalPatterns: Record<string, { expressions: string[]; typoChance: number; shorthandChance: number; lowercaseChance: number; emojiChance: number; mobileTypoChance: number }> = {
   singapore: {
     expressions: ['lah', 'lor', 'sia', 'hor', 'leh', 'meh', 'one', 'can'],
-    typoChance: 0.15,
-    shorthandChance: 0.25,
-    lowercaseChance: 0.2,
-    emojiChance: 0.3,
+    typoChance: 0.18,
+    shorthandChance: 0.28,
+    lowercaseChance: 0.25,
+    emojiChance: 0.32,
+    mobileTypoChance: 0.15,
   },
   india: {
     expressions: ['yaar', 'na', 'actually', 'basically', 'only'],
-    typoChance: 0.1,
-    shorthandChance: 0.2,
-    lowercaseChance: 0.15,
-    emojiChance: 0.25,
+    typoChance: 0.12,
+    shorthandChance: 0.22,
+    lowercaseChance: 0.18,
+    emojiChance: 0.28,
+    mobileTypoChance: 0.12,
   },
   philippines: {
     expressions: ['po', 'naman', 'talaga', 'grabe'],
-    typoChance: 0.12,
-    shorthandChance: 0.3,
-    lowercaseChance: 0.25,
-    emojiChance: 0.4,
+    typoChance: 0.15,
+    shorthandChance: 0.32,
+    lowercaseChance: 0.28,
+    emojiChance: 0.42,
+    mobileTypoChance: 0.18,
   },
   hong_kong: {
     expressions: ['la', 'ga', 'ah'],
-    typoChance: 0.15,
-    shorthandChance: 0.15,
-    lowercaseChance: 0.1,
-    emojiChance: 0.2,
+    typoChance: 0.18,
+    shorthandChance: 0.18,
+    lowercaseChance: 0.15,
+    emojiChance: 0.25,
+    mobileTypoChance: 0.12,
   },
   china: {
-    expressions: [], // Less native expressions, more literal translations
-    typoChance: 0.25, // Higher typo chance for non-native speakers
-    shorthandChance: 0.1,
-    lowercaseChance: 0.3,
-    emojiChance: 0.35,
+    expressions: [],
+    typoChance: 0.28,
+    shorthandChance: 0.12,
+    lowercaseChance: 0.32,
+    emojiChance: 0.38,
+    mobileTypoChance: 0.2,
   },
   usa: {
     expressions: ['like', 'literally', 'honestly', 'lowkey', 'ngl', 'fr'],
-    typoChance: 0.12,
-    shorthandChance: 0.35,
-    lowercaseChance: 0.3,
-    emojiChance: 0.25,
+    typoChance: 0.15,
+    shorthandChance: 0.38,
+    lowercaseChance: 0.35,
+    emojiChance: 0.28,
+    mobileTypoChance: 0.2,
   },
   france: {
-    expressions: ['en fait', 'quand même', 'voilà', 'c\'est'],
-    typoChance: 0.18,
-    shorthandChance: 0.15,
-    lowercaseChance: 0.2,
-    emojiChance: 0.3,
+    expressions: ['en fait', 'voilà', "c'est"],
+    typoChance: 0.2,
+    shorthandChance: 0.18,
+    lowercaseChance: 0.22,
+    emojiChance: 0.32,
+    mobileTypoChance: 0.15,
   },
   uk: {
-    expressions: ['quite', 'rather', 'proper', 'brilliant', 'cheers', 'mate'],
-    typoChance: 0.1,
-    shorthandChance: 0.2,
-    lowercaseChance: 0.15,
-    emojiChance: 0.2,
+    expressions: ['quite', 'rather', 'proper', 'brilliant', 'cheers', 'mate', 'reckon'],
+    typoChance: 0.12,
+    shorthandChance: 0.22,
+    lowercaseChance: 0.18,
+    emojiChance: 0.22,
+    mobileTypoChance: 0.1,
   },
   japan: {
     expressions: [],
-    typoChance: 0.2,
-    shorthandChance: 0.1,
-    lowercaseChance: 0.25,
-    emojiChance: 0.45,
+    typoChance: 0.22,
+    shorthandChance: 0.12,
+    lowercaseChance: 0.28,
+    emojiChance: 0.48,
+    mobileTypoChance: 0.18,
   },
   korea: {
     expressions: [],
-    typoChance: 0.18,
-    shorthandChance: 0.15,
-    lowercaseChance: 0.2,
-    emojiChance: 0.4,
+    typoChance: 0.2,
+    shorthandChance: 0.18,
+    lowercaseChance: 0.22,
+    emojiChance: 0.42,
+    mobileTypoChance: 0.15,
   },
   indonesia: {
     expressions: ['dong', 'sih', 'nih', 'deh'],
-    typoChance: 0.15,
-    shorthandChance: 0.25,
-    lowercaseChance: 0.25,
-    emojiChance: 0.35,
+    typoChance: 0.18,
+    shorthandChance: 0.28,
+    lowercaseChance: 0.28,
+    emojiChance: 0.38,
+    mobileTypoChance: 0.18,
   },
   thailand: {
     expressions: ['krub', 'ka', 'na'],
-    typoChance: 0.2,
-    shorthandChance: 0.2,
-    lowercaseChance: 0.25,
-    emojiChance: 0.4,
+    typoChance: 0.22,
+    shorthandChance: 0.22,
+    lowercaseChance: 0.28,
+    emojiChance: 0.42,
+    mobileTypoChance: 0.2,
   },
   vietnam: {
     expressions: [],
-    typoChance: 0.22,
-    shorthandChance: 0.15,
-    lowercaseChance: 0.2,
-    emojiChance: 0.3,
+    typoChance: 0.25,
+    shorthandChance: 0.18,
+    lowercaseChance: 0.22,
+    emojiChance: 0.32,
+    mobileTypoChance: 0.18,
   },
   malaysia: {
     expressions: ['lah', 'mah', 'kan', 'one'],
-    typoChance: 0.15,
-    shorthandChance: 0.25,
-    lowercaseChance: 0.2,
-    emojiChance: 0.3,
+    typoChance: 0.18,
+    shorthandChance: 0.28,
+    lowercaseChance: 0.22,
+    emojiChance: 0.32,
+    mobileTypoChance: 0.15,
   },
   west: {
     expressions: ['honestly', 'literally', 'basically'],
-    typoChance: 0.1,
-    shorthandChance: 0.2,
-    lowercaseChance: 0.2,
-    emojiChance: 0.2,
+    typoChance: 0.12,
+    shorthandChance: 0.22,
+    lowercaseChance: 0.22,
+    emojiChance: 0.22,
+    mobileTypoChance: 0.12,
   },
 };
 
@@ -131,91 +146,107 @@ const typoPatterns = [
   { correct: 'really', typo: 'realy' },
   { correct: 'because', typo: 'becuase' },
   { correct: 'people', typo: 'poeple' },
+  { correct: 'their', typo: 'thier' },
+  { correct: 'which', typo: 'whcih' },
+  { correct: 'being', typo: 'bieng' },
+];
+
+// Mobile autocorrect mistakes
+const mobileTypos = [
+  { correct: 'definitely', typo: 'defiantly' },
+  { correct: 'probably', typo: 'prolly' },
+  { correct: 'going to', typo: 'gonna' },
+  { correct: 'want to', typo: 'wanna' },
+  { correct: 'got to', typo: 'gotta' },
+  { correct: 'kind of', typo: 'kinda' },
+  { correct: 'sort of', typo: 'sorta' },
+  { correct: 'a lot', typo: 'alot' },
+  { correct: 'tomorrow', typo: 'tmrw' },
+  { correct: 'something', typo: 'smth' },
 ];
 
 // Shorthand replacements
 const shorthandReplacements = [
   { from: /\bvery\b/gi, to: 'rly', chance: 0.3 },
   { from: /\bthough\b/gi, to: 'tho', chance: 0.4 },
-  { from: /\byou\b/gi, to: 'u', chance: 0.2 },
-  { from: /\byour\b/gi, to: 'ur', chance: 0.2 },
-  { from: /\byou're\b/gi, to: 'ur', chance: 0.25 },
-  { from: /\bwith\b/gi, to: 'w/', chance: 0.15 },
-  { from: /\bthanks\b/gi, to: 'thx', chance: 0.35 },
-  { from: /\bbecause\b/gi, to: 'bc', chance: 0.25 },
-  { from: /\bthrough\b/gi, to: 'thru', chance: 0.3 },
-  { from: /\band\b/gi, to: '&', chance: 0.2 },
-  { from: /\bdefinitely\b/gi, to: 'def', chance: 0.3 },
-  { from: /\bprobably\b/gi, to: 'prob', chance: 0.3 },
-  { from: /\bto be honest\b/gi, to: 'tbh', chance: 0.4 },
-  { from: /\bin my opinion\b/gi, to: 'imo', chance: 0.4 },
-  { from: /\bi don't know\b/gi, to: 'idk', chance: 0.35 },
-  { from: /\bnot gonna lie\b/gi, to: 'ngl', chance: 0.4 },
-  { from: /\bright now\b/gi, to: 'rn', chance: 0.3 },
-  { from: /\bpeople\b/gi, to: 'ppl', chance: 0.2 },
-  { from: /\bsomething\b/gi, to: 'sth', chance: 0.15 },
-  { from: /\bwithout\b/gi, to: 'w/o', chance: 0.2 },
-  { from: /\bpretty much\b/gi, to: 'p much', chance: 0.25 },
-  { from: /\bfor real\b/gi, to: 'fr', chance: 0.3 },
+  { from: /\byou\b/gi, to: 'u', chance: 0.25 },
+  { from: /\byour\b/gi, to: 'ur', chance: 0.25 },
+  { from: /\byou're\b/gi, to: 'ur', chance: 0.28 },
+  { from: /\bwith\b/gi, to: 'w/', chance: 0.18 },
+  { from: /\bthanks\b/gi, to: 'thx', chance: 0.38 },
+  { from: /\bbecause\b/gi, to: 'bc', chance: 0.28 },
+  { from: /\bthrough\b/gi, to: 'thru', chance: 0.32 },
+  { from: /\band\b/gi, to: '&', chance: 0.22 },
+  { from: /\bdefinitely\b/gi, to: 'def', chance: 0.32 },
+  { from: /\bprobably\b/gi, to: 'prob', chance: 0.32 },
+  { from: /\bto be honest\b/gi, to: 'tbh', chance: 0.45 },
+  { from: /\bin my opinion\b/gi, to: 'imo', chance: 0.45 },
+  { from: /\bi don't know\b/gi, to: 'idk', chance: 0.38 },
+  { from: /\bnot gonna lie\b/gi, to: 'ngl', chance: 0.45 },
+  { from: /\bright now\b/gi, to: 'rn', chance: 0.35 },
+  { from: /\bpeople\b/gi, to: 'ppl', chance: 0.25 },
+  { from: /\bsomething\b/gi, to: 'sth', chance: 0.18 },
+  { from: /\bwithout\b/gi, to: 'w/o', chance: 0.22 },
+  { from: /\bfor real\b/gi, to: 'fr', chance: 0.35 },
+  { from: /\bplease\b/gi, to: 'pls', chance: 0.3 },
+  { from: /\banyway\b/gi, to: 'anyways', chance: 0.4 },
 ];
 
 // Missing apostrophe patterns
 const apostrophePatterns = [
-  { from: /\bdon't\b/gi, to: 'dont', chance: 0.35 },
-  { from: /\bcan't\b/gi, to: 'cant', chance: 0.35 },
-  { from: /\bwon't\b/gi, to: 'wont', chance: 0.35 },
-  { from: /\bdidn't\b/gi, to: 'didnt', chance: 0.3 },
-  { from: /\bisn't\b/gi, to: 'isnt', chance: 0.3 },
-  { from: /\baren't\b/gi, to: 'arent', chance: 0.3 },
-  { from: /\bwasn't\b/gi, to: 'wasnt', chance: 0.3 },
-  { from: /\bweren't\b/gi, to: 'werent', chance: 0.3 },
-  { from: /\bit's\b/gi, to: 'its', chance: 0.25 },
-  { from: /\bthat's\b/gi, to: 'thats', chance: 0.25 },
-  { from: /\bwhat's\b/gi, to: 'whats', chance: 0.25 },
-  { from: /\bI'm\b/gi, to: 'im', chance: 0.35 },
-  { from: /\bI've\b/gi, to: 'ive', chance: 0.3 },
-  { from: /\bI'll\b/gi, to: 'ill', chance: 0.3 },
+  { from: /\bdon't\b/gi, to: 'dont', chance: 0.38 },
+  { from: /\bcan't\b/gi, to: 'cant', chance: 0.38 },
+  { from: /\bwon't\b/gi, to: 'wont', chance: 0.38 },
+  { from: /\bdidn't\b/gi, to: 'didnt', chance: 0.32 },
+  { from: /\bisn't\b/gi, to: 'isnt', chance: 0.32 },
+  { from: /\baren't\b/gi, to: 'arent', chance: 0.32 },
+  { from: /\bwasn't\b/gi, to: 'wasnt', chance: 0.32 },
+  { from: /\bweren't\b/gi, to: 'werent', chance: 0.32 },
+  { from: /\bit's\b/gi, to: 'its', chance: 0.28 },
+  { from: /\bthat's\b/gi, to: 'thats', chance: 0.28 },
+  { from: /\bwhat's\b/gi, to: 'whats', chance: 0.28 },
+  { from: /\bI'm\b/gi, to: 'im', chance: 0.38 },
+  { from: /\bI've\b/gi, to: 'ive', chance: 0.32 },
+  { from: /\bI'll\b/gi, to: 'ill', chance: 0.32 },
+  { from: /\blet's\b/gi, to: 'lets', chance: 0.3 },
+  { from: /\bhere's\b/gi, to: 'heres', chance: 0.3 },
 ];
 
 // Emoji sets by sentiment
-const positiveEmojis = ['👍', '🙌', '💯', '🔥', '✨', '👏', '🎯', '💪', '🚀', '⭐'];
-const neutralEmojis = ['🤔', '💭', '📌', '👀', '💡', '📊', '🧐', '📝'];
-const negativeEmojis = ['😬', '🙄', '😅', '🤷', '😤'];
+const positiveEmojis = ['👍', '🙌', '💯', '🔥', '✨', '👏', '🎯', '💪', '🚀', '⭐', '😊', '🤩'];
+const neutralEmojis = ['🤔', '💭', '📌', '👀', '💡', '📊', '🧐', '📝', '➡️', '📱'];
+const negativeEmojis = ['😬', '🙄', '😅', '🤷', '😤', '💀', '🫠', '😒'];
 
 // Helper to add natural typos
 const addTypos = (text: string, typoChance: number): string => {
   if (Math.random() > typoChance) return text;
   
   let result = text;
-  const numTypos = Math.random() < 0.7 ? 1 : 2;
+  const numTypos = Math.random() < 0.65 ? 1 : 2;
   
   for (let i = 0; i < numTypos; i++) {
-    // Random typo type
     const typoType = Math.random();
     
-    if (typoType < 0.4) {
-      // Use predefined typo patterns
+    if (typoType < 0.45) {
       const pattern = typoPatterns[Math.floor(Math.random() * typoPatterns.length)];
       const regex = new RegExp(`\\b${pattern.correct}\\b`, 'i');
       if (regex.test(result)) {
         result = result.replace(regex, pattern.typo);
       }
-    } else if (typoType < 0.7) {
-      // Double a letter
+    } else if (typoType < 0.72) {
       const words = result.split(' ');
       const randomIndex = Math.floor(Math.random() * words.length);
       const word = words[randomIndex];
-      if (word.length > 4) {
+      if (word.length > 4 && /^[a-zA-Z]+$/.test(word)) {
         const pos = Math.floor(Math.random() * (word.length - 1)) + 1;
         words[randomIndex] = word.slice(0, pos) + word[pos - 1] + word.slice(pos);
         result = words.join(' ');
       }
     } else {
-      // Skip a letter
       const words = result.split(' ');
       const randomIndex = Math.floor(Math.random() * words.length);
       const word = words[randomIndex];
-      if (word.length > 5) {
+      if (word.length > 5 && /^[a-zA-Z]+$/.test(word)) {
         const pos = Math.floor(Math.random() * (word.length - 2)) + 1;
         words[randomIndex] = word.slice(0, pos) + word.slice(pos + 1);
         result = words.join(' ');
@@ -226,12 +257,24 @@ const addTypos = (text: string, typoChance: number): string => {
   return result;
 };
 
+// Helper to add mobile typos
+const addMobileTypos = (text: string, mobileTypoChance: number): string => {
+  if (Math.random() > mobileTypoChance) return text;
+  
+  let result = text;
+  const pattern = mobileTypos[Math.floor(Math.random() * mobileTypos.length)];
+  const regex = new RegExp(`\\b${pattern.correct}\\b`, 'gi');
+  result = result.replace(regex, pattern.typo);
+  
+  return result;
+};
+
 // Helper to add shorthand
 const addShorthand = (text: string, shorthandChance: number): string => {
   if (Math.random() > shorthandChance) return text;
   
   let result = text;
-  const numReplacements = Math.random() < 0.6 ? 1 : Math.random() < 0.9 ? 2 : 3;
+  const numReplacements = Math.random() < 0.55 ? 1 : Math.random() < 0.85 ? 2 : 3;
   const shuffled = [...shorthandReplacements].sort(() => Math.random() - 0.5);
   
   for (let i = 0; i < Math.min(numReplacements, shuffled.length); i++) {
@@ -259,19 +302,15 @@ const removeApostrophes = (text: string): string => {
 const makeLowercase = (text: string, lowercaseChance: number): string => {
   if (Math.random() > lowercaseChance) return text;
   
-  // Different levels of lowercase
   const level = Math.random();
-  if (level < 0.5) {
-    // Full lowercase
+  if (level < 0.55) {
     return text.toLowerCase();
   } else if (level < 0.8) {
-    // Lowercase except first letter
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
   } else {
-    // Random capitalization dropped
-    return text.split('').map(char => 
-      Math.random() < 0.3 ? char.toLowerCase() : char
-    ).join('');
+    return text.split(' ').map((word, i) => 
+      i === 0 ? word : (Math.random() < 0.4 ? word.toLowerCase() : word)
+    ).join(' ');
   }
 };
 
@@ -279,22 +318,25 @@ const makeLowercase = (text: string, lowercaseChance: number): string => {
 const addPunctuationVariations = (text: string): string => {
   let result = text;
   
-  // Double punctuation
-  if (Math.random() < 0.15) {
+  if (Math.random() < 0.18) {
     result = result.replace(/!$/, '!!');
   }
-  if (Math.random() < 0.1) {
+  if (Math.random() < 0.12) {
     result = result.replace(/\?$/, '??');
   }
-  
-  // Trailing ellipsis
-  if (Math.random() < 0.12 && !result.endsWith('...') && !result.endsWith('!') && !result.endsWith('?')) {
+  if (Math.random() < 0.15 && !result.endsWith('...') && !result.endsWith('!') && !result.endsWith('?')) {
     result = result.replace(/\.$/, '...');
   }
-  
-  // Missing final punctuation
-  if (Math.random() < 0.2) {
+  if (Math.random() < 0.25) {
     result = result.replace(/[.!?]$/, '');
+  }
+  
+  // Random comma removal
+  if (Math.random() < 0.2) {
+    const commaIndex = result.indexOf(',');
+    if (commaIndex > 0) {
+      result = result.slice(0, commaIndex) + result.slice(commaIndex + 1);
+    }
   }
   
   return result;
@@ -307,21 +349,19 @@ const addEmojis = (text: string, emojiChance: number, sentiment: 'positive' | 'n
   const emojiSet = sentiment === 'positive' ? positiveEmojis : 
                    sentiment === 'negative' ? negativeEmojis : neutralEmojis;
   
-  const numEmojis = Math.random() < 0.7 ? 1 : 2;
+  const numEmojis = Math.random() < 0.72 ? 1 : 2;
   const selectedEmojis = [];
   
   for (let i = 0; i < numEmojis; i++) {
     selectedEmojis.push(emojiSet[Math.floor(Math.random() * emojiSet.length)]);
   }
   
-  // Position: end, beginning, or inline
   const position = Math.random();
-  if (position < 0.7) {
+  if (position < 0.72) {
     return text + ' ' + selectedEmojis.join('');
-  } else if (position < 0.85) {
+  } else if (position < 0.88) {
     return selectedEmojis.join('') + ' ' + text;
   } else {
-    // Inline
     const sentences = text.split('. ');
     if (sentences.length > 1) {
       const insertPos = Math.floor(Math.random() * (sentences.length - 1));
@@ -338,21 +378,22 @@ const addNaturalVariations = (text: string, region: string): string => {
   
   let result = text;
   
-  // Apply variations in order
   result = addTypos(result, patterns.typoChance);
+  result = addMobileTypos(result, patterns.mobileTypoChance);
   result = addShorthand(result, patterns.shorthandChance);
   result = removeApostrophes(result);
   result = makeLowercase(result, patterns.lowercaseChance);
   result = addPunctuationVariations(result);
   
-  // Determine sentiment for emoji selection
   const lowerText = text.toLowerCase();
   let sentiment: 'positive' | 'neutral' | 'negative' = 'neutral';
   if (lowerText.includes('great') || lowerText.includes('love') || lowerText.includes('amazing') || 
-      lowerText.includes('excellent') || lowerText.includes('helpful') || lowerText.includes('thanks')) {
+      lowerText.includes('excellent') || lowerText.includes('helpful') || lowerText.includes('thanks') ||
+      lowerText.includes('awesome') || lowerText.includes('excited')) {
     sentiment = 'positive';
   } else if (lowerText.includes('problem') || lowerText.includes('issue') || lowerText.includes('bad') ||
-             lowerText.includes('disagree') || lowerText.includes('wrong') || lowerText.includes('concern')) {
+             lowerText.includes('disagree') || lowerText.includes('wrong') || lowerText.includes('concern') ||
+             lowerText.includes('skeptic') || lowerText.includes('doubt') || lowerText.includes('worried')) {
     sentiment = 'negative';
   }
   
@@ -364,7 +405,6 @@ const addNaturalVariations = (text: string, region: string): string => {
 // Helper to generate comment timestamp
 const generateTimestamp = (publishDate: string, updatedDate: string | null): Date => {
   const published = new Date(publishDate);
-  const updated = updatedDate ? new Date(updatedDate) : published;
   const now = new Date();
   const articleAgeMonths = (now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24 * 30);
 
@@ -406,7 +446,6 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch articles
     let query = supabase
       .from('articles')
       .select('id, title, excerpt, published_at, updated_at')
@@ -428,7 +467,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch all authors
     const { data: authors, error: authorsError } = await supabase
       .from('ai_comment_authors')
       .select('*');
@@ -442,7 +480,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Group authors by region
     const authorsByRegion: Record<string, typeof authors> = {};
     for (const author of authors) {
       if (!authorsByRegion[author.region]) {
@@ -457,40 +494,63 @@ Deno.serve(async (req) => {
     let totalGenerated = 0;
 
     for (const article of articles) {
-      // Delete existing AI comments for this article
       await supabase
         .from('ai_generated_comments')
         .delete()
         .eq('article_id', article.id);
 
-      // Determine number of comments (2-4 default, with 20% chance of 5-6)
-      const numComments = Math.random() < 0.2 
-        ? Math.floor(Math.random() * 2) + 5
-        : Math.floor(Math.random() * 3) + 2;
+      // Variable comment count with clustering (some articles get more engagement)
+      const engagementLevel = Math.random();
+      let numComments: number;
+      if (engagementLevel < 0.15) {
+        numComments = Math.floor(Math.random() * 2) + 1; // 1-2 low engagement
+      } else if (engagementLevel < 0.75) {
+        numComments = Math.floor(Math.random() * 3) + 3; // 3-5 normal
+      } else {
+        numComments = Math.floor(Math.random() * 3) + 6; // 6-8 viral
+      }
 
-      const commentsToGenerate = [];
+      const commentsToGenerate: any[] = [];
+      const usedAuthors: string[] = [];
 
-      // Comment personas for variety
+      // Personas with messy, realistic styles
       const personas = [
-        { type: 'enthusiast', tone: 'excited and supportive' },
-        { type: 'skeptic', tone: 'questioning and analytical' },
-        { type: 'insider', tone: 'knowledgeable, shares industry experience' },
-        { type: 'newcomer', tone: 'curious, asks basic questions' },
-        { type: 'critic', tone: 'constructive criticism, points out issues' },
-        { type: 'storyteller', tone: 'shares personal anecdotes' },
-        { type: 'joker', tone: 'light-hearted, uses humor' },
-        { type: 'pragmatist', tone: 'practical, focuses on applications' },
+        { type: 'enthusiast', tone: 'excited, maybe too excited, uses caps sometimes', style: 'gushing, might ramble' },
+        { type: 'skeptic', tone: 'doubtful, questions everything', style: 'short sharp sentences, dismissive' },
+        { type: 'insider', tone: 'knows the industry, drops hints', style: 'casual authority, name drops' },
+        { type: 'newcomer', tone: 'confused, asking basic stuff', style: 'lots of questions, uncertain' },
+        { type: 'critic', tone: 'finds flaws, not mean just honest', style: 'points out issues matter of factly' },
+        { type: 'storyteller', tone: 'relates everything to personal experience', style: 'anecdotal, goes on tangents' },
+        { type: 'joker', tone: 'cant take anything seriously', style: 'sarcastic, uses humor' },
+        { type: 'pragmatist', tone: 'just wants to know if it works', style: 'practical questions, no fluff' },
+        { type: 'lurker', tone: 'usually silent, felt compelled to speak', style: 'hesitant, mentions lurking' },
+        { type: 'veteran', tone: 'seen it all before', style: 'references past, slightly cynical' },
       ];
 
+      // Determine sentiment skew for this article (not always balanced)
+      const sentimentSkew = Math.random();
+      let dominantSentiment: 'positive' | 'negative' | 'mixed';
+      if (sentimentSkew < 0.35) dominantSentiment = 'positive';
+      else if (sentimentSkew < 0.55) dominantSentiment = 'negative';
+      else dominantSentiment = 'mixed';
+
+      // Track previous comments for threading
+      const previousComments: { author: string; snippet: string }[] = [];
+
       for (let i = 0; i < numComments; i++) {
-        // 30% chance to use power user
-        const usePowerUser = Math.random() < 0.3 && powerUsers.length > 0;
+        // 25% chance to use power user
+        const usePowerUser = Math.random() < 0.25 && powerUsers.length > 0;
+        
+        // 15% chance same author comments again (repeat commenter)
+        const useRepeatAuthor = i > 0 && Math.random() < 0.15 && usedAuthors.length > 0;
         
         let selectedAuthor;
-        if (usePowerUser) {
+        if (useRepeatAuthor) {
+          const repeatAuthorId = usedAuthors[Math.floor(Math.random() * usedAuthors.length)];
+          selectedAuthor = authors.find(a => a.id === repeatAuthorId);
+        } else if (usePowerUser) {
           selectedAuthor = powerUsers[Math.floor(Math.random() * powerUsers.length)];
         } else {
-          // Select author based on regional distribution weighted toward Asia
           const rand = Math.random();
           let region: string;
           if (rand < 0.15) region = 'singapore';
@@ -516,86 +576,117 @@ Deno.serve(async (req) => {
           }
         }
         
-        if (!selectedAuthor) {
-          console.error('Failed to select author');
-          continue;
-        }
+        if (!selectedAuthor) continue;
+        usedAuthors.push(selectedAuthor.id);
 
-        // Select random persona
         const persona = personas[Math.floor(Math.random() * personas.length)];
 
-        // Determine comment length (25% short, 50% medium, 25% long)
+        // Variable lengths - more short ones
         const lengthRand = Math.random();
         let targetLength: string;
-        if (lengthRand < 0.25) targetLength = '10-30 words, can be a fragment or one-liner';
-        else if (lengthRand < 0.75) targetLength = '30-60 words';
-        else targetLength = '60-100 words';
+        if (lengthRand < 0.3) targetLength = '5-20 words, can be super short like "this is huge" or "finally"';
+        else if (lengthRand < 0.7) targetLength = '20-50 words, conversational';
+        else targetLength = '50-90 words, more detailed but still casual';
 
-        // Check if article is old
+        // Build special behaviors
+        let specialBehavior = '';
+        const behaviorRand = Math.random();
+        
+        if (useRepeatAuthor) {
+          const repeatStyles = [
+            'This is a FOLLOW-UP comment. Start with "oh also" or "forgot to say" or "wait" or just add another thought',
+            'This is a CORRECTION to your earlier comment. Start with "actually wait" or "nvm" or correct yourself',
+            'Add a related tangent you just thought of',
+          ];
+          specialBehavior = repeatStyles[Math.floor(Math.random() * repeatStyles.length)];
+        } else if (behaviorRand < 0.12 && previousComments.length > 0) {
+          // Reply to previous comment
+          const prevComment = previousComments[Math.floor(Math.random() * previousComments.length)];
+          specialBehavior = `Reference or reply to a previous commenter. You can say things like "@${prevComment.author} totally" or "agree with above" or "what ${prevComment.author.split(' ')[0]} said" - keep it natural`;
+        } else if (behaviorRand < 0.2) {
+          // Credential drop
+          const credentials = [
+            'Mention you work in tech/AI casually like "at my company we..."',
+            'Drop that youve been in the industry X years without being braggy',
+            'Reference your job role naturally like "as a dev..." or "from a product perspective..."',
+            'Mention a relevant personal project or side hustle',
+          ];
+          specialBehavior = credentials[Math.floor(Math.random() * credentials.length)];
+        } else if (behaviorRand < 0.28) {
+          // Lurker declaration
+          specialBehavior = 'Mention that you usually just read/lurk but had to comment on this one. Be natural about it, not formulaic';
+        } else if (behaviorRand < 0.35) {
+          // Incomplete thought
+          specialBehavior = 'Trail off or change direction mid-thought. Like you started saying something then went somewhere else. Real people do this';
+        } else if (behaviorRand < 0.42) {
+          // Healthy AI skepticism
+          specialBehavior = 'Express some skepticism about AI hype or this specific claim. Not hostile, just... youve seen promises before';
+        } else if (behaviorRand < 0.48) {
+          // Topic drift
+          specialBehavior = 'Go slightly off-topic or connect this to something tangentially related. Real comments wander';
+        }
+
+        // Sentiment based on article skew
+        let commentSentiment: string;
+        if (dominantSentiment === 'positive') {
+          commentSentiment = Math.random() < 0.7 ? 'lean positive or excited' : 'neutral or mildly questioning';
+        } else if (dominantSentiment === 'negative') {
+          commentSentiment = Math.random() < 0.6 ? 'skeptical or concerned' : 'cautiously optimistic';
+        } else {
+          const r = Math.random();
+          if (r < 0.33) commentSentiment = 'positive';
+          else if (r < 0.66) commentSentiment = 'skeptical or questioning';
+          else commentSentiment = 'neutral, just adding info';
+        }
+
         const articleAge = (new Date().getTime() - new Date(article.published_at).getTime()) / (1000 * 60 * 60 * 24 * 30);
         const isOldArticle = articleAge > 12;
 
-        // Build regional language instruction
-        const regionPatterns = regionalPatterns[selectedAuthor.region] || regionalPatterns.west;
+        // Regional language instruction
         let regionalInstruction = '';
-        
         if (selectedAuthor.region === 'china') {
-          regionalInstruction = `Write with slightly awkward English phrasing typical of non-native speakers. May use literal translations, occasionally miss articles (a/the), or have unusual word order. Examples: "This technology is very useful for my work situation" or "I have concern about this approach"`;
+          regionalInstruction = `Write with NON-NATIVE English. Skip articles sometimes (the/a), unusual word order, literal translations. "This technology very useful for work" or "I have doubt about this approach" - NOT perfect grammar`;
         } else if (selectedAuthor.region === 'france') {
-          regionalInstruction = `Occasionally include a French word or expression (en fait, voilà, c'est vrai). May have slight French-influenced phrasing.`;
+          regionalInstruction = `Maybe drop a French word (voilà, en fait). Slightly French phrasing is ok. Not perfect English`;
         } else if (selectedAuthor.region === 'singapore' || selectedAuthor.region === 'malaysia') {
-          regionalInstruction = `May naturally use Singlish expressions like "lah", "lor", "sia" at end of sentences. Example: "This one quite good lah" or "Not sure if can work lor"`;
+          regionalInstruction = `Use Singlish naturally - "lah", "lor", "sia", "can" at end. "This one quite good lah" or "Cannot work one lor"`;
         } else if (selectedAuthor.region === 'india') {
-          regionalInstruction = `May use Indian English patterns like "only" for emphasis, "actually" frequently, or expressions like "yaar". Example: "This is actually very good only" or "We should try this na"`;
+          regionalInstruction = `Indian English patterns - "only" for emphasis, "actually" often, "na" or "yaar". "This is actually very good only" or "We should try na"`;
         }
 
-        // Vary temporal handling for old articles
         let temporalInstruction = '';
-        if (isOldArticle) {
-          const temporalVariations = [
-            'Subtly reference that some time has passed but avoid clichés',
-            "Don't mention the article age at all",
-            'Casually note you just discovered this topic',
-            '',
-          ];
-          temporalInstruction = temporalVariations[Math.floor(Math.random() * temporalVariations.length)];
+        if (isOldArticle && Math.random() < 0.4) {
+          temporalInstruction = 'Can mention just finding this or coming back to it, but dont be formulaic about it';
         }
 
-        // Generate comment using Lovable AI
-        const prompt = `You are ${selectedAuthor.name}, a ${persona.type} reader from ${selectedAuthor.region.replace('_', ' ')}. Your tone is ${persona.tone}.
+        const prompt = `You are ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}. Write a comment on this article.
 
-Write a comment on this article:
-Title: "${article.title}"
-Summary: "${article.excerpt || 'No summary available'}"
+Article: "${article.title}"
+Summary: "${article.excerpt || ''}"
 
-CRITICAL AUTHENTICITY REQUIREMENTS:
-- Write like a REAL person typing quickly online, NOT a polished essay
-- Use casual, conversational language with natural imperfections
-- Sentence fragments are OK. Run-on sentences happen too.
-- Don't always use perfect grammar or punctuation
-- Some comments can be just reactions like "wow this is huge" or "finally someone talking about this"
-- Mix short punchy sentences with longer rambling ones
-- Can start sentences with "And", "But", "So", "Like"
-- DON'T sound like ChatGPT or formal writing
-- NO em dashes, NO semicolons, minimal commas
-- NEVER end with question tags like "isn't it?", "right?", "don't you think?"
+YOUR STYLE: ${persona.type} - ${persona.tone}. ${persona.style}
 
+CRITICAL - WRITE LIKE A REAL PERSON NOT AN AI:
+- Real people dont write perfectly. Sentences run together sometimes or break off
+- Start with lowercase sometimes. or dont use periods
+- Fragments are fine. "Love this." "Wait what." "Hmm not sure about that part"
+- Use filler: "like", "honestly", "I mean", "so basically", "wait", "ok but"
+- Some sentences just trail off...
+- Double check urself mid-sentence "wait no I mean"
+- Typos happen. dont fix them all
+- NO em dashes ever. NO semicolons. minimal commas
+- NEVER end with "right?" or "isn't it?" or "don't you think?"
+- Dont sound like youre writing an essay. this is a comment section
+
+LENGTH: ${targetLength}
+SENTIMENT: ${commentSentiment}
 ${regionalInstruction}
+${temporalInstruction}
+${specialBehavior ? `SPECIAL: ${specialBehavior}` : ''}
 
-Style:
-- Length: ${targetLength}
-- Persona: ${persona.type} - ${persona.tone}
-${temporalInstruction ? `- ${temporalInstruction}` : ''}
+Comment ${i + 1} of ${numComments} - make it DIFFERENT from others. vary everything.
 
-VARIETY (comment ${i + 1} of ${numComments}):
-- Each comment must feel like a different person wrote it
-- Vary: sentence structure, vocabulary, formality level, punctuation style
-- Some people use all lowercase
-- Some people dont use apostrophes  
-- Some people use abbreviations like "tbh" "imo" "ngl" "rn"
-- Some people add emojis 🔥 or 👍
-
-Write ONLY the comment text, nothing else.`;
+Write ONLY the comment. nothing else.`;
 
         try {
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -620,11 +711,19 @@ Write ONLY the comment text, nothing else.`;
 
           // Remove any quotes the AI might have added
           commentText = commentText.replace(/^["']|["']$/g, '');
+          
+          // Remove any "Comment:" prefix if AI added it
+          commentText = commentText.replace(/^(Comment|Response|Reply):\s*/i, '');
 
           // Add natural variations based on region
           commentText = addNaturalVariations(commentText, selectedAuthor.region);
 
-          // Generate timestamp
+          // Store for potential threading
+          previousComments.push({
+            author: selectedAuthor.name,
+            snippet: commentText.slice(0, 50),
+          });
+
           const commentDate = generateTimestamp(article.published_at, article.updated_at);
 
           commentsToGenerate.push({
@@ -634,15 +733,13 @@ Write ONLY the comment text, nothing else.`;
             comment_date: commentDate.toISOString(),
           });
 
-          // Small delay to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 150));
+          await new Promise(resolve => setTimeout(resolve, 180));
         } catch (error) {
           console.error('Error generating comment:', error);
           continue;
         }
       }
 
-      // Insert all comments for this article
       if (commentsToGenerate.length > 0) {
         const { error: insertError } = await supabase
           .from('ai_generated_comments')
@@ -653,7 +750,6 @@ Write ONLY the comment text, nothing else.`;
         } else {
           totalGenerated += commentsToGenerate.length;
 
-          // Update author comment counts
           const authorCounts = new Map();
           for (const comment of commentsToGenerate) {
             authorCounts.set(comment.author_id, (authorCounts.get(comment.author_id) || 0) + 1);
