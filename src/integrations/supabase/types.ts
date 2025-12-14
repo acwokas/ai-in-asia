@@ -1487,6 +1487,60 @@ export type Database = {
         }
         Relationships: []
       }
+      error_tracking: {
+        Row: {
+          affected_pages: string[] | null
+          created_at: string
+          error_message: string
+          error_signature: string
+          error_source: string | null
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          notes: string | null
+          occurrence_count: number
+          resolved_at: string | null
+          resolved_by: string | null
+          sample_stack: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affected_pages?: string[] | null
+          created_at?: string
+          error_message: string
+          error_signature: string
+          error_source?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          notes?: string | null
+          occurrence_count?: number
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_stack?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affected_pages?: string[] | null
+          created_at?: string
+          error_message?: string
+          error_signature?: string
+          error_source?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          notes?: string | null
+          occurrence_count?: number
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_stack?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           city: string
