@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
-  MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon, DollarSign
+  MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon, DollarSign,
+  Activity, Scroll, FileText, ArrowUpRight, ArrowDownRight, Minus
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -34,11 +35,35 @@ import { SponsorAnalytics } from "@/components/analytics/SponsorAnalytics";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
 
+// Metric change indicator component
+const MetricChange = ({ value }: { value: string | number }) => {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (numValue === 0 || isNaN(numValue)) {
+    return (
+      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+        <Minus className="h-3 w-3" />
+        <span>No change</span>
+      </div>
+    );
+  }
+  const isPositive = numValue > 0;
+  return (
+    <div className={`flex items-center gap-1 text-xs mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+      {isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+      <span>{isPositive ? '+' : ''}{typeof value === 'number' ? value.toFixed(1) : value}%</span>
+    </div>
+  );
+};
+
 const SiteAnalytics = () => {
   const [dateRange, setDateRange] = useState("7");
 
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
+  
+  // Previous period for comparison
+  const prevStartDate = startOfDay(subDays(startDate, parseInt(dateRange)));
+  const prevEndDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
 
   // Fetch sessions data
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
@@ -56,6 +81,21 @@ const SiteAnalytics = () => {
     },
   });
 
+  // Fetch previous period sessions for comparison
+  const { data: prevSessionsData } = useQuery({
+    queryKey: ["analytics-sessions-prev", dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("analytics_sessions")
+        .select("*")
+        .gte("started_at", prevStartDate.toISOString())
+        .lt("started_at", prevEndDate.toISOString());
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Fetch pageviews data
   const { data: pageviewsData, isLoading: pageviewsLoading } = useQuery({
     queryKey: ["analytics-pageviews", dateRange],
@@ -66,6 +106,21 @@ const SiteAnalytics = () => {
         .gte("viewed_at", startDate.toISOString())
         .lte("viewed_at", endDate.toISOString())
         .order("viewed_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch previous period pageviews for comparison
+  const { data: prevPageviewsData } = useQuery({
+    queryKey: ["analytics-pageviews-prev", dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("analytics_pageviews")
+        .select("*")
+        .gte("viewed_at", prevStartDate.toISOString())
+        .lt("viewed_at", prevEndDate.toISOString());
       
       if (error) throw error;
       return data || [];
@@ -90,15 +145,49 @@ const SiteAnalytics = () => {
 
   // Calculate metrics
   const totalSessions = sessionsData?.length || 0;
+  const prevTotalSessions = prevSessionsData?.length || 0;
   const totalPageviews = pageviewsData?.length || 0;
+  const prevTotalPageviews = prevPageviewsData?.length || 0;
   const uniqueVisitors = new Set(sessionsData?.map(s => s.user_id || s.session_id)).size;
-  const avgPagesPerSession = totalSessions > 0 ? (totalPageviews / totalSessions).toFixed(1) : 0;
+  const prevUniqueVisitors = new Set(prevSessionsData?.map(s => s.user_id || s.session_id)).size;
+  const avgPagesPerSession = totalSessions > 0 ? (totalPageviews / totalSessions).toFixed(1) : "0";
+  const prevAvgPagesPerSession = prevTotalSessions > 0 ? (prevTotalPageviews / prevTotalSessions).toFixed(1) : "0";
   const bounceRate = totalSessions > 0 
     ? ((sessionsData?.filter(s => s.is_bounce).length || 0) / totalSessions * 100).toFixed(1) 
-    : 0;
+    : "0";
+  const prevBounceRate = prevTotalSessions > 0 
+    ? ((prevSessionsData?.filter(s => s.is_bounce).length || 0) / prevTotalSessions * 100).toFixed(1) 
+    : "0";
   const avgSessionDuration = totalSessions > 0
     ? Math.round((sessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / totalSessions)
     : 0;
+  const prevAvgSessionDuration = prevTotalSessions > 0
+    ? Math.round((prevSessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / prevTotalSessions)
+    : 0;
+
+  // Calculate percentage changes
+  const calcChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous * 100).toFixed(1);
+  };
+
+  const sessionsChange = calcChange(totalSessions, prevTotalSessions);
+  const pageviewsChange = calcChange(totalPageviews, prevTotalPageviews);
+  const visitorsChange = calcChange(uniqueVisitors, prevUniqueVisitors);
+  const durationChange = calcChange(avgSessionDuration, prevAvgSessionDuration);
+
+  // Calculate average scroll depth
+  const avgScrollDepth = useMemo(() => {
+    const pagesWithScroll = pageviewsData?.filter(p => p.scroll_depth_percent && p.scroll_depth_percent > 0) || [];
+    if (pagesWithScroll.length === 0) return 0;
+    return Math.round(pagesWithScroll.reduce((acc, p) => acc + (p.scroll_depth_percent || 0), 0) / pagesWithScroll.length);
+  }, [pageviewsData]);
+
+  // Active visitors (sessions in last 5 minutes)
+  const activeVisitors = useMemo(() => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    return sessionsData?.filter(s => s.started_at > fiveMinutesAgo || (s.ended_at && s.ended_at > fiveMinutesAgo)).length || 0;
+  }, [sessionsData]);
 
   // Referrer analysis
   const referrerStats = sessionsData?.reduce((acc: Record<string, number>, session) => {
@@ -294,8 +383,25 @@ const SiteAnalytics = () => {
           </Select>
         </div>
 
+        {/* Active Visitors Indicator */}
+        {activeVisitors > 0 && (
+          <Card className="mb-4 border-green-500/50 bg-green-500/5">
+            <CardContent className="py-3">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Activity className="h-5 w-5 text-green-500" />
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                </div>
+                <span className="text-sm font-medium">
+                  <span className="text-green-500 font-bold">{activeVisitors}</span> active visitor{activeVisitors !== 1 ? 's' : ''} right now
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-muted-foreground mb-2">
@@ -303,7 +409,10 @@ const SiteAnalytics = () => {
                 <span className="text-sm">Sessions</span>
               </div>
               {isLoading ? <Skeleton className="h-8 w-20" /> : (
-                <p className="text-2xl font-bold">{totalSessions.toLocaleString()}</p>
+                <>
+                  <p className="text-2xl font-bold">{totalSessions.toLocaleString()}</p>
+                  <MetricChange value={sessionsChange} />
+                </>
               )}
             </CardContent>
           </Card>
@@ -314,7 +423,10 @@ const SiteAnalytics = () => {
                 <span className="text-sm">Pageviews</span>
               </div>
               {isLoading ? <Skeleton className="h-8 w-20" /> : (
-                <p className="text-2xl font-bold">{totalPageviews.toLocaleString()}</p>
+                <>
+                  <p className="text-2xl font-bold">{totalPageviews.toLocaleString()}</p>
+                  <MetricChange value={pageviewsChange} />
+                </>
               )}
             </CardContent>
           </Card>
@@ -336,7 +448,10 @@ const SiteAnalytics = () => {
                 <span className="text-sm">Avg Duration</span>
               </div>
               {isLoading ? <Skeleton className="h-8 w-20" /> : (
-                <p className="text-2xl font-bold">{Math.floor(avgSessionDuration / 60)}m {avgSessionDuration % 60}s</p>
+                <>
+                  <p className="text-2xl font-bold">{Math.floor(avgSessionDuration / 60)}m {avgSessionDuration % 60}s</p>
+                  <MetricChange value={durationChange} />
+                </>
               )}
             </CardContent>
           </Card>
@@ -358,7 +473,32 @@ const SiteAnalytics = () => {
                 <span className="text-sm">Unique Visitors</span>
               </div>
               {isLoading ? <Skeleton className="h-8 w-20" /> : (
-                <p className="text-2xl font-bold">{uniqueVisitors.toLocaleString()}</p>
+                <>
+                  <p className="text-2xl font-bold">{uniqueVisitors.toLocaleString()}</p>
+                  <MetricChange value={visitorsChange} />
+                </>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <Scroll className="h-4 w-4" />
+                <span className="text-sm">Avg Scroll Depth</span>
+              </div>
+              {isLoading ? <Skeleton className="h-8 w-20" /> : (
+                <p className="text-2xl font-bold">{avgScrollDepth}%</p>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <FileText className="h-4 w-4" />
+                <span className="text-sm">Events</span>
+              </div>
+              {isLoading ? <Skeleton className="h-8 w-20" /> : (
+                <p className="text-2xl font-bold">{(eventsData?.length || 0).toLocaleString()}</p>
               )}
             </CardContent>
           </Card>
@@ -395,7 +535,7 @@ const SiteAnalytics = () => {
 
         <Tabs defaultValue="charts" className="space-y-6">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:grid md:grid-cols-9">
+            <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:grid md:grid-cols-10">
               <TabsTrigger value="charts" className="gap-1 text-xs md:text-sm px-2 md:px-3">
                 <LineChartIcon className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">Charts</span>
@@ -405,6 +545,7 @@ const SiteAnalytics = () => {
                 <span className="hidden sm:inline">Sponsors</span>
               </TabsTrigger>
               <TabsTrigger value="traffic" className="text-xs md:text-sm px-2 md:px-3">Traffic</TabsTrigger>
+              <TabsTrigger value="content" className="text-xs md:text-sm px-2 md:px-3">Content</TabsTrigger>
               <TabsTrigger value="pages" className="text-xs md:text-sm px-2 md:px-3">Pages</TabsTrigger>
               <TabsTrigger value="journeys" className="text-xs md:text-sm px-2 md:px-3">Journeys</TabsTrigger>
               <TabsTrigger value="sources" className="text-xs md:text-sm px-2 md:px-3">Sources</TabsTrigger>
@@ -462,6 +603,221 @@ const SiteAnalytics = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Content Engagement Tab */}
+          <TabsContent value="content" className="space-y-6">
+            {(() => {
+              // Scroll depth distribution
+              const scrollRanges = [
+                { range: '0-25%', min: 0, max: 25 },
+                { range: '26-50%', min: 26, max: 50 },
+                { range: '51-75%', min: 51, max: 75 },
+                { range: '76-100%', min: 76, max: 100 },
+              ];
+              
+              const scrollDistribution = scrollRanges.map(r => {
+                const count = pageviewsData?.filter(p => 
+                  p.scroll_depth_percent !== null && 
+                  p.scroll_depth_percent >= r.min && 
+                  p.scroll_depth_percent <= r.max
+                ).length || 0;
+                return { name: r.range, value: count };
+              });
+
+              // Time on page distribution
+              const timeRanges = [
+                { range: '<10s', min: 0, max: 10 },
+                { range: '10-30s', min: 10, max: 30 },
+                { range: '30-60s', min: 30, max: 60 },
+                { range: '1-2m', min: 60, max: 120 },
+                { range: '2-5m', min: 120, max: 300 },
+                { range: '>5m', min: 300, max: Infinity },
+              ];
+
+              const timeDistribution = timeRanges.map(r => {
+                const count = pageviewsData?.filter(p => 
+                  p.time_on_page_seconds !== null && 
+                  p.time_on_page_seconds >= r.min && 
+                  p.time_on_page_seconds < r.max
+                ).length || 0;
+                return { name: r.range, value: count };
+              });
+
+              // Best performing content (high scroll + high time)
+              const contentPerformance = Object.entries(pageStats)
+                .map(([path, stats]) => {
+                  const pagesWithScroll = pageviewsData?.filter(p => p.page_path?.startsWith(path) && p.scroll_depth_percent) || [];
+                  const avgScroll = pagesWithScroll.length > 0 
+                    ? Math.round(pagesWithScroll.reduce((acc, p) => acc + (p.scroll_depth_percent || 0), 0) / pagesWithScroll.length)
+                    : 0;
+                  return {
+                    path,
+                    views: stats.views,
+                    avgTime: stats.views > 0 ? Math.round(stats.totalTime / stats.views) : 0,
+                    avgScroll,
+                    engagementScore: (avgScroll * 0.5) + ((stats.views > 0 ? stats.totalTime / stats.views : 0) * 0.5),
+                  };
+                })
+                .filter(p => p.views >= 3) // Only show pages with meaningful data
+                .sort((a, b) => b.engagementScore - a.engagementScore)
+                .slice(0, 10);
+
+              return (
+                <>
+                  {/* Content Metrics Summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Scroll className="h-4 w-4" />
+                          <span className="text-sm">Avg Scroll Depth</span>
+                        </div>
+                        <p className="text-2xl font-bold">{avgScrollDepth}%</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {avgScrollDepth >= 70 ? 'Excellent engagement' : avgScrollDepth >= 50 ? 'Good engagement' : 'Needs improvement'}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-sm">Avg Time on Page</span>
+                        </div>
+                        <p className="text-2xl font-bold">
+                          {(() => {
+                            const pagesWithTime = pageviewsData?.filter(p => p.time_on_page_seconds && p.time_on_page_seconds > 0) || [];
+                            const avgTime = pagesWithTime.length > 0 
+                              ? Math.round(pagesWithTime.reduce((acc, p) => acc + (p.time_on_page_seconds || 0), 0) / pagesWithTime.length)
+                              : 0;
+                            return `${Math.floor(avgTime / 60)}m ${avgTime % 60}s`;
+                          })()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <Target className="h-4 w-4" />
+                          <span className="text-sm">Readers to 75%+</span>
+                        </div>
+                        <p className="text-2xl font-bold">
+                          {(() => {
+                            const totalWithScroll = pageviewsData?.filter(p => p.scroll_depth_percent !== null).length || 0;
+                            const deep = pageviewsData?.filter(p => p.scroll_depth_percent && p.scroll_depth_percent >= 75).length || 0;
+                            return totalWithScroll > 0 ? `${Math.round((deep / totalWithScroll) * 100)}%` : '0%';
+                          })()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                          <FileText className="h-4 w-4" />
+                          <span className="text-sm">Unique Pages Viewed</span>
+                        </div>
+                        <p className="text-2xl font-bold">{Object.keys(pageStats).length}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    {/* Scroll Depth Distribution */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Scroll className="h-5 w-5" />
+                          Scroll Depth Distribution
+                        </CardTitle>
+                        <CardDescription>How far users scroll on pages</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart data={scrollDistribution}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" className="text-xs" />
+                            <YAxis />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'hsl(var(--card))', 
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: '8px'
+                              }} 
+                            />
+                            <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+
+                    {/* Time on Page Distribution */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="h-5 w-5" />
+                          Time on Page Distribution
+                        </CardTitle>
+                        <CardDescription>How long users spend on pages</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart data={timeDistribution}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" className="text-xs" />
+                            <YAxis />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'hsl(var(--card))', 
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: '8px'
+                              }} 
+                            />
+                            <Bar dataKey="value" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Best Performing Content */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Best Performing Content
+                      </CardTitle>
+                      <CardDescription>Pages with highest engagement (scroll depth + time on page)</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {contentPerformance.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-8">
+                          Not enough engagement data yet. Check back after more visitors interact with your content.
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {contentPerformance.map((page, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{page.path}</p>
+                                <div className="flex gap-4 text-sm text-muted-foreground mt-1">
+                                  <span>{page.views} views</span>
+                                  <span>{page.avgScroll}% scroll</span>
+                                  <span>{Math.floor(page.avgTime / 60)}m {page.avgTime % 60}s avg</span>
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="ml-2">
+                                Score: {Math.round(page.engagementScore)}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              );
+            })()}
           </TabsContent>
 
           {/* Pages Tab */}
