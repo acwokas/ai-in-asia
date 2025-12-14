@@ -96,31 +96,29 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
   }
 
   return (
-    <div className="my-10 p-6 md:p-8 rounded-xl bg-gradient-to-br from-primary/10 via-background to-accent/10 border border-primary/20">
-      <div className="flex items-start gap-4">
-        <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 shrink-0">
-          <Mail className="h-6 w-6 text-primary" />
+    <div className="my-6 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20">
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 shrink-0">
+          <Mail className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-lg mb-1">Enjoying this? Get more in your inbox.</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Weekly AI news, insights, and prompts from across Asia. No spam, unsubscribe anytime.
-          </p>
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1"
-              required
-              disabled={isSubmitting}
-            />
-            <Button type="submit" disabled={isSubmitting} className="shrink-0">
-              {isSubmitting ? "Subscribing..." : "Subscribe Free"}
-            </Button>
-          </form>
+          <h3 className="font-semibold text-sm mb-0.5">Enjoying this? Get more in your inbox.</h3>
+          <p className="text-xs text-muted-foreground">Weekly AI news & insights from Asia.</p>
         </div>
+        <form onSubmit={handleSubmit} className="flex gap-2 shrink-0">
+          <Input
+            type="email"
+            placeholder="Your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-40 h-9 text-sm"
+            required
+            disabled={isSubmitting}
+          />
+          <Button type="submit" size="sm" disabled={isSubmitting} className="h-9">
+            {isSubmitting ? "..." : "Subscribe"}
+          </Button>
+        </form>
       </div>
     </div>
   );
