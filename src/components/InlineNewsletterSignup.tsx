@@ -27,7 +27,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
 
       const { error } = await supabase
         .from("newsletter_subscribers")
-        .insert([{ email: validatedEmail }]);
+        .insert([{ email: validatedEmail, signup_source: "inline_article" }]);
 
       if (error) {
         if (error.code === "23505") {

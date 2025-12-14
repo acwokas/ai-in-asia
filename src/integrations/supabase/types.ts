@@ -1844,6 +1844,7 @@ export type Database = {
           id: string
           points_earned: number | null
           preferences: Json | null
+          signup_source: string | null
           subscribed_at: string
           total_clicks: number | null
           total_opens: number | null
@@ -1856,6 +1857,7 @@ export type Database = {
           id?: string
           points_earned?: number | null
           preferences?: Json | null
+          signup_source?: string | null
           subscribed_at?: string
           total_clicks?: number | null
           total_opens?: number | null
@@ -1868,6 +1870,7 @@ export type Database = {
           id?: string
           points_earned?: number | null
           preferences?: Json | null
+          signup_source?: string | null
           subscribed_at?: string
           total_clicks?: number | null
           total_opens?: number | null

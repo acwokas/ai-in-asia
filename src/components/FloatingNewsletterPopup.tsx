@@ -104,10 +104,9 @@ const FloatingNewsletterPopup = () => {
           .update({ unsubscribed_at: null, confirmed: true })
           .eq("id", existing.id);
       } else {
-        // New subscription
         await supabase
           .from("newsletter_subscribers")
-          .insert({ email: validation.data, confirmed: true });
+          .insert({ email: validation.data, confirmed: true, signup_source: "floating_popup" });
       }
 
       toast({

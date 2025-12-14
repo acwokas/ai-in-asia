@@ -52,7 +52,7 @@ const StickyNewsletterBar = () => {
 
       const { error } = await supabase
         .from("newsletter_subscribers")
-        .insert([{ email: validatedEmail }]);
+        .insert([{ email: validatedEmail, signup_source: "sticky_bar" }]);
 
       if (error) {
         if (error.code === "23505") {
