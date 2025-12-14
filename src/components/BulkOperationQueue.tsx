@@ -108,19 +108,21 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     setActiveJob(active || null);
   }, [queueJobs]);
 
-  const handleCancelJob = async (jobId: string) => {
+  const handleCancelJob = async (jobId: string, isProcessing: boolean = false) => {
     try {
       const { error } = await supabase
         .from("bulk_operation_queue")
-        .update({ status: 'cancelled' })
+        .update({ status: 'cancelled', completed_at: new Date().toISOString() })
         .eq("id", jobId)
-        .eq("status", "queued"); // Can only cancel queued jobs
+        .in("status", isProcessing ? ["processing", "queued"] : ["queued"]);
 
       if (error) throw error;
 
       toast({
-        title: "Job Cancelled",
-        description: "The bulk operation has been cancelled",
+        title: isProcessing ? "Job Stopped" : "Job Cancelled",
+        description: isProcessing 
+          ? "The bulk operation has been stopped. Current batch may still complete." 
+          : "The bulk operation has been cancelled",
       });
       refetch();
     } catch (error: any) {
@@ -354,15 +356,13 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
           <Loader2 className="h-4 w-4 animate-spin" />
           <AlertTitle className="flex items-center justify-between">
             <span>{activeJob.status === 'processing' ? 'Processing' : 'Queued'}: {getOperationTypeName(activeJob.operation_type)}</span>
-            {activeJob.status === 'queued' && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleCancelJob(activeJob.id)}
-              >
-                Cancel
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant={activeJob.status === 'processing' ? "destructive" : "ghost"}
+              onClick={() => handleCancelJob(activeJob.id, activeJob.status === 'processing')}
+            >
+              {activeJob.status === 'processing' ? 'Stop' : 'Cancel'}
+            </Button>
           </AlertTitle>
           <AlertDescription>
             <div className="mt-2">
