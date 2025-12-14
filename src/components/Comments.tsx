@@ -65,6 +65,7 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [content, setContent] = useState("");
   const [isNotRobot, setIsNotRobot] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [isAiControlsOpen, setIsAiControlsOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [editContent, setEditContent] = useState("");
   const { toast } = useToast();
@@ -504,185 +505,190 @@ const Comments = ({ articleId }: CommentsProps) => {
       <CollapsibleContent>
         {/* Admin AI Comment Controls */}
         {isAdmin && (
-          <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-lg">AI Comment Controls</h3>
-              <span className="text-sm text-muted-foreground ml-auto">
-                {publishedCount} published / {unpublishedCount} unpublished
-              </span>
-            </div>
-            
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Button
-                size="sm"
-                onClick={handleGenerateComments}
-                disabled={generating}
-              >
-                {generating ? (
-                  <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...</>
-                ) : (
-                  <><Sparkles className="h-4 w-4 mr-1" /> Generate Comments</>
-                )}
-              </Button>
+          <Collapsible open={isAiControlsOpen} onOpenChange={setIsAiControlsOpen} className="mb-8">
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <CollapsibleTrigger className="flex items-center gap-2 w-full">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-lg">AI Comment Controls</h3>
+                <span className="text-sm text-muted-foreground ml-auto mr-2">
+                  {publishedCount} published / {unpublishedCount} unpublished
+                </span>
+                <ChevronDown className={`h-5 w-5 text-primary transition-transform duration-200 ${isAiControlsOpen ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="outline" disabled={generating || aiComments.length === 0}>
-                    <RefreshCw className="h-4 w-4 mr-1" /> Regenerate All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Regenerate all AI comments?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will delete all existing AI comments for this article and generate new ones.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleRegenerateAll}>Regenerate</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={handlePublishAll}
-                disabled={unpublishedCount === 0}
-              >
-                <Eye className="h-4 w-4 mr-1" /> Publish All
-              </Button>
-
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={handleUnpublishAll}
-                disabled={publishedCount === 0}
-              >
-                <EyeOff className="h-4 w-4 mr-1" /> Unpublish All
-              </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="destructive" disabled={aiComments.length === 0}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete all AI comments?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all AI-generated comments for this article.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAllAiComments} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-
-            {/* AI Comments List for Admin */}
-            {aiComments.length > 0 && (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                <h4 className="text-sm font-medium text-muted-foreground">AI Comments ({aiComments.length})</h4>
-                {aiComments.map((comment) => (
-                  <div 
-                    key={comment.id} 
-                    className={`flex gap-3 p-3 rounded-lg border ${
-                      comment.published 
-                        ? 'bg-background border-border' 
-                        : 'bg-muted/50 border-dashed border-muted-foreground/30'
-                    }`}
+              <CollapsibleContent className="mt-4">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateComments}
+                    disabled={generating}
                   >
-                    {comment.avatar_url ? (
-                      <img 
-                        src={comment.avatar_url} 
-                        alt={comment.author_name || "User"} 
-                        className="w-8 h-8 rounded-full flex-shrink-0 object-cover"
-                      />
+                    {generating ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...</>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 text-white" />
-                      </div>
+                      <><Sparkles className="h-4 w-4 mr-1" /> Generate Comments</>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm truncate">
-                          {comment.author_name}
-                        </span>
-                        {comment.author_handle && (
-                          <span className="text-xs text-muted-foreground">
-                            @{comment.author_handle}
-                          </span>
-                        )}
-                        {!comment.published && (
-                          <span className="text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                            Unpublished
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7"
-                        onClick={() => handlePublishComment(comment.id, !comment.published)}
-                        title={comment.published ? "Unpublish" : "Publish"}
-                      >
-                        {comment.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" disabled={generating || aiComments.length === 0}>
+                        <RefreshCw className="h-4 w-4 mr-1" /> Regenerate All
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7"
-                        onClick={() => handleEditComment(comment)}
-                        title="Edit"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Regenerate all AI comments?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will delete all existing AI comments for this article and generate new ones.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRegenerateAll}>Regenerate</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handlePublishAll}
+                    disabled={unpublishedCount === 0}
+                  >
+                    <Eye className="h-4 w-4 mr-1" /> Publish All
+                  </Button>
+
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleUnpublishAll}
+                    disabled={publishedCount === 0}
+                  >
+                    <EyeOff className="h-4 w-4 mr-1" /> Unpublish All
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" disabled={aiComments.length === 0}>
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete All
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all AI comments?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete all AI-generated comments for this article.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAllAiComments} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+
+                {/* AI Comments List for Admin */}
+                {aiComments.length > 0 && (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    <h4 className="text-sm font-medium text-muted-foreground">AI Comments ({aiComments.length})</h4>
+                    {aiComments.map((comment) => (
+                      <div 
+                        key={comment.id} 
+                        className={`flex gap-3 p-3 rounded-lg border ${
+                          comment.published 
+                            ? 'bg-background border-border' 
+                            : 'bg-muted/50 border-dashed border-muted-foreground/30'
+                        }`}
+                      >
+                        {comment.avatar_url ? (
+                          <img 
+                            src={comment.avatar_url} 
+                            alt={comment.author_name || "User"} 
+                            className="w-8 h-8 rounded-full flex-shrink-0 object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm truncate">
+                              {comment.author_name}
+                            </span>
+                            {comment.author_handle && (
+                              <span className="text-xs text-muted-foreground">
+                                @{comment.author_handle}
+                              </span>
+                            )}
+                            {!comment.published && (
+                              <span className="text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                                Unpublished
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            title="Delete"
+                            className="h-7 w-7"
+                            onClick={() => handlePublishComment(comment.id, !comment.published)}
+                            title={comment.published ? "Unpublish" : "Publish"}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            {comment.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete this AI-generated comment.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeleteAiComment(comment.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => handleEditComment(comment)}
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete this AI-generated comment.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteAiComment(comment.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                )}
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
         )}
 
         {/* Comments List */}
