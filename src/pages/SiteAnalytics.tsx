@@ -58,6 +58,7 @@ const MetricChange = ({ value }: { value: string | number }) => {
 
 const SiteAnalytics = () => {
   const [dateRange, setDateRange] = useState("7");
+  const [activeTab, setActiveTab] = useState("charts");
 
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
@@ -319,7 +320,14 @@ const SiteAnalytics = () => {
     .slice(0, 10);
 
   // Optimization suggestions
-  const suggestions = [];
+  const suggestions: Array<{
+    type: string;
+    title: string;
+    description: string;
+    action: string;
+    actionType: 'link' | 'tab' | 'info';
+    target?: string;
+  }> = [];
   
   const bounceRateNum = typeof bounceRate === 'string' ? parseFloat(bounceRate) : bounceRate;
   if (bounceRateNum > 60) {
@@ -328,6 +336,8 @@ const SiteAnalytics = () => {
       title: 'High Bounce Rate',
       description: `Your bounce rate is ${bounceRate}%. Consider improving landing page content and load times.`,
       action: 'Review landing pages',
+      actionType: 'tab',
+      target: 'pages',
     });
   }
   
@@ -336,7 +346,9 @@ const SiteAnalytics = () => {
       type: 'warning',
       title: 'Low Session Duration',
       description: `Average session is only ${avgSessionDuration}s. Add more engaging content to keep visitors longer.`,
-      action: 'Add related content',
+      action: 'View content engagement',
+      actionType: 'tab',
+      target: 'content',
     });
   }
 
@@ -346,7 +358,9 @@ const SiteAnalytics = () => {
       type: 'info',
       title: 'Mobile-First Audience',
       description: `${mobilePercentage.toFixed(0)}% of visitors use mobile. Ensure mobile experience is optimized.`,
-      action: 'Test mobile UX',
+      action: 'View device stats',
+      actionType: 'tab',
+      target: 'technology',
     });
   }
 
@@ -356,7 +370,9 @@ const SiteAnalytics = () => {
         type: 'warning',
         title: `High Exit Rate: ${page.path}`,
         description: `${page.exitRate}% exit rate. Consider adding CTAs or related content.`,
-        action: 'Optimize page',
+        action: 'View page details',
+        actionType: 'tab',
+        target: 'pages',
       });
     }
   });
@@ -523,7 +539,17 @@ const SiteAnalytics = () => {
                     <div className="flex-1">
                       <h4 className="font-medium">{suggestion.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">{suggestion.description}</p>
-                      <Button variant="link" className="p-0 h-auto mt-2 text-primary">
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto mt-2 text-primary"
+                        onClick={() => {
+                          if (suggestion.actionType === 'tab' && suggestion.target) {
+                            setActiveTab(suggestion.target);
+                            // Scroll to tabs section
+                            document.getElementById('analytics-tabs')?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
                         {suggestion.action} <ArrowRight className="h-3 w-3 ml-1" />
                       </Button>
                     </div>
@@ -534,7 +560,7 @@ const SiteAnalytics = () => {
           </Card>
         )}
 
-        <Tabs defaultValue="charts" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" id="analytics-tabs">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
             <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:grid md:grid-cols-10">
               <TabsTrigger value="charts" className="gap-1 text-xs md:text-sm px-2 md:px-3">
