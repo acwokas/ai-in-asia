@@ -1,6 +1,16 @@
+import { useEffect } from "react";
 import promptAndGoLogo from "@/assets/promptandgo-logo.png";
+import { trackSponsorClick, trackSponsorImpression } from "@/hooks/useSponsorTracking";
 
 export const PromptAndGoSponsor = () => {
+  useEffect(() => {
+    trackSponsorImpression('prompt_and_go_sidebar', 'Prompt and Go');
+  }, []);
+
+  const handleClick = () => {
+    trackSponsorClick('prompt_and_go_sidebar', 'Prompt and Go', 'https://www.promptandgo.ai');
+  };
+
   return (
     <div className="sticky top-24">
       <a
@@ -9,6 +19,7 @@ export const PromptAndGoSponsor = () => {
         rel="noopener noreferrer sponsored"
         className="block bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow"
         aria-label="Prompt and Go AI - Your AI prompt companion"
+        onClick={handleClick}
       >
         <div className="text-xs text-muted-foreground uppercase tracking-wider mb-4 text-center">
           In Partnership With

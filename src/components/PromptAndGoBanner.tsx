@@ -1,7 +1,17 @@
+import { useEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import promptAndGoLogo from "@/assets/promptandgo-logo.png";
+import { trackSponsorClick, trackSponsorImpression } from "@/hooks/useSponsorTracking";
 
 export const PromptAndGoBanner = () => {
+  useEffect(() => {
+    trackSponsorImpression('prompt_and_go_banner', 'Prompt and Go');
+  }, []);
+
+  const handleClick = () => {
+    trackSponsorClick('prompt_and_go_banner', 'Prompt and Go', 'https://www.promptandgo.ai');
+  };
+
   return (
     <div className="w-full max-w-[640px] md:max-w-full mx-auto">
       <a
@@ -10,6 +20,7 @@ export const PromptAndGoBanner = () => {
         rel="noopener noreferrer sponsored"
         className="block relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 h-[100px] md:h-[140px]"
         aria-label="Better and faster AI results, every time - Browse 3,000+ tested prompts at Prompt and Go AI"
+        onClick={handleClick}
       >
         {/* Gradient background */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600" />
