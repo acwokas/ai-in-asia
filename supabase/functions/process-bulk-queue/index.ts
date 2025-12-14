@@ -423,7 +423,7 @@ Return ONLY the updated content with links added. Do not change any other aspect
 async function processAIComments(supabase: any, job: any, lovableApiKey: string) {
   const articleIds = job.article_ids as string[];
   const options = job.options || {};
-  const ARTICLES_PER_RUN = 20; // Process 20 articles per invocation to avoid timeout
+  const ARTICLES_PER_RUN = 5; // Process 5 articles per invocation (each article = 3-5 AI calls)
   const processedSoFar = job.processed_items || 0;
 
   console.log(`Processing AI comments: ${processedSoFar}/${articleIds.length} articles completed`);

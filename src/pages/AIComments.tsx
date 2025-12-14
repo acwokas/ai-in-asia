@@ -506,16 +506,22 @@ const AIComments = () => {
     }
   };
 
-  const handleQueueBulkOperation = async () => {
+  const handleQueueBulkOperation = async (categoryId?: string, regenerateAll: boolean = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get all published articles
-      const { data: allArticles, error: articlesError } = await supabase
+      // Get published articles, optionally filtered by category
+      let articlesQuery = supabase
         .from('articles')
         .select('id')
         .eq('status', 'published');
+      
+      if (categoryId) {
+        articlesQuery = articlesQuery.eq('primary_category_id', categoryId);
+      }
+
+      const { data: allArticles, error: articlesError } = await articlesQuery;
 
       if (articlesError) throw articlesError;
       if (!allArticles || allArticles.length === 0) {
@@ -527,26 +533,41 @@ const AIComments = () => {
         return;
       }
 
-      // Get articles that already have AI comments
-      const { data: articlesWithComments, error: commentsError } = await supabase
-        .from('ai_generated_comments')
-        .select('article_id');
+      let articleIdsToProcess: string[];
+      
+      if (regenerateAll) {
+        // Delete existing comments for these articles first
+        const articleIds = allArticles.map(a => a.id);
+        await supabase
+          .from('ai_generated_comments')
+          .delete()
+          .in('article_id', articleIds);
+        
+        articleIdsToProcess = articleIds;
+      } else {
+        // Get articles that already have AI comments
+        const { data: articlesWithComments, error: commentsError } = await supabase
+          .from('ai_generated_comments')
+          .select('article_id');
 
-      if (commentsError) throw commentsError;
+        if (commentsError) throw commentsError;
 
-      const articlesWithCommentsIds = new Set(
-        articlesWithComments?.map(c => c.article_id) || []
-      );
+        const articlesWithCommentsIds = new Set(
+          articlesWithComments?.map(c => c.article_id) || []
+        );
 
-      // Filter to only articles without comments
-      const articlesNeedingComments = allArticles
-        .filter(a => !articlesWithCommentsIds.has(a.id))
-        .map(a => a.id);
+        // Filter to only articles without comments
+        articleIdsToProcess = allArticles
+          .filter(a => !articlesWithCommentsIds.has(a.id))
+          .map(a => a.id);
+      }
 
-      if (articlesNeedingComments.length === 0) {
+      if (articleIdsToProcess.length === 0) {
         toast({
           title: "All Set",
-          description: "All published articles already have AI comments",
+          description: regenerateAll 
+            ? "No articles to process" 
+            : "All published articles already have AI comments",
         });
         return;
       }
@@ -556,16 +577,18 @@ const AIComments = () => {
         .from('bulk_operation_queue')
         .insert({
           operation_type: 'generate_ai_comments',
-          article_ids: articlesNeedingComments,
+          article_ids: articleIdsToProcess,
+          total_items: articleIdsToProcess.length,
           created_by: user.id,
-          status: 'queued'
+          status: 'queued',
+          options: categoryId ? { categoryId } : {}
         });
 
       if (queueError) throw queueError;
 
       toast({
         title: "Operation Queued",
-        description: `${articlesNeedingComments.length} articles queued for AI comment generation`,
+        description: `${articleIdsToProcess.length} articles queued for AI comment generation. Processing will start automatically.`,
       });
 
       queryClient.invalidateQueries({ queryKey: ['bulk-operation-queue'] });
@@ -879,50 +902,70 @@ const AIComments = () => {
         <CardHeader>
           <CardTitle>Bulk Generate Comments</CardTitle>
           <CardDescription>
-            Queue AI comment generation for all articles without comments
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={handleQueueBulkOperation}
-            disabled={!authorStats}
-            className="w-full"
-          >
-            <ListChecks className="mr-2 h-4 w-4" />
-            Queue All Articles Without Comments
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Generate Comments */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Generate Comments by Category</CardTitle>
-          <CardDescription>
-            Select a category to generate AI comments for all published articles in that category
+            Queue AI comment generation. Jobs process automatically in batches of 5 articles at a time with real-time progress.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => generateCommentsMutation.mutate(selectedCategory)}
-            disabled={!selectedCategory || isGenerating || !authorStats}
-          >
-            {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Generate Comments
-          </Button>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              onClick={() => handleQueueBulkOperation()}
+              disabled={!authorStats}
+              variant="default"
+            >
+              <ListChecks className="mr-2 h-4 w-4" />
+              Queue Articles Without Comments
+            </Button>
+            <Button
+              onClick={() => {
+                if (confirm('This will DELETE all existing AI comments and regenerate for ALL articles. This will take a long time. Continue?')) {
+                  handleQueueBulkOperation(undefined, true);
+                }
+              }}
+              disabled={!authorStats}
+              variant="destructive"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Regenerate All Comments
+            </Button>
+          </div>
+          
+          <div className="border-t pt-4">
+            <p className="text-sm text-muted-foreground mb-2">Or queue by category:</p>
+            <div className="flex gap-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => handleQueueBulkOperation(selectedCategory)}
+                disabled={!selectedCategory || !authorStats}
+                variant="secondary"
+              >
+                <ListChecks className="mr-2 h-4 w-4" />
+                Queue Category
+              </Button>
+              <Button
+                onClick={() => {
+                  if (confirm(`This will DELETE and regenerate all comments for articles in this category. Continue?`)) {
+                    handleQueueBulkOperation(selectedCategory, true);
+                  }
+                }}
+                disabled={!selectedCategory || !authorStats}
+                variant="outline"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Regen Category
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
