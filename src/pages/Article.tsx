@@ -1329,8 +1329,8 @@ const Article = () => {
               </div>
             </footer>
 
-            {/* Author Bio */}
-            {article.authors && (
+            {/* Author Bio - Hide for Intelligence Desk */}
+            {article.authors && article.authors.name !== 'Intelligence Desk' && (
               <div className="bg-muted/50 rounded-lg p-8 flex flex-col md:flex-row items-center md:items-start gap-6 mt-8">
                 {article.authors.slug ? (
                   <Link to={`/author/${article.authors.slug}`} className="flex-shrink-0">
