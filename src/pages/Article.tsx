@@ -1304,25 +1304,116 @@ const Article = () => {
 
 
 
-            {/* Article Footer - Compact Share */}
-            <div className="mt-8 pt-4 border-t border-border flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Share:</span>
-              <div className="flex gap-1.5">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleTwitterShare} title="Share on Twitter">
-                  <Twitter className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleLinkedInShare} title="Share on LinkedIn">
-                  <Linkedin className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFacebookShare} title="Share on Facebook">
-                  <Facebook className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleWhatsAppShare} title="Share on WhatsApp">
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleEmailShare} title="Share via Email">
-                  <Mail className="h-4 w-4" />
-                </Button>
+            {/* Article Footer - Author Block (same as top) */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 relative z-20">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  {article.authors?.slug ? (
+                    <Link to={`/author/${article.authors.slug}`}>
+                      {article.authors.avatar_url ? (
+                        <img 
+                          src={article.authors.avatar_url} 
+                          alt={article.authors.name}
+                          className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary hover:opacity-80 transition-opacity flex-shrink-0" />
+                      )}
+                    </Link>
+                  ) : (
+                    article.authors?.avatar_url ? (
+                      <img 
+                        src={article.authors.avatar_url} 
+                        alt={article.authors?.name || 'Anonymous'}
+                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
+                    )
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <User className="h-4 w-4 flex-shrink-0" />
+                      {article.authors?.slug ? (
+                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors truncate">
+                          {article.authors.name}
+                        </Link>
+                      ) : (
+                        <span className="truncate">{article.authors?.name || 'Anonymous'}</span>
+                      )}
+                    </div>
+                    {article.authors?.job_title && (
+                      <div className="text-sm text-muted-foreground truncate">
+                        {article.authors.job_title}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                      <Clock className="h-3 w-3 flex-shrink-0" />
+                      <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min read</span>
+                      <span>•</span>
+                      <span className="whitespace-nowrap">
+                        {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span>•</span>
+                      <button 
+                        onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        <MessageCircle className="h-3 w-3 flex-shrink-0" />
+                        <span className="whitespace-nowrap">{commentCount} comments</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                  <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2">
+                    {article.authors && (
+                      <FollowButton
+                        followType="author"
+                        followId={article.authors.id}
+                        followName={article.authors.name}
+                      />
+                    )}
+                    {article.categories && (
+                      <FollowButton
+                        followType="category"
+                        followId={article.categories.id}
+                        followName={article.categories.name}
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 ml-auto md:ml-0">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={handleBookmark}
+                      title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
+                      className="h-8 w-8 cursor-pointer"
+                    >
+                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
+                      <FontSizeControl />
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={handleShare}
+                      title="Share article"
+                      className="h-8 w-8 cursor-pointer"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
