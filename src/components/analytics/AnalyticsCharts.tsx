@@ -171,14 +171,36 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
       .slice(0, 20);
   }, [pageviewsData, searchFilter]);
 
+  // Helper to format referrer domains to friendly names
+  const formatReferrerDomain = (domain: string): string => {
+    if (!domain || domain === 'Direct') return 'Direct';
+    
+    // Handle Lovable preview URLs
+    if (domain.includes('lovableproject.com') || domain.includes('lovable.app')) {
+      return 'Lovable Preview';
+    }
+    if (domain.includes('lovable.dev')) {
+      return 'Lovable';
+    }
+    
+    // Clean up common domains
+    const cleanDomain = domain
+      .replace(/^www\./, '')
+      .replace(/\.com$|\.org$|\.net$|\.io$/, '');
+    
+    // Capitalize first letter
+    return cleanDomain.charAt(0).toUpperCase() + cleanDomain.slice(1);
+  };
+
   // Referrer data
   const referrerData = useMemo(() => {
     if (!sessionsData) return [];
 
     const refMap = new Map<string, number>();
     sessionsData.forEach(session => {
-      const domain = session.referrer_domain || 'Direct';
-      refMap.set(domain, (refMap.get(domain) || 0) + 1);
+      const rawDomain = session.referrer_domain || 'Direct';
+      const friendlyName = formatReferrerDomain(rawDomain);
+      refMap.set(friendlyName, (refMap.get(friendlyName) || 0) + 1);
     });
 
     return Array.from(refMap.entries())
