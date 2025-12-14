@@ -223,17 +223,11 @@ const ContentCalendar = () => {
       ? new Date(article.scheduled_for!) 
       : new Date(article.published_at!);
     
-    // Randomize minutes to non-round numbers (e.g., 7, 13, 22, 37, 43, 52)
-    const randomMinutes = [7, 13, 22, 37, 43, 52];
-    const randomMinute = randomMinutes[Math.floor(Math.random() * randomMinutes.length)];
-    eventDate.setMinutes(randomMinute);
-    eventDate.setSeconds(0);
-    
     return {
       id: article.id,
       title: article.title,
       start: eventDate,
-      end: new Date(eventDate.getTime() + 3 * 60 * 60 * 1000), // 3 hour duration
+      end: new Date(eventDate.getTime() + 30 * 60 * 1000), // 30 minute duration for cleaner display
       author: article.authors?.name || "Unknown Author",
       authorId: article.author_id || "unknown",
       categoryName: article.categories?.name || "Uncategorized",
@@ -545,20 +539,28 @@ const ContentCalendar = () => {
                 onEventDrop={handleEventDrop}
                 onEventResize={handleEventResize}
                 eventPropGetter={eventStyleGetter}
-                resizable
-                min={new Date(2024, 0, 1, 7, 0, 0)}
-                max={new Date(2024, 0, 1, 19, 0, 0)}
-                step={5}
-                timeslots={12}
+                resizable={false}
+                min={new Date(2024, 0, 1, 0, 0, 0)}
+                max={new Date(2024, 0, 1, 23, 59, 59)}
+                step={30}
+                timeslots={2}
+                formats={{
+                  eventTimeRangeFormat: () => '', // Hide end time in events
+                }}
                 components={{
                   event: ({ event }: { event: CalendarEvent }) => (
-                    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                      <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                    <div style={{ 
+                      height: "100%", 
+                      display: "flex", 
+                      alignItems: "center",
+                      gap: "6px",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis"
+                    }}>
+                      <span style={{ fontWeight: "600", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {event.title}
-                      </div>
-                      <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
-                        👤 {event.author}
-                      </div>
+                      </span>
                     </div>
                   ),
                 }}
