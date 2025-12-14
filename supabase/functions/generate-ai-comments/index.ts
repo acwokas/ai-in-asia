@@ -372,15 +372,32 @@ const addEmojis = (text: string, emojiChance: number, sentiment: 'positive' | 'n
   }
 };
 
-// Hard sanitization to remove overused regional fillers
-// We completely strip "wah" and "lah" so they never appear in stored comments
+// Hard sanitization to remove overused or banned patterns
+// We completely strip or soften certain fillers and slang so they never appear in stored comments
 const sanitizeComment = (text: string): string => {
   let result = text;
-  result = result.replace(/\bwah\b[,!?.]*/gi, '');
-  result = result.replace(/\blah\b[,!?.]*/gi, '');
-  // Collapse extra whitespace and trim
-  result = result.replace(/\s{2,}/g, ' ').trim();
-  return result;
+
+  // Strip overused regional fillers regardless of punctuation
+  result = result.replace(/\bwa+h+\b[^A-Za-z0-9]*/gi, " "); // wah, waah, wahh
+  result = result.replace(/\bla+h+\b[^A-Za-z0-9]*/gi, " "); // lah, laah, lahh
+
+  // Remove British-isms that feel over the top for this site
+  result = result.replace(/\bblimey\b[^A-Za-z0-9]*/gi, " ");
+  result = result.replace(/\bproper\s+(mental|mad|wild|insane)\b/gi, "$1");
+  result = result.replace(/\b(cheers mate|cheers,?\s*mate)\b/gi, "thanks");
+  result = result.replace(/\b(bloody|proper)\b\s+/gi, "");
+
+  // Remove common rhetorical tag questions and agreement-seeking endings
+  result = result.replace(/,?\s*(isnt it|isn't it|right\?|dont you think|don't you think|wouldnt you say|wouldn't you say|no\?)\b/gi, "");
+
+  // If the whole comment ends with a bare tag question like "right?" etc, trim it
+  result = result.replace(/(,?\s*(right\?|is(n't|nt) it\?|don'?t you think\?|wouldn'?t you say\?|no\?))\s*$/gi, "");
+
+  // Collapse multiple spaces and tidy up stray punctuation
+  result = result.replace(/\s{2,}/g, " ");
+  result = result.replace(/\s+([,.!?])/g, "$1");
+
+  return result.trim();
 };
 
 // Main function to add all natural variations
@@ -576,6 +593,7 @@ Deno.serve(async (req) => {
         'isnt it', "isn't it", 'right?', 'dont you think', "don't you think",
         'would you agree', 'wouldnt you say', "wouldn't you say", 'no?',
         'this is a', 'this was a', 'this has been',
+        'blimey', 'proper', 'proper mental', 'cheers mate', 'bloody',
       ];
 
       // Determine sentiment skew for this article (not always balanced)
@@ -775,40 +793,15 @@ TIME CONTEXT: ${timeStyle.instruction}
 
 CRITICAL VARIATION RULES - READ CAREFULLY:
 ${bannedOpeningsStr}
-- ABSOLUTELY NEVER use these words/phrases: wah, waah, fascinating, "great read", "interesting read", "nice article", "brilliant"
+- ABSOLUTELY NEVER use these words/phrases: wah, waah, lah, fascinating, "great read", "interesting read", "nice article", "brilliant", "blimey", "proper", "cheers mate", "bloody"
 - NEVER end sentences with rhetorical questions like: "right?", "isn't it?", "don't you think?", "wouldn't you say?", "no?"
 - NEVER say "this is wild/crazy/huge/interesting/insane" - be more creative
 - NEVER start with generic praise like "This is a great/interesting/fascinating..."
 - NEVER mention starting a company unless directly relevant
 - Each comment MUST have a completely UNIQUE structure and opening
 - Vary your opening word dramatically - dont start with "This" or "I" every time
-- Try starting with: verbs, reactions, questions, lowercase words, single words, specific references
+- Try starting with: verbs, reactions, questions, lowercase words, single words, specific references`;
 
-STRUCTURAL DIVERSITY - CRITICAL:
-- If other comments ask questions, this one should make statements
-- If other comments are positive, this one can be skeptical
-- If other comments are long, this one should be short
-- AVOID similar sentence patterns within the same article
-
-WRITE LIKE A REAL PERSON NOT AN AI:
-- Real people dont write perfectly. Sentences run together sometimes or break off
-- Start with lowercase sometimes. or dont use periods
-- Fragments are fine. "Love this." "Wait what." "Hmm not sure about that part" "finally!"
-- Use filler: "like", "honestly", "I mean", "so basically", "wait", "ok but", "idk"
-- Some sentences just trail off...
-- Typos happen. dont fix them all
-- NO em dashes ever. NO semicolons. minimal commas
-- ABSOLUTELY NO rhetorical questions at the end. End with statements, not questions seeking agreement.
-
-LENGTH: ${targetLength}
-SENTIMENT: ${commentSentiment}
-${regionalInstruction}
-${temporalInstruction}
-${specialBehavior ? `SPECIAL BEHAVIOR: ${specialBehavior}` : ''}
-
-Comment ${i + 1} of ${numComments} - MUST be STRUCTURALLY DIFFERENT from all others. Different opening, different length, different tone.
-
-Write ONLY the comment. nothing else.`;
 
         try {
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -844,7 +837,12 @@ Write ONLY the comment. nothing else.`;
           commentText = sanitizeComment(commentText);
 
           // Track the opening to avoid repetition
-          const opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+          let opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+          if (usedOpenings.includes(opening)) {
+            // Nudge duplicated openings to feel less copy-paste
+            commentText = commentText.replace(/^[^.!?\n]+/, (m: string) => `honestly ${m.toLowerCase()}`);
+            opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+          }
           usedOpenings.push(opening);
 
           // Store for potential threading
