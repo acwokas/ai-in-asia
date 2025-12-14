@@ -160,7 +160,19 @@ export const useAnalyticsTracking = () => {
   const pageStartTimeRef = useRef<number>(Date.now());
   const scrollDepthRef = useRef<number>(0);
 
-  const getOrCreateSession = useCallback(async (): Promise<string> => {
+  // Update session duration
+  const updateSessionDuration = useCallback(async (sessionId: string, startedAt: number) => {
+    const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
+    await supabase
+      .from('analytics_sessions')
+      .update({ 
+        duration_seconds: durationSeconds,
+        ended_at: new Date().toISOString(),
+      })
+      .eq('session_id', sessionId);
+  }, []);
+
+  const getOrCreateSession = useCallback(async (): Promise<{ sessionId: string; startedAt: number }> => {
     const stored = localStorage.getItem(SESSION_KEY);
     let sessionData: SessionData | null = null;
 
@@ -169,6 +181,8 @@ export const useAnalyticsTracking = () => {
         sessionData = JSON.parse(stored);
         // Check if session is still valid (within timeout)
         if (Date.now() - sessionData.lastActivity > SESSION_TIMEOUT) {
+          // Update final duration of old session before creating new one
+          await updateSessionDuration(sessionData.sessionId, sessionData.startedAt);
           sessionData = null;
         }
       } catch {
@@ -177,20 +191,25 @@ export const useAnalyticsTracking = () => {
     }
 
     if (sessionData) {
-      // Update last activity
+      // Update last activity and session duration
       sessionData.lastActivity = Date.now();
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-      return sessionData.sessionId;
+      
+      // Update session duration in database
+      await updateSessionDuration(sessionData.sessionId, sessionData.startedAt);
+      
+      return { sessionId: sessionData.sessionId, startedAt: sessionData.startedAt };
     }
 
     // Create new session
     const sessionId = generateSessionId();
     const utmParams = getUTMParams();
     const referrer = document.referrer;
+    const startedAt = Date.now();
 
     const newSession: SessionData = {
       sessionId,
-      startedAt: Date.now(),
+      startedAt,
       lastActivity: Date.now(),
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
@@ -210,13 +229,14 @@ export const useAnalyticsTracking = () => {
       browser: getBrowser(),
       os: getOS(),
       landing_page: location.pathname,
+      duration_seconds: 0,
     });
 
-    return sessionId;
-  }, [user?.id, location.pathname]);
+    return { sessionId, startedAt };
+  }, [user?.id, location.pathname, updateSessionDuration]);
 
   const trackPageView = useCallback(async () => {
-    const sessionId = await getOrCreateSession();
+    const { sessionId } = await getOrCreateSession();
     const currentPath = location.pathname + location.search;
 
     // Update previous pageview with time spent and exit status
@@ -245,7 +265,7 @@ export const useAnalyticsTracking = () => {
     // Insert new pageview
     const { data } = await supabase
       .from('analytics_pageviews')
-      .insert({
+      .insert([{
         session_id: sessionId,
         user_id: user?.id || null,
         page_path: currentPath,
@@ -254,7 +274,7 @@ export const useAnalyticsTracking = () => {
         article_id: articleId,
         guide_id: guideId,
         category_slug: categorySlug,
-      })
+      }])
       .select('id')
       .single();
 
