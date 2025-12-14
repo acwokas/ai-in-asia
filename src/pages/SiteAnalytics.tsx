@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
-  MousePointer, LogOut, Target, Zap, AlertTriangle
+  MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -29,6 +29,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import { AnalyticsCharts } from "@/components/analytics/AnalyticsCharts";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
 
@@ -391,8 +392,12 @@ const SiteAnalytics = () => {
           </Card>
         )}
 
-        <Tabs defaultValue="traffic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 lg:w-auto lg:inline-grid">
+        <Tabs defaultValue="charts" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="charts" className="gap-1">
+              <LineChartIcon className="h-4 w-4" />
+              Charts
+            </TabsTrigger>
             <TabsTrigger value="traffic">Traffic</TabsTrigger>
             <TabsTrigger value="pages">Pages</TabsTrigger>
             <TabsTrigger value="journeys">User Journeys</TabsTrigger>
@@ -401,6 +406,16 @@ const SiteAnalytics = () => {
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="errors">Errors</TabsTrigger>
           </TabsList>
+
+          {/* Interactive Charts Tab */}
+          <TabsContent value="charts" className="space-y-6">
+            <AnalyticsCharts
+              sessionsData={sessionsData || []}
+              pageviewsData={pageviewsData || []}
+              eventsData={eventsData || []}
+              isLoading={isLoading}
+            />
+          </TabsContent>
 
           {/* Traffic Tab */}
           <TabsContent value="traffic" className="space-y-6">
