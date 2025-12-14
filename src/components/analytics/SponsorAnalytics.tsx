@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
+  PieChart, Pie, Cell, Legend
 } from "recharts";
 import { MousePointer, Eye, TrendingUp, DollarSign } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CHART_COLORS = [
   'hsl(var(--primary))', 
@@ -38,6 +39,11 @@ const PLACEMENT_LABELS: Record<string, string> = {
 };
 
 export const SponsorAnalytics = ({ eventsData, isLoading }: SponsorAnalyticsProps) => {
+  const isMobile = useIsMobile();
+  const chartHeight = isMobile ? 200 : 250;
+  const yAxisWidth = isMobile ? 100 : 140;
+  const truncateLength = isMobile ? 12 : 20;
+
   // Filter sponsor events
   const sponsorEvents = useMemo(() => {
     return eventsData?.filter(e => e.event_category === 'sponsorship') || [];
@@ -188,60 +194,65 @@ export const SponsorAnalytics = ({ eventsData, isLoading }: SponsorAnalyticsProp
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Clicks by Placement */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MousePointer className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <MousePointer className="h-4 w-4 md:h-5 md:w-5" />
               Clicks by Placement
             </CardTitle>
-            <CardDescription>Which ad placements drive the most clicks</CardDescription>
+            <CardDescription className="text-xs md:text-sm">Which ad placements drive the most clicks</CardDescription>
           </CardHeader>
           <CardContent>
             {clicksByPlacement.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No sponsor clicks tracked yet.</p>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={clicksByPlacement} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" />
-                  <YAxis 
-                    dataKey="label" 
-                    type="category" 
-                    width={140} 
-                    className="text-xs"
-                    tickFormatter={(v) => v.length > 20 ? v.slice(0, 20) + '...' : v}
-                  />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="clicks" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                <div className="min-w-[280px]">
+                  <ResponsiveContainer width="100%" height={chartHeight}>
+                    <BarChart data={clicksByPlacement} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis type="number" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                      <YAxis 
+                        dataKey="label" 
+                        type="category" 
+                        width={yAxisWidth} 
+                        className="text-xs"
+                        tick={{ fontSize: isMobile ? 9 : 12 }}
+                        tickFormatter={(v) => v.length > truncateLength ? v.slice(0, truncateLength) + '...' : v}
+                      />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="clicks" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
         {/* Clicks by Sponsor */}
         <Card>
-          <CardHeader>
-            <CardTitle>Clicks by Sponsor</CardTitle>
-            <CardDescription>Performance breakdown by sponsor</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Clicks by Sponsor</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Performance breakdown by sponsor</CardDescription>
           </CardHeader>
           <CardContent>
             {clicksBySponsor.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No sponsor data yet.</p>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
                   <Pie
                     data={clicksBySponsor}
                     cx="50%"
                     cy="50%"
-                    innerRadius={50}
-                    outerRadius={90}
+                    innerRadius={isMobile ? 35 : 50}
+                    outerRadius={isMobile ? 60 : 90}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={isMobile ? false : ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {clicksBySponsor.map((_, index) => (
@@ -249,6 +260,10 @@ export const SponsorAnalytics = ({ eventsData, isLoading }: SponsorAnalyticsProp
                     ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
+                  <Legend 
+                    wrapperStyle={{ fontSize: isMobile ? 10 : 12 }}
+                    formatter={(value: string) => value.length > 15 ? value.slice(0, 15) + '...' : value}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             )}
