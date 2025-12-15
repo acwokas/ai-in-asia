@@ -5,38 +5,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Regional expressions and patterns
+// Regional expressions and patterns - increased emoji chances to 25-50%
 const regionalPatterns: Record<string, { expressions: string[]; typoChance: number; shorthandChance: number; lowercaseChance: number; emojiChance: number; mobileTypoChance: number }> = {
   singapore: {
-    expressions: ['lah', 'lor', 'sia', 'hor', 'leh', 'meh', 'one', 'can'],
+    expressions: [], // Removed regional expressions - handled by AI prompt now
     typoChance: 0.18,
     shorthandChance: 0.28,
     lowercaseChance: 0.25,
-    emojiChance: 0.32,
+    emojiChance: 0.38, // Increased
     mobileTypoChance: 0.15,
   },
   india: {
-    expressions: ['yaar', 'na', 'actually', 'basically', 'only'],
+    expressions: [],
     typoChance: 0.12,
     shorthandChance: 0.22,
     lowercaseChance: 0.18,
-    emojiChance: 0.28,
+    emojiChance: 0.32, // Increased
     mobileTypoChance: 0.12,
   },
   philippines: {
-    expressions: ['po', 'naman', 'talaga', 'grabe'],
+    expressions: [],
     typoChance: 0.15,
     shorthandChance: 0.32,
     lowercaseChance: 0.28,
-    emojiChance: 0.42,
+    emojiChance: 0.48, // Increased
     mobileTypoChance: 0.18,
   },
   hong_kong: {
-    expressions: ['la', 'ga', 'ah'],
+    expressions: [],
     typoChance: 0.18,
     shorthandChance: 0.18,
     lowercaseChance: 0.15,
-    emojiChance: 0.25,
+    emojiChance: 0.30, // Increased
     mobileTypoChance: 0.12,
   },
   china: {
@@ -44,7 +44,7 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.28,
     shorthandChance: 0.12,
     lowercaseChance: 0.32,
-    emojiChance: 0.38,
+    emojiChance: 0.45, // Increased
     mobileTypoChance: 0.2,
   },
   usa: {
@@ -52,23 +52,23 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.15,
     shorthandChance: 0.38,
     lowercaseChance: 0.35,
-    emojiChance: 0.28,
+    emojiChance: 0.35, // Increased
     mobileTypoChance: 0.2,
   },
   france: {
-    expressions: ['en fait', 'voilà', "c'est"],
+    expressions: [],
     typoChance: 0.2,
     shorthandChance: 0.18,
     lowercaseChance: 0.22,
-    emojiChance: 0.32,
+    emojiChance: 0.38, // Increased
     mobileTypoChance: 0.15,
   },
   uk: {
-    expressions: ['quite', 'rather', 'proper', 'brilliant', 'cheers', 'mate', 'reckon'],
+    expressions: ['quite', 'rather', 'reckon'],
     typoChance: 0.12,
     shorthandChance: 0.22,
     lowercaseChance: 0.18,
-    emojiChance: 0.22,
+    emojiChance: 0.28, // Increased
     mobileTypoChance: 0.1,
   },
   japan: {
@@ -76,7 +76,7 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.22,
     shorthandChance: 0.12,
     lowercaseChance: 0.28,
-    emojiChance: 0.48,
+    emojiChance: 0.55, // High - Japanese commenters use lots of emoji
     mobileTypoChance: 0.18,
   },
   korea: {
@@ -84,23 +84,23 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.2,
     shorthandChance: 0.18,
     lowercaseChance: 0.22,
-    emojiChance: 0.42,
+    emojiChance: 0.50, // High
     mobileTypoChance: 0.15,
   },
   indonesia: {
-    expressions: ['dong', 'sih', 'nih', 'deh'],
+    expressions: [],
     typoChance: 0.18,
     shorthandChance: 0.28,
     lowercaseChance: 0.28,
-    emojiChance: 0.38,
+    emojiChance: 0.45, // Increased
     mobileTypoChance: 0.18,
   },
   thailand: {
-    expressions: ['krub', 'ka', 'na'],
+    expressions: [],
     typoChance: 0.22,
     shorthandChance: 0.22,
     lowercaseChance: 0.28,
-    emojiChance: 0.42,
+    emojiChance: 0.50, // Increased
     mobileTypoChance: 0.2,
   },
   vietnam: {
@@ -108,15 +108,15 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.25,
     shorthandChance: 0.18,
     lowercaseChance: 0.22,
-    emojiChance: 0.32,
+    emojiChance: 0.38, // Increased
     mobileTypoChance: 0.18,
   },
   malaysia: {
-    expressions: ['lah', 'mah', 'kan', 'one'],
+    expressions: [], // Removed - no lah/wah
     typoChance: 0.18,
     shorthandChance: 0.28,
     lowercaseChance: 0.22,
-    emojiChance: 0.32,
+    emojiChance: 0.38, // Increased
     mobileTypoChance: 0.15,
   },
   west: {
@@ -124,7 +124,7 @@ const regionalPatterns: Record<string, { expressions: string[]; typoChance: numb
     typoChance: 0.12,
     shorthandChance: 0.22,
     lowercaseChance: 0.22,
-    emojiChance: 0.22,
+    emojiChance: 0.28, // Increased
     mobileTypoChance: 0.12,
   },
 };
@@ -381,17 +381,49 @@ const sanitizeComment = (text: string): string => {
   result = result.replace(/\bwa+h+\b[^A-Za-z0-9]*/gi, " "); // wah, waah, wahh
   result = result.replace(/\bla+h+\b[^A-Za-z0-9]*/gi, " "); // lah, laah, lahh
 
-  // Remove British-isms that feel over the top for this site
+  // Remove British slang that non-UK authors shouldn't use
   result = result.replace(/\bblimey\b[^A-Za-z0-9]*/gi, " ");
+  result = result.replace(/\bcrikey\b[^A-Za-z0-9]*/gi, " ");
   result = result.replace(/\bproper\s+(mental|mad|wild|insane)\b/gi, "$1");
   result = result.replace(/\b(cheers mate|cheers,?\s*mate)\b/gi, "thanks");
   result = result.replace(/\b(bloody|proper)\b\s+/gi, "");
+  result = result.replace(/\bkerfuffle\b/gi, "mess");
+  result = result.replace(/\binnit\b[^A-Za-z0-9]*/gi, " ");
 
   // Remove common rhetorical tag questions and agreement-seeking endings
-  result = result.replace(/,?\s*(isnt it|isn't it|right\?|dont you think|don't you think|wouldnt you say|wouldn't you say|no\?)\b/gi, "");
+  result = result.replace(/,?\s*(isnt it|isn't it|right\?|dont you think|don't you think|wouldnt you say|wouldn't you say|no\?|eh\?)\b/gi, "");
 
   // If the whole comment ends with a bare tag question like "right?" etc, trim it
-  result = result.replace(/(,?\s*(right\?|is(n't|nt) it\?|don'?t you think\?|wouldn'?t you say\?|no\?))\s*$/gi, "");
+  result = result.replace(/(,?\s*(right\?|is(n't|nt) it\?|don'?t you think\?|wouldn'?t you say\?|no\?|eh\?))\s*$/gi, "");
+
+  // Remove overused AI-sounding phrases
+  result = result.replace(/\bhere'?s the kicker\b/gi, "");
+  result = result.replace(/\bthe kicker is\b/gi, "");
+  result = result.replace(/\bat the end of the day\b/gi, "");
+  result = result.replace(/\bit goes without saying\b/gi, "");
+  result = result.replace(/\bneedless to say\b/gi, "");
+  result = result.replace(/\bto be fair\b/gi, "tbf");
+  result = result.replace(/\bfascinating read\b/gi, "");
+  result = result.replace(/\binteresting read\b/gi, "");
+  result = result.replace(/\bgreat read\b/gi, "");
+  result = result.replace(/\bbrilliant read\b/gi, "");
+  result = result.replace(/\bquite the pickle\b/gi, "tricky");
+  result = result.replace(/\ba right pickle\b/gi, "a mess");
+  result = result.replace(/\breal pickle\b/gi, "tricky situation");
+  
+  // Remove asterisk emphasis overuse - keep max 1 per comment
+  const asteriskMatches = result.match(/\*[^*]+\*/g);
+  if (asteriskMatches && asteriskMatches.length > 1) {
+    // Keep only the first one
+    let firstFound = false;
+    result = result.replace(/\*([^*]+)\*/g, (match, p1) => {
+      if (!firstFound) {
+        firstFound = true;
+        return match;
+      }
+      return p1; // Remove asterisks from subsequent matches
+    });
+  }
 
   // Collapse multiple spaces and tidy up stray punctuation
   result = result.replace(/\s{2,}/g, " ");
@@ -582,19 +614,24 @@ Deno.serve(async (req) => {
         'pain.', 'RIP', 'gg', 'lets go', 'W take', 'hard agree', 'nah'
       ];
 
-      // Opening variations to AVOID repetition - EXPANDED LIST
-      const bannedPhrases = [
-        'this is wild', 'this is crazy', 'this is huge', 'this is interesting',
-        'this is insane', 'this is big', "i'm starting", "i'm trying",
-        'the implications', 'game changer', 'the fact that',
-        'wah', 'waah', 'lah', 'fascinating read', 'interesting read', 'great read',
-        'great article', 'nice article', 'good article', 'excellent article',
-        'what a read', 'must read', 'amazing read', 'brilliant read',
-        'isnt it', "isn't it", 'right?', 'dont you think', "don't you think",
-        'would you agree', 'wouldnt you say', "wouldn't you say", 'no?',
-        'this is a', 'this was a', 'this has been',
-        'blimey', 'proper', 'proper mental', 'cheers mate', 'bloody',
-      ];
+        // Opening variations to AVOID repetition - EXPANDED LIST
+        const bannedPhrases = [
+          'this is wild', 'this is crazy', 'this is huge', 'this is interesting',
+          'this is insane', 'this is big', "i'm starting", "i'm trying",
+          'the implications', 'game changer', 'the fact that',
+          'wah', 'waah', 'lah', 'fascinating read', 'interesting read', 'great read',
+          'great article', 'nice article', 'good article', 'excellent article',
+          'what a read', 'must read', 'amazing read', 'brilliant read',
+          'isnt it', "isn't it", 'right?', 'dont you think', "don't you think",
+          'would you agree', 'wouldnt you say', "wouldn't you say", 'no?',
+          'this is a', 'this was a', 'this has been',
+          'blimey', 'proper', 'proper mental', 'cheers mate', 'bloody',
+          'innit', 'crikey', 'kerfuffle', 'quite the pickle', 'a right pickle',
+          'heres the kicker', "here's the kicker", 'the kicker is',
+          'makes me wonder', 'i cant help but wonder', "i can't help but wonder",
+          'this is quite', 'this is fascinating', 'interesting to see',
+          'at the end of the day', 'it goes without saying', 'needless to say',
+        ];
 
       // Determine sentiment skew for this article (not always balanced)
       const sentimentSkew = Math.random();
@@ -660,22 +697,20 @@ Deno.serve(async (req) => {
         const persona = personas[Math.floor(Math.random() * personas.length)];
         const timeStyle = getTimeOfDayStyle();
 
-        // More varied lengths - heavier on short and ultra-short
+        // Length distribution: 25% short, 50% medium, 25% long
         const lengthRand = Math.random();
         let targetLength: string;
         let isUltraShort = false;
-        if (lengthRand < 0.20) {
+        if (lengthRand < 0.10) {
           isUltraShort = true;
           const reaction = ultraShortReactions[Math.floor(Math.random() * ultraShortReactions.length)];
           targetLength = `ULTRA SHORT: Just write 1-3 words max like "${reaction}" - pure gut reaction`;
-        } else if (lengthRand < 0.45) {
-          targetLength = '4-15 words. Very brief. "love this" "wait really?" "not sure about that" "hmm interesting point"';
+        } else if (lengthRand < 0.25) {
+          targetLength = 'SHORT: 4-20 words max. One quick thought. "honestly not sure about this" or "wait that actually makes sense"';
         } else if (lengthRand < 0.75) {
-          targetLength = '15-35 words, one thought, conversational';
-        } else if (lengthRand < 0.92) {
-          targetLength = '35-60 words, bit more detail but still casual';
+          targetLength = 'MEDIUM: 20-60 words. One or two sentences. Conversational, not an essay.';
         } else {
-          targetLength = '60-100 words, more detailed story or explanation';
+          targetLength = 'LONGER: 60-120 words. Share a story or detailed perspective. Still casual, not formal.';
         }
 
         // Build special behaviors
@@ -783,24 +818,67 @@ Deno.serve(async (req) => {
           ? `ALREADY USED (DO NOT START WITH): ${usedOpenings.slice(-5).join(', ')}`
           : '';
 
-        const prompt = `You are ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}. Write a comment on this article.
+        const prompt = `You are ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}. Write ONE comment on this article.
 
 Article: "${article.title}"
 Summary: "${article.excerpt || ''}"
 
-YOUR STYLE: ${persona.type} - ${persona.tone}. ${persona.style}
+YOUR PERSONA: ${persona.type} - ${persona.tone}. ${persona.style}
 TIME CONTEXT: ${timeStyle.instruction}
+${regionalInstruction}
+${temporalInstruction}
+${specialBehavior ? `SPECIAL BEHAVIOR: ${specialBehavior}` : ''}
 
-CRITICAL VARIATION RULES - READ CAREFULLY:
+LENGTH: ${targetLength}
+
+SENTIMENT: ${commentSentiment}
+
+=== ABSOLUTE BANNED WORDS/PHRASES (INSTANT FAIL IF USED) ===
+- "wah", "lah", "innit", "blimey", "crikey", "kerfuffle", "proper" (as intensifier)
+- "cheers mate", "bloody", "brilliant" (as exclamation)
+- "fascinating", "intriguing", "compelling", "thought-provoking"
+- "great read", "interesting read", "nice article", "excellent article"
+- "here's the kicker", "the kicker is", "at the end of the day"
+- "it goes without saying", "needless to say", "food for thought"
+- "this is quite...", "this is fascinating...", "interesting to see..."
+- "makes me wonder", "I can't help but wonder", "one has to wonder"
+- "quite the pickle", "a right pickle", "in a pickle"
+- Any asterisk emphasis like *word* (avoid completely)
+- Foreign words in asterisks like *sennibari*, *panata*, *wagashi*
+
+=== SLANG RULES BY REGION (CRITICAL) ===
+- ONLY UK/Australia authors may use: "reckon", "proper", "brilliant", "cheers"
+- Singapore/Malaysia: NO "wah" or "lah" EVER. Write normal casual English.
+- India: Can use "yaar" or "na" sparingly, never British slang
+- China: Write with slightly imperfect English - skip articles, unusual word order
+- USA: "like", "honestly", "lowkey", "ngl", "fr" are OK
+- Other Asian regions: Write casual English, no forced local terms
+
+=== ENDING RULES ===
+- Only 25% of comments should end with a question
+- 75% should be STATEMENTS - opinions, observations, reactions
+- NEVER end with: "right?", "isn't it?", "don't you think?", "eh?", "no?"
+- If asking a question, make it GENUINE (seeking info) not rhetorical
+
+=== OPENING VARIATION (CRITICAL) ===
 ${bannedOpeningsStr}
-- ABSOLUTELY NEVER use these words/phrases: wah, waah, lah, fascinating, "great read", "interesting read", "nice article", "brilliant", "blimey", "proper", "cheers mate", "bloody"
-- NEVER end sentences with rhetorical questions like: "right?", "isn't it?", "don't you think?", "wouldn't you say?", "no?"
-- NEVER say "this is wild/crazy/huge/interesting/insane" - be more creative
-- NEVER start with generic praise like "This is a great/interesting/fascinating..."
-- NEVER mention starting a company unless directly relevant
-- Each comment MUST have a completely UNIQUE structure and opening
-- Vary your opening word dramatically - dont start with "This" or "I" every time
-- Try starting with: verbs, reactions, questions, lowercase words, single words, specific references`;
+- NEVER start with "This is quite/interesting/fascinating/wild/crazy..."
+- NEVER start with "Makes me wonder..." or "I can't help but..."
+- Vary drastically: reactions ("oof", "wait"), opinions ("honestly"), questions, specific references
+- Try starting with: a verb, lowercase word, single word reaction, or specific article reference
+- Be unpredictable - each comment should feel like a different person wrote it
+
+=== AUTHENTICITY REQUIREMENTS ===
+- Write like you're typing on your phone quickly
+- Incomplete thoughts are OK. Trailing off is OK.
+- One thought per comment usually. Don't be comprehensive.
+- Use contractions, skip words sometimes
+- Imperfect grammar is more believable than perfect grammar
+- Don't try to cover every angle - real people react to ONE thing
+- Be specific about what caught your attention, not vague praise
+- If critical, be specific about what you disagree with
+
+Write the comment ONLY. No quotation marks. No "Comment:" prefix. Just the raw comment text.`;
 
 
         try {
