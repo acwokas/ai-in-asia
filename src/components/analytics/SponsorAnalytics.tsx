@@ -137,6 +137,17 @@ export const SponsorAnalytics = ({ eventsData, isLoading }: SponsorAnalyticsProp
       .sort((a, b) => b.value - a.value);
   }, [clickEvents]);
 
+  // Active sponsors (sponsors with any impressions)
+  const activeSponsors = useMemo(() => {
+    const sponsors = new Set<string>();
+    impressionEvents.forEach(event => {
+      const data = event.event_data as Record<string, unknown> | null;
+      const sponsor = (data?.sponsor_name as string);
+      if (sponsor) sponsors.add(sponsor);
+    });
+    return sponsors.size;
+  }, [impressionEvents]);
+
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
@@ -189,7 +200,7 @@ export const SponsorAnalytics = ({ eventsData, isLoading }: SponsorAnalyticsProp
               <DollarSign className="h-4 w-4" />
               <span className="text-sm">Active Sponsors</span>
             </div>
-            <p className="text-2xl font-bold">{clicksBySponsor.length}</p>
+            <p className="text-2xl font-bold">{activeSponsors}</p>
           </CardContent>
         </Card>
       </div>
