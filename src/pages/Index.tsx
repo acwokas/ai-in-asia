@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ReadingStreakTracker from "@/components/ReadingStreakTracker";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -44,6 +45,9 @@ const Index = () => {
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Auto-refresh every 30 minutes
+  useAutoRefresh();
 
   // Enable secondary queries after main content loads
   useEffect(() => {
