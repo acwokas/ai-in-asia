@@ -293,11 +293,14 @@ const SiteAnalytics = () => {
     .map(([date, stats]) => ({ date, ...stats }))
     .reverse();
 
-  // User journeys (common paths)
+  // User journeys (common paths) - filter out internal pages
   const journeyMap = new Map<string, number>();
   const sessionPageviews = pageviewsData?.reduce((acc: Record<string, string[]>, pv) => {
+    const path = pv.page_path?.split('?')[0] || '/';
+    // Skip internal pages from journey tracking
+    if (isInternalPage(path)) return acc;
     if (!acc[pv.session_id]) acc[pv.session_id] = [];
-    acc[pv.session_id].push(pv.page_path?.split('?')[0] || '/');
+    acc[pv.session_id].push(path);
     return acc;
   }, {}) || {};
 
