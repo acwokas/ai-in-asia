@@ -9,6 +9,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import { MPUAd } from "@/components/GoogleAds";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -114,6 +115,9 @@ const CategorySponsorCard = ({ sponsor, categoryName }: { sponsor: CategorySpons
 const Category = () => {
   const { slug } = useParams();
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
+  
+  // Auto-refresh every 30 minutes
+  useAutoRefresh();
 
   // Enable secondary queries after main content loads
   useEffect(() => {
