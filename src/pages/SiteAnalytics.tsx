@@ -202,6 +202,11 @@ const SiteAnalytics = () => {
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
+  // Helper to check if page is internal/admin
+  const isInternalPage = (path: string) => {
+    const internalPrefixes = ['/admin', '/editor', '/auth', '/profile', '/connection-test'];
+    return internalPrefixes.some(prefix => path.startsWith(prefix));
+  };
 
   // Page performance
   const pageStats = pageviewsData?.reduce((acc: Record<string, { views: number; totalTime: number; exits: number }>, pv) => {
@@ -214,6 +219,7 @@ const SiteAnalytics = () => {
   }, {}) || {};
 
   const topPages = Object.entries(pageStats)
+    .filter(([path]) => !isInternalPage(path))
     .map(([path, stats]) => ({
       path,
       views: stats.views,
@@ -224,6 +230,7 @@ const SiteAnalytics = () => {
     .slice(0, 15);
 
   const topExitPages = Object.entries(pageStats)
+    .filter(([path]) => !isInternalPage(path))
     .map(([path, stats]) => ({
       path,
       exits: stats.exits,
@@ -676,6 +683,7 @@ const SiteAnalytics = () => {
 
               // Best performing content (high scroll + high time)
               const contentPerformance = Object.entries(pageStats)
+                .filter(([path]) => !isInternalPage(path))
                 .map(([path, stats]) => {
                   const pagesWithScroll = pageviewsData?.filter(p => p.page_path?.startsWith(path) && p.scroll_depth_percent) || [];
                   const avgScroll = pagesWithScroll.length > 0 
