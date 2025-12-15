@@ -284,16 +284,28 @@ const Comments = ({ articleId }: CommentsProps) => {
 
   const handlePublishAll = async () => {
     try {
-      const { error } = await supabase
+      const now = new Date().toISOString();
+      
+      // Only publish comments where comment_date has passed
+      const { error, count } = await supabase
         .from("ai_generated_comments")
         .update({ published: true })
-        .eq("article_id", articleId);
+        .eq("article_id", articleId)
+        .lte("comment_date", now)
+        .eq("published", false);
 
       if (error) throw error;
 
+      // Count how many future-dated comments remain unpublished
+      const futureCount = aiComments.filter(c => 
+        !c.published && new Date(c.created_at) > new Date()
+      ).length;
+
       toast({
-        title: "All comments published",
-        description: "All AI comments are now visible to everyone.",
+        title: "Comments published",
+        description: futureCount > 0 
+          ? `Published current comments. ${futureCount} future-dated comment(s) will auto-publish when their date arrives.`
+          : "All AI comments are now visible to everyone.",
       });
 
       fetchComments();
