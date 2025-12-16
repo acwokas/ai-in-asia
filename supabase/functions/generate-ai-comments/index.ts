@@ -697,6 +697,8 @@ Deno.serve(async (req) => {
     let totalGenerated = 0;
 
     for (const article of articles) {
+      console.log(`Starting comment generation for article: "${article.title}" (ID: ${article.id})`);
+      
       await supabase
         .from('ai_generated_comments')
         .delete()
@@ -712,6 +714,8 @@ Deno.serve(async (req) => {
       } else {
         numComments = Math.floor(Math.random() * 3) + 6; // 6-8 viral
       }
+      
+      console.log(`Generating ${numComments} comments for this article`);
 
       const commentsToGenerate: any[] = [];
       const usedAuthors: string[] = [];
@@ -1011,8 +1015,14 @@ Write ONE comment now.`;
         let commentText = '';
         let isValidComment = false;
         
+        console.log(`Generating comment ${i + 1}/${numComments} for article: ${article.title}`);
+        
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
           try {
+            // Add 60-second timeout for AI call
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+            
             const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
               method: 'POST',
               headers: {
@@ -1026,10 +1036,14 @@ Write ONE comment now.`;
                   { role: 'user', content: userPrompt }
                 ],
               }),
+              signal: controller.signal,
             });
+            
+            clearTimeout(timeoutId);
 
             if (!aiResponse.ok) {
-              console.error('AI API error:', await aiResponse.text());
+              const errorText = await aiResponse.text();
+              console.error(`AI API error (attempt ${attempt + 1}):`, errorText);
               continue;
             }
 
@@ -1067,7 +1081,11 @@ Write ONE comment now.`;
             isValidComment = true;
             break;
           } catch (error) {
-            console.error(`Attempt ${attempt + 1} error:`, error);
+            if (error instanceof Error && error.name === 'AbortError') {
+              console.error(`Attempt ${attempt + 1}: AI request timed out after 60 seconds`);
+            } else {
+              console.error(`Attempt ${attempt + 1} error:`, error instanceof Error ? error.message : error);
+            }
             await new Promise(resolve => setTimeout(resolve, 200));
           }
         }
