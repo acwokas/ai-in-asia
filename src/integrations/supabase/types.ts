@@ -86,6 +86,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_ai: boolean | null
+          parent_id: string | null
           published: boolean | null
         }
         Insert: {
@@ -96,6 +97,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_ai?: boolean | null
+          parent_id?: string | null
           published?: boolean | null
         }
         Update: {
@@ -106,6 +108,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_ai?: boolean | null
+          parent_id?: string | null
           published?: boolean | null
         }
         Relationships: [
@@ -121,6 +124,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "ai_comment_authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_generated_comments"
             referencedColumns: ["id"]
           },
         ]
