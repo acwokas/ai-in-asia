@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   MessageCircle, User, ChevronDown, Check, X, 
   Sparkles, RefreshCw, Trash2, Edit2, Eye, EyeOff,
-  Loader2, AlertTriangle
+  Loader2, AlertTriangle, Reply, CornerDownRight
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -41,6 +41,8 @@ interface Comment {
   is_ai?: boolean;
   published?: boolean;
   comment_date?: string;
+  parent_id?: string | null;
+  replies?: Comment[];
 }
 
 interface CommentsProps {
@@ -51,6 +53,183 @@ interface CommentsProps {
 const formatCommentWithEmojis = (content: string): string => {
   const emojiRegex = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
   return content.replace(emojiRegex, '<span class="text-primary">$1</span>');
+};
+
+// Helper to organize comments into threaded structure
+const organizeThreadedComments = (comments: Comment[]): Comment[] => {
+  const commentMap = new Map<string, Comment>();
+  const rootComments: Comment[] = [];
+
+  // First pass: create map of all comments
+  comments.forEach(comment => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
+
+  // Second pass: organize into tree structure
+  comments.forEach(comment => {
+    const mappedComment = commentMap.get(comment.id)!;
+    if (comment.parent_id && commentMap.has(comment.parent_id)) {
+      const parent = commentMap.get(comment.parent_id)!;
+      parent.replies = parent.replies || [];
+      parent.replies.push(mappedComment);
+    } else {
+      rootComments.push(mappedComment);
+    }
+  });
+
+  // Sort replies by date (oldest first for natural conversation flow)
+  const sortReplies = (comments: Comment[]) => {
+    comments.forEach(comment => {
+      if (comment.replies && comment.replies.length > 0) {
+        comment.replies.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        sortReplies(comment.replies);
+      }
+    });
+  };
+  sortReplies(rootComments);
+
+  return rootComments;
+};
+
+// Threaded comment display component
+interface CommentThreadProps {
+  comment: Comment;
+  isAdmin: boolean;
+  replyingTo: Comment | null;
+  setReplyingTo: (comment: Comment | null) => void;
+  replyContent: string;
+  setReplyContent: (content: string) => void;
+  submittingReply: boolean;
+  handleReplySubmit: (parentComment: Comment) => void;
+  depth: number;
+}
+
+const CommentThread = ({ 
+  comment, 
+  isAdmin, 
+  replyingTo, 
+  setReplyingTo, 
+  replyContent, 
+  setReplyContent, 
+  submittingReply, 
+  handleReplySubmit,
+  depth 
+}: CommentThreadProps) => {
+  const maxDepth = 3; // Maximum nesting level
+  const isReplying = replyingTo?.id === comment.id;
+
+  return (
+    <div className={depth > 0 ? "ml-6 sm:ml-10 border-l-2 border-primary/20 pl-4" : ""}>
+      <div className="flex gap-4">
+        {comment.avatar_url ? (
+          <img 
+            src={comment.avatar_url} 
+            alt={comment.author_name || "User"} 
+            className={`${depth > 0 ? 'w-8 h-8' : 'w-10 h-10'} rounded-full flex-shrink-0 object-cover`}
+          />
+        ) : (
+          <div className={`${depth > 0 ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0`}>
+            <User className={depth > 0 ? "h-4 w-4 text-white" : "h-5 w-5 text-white"} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <span className={`font-semibold truncate ${depth > 0 ? 'text-sm' : ''}`}>
+                {comment.author_name || "Anonymous"}
+              </span>
+              {comment.author_handle && (
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  @{comment.author_handle}
+                </span>
+              )}
+            </div>
+            <span className="text-xs sm:text-sm text-muted-foreground">
+              {new Date(comment.created_at).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+          <p className={`text-muted-foreground ${depth > 0 ? 'text-sm' : ''}`} dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+          
+          {/* Reply button - only show if not at max depth and user is admin */}
+          {isAdmin && depth < maxDepth && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-2 h-7 px-2 text-xs text-muted-foreground hover:text-primary"
+              onClick={() => setReplyingTo(isReplying ? null : comment)}
+            >
+              <Reply className="h-3 w-3 mr-1" />
+              Reply
+            </Button>
+          )}
+
+          {/* Reply form */}
+          {isReplying && (
+            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <CornerDownRight className="h-4 w-4 text-muted-foreground mt-2 flex-shrink-0" />
+                <div className="flex-1">
+                  <Textarea
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder={`Reply to ${comment.author_name}...`}
+                    className="min-h-[80px] text-sm"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleReplySubmit(comment)}
+                      disabled={submittingReply || !replyContent.trim()}
+                    >
+                      {submittingReply ? (
+                        <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Posting...</>
+                      ) : (
+                        "Post Reply"
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyContent("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Render replies */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-4 space-y-4">
+          {comment.replies.map((reply) => (
+            <CommentThread
+              key={reply.id}
+              comment={reply}
+              isAdmin={isAdmin}
+              replyingTo={replyingTo}
+              setReplyingTo={setReplyingTo}
+              replyContent={replyContent}
+              setReplyContent={setReplyContent}
+              submittingReply={submittingReply}
+              handleReplySubmit={handleReplySubmit}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const Comments = ({ articleId }: CommentsProps) => {
@@ -69,6 +248,9 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [isAiControlsOpen, setIsAiControlsOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [submittingReply, setSubmittingReply] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -114,6 +296,7 @@ const Comments = ({ articleId }: CommentsProps) => {
           content,
           comment_date,
           published,
+          parent_id,
           ai_comment_authors (
             name,
             handle,
@@ -144,6 +327,8 @@ const Comments = ({ articleId }: CommentsProps) => {
         approved: true,
         is_ai: true,
         published: aiComment.published,
+        comment_date: aiComment.comment_date,
+        parent_id: aiComment.parent_id,
       }));
 
       setAiComments(transformedAiComments);
@@ -153,7 +338,9 @@ const Comments = ({ articleId }: CommentsProps) => {
       const allDisplayComments = [...(approvedData || []), ...publishedAiComments];
       allDisplayComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      setComments(allDisplayComments);
+      // Organize into threaded structure
+      const threadedComments = organizeThreadedComments(allDisplayComments);
+      setComments(threadedComments);
 
       // Fetch pending comments if admin
       if (isAdmin) {
@@ -503,6 +690,80 @@ const Comments = ({ articleId }: CommentsProps) => {
     }
   };
 
+  const handleReplySubmit = async (parentComment: Comment) => {
+    if (!replyContent.trim()) return;
+    setSubmittingReply(true);
+
+    try {
+      // For AI comments, create a reply in the ai_generated_comments table
+      if (parentComment.is_ai) {
+        // Get a random author for the reply
+        const { data: authors } = await supabase
+          .from("ai_comment_authors")
+          .select("id")
+          .limit(50);
+        
+        if (!authors || authors.length === 0) {
+          throw new Error("No AI authors available");
+        }
+        
+        const randomAuthor = authors[Math.floor(Math.random() * authors.length)];
+        
+        const { error } = await supabase
+          .from("ai_generated_comments")
+          .insert({
+            article_id: articleId,
+            author_id: randomAuthor.id,
+            content: replyContent,
+            comment_date: new Date().toISOString(),
+            published: true,
+            parent_id: parentComment.id,
+          });
+
+        if (error) throw error;
+      } else {
+        // For real comments, create a reply in the comments table (awaiting moderation)
+        const { error } = await supabase
+          .from("comments")
+          .insert({
+            article_id: articleId,
+            author_name: "Reply", // This would need a form for real users
+            content: replyContent,
+            approved: false,
+            parent_id: parentComment.id,
+          });
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Reply added",
+        description: parentComment.is_ai ? "Reply has been published." : "Reply is awaiting moderation.",
+      });
+
+      setReplyingTo(null);
+      setReplyContent("");
+      fetchComments();
+    } catch (error) {
+      console.error("Error submitting reply:", error);
+      toast({
+        title: "Failed to submit reply",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingReply(false);
+    }
+  };
+
+  // Calculate total comments including replies
+  const countAllComments = (comments: Comment[]): number => {
+    return comments.reduce((total, comment) => {
+      return total + 1 + (comment.replies ? countAllComments(comment.replies) : 0);
+    }, 0);
+  };
+  const totalCommentCount = countAllComments(comments);
+
   const unpublishedCount = aiComments.filter(c => !c.published).length;
   const publishedCount = aiComments.filter(c => c.published).length;
 
@@ -511,7 +772,7 @@ const Comments = ({ articleId }: CommentsProps) => {
       <CollapsibleTrigger className="flex items-center justify-between w-full group mb-8">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-6 w-6 text-primary" />
-          <h2 className="headline text-3xl">Comments ({comments.length})</h2>
+          <h2 className="headline text-3xl">Comments ({totalCommentCount})</h2>
         </div>
         <ChevronDown className={`h-6 w-6 text-primary transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </CollapsibleTrigger>
@@ -770,43 +1031,20 @@ const Comments = ({ articleId }: CommentsProps) => {
               </div>
             ) : comments.length > 0 && (
               <div className="space-y-6 mb-8">
-                {comments.length > 0 && <h3 className="font-semibold text-lg">Latest Comments ({comments.length})</h3>}
+                {comments.length > 0 && <h3 className="font-semibold text-lg">Latest Comments ({totalCommentCount})</h3>}
                 {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-4">
-                    {comment.avatar_url ? (
-                      <img 
-                        src={comment.avatar_url} 
-                        alt={comment.author_name || "User"} 
-                        className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold truncate">
-                            {comment.author_name || "Anonymous"}
-                          </span>
-                          {comment.author_handle && (
-                            <span className="text-sm text-muted-foreground">
-                              @{comment.author_handle}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(comment.created_at).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
-                    </div>
-                  </div>
+                  <CommentThread 
+                    key={comment.id} 
+                    comment={comment} 
+                    isAdmin={isAdmin}
+                    replyingTo={replyingTo}
+                    setReplyingTo={setReplyingTo}
+                    replyContent={replyContent}
+                    setReplyContent={setReplyContent}
+                    submittingReply={submittingReply}
+                    handleReplySubmit={handleReplySubmit}
+                    depth={0}
+                  />
                 ))}
               </div>
             )}
