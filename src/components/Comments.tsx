@@ -40,6 +40,7 @@ interface Comment {
   approved: boolean;
   is_ai?: boolean;
   published?: boolean;
+  comment_date?: string;
 }
 
 interface CommentsProps {
@@ -641,6 +642,11 @@ const Comments = ({ articleId }: CommentsProps) => {
                             {!comment.published && (
                               <span className="text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
                                 Unpublished
+                              </span>
+                            )}
+                            {comment.comment_date && (
+                              <span className="text-xs text-muted-foreground">
+                                Scheduled: {new Date(comment.comment_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                             )}
                           </div>
