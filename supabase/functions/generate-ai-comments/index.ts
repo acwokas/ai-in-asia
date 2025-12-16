@@ -447,6 +447,10 @@ const HARD_BANNED_PATTERNS = [
   /\breally interesting\b/i,
   /\bspot on\b/i,
   /\bsmashing piece\b/i,
+  
+  // Em dashes and en dashes (AI writing tells)
+  /—/,
+  /–/,
 ];
 
 // Check if comment violates any hard-banned patterns
@@ -547,6 +551,10 @@ const sanitizeComment = (text: string): string => {
   
   // Remove all asterisk emphasis completely
   result = result.replace(/\*([^*]+)\*/g, '$1');
+  
+  // Remove em dashes and en dashes (AI writing tells) - replace with hyphen or comma
+  result = result.replace(/\s*—\s*/g, ', ');
+  result = result.replace(/\s*–\s*/g, '-');
 
   // Clean up starting patterns
   result = result.replace(/^(Ay,?\s*|Ayo,?\s*)/i, "");
@@ -958,6 +966,7 @@ BANNED (instant fail):
 - "wah" "lah" "innit" "blimey" "kerfuffle" "cheers mate"
 - "right?" "isn't it?" "don't you think?" "wouldn't you say?"
 - "makes me wonder" "food for thought" "at the end of the day"
+- Em dashes (—) or en dashes (–) - use commas or hyphens instead
 - "This is fascinating/interesting/wild..." openings
 - *asterisks* for emphasis
 - Any tag questions at the end
