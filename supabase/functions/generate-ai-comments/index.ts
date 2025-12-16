@@ -1220,8 +1220,11 @@ Write the comment now. No quotation marks. No "Comment:" label. Just the raw com
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                model: 'google/gemini-2.5-flash',
-                messages: [{ role: 'user', content: prompt }],
+                model: 'openai/gpt-5',
+                messages: [
+                  { role: 'system', content: 'You generate realistic social media comments. Follow ALL instructions exactly. Never use banned words/phrases.' },
+                  { role: 'user', content: prompt }
+                ],
               }),
             });
 
