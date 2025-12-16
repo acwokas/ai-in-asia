@@ -215,7 +215,7 @@ const apostrophePatterns = [
 // Emoji sets by sentiment
 const positiveEmojis = ['👍', '🙌', '💯', '🔥', '✨', '👏', '🎯', '💪', '🚀', '⭐', '😊', '🤩'];
 const neutralEmojis = ['🤔', '💭', '📌', '👀', '💡', '📊', '🧐', '📝', '➡️', '📱'];
-const negativeEmojis = ['😬', '🙄', '😅', '🤷', '😤', '💀', '🫠', '😒'];
+const negativeEmojis = ['😬', '🙄', '😅', '🤷', '😤', '💀', '😩', '😒'];
 
 // Helper to add natural typos
 const addTypos = (text: string, typoChance: number): string => {
@@ -555,6 +555,10 @@ const sanitizeComment = (text: string): string => {
   // Remove em dashes and en dashes (AI writing tells) - replace with hyphen or comma
   result = result.replace(/\s*—\s*/g, ', ');
   result = result.replace(/\s*–\s*/g, '-');
+  
+  // Remove unsupported/broken Unicode characters (replacement chars, surrogate pairs that may not render)
+  result = result.replace(/[\uFFFD\uFFFE\uFFFF]/g, ''); // Replacement characters
+  result = result.replace(/[\u{1FAE0}-\u{1FAFF}]/gu, ''); // Remove newer emoji ranges that may not render (Unicode 14+)
 
   // Clean up starting patterns
   result = result.replace(/^(Ay,?\s*|Ayo,?\s*)/i, "");
