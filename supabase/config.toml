@@ -94,7 +94,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.process-bulk-queue]
-verify_jwt = false
+verify_jwt = true
 
 [functions.suggest-internal-links]
 verify_jwt = true

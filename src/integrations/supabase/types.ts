@@ -1331,6 +1331,13 @@ export type Database = {
             referencedRelation: "comments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contact_messages: {
@@ -1673,6 +1680,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "guide_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "guide_comments_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3119,6 +3133,116 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      comments_public: {
+        Row: {
+          approved: boolean | null
+          article_id: string | null
+          author_name: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          parent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          article_id?: string | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          article_id?: string | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guide_comments_public: {
+        Row: {
+          approved: boolean | null
+          author_name: string | null
+          content: string | null
+          created_at: string | null
+          guide_id: string | null
+          id: string | null
+          parent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          guide_id?: string | null
+          id?: string | null
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string | null
+          guide_id?: string | null
+          id?: string | null
+          parent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_comments_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "ai_guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "guide_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "guide_comments_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

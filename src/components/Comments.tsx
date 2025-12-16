@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import DOMPurify from "dompurify";
 
 interface Comment {
   id: string;
@@ -49,10 +50,16 @@ interface CommentsProps {
   articleId: string;
 }
 
-// Helper to wrap emojis in teal-colored spans
+// Helper to wrap emojis in teal-colored spans with XSS protection
 const formatCommentWithEmojis = (content: string): string => {
+  // First sanitize to remove any malicious HTML/scripts
+  const sanitized = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['br'], // Only allow line breaks
+    ALLOWED_ATTR: [] // No attributes allowed
+  });
+  // Then wrap emojis
   const emojiRegex = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
-  return content.replace(emojiRegex, '<span class="text-primary">$1</span>');
+  return sanitized.replace(emojiRegex, '<span class="text-primary">$1</span>');
 };
 
 // Helper to organize comments into threaded structure

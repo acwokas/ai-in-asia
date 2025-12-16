@@ -7,6 +7,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, User, ChevronDown, Check, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import DOMPurify from "dompurify";
+
+// Helper to sanitize comment content for safe HTML rendering
+const sanitizeContent = (content: string): string => {
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['br'],
+    ALLOWED_ATTR: []
+  });
+};
 
 interface Comment {
   id: string;
@@ -212,7 +221,7 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
                           })}
                         </span>
                       </div>
-                      <p className="text-foreground mb-3">{comment.content}</p>
+                      <p className="text-foreground mb-3" dangerouslySetInnerHTML={{ __html: sanitizeContent(comment.content) }} />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -265,7 +274,7 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
                           })}
                         </span>
                       </div>
-                      <p className="text-muted-foreground">{comment.content}</p>
+                      <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeContent(comment.content) }} />
                     </div>
                   </div>
                 ))}
