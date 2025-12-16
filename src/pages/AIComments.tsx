@@ -511,20 +511,37 @@ const AIComments = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get published articles, optionally filtered by category
-      let articlesQuery = supabase
-        .from('articles')
-        .select('id')
-        .eq('status', 'published');
-      
-      if (categoryId) {
-        articlesQuery = articlesQuery.eq('primary_category_id', categoryId);
+      // Get published articles with pagination to avoid 1000 row limit
+      let allArticles: { id: string }[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        let articlesQuery = supabase
+          .from('articles')
+          .select('id')
+          .eq('status', 'published')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        
+        if (categoryId) {
+          articlesQuery = articlesQuery.eq('primary_category_id', categoryId);
+        }
+
+        const { data: pageData, error: articlesError } = await articlesQuery;
+
+        if (articlesError) throw articlesError;
+        
+        if (pageData && pageData.length > 0) {
+          allArticles = [...allArticles, ...pageData];
+          hasMore = pageData.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
       }
 
-      const { data: allArticles, error: articlesError } = await articlesQuery;
-
-      if (articlesError) throw articlesError;
-      if (!allArticles || allArticles.length === 0) {
+      if (allArticles.length === 0) {
         toast({
           title: "No Articles",
           description: "No published articles found to process",
@@ -545,16 +562,27 @@ const AIComments = () => {
         
         articleIdsToProcess = articleIds;
       } else {
-        // Get articles that already have AI comments
-        const { data: articlesWithComments, error: commentsError } = await supabase
-          .from('ai_generated_comments')
-          .select('article_id');
+        // Get articles that already have AI comments (with pagination)
+        let articlesWithCommentsIds = new Set<string>();
+        let commentPage = 0;
+        let hasMoreComments = true;
 
-        if (commentsError) throw commentsError;
+        while (hasMoreComments) {
+          const { data: commentPageData, error: commentsError } = await supabase
+            .from('ai_generated_comments')
+            .select('article_id')
+            .range(commentPage * pageSize, (commentPage + 1) * pageSize - 1);
 
-        const articlesWithCommentsIds = new Set(
-          articlesWithComments?.map(c => c.article_id) || []
-        );
+          if (commentsError) throw commentsError;
+
+          if (commentPageData && commentPageData.length > 0) {
+            commentPageData.forEach(c => articlesWithCommentsIds.add(c.article_id));
+            hasMoreComments = commentPageData.length === pageSize;
+            commentPage++;
+          } else {
+            hasMoreComments = false;
+          }
+        }
 
         // Filter to only articles without comments
         articleIdsToProcess = allArticles
