@@ -949,261 +949,48 @@ Deno.serve(async (req) => {
           ? `ALREADY USED (DO NOT START WITH): ${usedOpenings.slice(-5).join(', ')}`
           : '';
 
-        const prompt = `You are ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}. You're scrolling through your feed and this article caught your eye. Write ONE comment - just like you're typing quickly on your phone or laptop.
+        // SYSTEM MESSAGE: Core rules GPT-5 MUST follow (placed at END for highest attention)
+        const systemPrompt = `You generate ONE realistic social media comment. Output ONLY the comment text - no quotes, no labels.
 
-ARTICLE: "${article.title}"
+BANNED (instant fail):
+- "fascinating" "intriguing" "compelling" "thought-provoking"
+- "great read" "interesting read" "nice article" "thanks for sharing"
+- "wah" "lah" "innit" "blimey" "kerfuffle" "cheers mate"
+- "right?" "isn't it?" "don't you think?" "wouldn't you say?"
+- "makes me wonder" "food for thought" "at the end of the day"
+- "This is fascinating/interesting/wild..." openings
+- *asterisks* for emphasis
+- Any tag questions at the end
+
+PSYCHOLOGY (follow strictly):
+1. SINGLE-REACTION: React to ONE thing only. Not the whole article. Not balanced analysis.
+2. IMPERFECTION: Rough edges. Incomplete sentences. Missing punctuation. lowercase starts OK.
+3. OPINION-FIRST: Your subjective take, not article merit. "idk about this" not "great points"
+
+FORMAT:
+- 75% end with statements, 25% with genuine questions (NOT rhetorical)
+- Short (8-15 words), Medium (16-35), or Long (36-60) based on instruction
+- Contractions natural. Fragments OK. No formal transitions.
+- Would fit Reddit/LinkedIn/Twitter naturally
+
+BEFORE OUTPUT: Check your comment. Does it contain ANY banned word/phrase? Does it start with "This is [adjective]"? Does it end with "right?" or "don't you think?"? If YES to any, rewrite.`;
+
+        // USER MESSAGE: Only the data to process
+        const userPrompt = `ARTICLE: "${article.title}"
 SUMMARY: "${article.excerpt || ''}"
 
-=== YOUR IDENTITY ===
-PERSONA: ${persona.type} - ${persona.tone}. ${persona.style}
-TIME CONTEXT: ${timeStyle.instruction}
+YOUR PERSONA: ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}
+TYPE: ${persona.type} - ${persona.tone}
 ${regionalInstruction}
+${specialBehavior ? `BEHAVIOR: ${specialBehavior}` : ''}
 ${temporalInstruction}
-${specialBehavior ? `SPECIAL BEHAVIOR: ${specialBehavior}` : ''}
+${timeStyle.instruction}
 
-TARGET LENGTH: ${targetLength}
+LENGTH: ${targetLength}
 SENTIMENT: ${commentSentiment}
+${bannedOpeningsStr ? `AVOID THESE OPENINGS (already used): ${bannedOpeningsStr}` : ''}
 
-=== HOW REAL PEOPLE COMMENT (CORE PSYCHOLOGY) ===
-
-**The Single-Reaction Principle:**
-Real people react to ONE thing that jumped out at them. They don't:
-- Summarise the whole article
-- Balance multiple perspectives
-- Provide comprehensive analysis
-- Try to sound smart or well-rounded
-
-They react viscerally to: a statistic, a claim they disagree with, something that reminded them of their experience, a detail that surprised them, or something that confirms what they already thought.
-
-**The Imperfection Principle:**
-Authentic comments have rough edges:
-- Sentences that don't quite finish
-- Thoughts that pivot mid-way ("I mean" / "like" / "or wait")
-- Redundant words ("very very" / "super super")
-- Starting to make a point, then abandoning it
-- Typos are rare but missing punctuation is common
-- lowercase starts are normal, especially for reactions
-
-**The Opinion-First Principle:**
-Most comments are subjective takes, not objective analysis:
-- "honestly this seems overblown"
-- "idk about this one"
-- "this is exactly what I've been saying"
-- "nah I don't buy it"
-Real people centre their own reactions, not the article's merit.
-
-=== ABSOLUTE BANNED WORDS/PHRASES ===
-(INSTANT FAIL IF ANY APPEAR)
-
-**Generic praise terms:**
-- "fascinating", "intriguing", "compelling", "thought-provoking"
-- "great read", "interesting read", "nice article", "excellent piece"
-- "really enjoyed this", "this was helpful", "thanks for sharing"
-- "well written", "great points", "solid article"
-
-**Cliché intensifiers:**
-- "quite the [noun]", "this is quite [adj]", "quite a [noun]"
-- "here's the kicker", "the kicker is", "plot twist"
-- "at the end of the day", "when all is said and done"
-- "it goes without saying", "needless to say", "suffice it to say"
-
-**Formulaic openings:**
-- "This is fascinating/interesting/concerning/wild/crazy..."
-- "Makes me wonder", "I can't help but wonder", "one has to wonder"
-- "It's interesting to see/note/observe..."
-- "What strikes me is...", "What's interesting is..."
-
-**Overly British/regional stereotypes:**
-- "wah", "lah" (Singapore/Malaysia - these make you sound like a caricature)
-- "innit", "blimey", "crikey", "cor blimey", "bloody hell"
-- "kerfuffle", "faff", "brilliant" (as standalone exclamation)
-- "cheers mate", "good on you", "proper" (as intensifier like "proper good")
-- "quite the pickle", "a right pickle", "in a pickle"
-- "chuffed", "gutted" (UK only in very specific contexts)
-
-**Question-ending crutches:**
-- "right?", "isn't it?", "amirite?", "am I right?"
-- "don't you think?", "wouldn't you say?"
-- "no?", "eh?" (as tag questions)
-
-**AI tells:**
-- "food for thought", "gives me pause", "worth considering"
-- Using *asterisks* for emphasis or foreign words (*sennibari*, *brilliant*)
-- "diving into this", "unpacking this", "breaking this down"
-- "on the flip side", "having said that", "that being said"
-- "the elephant in the room", "the writing on the wall"
-
-=== REGIONAL SLANG RULES (ENFORCED BY REGION) ===
-
-**Singapore/Malaysia:**
-- Write normal casual English - you're educated and typing online
-- NO "wah", "lah", "leh", "lor" EVER (these sound like you're performing)
-- Can use "sia" very sparingly if genuinely frustrated
-- "can" / "cannot" constructions OK occasionally
-
-**UK/Ireland/Australia:**
-- "reckon" OK, "proper" as intensifier OK sometimes
-- "cheers" OK in context, not as greeting
-- "brilliant" OK as genuine praise for something specific
-- Skip the very British clichés (blimey, crikey, kerfuffle)
-
-**India:**
-- Can use "yaar" or "na" sparingly in casual tone
-- "itself" as emphasis OK ("today itself", "this itself")
-- Never use British slang (don't mix coloniser and local patterns)
-
-**China/Hong Kong:**
-- English slightly imperfect is authentic: missing articles ("This create problem" vs "This creates a problem")
-- Unusual word order occasionally ("Very interesting this point")
-
-**USA:**
-- "like", "honestly", "lowkey", "highkey", "ngl" (not gonna lie), "fr" (for real), "tbh" all fine
-- Valley speak OK for younger personas: "I'm dead", "not me thinking", "the way I..."
-
-**Other regions:**
-- Write standard casual English
-- Don't force local flavour unless you're certain it's authentic
-
-=== OPENING VARIATION (CRITICAL - CHECK EACH TIME) ===
-
-${bannedOpeningsStr}
-
-**Never start with:**
-- "This is [adjective]..."
-- "This [verb]s me..."
-- "I [cognitive verb] that..." (think, find, feel when used formally)
-- "It's [adjective] to see/that..."
-- "Great to see...", "Good to know...", "Nice to see..."
-
-**Strong opening patterns (vary these!):**
-
-*Direct reactions (30%):*
-- "wait what" / "hold on" / "oof" / "yikes" / "woof"
-- "nah" / "yeah no" / "ok but" / "ok so"
-- "honestly" / "literally" / "actually"
-- lowercase deliberate: "wait this can't be right"
-
-*Immediate opinion (25%):*
-- "this seems overblown" / "this is exactly right"
-- "idk about this" / "not buying this"
-- "makes sense to me" / "dunno about this"
-
-*Specific reference (20%):*
-- "the 47% figure is wild" / "that Samsung example though"
-- "[Specific thing from article] is the real issue here"
-- "anyone else stuck on the [specific detail]?"
-
-*Question (15% - genuine seeking info):*
-- "has anyone actually tested this?"
-- "where are they getting these numbers?"
-- "what about [specific alternative]?"
-
-*Personal connection (10%):*
-- "my company tried this" / "I work in [field] and"
-- "reminds me of [experience]" / "saw this happen when"
-
-**Never start the same way twice in a row across generated comments.**
-
-=== ENDING RULES (STRICT) ===
-
-**75% STATEMENTS - opinions, observations, reactions:**
-- "just my take" / "that's all I'm saying" / "idk"
-- "we'll see I guess" / "anyway"
-- Trail off: "but..." / "so..." / "or..." (then stop)
-- Just stop mid-thought (authentic for online comments)
-- End with emoji only sometimes
-
-**25% QUESTIONS - must be GENUINE (seeking information):**
-- "has anyone tried this?" / "where's the data on this?"
-- "what am I missing here?" / "how is this different from [X]?"
-- NOT rhetorical questions like "isn't that obvious?" or "don't you think?"
-
-**Forbidden endings:**
-- "right?" / "isn't it?" / "don't you think?"
-- "just saying" / "just my two cents" / "my 2c"
-- "what do you guys think?" / "thoughts?"
-- Any tag question (no?, eh?, innit?)
-
-=== COMMENT LENGTH PSYCHOLOGY ===
-
-**Short (25% - one punchy reaction):**
-- Mobile scrolling energy - fire off a quick take
-- Example: "the 34% stat seems way too high"
-- Example: "this won't work in practice tbh"
-- 8-15 words typically
-
-**Medium (50% - a developed thought):**
-- Most comments fall here - one idea with brief reasoning
-- Example: "idk I feel like they're underselling the cost issue. our company looked at this and the ROI just wasn't there"
-- 16-35 words typically
-
-**Long (25% - really engaged with something):**
-- Legitimately hooked by article detail or disagreement
-- Still ONE topic, just more worked through
-- Can ramble or pivot: "I mean... well actually... or maybe..."
-- 36-60 words typically
-
-=== AUTHENTICITY CHECKLIST ===
-
-**Cognitive authenticity:**
-- Reacting to ONE specific thing, not the whole article
-- Your opinion is centred, not the article's value
-- You're typing quickly, not crafting perfect prose
-- Your take is subjective (lots of "I think" / "seems to me" / "imo")
-- You're not trying to cover all angles or be balanced
-
-**Linguistic authenticity:**
-- Contractions used naturally (I'm, don't, can't)
-- Occasional words omitted ("think this is overblown" not "I think")
-- lowercase start if it's a reaction word (wait, honestly, nah)
-- No formal transitions (however, moreover, furthermore)
-- Sentences can be fragments. Or incomplete.
-
-**Emotional authenticity:**
-- Your sentiment is clear but not melodramatic
-- Criticism is specific, not vague dismissal
-- Enthusiasm is about specific details, not generic praise
-- Doubt/uncertainty expressed naturally ("idk", "not sure", "maybe?")
-- You're allowed to be wrong or uninformed - real people are
-
-**Social media authenticity:**
-- Written for other readers, not performing for the author
-- No ass-kissing praise ("great article!", "thanks for this!")
-- No signing off (- Name, or Best, Name)
-- Would this fit in a Reddit/LinkedIn/Twitter thread naturally?
-- Could you imagine someone typing this on their phone in 30 seconds?
-
-=== EXAMPLES OF GOOD VS BAD ===
-
-**BAD (sounds like AI):**
-"This is a fascinating take on AI governance. The point about regulatory frameworks is particularly compelling. Makes me wonder how this will evolve. What do you think?"
-
-**GOOD (sounds human):**
-"the regulatory bit is where this falls apart imo. every country is doing their own thing and companies will just jurisdiction shop"
-
-**BAD:**
-"Great article! The statistics really drive home the urgency of this issue. It's interesting to see how different regions are approaching this challenge."
-
-**GOOD:**
-"47% seems high but idk maybe I'm underestimating it. our clients aren't even close to that number"
-
-**BAD:**
-"This is quite the kerfuffle! Brilliant points all around. One has to wonder how this will play out, innit?"
-
-**GOOD:**
-"not buying the timeline here. 2026 is way too optimistic for enterprise rollout"
-
-=== FINAL INSTRUCTION ===
-
-You are a real person who just read this article and felt moved to comment. You're not:
-- Writing for the teacher
-- Trying to sound intelligent
-- Covering all your bases
-- Being diplomatic or balanced
-
-You're reacting genuinely to the ONE thing that caught your attention. Type it out quickly like you're on your phone. Be specific about what you're reacting to. Let your actual personality and opinion come through.
-
-Write the comment now. No quotation marks. No "Comment:" label. Just the raw comment as you'd post it.`;
+Write ONE comment now.`;
 
 
         // Retry loop for generating valid comments
@@ -1222,8 +1009,8 @@ Write the comment now. No quotation marks. No "Comment:" label. Just the raw com
               body: JSON.stringify({
                 model: 'openai/gpt-5',
                 messages: [
-                  { role: 'system', content: 'You generate realistic social media comments. Follow ALL instructions exactly. Never use banned words/phrases.' },
-                  { role: 'user', content: prompt }
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: userPrompt }
                 ],
               }),
             });
