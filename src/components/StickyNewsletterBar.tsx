@@ -99,13 +99,13 @@ const StickyNewsletterBar = () => {
       
       <div className="bg-background/95 backdrop-blur-md border-t border-border/50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-6">
-            {/* Left side - branding & text */}
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="flex items-center justify-center gap-4 md:gap-6">
+            {/* Branding & text */}
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <div className="hidden lg:block">
+              <div className="hidden lg:block text-center">
                 <p className="text-sm font-semibold text-foreground">
                   Stay ahead of the curve
                 </p>
@@ -118,9 +118,9 @@ const StickyNewsletterBar = () => {
               </p>
             </div>
 
-            {/* Center - form */}
-            <form onSubmit={handleSubmit} className="flex items-center gap-2 flex-1 max-w-sm">
-              <div className="relative flex-1">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 max-w-sm">
+              <div className="relative flex-1 min-w-[180px]">
                 <Input
                   type="email"
                   placeholder="Enter your email"
@@ -148,7 +148,7 @@ const StickyNewsletterBar = () => {
               </Button>
             </form>
 
-            {/* Right side - dismiss */}
+            {/* Dismiss */}
             <Button
               variant="ghost"
               size="icon"
