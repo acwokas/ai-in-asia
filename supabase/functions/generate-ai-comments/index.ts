@@ -607,8 +607,8 @@ const addNaturalVariations = (text: string, region: string): string => {
 
 // Helper to generate comment timestamp
 // isFirstComment: if true, generates a "live" date (past/current) so at least one comment shows immediately
-const generateTimestamp = (publishDate: string, updatedDate: string | null, isFirstComment: boolean = false): Date => {
-  const published = new Date(publishDate);
+// commentIndex: used to stagger future comments across days
+const generateTimestamp = (publishDate: string, updatedDate: string | null, isFirstComment: boolean = false, commentIndex: number = 0): Date => {
   const now = new Date();
   
   // First comment should always be "live" - set to a past date so it displays immediately
@@ -619,26 +619,16 @@ const generateTimestamp = (publishDate: string, updatedDate: string | null, isFi
     return timestamp;
   }
   
-  const articleAgeMonths = (now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24 * 30);
-
-  if (articleAgeMonths > 6) {
-    if (Math.random() < 0.3) {
-      const daysAgo = Math.floor(Math.random() * 60);
-      const timestamp = new Date(now);
-      timestamp.setDate(timestamp.getDate() - daysAgo);
-      return timestamp;
-    } else {
-      const weeksAfter = Math.floor(Math.random() * 12) + 1;
-      const timestamp = new Date(published);
-      timestamp.setDate(timestamp.getDate() + (weeksAfter * 7));
-      return timestamp;
-    }
-  } else {
-    const daysAfter = Math.floor(Math.random() * 30) + 1;
-    const timestamp = new Date(published);
-    timestamp.setDate(timestamp.getDate() + daysAfter);
-    return timestamp;
-  }
+  // Non-first comments get FUTURE dates, staggered over time
+  // Spread comments across the next 1-14 days with some randomness
+  const baseDays = Math.floor(commentIndex / 2) + 1; // Every 2 comments adds another day base
+  const randomHours = Math.floor(Math.random() * 48); // Add 0-48 hours of randomness
+  
+  const timestamp = new Date(now);
+  timestamp.setDate(timestamp.getDate() + baseDays);
+  timestamp.setHours(timestamp.getHours() + randomHours);
+  
+  return timestamp;
 };
 
 Deno.serve(async (req) => {
@@ -1103,7 +1093,7 @@ Write ONE comment now.`;
         });
 
         const isFirstComment = commentsToGenerate.length === 0;
-        const commentDate = generateTimestamp(article.published_at, article.updated_at, isFirstComment);
+        const commentDate = generateTimestamp(article.published_at, article.updated_at, isFirstComment, i);
 
         commentsToGenerate.push({
           article_id: article.id,
