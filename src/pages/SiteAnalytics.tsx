@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import Header from "@/components/Header";
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
   MousePointer, LogOut, Target, Zap, AlertTriangle, LineChart as LineChartIcon, DollarSign,
-  Activity, Scroll, FileText, ArrowUpRight, ArrowDownRight, Minus, Bug
+  Activity, Scroll, FileText, ArrowUpRight, ArrowDownRight, Minus, Bug, ChevronRight
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -391,7 +393,17 @@ const SiteAnalytics = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumbs */}
+        <nav className="mb-6 flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+          <Link to="/admin" className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline">
+            Admin
+          </Link>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <span className="text-foreground font-semibold">Site Analytics</span>
+        </nav>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold">Site Analytics</h1>
