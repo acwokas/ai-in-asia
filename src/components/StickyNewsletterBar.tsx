@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Mail } from "lucide-react";
+import { X, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,6 @@ const StickyNewsletterBar = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user has dismissed or already subscribed
     const dismissed = localStorage.getItem("newsletter-bar-dismissed");
     const subscribed = localStorage.getItem("newsletter-subscribed");
     
@@ -25,7 +24,6 @@ const StickyNewsletterBar = () => {
       return;
     }
 
-    // Show after scrolling 30% of page
     const handleScroll = () => {
       const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
       if (scrollPercentage > 30) {
@@ -95,44 +93,72 @@ const StickyNewsletterBar = () => {
   if (isDismissed || !isVisible) return null;
 
   return (
-    <div className="hidden sm:block fixed bottom-0 left-0 right-0 z-40 bg-primary text-primary-foreground shadow-lg animate-in slide-in-from-bottom duration-300">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <Mail className="h-5 w-5 shrink-0 hidden sm:block" />
-            <span className="text-sm font-medium hidden md:block">
-              Get weekly AI insights from Asia
-            </span>
-            <form onSubmit={handleSubmit} className="flex gap-2 flex-1 max-w-md">
-              <Input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/60"
-                required
-                disabled={isSubmitting}
-              />
+    <div className="hidden sm:block fixed bottom-0 left-0 right-0 z-40 animate-in slide-in-from-bottom duration-500">
+      {/* Gradient border top */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      
+      <div className="bg-background/95 backdrop-blur-md border-t border-border/50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-6">
+            {/* Left side - branding & text */}
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="hidden lg:block">
+                <p className="text-sm font-semibold text-foreground">
+                  Stay ahead of the curve
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Weekly AI insights from across Asia
+                </p>
+              </div>
+              <p className="text-sm font-medium text-foreground lg:hidden">
+                Get weekly AI insights
+              </p>
+            </div>
+
+            {/* Center - form */}
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 flex-1 max-w-sm">
+              <div className="relative flex-1">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 pr-4 bg-muted/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 text-sm"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
               <Button 
                 type="submit" 
-                variant="secondary" 
                 size="sm"
                 disabled={isSubmitting}
-                className="shrink-0"
+                className="h-10 px-5 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
               >
-                {isSubmitting ? "..." : "Subscribe"}
+                {isSubmitting ? (
+                  <span className="animate-pulse">...</span>
+                ) : (
+                  <>
+                    Subscribe
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
+
+            {/* Right side - dismiss */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDismiss}
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full"
+              aria-label="Dismiss"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDismiss}
-            className="h-8 w-8 shrink-0 text-primary-foreground hover:bg-primary-foreground/10"
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>
