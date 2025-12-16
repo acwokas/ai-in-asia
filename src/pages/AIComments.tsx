@@ -31,7 +31,7 @@ import { BulkOperationQueue } from "@/components/BulkOperationQueue";
 const AIComments = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [editingComment, setEditingComment] = useState<{ id: string; content: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{ id: string; content: string; comment_date: string } | null>(null);
   const [editingAuthor, setEditingAuthor] = useState<any>(null);
   const [isManageAuthorsOpen, setIsManageAuthorsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("generate");
@@ -280,10 +280,10 @@ const AIComments = () => {
 
   // Update comment mutation
   const updateCommentMutation = useMutation({
-    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+    mutationFn: async ({ id, content, comment_date }: { id: string; content: string; comment_date: string }) => {
       const { error } = await supabase
         .from('ai_generated_comments')
-        .update({ content })
+        .update({ content, comment_date })
         .eq('id', id);
       if (error) throw error;
     },
@@ -1042,7 +1042,11 @@ const AIComments = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setEditingComment({ id: comment.id, content: comment.content })}
+                                onClick={() => setEditingComment({ 
+                                  id: comment.id, 
+                                  content: comment.content,
+                                  comment_date: comment.comment_date 
+                                })}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -1051,14 +1055,35 @@ const AIComments = () => {
                               <DialogHeader>
                                 <DialogTitle>Edit Comment</DialogTitle>
                                 <DialogDescription>
-                                  Update the comment content below
+                                  Update the comment content and publish date
                                 </DialogDescription>
                               </DialogHeader>
-                              <Textarea
-                                value={editingComment?.id === comment.id ? editingComment.content : comment.content}
-                                onChange={(e) => setEditingComment({ id: comment.id, content: e.target.value })}
-                                rows={5}
-                              />
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label>Publish Date</Label>
+                                  <Input
+                                    type="datetime-local"
+                                    value={editingComment?.id === comment.id 
+                                      ? new Date(editingComment.comment_date).toISOString().slice(0, 16) 
+                                      : new Date(comment.comment_date).toISOString().slice(0, 16)}
+                                    onChange={(e) => setEditingComment(prev => prev ? { 
+                                      ...prev, 
+                                      comment_date: new Date(e.target.value).toISOString() 
+                                    } : null)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Comment Content</Label>
+                                  <Textarea
+                                    value={editingComment?.id === comment.id ? editingComment.content : comment.content}
+                                    onChange={(e) => setEditingComment(prev => prev ? { 
+                                      ...prev, 
+                                      content: e.target.value 
+                                    } : null)}
+                                    rows={5}
+                                  />
+                                </div>
+                              </div>
                               <Button
                                 onClick={() => editingComment && updateCommentMutation.mutate(editingComment)}
                                 disabled={updateCommentMutation.isPending}
