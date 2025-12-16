@@ -108,6 +108,25 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     setActiveJob(active || null);
   }, [queueJobs]);
 
+  // Auto-continue processing for active jobs
+  useEffect(() => {
+    const processingJob = queueJobs?.find(j => j.status === 'processing');
+    
+    if (processingJob && processingJob.processed_items < processingJob.total_items) {
+      // Check if last update was more than 10 seconds ago (stalled)
+      const lastUpdated = processingJob.started_at ? new Date(processingJob.started_at).getTime() : 0;
+      const now = Date.now();
+      const timeSinceUpdate = now - lastUpdated;
+      
+      // If processing and seems stalled (no progress in recent check), trigger continuation
+      if (timeSinceUpdate > 10000) {
+        console.log(`Auto-continuing processing for job ${processingJob.id}`);
+        supabase.functions.invoke('process-bulk-queue', { method: 'POST' })
+          .catch(err => console.log('Auto-continue error (may be expected):', err));
+      }
+    }
+  }, [queueJobs]);
+
   const handleCancelJob = async (jobId: string, isProcessing: boolean = false) => {
     try {
       const { error } = await supabase

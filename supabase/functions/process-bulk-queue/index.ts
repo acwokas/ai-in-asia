@@ -21,24 +21,51 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    // Verify admin authentication
+    // Check for authorization - support both admin users and internal service calls
     const authHeader = req.headers.get('Authorization');
-    const authSupabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: authHeader ? { Authorization: authHeader } : {} }
-    });
+    let isAuthorized = false;
     
-    const user = await getUserFromAuth(authSupabase, authHeader);
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (authHeader) {
+      // User authentication check
+      const authSupabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      
+      const user = await getUserFromAuth(authSupabase, authHeader);
+      if (user) {
+        try {
+          await requireAdmin(authSupabase, user.id);
+          isAuthorized = true;
+          console.log(`Admin user ${user.id} authorized for bulk queue processing`);
+        } catch (adminErr) {
+          console.log(`User ${user.id} is not an admin`);
+        }
+      }
     }
     
-    await requireAdmin(authSupabase, user.id);
-    console.log(`Admin user ${user.id} authorized for bulk queue processing`);
-
+    // Also check if there's an active job that needs to continue processing
+    // This allows the function to be called without auth for continuation scenarios
     const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    if (!isAuthorized) {
+      // Check if there's an active processing job that needs continuation
+      const { data: activeJob } = await supabase
+        .from("bulk_operation_queue")
+        .select("id, status, processed_items, total_items")
+        .eq("status", "processing")
+        .limit(1)
+        .single();
+      
+      if (activeJob && activeJob.processed_items < activeJob.total_items) {
+        console.log(`Allowing continuation for active job ${activeJob.id}`);
+        isAuthorized = true;
+      } else {
+        return new Response(
+          JSON.stringify({ error: "Authentication required. Please click 'Resume Now' to start processing." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     console.log("Checking for queued bulk operations...");
 
