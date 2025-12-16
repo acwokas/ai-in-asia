@@ -644,7 +644,7 @@ const Comments = ({ articleId }: CommentsProps) => {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <Button
