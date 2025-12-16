@@ -372,37 +372,124 @@ const addEmojis = (text: string, emojiChance: number, sentiment: 'positive' | 'n
   }
 };
 
+// Strict validation patterns - if ANY of these appear, comment MUST be regenerated
+const HARD_BANNED_PATTERNS = [
+  // Singlish particles - absolute ban
+  /\bwah+\b/i,
+  /\blah+\b/i,
+  /\bleh\b/i,
+  /\blor\b/i,
+  /\bsia\b/i,
+  
+  // British slang
+  /\bblimey\b/i,
+  /\bcrikey\b/i,
+  /\binnit\b/i,
+  /\bkerfuffle\b/i,
+  /\bchuffed\b/i,
+  /\bgutted\b/i,
+  /\bcor blimey\b/i,
+  /\bbloody hell\b/i,
+  /\bproper\s+(good|mad|mental|wild|insane)\b/i,
+  /\bcheers mate\b/i,
+  
+  // Asterisk emphasis
+  /\*[^*]+\*/,
+  
+  // Tag questions
+  /\bisn'?t it\??\s*$/i,
+  /\bright\?\s*$/i,
+  /\bdon'?t you think\??\s*$/i,
+  /\bwouldn'?t you say\??\s*$/i,
+  /\beh\?\s*$/i,
+  /\bno\?\s*$/i,
+  /\binnit\??\s*$/i,
+  /\bcan or not\??\s*$/i,
+  
+  // AI clichés
+  /\bfascinating\b/i,
+  /\bintriguing\b/i,
+  /\bcompelling\b/i,
+  /\bthought-?provoking\b/i,
+  /\bquite the\b/i,
+  /\ba right\b/i,
+  /\bhere'?s the kicker\b/i,
+  /\bfood for thought\b/i,
+  /\bgives me pause\b/i,
+  /\bworth considering\b/i,
+  /\bat the end of the day\b/i,
+  /\bit goes without saying\b/i,
+  /\bneedless to say\b/i,
+  /\bsuffice it to say\b/i,
+  /\bmakes me wonder\b/i,
+  /\bi can'?t help but wonder\b/i,
+  /\bone has to wonder\b/i,
+  /\bplot twist\b/i,
+  /\bthe elephant in the room\b/i,
+  
+  // Generic praise
+  /\bfascinating read\b/i,
+  /\binteresting read\b/i,
+  /\bgreat read\b/i,
+  /\bbrilliant read\b/i,
+  /\bexcellent piece\b/i,
+  /\bsolid article\b/i,
+  /\bnice article\b/i,
+  /\bgreat article\b/i,
+  /\bthanks for sharing\b/i,
+  /\breally enjoyed this\b/i,
+  /\bwell written\b/i,
+  /\bthis is quite\b/i,
+  /\bquite timely\b/i,
+  /\bsuper timely\b/i,
+  /\bsuper helpful\b/i,
+  /\bpretty interesting\b/i,
+  /\breally interesting\b/i,
+  /\bspot on\b/i,
+  /\bsmashing piece\b/i,
+];
+
+// Check if comment violates any hard-banned patterns
+const hasViolations = (text: string): { valid: boolean; violations: string[] } => {
+  const violations: string[] = [];
+  for (const pattern of HARD_BANNED_PATTERNS) {
+    const match = text.match(pattern);
+    if (match) {
+      violations.push(`"${match[0]}" matched by ${pattern.toString()}`);
+    }
+  }
+  return { valid: violations.length === 0, violations };
+};
+
 // Hard sanitization to remove overused or banned patterns
 // We completely strip or soften certain fillers and slang so they never appear in stored comments
 const sanitizeComment = (text: string): string => {
   let result = text;
 
   // Strip overused regional fillers regardless of punctuation
-  result = result.replace(/\bwa+h+\b[^A-Za-z0-9]*/gi, " "); // wah, waah, wahh
-  result = result.replace(/\bla+h+\b[^A-Za-z0-9]*/gi, " "); // lah, laah, lahh
-  result = result.replace(/\ble+h+\b[^A-Za-z0-9]*/gi, " "); // leh
-  result = result.replace(/\blo+r+\b[^A-Za-z0-9]*/gi, " "); // lor
+  result = result.replace(/\bwa+h+\b[,!.\s]*/gi, ""); // wah, waah, wahh
+  result = result.replace(/\bla+h+\b[,!.\s]*/gi, ""); // lah, laah, lahh
+  result = result.replace(/\ble+h+\b[,!.\s]*/gi, ""); // leh
+  result = result.replace(/\blo+r+\b[,!.\s]*/gi, ""); // lor
+  result = result.replace(/\bsia\b[,!.\s]*/gi, ""); // sia
 
   // Remove British slang that non-UK authors shouldn't use
-  result = result.replace(/\bblimey\b[^A-Za-z0-9]*/gi, " ");
-  result = result.replace(/\bcrikey\b[^A-Za-z0-9]*/gi, " ");
-  result = result.replace(/\bcor blimey\b[^A-Za-z0-9]*/gi, " ");
-  result = result.replace(/\bbloody hell\b[^A-Za-z0-9]*/gi, " ");
+  result = result.replace(/\bblimey\b[,!.\s]*/gi, "");
+  result = result.replace(/\bcrikey\b[,!.\s]*/gi, "");
+  result = result.replace(/\bcor blimey\b[,!.\s]*/gi, "");
+  result = result.replace(/\bbloody hell\b[,!.\s]*/gi, "");
   result = result.replace(/\bproper\s+(mental|mad|wild|insane|good)\b/gi, "$1");
   result = result.replace(/\b(cheers mate|cheers,?\s*mate)\b/gi, "thanks");
   result = result.replace(/\b(bloody|proper)\b\s+/gi, "");
   result = result.replace(/\bkerfuffle\b/gi, "mess");
   result = result.replace(/\bfaff\b/gi, "hassle");
-  result = result.replace(/\binnit\b[^A-Za-z0-9]*/gi, " ");
+  result = result.replace(/\binnit\b[,!.\s]*/gi, "");
   result = result.replace(/\bchuffed\b/gi, "pleased");
   result = result.replace(/\bgutted\b/gi, "disappointed");
 
   // Remove common rhetorical tag questions and agreement-seeking endings
-  result = result.replace(/,?\s*(isnt it|isn't it|right\?|dont you think|don't you think|wouldnt you say|wouldn't you say|no\?|eh\?|amirite|am i right)\b/gi, "");
-
-  // If the whole comment ends with a bare tag question, trim it
-  result = result.replace(/(,?\s*(right\?|is(n't|nt) it\?|don'?t you think\?|wouldn'?t you say\?|no\?|eh\?|thoughts\?))\s*$/gi, "");
-
+  result = result.replace(/[,.]?\s*(isnt it|isn't it|right\?|dont you think|don't you think|wouldnt you say|wouldn't you say|no\?|eh\?|amirite|am i right|can or not)\b[?.!]*/gi, ".");
+  
   // Remove AI-sounding clichés
   result = result.replace(/\bhere'?s the kicker\b/gi, "");
   result = result.replace(/\bthe kicker is\b/gi, "");
@@ -410,7 +497,7 @@ const sanitizeComment = (text: string): string => {
   result = result.replace(/\bit goes without saying\b/gi, "");
   result = result.replace(/\bneedless to say\b/gi, "");
   result = result.replace(/\bsuffice it to say\b/gi, "");
-  result = result.replace(/\bfood for thought\b/gi, "");
+  result = result.replace(/\bfood for thought\b[,.\s]*/gi, "");
   result = result.replace(/\bgives me pause\b/gi, "");
   result = result.replace(/\bworth considering\b/gi, "");
   result = result.replace(/\bon the flip side\b/gi, "but");
@@ -422,10 +509,17 @@ const sanitizeComment = (text: string): string => {
   result = result.replace(/\bunpacking this\b/gi, "looking at this");
   result = result.replace(/\bbreaking this down\b/gi, "looking at this");
   result = result.replace(/\bto be fair\b/gi, "tbf");
+  result = result.replace(/\bmakes me wonder\b/gi, "wonder");
+  result = result.replace(/\bi can'?t help but wonder\b/gi, "I wonder");
+  result = result.replace(/\bone has to wonder\b/gi, "wonder");
+  result = result.replace(/\bplot twist\b/gi, "");
   
   // Remove generic praise
-  result = result.replace(/\bfascinating read\b/gi, "");
-  result = result.replace(/\binteresting read\b/gi, "");
+  result = result.replace(/\bfascinating\s*(read|article|piece|take|point)?\b/gi, "");
+  result = result.replace(/\binteresting\s*(read|article|piece|take|point)?\b/gi, "");
+  result = result.replace(/\bcompelling\b/gi, "");
+  result = result.replace(/\bintriguing\b/gi, "");
+  result = result.replace(/\bthought-?provoking\b/gi, "");
   result = result.replace(/\bgreat read\b/gi, "");
   result = result.replace(/\bbrilliant read\b/gi, "");
   result = result.replace(/\bexcellent piece\b/gi, "");
@@ -435,33 +529,36 @@ const sanitizeComment = (text: string): string => {
   result = result.replace(/\bthanks for sharing\b/gi, "");
   result = result.replace(/\breally enjoyed this\b/gi, "");
   result = result.replace(/\bthis was helpful\b/gi, "");
+  result = result.replace(/\bquite timely\b/gi, "timely");
+  result = result.replace(/\bsuper timely\b/gi, "timely");
+  result = result.replace(/\bsuper helpful\b/gi, "helpful");
+  result = result.replace(/\bpretty interesting\b/gi, "");
+  result = result.replace(/\breally interesting\b/gi, "");
+  result = result.replace(/\bspot on\b/gi, "accurate");
+  result = result.replace(/\bsmashing piece\b/gi, "");
   
   // Remove pickle phrases
   result = result.replace(/\bquite the pickle\b/gi, "tricky");
   result = result.replace(/\ba right pickle\b/gi, "a mess");
   result = result.replace(/\breal pickle\b/gi, "tricky situation");
   result = result.replace(/\bin a pickle\b/gi, "in trouble");
+  result = result.replace(/\bquite the\b/gi, "a");
+  result = result.replace(/\ba right\b/gi, "a");
   
-  // Remove asterisk emphasis overuse - keep max 1 per comment
-  const asteriskMatches = result.match(/\*[^*]+\*/g);
-  if (asteriskMatches && asteriskMatches.length > 1) {
-    // Keep only the first one
-    let firstFound = false;
-    result = result.replace(/\*([^*]+)\*/g, (match, p1) => {
-      if (!firstFound) {
-        firstFound = true;
-        return match;
-      }
-      return p1; // Remove asterisks from subsequent matches
-    });
-  }
-  
-  // Remove all asterisk emphasis completely (new rule)
+  // Remove all asterisk emphasis completely
   result = result.replace(/\*([^*]+)\*/g, '$1');
+
+  // Clean up starting patterns
+  result = result.replace(/^(Ay,?\s*|Ayo,?\s*)/i, "");
+  if (result.match(/^(this is|it'?s)\s+(quite|super|really|pretty)\s+/i)) {
+    result = result.replace(/^(this is|it'?s)\s+(quite|super|really|pretty)\s+/i, "this is ");
+  }
 
   // Collapse multiple spaces and tidy up stray punctuation
   result = result.replace(/\s{2,}/g, " ");
   result = result.replace(/\s+([,.!?])/g, "$1");
+  result = result.replace(/^[,.\s]+/, ""); // Clean start
+  result = result.replace(/[,.\s]+$/, "."); // Clean end
 
   return result.trim();
 };
@@ -1109,68 +1206,99 @@ You're reacting genuinely to the ONE thing that caught your attention. Type it o
 Write the comment now. No quotation marks. No "Comment:" label. Just the raw comment as you'd post it.`;
 
 
-        try {
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${lovableApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
-              messages: [{ role: 'user', content: prompt }],
-            }),
-          });
+        // Retry loop for generating valid comments
+        const MAX_RETRIES = 3;
+        let commentText = '';
+        let isValidComment = false;
+        
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+          try {
+            const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${lovableApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'google/gemini-2.5-flash',
+                messages: [{ role: 'user', content: prompt }],
+              }),
+            });
 
-          if (!aiResponse.ok) {
-            console.error('AI API error:', await aiResponse.text());
-            continue;
+            if (!aiResponse.ok) {
+              console.error('AI API error:', await aiResponse.text());
+              continue;
+            }
+
+            const aiData = await aiResponse.json();
+            commentText = aiData.choices[0].message.content.trim();
+
+            // Remove any quotes the AI might have added
+            commentText = commentText.replace(/^['"]|['"]$/g, '');
+            
+            // Remove any "Comment:" prefix if AI added it
+            commentText = commentText.replace(/^(Comment|Response|Reply):\s*/i, '');
+
+            // Check for violations BEFORE sanitization to catch AI misbehavior
+            const preCheck = hasViolations(commentText);
+            if (!preCheck.valid) {
+              console.log(`Attempt ${attempt + 1}: Comment has violations, regenerating. Violations: ${preCheck.violations.join(', ')}`);
+              await new Promise(resolve => setTimeout(resolve, 200));
+              continue;
+            }
+
+            // Add natural variations based on region
+            commentText = addNaturalVariations(commentText, selectedAuthor.region);
+
+            // Final hard sanitization for any remaining banned fillers
+            commentText = sanitizeComment(commentText);
+
+            // Double-check after sanitization
+            const postCheck = hasViolations(commentText);
+            if (!postCheck.valid) {
+              console.log(`Attempt ${attempt + 1}: Comment still has violations after sanitization, regenerating`);
+              await new Promise(resolve => setTimeout(resolve, 200));
+              continue;
+            }
+
+            isValidComment = true;
+            break;
+          } catch (error) {
+            console.error(`Attempt ${attempt + 1} error:`, error);
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
-
-          const aiData = await aiResponse.json();
-          let commentText = aiData.choices[0].message.content.trim();
-
-          // Remove any quotes the AI might have added
-          commentText = commentText.replace(/^['"]|['"]$/g, '');
-          
-          // Remove any "Comment:" prefix if AI added it
-          commentText = commentText.replace(/^(Comment|Response|Reply):\s*/i, '');
-
-          // Add natural variations based on region
-          commentText = addNaturalVariations(commentText, selectedAuthor.region);
-
-          // Final hard sanitization for banned fillers like "wah" and "lah"
-          commentText = sanitizeComment(commentText);
-
-          // Track the opening to avoid repetition
-          let opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
-          if (usedOpenings.includes(opening)) {
-            // Nudge duplicated openings to feel less copy-paste
-            commentText = commentText.replace(/^[^.!?\n]+/, (m: string) => `honestly ${m.toLowerCase()}`);
-            opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
-          }
-          usedOpenings.push(opening);
-
-          // Store for potential threading
-          previousComments.push({
-            author: selectedAuthor.name,
-            snippet: commentText.slice(0, 50),
-          });
-
-          const commentDate = generateTimestamp(article.published_at, article.updated_at);
-
-          commentsToGenerate.push({
-            article_id: article.id,
-            author_id: selectedAuthor.id,
-            content: commentText,
-            comment_date: commentDate.toISOString(),
-          });
-
-          await new Promise(resolve => setTimeout(resolve, 180));
-        } catch (error) {
-          console.error('Error generating comment:', error);
+        }
+        
+        if (!isValidComment || !commentText) {
+          console.log('Failed to generate valid comment after max retries, skipping');
           continue;
         }
+
+        // Track the opening to avoid repetition
+        let opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+        if (usedOpenings.includes(opening)) {
+          // Nudge duplicated openings to feel less copy-paste
+          commentText = commentText.replace(/^[^.!?\n]+/, (m: string) => `honestly ${m.toLowerCase()}`);
+          opening = commentText.split(/[.!?\n]/)[0].toLowerCase().slice(0, 30);
+        }
+        usedOpenings.push(opening);
+
+        // Store for potential threading
+        previousComments.push({
+          author: selectedAuthor.name,
+          snippet: commentText.slice(0, 50),
+        });
+
+        const commentDate = generateTimestamp(article.published_at, article.updated_at);
+
+        commentsToGenerate.push({
+          article_id: article.id,
+          author_id: selectedAuthor.id,
+          content: commentText,
+          comment_date: commentDate.toISOString(),
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 180));
       }
 
       if (commentsToGenerate.length > 0) {
