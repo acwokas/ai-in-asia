@@ -606,9 +606,19 @@ const addNaturalVariations = (text: string, region: string): string => {
 };
 
 // Helper to generate comment timestamp
-const generateTimestamp = (publishDate: string, updatedDate: string | null): Date => {
+// isFirstComment: if true, generates a "live" date (past/current) so at least one comment shows immediately
+const generateTimestamp = (publishDate: string, updatedDate: string | null, isFirstComment: boolean = false): Date => {
   const published = new Date(publishDate);
   const now = new Date();
+  
+  // First comment should always be "live" - set to a past date so it displays immediately
+  if (isFirstComment) {
+    const hoursAgo = Math.floor(Math.random() * 48) + 1; // 1-48 hours ago
+    const timestamp = new Date(now);
+    timestamp.setHours(timestamp.getHours() - hoursAgo);
+    return timestamp;
+  }
+  
   const articleAgeMonths = (now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24 * 30);
 
   if (articleAgeMonths > 6) {
@@ -1092,7 +1102,8 @@ Write ONE comment now.`;
           snippet: commentText.slice(0, 50),
         });
 
-        const commentDate = generateTimestamp(article.published_at, article.updated_at);
+        const isFirstComment = commentsToGenerate.length === 0;
+        const commentDate = generateTimestamp(article.published_at, article.updated_at, isFirstComment);
 
         commentsToGenerate.push({
           article_id: article.id,
