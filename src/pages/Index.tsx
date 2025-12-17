@@ -39,7 +39,7 @@ const newsletterSchema = z.object({
     .max(255, { message: "Email must be less than 255 characters" }),
 });
 
-// Editorial freshness labels for homepage articles
+// Editorial freshness labels for homepage articles - selective to be meaningful
 const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null, isCornerstone?: boolean): string | null => {
   if (!publishedAt) return null;
   
@@ -47,24 +47,31 @@ const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null,
   const published = new Date(publishedAt);
   const updated = updatedAt ? new Date(updatedAt) : null;
   
-  const daysSincePublished = Math.floor((now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24));
-  const daysSinceUpdated = updated ? Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  const hoursSincePublished = (now.getTime() - published.getTime()) / (1000 * 60 * 60);
+  const daysSincePublished = Math.floor(hoursSincePublished / 24);
+  const hoursSinceUpdated = updated ? (now.getTime() - updated.getTime()) / (1000 * 60 * 60) : null;
   
-  // If updated within the last 7 days (and not the same as publish date)
-  if (daysSinceUpdated !== null && daysSinceUpdated <= 7 && updated && published && updated.getTime() > published.getTime() + 86400000) {
-    return "Updated this week";
+  // Priority 1: Updated recently (but not same day as published - means actual update)
+  if (hoursSinceUpdated !== null && hoursSinceUpdated <= 72 && updated && published && updated.getTime() > published.getTime() + 86400000) {
+    return "Updated recently";
   }
   
-  // If published within the last 30 days
-  if (daysSincePublished <= 30) {
-    return "New this month";
+  // Priority 2: Just published (within 24 hours) - truly fresh
+  if (hoursSincePublished <= 24) {
+    return "Just in";
   }
   
-  // For cornerstone or important ongoing topics
+  // Priority 3: Cornerstone content that's being actively tracked
   if (isCornerstone) {
     return "Ongoing coverage";
   }
   
+  // Priority 4: Published within last 3 days (selective, not everything)
+  if (daysSincePublished <= 3) {
+    return "This week";
+  }
+  
+  // No label for older content - keeps badges meaningful
   return null;
 };
 
