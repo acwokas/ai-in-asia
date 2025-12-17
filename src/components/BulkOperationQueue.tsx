@@ -106,10 +106,11 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     };
   }, [refetch, toast]);
 
-  // Set active job (first processing or queued job)
+  // Set active job (prioritize processing job over queued)
   useEffect(() => {
-    const active = queueJobs?.find(j => j.status === 'processing' || j.status === 'queued');
-    setActiveJob(active || null);
+    const processing = queueJobs?.find((j) => j.status === "processing") || null;
+    const queued = queueJobs?.find((j) => j.status === "queued") || null;
+    setActiveJob(processing || queued);
   }, [queueJobs]);
 
   // Auto-start processing when jobs are queued (prevents "stuck at 0" states)
