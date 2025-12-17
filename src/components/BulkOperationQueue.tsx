@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +38,10 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
   const [isRetrying, setIsRetrying] = useState<string | null>(null);
   const [isResuming, setIsResuming] = useState(false);
+
+  // Track progress across polls to detect stalls
+  const lastProgressRef = useRef<{ jobId: string; processedItems: number; ts: number } | null>(null);
+  const lastAutoStartRef = useRef<number>(0);
 
   // Fetch queue jobs
   const { data: queueJobs, refetch } = useQuery({
@@ -108,24 +112,59 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     setActiveJob(active || null);
   }, [queueJobs]);
 
-  // Auto-continue processing for active jobs
+  // Auto-start processing when jobs are queued (prevents "stuck at 0" states)
   useEffect(() => {
-    const processingJob = queueJobs?.find(j => j.status === 'processing');
-    
-    if (processingJob && processingJob.processed_items < processingJob.total_items) {
-      // Check if last update was more than 10 seconds ago (stalled)
-      const lastUpdated = processingJob.started_at ? new Date(processingJob.started_at).getTime() : 0;
+    const hasProcessing = queueJobs?.some((j) => j.status === "processing");
+    const hasQueued = queueJobs?.some((j) => j.status === "queued");
+
+    if (!hasProcessing && hasQueued && !isResuming) {
       const now = Date.now();
-      const timeSinceUpdate = now - lastUpdated;
-      
-      // If processing and seems stalled (no progress in recent check), trigger continuation
-      if (timeSinceUpdate > 10000) {
-        console.log(`Auto-continuing processing for job ${processingJob.id}`);
-        supabase.functions.invoke('process-bulk-queue', { method: 'POST' })
-          .catch(err => console.log('Auto-continue error (may be expected):', err));
+      // Guard: don't spam invocations (e.g. during refetch/realtime bursts)
+      if (now - lastAutoStartRef.current > 15000) {
+        lastAutoStartRef.current = now;
+        console.log("Auto-starting bulk queue processor");
+        supabase.functions
+          .invoke("process-bulk-queue", { method: "POST" })
+          .catch((err) => console.log("Auto-start error (may be expected):", err));
       }
     }
+  }, [queueJobs, isResuming]);
+
+  // Auto-continue processing for active jobs (only if progress hasn't moved)
+  useEffect(() => {
+    const processingJob = queueJobs?.find((j) => j.status === "processing");
+
+    if (!processingJob) {
+      lastProgressRef.current = null;
+      return;
+    }
+
+    const now = Date.now();
+    const prev = lastProgressRef.current;
+
+    // First time seeing this job, or progress advanced: update marker
+    if (!prev || prev.jobId !== processingJob.id || prev.processedItems !== processingJob.processed_items) {
+      lastProgressRef.current = {
+        jobId: processingJob.id,
+        processedItems: processingJob.processed_items,
+        ts: now,
+      };
+      return;
+    }
+
+    // Same processed_items as last poll - consider stalled
+    const stalledForMs = now - prev.ts;
+    if (processingJob.processed_items < processingJob.total_items && stalledForMs > 10000) {
+      console.log(`Auto-continuing processing for job ${processingJob.id} (stalled ${Math.round(stalledForMs / 1000)}s)`);
+      supabase.functions
+        .invoke("process-bulk-queue", { method: "POST" })
+        .catch((err) => console.log("Auto-continue error (may be expected):", err));
+
+      // Reset timer so we don't spam every render
+      lastProgressRef.current = { ...prev, ts: now };
+    }
   }, [queueJobs]);
+
 
   const handleCancelJob = async (jobId: string, isProcessing: boolean = false) => {
     try {
