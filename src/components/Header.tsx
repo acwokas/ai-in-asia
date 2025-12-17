@@ -200,6 +200,7 @@ const Header = memo(() => {
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-px bg-primary my-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
+              <div className="h-px bg-primary my-2" />
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
               <form onSubmit={handleSearch} className="pt-2">
                 <div className="relative">
