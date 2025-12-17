@@ -20,6 +20,7 @@ import ReadingStreakTracker from "@/components/ReadingStreakTracker";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
+import NotificationPrompt from "@/components/NotificationPrompt";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -364,6 +365,7 @@ const Index = () => {
       <OrganizationStructuredData />
       
       <Header />
+      <NotificationPrompt />
       <Suspense fallback={null}>
         <StockTicker />
       </Suspense>
