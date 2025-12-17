@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
 const ReturnTriggerBlock = () => {
+  return null; // Hidden per user request
+  
   const { toast } = useToast();
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>('default');
 
