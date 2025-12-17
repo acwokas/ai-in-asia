@@ -795,15 +795,16 @@ const Index = () => {
           <PromptAndGoBanner />
         </section>
 
-        {/* You May Also Like - Moved above What's Changed */}
+        {/* You May Like (Recommended Articles) */}
         <Suspense fallback={
           <div className="container mx-auto px-4 py-12">
             <div className="space-y-4">
               <Skeleton className="h-8 w-64" />
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {Array.from({ length: 4 }).map((_, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="space-y-3">
-                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-full" />
                   </div>
                 ))}
@@ -811,7 +812,7 @@ const Index = () => {
             </div>
           </div>
         }>
-          <YouMayAlsoLike excludeIds={heroLatestIds} skipCount={6} />
+          <RecommendedArticles excludeIds={heroLatestIds} />
         </Suspense>
 
         {/* What's Changed Section */}
@@ -901,26 +902,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Recommended Articles */}
-        <Suspense fallback={
-          <div className="container mx-auto px-4 py-12">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-64" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        }>
-          <RecommendedArticles excludeIds={heroLatestIds} />
-        </Suspense>
-
         {/* Upcoming Events */}
         <Suspense fallback={
           <div className="container mx-auto px-4 py-12">
@@ -935,6 +916,25 @@ const Index = () => {
           </div>
         }>
           <UpcomingEvents />
+        </Suspense>
+
+        {/* You May Also Like */}
+        <Suspense fallback={
+          <div className="container mx-auto px-4 py-12">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <YouMayAlsoLike excludeIds={heroLatestIds} skipCount={6} />
         </Suspense>
 
 
