@@ -21,6 +21,13 @@ import FloatingNewsletterPopup from "@/components/FloatingNewsletterPopup";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
+import ContinueReading from "@/components/ContinueReading";
+import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
+import DeepDiveSection from "@/components/DeepDiveSection";
+import ExploreMoreButton from "@/components/ExploreMoreButton";
+import UpNextSidebar from "@/components/UpNextSidebar";
+import NextArticleProgress from "@/components/NextArticleProgress";
+import ExitIntentOverlay from "@/components/ExitIntentOverlay";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1495,6 +1502,19 @@ const Article = () => {
               </div>
             )}
 
+            {/* Share Thoughts CTA */}
+            <ShareThoughtsCTA commentCount={commentCount} />
+
+            {/* Deep Dive Section - Cornerstone articles */}
+            <DeepDiveSection currentArticleId={article.id} tags={article.ai_tags} />
+
+            {/* Continue Reading */}
+            <ContinueReading 
+              currentArticleId={article.id} 
+              categoryId={article.primary_category_id || undefined}
+              categorySlug={article.categories?.slug}
+            />
+
             {/* Return Trigger Block */}
             <ReturnTriggerBlock />
           </article>
@@ -1580,6 +1600,12 @@ const Article = () => {
             </section>
           )}
         </main>
+
+        {/* Engagement Components */}
+        <ExploreMoreButton />
+        <UpNextSidebar currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
+        <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
+        <ExitIntentOverlay currentArticleId={article.id} />
 
         <FloatingNewsletterPopup />
         <Footer />

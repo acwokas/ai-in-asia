@@ -21,6 +21,7 @@ import RecommendedGuides from "@/components/RecommendedGuides";
 import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import NotificationPrompt from "@/components/NotificationPrompt";
+import WhatsChanged from "@/components/WhatsChanged";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -792,6 +793,11 @@ const Index = () => {
         {/* Ad Banner */}
         <section className="container mx-auto px-4 py-8">
           <PromptAndGoBanner />
+        </section>
+
+        {/* What's Changed Section */}
+        <section className="container mx-auto px-4">
+          <WhatsChanged />
         </section>
 
         {/* Recommended Guides & Tutorials */}
