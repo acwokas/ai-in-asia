@@ -1,12 +1,21 @@
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
-interface ReturnTriggerBlockProps {
-  onBookmark?: () => void;
-  isBookmarked?: boolean;
-}
+const ReturnTriggerBlock = () => {
+  const { toast } = useToast();
 
-const ReturnTriggerBlock = ({ onBookmark, isBookmarked }: ReturnTriggerBlockProps) => {
+  const handleBookmarkPrompt = () => {
+    // Detect OS for correct keyboard shortcut
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const shortcut = isMac ? '⌘+D' : 'Ctrl+D';
+    
+    toast({
+      title: "Add to bookmarks",
+      description: `Press ${shortcut} to bookmark this page in your browser`,
+    });
+  };
+
   return (
     <div className="my-8 p-6 bg-muted/50 border border-border rounded-lg">
       <h3 className="text-lg font-semibold text-foreground mb-3">
@@ -16,22 +25,15 @@ const ReturnTriggerBlock = ({ onBookmark, isBookmarked }: ReturnTriggerBlockProp
         We track how AI, platforms, policy, and adoption evolve across Asia.
         This article may be updated as things change, with follow-ups and regional context.
       </p>
-      {onBookmark ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBookmark}
-          className="gap-2"
-        >
-          <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-          {isBookmarked ? 'Bookmarked - check back for updates' : 'Bookmark AIinASIA and check back for updates'}
-        </Button>
-      ) : (
-        <p className="text-foreground font-medium flex items-center gap-2">
-          <Bookmark className="h-4 w-4" />
-          Bookmark AIinASIA and check back for updates.
-        </p>
-      )}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleBookmarkPrompt}
+        className="gap-2"
+      >
+        <Bookmark className="h-4 w-4" />
+        Bookmark this page
+      </Button>
     </div>
   );
 };

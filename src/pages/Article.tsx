@@ -1496,7 +1496,7 @@ const Article = () => {
             )}
 
             {/* Return Trigger Block */}
-            <ReturnTriggerBlock onBookmark={handleBookmark} isBookmarked={isBookmarked} />
+            <ReturnTriggerBlock />
           </article>
 
           {/* Comments Section */}
