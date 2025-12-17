@@ -843,11 +843,11 @@ const AIComments = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button 
                     variant="outline" 
                     onClick={() => setIsManageAuthorsOpen(true)}
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Manage Author Pool
@@ -860,7 +860,7 @@ const AIComments = () => {
                       }
                     }}
                     disabled={reseedAuthorsMutation.isPending}
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                   >
                     {reseedAuthorsMutation.isPending ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -870,7 +870,7 @@ const AIComments = () => {
                     Reseed Authors
                   </Button>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="destructive"
                     onClick={() => {
@@ -879,7 +879,7 @@ const AIComments = () => {
                       }
                     }}
                     disabled={deleteAllCommentsMutation.isPending}
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                     size="sm"
                   >
                     {deleteAllCommentsMutation.isPending ? (
@@ -898,7 +898,7 @@ const AIComments = () => {
                     }}
                     disabled={deleteLegacyComments.isPending}
                     size="sm"
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete Legacy Comments
