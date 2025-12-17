@@ -39,6 +39,35 @@ const newsletterSchema = z.object({
     .max(255, { message: "Email must be less than 255 characters" }),
 });
 
+// Editorial freshness labels for homepage articles
+const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null, isCornerstone?: boolean): string | null => {
+  if (!publishedAt) return null;
+  
+  const now = new Date();
+  const published = new Date(publishedAt);
+  const updated = updatedAt ? new Date(updatedAt) : null;
+  
+  const daysSincePublished = Math.floor((now.getTime() - published.getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceUpdated = updated ? Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  
+  // If updated within the last 7 days (and not the same as publish date)
+  if (daysSinceUpdated !== null && daysSinceUpdated <= 7 && updated && published && updated.getTime() > published.getTime() + 86400000) {
+    return "Updated this week";
+  }
+  
+  // If published within the last 30 days
+  if (daysSincePublished <= 30) {
+    return "New this month";
+  }
+  
+  // For cornerstone or important ongoing topics
+  if (isCornerstone) {
+    return "Ongoing coverage";
+  }
+  
+  return null;
+};
+
 const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
@@ -75,6 +104,8 @@ const Index = () => {
           featured_image_url,
           reading_time_minutes,
           published_at,
+          updated_at,
+          cornerstone,
           sticky,
           primary_category_id,
           comment_count,
@@ -106,10 +137,13 @@ const Index = () => {
           featured_image_url,
           reading_time_minutes,
           published_at,
+          updated_at,
+          cornerstone,
           view_count,
           primary_category_id,
           comment_count,
           homepage_trending,
+          is_trending,
           authors:author_id (name, slug),
           categories:primary_category_id (name, slug)
         `)
@@ -429,6 +463,11 @@ const Index = () => {
                         Trending
                       </Badge>
                     )}
+                    {index < 3 && getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
+                      <Badge className="absolute top-2 right-2 bg-emerald-600 text-white text-xs">
+                        {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
+                      </Badge>
+                    )}
                     {index === 0 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                         <p className="text-white text-xs mb-1">
@@ -490,6 +529,11 @@ const Index = () => {
                           <Badge className="bg-orange-500 text-white flex items-center gap-1">
                             <TrendingUp className="h-3 w-3" />
                             Trending
+                          </Badge>
+                        )}
+                        {getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone) && (
+                          <Badge className="bg-emerald-600 text-white">
+                            {getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}
                           </Badge>
                         )}
                       </div>
@@ -594,6 +638,11 @@ const Index = () => {
                             <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs">
                               <TrendingUp className="h-3 w-3" />
                               Trending
+                            </Badge>
+                          )}
+                          {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
+                            <Badge className="bg-emerald-600 text-white text-xs">
+                              {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
                             </Badge>
                           )}
                         </div>
