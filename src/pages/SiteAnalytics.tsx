@@ -227,14 +227,39 @@ const SiteAnalytics = () => {
     },
   });
 
+  // Fetch unique visitors via RPC (avoids REST row limits)
+  const { data: uniqueVisitorsCount, isLoading: uniqueVisitorsCountLoading } = useQuery({
+    queryKey: ["analytics-unique-visitors", dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_unique_visitors", {
+        p_start: startDate.toISOString(),
+        p_end: endDate.toISOString(),
+      });
+      if (error) throw error;
+      return (data ?? 0) as number;
+    },
+  });
+
+  const { data: prevUniqueVisitorsCount, isLoading: prevUniqueVisitorsCountLoading } = useQuery({
+    queryKey: ["analytics-unique-visitors-prev", dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_unique_visitors", {
+        p_start: prevStartDate.toISOString(),
+        p_end: prevEndDate.toISOString(),
+      });
+      if (error) throw error;
+      return (data ?? 0) as number;
+    },
+  });
+
   // Calculate metrics - use accurate counts from count queries
   const totalSessions = sessionsCount || sessionsData?.length || 0;
   const prevTotalSessions = prevSessionsCount || prevSessionsData?.length || 0;
   const totalPageviews = pageviewsCount || pageviewsData?.length || 0;
   const prevTotalPageviews = prevPageviewsCount || prevPageviewsData?.length || 0;
   const totalEvents = eventsCount || eventsData?.length || 0;
-  const uniqueVisitors = new Set(sessionsData?.map(s => s.user_id || s.session_id)).size;
-  const prevUniqueVisitors = new Set(prevSessionsData?.map(s => s.user_id || s.session_id)).size;
+  const uniqueVisitors = uniqueVisitorsCount ?? new Set(sessionsData?.map(s => s.user_id || s.session_id)).size;
+  const prevUniqueVisitors = prevUniqueVisitorsCount ?? new Set(prevSessionsData?.map(s => s.user_id || s.session_id)).size;
   // Use sampled data for averages (based on fetched data, not counts)
   const sampledSessions = sessionsData?.length || 0;
   const sampledPageviews = pageviewsData?.length || 0;
@@ -473,7 +498,7 @@ const SiteAnalytics = () => {
     }
   });
 
-  const isLoading = sessionsLoading || pageviewsLoading || eventsLoading;
+  const isLoading = sessionsLoading || pageviewsLoading || eventsLoading || uniqueVisitorsCountLoading || prevUniqueVisitorsCountLoading;
 
   return (
     <div className="min-h-screen bg-background">
