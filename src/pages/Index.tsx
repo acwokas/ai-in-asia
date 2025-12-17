@@ -795,6 +795,25 @@ const Index = () => {
           <PromptAndGoBanner />
         </section>
 
+        {/* You May Also Like - Moved above What's Changed */}
+        <Suspense fallback={
+          <div className="container mx-auto px-4 py-12">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <YouMayAlsoLike excludeIds={heroLatestIds} skipCount={6} />
+        </Suspense>
+
         {/* What's Changed Section */}
         <section className="container mx-auto px-4">
           <WhatsChanged />
@@ -918,24 +937,7 @@ const Index = () => {
           <UpcomingEvents />
         </Suspense>
 
-        {/* You May Also Like */}
-        <Suspense fallback={
-          <div className="container mx-auto px-4 py-12">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-64" />
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        }>
-          <YouMayAlsoLike excludeIds={heroLatestIds} skipCount={6} />
-        </Suspense>
+
 
         {/* Featured Voices Section - Moved above Google Discover */}
         {(featuredAuthors && featuredAuthors.length > 0) && (
