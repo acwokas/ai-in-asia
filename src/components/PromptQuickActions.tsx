@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "./GoogleAnalytics";
 
 interface PromptQuickActionsProps {
   prompt: string;
@@ -19,21 +20,25 @@ export const PromptQuickActions = ({ prompt, title }: PromptQuickActionsProps) =
   const { toast } = useToast();
 
   const tryInChatGPT = () => {
+    trackEvent("prompt_try_in_tool", { tool: "ChatGPT", prompt_title: title });
     const url = `https://chat.openai.com/?q=${encodeURIComponent(prompt)}`;
     window.open(url, '_blank');
   };
 
   const tryInClaude = () => {
+    trackEvent("prompt_try_in_tool", { tool: "Claude", prompt_title: title });
     const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
     window.open(url, '_blank');
   };
 
   const tryInGemini = () => {
+    trackEvent("prompt_try_in_tool", { tool: "Gemini", prompt_title: title });
     const url = `https://gemini.google.com/app?q=${encodeURIComponent(prompt)}`;
     window.open(url, '_blank');
   };
 
   const exportAsText = () => {
+    trackEvent("prompt_export", { format: "text", prompt_title: title });
     const blob = new Blob([`${title}\n\n${prompt}`], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -50,17 +55,20 @@ export const PromptQuickActions = ({ prompt, title }: PromptQuickActionsProps) =
   };
 
   const shareOnTwitter = () => {
+    trackEvent("prompt_share", { platform: "Twitter", prompt_title: title });
     const text = `Check out this AI prompt: ${title}\n\n${window.location.origin}/prompts`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
 
   const shareOnLinkedIn = () => {
+    trackEvent("prompt_share", { platform: "LinkedIn", prompt_title: title });
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
     window.open(url, '_blank');
   };
 
   const copyLink = () => {
+    trackEvent("prompt_share", { platform: "copy_link", prompt_title: title });
     navigator.clipboard.writeText(window.location.href);
     toast({
       title: "Link copied!",

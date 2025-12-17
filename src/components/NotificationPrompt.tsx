@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { trackEvent } from "./GoogleAnalytics";
 
 const PROMPT_STORAGE_KEY = 'aiinasia_notification_prompt_dismissed';
 const PROMPT_DELAY_MS = 3000; // Show after 3 seconds
@@ -38,15 +39,18 @@ const NotificationPrompt = () => {
     // Show prompt after delay
     const timer = setTimeout(() => {
       setIsVisible(true);
+      trackEvent("notification_prompt_shown");
     }, PROMPT_DELAY_MS);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleAllow = async () => {
+    trackEvent("notification_prompt_allow_click");
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
+      trackEvent("notification_permission_result", { result });
       
       if (result === 'granted') {
         new Notification('AIinASIA', {
@@ -61,6 +65,7 @@ const NotificationPrompt = () => {
   };
 
   const handleDeny = () => {
+    trackEvent("notification_prompt_deny_click");
     localStorage.setItem(PROMPT_STORAGE_KEY, new Date().toISOString());
     setIsVisible(false);
   };

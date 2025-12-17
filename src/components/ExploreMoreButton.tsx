@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { trackEvent } from "./GoogleAnalytics";
 
 const categories = [
   { name: "News", slug: "news" },
@@ -38,6 +39,10 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
     return () => window.removeEventListener("scroll", handleScroll);
   }, [minScrollPercent]);
 
+  const handleCategoryClick = (categoryName: string, categorySlug: string) => {
+    trackEvent("explore_more_click", { category: categoryName, slug: categorySlug });
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -47,6 +52,7 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
           <Button
             size="lg"
             className="rounded-full shadow-lg gap-2 pr-3"
+            onClick={() => trackEvent("explore_more_open")}
           >
             <Compass className="h-4 w-4" />
             Explore More
@@ -56,13 +62,21 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
         <DropdownMenuContent align="end" className="w-48 bg-background">
           {categories.map((cat) => (
             <DropdownMenuItem key={cat.slug} asChild>
-              <Link to={`/${cat.slug}`} className="cursor-pointer">
+              <Link 
+                to={`/${cat.slug}`} 
+                className="cursor-pointer"
+                onClick={() => handleCategoryClick(cat.name, cat.slug)}
+              >
                 {cat.name}
               </Link>
             </DropdownMenuItem>
           ))}
           <DropdownMenuItem asChild>
-            <Link to="/guides" className="cursor-pointer font-medium text-primary">
+            <Link 
+              to="/guides" 
+              className="cursor-pointer font-medium text-primary"
+              onClick={() => handleCategoryClick("AI Guides", "guides")}
+            >
               AI Guides
             </Link>
           </DropdownMenuItem>
