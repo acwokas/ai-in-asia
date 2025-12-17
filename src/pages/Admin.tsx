@@ -829,12 +829,16 @@ const Admin = () => {
               <h1 className="headline text-4xl mb-2">Admin Dashboard</h1>
               <p className="text-muted-foreground">Welcome back, {getFirstName(user?.email)}</p>
             </div>
-            <div className="flex gap-2 w-full md:w-auto">
+            <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row">
+              <Button onClick={() => navigate("/editor")} size="lg" className="w-full md:w-auto">
+                <FileText className="h-4 w-4 mr-2" />
+                Create New Article
+              </Button>
               <Button 
                 onClick={() => navigate("/admin/dashboard")}
                 variant="default"
                 size="lg"
-                className="flex-1 md:flex-initial"
+                className="w-full md:w-auto"
               >
                 <BarChart className="h-4 w-4 mr-2" />
                 View Dashboard
@@ -846,7 +850,7 @@ const Admin = () => {
                 }}
                 variant="outline"
                 disabled={statsLoading}
-                className="flex-1 md:flex-initial"
+                className="w-full md:w-auto"
               >
                 {statsLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -856,10 +860,6 @@ const Admin = () => {
                     Refresh Stats
                   </>
                 )}
-              </Button>
-              <Button onClick={() => navigate("/editor")} size="lg" className="flex-1 md:flex-initial">
-                <FileText className="h-4 w-4 mr-2" />
-                Create New Article
               </Button>
             </div>
           </div>
