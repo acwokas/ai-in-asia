@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
+import { trackEvent } from "./GoogleAnalytics";
 
 interface NextArticleProgressProps {
   currentArticleId: string;
@@ -56,6 +57,18 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleReadNowClick = () => {
+    trackEvent("next_article_read_now_click", { 
+      next_article_id: nextArticle?.id,
+      next_article_title: nextArticle?.title 
+    });
+  };
+
+  const handleDismiss = () => {
+    trackEvent("next_article_dismiss");
+    setIsDismissed(true);
+  };
+
   if (!isVisible || isDismissed || !nextArticle) return null;
 
   return (
@@ -80,6 +93,7 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
               <Link
                 to={`/${nextArticle.categories?.slug || 'news'}/${nextArticle.slug}`}
                 className="font-medium text-sm line-clamp-1 hover:text-primary transition-colors"
+                onClick={handleReadNowClick}
               >
                 {nextArticle.title}
               </Link>
@@ -87,7 +101,7 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
           </div>
           
           <div className="flex items-center gap-2">
-            <Button asChild size="sm">
+            <Button asChild size="sm" onClick={handleReadNowClick}>
               <Link to={`/${nextArticle.categories?.slug || 'news'}/${nextArticle.slug}`}>
                 Read Now
               </Link>
@@ -96,7 +110,7 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => setIsDismissed(true)}
+              onClick={handleDismiss}
             >
               <X className="h-4 w-4" />
             </Button>

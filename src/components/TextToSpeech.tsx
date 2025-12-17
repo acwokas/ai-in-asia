@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Play, Pause, Square } from "lucide-react";
 import { toast } from "./ui/use-toast";
+import { trackEvent } from "./GoogleAnalytics";
 
 interface TextToSpeechProps {
   content: string;
@@ -51,6 +52,8 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
   };
 
   const handlePlay = async () => {
+    trackEvent("text_to_speech_play", { article_title: title });
+    
     if (!window.puter) {
       toast({
         title: "Error",
@@ -61,6 +64,7 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
     }
 
     if (isPaused && currentAudio) {
+      trackEvent("text_to_speech_resume", { article_title: title });
       currentAudio.play();
       setIsPaused(false);
       setIsPlaying(true);
@@ -93,6 +97,7 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
       };
 
       audio.onended = () => {
+        trackEvent("text_to_speech_complete", { article_title: title });
         setIsPlaying(false);
         setIsPaused(false);
         setCurrentAudio(null);
@@ -111,6 +116,7 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
   };
 
   const handlePause = () => {
+    trackEvent("text_to_speech_pause", { article_title: title });
     if (currentAudio) {
       currentAudio.pause();
       setIsPaused(true);
@@ -119,6 +125,7 @@ const TextToSpeech = ({ content, title }: TextToSpeechProps) => {
   };
 
   const handleStop = () => {
+    trackEvent("text_to_speech_stop", { article_title: title });
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;

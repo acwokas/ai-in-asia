@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "./GoogleAnalytics";
 
 interface PromptBookmarkButtonProps {
   promptItemId: string;
@@ -104,6 +105,7 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
       return data;
     },
     onSuccess: () => {
+      trackEvent("prompt_collection_created", { collection_name: newCollectionName });
       queryClient.invalidateQueries({ queryKey: ['prompt-collections'] });
       setShowNewCollection(false);
       setNewCollectionName('');
@@ -122,6 +124,7 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
 
       if (bookmark) {
         // Remove bookmark
+        trackEvent("prompt_bookmark_removed", { prompt_id: promptItemId });
         const { error } = await supabase
           .from('prompt_bookmarks')
           .delete()
@@ -130,6 +133,10 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
         return null;
       } else {
         // Add bookmark
+        trackEvent("prompt_bookmark_added", { 
+          prompt_id: promptItemId, 
+          collection_id: collectionId || "none" 
+        });
         const { data, error } = await supabase
           .from('prompt_bookmarks')
           .insert({

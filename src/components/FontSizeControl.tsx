@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Minus, Plus } from "lucide-react";
+import { trackEvent } from "./GoogleAnalytics";
 
 const FONT_SIZE_KEY = "article-font-size";
 const DEFAULT_SIZE = 100;
@@ -34,7 +35,7 @@ const FontSizeControl = () => {
   };
 
   const handleIncrease = () => {
-    console.log('[FontSizeControl] Increase clicked', { fontSize });
+    trackEvent("font_size_change", { action: "increase", new_size: fontSize + STEP });
     if (fontSize < MAX_SIZE) {
       const newSize = fontSize + STEP;
       setFontSize(newSize);
@@ -44,7 +45,7 @@ const FontSizeControl = () => {
   };
 
   const handleDecrease = () => {
-    console.log('[FontSizeControl] Decrease clicked', { fontSize });
+    trackEvent("font_size_change", { action: "decrease", new_size: fontSize - STEP });
     if (fontSize > MIN_SIZE) {
       const newSize = fontSize - STEP;
       setFontSize(newSize);

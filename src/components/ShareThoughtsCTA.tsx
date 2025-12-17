@@ -1,5 +1,6 @@
 import { MessageSquare } from "lucide-react";
 import { Button } from "./ui/button";
+import { trackEvent } from "./GoogleAnalytics";
 
 interface ShareThoughtsCTAProps {
   commentCount?: number;
@@ -7,6 +8,7 @@ interface ShareThoughtsCTAProps {
 
 const ShareThoughtsCTA = ({ commentCount = 0 }: ShareThoughtsCTAProps) => {
   const scrollToComments = () => {
+    trackEvent("jump_to_comments_click", { comment_count: commentCount });
     const commentsSection = document.getElementById("comments-section");
     if (commentsSection) {
       commentsSection.scrollIntoView({ behavior: "smooth" });
