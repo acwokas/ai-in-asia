@@ -16,6 +16,7 @@ import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 import FloatingNewsletterPopup from "@/components/FloatingNewsletterPopup";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
@@ -1493,6 +1494,9 @@ const Article = () => {
                 </div>
               </div>
             )}
+
+            {/* Return Trigger Block */}
+            <ReturnTriggerBlock />
           </article>
 
           {/* Comments Section */}

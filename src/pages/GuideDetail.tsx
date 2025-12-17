@@ -21,6 +21,7 @@ import SeasoningMatrixDownload from "@/components/SeasoningMatrixDownload";
 import TutorialContentRenderer from "@/components/TutorialContentRenderer";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
+import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 
 // Sanitize corrupted content from CSV imports
 const sanitizeContent = (text: string | null | undefined): string => {
@@ -843,6 +844,9 @@ const GuideDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Return Trigger Block */}
+            <ReturnTriggerBlock />
 
             {/* End of Content Newsletter CTA */}
             <EndOfContentNewsletter />
