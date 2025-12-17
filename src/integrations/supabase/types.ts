@@ -3254,6 +3254,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      get_unique_visitors: {
+        Args: { p_end: string; p_start: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
