@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
@@ -14,7 +14,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { trackSponsorClick, trackSponsorImpression } from "@/hooks/useSponsorTracking";
+import CategoryBreadcrumbsWithSiblings from "@/components/CategoryBreadcrumbsWithSiblings";
 import {
   Loader2, 
   TrendingUp, 
@@ -115,6 +117,8 @@ const CategorySponsorCard = ({ sponsor, categoryName }: { sponsor: CategorySpons
 const Category = () => {
   const { slug } = useParams();
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
+  const [showAllArticles, setShowAllArticles] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   
   // Auto-refresh every 30 minutes
   useAutoRefresh();
@@ -806,6 +810,14 @@ const Category = () => {
         </section>
 
         <div className="container mx-auto px-4 py-8">
+          {/* Sibling category suggestions */}
+          {category && (
+            <CategoryBreadcrumbsWithSiblings 
+              currentCategorySlug={category.slug} 
+              currentCategoryName={category.name} 
+            />
+          )}
+
           {articlesLoading ? (
             /* Loading skeletons for category content */
             <div className="space-y-12">
@@ -1238,14 +1250,14 @@ const Category = () => {
             </>
           )}
 
-          {/* More from Voices / More Articles - Compact Grid */}
+          {/* More from Voices / More Articles - Compact Grid with Load More */}
           {moreArticles.length > 0 && (
             <section>
               <h2 className="text-2xl font-bold mb-6">
                 {category?.slug === 'voices' ? 'More from Voices' : `More from ${category?.name}`}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {moreArticles.map((article) => (
+                {(showAllArticles ? moreArticles : moreArticles.slice(0, 8)).map((article) => (
                   <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <Link to={`/${article.categories?.slug || 'news'}/${article.slug}`}>
                       <div className="relative aspect-video overflow-hidden">
@@ -1267,6 +1279,39 @@ const Category = () => {
                   </Card>
                 ))}
               </div>
+              
+              {/* Load More Button */}
+              {!showAllArticles && moreArticles.length > 8 && (
+                <div className="flex justify-center mt-8">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setIsLoadingMore(true);
+                      setTimeout(() => {
+                        setShowAllArticles(true);
+                        setIsLoadingMore(false);
+                      }, 300);
+                    }}
+                    disabled={isLoadingMore}
+                    className="gap-2"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Load More Articles
+                        <Badge variant="secondary" className="ml-1">
+                          +{moreArticles.length - 8}
+                        </Badge>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </section>
           )}
 
