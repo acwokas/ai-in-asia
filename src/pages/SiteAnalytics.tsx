@@ -69,7 +69,22 @@ const SiteAnalytics = () => {
   const prevStartDate = startOfDay(subDays(startDate, parseInt(dateRange)));
   const prevEndDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
 
-  // Fetch sessions data
+  // Fetch sessions count (accurate total)
+  const { data: sessionsCount } = useQuery({
+    queryKey: ["analytics-sessions-count", dateRange],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("analytics_sessions")
+        .select("*", { count: 'exact', head: true })
+        .gte("started_at", startDate.toISOString())
+        .lte("started_at", endDate.toISOString());
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Fetch sessions data (limited for processing)
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ["analytics-sessions", dateRange],
     queryFn: async () => {
@@ -78,14 +93,30 @@ const SiteAnalytics = () => {
         .select("*")
         .gte("started_at", startDate.toISOString())
         .lte("started_at", endDate.toISOString())
-        .order("started_at", { ascending: false });
+        .order("started_at", { ascending: false })
+        .limit(5000);
       
       if (error) throw error;
       return data || [];
     },
   });
 
-  // Fetch previous period sessions for comparison
+  // Fetch previous period sessions count for comparison
+  const { data: prevSessionsCount } = useQuery({
+    queryKey: ["analytics-sessions-count-prev", dateRange],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("analytics_sessions")
+        .select("*", { count: 'exact', head: true })
+        .gte("started_at", prevStartDate.toISOString())
+        .lt("started_at", prevEndDate.toISOString());
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Fetch previous period sessions data for comparison
   const { data: prevSessionsData } = useQuery({
     queryKey: ["analytics-sessions-prev", dateRange],
     queryFn: async () => {
@@ -93,14 +124,30 @@ const SiteAnalytics = () => {
         .from("analytics_sessions")
         .select("*")
         .gte("started_at", prevStartDate.toISOString())
-        .lt("started_at", prevEndDate.toISOString());
+        .lt("started_at", prevEndDate.toISOString())
+        .limit(5000);
       
       if (error) throw error;
       return data || [];
     },
   });
 
-  // Fetch pageviews data
+  // Fetch pageviews count (accurate total)
+  const { data: pageviewsCount } = useQuery({
+    queryKey: ["analytics-pageviews-count", dateRange],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("analytics_pageviews")
+        .select("*", { count: 'exact', head: true })
+        .gte("viewed_at", startDate.toISOString())
+        .lte("viewed_at", endDate.toISOString());
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Fetch pageviews data (limited for processing)
   const { data: pageviewsData, isLoading: pageviewsLoading } = useQuery({
     queryKey: ["analytics-pageviews", dateRange],
     queryFn: async () => {
@@ -109,10 +156,26 @@ const SiteAnalytics = () => {
         .select("*")
         .gte("viewed_at", startDate.toISOString())
         .lte("viewed_at", endDate.toISOString())
-        .order("viewed_at", { ascending: false });
+        .order("viewed_at", { ascending: false })
+        .limit(5000);
       
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Fetch previous period pageviews count for comparison
+  const { data: prevPageviewsCount } = useQuery({
+    queryKey: ["analytics-pageviews-count-prev", dateRange],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("analytics_pageviews")
+        .select("*", { count: 'exact', head: true })
+        .gte("viewed_at", prevStartDate.toISOString())
+        .lt("viewed_at", prevEndDate.toISOString());
+      
+      if (error) throw error;
+      return count || 0;
     },
   });
 
@@ -124,14 +187,30 @@ const SiteAnalytics = () => {
         .from("analytics_pageviews")
         .select("*")
         .gte("viewed_at", prevStartDate.toISOString())
-        .lt("viewed_at", prevEndDate.toISOString());
+        .lt("viewed_at", prevEndDate.toISOString())
+        .limit(5000);
       
       if (error) throw error;
       return data || [];
     },
   });
 
-  // Fetch events data
+  // Fetch events count (accurate total)
+  const { data: eventsCount } = useQuery({
+    queryKey: ["analytics-events-count", dateRange],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("analytics_events")
+        .select("*", { count: 'exact', head: true })
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Fetch events data (limited for processing)
   const { data: eventsData, isLoading: eventsLoading } = useQuery({
     queryKey: ["analytics-events", dateRange],
     queryFn: async () => {
@@ -140,33 +219,38 @@ const SiteAnalytics = () => {
         .select("*")
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(5000);
       
       if (error) throw error;
       return data || [];
     },
   });
 
-  // Calculate metrics
-  const totalSessions = sessionsData?.length || 0;
-  const prevTotalSessions = prevSessionsData?.length || 0;
-  const totalPageviews = pageviewsData?.length || 0;
-  const prevTotalPageviews = prevPageviewsData?.length || 0;
+  // Calculate metrics - use accurate counts from count queries
+  const totalSessions = sessionsCount || sessionsData?.length || 0;
+  const prevTotalSessions = prevSessionsCount || prevSessionsData?.length || 0;
+  const totalPageviews = pageviewsCount || pageviewsData?.length || 0;
+  const prevTotalPageviews = prevPageviewsCount || prevPageviewsData?.length || 0;
+  const totalEvents = eventsCount || eventsData?.length || 0;
   const uniqueVisitors = new Set(sessionsData?.map(s => s.user_id || s.session_id)).size;
   const prevUniqueVisitors = new Set(prevSessionsData?.map(s => s.user_id || s.session_id)).size;
+  // Use sampled data for averages (based on fetched data, not counts)
+  const sampledSessions = sessionsData?.length || 0;
+  const sampledPageviews = pageviewsData?.length || 0;
   const avgPagesPerSession = totalSessions > 0 ? (totalPageviews / totalSessions).toFixed(1) : "0";
   const prevAvgPagesPerSession = prevTotalSessions > 0 ? (prevTotalPageviews / prevTotalSessions).toFixed(1) : "0";
-  const bounceRate = totalSessions > 0 
-    ? ((sessionsData?.filter(s => s.is_bounce).length || 0) / totalSessions * 100).toFixed(1) 
+  const bounceRate = sampledSessions > 0 
+    ? ((sessionsData?.filter(s => s.is_bounce).length || 0) / sampledSessions * 100).toFixed(1) 
     : "0";
-  const prevBounceRate = prevTotalSessions > 0 
-    ? ((prevSessionsData?.filter(s => s.is_bounce).length || 0) / prevTotalSessions * 100).toFixed(1) 
+  const prevBounceRate = (prevSessionsData?.length || 0) > 0 
+    ? ((prevSessionsData?.filter(s => s.is_bounce).length || 0) / (prevSessionsData?.length || 1) * 100).toFixed(1) 
     : "0";
-  const avgSessionDuration = totalSessions > 0
-    ? Math.round((sessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / totalSessions)
+  const avgSessionDuration = sampledSessions > 0
+    ? Math.round((sessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / sampledSessions)
     : 0;
-  const prevAvgSessionDuration = prevTotalSessions > 0
-    ? Math.round((prevSessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / prevTotalSessions)
+  const prevAvgSessionDuration = (prevSessionsData?.length || 0) > 0
+    ? Math.round((prevSessionsData?.reduce((acc, s) => acc + (s.duration_seconds || 0), 0) || 0) / (prevSessionsData?.length || 1))
     : 0;
 
   // Calculate percentage changes
@@ -537,7 +621,7 @@ const SiteAnalytics = () => {
                 <span className="text-sm">Events</span>
               </div>
               {isLoading ? <Skeleton className="h-8 w-20" /> : (
-                <p className="text-2xl font-bold">{(eventsData?.length || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold">{totalEvents.toLocaleString()}</p>
               )}
             </CardContent>
           </Card>
