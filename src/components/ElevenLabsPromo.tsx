@@ -34,7 +34,7 @@ const ElevenLabsPromo = ({ variant = 'homepage' }: ElevenLabsPromoProps) => {
             <div className="text-xs font-semibold text-accent mb-1 uppercase tracking-wide">
               Adrian's Personal Invite
             </div>
-            <h3 className="font-bold text-xl mb-2">Create Studio Quality Voices With ElevenLabs</h3>
+            <h3 className="font-bold text-xl mb-2">Create Studio Voices With ElevenLabs</h3>
           </div>
         </div>
 
