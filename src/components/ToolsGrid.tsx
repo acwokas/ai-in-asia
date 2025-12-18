@@ -10,6 +10,7 @@ import { ExternalLink, Star, Search, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import PerplexityCometPromo from "@/components/PerplexityCometPromo";
+import ElevenLabsPromo from "@/components/ElevenLabsPromo";
 
 interface ToolsGridProps {
   searchQuery?: string;
@@ -236,6 +237,7 @@ const ToolsGrid = ({ searchQuery: externalSearchQuery = "" }: ToolsGridProps) =>
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <PerplexityCometPromo variant="tools" />
+            <ElevenLabsPromo variant="tools" />
             
             {filteredTools.map((tool) => (
               <Card key={tool.id} className="p-6 hover:shadow-lg transition-all duration-300">

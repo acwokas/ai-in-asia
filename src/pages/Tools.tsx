@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import PerplexityCometPromo from "@/components/PerplexityCometPromo";
+import ElevenLabsPromo from "@/components/ElevenLabsPromo";
 
 const Tools = () => {
   const { toast } = useToast();
@@ -266,8 +267,10 @@ const Tools = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Perplexity Comet Promo - Always First */}
+                {/* Perplexity Comet Promo - Always First (Slot 1) */}
                 <PerplexityCometPromo variant="tools" />
+                {/* ElevenLabs Promo - Always Second (Slot 2) */}
+                <ElevenLabsPromo variant="tools" />
                 
                 {filteredTools.map((tool) => (
                 <Card key={tool.id} className="p-6 hover:shadow-lg transition-all duration-300">

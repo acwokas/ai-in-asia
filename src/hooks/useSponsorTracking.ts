@@ -6,6 +6,8 @@ export type SponsorPlacement =
   | 'business_in_a_byte_mpu'
   | 'perplexity_comet_homepage'
   | 'perplexity_comet_tools'
+  | 'elevenlabs_homepage'
+  | 'elevenlabs_tools'
   | 'category_sponsor'
   | 'newsletter_sponsor'
   | 'google_ad_sidebar'
