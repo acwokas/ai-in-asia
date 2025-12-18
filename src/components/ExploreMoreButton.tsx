@@ -63,7 +63,7 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
           {categories.map((cat) => (
             <DropdownMenuItem key={cat.slug} asChild>
               <Link 
-                to={`/${cat.slug}`} 
+                to={`/category/${cat.slug}`} 
                 className="cursor-pointer"
                 onClick={() => handleCategoryClick(cat.name, cat.slug)}
               >
