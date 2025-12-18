@@ -26,6 +26,7 @@ import WhatsChanged from "@/components/WhatsChanged";
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
 const PerplexityCometPromo = lazy(() => import("@/components/PerplexityCometPromo"));
+const ElevenLabsPromo = lazy(() => import("@/components/ElevenLabsPromo"));
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
@@ -847,9 +848,13 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Perplexity Comet Promo - Always First */}
+            {/* Perplexity Comet Promo - Always First (Slot 1) */}
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <PerplexityCometPromo variant="homepage" />
+            </Suspense>
+            {/* ElevenLabs Promo - Always Second (Slot 2) */}
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <ElevenLabsPromo variant="homepage" />
             </Suspense>
             
             {!enableSecondaryQueries ? (
