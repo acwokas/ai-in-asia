@@ -848,61 +848,51 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Perplexity Comet Promo - Always First (Slot 1) */}
+            {/* Perplexity Comet Promo - Slot 1 */}
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <PerplexityCometPromo variant="homepage" />
             </Suspense>
-            {/* ElevenLabs Promo - Always Second (Slot 2) */}
+            {/* ElevenLabs Promo - Slot 2 */}
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <ElevenLabsPromo variant="homepage" />
             </Suspense>
             
+            {/* Single Tool - Slot 3 */}
             {!enableSecondaryQueries ? (
-              // Loading skeletons while tools load
-              Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="article-card p-6">
-                  <Skeleton className="h-6 w-3/4 mb-3" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-4" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-              ))
+              <div className="article-card p-6">
+                <Skeleton className="h-6 w-3/4 mb-3" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-4" />
+                <Skeleton className="h-9 w-full" />
+              </div>
             ) : trendingTools && trendingTools.length > 0 ? (
-              trendingTools.map((tool) => (
-                <div key={tool.id} className="article-card p-6 relative">
-                  <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
-                    {tool.category || 'AI Tool'}
-                  </Badge>
-                  <h3 className="font-semibold text-lg mb-3 pr-20">{tool.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{tool.description}</p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      Learn More about {tool.name}
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </Button>
-                </div>
-              ))
+              <div key={trendingTools[0].id} className="article-card p-6 relative">
+                <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
+                  {trendingTools[0].category || 'AI Tool'}
+                </Badge>
+                <h3 className="font-semibold text-lg mb-3 pr-20">{trendingTools[0].name}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{trendingTools[0].description}</p>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <a href={trendingTools[0].url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                    Learn More about {trendingTools[0].name}
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </Button>
+              </div>
             ) : (
-              // Fallback if no tools in database
-              [
-                { name: "Prompt with the power of AI.", desc: "Advanced prompt engineering platform", url: "https://www.promptandgo.ai", category: "Productivity" },
-                { name: "Startup with the power of AI.", desc: "AI prompts and templates to supercharge your business", url: "https://www.businessinabyte.com", category: "Business" },
-              ].map((tool, i) => (
-                <div key={i} className="article-card p-6 relative">
-                  <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
-                    {tool.category}
-                  </Badge>
-                  <h3 className="font-semibold text-lg mb-3 pr-20">{tool.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{tool.desc}</p>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href={tool.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                      Learn More about {tool.name}
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </Button>
-                </div>
-              ))
+              <div className="article-card p-6 relative">
+                <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
+                  Productivity
+                </Badge>
+                <h3 className="font-semibold text-lg mb-3 pr-20">Prompt with the power of AI.</h3>
+                <p className="text-sm text-muted-foreground mb-4">Advanced prompt engineering platform</p>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <a href="https://www.promptandgo.ai" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                    Learn More about Prompt and Go
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </Button>
+              </div>
             )}
           </div>
         </section>
