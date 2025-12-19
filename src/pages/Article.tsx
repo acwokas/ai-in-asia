@@ -460,20 +460,26 @@ const Article = () => {
     }
   };
 
+  // Use SEO-friendly share URLs that route through the edge function
+  // Social platforms will receive proper meta tags from the edge function
+  const categorySlug = article?.categories?.slug || category || 'news';
+  const articleSlug = article?.slug || cleanSlug || '';
+  const articleTitle = article?.title || '';
+
   const handleTwitterShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(article?.title || '');
-    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
+    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
+    const text = encodeURIComponent(articleTitle);
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${text}`, '_blank', 'width=600,height=400');
   };
 
   const handleLinkedInShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
+    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
   };
 
   const handleFacebookShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
   };
 
   const handleInstagramShare = async () => {
@@ -492,20 +498,23 @@ const Article = () => {
   };
 
   const handleRedditShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent(article?.title || '');
-    window.open(`https://reddit.com/submit?url=${url}&title=${title}`, '_blank', 'width=600,height=400');
+    const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
+    const text = encodeURIComponent(articleTitle);
+    window.open(`https://reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${text}`, '_blank', 'width=600,height=400');
   };
 
   const handleWhatsAppShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`${article?.title}\n\n${window.location.href}`);
+    // WhatsApp uses direct URL since users will click it
+    const directUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    const text = encodeURIComponent(`${articleTitle}\n\n${directUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent(article?.title || '');
-    const body = encodeURIComponent(`Check out this article:\n\n${article?.title}\n${window.location.href}`);
+    // Email uses direct URL since users will click it
+    const directUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    const subject = encodeURIComponent(articleTitle);
+    const body = encodeURIComponent(`Check out this article:\n\n${articleTitle}\n${directUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
