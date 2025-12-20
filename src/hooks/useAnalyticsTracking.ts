@@ -144,8 +144,21 @@ export const setupGlobalErrorTracking = () => {
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     ).join(' ');
     
-    // Only track if it looks like a real error (not React dev warnings)
-    if (!message.includes('Warning:') && !message.includes('ReactDOM')) {
+    // Filter out noise - don't track these error types:
+    const ignoredPatterns = [
+      'Warning:',                    // React dev warnings
+      'ReactDOM',                    // React internals
+      'AdSense',                     // Google Ads slot size errors (normal behavior)
+      'adsbygoogle',                 // Google Ads push errors
+      'No slot size',                // AdSense no slot available
+      'availableWidth=0',            // AdSense width calculation issues
+      'dehydrated as pending',       // React Query SSR hydration (expected)
+      'CancelledError',              // React Query cancelled requests (navigation)
+    ];
+    
+    const shouldIgnore = ignoredPatterns.some(pattern => message.includes(pattern));
+    
+    if (!shouldIgnore) {
       trackError(message.slice(0, 500), 'console.error');
     }
     

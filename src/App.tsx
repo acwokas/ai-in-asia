@@ -94,6 +94,7 @@ const ContentFreshness = lazy(() => import("./pages/ContentFreshness"));
 const FixBrokenLinks = lazy(() => import("./pages/FixBrokenLinks"));
 const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
+const LegacyArticleRedirect = lazy(() => import("./pages/LegacyArticleRedirect"));
 const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
@@ -264,6 +265,8 @@ const App = () => (
               <Route path="/admin/site-analytics" element={<SiteAnalytics />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
+              {/* Legacy WordPress URL redirect - must be before catch-all */}
+              <Route path="/:slug" element={<LegacyArticleRedirect />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CollectiveFooter />
