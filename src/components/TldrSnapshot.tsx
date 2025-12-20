@@ -13,8 +13,9 @@ const TldrSnapshot = ({ bullets }: TldrSnapshotProps) => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-xl">
           <Zap className="h-5 w-5 text-primary fill-primary" />
-          TL;DR Snapshot
+          AI Snapshot
         </CardTitle>
+        <p className="text-sm text-muted-foreground italic">The TL;DR: what matters, fast.</p>
       </CardHeader>
       <CardContent className="space-y-2">
         {bullets.map((bullet, index) => (

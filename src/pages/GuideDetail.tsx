@@ -512,7 +512,8 @@ const GuideDetail = () => {
             {tldrBullets.length > 0 && (
               <Card className="mb-8 border-primary/20 bg-primary/5">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">TL;DR</CardTitle>
+                  <CardTitle className="text-lg">AI Snapshot</CardTitle>
+                  <p className="text-sm text-muted-foreground italic">The TL;DR: what matters, fast.</p>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
