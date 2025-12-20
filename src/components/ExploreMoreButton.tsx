@@ -74,10 +74,10 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
           <DropdownMenuItem asChild>
             <Link 
               to="/guides" 
-              className="cursor-pointer font-medium text-primary"
-              onClick={() => handleCategoryClick("AI Guides", "guides")}
+              className="cursor-pointer"
+              onClick={() => handleCategoryClick("Guides", "guides")}
             >
-              AI Guides
+              Guides
             </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
