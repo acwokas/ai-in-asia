@@ -47,6 +47,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+import ExploreMoreButton from "@/components/ExploreMoreButton";
 
 // Category icon mapping
 const categoryIcons: Record<string, LucideIcon> = {
@@ -1325,6 +1326,7 @@ const Category = () => {
         </div>
       </main>
 
+      <ExploreMoreButton />
       <Footer />
     </div>
   );
