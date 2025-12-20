@@ -31,7 +31,7 @@ const GenerateTldrBulk = () => {
       if (!articles || articles.length === 0) {
         toast({
           title: "No articles to process",
-          description: "All articles already have TL;DR Snapshots.",
+          description: "All articles already have AI Snapshots.",
         });
         setIsProcessing(false);
         return;
@@ -94,7 +94,7 @@ const GenerateTldrBulk = () => {
       }
 
       toast({
-        title: "Bulk TL;DR Generation Complete!",
+        title: "Bulk AI Snapshot Generation Complete!",
         description: `Successfully generated: ${stats.success}, Failed: ${stats.failed}`,
       });
     } catch (error: any) {
@@ -124,7 +124,7 @@ const GenerateTldrBulk = () => {
             Migration Dashboard
           </Link>
           <span className="mx-2">›</span>
-          <span>Generate TL;DR Snapshots</span>
+          <span>Generate AI Snapshots</span>
         </nav>
 
         <div className="mb-6">
@@ -137,9 +137,9 @@ const GenerateTldrBulk = () => {
             Back to Migration Dashboard
           </Button>
           
-          <h1 className="headline text-4xl mb-2">Generate TL;DR Snapshots</h1>
+          <h1 className="headline text-4xl mb-2">Generate AI Snapshots</h1>
           <p className="text-muted-foreground">
-            Automatically generate TL;DR Snapshots for all articles in the platform
+            Automatically generate AI Snapshots for all articles in the platform
           </p>
         </div>
 
@@ -147,10 +147,10 @@ const GenerateTldrBulk = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5" />
-              Bulk TL;DR Generation
+              Bulk AI Snapshot Generation
             </CardTitle>
             <CardDescription>
-              This will generate 3-bullet TL;DR Snapshots for all articles (published or draft) and remove any existing TL;DR sections from article bodies.
+              This will generate 3-bullet AI Snapshots for all articles (published or draft) and remove any existing TL;DR sections from article bodies.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -168,7 +168,7 @@ const GenerateTldrBulk = () => {
               ) : (
                 <>
                   <Zap className="mr-2 h-4 w-4" />
-                  Generate TL;DR for All Articles
+                  Generate AI Snapshots for All Articles
                 </>
               )}
             </Button>
