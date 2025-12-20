@@ -33,6 +33,7 @@ const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
 const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import ExploreMoreButton from "@/components/ExploreMoreButton";
 
 const newsletterSchema = z.object({
   email: z.string()
@@ -1048,6 +1049,7 @@ const Index = () => {
         </section>
       </main>
 
+      <ExploreMoreButton />
       <Footer />
     </div>
   );
