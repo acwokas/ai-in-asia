@@ -723,6 +723,8 @@ const SiteAnalytics = () => {
               pageviewsData={pageviewsData || []}
               eventsData={eventsData || []}
               isLoading={isLoading}
+              startDate={startDate}
+              endDate={endDate}
             />
           </TabsContent>
 

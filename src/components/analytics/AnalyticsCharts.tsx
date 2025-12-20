@@ -1,20 +1,16 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend,
   ComposedChart, Scatter
 } from "recharts";
-import { CalendarIcon, Download, Filter, RefreshCw, Search } from "lucide-react";
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, parseISO } from "date-fns";
-import { cn } from "@/lib/utils";
+import { CalendarIcon, Search } from "lucide-react";
+import { format, eachDayOfInterval, parseISO } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const CHART_COLORS = [
@@ -42,17 +38,17 @@ interface AnalyticsChartsProps {
   pageviewsData: any[];
   eventsData: any[];
   isLoading: boolean;
+  startDate: Date;
+  endDate: Date;
 }
 
-export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoading }: AnalyticsChartsProps) => {
+export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoading, startDate, endDate }: AnalyticsChartsProps) => {
   const isMobile = useIsMobile();
   const [chartType, setChartType] = useState<'area' | 'line' | 'bar'>('area');
   const [metric, setMetric] = useState<'all' | 'sessions' | 'pageviews' | 'bounces'>('all');
   const [groupBy, setGroupBy] = useState<'day' | 'hour' | 'week'>('day');
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: subDays(new Date(), 7),
-    to: new Date()
-  });
+  // Use parent's date range instead of internal state
+  const dateRange = { from: startDate, to: endDate };
   const [searchFilter, setSearchFilter] = useState('');
   
   // Responsive chart heights
@@ -327,38 +323,11 @@ export const AnalyticsCharts = ({ sessionsData, pageviewsData, eventsData, isLoa
               <CardDescription>Query and visualize your data with customizable charts</CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {/* Date Range Picker */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="range"
-                    selected={{ from: dateRange.from, to: dateRange.to }}
-                    onSelect={(range) => {
-                      if (range?.from && range?.to) {
-                        setDateRange({ from: range.from, to: range.to });
-                      }
-                    }}
-                    numberOfMonths={2}
-                  />
-                  <div className="p-3 border-t flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setDateRange({ from: subDays(new Date(), 7), to: new Date() })}>
-                      Last 7 days
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setDateRange({ from: subDays(new Date(), 30), to: new Date() })}>
-                      Last 30 days
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setDateRange({ from: subDays(new Date(), 90), to: new Date() })}>
-                      Last 90 days
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              {/* Show current date range (controlled by parent) */}
+              <Badge variant="outline" className="gap-2">
+                <CalendarIcon className="h-3 w-3" />
+                {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d')}
+              </Badge>
             </div>
           </div>
         </CardHeader>
