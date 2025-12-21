@@ -46,7 +46,7 @@ const ExploreMoreButton = ({ minScrollPercent = 30 }: ExploreMoreButtonProps) =>
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 animate-in slide-in-from-bottom-4 fade-in duration-300">
+    <div className="fixed bottom-6 right-4 sm:right-6 z-40 animate-in slide-in-from-bottom-4 fade-in duration-300 max-w-[calc(100vw-2rem)]">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
