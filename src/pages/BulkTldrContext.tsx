@@ -125,7 +125,7 @@ const BulkTldrContext = () => {
       .limit(1);
 
     if (data && data.length > 0) {
-      const job = data[0];
+      const job: any = data[0];
       setActiveBatchId(job.id);
       setQueue({
         id: job.id,
@@ -137,6 +137,10 @@ const BulkTldrContext = () => {
         started_at: job.started_at,
         completed_at: job.completed_at,
       });
+
+      // Seed lastUpdated so stall detection and Resume button work after reload
+      const ts = job.updated_at || job.started_at || job.created_at;
+      if (ts) setLastUpdated(new Date(ts));
     }
   };
 
@@ -250,11 +254,12 @@ const BulkTldrContext = () => {
 
   // Detect stalled job - queued/processing but no updates for 30+ seconds
   const isStalled = isActive && lastUpdated && (Date.now() - lastUpdated.getTime() > 30000);
-  // Also consider stalled if queued but started_at is null and processed > 0
-  const isDefinitelyStalled = queue && 
-    queue.status === "queued" && 
-    queue.processed_items > 0 && 
-    !queue.started_at;
+
+  // If a job is "queued" but has partial progress, it is resumable even if started_at is set.
+  const isResumableQueued = !!queue &&
+    queue.status === "queued" &&
+    queue.processed_items > 0 &&
+    queue.processed_items < queue.total_items;
 
   const formatDuration = () => {
     if (!queue?.started_at) return "";
@@ -366,7 +371,7 @@ const BulkTldrContext = () => {
                   </>
                 ) : (
                   <div className="flex gap-2">
-                    {(isStalled || isDefinitelyStalled) && (
+                    {(isStalled || isResumableQueued) && (
                       <Button onClick={handleResume} disabled={isResuming} variant="default">
                         {isResuming ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
                         Resume Job
@@ -416,10 +421,10 @@ const BulkTldrContext = () => {
                   )}
 
                   {isActive && (
-                    <div className={`p-3 rounded-lg border ${(isStalled || isDefinitelyStalled) ? 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800' : 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'}`}>
-                      <p className={`text-sm ${(isStalled || isDefinitelyStalled) ? 'text-amber-800 dark:text-amber-200' : 'text-blue-800 dark:text-blue-200'}`}>
-                        {(isStalled || isDefinitelyStalled) 
-                          ? "Job appears to have stalled. Click 'Resume Job' to continue processing from where it left off."
+                    <div className={`p-3 rounded-lg border ${(isStalled || isResumableQueued) ? 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800' : 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'}`}>
+                      <p className={`text-sm ${(isStalled || isResumableQueued) ? 'text-amber-800 dark:text-amber-200' : 'text-blue-800 dark:text-blue-200'}`}>
+                        {(isStalled || isResumableQueued) 
+                          ? "Job is paused. Click 'Resume Job' to continue processing from where it left off."
                           : "Processing in background. You can leave this page - progress will continue."}
                       </p>
                     </div>
