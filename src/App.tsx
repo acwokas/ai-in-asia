@@ -107,6 +107,7 @@ const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
 const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
+const Contribute = lazy(() => import("./pages/Contribute"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -231,6 +232,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/editorial-standards" element={<EditorialStandards />} />
+              <Route path="/contribute" element={<Contribute />} />
               <Route path="/redirects" element={<Redirects />} />
               <Route path="/admin/bulk-import" element={<BulkImport />} />
               <Route path="/admin/extract-image-urls" element={<ExtractImageUrls />} />
