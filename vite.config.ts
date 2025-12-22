@@ -11,10 +11,24 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-    dedupe: ["react", "react-dom"],
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      { find: /^react$/, replacement: path.resolve(__dirname, "node_modules/react") },
+      { find: /^react-dom$/, replacement: path.resolve(__dirname, "node_modules/react-dom") },
+      {
+        find: /^react-dom\/client$/,
+        replacement: path.resolve(__dirname, "node_modules/react-dom/client"),
+      },
+      {
+        find: /^react\/jsx-runtime$/,
+        replacement: path.resolve(__dirname, "node_modules/react/jsx-runtime"),
+      },
+      {
+        find: /^react\/jsx-dev-runtime$/,
+        replacement: path.resolve(__dirname, "node_modules/react/jsx-dev-runtime"),
+      },
+    ],
+    dedupe: ["react", "react-dom", "react-dom/client"],
   },
   build: {
     rollupOptions: {
@@ -34,6 +48,12 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: false,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react/jsx-runtime",
+      "react-router-dom",
+    ],
   },
 }));

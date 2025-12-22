@@ -1,5 +1,5 @@
-const CACHE_NAME = 'aiinasia-v1';
-const IMAGE_CACHE = 'aiinasia-images-v1';
+const CACHE_NAME = 'aiinasia-v2';
+const IMAGE_CACHE = 'aiinasia-images-v2';
 const MAX_IMAGE_CACHE_SIZE = 100;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -193,7 +193,20 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
-    // Asset requests: cache first, then network
+    // IMPORTANT: do not cache Vite dev module URLs (can cause React duplication / invalid hook calls)
+    if (
+      url.origin === self.location.origin &&
+      (url.pathname.startsWith('/node_modules/.vite/') ||
+        url.pathname.startsWith('/node_modules/') ||
+        url.pathname.startsWith('/@') ||
+        url.pathname.startsWith('/src/') ||
+        url.searchParams.has('v'))
+    ) {
+      event.respondWith(fetch(request));
+      return;
+    }
+
+    // Asset requests: cache first, then network (production assets)
     event.respondWith(
       caches.match(request).then((cached) => {
         return (
