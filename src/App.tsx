@@ -104,6 +104,7 @@ const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 const GuidesImport = lazy(() => import("./pages/GuidesImport"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
+const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -213,6 +214,7 @@ const App = () => (
               <Route path="/events" element={<Events />} />
               <Route path="/tools" element={<Navigate to="/guides?category=tools" replace />} />
               <Route path="/prompts" element={<Navigate to="/guides?category=prompts" replace />} />
+              <Route path="/saved" element={<SavedArticles />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
               <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />

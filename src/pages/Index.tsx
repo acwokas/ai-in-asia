@@ -22,6 +22,7 @@ import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import WhatsChanged from "@/components/WhatsChanged";
+import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
 
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
@@ -820,6 +821,11 @@ const Index = () => {
         {/* What's Changed Section */}
         <section className="container mx-auto px-4">
           <WhatsChanged />
+        </section>
+
+        {/* Continue Reading - Based on recently viewed articles */}
+        <section className="container mx-auto px-4 py-8">
+          <RecentlyViewedArticles maxItems={5} title="Continue reading" />
         </section>
 
         {/* Recommended Guides & Tutorials */}

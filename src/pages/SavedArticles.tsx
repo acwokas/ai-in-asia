@@ -1,0 +1,126 @@
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Bookmark, X, ExternalLink, Clock } from 'lucide-react';
+import { useSavedArticles } from '@/hooks/useSavedArticles';
+import { format } from 'date-fns';
+
+const SavedArticles = () => {
+  const { savedArticles, removeArticle } = useSavedArticles();
+  
+  // Sort by most recently saved
+  const sortedArticles = [...savedArticles].sort((a, b) => b.savedAt - a.savedAt);
+
+  const formatDate = (timestamp: number) => {
+    try {
+      return format(new Date(timestamp), 'MMM d, yyyy');
+    } catch {
+      return '';
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Helmet>
+        <title>Saved Articles | AI in ASIA</title>
+        <meta name="description" content="Your saved articles from AI in ASIA. Read later without an account - saved items live on this device only." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <Header />
+      
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Bookmark className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl font-bold">Saved Articles</h1>
+          </div>
+          <p className="text-muted-foreground">
+            Saved items live on this device only. No login required.
+          </p>
+        </div>
+
+        {sortedArticles.length === 0 ? (
+          <Card className="p-8 text-center bg-card/50 border-border/40">
+            <Bookmark className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">No saved articles yet</h2>
+            <p className="text-muted-foreground mb-6">
+              When you save an article, it will appear here for easy access later.
+            </p>
+            <Button asChild>
+              <Link to="/">Browse articles</Link>
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {sortedArticles.map((article) => (
+              <Card 
+                key={article.url}
+                className="p-4 bg-card/50 border-border/40 hover:border-primary/30 transition-colors"
+              >
+                <div className="flex gap-4">
+                  {article.featuredImageUrl && (
+                    <Link to={article.url} className="flex-shrink-0">
+                      <img
+                        src={article.featuredImageUrl}
+                        alt=""
+                        className="w-24 h-20 sm:w-32 sm:h-24 object-cover rounded-lg"
+                        loading="lazy"
+                      />
+                    </Link>
+                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <Link 
+                          to={article.url}
+                          className="font-semibold text-lg hover:text-primary transition-colors line-clamp-2"
+                        >
+                          {article.title}
+                        </Link>
+                        
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                          {article.categoryName && (
+                            <span className="text-primary">{article.categoryName}</span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Saved {formatDate(article.savedAt)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeArticle(article.url)}
+                        className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                        aria-label="Remove from saved"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {article.excerpt && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2 hidden sm:block">
+                        {article.excerpt}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default SavedArticles;

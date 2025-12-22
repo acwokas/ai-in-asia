@@ -28,6 +28,9 @@ import ExploreMoreButton from "@/components/ExploreMoreButton";
 import UpNextSidebar from "@/components/UpNextSidebar";
 import NextArticleProgress from "@/components/NextArticleProgress";
 import ExitIntentOverlay from "@/components/ExitIntentOverlay";
+import ArticleSaveButton from "@/components/ArticleSaveButton";
+import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
+import { useRecentArticles } from "@/hooks/useRecentArticles";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -93,6 +96,7 @@ const Article = () => {
   const { user } = useAuth();
   const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
   const queryClient = useQueryClient();
+  const { trackView } = useRecentArticles();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -209,6 +213,16 @@ const Article = () => {
   useEffect(() => {
     if (article?.id && article.status === 'published') {
       trackArticleView();
+      // Track for "Continue Reading" localStorage-based feature
+      const articleUrl = `/${article.categories?.slug || category || 'news'}/${article.slug}`;
+      trackView({
+        id: article.id,
+        title: article.title,
+        url: articleUrl,
+        featuredImageUrl: article.featured_image_url || undefined,
+        categoryName: article.categories?.name || undefined,
+        categorySlug: article.categories?.slug || undefined,
+      });
     }
   }, [article?.id]);
 
@@ -1259,15 +1273,20 @@ const Article = () => {
                   </div>
                   
                   <div className="flex items-center gap-2 ml-auto md:ml-0">
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={handleBookmark}
-                      title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
-                      className="h-8 w-8 cursor-pointer"
-                    >
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                    </Button>
+                    <ArticleSaveButton
+                      article={{
+                        id: article.id,
+                        title: article.title,
+                        url: `/${article.categories?.slug || category || 'news'}/${article.slug}`,
+                        excerpt: article.excerpt || '',
+                        featuredImageUrl: article.featured_image_url || undefined,
+                        categoryName: article.categories?.name || undefined,
+                        categorySlug: article.categories?.slug || undefined,
+                      }}
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                    />
                     
                     <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
                       <FontSizeControl />
@@ -1531,6 +1550,15 @@ const Article = () => {
           {/* Comments Section */}
           <section id="comments-section" className="container mx-auto px-4 max-w-4xl mt-12">
             <Comments articleId={article.id} />
+          </section>
+
+          {/* Continue Reading - Based on recently viewed articles */}
+          <section className="container mx-auto px-4 max-w-4xl mt-12">
+            <RecentlyViewedArticles 
+              excludeUrl={`/${article.categories?.slug || category || 'news'}/${article.slug}`}
+              maxItems={5}
+              title="Continue reading"
+            />
           </section>
 
           {/* Related Articles Box - Above You May Also Like */}
