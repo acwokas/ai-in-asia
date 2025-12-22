@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pag-v1';
-const IMAGE_CACHE = 'pag-images-v1';
+const CACHE_NAME = 'aiinasia-v1';
+const IMAGE_CACHE = 'aiinasia-images-v1';
 const MAX_IMAGE_CACHE_SIZE = 100;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 

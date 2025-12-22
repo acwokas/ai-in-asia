@@ -1,34 +1,26 @@
 {
-  "name": "AI in ASIA - AI News and Innovation",
-  "short_name": "AI in ASIA",
-  "description": "Your source for AI news, innovations, and expert insights from across Asia",
+  "name": "AIinASIA",
+  "short_name": "AIinASIA",
+  "description": "AI news, tools, and practical guidance across Asia.",
   "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#000000",
-  "orientation": "portrait-primary",
   "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/icons/aiinasia-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "/favicon.png",
+      "src": "/icons/aiinasia-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "/favicon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/favicon.png",
+      "src": "/icons/aiinasia-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
