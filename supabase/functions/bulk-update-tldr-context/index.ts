@@ -131,6 +131,48 @@ serve(async (req) => {
       );
     }
 
+    // Resume a stalled/queued job
+    if (action === "resume") {
+      if (!batchId) throw new Error("batchId required");
+
+      const { data: queue, error: queueError } = await supabase
+        .from("bulk_operation_queue")
+        .select("*")
+        .eq("id", batchId)
+        .single();
+
+      if (queueError || !queue) throw new Error("Job not found");
+
+      if (queue.status === "completed") {
+        return new Response(
+          JSON.stringify({ success: false, message: "Job already completed" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Get remaining article IDs to process
+      const allIds = queue.article_ids as string[];
+      const processedCount = queue.processed_items || 0;
+      const remainingIds = allIds.slice(processedCount);
+
+      console.log(`Resuming batch ${batchId} from item ${processedCount}, ${remainingIds.length} remaining`);
+
+      // Start background processing for remaining items
+      // @ts-ignore
+      (globalThis as any).EdgeRuntime.waitUntil(
+        processAllArticles(batchId, remainingIds, supabase, lovableApiKey, processedCount, queue.successful_items || 0, queue.failed_items || 0)
+      );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Resuming from item ${processedCount}`,
+          remaining: remainingIds.length,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Cancel a running job
     if (action === "cancel") {
       if (!batchId) throw new Error("batchId required");
@@ -179,9 +221,12 @@ async function processAllArticles(
   batchId: string,
   articleIds: string[],
   supabase: any,
-  apiKey: string
+  apiKey: string,
+  startProcessed: number = 0,
+  startSuccessful: number = 0,
+  startFailed: number = 0
 ) {
-  console.log(`Starting background processing for batch ${batchId} with ${articleIds.length} articles`);
+  console.log(`Processing batch ${batchId}: ${articleIds.length} articles (starting from ${startProcessed})`);
 
   // Update status to processing
   await supabase
@@ -189,9 +234,9 @@ async function processAllArticles(
     .update({ status: "processing", started_at: new Date().toISOString() })
     .eq("id", batchId);
 
-  let processed = 0;
-  let successful = 0;
-  let failed = 0;
+  let processed = startProcessed;
+  let successful = startSuccessful;
+  let failed = startFailed;
   const batchSize = 3; // Process 3 at a time
 
   for (let i = 0; i < articleIds.length; i += batchSize) {
