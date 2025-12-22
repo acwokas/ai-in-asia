@@ -66,7 +66,7 @@ const Header = memo(() => {
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-4 w-px bg-primary mx-2" />
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">AI Policy Atlas</Link>
+              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">Policy Atlas</Link>
               <div className="h-4 w-px bg-primary mx-2" />
             </nav>
           </div>
@@ -199,7 +199,7 @@ const Header = memo(() => {
               <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-px bg-primary my-2" />
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">AI Policy Atlas</Link>
+              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">Policy Atlas</Link>
               <div className="h-px bg-primary my-2" />
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
               <form onSubmit={handleSearch} className="pt-2">

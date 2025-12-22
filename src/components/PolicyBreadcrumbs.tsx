@@ -14,7 +14,7 @@ const PolicyBreadcrumbs = ({ regionName, regionSlug, articleTitle }: PolicyBread
         to="/ai-policy-atlas" 
         className="text-primary hover:text-primary/80 transition-colors font-medium hover:underline py-1"
       >
-        AI Policy Atlas
+        Policy Atlas
       </Link>
       
       {regionName && regionSlug && (
