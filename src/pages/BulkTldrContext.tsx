@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ArrowLeft, Play, Eye, Loader2, CheckCircle, XCircle, SkipForward, StopCircle } from "lucide-react";
+import { ArrowLeft, Play, Eye, Loader2, CheckCircle, XCircle, SkipForward, StopCircle, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PreviewResult {
@@ -32,12 +32,14 @@ const BulkTldrContext = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticleId, setSelectedArticleId] = useState<string>("");
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [existingSnapshot, setExistingSnapshot] = useState<any>(null);
   const [queue, setQueue] = useState<QueueStatus | null>(null);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchArticles();
@@ -71,6 +73,7 @@ const BulkTldrContext = () => {
             started_at: newData.started_at,
             completed_at: newData.completed_at,
           });
+          setLastUpdated(new Date());
 
           if (newData.status === 'completed') {
             toast({ title: "Complete!", description: "All articles have been processed" });
@@ -210,9 +213,30 @@ const BulkTldrContext = () => {
     }
   };
 
+  const handleResume = async () => {
+    if (!activeBatchId) return;
+    setIsResuming(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
+        headers: await getAuthHeaders(),
+        body: { action: "resume", batchId: activeBatchId },
+      });
+
+      if (error) throw error;
+      toast({ title: "Resuming", description: `Continuing from item ${queue?.processed_items || 0}` });
+      setLastUpdated(new Date());
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
   const handleClear = () => {
     setQueue(null);
     setActiveBatchId(null);
+    setLastUpdated(null);
   };
 
   const selectedArticle = articles.find(a => a.id === selectedArticleId);
@@ -223,6 +247,14 @@ const BulkTldrContext = () => {
   const skippedCount = queue 
     ? queue.processed_items - queue.successful_items - queue.failed_items 
     : 0;
+
+  // Detect stalled job - queued/processing but no updates for 30+ seconds
+  const isStalled = isActive && lastUpdated && (Date.now() - lastUpdated.getTime() > 30000);
+  // Also consider stalled if queued but started_at is null and processed > 0
+  const isDefinitelyStalled = queue && 
+    queue.status === "queued" && 
+    queue.processed_items > 0 && 
+    !queue.started_at;
 
   const formatDuration = () => {
     if (!queue?.started_at) return "";
@@ -333,10 +365,18 @@ const BulkTldrContext = () => {
                     )}
                   </>
                 ) : (
-                  <Button onClick={handleCancel} variant="destructive">
-                    <StopCircle className="h-4 w-4 mr-2" />
-                    Cancel Job
-                  </Button>
+                  <div className="flex gap-2">
+                    {(isStalled || isDefinitelyStalled) && (
+                      <Button onClick={handleResume} disabled={isResuming} variant="default">
+                        {isResuming ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                        Resume Job
+                      </Button>
+                    )}
+                    <Button onClick={handleCancel} variant="destructive">
+                      <StopCircle className="h-4 w-4 mr-2" />
+                      Cancel Job
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -376,9 +416,11 @@ const BulkTldrContext = () => {
                   )}
 
                   {isActive && (
-                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
-                      <p className="text-sm text-blue-800 dark:text-blue-200">
-                        Processing in background. You can leave this page - progress will continue.
+                    <div className={`p-3 rounded-lg border ${(isStalled || isDefinitelyStalled) ? 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800' : 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'}`}>
+                      <p className={`text-sm ${(isStalled || isDefinitelyStalled) ? 'text-amber-800 dark:text-amber-200' : 'text-blue-800 dark:text-blue-200'}`}>
+                        {(isStalled || isDefinitelyStalled) 
+                          ? "Job appears to have stalled. Click 'Resume Job' to continue processing from where it left off."
+                          : "Processing in background. You can leave this page - progress will continue."}
                       </p>
                     </div>
                   )}
