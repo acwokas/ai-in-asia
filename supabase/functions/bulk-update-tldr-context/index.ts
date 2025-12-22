@@ -22,7 +22,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check authentication and admin role (must be a signed-in user token)
+    // Check authentication and admin role
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -52,8 +52,8 @@ serve(async (req) => {
       });
     }
 
-    const { action, articleId, batchId, batchSize = 5 } = await req.json();
-    console.log("bulk-update-tldr-context request", { action, articleId, batchId, batchSize });
+    const { action, articleId, batchId } = await req.json();
+    console.log("bulk-update-tldr-context request", { action, articleId, batchId });
 
     // Preview mode - generate for a single article without saving
     if (action === "preview") {
@@ -79,7 +79,7 @@ serve(async (req) => {
       );
     }
 
-    // Start a new batch job
+    // Start a new batch job - collect all article IDs and spawn background processing
     if (action === "start") {
       const pageSize = 1000;
       const allIds: string[] = [];
@@ -95,10 +95,9 @@ serve(async (req) => {
           .range(from, from + pageSize - 1);
 
         if (pageError) throw pageError;
-
         if (!page || page.length === 0) break;
+        
         for (const row of page) allIds.push(row.id);
-
         if (page.length < pageSize) break;
         from += pageSize;
       }
@@ -117,136 +116,52 @@ serve(async (req) => {
 
       if (queueError) throw queueError;
 
+      // Start background processing using waitUntil
+      // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+      (globalThis as any).EdgeRuntime.waitUntil(processAllArticles(newBatchId, allIds, supabase, lovableApiKey));
+
       return new Response(
         JSON.stringify({
           success: true,
           batchId: newBatchId,
           totalItems: allIds.length,
+          message: "Background processing started. Subscribe to realtime updates.",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Process next batch
-    if (action === "process") {
-      if (!batchId) throw new Error("batchId required for processing");
+    // Cancel a running job
+    if (action === "cancel") {
+      if (!batchId) throw new Error("batchId required");
 
-      // Get queue entry
+      await supabase
+        .from("bulk_operation_queue")
+        .update({ status: "cancelled", completed_at: new Date().toISOString() })
+        .eq("id", batchId);
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Job cancelled" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Get status of a job
+    if (action === "status") {
+      if (!batchId) throw new Error("batchId required");
+
       const { data: queue, error: queueError } = await supabase
         .from("bulk_operation_queue")
         .select("*")
         .eq("id", batchId)
         .single();
 
-      if (queueError || !queue) throw new Error("Batch not found");
-      if (queue.status === "completed") {
-        return new Response(JSON.stringify({ success: true, completed: true, queue }), 
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
+      if (queueError) throw queueError;
 
-      // Update status to processing
-      if (queue.status === "queued") {
-        await supabase
-          .from("bulk_operation_queue")
-          .update({ status: "processing", started_at: new Date().toISOString() })
-          .eq("id", batchId);
-      }
-
-      const articleIds = queue.article_ids as string[];
-      const startIndex = queue.processed_items;
-      const endIndex = Math.min(startIndex + batchSize, articleIds.length);
-      const batchArticleIds = articleIds.slice(startIndex, endIndex);
-
-      if (batchArticleIds.length === 0) {
-        // Mark as completed
-        await supabase
-          .from("bulk_operation_queue")
-          .update({ 
-            status: "completed", 
-            completed_at: new Date().toISOString() 
-          })
-          .eq("id", batchId);
-
-        return new Response(JSON.stringify({ success: true, completed: true, queue }), 
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-
-      // Fetch articles for this batch
-      const { data: articles, error: articlesError } = await supabase
-        .from("articles")
-        .select("id, title, content, tldr_snapshot")
-        .in("id", batchArticleIds);
-
-      if (articlesError) throw articlesError;
-
-      let successCount = 0;
-      let failCount = 0;
-      const results: any[] = [];
-
-      for (const article of articles || []) {
-        try {
-          // Check if already has the new fields
-          const snapshot = article.tldr_snapshot as any;
-          if (snapshot && !Array.isArray(snapshot) && snapshot.whoShouldPayAttention) {
-            console.log(`Skipping ${article.id} - already has context`);
-            successCount++;
-            results.push({ id: article.id, status: "skipped" });
-            continue;
-          }
-
-          const result = await generateContextForArticle(article, lovableApiKey);
-          
-          // Build updated snapshot
-          const bullets = Array.isArray(snapshot) ? snapshot : snapshot?.bullets || [];
-          const updatedSnapshot = {
-            bullets,
-            whoShouldPayAttention: result.whoShouldPayAttention,
-            whatChangesNext: result.whatChangesNext
-          };
-
-          // Update article
-          const { error: updateError } = await supabase
-            .from("articles")
-            .update({ tldr_snapshot: updatedSnapshot })
-            .eq("id", article.id);
-
-          if (updateError) throw updateError;
-
-          successCount++;
-          results.push({ id: article.id, status: "success", ...result });
-          
-          // Small delay to avoid rate limiting
-          await new Promise(r => setTimeout(r, 500));
-        } catch (err) {
-          console.error(`Error processing ${article.id}:`, err);
-          failCount++;
-          results.push({ id: article.id, status: "error", error: err instanceof Error ? err.message : "Unknown error" });
-        }
-      }
-
-      // Update queue progress
-      const newProcessed = queue.processed_items + batchArticleIds.length;
-      const isComplete = newProcessed >= articleIds.length;
-
-      await supabase
-        .from("bulk_operation_queue")
-        .update({ 
-          processed_items: newProcessed,
-          successful_items: queue.successful_items + successCount,
-          failed_items: queue.failed_items + failCount,
-          status: isComplete ? "completed" : "processing",
-          completed_at: isComplete ? new Date().toISOString() : null,
-          results: [...(queue.results as any[] || []), ...results]
-        })
-        .eq("id", batchId);
-
-      return new Response(JSON.stringify({ 
-        success: true, 
-        completed: isComplete,
-        processed: newProcessed,
-        total: articleIds.length,
-        batchResults: results
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({ success: true, queue }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     throw new Error("Invalid action");
@@ -258,6 +173,125 @@ serve(async (req) => {
     );
   }
 });
+
+// Background processing function
+async function processAllArticles(
+  batchId: string,
+  articleIds: string[],
+  supabase: any,
+  apiKey: string
+) {
+  console.log(`Starting background processing for batch ${batchId} with ${articleIds.length} articles`);
+
+  // Update status to processing
+  await supabase
+    .from("bulk_operation_queue")
+    .update({ status: "processing", started_at: new Date().toISOString() })
+    .eq("id", batchId);
+
+  let processed = 0;
+  let successful = 0;
+  let failed = 0;
+  const batchSize = 3; // Process 3 at a time
+
+  for (let i = 0; i < articleIds.length; i += batchSize) {
+    // Check if job was cancelled
+    const { data: queue } = await supabase
+      .from("bulk_operation_queue")
+      .select("status")
+      .eq("id", batchId)
+      .single();
+
+    if (queue?.status === "cancelled") {
+      console.log(`Job ${batchId} was cancelled`);
+      return;
+    }
+
+    const batchArticleIds = articleIds.slice(i, i + batchSize);
+
+    // Fetch articles for this mini-batch
+    const { data: articles, error: articlesError } = await supabase
+      .from("articles")
+      .select("id, title, content, tldr_snapshot")
+      .in("id", batchArticleIds);
+
+    if (articlesError) {
+      console.error("Error fetching articles:", articlesError);
+      failed += batchArticleIds.length;
+      processed += batchArticleIds.length;
+      continue;
+    }
+
+    for (const article of articles || []) {
+      try {
+        // Check if already has the new fields
+        const snapshot = article.tldr_snapshot as any;
+        if (snapshot && !Array.isArray(snapshot) && snapshot.whoShouldPayAttention) {
+          console.log(`Skipping ${article.id} - already has context`);
+          successful++;
+          processed++;
+          continue;
+        }
+
+        const result = await generateContextForArticle(article, apiKey);
+        
+        // Build updated snapshot
+        const bullets = Array.isArray(snapshot) ? snapshot : snapshot?.bullets || [];
+        const updatedSnapshot = {
+          bullets,
+          whoShouldPayAttention: result.whoShouldPayAttention,
+          whatChangesNext: result.whatChangesNext
+        };
+
+        // Update article
+        const { error: updateError } = await supabase
+          .from("articles")
+          .update({ tldr_snapshot: updatedSnapshot })
+          .eq("id", article.id);
+
+        if (updateError) throw updateError;
+
+        successful++;
+        console.log(`Processed ${article.id} successfully`);
+        
+        // Small delay to avoid rate limiting
+        await new Promise(r => setTimeout(r, 300));
+      } catch (err) {
+        console.error(`Error processing ${article.id}:`, err);
+        failed++;
+      }
+      processed++;
+    }
+
+    // Update progress in database (realtime will push to clients)
+    await supabase
+      .from("bulk_operation_queue")
+      .update({ 
+        processed_items: processed,
+        successful_items: successful,
+        failed_items: failed,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", batchId);
+
+    // Small delay between batches
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  // Mark as completed
+  await supabase
+    .from("bulk_operation_queue")
+    .update({ 
+      status: "completed",
+      processed_items: processed,
+      successful_items: successful,
+      failed_items: failed,
+      completed_at: new Date().toISOString()
+    })
+    .eq("id", batchId);
+
+  console.log(`Batch ${batchId} completed: ${successful} success, ${failed} failed`);
+}
 
 async function generateContextForArticle(article: any, apiKey: string) {
   // Extract content text

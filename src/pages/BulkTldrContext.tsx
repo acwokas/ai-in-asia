@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ArrowLeft, Play, Eye, Loader2, CheckCircle, XCircle, SkipForward } from "lucide-react";
+import { ArrowLeft, Play, Eye, Loader2, CheckCircle, XCircle, SkipForward, StopCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PreviewResult {
@@ -24,23 +24,67 @@ interface QueueStatus {
   processed_items: number;
   successful_items: number;
   failed_items: number;
+  started_at: string | null;
+  completed_at: string | null;
 }
 
 const BulkTldrContext = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
   const [selectedArticleId, setSelectedArticleId] = useState<string>("");
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [existingSnapshot, setExistingSnapshot] = useState<any>(null);
   const [queue, setQueue] = useState<QueueStatus | null>(null);
-  const [batchResults, setBatchResults] = useState<any[]>([]);
-  const processingRef = useRef(false);
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchArticles();
+    checkExistingJob();
   }, []);
+
+  // Subscribe to realtime updates when we have an active batch
+  useEffect(() => {
+    if (!activeBatchId) return;
+
+    const channel = supabase
+      .channel(`bulk-queue-${activeBatchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bulk_operation_queue',
+          filter: `id=eq.${activeBatchId}`
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          const newData = payload.new as any;
+          setQueue({
+            id: newData.id,
+            status: newData.status,
+            total_items: newData.total_items,
+            processed_items: newData.processed_items,
+            successful_items: newData.successful_items,
+            failed_items: newData.failed_items,
+            started_at: newData.started_at,
+            completed_at: newData.completed_at,
+          });
+
+          if (newData.status === 'completed') {
+            toast({ title: "Complete!", description: "All articles have been processed" });
+          } else if (newData.status === 'cancelled') {
+            toast({ title: "Cancelled", description: "Job was cancelled" });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeBatchId, toast]);
 
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -64,6 +108,32 @@ const BulkTldrContext = () => {
       if (data.length > 0) {
         setSelectedArticleId(data[0].id);
       }
+    }
+  };
+
+  const checkExistingJob = async () => {
+    // Check for any in-progress jobs
+    const { data } = await supabase
+      .from("bulk_operation_queue")
+      .select("*")
+      .eq("operation_type", "tldr_context_update")
+      .in("status", ["queued", "processing"])
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (data && data.length > 0) {
+      const job = data[0];
+      setActiveBatchId(job.id);
+      setQueue({
+        id: job.id,
+        status: job.status,
+        total_items: job.total_items,
+        processed_items: job.processed_items,
+        successful_items: job.successful_items,
+        failed_items: job.failed_items,
+        started_at: job.started_at,
+        completed_at: job.completed_at,
+      });
     }
   };
 
@@ -91,8 +161,7 @@ const BulkTldrContext = () => {
   };
 
   const handleStartBulk = async () => {
-    setIsProcessing(true);
-    setBatchResults([]);
+    setIsStarting(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
@@ -102,6 +171,7 @@ const BulkTldrContext = () => {
 
       if (error) throw error;
 
+      setActiveBatchId(data.batchId);
       setQueue({
         id: data.batchId,
         status: "queued",
@@ -109,76 +179,60 @@ const BulkTldrContext = () => {
         processed_items: 0,
         successful_items: 0,
         failed_items: 0,
+        started_at: null,
+        completed_at: null,
       });
 
       toast({
         title: "Bulk update started",
-        description: `Processing ${data.totalItems} articles`,
+        description: `Processing ${data.totalItems} articles in background`,
       });
-
-      // Start processing
-      processingRef.current = true;
-      processNextBatch(data.batchId);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
-      setIsProcessing(false);
+    } finally {
+      setIsStarting(false);
     }
   };
 
-  const processNextBatch = async (batchId: string) => {
-    if (!processingRef.current) return;
+  const handleCancel = async () => {
+    if (!activeBatchId) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
+      const { error } = await supabase.functions.invoke("bulk-update-tldr-context", {
         headers: await getAuthHeaders(),
-        body: { action: "process", batchId, batchSize: 3 },
+        body: { action: "cancel", batchId: activeBatchId },
       });
 
       if (error) throw error;
-
-      setQueue((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: data.completed ? "completed" : "processing",
-              processed_items: data.processed,
-              successful_items:
-                prev.successful_items +
-                (data.batchResults?.filter((r: any) => r.status === "success").length || 0),
-              failed_items:
-                prev.failed_items +
-                (data.batchResults?.filter((r: any) => r.status === "error").length || 0),
-            }
-          : null
-      );
-
-      if (data.batchResults) {
-        setBatchResults((prev) => [...prev, ...data.batchResults]);
-      }
-
-      if (data.completed) {
-        toast({ title: "Complete!", description: "All articles have been processed" });
-        setIsProcessing(false);
-        processingRef.current = false;
-      } else {
-        // Continue processing after a short delay
-        setTimeout(() => processNextBatch(batchId), 1000);
-      }
+      toast({ title: "Cancelled", description: "Job has been cancelled" });
     } catch (err: any) {
-      toast({ title: "Error processing batch", description: err.message, variant: "destructive" });
-      setIsProcessing(false);
-      processingRef.current = false;
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
-  const handleStop = () => {
-    processingRef.current = false;
-    setIsProcessing(false);
-    toast({ title: "Stopped", description: "Processing has been paused" });
+  const handleClear = () => {
+    setQueue(null);
+    setActiveBatchId(null);
   };
 
   const selectedArticle = articles.find(a => a.id === selectedArticleId);
-  const progressPercent = queue ? (queue.processed_items / queue.total_items) * 100 : 0;
+  const progressPercent = queue && queue.total_items > 0 
+    ? (queue.processed_items / queue.total_items) * 100 
+    : 0;
+  const isActive = queue && (queue.status === "queued" || queue.status === "processing");
+  const skippedCount = queue 
+    ? queue.processed_items - queue.successful_items - queue.failed_items 
+    : 0;
+
+  const formatDuration = () => {
+    if (!queue?.started_at) return "";
+    const start = new Date(queue.started_at).getTime();
+    const end = queue.completed_at ? new Date(queue.completed_at).getTime() : Date.now();
+    const seconds = Math.floor((end - start) / 1000);
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  };
 
   return (
     <>
@@ -261,19 +315,27 @@ const BulkTldrContext = () => {
               <CardTitle className="text-xl">Step 2: Bulk Update All Articles</CardTitle>
               <CardDescription>
                 Process all published and scheduled articles with existing TL;DR snapshots.
-                This runs in small batches to avoid timeouts.
+                Progress updates in real-time. Processing continues in the background.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-4">
-                {!isProcessing ? (
-                  <Button onClick={handleStartBulk} disabled={isProcessing} className="bg-primary">
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Bulk Update
-                  </Button>
+                {!isActive ? (
+                  <>
+                    <Button onClick={handleStartBulk} disabled={isStarting} className="bg-primary">
+                      {isStarting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                      Start Bulk Update
+                    </Button>
+                    {queue && queue.status === "completed" && (
+                      <Button onClick={handleClear} variant="outline">
+                        Clear
+                      </Button>
+                    )}
+                  </>
                 ) : (
-                  <Button onClick={handleStop} variant="destructive">
-                    Stop Processing
+                  <Button onClick={handleCancel} variant="destructive">
+                    <StopCircle className="h-4 w-4 mr-2" />
+                    Cancel Job
                   </Button>
                 )}
               </div>
@@ -282,9 +344,14 @@ const BulkTldrContext = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
                     <span>Progress: {queue.processed_items} / {queue.total_items}</span>
-                    <Badge variant={queue.status === "completed" ? "default" : "secondary"}>
-                      {queue.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {formatDuration() && (
+                        <span className="text-muted-foreground">{formatDuration()}</span>
+                      )}
+                      <Badge variant={queue.status === "completed" ? "default" : queue.status === "cancelled" ? "destructive" : "secondary"}>
+                        {queue.status}
+                      </Badge>
+                    </div>
                   </div>
                   <Progress value={progressPercent} className="h-3" />
                   
@@ -296,29 +363,25 @@ const BulkTldrContext = () => {
                       <XCircle className="h-4 w-4" /> {queue.failed_items} failed
                     </span>
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      <SkipForward className="h-4 w-4" /> {batchResults.filter(r => r.status === "skipped").length} skipped
+                      <SkipForward className="h-4 w-4" /> {skippedCount} skipped
                     </span>
                   </div>
-                </div>
-              )}
 
-              {/* Recent results */}
-              {batchResults.length > 0 && (
-                <div className="border rounded-lg p-4 max-h-64 overflow-y-auto">
-                  <h4 className="font-medium mb-2">Recent Results:</h4>
-                  <div className="space-y-2 text-sm">
-                    {batchResults.slice(-10).reverse().map((result, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        {result.status === "success" && <CheckCircle className="h-4 w-4 text-green-600" />}
-                        {result.status === "error" && <XCircle className="h-4 w-4 text-red-600" />}
-                        {result.status === "skipped" && <SkipForward className="h-4 w-4 text-muted-foreground" />}
-                        <span className="truncate flex-1">{result.id}</span>
-                        {result.status === "error" && (
-                          <span className="text-red-600 truncate">{result.error}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  {queue.status === "completed" && (
+                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+                      <p className="text-sm text-green-800 dark:text-green-200">
+                        Processing complete! {queue.successful_items} articles updated successfully.
+                      </p>
+                    </div>
+                  )}
+
+                  {isActive && (
+                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        Processing in background. You can leave this page - progress will continue.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
