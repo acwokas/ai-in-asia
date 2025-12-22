@@ -1,20 +1,55 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X, CheckCircle, Smartphone } from 'lucide-react';
+import { Download, X, CheckCircle, Smartphone, Trophy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const APP_INSTALL_POINTS = 50;
+
 export const InstallAppButton = () => {
+  const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
+
+  const awardInstallPoints = async () => {
+    if (!user) return;
+    
+    // Check if user already got install points (stored in localStorage to prevent duplicates)
+    const alreadyAwarded = localStorage.getItem(`pwa-install-points-${user.id}`);
+    if (alreadyAwarded) return;
+    
+    try {
+      await supabase.rpc('award_points', {
+        _user_id: user.id,
+        _points: APP_INSTALL_POINTS
+      });
+      
+      localStorage.setItem(`pwa-install-points-${user.id}`, 'true');
+      
+      toast({
+        title: (
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            <span>+{APP_INSTALL_POINTS} Points!</span>
+          </div>
+        ) as unknown as string,
+        description: "Thanks for installing the app! You've earned bonus points.",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Failed to award install points:', error);
+    }
+  };
 
   const showPostInstallMessage = () => {
     const description = isIOS
@@ -57,6 +92,7 @@ export const InstallAppButton = () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
       showPostInstallMessage();
+      awardInstallPoints();
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
