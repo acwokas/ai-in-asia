@@ -1,5 +1,5 @@
-const CACHE_NAME = 'aiinasia-v2';
-const IMAGE_CACHE = 'aiinasia-images-v2';
+const CACHE_NAME = 'aiinasia-v3';
+const IMAGE_CACHE = 'aiinasia-images-v3';
 const MAX_IMAGE_CACHE_SIZE = 100;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -206,7 +206,21 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
-    // Asset requests: cache first, then network (production assets)
+    // Scripts/styles: network-first to avoid serving stale bundles after deployments
+    if (request.destination === 'script' || request.destination === 'style') {
+      event.respondWith(
+        fetch(request)
+          .then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            return res;
+          })
+          .catch(() => caches.match(request))
+      );
+      return;
+    }
+
+    // Other asset requests: cache first, then network
     event.respondWith(
       caches.match(request).then((cached) => {
         return (
