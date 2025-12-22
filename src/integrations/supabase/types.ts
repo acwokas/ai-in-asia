@@ -3319,6 +3319,7 @@ export type Database = {
         | "event"
         | "policy_article"
         | "top_lists"
+        | "editors_note"
       newsletter_status: "draft" | "scheduled" | "sending" | "sent" | "failed"
       policy_applies_to_type: "commercial_ai" | "public_sector_ai" | "both"
       policy_regulatory_impact_type: "low" | "medium" | "high"
@@ -3468,6 +3469,7 @@ export const Constants = {
         "event",
         "policy_article",
         "top_lists",
+        "editors_note",
       ],
       newsletter_status: ["draft", "scheduled", "sending", "sent", "failed"],
       policy_applies_to_type: ["commercial_ai", "public_sector_ai", "both"],

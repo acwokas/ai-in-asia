@@ -11,6 +11,7 @@ import SeriesNavigation from "@/components/SeriesNavigation";
 import GoogleAd, { InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
+import EditorNoteContent from "@/components/EditorNoteContent";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
@@ -1377,6 +1378,8 @@ const Article = () => {
                   introHtml={article.top_list_intro as string | undefined}
                   outroHtml={article.top_list_outro as string | undefined}
                 />
+              ) : article.article_type === 'editors_note' ? (
+                <EditorNoteContent article={article} renderContent={renderContent} />
               ) : (
                 renderContent(article.content)
               )}
