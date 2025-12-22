@@ -3,9 +3,17 @@ const IMAGE_CACHE = 'aiinasia-images-v2';
 const MAX_IMAGE_CACHE_SIZE = 100; // Limit cache to 100 images
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
-// Install event - required for service worker
+// Install event - cache core assets for offline support
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        '/',
+        '/manifest.webmanifest',
+        '/favicon.png'
+      ]);
+    }).then(() => self.skipWaiting())
+  );
 });
 
 // Detect crawlers and bots
