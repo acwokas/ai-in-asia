@@ -42,6 +42,14 @@ const BulkTldrContext = () => {
     fetchArticles();
   }, []);
 
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error("You must be signed in to run this admin tool.");
+    }
+    return { Authorization: `Bearer ${session.access_token}` };
+  };
+
   const fetchArticles = async () => {
     const { data, error } = await supabase
       .from("articles")
@@ -66,7 +74,8 @@ const BulkTldrContext = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
-        body: { action: "preview", articleId: selectedArticleId }
+        headers: await getAuthHeaders(),
+        body: { action: "preview", articleId: selectedArticleId },
       });
 
       if (error) throw error;
@@ -87,7 +96,8 @@ const BulkTldrContext = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
-        body: { action: "start" }
+        headers: await getAuthHeaders(),
+        body: { action: "start" },
       });
 
       if (error) throw error;
@@ -98,12 +108,12 @@ const BulkTldrContext = () => {
         total_items: data.totalItems,
         processed_items: 0,
         successful_items: 0,
-        failed_items: 0
+        failed_items: 0,
       });
 
-      toast({ 
-        title: "Bulk update started", 
-        description: `Processing ${data.totalItems} articles` 
+      toast({
+        title: "Bulk update started",
+        description: `Processing ${data.totalItems} articles`,
       });
 
       // Start processing
@@ -120,21 +130,30 @@ const BulkTldrContext = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("bulk-update-tldr-context", {
-        body: { action: "process", batchId, batchSize: 3 }
+        headers: await getAuthHeaders(),
+        body: { action: "process", batchId, batchSize: 3 },
       });
 
       if (error) throw error;
 
-      setQueue(prev => prev ? {
-        ...prev,
-        status: data.completed ? "completed" : "processing",
-        processed_items: data.processed,
-        successful_items: prev.successful_items + (data.batchResults?.filter((r: any) => r.status === "success").length || 0),
-        failed_items: prev.failed_items + (data.batchResults?.filter((r: any) => r.status === "error").length || 0)
-      } : null);
+      setQueue((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: data.completed ? "completed" : "processing",
+              processed_items: data.processed,
+              successful_items:
+                prev.successful_items +
+                (data.batchResults?.filter((r: any) => r.status === "success").length || 0),
+              failed_items:
+                prev.failed_items +
+                (data.batchResults?.filter((r: any) => r.status === "error").length || 0),
+            }
+          : null
+      );
 
       if (data.batchResults) {
-        setBatchResults(prev => [...prev, ...data.batchResults]);
+        setBatchResults((prev) => [...prev, ...data.batchResults]);
       }
 
       if (data.completed) {
