@@ -22,25 +22,38 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check authentication and admin role
+    // Check authentication and admin role (must be a signed-in user token)
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
     if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden: Admin role required" }), { status: 403, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: "Forbidden: Admin role required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { action, articleId, batchId, batchSize = 5 } = await req.json();
+    console.log("bulk-update-tldr-context request", { action, articleId, batchId, batchSize });
 
     // Preview mode - generate for a single article without saving
     if (action === "preview") {
@@ -55,52 +68,63 @@ serve(async (req) => {
       if (articleError || !article) throw new Error("Article not found");
 
       const result = await generateContextForArticle(article, lovableApiKey);
-      
-      return new Response(JSON.stringify({ 
-        success: true, 
-        preview: result,
-        existingSnapshot: article.tldr_snapshot
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          preview: result,
+          existingSnapshot: article.tldr_snapshot,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Start a new batch job
     if (action === "start") {
-      // Count articles that need updating (have bullets but missing context fields)
-      const { data: articlesToUpdate, error: countError } = await supabase
-        .from("articles")
-        .select("id")
-        .in("status", ["published", "scheduled"])
-        .not("tldr_snapshot", "is", null);
+      const pageSize = 1000;
+      const allIds: string[] = [];
+      let from = 0;
 
-      if (countError) throw countError;
+      while (true) {
+        const { data: page, error: pageError } = await supabase
+          .from("articles")
+          .select("id")
+          .in("status", ["published", "scheduled"])
+          .not("tldr_snapshot", "is", null)
+          .order("id", { ascending: true })
+          .range(from, from + pageSize - 1);
 
-      // Filter to only those missing the new fields
-      const needsUpdate = articlesToUpdate?.filter(a => {
-        // Will be checked properly when processing
-        return true;
-      }) || [];
+        if (pageError) throw pageError;
+
+        if (!page || page.length === 0) break;
+        for (const row of page) allIds.push(row.id);
+
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
 
       const newBatchId = crypto.randomUUID();
 
       // Create queue entry
-      const { error: queueError } = await supabase
-        .from("bulk_operation_queue")
-        .insert({
-          id: newBatchId,
-          operation_type: "tldr_context_update",
-          article_ids: needsUpdate.map(a => a.id),
-          total_items: needsUpdate.length,
-          status: "queued",
-          created_by: user.id
-        });
+      const { error: queueError } = await supabase.from("bulk_operation_queue").insert({
+        id: newBatchId,
+        operation_type: "tldr_context_update",
+        article_ids: allIds,
+        total_items: allIds.length,
+        status: "queued",
+        created_by: user.id,
+      });
 
       if (queueError) throw queueError;
 
-      return new Response(JSON.stringify({ 
-        success: true, 
-        batchId: newBatchId,
-        totalItems: needsUpdate.length
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          batchId: newBatchId,
+          totalItems: allIds.length,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Process next batch
