@@ -183,6 +183,14 @@ serve(async (req) => {
         await processAIComments(supabase, job, lovableApiKey);
       } else if (job.operation_type === "generate_seo") {
         await processSEOGeneration(supabase, job, lovableApiKey);
+      } else if (job.operation_type === "tldr_context_update") {
+        // This operation is handled by bulk-update-tldr-context edge function
+        // Skip it here - it has its own background processing
+        console.log(`Skipping tldr_context_update job ${job.id} - handled by separate edge function`);
+        return new Response(
+          JSON.stringify({ message: "Job handled by separate edge function", jobId: job.id }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       } else {
         throw new Error(`Unknown operation type: ${job.operation_type}`);
       }
