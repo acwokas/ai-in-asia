@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, Shield, Globe, TrendingUp, BookOpen } from "lucide-react";
+import PolicyStatusPanel from "@/components/PolicyStatusPanel";
+import PolicyDisclaimer from "@/components/PolicyDisclaimer";
 
 interface PolicyArticleContentProps {
   article: any; // Using any due to complex Json types from Supabase
@@ -13,6 +15,14 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
 
   return (
     <div className="space-y-12">
+      {/* Policy Status Panel */}
+      <PolicyStatusPanel
+        policyStatus={article.policy_status}
+        effectiveDate={article.policy_effective_date}
+        appliesTo={article.policy_applies_to}
+        regulatoryImpact={article.policy_regulatory_impact}
+      />
+
       {/* Metadata Section - Enhanced */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 p-4 md:p-8 border border-primary/20">
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
@@ -199,6 +209,9 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Policy Disclaimer and Footer */}
+      <PolicyDisclaimer lastEditorialReview={article.last_editorial_review} />
     </div>
   );
 };
