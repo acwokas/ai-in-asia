@@ -166,10 +166,11 @@ const Footer = memo(() => {
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© 2026 AI in ASIA. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
             <Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</Link>
+            <Link to="/editorial-standards" className="hover:text-primary transition-colors">Editorial Standards</Link>
           </div>
         </div>
       </div>
