@@ -34,6 +34,11 @@ interface PolicyArticleEditorProps {
   comparisonTables: ComparisonTable[];
   localResources: LocalResource[];
   topicTags: string[];
+  policyStatus: string;
+  policyEffectiveDate: string;
+  policyAppliesTo: string;
+  policyRegulatoryImpact: string;
+  lastEditorialReview: string;
   onRegionChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   onGovernanceMaturityChange: (value: string) => void;
@@ -41,6 +46,11 @@ interface PolicyArticleEditorProps {
   onComparisonTablesChange: (value: ComparisonTable[]) => void;
   onLocalResourcesChange: (value: LocalResource[]) => void;
   onTopicTagsChange: (value: string[]) => void;
+  onPolicyStatusChange: (value: string) => void;
+  onPolicyEffectiveDateChange: (value: string) => void;
+  onPolicyAppliesToChange: (value: string) => void;
+  onPolicyRegulatoryImpactChange: (value: string) => void;
+  onLastEditorialReviewChange: (value: string) => void;
   availableRegions: string[];
   availableTopicTags: string[];
 }
@@ -63,6 +73,11 @@ export const PolicyArticleEditor = ({
   comparisonTables,
   localResources,
   topicTags,
+  policyStatus,
+  policyEffectiveDate,
+  policyAppliesTo,
+  policyRegulatoryImpact,
+  lastEditorialReview,
   onRegionChange,
   onCountryChange,
   onGovernanceMaturityChange,
@@ -70,6 +85,11 @@ export const PolicyArticleEditor = ({
   onComparisonTablesChange,
   onLocalResourcesChange,
   onTopicTagsChange,
+  onPolicyStatusChange,
+  onPolicyEffectiveDateChange,
+  onPolicyAppliesToChange,
+  onPolicyRegulatoryImpactChange,
+  onLastEditorialReviewChange,
   availableRegions,
   availableTopicTags,
 }: PolicyArticleEditorProps) => {
@@ -211,29 +231,113 @@ export const PolicyArticleEditor = ({
               This controls the color coding on the interactive map
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Policy Status Panel Fields */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Policy Status Panel</CardTitle>
+          <CardDescription>Displayed at the top of the policy article page</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="policy-status">Policy Status</Label>
+              <Select value={policyStatus} onValueChange={onPolicyStatusChange}>
+                <SelectTrigger id="policy-status">
+                  <SelectValue placeholder="Select status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="proposed">Proposed</SelectItem>
+                  <SelectItem value="enacted">Enacted</SelectItem>
+                  <SelectItem value="in_force">In force</SelectItem>
+                  <SelectItem value="under_review">Under review</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="policy-effective-date">Effective Date</Label>
+              <Input
+                id="policy-effective-date"
+                value={policyEffectiveDate}
+                onChange={(e) => onPolicyEffectiveDateChange(e.target.value)}
+                placeholder="e.g., January 2025 or TBC"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="policy-applies-to">Applies To</Label>
+              <Select value={policyAppliesTo} onValueChange={onPolicyAppliesToChange}>
+                <SelectTrigger id="policy-applies-to">
+                  <SelectValue placeholder="Select scope..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="commercial_ai">Commercial AI</SelectItem>
+                  <SelectItem value="public_sector_ai">Public sector AI</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="policy-regulatory-impact">Regulatory Impact</Label>
+              <Select value={policyRegulatoryImpact} onValueChange={onPolicyRegulatoryImpactChange}>
+                <SelectTrigger id="policy-regulatory-impact">
+                  <SelectValue placeholder="Select impact level..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div>
-            <Label>Topic Tags</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {availableTopicTags && Array.isArray(availableTopicTags) && availableTopicTags.length > 0 ? (
-                availableTopicTags.map((tag) => {
-                  if (typeof tag !== 'string') return null;
-                  return (
-                    <Button
-                      key={tag}
-                      type="button"
-                      variant={topicTags.includes(tag) ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleTopicTagToggle(tag)}
-                    >
-                      {tag}
-                    </Button>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-muted-foreground">Loading topic tags...</p>
-              )}
-            </div>
+            <Label htmlFor="last-editorial-review">Last Editorial Review</Label>
+            <Input
+              id="last-editorial-review"
+              type="date"
+              value={lastEditorialReview}
+              onChange={(e) => onLastEditorialReviewChange(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Date of last editorial review, displayed at the bottom of the page
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Topic Tags */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Topic Tags</CardTitle>
+          <CardDescription>Select relevant policy topics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {availableTopicTags && Array.isArray(availableTopicTags) && availableTopicTags.length > 0 ? (
+              availableTopicTags.map((tag) => {
+                if (typeof tag !== 'string') return null;
+                return (
+                  <Button
+                    key={tag}
+                    type="button"
+                    variant={topicTags.includes(tag) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleTopicTagToggle(tag)}
+                  >
+                    {tag}
+                  </Button>
+                );
+              })
+            ) : (
+              <p className="text-sm text-muted-foreground">Loading topic tags...</p>
+            )}
           </div>
         </CardContent>
       </Card>

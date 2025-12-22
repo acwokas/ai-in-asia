@@ -175,7 +175,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [topicTags, setTopicTags] = useState<string[]>(
     Array.isArray(initialData?.topic_tags) ? initialData.topic_tags : []
   );
-  
+  const [policyStatus, setPolicyStatus] = useState(initialData?.policy_status || "");
+  const [policyEffectiveDate, setPolicyEffectiveDate] = useState(initialData?.policy_effective_date || "");
+  const [policyAppliesTo, setPolicyAppliesTo] = useState(initialData?.policy_applies_to || "");
+  const [policyRegulatoryImpact, setPolicyRegulatoryImpact] = useState(initialData?.policy_regulatory_impact || "");
+  const [lastEditorialReview, setLastEditorialReview] = useState(initialData?.last_editorial_review || "");
   // Top Lists specific state
   const [topListItems, setTopListItems] = useState(
     Array.isArray(initialData?.top_list_items) ? initialData.top_list_items : []
@@ -983,6 +987,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         comparison_tables: comparisonTables,
         local_resources: localResources,
         topic_tags: topicTags,
+        policy_status: policyStatus || null,
+        policy_effective_date: policyEffectiveDate || null,
+        policy_applies_to: policyAppliesTo || null,
+        policy_regulatory_impact: policyRegulatoryImpact || null,
+        last_editorial_review: lastEditorialReview || null,
       }),
       // Top Lists fields
       ...(articleType === 'top_lists' && {
@@ -1396,6 +1405,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 comparisonTables={comparisonTables}
                 localResources={localResources}
                 topicTags={topicTags}
+                policyStatus={policyStatus}
+                policyEffectiveDate={policyEffectiveDate}
+                policyAppliesTo={policyAppliesTo}
+                policyRegulatoryImpact={policyRegulatoryImpact}
+                lastEditorialReview={lastEditorialReview}
                 onRegionChange={setRegion}
                 onCountryChange={setCountry}
                 onGovernanceMaturityChange={setGovernanceMaturity}
@@ -1403,6 +1417,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 onComparisonTablesChange={setComparisonTables}
                 onLocalResourcesChange={setLocalResources}
                 onTopicTagsChange={setTopicTags}
+                onPolicyStatusChange={setPolicyStatus}
+                onPolicyEffectiveDateChange={setPolicyEffectiveDate}
+                onPolicyAppliesToChange={setPolicyAppliesTo}
+                onPolicyRegulatoryImpactChange={setPolicyRegulatoryImpact}
+                onLastEditorialReviewChange={setLastEditorialReview}
                 availableRegions={policyRegions || []}
                 availableTopicTags={policyTopicTags || []}
               />

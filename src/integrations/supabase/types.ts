@@ -725,13 +725,24 @@ export type Database = {
           is_launch_article: boolean | null
           is_trending: boolean | null
           keyphrase_synonyms: string | null
+          last_editorial_review: string | null
           like_count: number | null
           local_resources: Json | null
           meta_description: string | null
           meta_title: string | null
           podcast_audio_url: string | null
           podcast_duration_minutes: number | null
+          policy_applies_to:
+            | Database["public"]["Enums"]["policy_applies_to_type"]
+            | null
+          policy_effective_date: string | null
+          policy_regulatory_impact:
+            | Database["public"]["Enums"]["policy_regulatory_impact_type"]
+            | null
           policy_sections: Json | null
+          policy_status:
+            | Database["public"]["Enums"]["policy_status_type"]
+            | null
           preview_code: string | null
           primary_category_id: string | null
           published_at: string | null
@@ -792,13 +803,24 @@ export type Database = {
           is_launch_article?: boolean | null
           is_trending?: boolean | null
           keyphrase_synonyms?: string | null
+          last_editorial_review?: string | null
           like_count?: number | null
           local_resources?: Json | null
           meta_description?: string | null
           meta_title?: string | null
           podcast_audio_url?: string | null
           podcast_duration_minutes?: number | null
+          policy_applies_to?:
+            | Database["public"]["Enums"]["policy_applies_to_type"]
+            | null
+          policy_effective_date?: string | null
+          policy_regulatory_impact?:
+            | Database["public"]["Enums"]["policy_regulatory_impact_type"]
+            | null
           policy_sections?: Json | null
+          policy_status?:
+            | Database["public"]["Enums"]["policy_status_type"]
+            | null
           preview_code?: string | null
           primary_category_id?: string | null
           published_at?: string | null
@@ -859,13 +881,24 @@ export type Database = {
           is_launch_article?: boolean | null
           is_trending?: boolean | null
           keyphrase_synonyms?: string | null
+          last_editorial_review?: string | null
           like_count?: number | null
           local_resources?: Json | null
           meta_description?: string | null
           meta_title?: string | null
           podcast_audio_url?: string | null
           podcast_duration_minutes?: number | null
+          policy_applies_to?:
+            | Database["public"]["Enums"]["policy_applies_to_type"]
+            | null
+          policy_effective_date?: string | null
+          policy_regulatory_impact?:
+            | Database["public"]["Enums"]["policy_regulatory_impact_type"]
+            | null
           policy_sections?: Json | null
+          policy_status?:
+            | Database["public"]["Enums"]["policy_status_type"]
+            | null
           preview_code?: string | null
           primary_category_id?: string | null
           published_at?: string | null
@@ -3287,6 +3320,14 @@ export type Database = {
         | "policy_article"
         | "top_lists"
       newsletter_status: "draft" | "scheduled" | "sending" | "sent" | "failed"
+      policy_applies_to_type: "commercial_ai" | "public_sector_ai" | "both"
+      policy_regulatory_impact_type: "low" | "medium" | "high"
+      policy_status_type:
+        | "draft"
+        | "proposed"
+        | "enacted"
+        | "in_force"
+        | "under_review"
       tool_prompt_category: "tool" | "prompt"
     }
     CompositeTypes: {
@@ -3429,6 +3470,15 @@ export const Constants = {
         "top_lists",
       ],
       newsletter_status: ["draft", "scheduled", "sending", "sent", "failed"],
+      policy_applies_to_type: ["commercial_ai", "public_sector_ai", "both"],
+      policy_regulatory_impact_type: ["low", "medium", "high"],
+      policy_status_type: [
+        "draft",
+        "proposed",
+        "enacted",
+        "in_force",
+        "under_review",
+      ],
       tool_prompt_category: ["tool", "prompt"],
     },
   },
