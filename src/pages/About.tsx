@@ -217,8 +217,14 @@ const About = () => {
                   <p className="text-lg text-muted-foreground mb-4">
                     We maintain strict editorial independence and transparency. Our content is researched, fact-checked, and written to the highest journalistic standards.
                   </p>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-lg text-muted-foreground mb-4">
                     Our gamification system is designed to reward engagement, not influence editorial decisions.
+                  </p>
+                  <p className="text-lg text-muted-foreground">
+                    We welcome contributions from practitioners and experts across the region.{" "}
+                    <Link to="/contribute" className="text-primary hover:underline font-medium">
+                      Learn how to contribute
+                    </Link>.
                   </p>
                 </div>
               </div>
