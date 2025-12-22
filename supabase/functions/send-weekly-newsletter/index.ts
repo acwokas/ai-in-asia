@@ -9,156 +9,117 @@ const corsHeaders = {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
+const SITE_URL = 'https://aiinasia.com';
+
 async function generateNewsletterHTML(
   edition: any,
   subscriber: any,
   trackingId: string,
   supabase: any
 ): Promise<string> {
-  // Fetch all content for the edition
+  // Fetch top stories for "This Week's Signals" section
   const { data: topStories } = await supabase
     .from('newsletter_top_stories')
-    .select('article_id, position, articles(*)')
+    .select('article_id, position, articles(id, title, slug, excerpt)')
     .eq('edition_id', edition.id)
-    .order('position');
+    .order('position')
+    .limit(4);
 
-  const { data: heroArticle } = await supabase
+  // Fetch a random policy atlas page for "From the AI Policy Atlas" section
+  const { data: policyArticle } = await supabase
     .from('articles')
-    .select('*')
-    .eq('id', edition.hero_article_id)
-    .single();
-
-  const { data: quickTakes } = await supabase
-    .from('newsletter_quick_takes')
-    .select('*')
-    .eq('edition_id', edition.id)
-    .order('display_order');
-
-  const { data: toolsPrompts } = await supabase
-    .from('newsletter_tools_prompts')
-    .select('*')
-    .eq('is_active', true)
-    .limit(3);
-
-  const { data: sponsor } = await supabase
-    .from('newsletter_sponsors')
-    .select('*')
-    .eq('is_active', true)
-    .order('priority', { ascending: false })
+    .select('id, title, slug, country, region')
+    .eq('article_type', 'policy')
+    .eq('status', 'published')
+    .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  const greeting = subscriber.first_name ? `Hi ${subscriber.first_name}!` : 'Hi there!';
-  
-  // Comprehensive HTML newsletter template
+  const editionDateFormatted = new Date(edition.edition_date).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  // Newsletter HTML following the exact editorial structure
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI in Asia Newsletter - ${edition.edition_date}</title>
+  <title>AI in ASIA Weekly Brief</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <img src="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/article-images/tracking-pixel.gif?id=${trackingId}" width="1" height="1" alt="" />
+<body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.7; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+  <!-- Tracking pixel -->
+  <img src="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/article-images/tracking-pixel.gif?id=${trackingId}" width="1" height="1" alt="" style="display: none;" />
   
-  <div style="text-align: center; margin-bottom: 30px;">
-    <h1 style="color: #8B5CF6;">AI in Asia Weekly</h1>
-    <p style="color: #666;">${new Date(edition.edition_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  <!-- Header -->
+  <div style="text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #e5e5e5;">
+    <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0; letter-spacing: -0.5px;">AI in ASIA Weekly Brief</h1>
+    <p style="font-size: 16px; color: #666666; margin: 0; font-style: italic;">What matters in artificial intelligence across Asia.</p>
   </div>
 
-  <p style="font-size: 18px; margin-bottom: 20px;">${greeting}</p>
-
+  <!-- Editor's Note -->
   ${edition.editor_note ? `
-  <div style="background: #f9fafb; padding: 20px; border-left: 4px solid #8B5CF6; margin-bottom: 30px;">
-    <h3 style="margin-top: 0;">📝 Editor's Note</h3>
-    <p style="margin: 0;">${edition.editor_note}</p>
+  <div style="margin-bottom: 32px;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Editor's Note</h2>
+    <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.8;">${edition.editor_note}</p>
   </div>
   ` : ''}
 
-  <div style="margin-bottom: 40px;">
-    <h2 style="color: #8B5CF6;">🌟 This Week's Hero Story</h2>
-    ${heroArticle ? `
-    <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
-      ${heroArticle.featured_image_url ? `<img src="${heroArticle.featured_image_url}" alt="${heroArticle.title}" style="width: 100%; height: auto;" />` : ''}
-      <div style="padding: 20px;">
-        <h3 style="margin-top: 0;">${heroArticle.title}</h3>
-        <p>${heroArticle.excerpt || ''}</p>
-        <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&aid=${heroArticle.id}&section=hero" style="display: inline-block; background: #8B5CF6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Read More</a>
-      </div>
-    </div>
-    ` : ''}
-  </div>
-
-  ${quickTakes && quickTakes.length > 0 ? `
-  <div style="margin-bottom: 40px;">
-    <h2 style="color: #8B5CF6;">⚡ Quick Takes</h2>
-    <div style="background: #fafafa; padding: 20px; border-radius: 8px;">
-      ${quickTakes.map((take: any) => `
-      <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb;">
-        <h4 style="margin: 0 0 5px 0; font-size: 16px;">${take.headline}</h4>
-        <p style="margin: 0; font-size: 14px; color: #666;">${take.insight}</p>
-        ${take.source_url ? `<a href="${take.source_url}" style="font-size: 12px; color: #8B5CF6;">Read more →</a>` : ''}
-      </div>
-      `).join('')}
-    </div>
-  </div>
-  ` : ''}
-
-  <div style="margin-bottom: 40px;">
-    <h2 style="color: #8B5CF6;">📚 Top Stories This Week</h2>
-    ${topStories?.map((story: any, index: number) => `
-    <div style="border-bottom: 1px solid #e5e7eb; padding: 15px 0;">
-      <div style="display: flex; align-items: start; gap: 10px;">
-        <span style="font-weight: bold; color: #8B5CF6; font-size: 20px;">${index + 1}</span>
-        <div>
-          <h4 style="margin: 0 0 10px 0;"><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&aid=${story.articles.id}&section=top${index + 1}" style="color: #333; text-decoration: none;">${story.articles.title}</a></h4>
-          <p style="color: #666; margin: 0; font-size: 14px;">${story.articles.excerpt || ''}</p>
-          <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&aid=${story.articles.id}&section=top${index + 1}" style="color: #8B5CF6; font-size: 14px; text-decoration: none;">Read more →</a>
-        </div>
-      </div>
-    </div>
-    `).join('') || ''}
-  </div>
-
-  ${toolsPrompts && toolsPrompts.length > 0 ? `
-  <div style="margin-bottom: 40px;">
-    <h2 style="color: #8B5CF6;">🛠️ Tools & Prompts Worth Trying</h2>
-    ${toolsPrompts.map((item: any) => `
-    <div style="margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 8px;">
-      <h4 style="margin: 0 0 5px 0;">${item.title}</h4>
-      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">${item.description}</p>
-      <a href="${item.url}" style="color: #8B5CF6; text-decoration: none; font-size: 14px;">Try it now →</a>
+  <!-- This Week's Signals -->
+  ${topStories && topStories.length > 0 ? `
+  <div style="margin-bottom: 32px;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">This Week's Signals</h2>
+    ${topStories.map((story: any) => `
+    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0;">
+      <h3 style="font-size: 17px; font-weight: 600; margin: 0 0 8px 0;">
+        <a href="${SITE_URL}/article/${story.articles.slug}" style="color: #1a1a1a; text-decoration: none;">${story.articles.title}</a>
+      </h3>
+      <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.6;">${story.articles.excerpt || ''}</p>
     </div>
     `).join('')}
   </div>
   ` : ''}
 
-  ${sponsor ? `
-  <div style="margin-bottom: 40px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; text-align: center;">
-    <p style="color: white; font-size: 12px; margin: 0 0 10px 0; opacity: 0.8;">SPONSORED</p>
-    ${sponsor.banner_image_url ? `<img src="${sponsor.banner_image_url}" alt="${sponsor.name}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px;" />` : ''}
-    <h3 style="color: white; margin: 0 0 10px 0;">${sponsor.name}</h3>
-    <a href="${sponsor.website_url}" style="display: inline-block; background: white; color: #764ba2; padding: 10px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">${sponsor.cta_text || 'Learn More'}</a>
+  <!-- Worth Watching -->
+  ${edition.worth_watching ? `
+  <div style="margin-bottom: 32px;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Worth Watching</h2>
+    <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.8;">${edition.worth_watching}</p>
   </div>
   ` : ''}
 
-  ${edition.mini_case_study ? `
-  <div style="margin-bottom: 40px; padding: 20px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
-    <h3 style="margin-top: 0; color: #3b82f6;">💡 Mini Case Study</h3>
-    <p style="margin: 0;">${edition.mini_case_study}</p>
+  <!-- From the AI Policy Atlas -->
+  ${policyArticle ? `
+  <div style="margin-bottom: 32px; padding: 20px; background-color: #f8f9fa; border-left: 3px solid #1a1a1a;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">From the AI Policy Atlas</h2>
+    <p style="font-size: 16px; margin: 0;">
+      <a href="${SITE_URL}/article/${policyArticle.slug}" style="color: #1a1a1a; text-decoration: underline;">${policyArticle.title}</a>
+    </p>
+    ${policyArticle.country || policyArticle.region ? `
+    <p style="font-size: 14px; color: #666666; margin: 8px 0 0 0;">Explore the latest regulatory developments${policyArticle.country ? ` in ${policyArticle.country}` : ''}${policyArticle.region ? ` across ${policyArticle.region}` : ''}.</p>
+    ` : ''}
   </div>
   ` : ''}
 
-  <div style="text-align: center; margin: 40px 0; padding: 20px; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); border-radius: 10px;">
-    <p style="color: white; font-size: 16px; margin: 0;">💪 Opening this email earned you <strong>+5 points</strong>!</p>
-    <p style="color: white; font-size: 14px; margin: 10px 0 0 0;">Click any article to earn <strong>+2 more points</strong> each.</p>
+  <!-- Before You Go -->
+  <div style="margin-bottom: 32px; padding-top: 24px; border-top: 1px solid #e5e5e5;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Before You Go</h2>
+    <p style="font-size: 15px; color: #555555; margin: 0 0 12px 0; line-height: 1.7;">AI in ASIA publishes independent, Asia-first coverage of how artificial intelligence is built, regulated, and used across the region.</p>
+    <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.7;">New articles are published throughout the week.</p>
   </div>
 
-  <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-    <p style="color: #666; font-size: 12px;">Part of the <strong>You.WithThePowerOf.AI Collective</strong></p>
-    <p style="color: #666; font-size: 12px;">#DemocratisingAI to empower everyone to explore, learn, and create with AI.</p>
-    <p style="margin-top: 20px;"><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&action=unsubscribe" style="color: #8B5CF6; font-size: 12px;">Unsubscribe</a></p>
+  <!-- Footer -->
+  <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e5e5e5;">
+    <p style="font-size: 13px; color: #888888; margin: 0 0 8px 0;">
+      <a href="${SITE_URL}" style="color: #1a1a1a; text-decoration: none;">AI in ASIA</a>
+    </p>
+    <p style="font-size: 12px; color: #aaaaaa; margin: 0;">
+      <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&action=unsubscribe" style="color: #888888; text-decoration: underline;">Unsubscribe</a>
+    </p>
   </div>
 </body>
 </html>
@@ -199,12 +160,12 @@ Deno.serve(async (req) => {
     if (test_email) {
       console.log(`Sending test email to ${test_email}`);
       
-      const testSubscriber = { email: test_email, first_name: 'Test' };
+      const testSubscriber = { email: test_email };
       const trackingId = crypto.randomUUID();
       const html = await generateNewsletterHTML(edition, testSubscriber, trackingId, supabase);
 
       await resend.emails.send({
-        from: 'AI in Asia <newsletter@aiinasia.com>',
+        from: 'AI in ASIA <newsletter@aiinasia.com>',
         to: test_email,
         subject: `[TEST] ${edition.subject_line}`,
         html,
@@ -251,7 +212,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
 
         await resend.emails.send({
-          from: 'AI in Asia <newsletter@aiinasia.com>',
+          from: 'AI in ASIA <newsletter@aiinasia.com>',
           to: subscriber.email,
           subject: edition.subject_line,
           html,
@@ -278,7 +239,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
 
         await resend.emails.send({
-          from: 'AI in Asia <newsletter@aiinasia.com>',
+          from: 'AI in ASIA <newsletter@aiinasia.com>',
           to: subscriber.email,
           subject: edition.subject_line_variant_b || edition.subject_line,
           html,
@@ -298,8 +259,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Wait 2 hours for A/B test results (in production, this would be a separate scheduled function)
-    // For now, send remaining with variant A
+    // Send remaining with variant A
     console.log(`Sending to remaining ${remaining.length} subscribers`);
 
     for (const subscriber of remaining) {
@@ -308,7 +268,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
 
         await resend.emails.send({
-          from: 'AI in Asia <newsletter@aiinasia.com>',
+          from: 'AI in ASIA <newsletter@aiinasia.com>',
           to: subscriber.email,
           subject: edition.subject_line,
           html,
