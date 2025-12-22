@@ -172,6 +172,7 @@ const Footer = memo(() => {
             <Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</Link>
             <Link to="/editorial-standards" className="hover:text-primary transition-colors">Editorial Standards</Link>
             <Link to="/contribute" className="hover:text-primary transition-colors">Contribute</Link>
+            <Link to="/media-and-partners" className="hover:text-primary transition-colors">Media and Partners</Link>
           </div>
         </div>
       </div>
