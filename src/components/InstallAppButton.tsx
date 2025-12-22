@@ -53,10 +53,10 @@ export const InstallAppButton = () => {
 
   const showPostInstallMessage = () => {
     const description = isIOS
-      ? "Look for 'AI in ASIA' on your home screen. If you don't see it, open Safari, tap Share, then 'Add to Home Screen'."
+      ? "Look for 'AIinASIA' on your home screen. If you don't see it, open Safari, tap Share, then 'Add to Home Screen'."
       : isAndroid
-      ? "Find 'AI in ASIA' on your home screen or in your app drawer. Long-press the icon to add it to your home screen if needed."
-      : "Find 'AI in ASIA' in your apps. You can pin it to your taskbar or start menu for quick access.";
+      ? "Find 'AIinASIA' on your home screen or in your app drawer. Long-press the icon to add it to your home screen if needed."
+      : "Find 'AIinASIA' in your apps. You can pin it to your taskbar or start menu for quick access.";
 
     toast({
       title: (
@@ -76,6 +76,11 @@ export const InstallAppButton = () => {
   };
 
   useEffect(() => {
+    // Increment visit count on mount
+    const visitKey = 'aiinasia_visit_count';
+    const currentVisits = parseInt(localStorage.getItem(visitKey) || '0', 10);
+    localStorage.setItem(visitKey, String(currentVisits + 1));
+
     // Check if already dismissed this session
     const dismissed = sessionStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
@@ -84,6 +89,15 @@ export const InstallAppButton = () => {
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
+      
+      // Only show after second visit
+      const visits = parseInt(localStorage.getItem(visitKey) || '0', 10);
+      const permanentlyDismissed = localStorage.getItem('aiinasia_install_dismissed') === 'true';
+      
+      if (visits < 2 || permanentlyDismissed) {
+        return;
+      }
+      
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     };
@@ -123,6 +137,7 @@ export const InstallAppButton = () => {
   const handleDismiss = () => {
     setIsDismissed(true);
     sessionStorage.setItem('pwa-install-dismissed', 'true');
+    localStorage.setItem('aiinasia_install_dismissed', 'true');
   };
 
   if (!isInstallable || isDismissed) return null;
@@ -131,7 +146,7 @@ export const InstallAppButton = () => {
     <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:w-auto z-40 animate-in slide-in-from-bottom-4 fade-in duration-300">
       <div className="bg-card border border-border rounded-lg shadow-lg p-4 flex items-center gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">Install AI in ASIA</p>
+          <p className="text-sm font-medium text-foreground">Install AIinASIA</p>
           <p className="text-xs text-muted-foreground">Get quick access from your home screen</p>
         </div>
         <Button
