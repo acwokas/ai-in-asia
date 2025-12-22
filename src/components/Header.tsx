@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -67,6 +67,7 @@ const Header = memo(() => {
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">Policy Atlas</Link>
+              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors">Saved</Link>
               <div className="h-4 w-px bg-primary mx-2" />
             </nav>
           </div>
@@ -200,6 +201,10 @@ const Header = memo(() => {
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-px bg-primary my-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">Policy Atlas</Link>
+              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2">
+                <Bookmark className="h-4 w-4" />
+                Saved Articles
+              </Link>
               <div className="h-px bg-primary my-2" />
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
               <form onSubmit={handleSearch} className="pt-2">
