@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X } from 'lucide-react';
+import { Download, X, CheckCircle, Smartphone } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -11,6 +12,33 @@ export const InstallAppButton = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  const showPostInstallMessage = () => {
+    const description = isIOS
+      ? "Look for 'AI in ASIA' on your home screen. If you don't see it, open Safari, tap Share, then 'Add to Home Screen'."
+      : isAndroid
+      ? "Find 'AI in ASIA' on your home screen or in your app drawer. Long-press the icon to add it to your home screen if needed."
+      : "Find 'AI in ASIA' in your apps. You can pin it to your taskbar or start menu for quick access.";
+
+    toast({
+      title: (
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+          <span>App Installed!</span>
+        </div>
+      ) as unknown as string,
+      description: (
+        <div className="flex items-start gap-2 mt-2">
+          <Smartphone className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+          <span>{description}</span>
+        </div>
+      ) as unknown as string,
+      duration: 10000,
+    });
+  };
 
   useEffect(() => {
     // Check if already dismissed this session
@@ -28,6 +56,7 @@ export const InstallAppButton = () => {
     const handleAppInstalled = () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
+      showPostInstallMessage();
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
