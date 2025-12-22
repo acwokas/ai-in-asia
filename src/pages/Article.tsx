@@ -1332,8 +1332,25 @@ const Article = () => {
             )}
 
             {/* TL;DR Snapshot */}
-            {article.tldr_snapshot && Array.isArray(article.tldr_snapshot) && article.tldr_snapshot.length > 0 && (
-              <TldrSnapshot bullets={article.tldr_snapshot as string[]} />
+            {article.tldr_snapshot && (
+              (() => {
+                // Handle both old format (array) and new format (object with bullets)
+                const snapshot = article.tldr_snapshot as any;
+                const bullets = Array.isArray(snapshot) ? snapshot : snapshot?.bullets;
+                const whoShouldPayAttention = !Array.isArray(snapshot) ? snapshot?.whoShouldPayAttention : undefined;
+                const whatChangesNext = !Array.isArray(snapshot) ? snapshot?.whatChangesNext : undefined;
+                
+                if (bullets && bullets.length > 0) {
+                  return (
+                    <TldrSnapshot 
+                      bullets={bullets} 
+                      whoShouldPayAttention={whoShouldPayAttention}
+                      whatChangesNext={whatChangesNext}
+                    />
+                  );
+                }
+                return null;
+              })()
             )}
 
 

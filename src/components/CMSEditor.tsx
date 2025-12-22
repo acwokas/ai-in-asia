@@ -79,9 +79,22 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || "");
   const [content, setContent] = useState(convertJsonbToMarkdown(initialData?.content) || "");
-  const [tldrSnapshot, setTldrSnapshot] = useState<string[]>(
-    Array.isArray(initialData?.tldr_snapshot) ? initialData.tldr_snapshot : []
-  );
+  const [tldrSnapshot, setTldrSnapshot] = useState<string[]>(() => {
+    const snapshot = initialData?.tldr_snapshot;
+    if (Array.isArray(snapshot)) return snapshot;
+    if (snapshot?.bullets && Array.isArray(snapshot.bullets)) return snapshot.bullets;
+    return [];
+  });
+  const [whoShouldPayAttention, setWhoShouldPayAttention] = useState<string>(() => {
+    const snapshot = initialData?.tldr_snapshot;
+    if (!Array.isArray(snapshot) && snapshot?.whoShouldPayAttention) return snapshot.whoShouldPayAttention;
+    return "";
+  });
+  const [whatChangesNext, setWhatChangesNext] = useState<string>(() => {
+    const snapshot = initialData?.tldr_snapshot;
+    if (!Array.isArray(snapshot) && snapshot?.whatChangesNext) return snapshot.whatChangesNext;
+    return "";
+  });
   const [isGeneratingTldr, setIsGeneratingTldr] = useState(false);
   const [articleType, setArticleType] = useState(initialData?.article_type || "article");
   const [status, setStatus] = useState(initialData?.status || "draft");
@@ -590,13 +603,22 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       if (error) throw error;
 
       if (data?.tldr_snapshot) {
-        setTldrSnapshot(data.tldr_snapshot);
+        // Handle new object format from API
+        const snapshot = data.tldr_snapshot;
+        if (snapshot.bullets) {
+          setTldrSnapshot(snapshot.bullets);
+          setWhoShouldPayAttention(snapshot.whoShouldPayAttention || "");
+          setWhatChangesNext(snapshot.whatChangesNext || "");
+        } else if (Array.isArray(snapshot)) {
+          // Fallback for old format
+          setTldrSnapshot(snapshot);
+        }
         if (data.content) {
           setContent(data.content);
         }
         toast({
           title: "Success!",
-          description: "TL;DR Snapshot generated and existing TL;DR removed from content",
+          description: "AI Snapshot generated with editorial context",
         });
       }
     } catch (error: any) {
@@ -929,7 +951,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       slug: finalSlug,
       excerpt,
       content,
-      tldr_snapshot: tldrSnapshot,
+      tldr_snapshot: {
+        bullets: tldrSnapshot,
+        whoShouldPayAttention,
+        whatChangesNext
+      },
       article_type: articleType,
       status: finalStatus,
       featured_image_url: featuredImage,
@@ -2012,6 +2038,28 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 />
               </div>
             ))}
+          </div>
+          
+          {/* Editorial extension lines */}
+          <div className="space-y-3 pt-3 mt-3 border-t border-border/50">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Who should pay attention</Label>
+              <Input
+                value={whoShouldPayAttention}
+                onChange={(e) => setWhoShouldPayAttention(e.target.value)}
+                placeholder="Founders | Platform trust teams | Regulators"
+              />
+              <p className="text-xs text-muted-foreground">Short list of audiences separated by vertical bars (|). Keep under 20 words.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">What changes next</Label>
+              <Input
+                value={whatChangesNext}
+                onChange={(e) => setWhatChangesNext(e.target.value)}
+                placeholder="Platform moderation rules are likely to tighten across major markets."
+              />
+              <p className="text-xs text-muted-foreground">One short sentence about implications. Leave blank if uncertain. Keep under 20 words.</p>
+            </div>
           </div>
         </CardContent>
       </Card>

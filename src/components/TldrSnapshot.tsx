@@ -3,9 +3,11 @@ import { Zap } from "lucide-react";
 
 interface TldrSnapshotProps {
   bullets: string[];
+  whoShouldPayAttention?: string;
+  whatChangesNext?: string;
 }
 
-const TldrSnapshot = ({ bullets }: TldrSnapshotProps) => {
+const TldrSnapshot = ({ bullets, whoShouldPayAttention, whatChangesNext }: TldrSnapshotProps) => {
   if (!bullets || bullets.length === 0) return null;
 
   return (
@@ -26,6 +28,24 @@ const TldrSnapshot = ({ bullets }: TldrSnapshotProps) => {
             <p className="text-sm leading-relaxed text-foreground/90">{bullet}</p>
           </div>
         ))}
+        
+        {/* Editorial extension lines */}
+        {(whoShouldPayAttention || whatChangesNext) && (
+          <div className="pt-3 mt-3 border-t border-border/50 space-y-2">
+            {whoShouldPayAttention && (
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground/80">Who should pay attention:</span>{" "}
+                {whoShouldPayAttention}
+              </p>
+            )}
+            {whatChangesNext && (
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground/80">What changes next:</span>{" "}
+                {whatChangesNext}
+              </p>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
