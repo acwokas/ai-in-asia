@@ -6,19 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function generateSubjectLines(heroTitle: string): { a: string; b: string } {
+// Subject line options following editorial guidelines
+function generateSubjectLines(): { a: string; b: string } {
   const variants = [
     {
-      a: `🤖 This Week in AI: ${heroTitle}`,
-      b: `Your Weekly AI Digest: ${heroTitle}`,
+      a: 'This week in AI across Asia',
+      b: 'AI in ASIA Weekly Brief',
     },
     {
-      a: `AI Weekly: ${heroTitle} + More`,
-      b: `🌏 APAC AI News: ${heroTitle}`,
+      a: 'AI in ASIA Weekly Brief',
+      b: 'What mattered in AI this week across Asia',
     },
     {
-      a: `Must-Read AI: ${heroTitle}`,
-      b: `This Week's Top AI Story: ${heroTitle}`,
+      a: 'What mattered in AI this week across Asia',
+      b: 'This week in AI across Asia',
     },
   ];
   
@@ -62,45 +63,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 1. Select hero article (top performer from last 7 days)
+    // Select top 4 articles from last 7 days for "This Week's Signals"
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const { data: heroArticle } = await supabase
+    const { data: topArticles } = await supabase
       .from('articles')
-      .select('id, title')
+      .select('id, title, primary_category_id')
       .eq('status', 'published')
       .gte('published_at', sevenDaysAgo.toISOString())
       .order('view_count', { ascending: false })
       .order('like_count', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(10);
 
-    if (!heroArticle) {
-      throw new Error('No published articles found for hero selection');
+    if (!topArticles || topArticles.length === 0) {
+      throw new Error('No published articles found for newsletter');
     }
 
-    // Generate subject lines
-    const subjects = generateSubjectLines(heroArticle.title);
-
-    // 2. Select top 5 stories (diverse categories)
-    const { data: topArticles } = await supabase
-      .from('articles')
-      .select('id, primary_category_id')
-      .eq('status', 'published')
-      .gte('published_at', sevenDaysAgo.toISOString())
-      .neq('id', heroArticle.id)
-      .order('view_count', { ascending: false })
-      .limit(20);
-
-    // Diversify by category
+    // Diversify by category - select up to 4 articles
     const selectedArticles: string[] = [];
     const usedCategories = new Set<string>();
 
-    for (const article of topArticles || []) {
-      if (selectedArticles.length >= 5) break;
+    for (const article of topArticles) {
+      if (selectedArticles.length >= 4) break;
       
-      if (!usedCategories.has(article.primary_category_id) || selectedArticles.length >= 3) {
+      if (!usedCategories.has(article.primary_category_id) || selectedArticles.length >= 2) {
         selectedArticles.push(article.id);
         if (article.primary_category_id) {
           usedCategories.add(article.primary_category_id);
@@ -108,42 +95,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Select mystery link (never used, not expired)
-    const { data: mysteryLink } = await supabase
-      .from('newsletter_mystery_links')
-      .select('id, used_in_editions')
-      .eq('is_active', true)
-      .gt('expires_at', new Date().toISOString())
-      .limit(1)
-      .single();
-
-    // 4. Select fun fact (least recently used)
-    const { data: funFact } = await supabase
-      .from('newsletter_fun_facts')
-      .select('id')
-      .eq('is_active', true)
-      .order('used_count', { ascending: true })
-      .order('last_used_at', { ascending: true, nullsFirst: true })
-      .limit(1)
-      .single();
-
-    // 5. Select sponsor (highest priority active)
-    const { data: sponsor } = await supabase
-      .from('newsletter_sponsors')
-      .select('id')
-      .eq('is_active', true)
-      .order('priority', { ascending: false })
-      .limit(1)
-      .single();
-
-    // 6. Get community pulse metrics
-    const { data: userStats } = await supabase
-      .from('user_stats')
-      .select('articles_read, points, comments_made');
-
-    const totalArticlesRead = userStats?.reduce((sum, stat) => sum + (stat.articles_read || 0), 0) || 0;
-    const totalPointsEarned = userStats?.reduce((sum, stat) => sum + (stat.points || 0), 0) || 0;
-    const totalComments = userStats?.reduce((sum, stat) => sum + (stat.comments_made || 0), 0) || 0;
+    // Generate subject lines (no emojis, editorial tone)
+    const subjects = generateSubjectLines();
 
     // Create edition
     const { data: edition, error: editionError } = await supabase
@@ -152,18 +105,15 @@ Deno.serve(async (req) => {
         edition_date: targetDate,
         subject_line: subjects.a,
         subject_line_variant_b: subjects.b,
-        hero_article_id: heroArticle.id,
-        hero_article_original: heroArticle.id,
         status: 'draft',
         created_by: user?.id,
-        comments_count_override: totalComments,
       })
       .select()
       .single();
 
     if (editionError) throw editionError;
 
-    // Insert top stories
+    // Insert top stories (This Week's Signals)
     const topStoriesInserts = selectedArticles.map((articleId, index) => ({
       edition_id: edition.id,
       article_id: articleId,
@@ -174,29 +124,6 @@ Deno.serve(async (req) => {
 
     await supabase.from('newsletter_top_stories').insert(topStoriesInserts);
 
-    // Update mystery link usage if found
-    if (mysteryLink) {
-      const updatedUsage = [...(mysteryLink.used_in_editions || []), edition.id];
-      await supabase
-        .from('newsletter_mystery_links')
-        .update({ used_in_editions: updatedUsage })
-        .eq('id', mysteryLink.id);
-    }
-
-    // Update fun fact usage if found
-    if (funFact) {
-      await supabase.rpc('increment', {
-        table_name: 'newsletter_fun_facts',
-        row_id: funFact.id,
-        column_name: 'used_count',
-      });
-      
-      await supabase
-        .from('newsletter_fun_facts')
-        .update({ last_used_at: new Date().toISOString() })
-        .eq('id', funFact.id);
-    }
-
     console.log(`Newsletter edition created successfully: ${edition.id}`);
 
     return new Response(
@@ -204,13 +131,8 @@ Deno.serve(async (req) => {
         success: true,
         edition_id: edition.id,
         edition_date: targetDate,
-        hero_article: heroArticle.title,
         top_stories_count: selectedArticles.length,
-        metrics: {
-          articles_read: totalArticlesRead,
-          points_earned: totalPointsEarned,
-          comments: totalComments,
-        },
+        subject_line: subjects.a,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

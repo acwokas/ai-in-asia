@@ -1820,6 +1820,7 @@ export type Database = {
           total_opened: number | null
           total_sent: number | null
           updated_at: string
+          worth_watching: string | null
         }
         Insert: {
           comments_count_override?: number | null
@@ -1844,6 +1845,7 @@ export type Database = {
           total_opened?: number | null
           total_sent?: number | null
           updated_at?: string
+          worth_watching?: string | null
         }
         Update: {
           comments_count_override?: number | null
@@ -1868,6 +1870,7 @@ export type Database = {
           total_opened?: number | null
           total_sent?: number | null
           updated_at?: string
+          worth_watching?: string | null
         }
         Relationships: [
           {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -16,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Upload, X, Home } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Home } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -32,12 +31,8 @@ export default function NewsletterManager() {
   const [isSending, setIsSending] = useState(false);
   const [editData, setEditData] = useState({
     editorNote: "",
-    miniCaseStudy: "",
-    memeCaption: "",
-    commentsOverride: "",
+    worthWatching: "",
   });
-  const [isUploadingMeme, setIsUploadingMeme] = useState(false);
-  const [memeImageUrl, setMemeImageUrl] = useState<string | null>(null);
 
   const { data: latestEdition, refetch } = useQuery({
     queryKey: ["newsletter-latest-edition"],
@@ -53,6 +48,16 @@ export default function NewsletterManager() {
       return data;
     },
   });
+
+  // Load existing content when edition loads
+  useEffect(() => {
+    if (latestEdition) {
+      setEditData({
+        editorNote: latestEdition.editor_note || "",
+        worthWatching: (latestEdition as any).worth_watching || "",
+      });
+    }
+  }, [latestEdition]);
 
   const updateEditionMutation = useMutation({
     mutationFn: async (updates: any) => {
@@ -128,53 +133,14 @@ export default function NewsletterManager() {
     }
   };
 
-  const handleSaveManualContent = () => {
+  const handleSaveContent = () => {
     updateEditionMutation.mutate({
       editor_note: editData.editorNote || null,
-      mini_case_study: editData.miniCaseStudy || null,
-      meme_caption: editData.memeCaption || null,
-      meme_image_url: memeImageUrl || null,
-      comments_count_override: editData.commentsOverride ? parseInt(editData.commentsOverride) : null,
+      worth_watching: editData.worthWatching || null,
     });
   };
 
-  const handleMemeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!latestEdition) {
-      toast.error("Please generate a newsletter first");
-      return;
-    }
-
-    setIsUploadingMeme(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `meme-${latestEdition.id}-${Date.now()}.${fileExt}`;
-      const filePath = `newsletter-memes/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('article-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('article-images')
-        .getPublicUrl(filePath);
-
-      setMemeImageUrl(publicUrl);
-      toast.success("Meme image uploaded successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to upload image");
-    } finally {
-      setIsUploadingMeme(false);
-    }
-  };
-
-  const handleRemoveMeme = () => {
-    setMemeImageUrl(null);
-  };
+  const editorNoteWordCount = editData.editorNote.trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <>
@@ -207,6 +173,7 @@ export default function NewsletterManager() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Newsletter Manager</h1>
           <p className="text-muted-foreground">AI in ASIA Weekly Brief</p>
+          <p className="text-sm text-muted-foreground mt-1 italic">What matters in artificial intelligence across Asia.</p>
         </div>
 
         {/* Current Edition Overview */}
@@ -218,7 +185,7 @@ export default function NewsletterManager() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    {new Date(latestEdition.edition_date).toLocaleDateString('en-US', {
+                    {new Date(latestEdition.edition_date).toLocaleDateString('en-GB', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
@@ -254,11 +221,11 @@ export default function NewsletterManager() {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium">Subject Line A</Label>
-                  <p className="text-sm mt-1">{latestEdition.subject_line}</p>
+                  <p className="text-sm mt-1 font-mono bg-muted p-2 rounded">{latestEdition.subject_line}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Subject Line B (A/B Test)</Label>
-                  <p className="text-sm mt-1">{latestEdition.subject_line_variant_b}</p>
+                  <p className="text-sm mt-1 font-mono bg-muted p-2 rounded">{latestEdition.subject_line_variant_b}</p>
                 </div>
               </div>
 
@@ -310,131 +277,89 @@ export default function NewsletterManager() {
         </Card>
 
         {/* Management Tabs */}
-        <Tabs defaultValue="automation" className="w-full">
+        <Tabs defaultValue="content" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="content">Editorial Content</TabsTrigger>
             <TabsTrigger value="automation">Automation</TabsTrigger>
-            <TabsTrigger value="manual">Manual Content</TabsTrigger>
             <TabsTrigger value="tools">Tools & Prompts</TabsTrigger>
             <TabsTrigger value="mystery">Mystery Links</TabsTrigger>
             <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="automation">
+          <TabsContent value="content" className="space-y-4">
             <Card className="p-6">
-              <AutomationStatus />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="manual" className="space-y-4">
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Manual Content Sections</h3>
+              <h3 className="text-xl font-semibold mb-2">Editorial Content</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                These sections are manually written for each edition
+                Write the editorial sections for this week's newsletter. Keep it under 400 words total.
               </p>
               
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="editor-note">Editor's Note (80-150 words)</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="editor-note">Editor's Note</Label>
+                    <span className={`text-xs ${editorNoteWordCount > 80 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {editorNoteWordCount}/80 words
+                    </span>
+                  </div>
                   <Textarea
                     id="editor-note"
                     rows={4}
-                    placeholder="Write a personal note from the editor..."
+                    placeholder="One short paragraph setting context for the week. This can reference themes such as regulation, platforms, adoption, or regional signals. Keep this under 80 words."
                     value={editData.editorNote}
                     onChange={(e) => setEditData({ ...editData, editorNote: e.target.value })}
-                    className="mt-2"
+                    className="font-serif"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Set the context for this week. Reference themes like regulation, platforms, adoption, or regional signals.
+                  </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="case-study">Mini Case Study</Label>
+                  <Label htmlFor="worth-watching">Worth Watching</Label>
                   <Textarea
-                    id="case-study"
+                    id="worth-watching"
                     rows={4}
-                    placeholder="Share a real-world AI success story or trend..."
-                    value={editData.miniCaseStudy}
-                    onChange={(e) => setEditData({ ...editData, miniCaseStudy: e.target.value })}
-                    className="mt-2"
+                    placeholder="One short paragraph highlighting a forward-looking signal. This may reference a policy timeline, platform trend, or regional shift. Avoid predictions framed as certainty."
+                    value={editData.worthWatching}
+                    onChange={(e) => setEditData({ ...editData, worthWatching: e.target.value })}
+                    className="mt-2 font-serif"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Highlight a forward-looking signal. Reference policy timelines, platform trends, or regional shifts.
+                  </p>
                 </div>
 
-                <div>
-                  <Label htmlFor="meme-caption">AI Meme Caption</Label>
-                  <Input
-                    id="meme-caption"
-                    placeholder="Caption for the AI meme..."
-                    value={editData.memeCaption}
-                    onChange={(e) => setEditData({ ...editData, memeCaption: e.target.value })}
-                    className="mt-2"
-                  />
-                  
-                  <div className="mt-4">
-                    <Label>Meme Image</Label>
-                    {memeImageUrl ? (
-                      <div className="mt-2 space-y-2">
-                        <img 
-                          src={memeImageUrl} 
-                          alt="Newsletter meme" 
-                          className="max-w-xs rounded-lg border"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleRemoveMeme}
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Remove Image
-                        </Button>
-                      </div>
+                <div className="pt-4 border-t">
+                  <Button onClick={handleSaveContent} disabled={updateEditionMutation.isPending}>
+                    {updateEditionMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
                     ) : (
-                      <div className="mt-2">
-                        <Input
-                          id="meme-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleMemeUpload}
-                          disabled={isUploadingMeme}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('meme-upload')?.click()}
-                          disabled={isUploadingMeme}
-                        >
-                          {isUploadingMeme ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Uploading...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4 mr-2" />
-                              Upload Meme Image
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      "Save Editorial Content"
                     )}
-                  </div>
+                  </Button>
                 </div>
-
-                <div>
-                  <Label htmlFor="comments-override">Comments Count Override</Label>
-                  <Input
-                    id="comments-override"
-                    type="number"
-                    placeholder="Manual comments count (optional)"
-                    value={editData.commentsOverride}
-                    onChange={(e) => setEditData({ ...editData, commentsOverride: e.target.value })}
-                    className="mt-2"
-                  />
-                </div>
-
-                <Button onClick={handleSaveManualContent}>
-                  Save Manual Content
-                </Button>
               </div>
+            </Card>
+
+            {/* Newsletter Structure Preview */}
+            <Card className="p-6 bg-muted/50">
+              <h4 className="font-semibold mb-4">Newsletter Structure</h4>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                <li><strong>Editor's Note</strong> - Your weekly context (above)</li>
+                <li><strong>This Week's Signals</strong> - Top 3-4 articles with one-sentence explanations (auto-selected)</li>
+                <li><strong>Worth Watching</strong> - Forward-looking signal (above)</li>
+                <li><strong>From the AI Policy Atlas</strong> - Link to relevant policy page (auto-selected)</li>
+                <li><strong>Before You Go</strong> - Standard closing copy (fixed)</li>
+              </ol>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="automation">
+            <Card className="p-6">
+              <AutomationStatus />
             </Card>
           </TabsContent>
 
