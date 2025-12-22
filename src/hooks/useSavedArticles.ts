@@ -60,6 +60,10 @@ export const useSavedArticles = () => {
     writeSaved(updated);
   }, [readSaved, writeSaved]);
 
+  const clearAll = useCallback(() => {
+    writeSaved([]);
+  }, [writeSaved]);
+
   const toggleSave = useCallback((article: Omit<SavedArticle, 'savedAt'>) => {
     if (isSaved(article.url)) {
       removeArticle(article.url);
@@ -75,6 +79,7 @@ export const useSavedArticles = () => {
     isSaved,
     saveArticle,
     removeArticle,
+    clearAll,
     toggleSave,
   };
 };

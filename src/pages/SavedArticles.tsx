@@ -4,12 +4,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bookmark, X, ExternalLink, Clock } from 'lucide-react';
+import { Bookmark, X, Clock, Trash2 } from 'lucide-react';
 import { useSavedArticles } from '@/hooks/useSavedArticles';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 const SavedArticles = () => {
-  const { savedArticles, removeArticle } = useSavedArticles();
+  const { savedArticles, removeArticle, clearAll } = useSavedArticles();
+  const { toast } = useToast();
   
   // Sort by most recently saved
   const sortedArticles = [...savedArticles].sort((a, b) => b.savedAt - a.savedAt);
@@ -34,9 +36,28 @@ const SavedArticles = () => {
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Bookmark className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Saved Articles</h1>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-3">
+              <Bookmark className="h-6 w-6 text-primary" />
+              <h1 className="text-3xl font-bold">Saved Articles</h1>
+            </div>
+            {sortedArticles.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  clearAll();
+                  toast({
+                    title: 'Saved Articles cleared',
+                    description: 'All saved articles have been removed.',
+                  });
+                }}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear all
+              </Button>
+            )}
           </div>
           <p className="text-muted-foreground">
             Saved items live on this device only. No login required.

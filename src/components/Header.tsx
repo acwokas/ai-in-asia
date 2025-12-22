@@ -21,6 +21,7 @@ import { useState, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useSavedArticles } from "@/hooks/useSavedArticles";
 import logo from "@/assets/aiinasia-logo.png";
 
 const Header = memo(() => {
@@ -30,6 +31,8 @@ const Header = memo(() => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
+  const { savedArticles } = useSavedArticles();
+  const savedCount = savedArticles.length;
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -67,7 +70,14 @@ const Header = memo(() => {
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">Policy Atlas</Link>
-              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors">Saved</Link>
+              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5">
+                Saved
+                {savedCount > 0 && (
+                  <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
+                    {savedCount}
+                  </span>
+                )}
+              </Link>
               <div className="h-4 w-px bg-primary mx-2" />
             </nav>
           </div>
@@ -204,6 +214,11 @@ const Header = memo(() => {
               <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2">
                 <Bookmark className="h-4 w-4" />
                 Saved Articles
+                {savedCount > 0 && (
+                  <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
+                    {savedCount}
+                  </span>
+                )}
               </Link>
               <div className="h-px bg-primary my-2" />
               <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
