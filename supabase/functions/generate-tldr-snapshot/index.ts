@@ -83,7 +83,12 @@ CRITICAL RULES:
 - Each bullet point must be ONE sentence maximum
 - Be specific and highlight key takeaways
 - Write naturally and concisely
-- Return ONLY a JSON array of 3 strings, nothing else
+- Use British English spelling
+- No emojis
+
+ALSO GENERATE:
+1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
+2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
 
 Article: "${title}"
 Content: ${contentText.substring(0, 2000)}`;
@@ -91,6 +96,8 @@ Content: ${contentText.substring(0, 2000)}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
     let tldrBullets: string[] = [];
+    let whoShouldPayAttention = "";
+    let whatChangesNext = "";
 
     try {
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -104,13 +111,13 @@ Content: ${contentText.substring(0, 2000)}`;
           model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: "Generate 3 concise TL;DR bullet points." }
+            { role: "user", content: "Generate 3 concise TL;DR bullet points plus the editorial context lines." }
           ],
           tools: [{
             type: "function",
             function: {
               name: "generate_tldr",
-              description: "Generate TL;DR bullet points",
+              description: "Generate TL;DR bullet points and editorial context",
               parameters: {
                 type: "object",
                 properties: {
@@ -120,9 +127,17 @@ Content: ${contentText.substring(0, 2000)}`;
                     description: "Array of 3 bullet point strings",
                     minItems: 3,
                     maxItems: 3
+                  },
+                  whoShouldPayAttention: {
+                    type: "string",
+                    description: "Short list of relevant audiences separated by vertical bars (|)"
+                  },
+                  whatChangesNext: {
+                    type: "string",
+                    description: "One short sentence about what to watch next or likely implications. Empty string if uncertain."
                   }
                 },
-                required: ["bullets"],
+                required: ["bullets", "whoShouldPayAttention", "whatChangesNext"],
                 additionalProperties: false
               }
             }
@@ -157,6 +172,8 @@ Content: ${contentText.substring(0, 2000)}`;
 
       const parsedArgs = JSON.parse(toolCall.function.arguments);
       tldrBullets = parsedArgs.bullets.slice(0, 3);
+      whoShouldPayAttention = parsedArgs.whoShouldPayAttention || "";
+      whatChangesNext = parsedArgs.whatChangesNext || "";
       console.log("TL;DR generated successfully:", tldrBullets.length, "bullets");
       
       if (tldrBullets.length < 3) {
@@ -206,15 +223,19 @@ Content: ${contentText.substring(0, 2000)}`;
       });
     }
 
-    // Update article with TL;DR and cleaned content only if articleId exists
+    // Update article with TL;DR snapshot (as object with all fields) only if articleId exists
+    const tldrSnapshotData = {
+      bullets: tldrBullets,
+      whoShouldPayAttention,
+      whatChangesNext
+    };
+
     if (articleId) {
       console.log("Updating article in database...");
       
-      // Update in two separate queries to avoid timeout with large content
-      // First update just the TL;DR
       const { error: tldrError } = await supabase
         .from("articles")
-        .update({ tldr_snapshot: tldrBullets })
+        .update({ tldr_snapshot: tldrSnapshotData })
         .eq("id", articleId);
 
       if (tldrError) {
@@ -222,22 +243,12 @@ Content: ${contentText.substring(0, 2000)}`;
         throw tldrError;
       }
       console.log("TL;DR updated successfully");
-
-      // Then update the content separately
-      // NOTE: To improve reliability and avoid timeouts on very large drafts,
-      // we no longer persist cleaned content from this function. The editor
-      // already has the latest content locally, and this function's primary
-      // responsibility is generating the TL;DR snapshot.
-      //
-      // If we need to resume server-side content cleaning in the future,
-      // this should be moved into a dedicated background task.
-
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        tldr_snapshot: tldrBullets,
+        tldr_snapshot: tldrSnapshotData,
         content: cleanedContent
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
