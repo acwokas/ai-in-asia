@@ -119,3 +119,6 @@ verify_jwt = true
 
 [functions.generate-top-list-tags]
 verify_jwt = true
+
+[functions.bulk-update-tldr-context]
+verify_jwt = true

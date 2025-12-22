@@ -1,0 +1,326 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+
+    if (!lovableApiKey) {
+      throw new Error("LOVABLE_API_KEY not configured");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check authentication and admin role
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    }
+
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden: Admin role required" }), { status: 403, headers: corsHeaders });
+    }
+
+    const { action, articleId, batchId, batchSize = 5 } = await req.json();
+
+    // Preview mode - generate for a single article without saving
+    if (action === "preview") {
+      if (!articleId) throw new Error("articleId required for preview");
+
+      const { data: article, error: articleError } = await supabase
+        .from("articles")
+        .select("id, title, content, tldr_snapshot")
+        .eq("id", articleId)
+        .single();
+
+      if (articleError || !article) throw new Error("Article not found");
+
+      const result = await generateContextForArticle(article, lovableApiKey);
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        preview: result,
+        existingSnapshot: article.tldr_snapshot
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Start a new batch job
+    if (action === "start") {
+      // Count articles that need updating (have bullets but missing context fields)
+      const { data: articlesToUpdate, error: countError } = await supabase
+        .from("articles")
+        .select("id")
+        .in("status", ["published", "scheduled"])
+        .not("tldr_snapshot", "is", null);
+
+      if (countError) throw countError;
+
+      // Filter to only those missing the new fields
+      const needsUpdate = articlesToUpdate?.filter(a => {
+        // Will be checked properly when processing
+        return true;
+      }) || [];
+
+      const newBatchId = crypto.randomUUID();
+
+      // Create queue entry
+      const { error: queueError } = await supabase
+        .from("bulk_operation_queue")
+        .insert({
+          id: newBatchId,
+          operation_type: "tldr_context_update",
+          article_ids: needsUpdate.map(a => a.id),
+          total_items: needsUpdate.length,
+          status: "queued",
+          created_by: user.id
+        });
+
+      if (queueError) throw queueError;
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        batchId: newBatchId,
+        totalItems: needsUpdate.length
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Process next batch
+    if (action === "process") {
+      if (!batchId) throw new Error("batchId required for processing");
+
+      // Get queue entry
+      const { data: queue, error: queueError } = await supabase
+        .from("bulk_operation_queue")
+        .select("*")
+        .eq("id", batchId)
+        .single();
+
+      if (queueError || !queue) throw new Error("Batch not found");
+      if (queue.status === "completed") {
+        return new Response(JSON.stringify({ success: true, completed: true, queue }), 
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Update status to processing
+      if (queue.status === "queued") {
+        await supabase
+          .from("bulk_operation_queue")
+          .update({ status: "processing", started_at: new Date().toISOString() })
+          .eq("id", batchId);
+      }
+
+      const articleIds = queue.article_ids as string[];
+      const startIndex = queue.processed_items;
+      const endIndex = Math.min(startIndex + batchSize, articleIds.length);
+      const batchArticleIds = articleIds.slice(startIndex, endIndex);
+
+      if (batchArticleIds.length === 0) {
+        // Mark as completed
+        await supabase
+          .from("bulk_operation_queue")
+          .update({ 
+            status: "completed", 
+            completed_at: new Date().toISOString() 
+          })
+          .eq("id", batchId);
+
+        return new Response(JSON.stringify({ success: true, completed: true, queue }), 
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Fetch articles for this batch
+      const { data: articles, error: articlesError } = await supabase
+        .from("articles")
+        .select("id, title, content, tldr_snapshot")
+        .in("id", batchArticleIds);
+
+      if (articlesError) throw articlesError;
+
+      let successCount = 0;
+      let failCount = 0;
+      const results: any[] = [];
+
+      for (const article of articles || []) {
+        try {
+          // Check if already has the new fields
+          const snapshot = article.tldr_snapshot as any;
+          if (snapshot && !Array.isArray(snapshot) && snapshot.whoShouldPayAttention) {
+            console.log(`Skipping ${article.id} - already has context`);
+            successCount++;
+            results.push({ id: article.id, status: "skipped" });
+            continue;
+          }
+
+          const result = await generateContextForArticle(article, lovableApiKey);
+          
+          // Build updated snapshot
+          const bullets = Array.isArray(snapshot) ? snapshot : snapshot?.bullets || [];
+          const updatedSnapshot = {
+            bullets,
+            whoShouldPayAttention: result.whoShouldPayAttention,
+            whatChangesNext: result.whatChangesNext
+          };
+
+          // Update article
+          const { error: updateError } = await supabase
+            .from("articles")
+            .update({ tldr_snapshot: updatedSnapshot })
+            .eq("id", article.id);
+
+          if (updateError) throw updateError;
+
+          successCount++;
+          results.push({ id: article.id, status: "success", ...result });
+          
+          // Small delay to avoid rate limiting
+          await new Promise(r => setTimeout(r, 500));
+        } catch (err) {
+          console.error(`Error processing ${article.id}:`, err);
+          failCount++;
+          results.push({ id: article.id, status: "error", error: err instanceof Error ? err.message : "Unknown error" });
+        }
+      }
+
+      // Update queue progress
+      const newProcessed = queue.processed_items + batchArticleIds.length;
+      const isComplete = newProcessed >= articleIds.length;
+
+      await supabase
+        .from("bulk_operation_queue")
+        .update({ 
+          processed_items: newProcessed,
+          successful_items: queue.successful_items + successCount,
+          failed_items: queue.failed_items + failCount,
+          status: isComplete ? "completed" : "processing",
+          completed_at: isComplete ? new Date().toISOString() : null,
+          results: [...(queue.results as any[] || []), ...results]
+        })
+        .eq("id", batchId);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        completed: isComplete,
+        processed: newProcessed,
+        total: articleIds.length,
+        batchResults: results
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    throw new Error("Invalid action");
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+
+async function generateContextForArticle(article: any, apiKey: string) {
+  // Extract content text
+  let contentText = "";
+  const content = article.content;
+  if (typeof content === "string") {
+    contentText = content;
+  } else if (Array.isArray(content)) {
+    contentText = content
+      .map((block: any) => {
+        if (block.type === "paragraph") return block.content;
+        if (block.type === "heading") return block.content;
+        if (block.type === "list") return block.items?.join(" ") || "";
+        return "";
+      })
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  const systemPrompt = `You are adding editorial context to an article TL;DR.
+
+CRITICAL RULES:
+- NEVER use em dashes (—)
+- Use British English spelling
+- No emojis
+- Be factual and restrained
+
+Generate:
+1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
+2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
+
+Article: "${article.title}"
+Content: ${contentText.substring(0, 2000)}`;
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "Generate the editorial context lines for this article." }
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: "generate_context",
+          description: "Generate editorial context for an article",
+          parameters: {
+            type: "object",
+            properties: {
+              whoShouldPayAttention: {
+                type: "string",
+                description: "Short list of relevant audiences separated by vertical bars (|)"
+              },
+              whatChangesNext: {
+                type: "string",
+                description: "One short sentence about what to watch next. Empty string if uncertain."
+              }
+            },
+            required: ["whoShouldPayAttention", "whatChangesNext"],
+            additionalProperties: false
+          }
+        }
+      }],
+      tool_choice: { type: "function", function: { name: "generate_context" } }
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    if (response.status === 429) throw new Error("Rate limit exceeded");
+    if (response.status === 402) throw new Error("Payment required");
+    throw new Error(`AI API error: ${response.status} - ${errorText}`);
+  }
+
+  const aiData = await response.json();
+  const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
+  
+  if (!toolCall) throw new Error("No tool call in AI response");
+
+  const parsedArgs = JSON.parse(toolCall.function.arguments);
+  return {
+    whoShouldPayAttention: parsedArgs.whoShouldPayAttention || "",
+    whatChangesNext: parsedArgs.whatChangesNext || ""
+  };
+}
