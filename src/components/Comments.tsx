@@ -10,6 +10,7 @@ import {
   Loader2, AlertTriangle, Reply, CornerDownRight
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -149,6 +150,16 @@ const CommentThread = ({
                 <span className="text-xs sm:text-sm text-muted-foreground">
                   @{comment.author_handle}
                 </span>
+              )}
+              {comment.is_ai && (
+                <Badge variant="secondary" className="h-5 px-2 text-[10px]">
+                  AI
+                </Badge>
+              )}
+              {isAdmin && comment.is_ai && !comment.published && (
+                <Badge variant="outline" className="h-5 px-2 text-[10px]">
+                  Unpublished
+                </Badge>
               )}
             </div>
             <span className="text-xs sm:text-sm text-muted-foreground">
@@ -296,20 +307,11 @@ const Comments = ({ articleId }: CommentsProps) => {
       if (approvedError) throw approvedError;
 
       // Fetch AI generated comments - admins see all, users see only published AND where comment_date has passed
+      console.log("[Comments] Fetching AI comments", { articleId, isAdmin });
+
       const aiQuery = supabase
         .from("ai_generated_comments")
-        .select(`
-          id,
-          content,
-          comment_date,
-          published,
-          parent_id,
-          ai_comment_authors (
-            name,
-            handle,
-            avatar_url
-          )
-        `)
+        .select("id, content, comment_date, published, parent_id, author_id")
         .eq("article_id", articleId)
         .order("comment_date", { ascending: false });
 
@@ -323,27 +325,55 @@ const Comments = ({ articleId }: CommentsProps) => {
 
       if (aiError) throw aiError;
 
+      console.log("[Comments] AI comments fetched", { count: aiCommentsData?.length ?? 0 });
+
+      const authorIds = Array.from(
+        new Set((aiCommentsData || []).map((c: any) => c.author_id).filter(Boolean))
+      );
+
+      const authorsById = new Map<string, { name: string; handle: string; avatar_url: string | null }>();
+      if (authorIds.length > 0) {
+        const { data: authorsData, error: authorsError } = await supabase
+          .from("ai_comment_authors")
+          .select("id, name, handle, avatar_url")
+          .in("id", authorIds);
+
+        if (authorsError) throw authorsError;
+
+        (authorsData || []).forEach((a: any) => {
+          authorsById.set(a.id, { name: a.name, handle: a.handle, avatar_url: a.avatar_url });
+        });
+      }
+
       // Transform AI comments to match Comment interface
-      const transformedAiComments: Comment[] = (aiCommentsData || []).map((aiComment: any) => ({
-        id: aiComment.id,
-        content: aiComment.content,
-        author_name: aiComment.ai_comment_authors?.name || "Unknown",
-        author_handle: aiComment.ai_comment_authors?.handle,
-        avatar_url: aiComment.ai_comment_authors?.avatar_url,
-        created_at: aiComment.comment_date,
-        approved: true,
-        is_ai: true,
-        published: aiComment.published,
-        comment_date: aiComment.comment_date,
-        parent_id: aiComment.parent_id,
-      }));
+      const transformedAiComments: Comment[] = (aiCommentsData || []).map((aiComment: any) => {
+        const author = authorsById.get(aiComment.author_id);
+        return {
+          id: aiComment.id,
+          content: aiComment.content,
+          author_name: author?.name || "Unknown",
+          author_handle: author?.handle,
+          avatar_url: author?.avatar_url ?? undefined,
+          created_at: aiComment.comment_date,
+          approved: true,
+          is_ai: true,
+          published: aiComment.published ?? false,
+          comment_date: aiComment.comment_date,
+          parent_id: aiComment.parent_id,
+        };
+      });
 
       setAiComments(transformedAiComments);
 
-      // Combine published AI comments with real comments for display
-      const publishedAiComments = transformedAiComments.filter(c => c.published);
-      const allDisplayComments = [...(approvedData || []), ...publishedAiComments];
-      allDisplayComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Combine AI comments with real comments for display
+      const displayAiComments = isAdmin
+        ? transformedAiComments
+        : transformedAiComments.filter((c) => c.published);
+
+      const allDisplayComments = [...(approvedData || []), ...displayAiComments];
+      allDisplayComments.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
       // Organize into threaded structure
       const threadedComments = organizeThreadedComments(allDisplayComments);
@@ -363,6 +393,14 @@ const Comments = ({ articleId }: CommentsProps) => {
       }
     } catch (error) {
       console.error("Error fetching comments:", error);
+      if (isAdmin) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        toast({
+          title: "Failed to load comments",
+          description: message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
