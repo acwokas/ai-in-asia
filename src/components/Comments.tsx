@@ -382,7 +382,9 @@ const Comments = ({ articleId }: CommentsProps) => {
         description: `Generated ${data.commentsGenerated} comments. They are unpublished by default.`,
       });
 
-      fetchComments();
+      // Small delay to ensure database has committed the new records
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await fetchComments();
     } catch (error) {
       console.error("Error generating comments:", error);
       toast({
