@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +7,9 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain, MessageSquare } from "lucide-react";
+import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain, MessageSquare, BarChart3, Eye, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { subDays, startOfDay, endOfDay } from "date-fns";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -104,6 +104,57 @@ const AdminDashboard = () => {
     enabled: isAdmin,
   });
 
+  // Site Analytics - last 7 days
+  const startDate = startOfDay(subDays(new Date(), 7));
+  const endDate = endOfDay(new Date());
+
+  const { data: analyticsStats, isLoading: isLoadingAnalytics } = useQuery({
+    queryKey: ["admin-analytics-stats"],
+    queryFn: async () => {
+      // Get sessions count
+      const { count: sessionsCount } = await supabase
+        .from("analytics_sessions")
+        .select("*", { count: "exact", head: true })
+        .gte("started_at", startDate.toISOString())
+        .lte("started_at", endDate.toISOString());
+
+      // Get pageviews count
+      const { count: pageviewsCount } = await supabase
+        .from("analytics_pageviews")
+        .select("*", { count: "exact", head: true })
+        .gte("viewed_at", startDate.toISOString())
+        .lte("viewed_at", endDate.toISOString());
+
+      // Get unique visitors via RPC
+      const { data: uniqueVisitors } = await supabase.rpc("get_unique_visitors", {
+        p_start: startDate.toISOString(),
+        p_end: endDate.toISOString(),
+      });
+
+      return {
+        sessions: sessionsCount || 0,
+        pageviews: pageviewsCount || 0,
+        uniqueVisitors: uniqueVisitors || 0,
+      };
+    },
+    enabled: isAdmin,
+  });
+
+  // Active visitors (sessions in last 5 minutes)
+  const { data: activeVisitors, isLoading: isLoadingActive } = useQuery({
+    queryKey: ["admin-active-visitors"],
+    queryFn: async () => {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("analytics_sessions")
+        .select("*", { count: "exact", head: true })
+        .or(`started_at.gte.${fiveMinutesAgo},ended_at.gte.${fiveMinutesAgo}`);
+      
+      return count || 0;
+    },
+    enabled: isAdmin,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
   // Fetch recent comments (both user and AI)
   const { data: recentComments, isLoading: isLoadingComments } = useQuery({
     queryKey: ["admin-recent-comments"],
@@ -230,7 +281,62 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Newsletter Subscribers */}
+            {/* Site Analytics */}
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer lg:col-span-2" onClick={() => navigate("/site-analytics")}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-8 w-8 text-primary" />
+                    <div>
+                      <CardTitle>Site Analytics</CardTitle>
+                      <CardDescription>Last 7 days performance</CardDescription>
+                    </div>
+                  </div>
+                  {!isLoadingActive && activeVisitors !== undefined && activeVisitors > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+                      <Activity className="h-4 w-4 text-green-500 animate-pulse" />
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {activeVisitors} active now
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoadingAnalytics ? (
+                  <div className="grid grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-accent/50">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                        <Users className="h-4 w-4" />
+                        Unique Visitors
+                      </div>
+                      <p className="text-2xl font-bold">{analyticsStats?.uniqueVisitors?.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-accent/50">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                        <Eye className="h-4 w-4" />
+                        Page Views
+                      </div>
+                      <p className="text-2xl font-bold">{analyticsStats?.pageviews?.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-accent/50">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                        <TrendingUp className="h-4 w-4" />
+                        Sessions
+                      </div>
+                      <p className="text-2xl font-bold">{analyticsStats?.sessions?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/newsletter-manager")}>
               <CardHeader>
                 <div className="flex items-center justify-between">
