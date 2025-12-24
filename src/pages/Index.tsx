@@ -100,10 +100,15 @@ const Index = () => {
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["homepage-articles"],
     staleTime: 10 * 1000, // 10 seconds - ensure fresh content on homepage
+    // Keep homepage updated while users leave the tab open
+    refetchInterval: 60 * 1000, // 1 minute
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
     queryFn: async () => {
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      
+
       // Single batched query for all homepage articles - only needed fields
       const { data: articles, error } = await supabase
         .from("articles")
@@ -129,14 +134,14 @@ const Index = () => {
         .order("sticky", { ascending: false })
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(15);
-      
+
       if (error) throw error;
       if (!articles || articles.length === 0) return { featured: null, latest: [], trending: [] };
-      
+
       // Split into featured (first one) and latest (rest)
       const featured = articles[0];
       const latest = articles.slice(1, 13); // Take up to 12 for latest
-      
+
       // Get trending articles for homepage - only show manually selected ones
       const { data: trendingData, error: trendingError } = await supabase
         .from("articles")
@@ -162,13 +167,13 @@ const Index = () => {
         .eq("homepage_trending", true)
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5);
-      
+
       if (trendingError) console.error("Error fetching trending:", trendingError);
-      
+
       return {
         featured,
         latest,
-        trending: trendingData || []
+        trending: trendingData || [],
       };
     },
   });
