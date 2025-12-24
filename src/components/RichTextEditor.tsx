@@ -667,24 +667,44 @@ const RichTextEditor = ({
   const handleInsertYoutube = () => {
     if (!youtubeUrl) return;
     
-    // Extract video ID from YouTube URL
-    let videoId = '';
-    const urlPatterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
-      /youtube\.com\/embed\/([^&\s]+)/
-    ];
+    let embedSrc = '';
     
-    for (const pattern of urlPatterns) {
-      const match = youtubeUrl.match(pattern);
-      if (match) {
-        videoId = match[1];
-        break;
+    // Check if it's a playlist URL
+    const playlistMatch = youtubeUrl.match(/[?&]list=([^&\s]+)/);
+    
+    if (playlistMatch) {
+      const playlistId = playlistMatch[1];
+      // Check if there's also a video ID (playlist with specific video start)
+      const videoInPlaylistMatch = youtubeUrl.match(/[?&]v=([^&\s]+)/);
+      if (videoInPlaylistMatch) {
+        // Embed playlist starting from specific video
+        embedSrc = `https://www.youtube.com/embed/${videoInPlaylistMatch[1]}?list=${playlistId}`;
+      } else {
+        // Embed entire playlist using videoseries
+        embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
       }
-    }
-    
-    if (!videoId) {
-      alert('Invalid YouTube URL. Please enter a valid YouTube video URL.');
-      return;
+    } else {
+      // Extract video ID from regular YouTube URL
+      let videoId = '';
+      const urlPatterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+        /youtube\.com\/embed\/([^&\s]+)/
+      ];
+      
+      for (const pattern of urlPatterns) {
+        const match = youtubeUrl.match(pattern);
+        if (match) {
+          videoId = match[1];
+          break;
+        }
+      }
+      
+      if (!videoId) {
+        alert('Invalid YouTube URL. Please enter a valid YouTube video or playlist URL.');
+        return;
+      }
+      
+      embedSrc = `https://www.youtube.com/embed/${videoId}`;
     }
     
     // Restore the saved selection
@@ -700,7 +720,7 @@ const RichTextEditor = ({
     editorRef.current?.focus();
     
     // Create YouTube embed HTML
-    const embedHtml = `<div class="youtube-embed" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`;
+    const embedHtml = `<div class="youtube-embed" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;"><iframe src="${embedSrc}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`;
     
     // Insert the embed
     execCommand('insertHTML', embedHtml);
