@@ -668,21 +668,17 @@ const RichTextEditor = ({
     if (!youtubeUrl) return;
     
     let embedSrc = '';
-    
+    let isPlaylist = false;
+
     // Check if it's a playlist URL
     const playlistMatch = youtubeUrl.match(/[?&]list=([^&\s]+)/);
-    
+
     if (playlistMatch) {
       const playlistId = playlistMatch[1];
-      // Check if there's also a video ID (playlist with specific video start)
-      const videoInPlaylistMatch = youtubeUrl.match(/[?&]v=([^&\s]+)/);
-      if (videoInPlaylistMatch) {
-        // Embed playlist starting from specific video
-        embedSrc = `https://www.youtube.com/embed/${videoInPlaylistMatch[1]}?list=${playlistId}`;
-      } else {
-        // Embed entire playlist using videoseries
-        embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
-      }
+      isPlaylist = true;
+
+      // Always embed as a playlist (more reliable than embedding a single video with ?list=)
+      embedSrc = `https://www.youtube.com/embed?listType=playlist&list=${playlistId}`;
     } else {
       // Extract video ID from regular YouTube URL
       let videoId = '';
@@ -690,7 +686,7 @@ const RichTextEditor = ({
         /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
         /youtube\.com\/embed\/([^&\s]+)/
       ];
-      
+
       for (const pattern of urlPatterns) {
         const match = youtubeUrl.match(pattern);
         if (match) {
@@ -698,12 +694,12 @@ const RichTextEditor = ({
           break;
         }
       }
-      
+
       if (!videoId) {
         alert('Invalid YouTube URL. Please enter a valid YouTube video or playlist URL.');
         return;
       }
-      
+
       embedSrc = `https://www.youtube.com/embed/${videoId}`;
     }
     
