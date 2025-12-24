@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { del } from "idb-keyval";
 import App from "./App.tsx";
 import "./index.css";
 import { loadGoogleAdsScript } from "./components/GoogleAds";
@@ -10,7 +11,7 @@ if ("serviceWorker" in navigator) {
     const host = window.location.hostname;
     const isLovablePreview = host.includes("lovableproject.com") || host === "localhost";
 
-    // In Lovable preview/staging we avoid SW caching issues that can break React (invalid hook call)
+    // In Lovable preview/staging we avoid SW + persisted query caching issues that can break live updates.
     if (isLovablePreview) {
       try {
         const alreadyCleaned = sessionStorage.getItem("aiinasia_sw_cleaned") === "true";
@@ -22,6 +23,9 @@ if ("serviceWorker" in navigator) {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
         }
+
+        // Clear persisted React Query cache (IndexedDB) so content changes show immediately.
+        await del("reactQuery");
 
         if (!alreadyCleaned) {
           sessionStorage.setItem("aiinasia_sw_cleaned", "true");

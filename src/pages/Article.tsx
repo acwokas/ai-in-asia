@@ -143,7 +143,18 @@ const Article = () => {
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["article", cleanSlug, previewCode],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime:
+      typeof window !== "undefined" &&
+      (window.location.hostname.includes("lovableproject.com") ||
+        window.location.hostname === "localhost")
+        ? 0
+        : 5 * 60 * 1000, // 5 minutes
+    refetchOnMount:
+      typeof window !== "undefined" &&
+      (window.location.hostname.includes("lovableproject.com") ||
+        window.location.hostname === "localhost")
+        ? "always"
+        : undefined,
     queryFn: async () => {
       console.log('Article fetch params:', { 
         category, 
@@ -715,9 +726,31 @@ const Article = () => {
     if (typeof content === 'string') {
       const hasPromptBoxes = content.includes('prompt-box');
 
+      // Normalize YouTube playlist embeds + strip inline styles that can break layout.
+      const normalizeYouTubeEmbeds = (html: string) => {
+        // Convert any "video in playlist" embed to a true playlist embed (shows the list UI).
+        html = html.replace(
+          /src="https?:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com)\/embed\/[^"?]+\?[^\"]*\blist=([^"&]+)[^\"]*"/gi,
+          'src="https://www.youtube.com/embed?listType=playlist&list=$1"'
+        );
+
+        // Strip inline layout styles from YouTube wrapper and iframe so CSS can control sizing.
+        html = html
+          .replace(
+            /<div([^>]*\bclass="[^"]*\byoutube-embed\b[^"]*"[^>]*)\sstyle="[^"]*"([^>]*)>/gi,
+            '<div$1$2>'
+          )
+          .replace(
+            /<iframe([^>]*\bsrc="[^"]*(?:youtube\.com|youtube-nocookie\.com)\/embed[^"]*"[^>]*)\sstyle="[^"]*"([^>]*)>/gi,
+            '<iframe$1$2>'
+          );
+
+        return html;
+      };
+
       // Consolidate ALL consecutive bullet points into single lists
       // Replace all double line breaks between bullets with single line breaks
-      let consolidated = content.replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
+      let consolidated = normalizeYouTubeEmbeds(content).replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
       
       // Consolidate numbered lists - merge consecutive numbered items separated by double line breaks
       consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
