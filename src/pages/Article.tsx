@@ -417,10 +417,10 @@ const Article = () => {
   const handleShare = async () => {
     console.log('[Article] Share clicked');
     // Always use the production URL, not window.location.href (which could be preview domain)
-    const articleUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    const articleUrl = article?.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`;
     const shareData = {
       title: article?.title || "",
-      text: article?.excerpt || "",
+      text: [article?.excerpt || "", articleUrl].filter(Boolean).join("\n\n"),
       url: articleUrl,
     };
 
@@ -501,7 +501,7 @@ const Article = () => {
 
   const handleInstagramShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(article?.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`);
       toast({
         title: "Link copied!",
         description: "Share this link in your Instagram story or post",
@@ -1020,7 +1020,7 @@ const Article = () => {
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@aiinasia" />
         <meta name="twitter:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
@@ -1029,7 +1029,7 @@ const Article = () => {
         {isPreview ? (
           <meta name="robots" content="noindex, nofollow" />
         ) : (
-          <link rel="canonical" href={article.canonical_url || window.location.href} />
+          <link rel="canonical" href={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`} />
         )}
       </Helmet>
 
@@ -1047,7 +1047,7 @@ const Article = () => {
         items={[
           { name: 'Home', url: 'https://aiinasia.com' },
           { name: article.categories?.name || 'Uncategorized', url: `https://aiinasia.com/category/${article.categories?.slug || 'uncategorized'}` },
-          { name: article.title, url: window.location.href }
+          { name: article.title, url: article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}` }
         ]}
       />
 
