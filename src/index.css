@@ -209,23 +209,32 @@ All colors MUST be HSL.
   }
   
   .youtube-embed {
-    position: relative;
+    /* Make embeds robust against older inline styles (height:0/overflow:hidden/absolute positioning) */
+    position: static !important;
     width: 100%;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
-    height: 0;
+    padding-bottom: 0 !important;
+    height: auto !important;
     margin: 2rem 0;
-    border-radius: 0.5rem;
-    background: hsl(var(--muted));
+    overflow: visible !important;
   }
   
   .youtube-embed iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
+    display: block;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
     border: 0;
     border-radius: 0.5rem;
+    background: hsl(var(--muted));
+  }
+
+  /* Playlists often render a list UI and need more vertical room than 16:9 */
+  .youtube-embed iframe[src*="list="] {
+    aspect-ratio: auto;
+    height: clamp(420px, 70vw, 720px);
   }
   
   /* Beautiful Prompt Box Styles */
