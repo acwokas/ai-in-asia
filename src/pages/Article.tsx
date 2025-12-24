@@ -416,10 +416,12 @@ const Article = () => {
 
   const handleShare = async () => {
     console.log('[Article] Share clicked');
+    // Always use the production URL, not window.location.href (which could be preview domain)
+    const articleUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
     const shareData = {
       title: article?.title || "",
       text: article?.excerpt || "",
-      url: window.location.href,
+      url: articleUrl,
     };
 
     try {
@@ -460,7 +462,7 @@ const Article = () => {
       }
 
       // Fallback to clipboard
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(articleUrl);
       toast({
         title: "Link copied!",
         description: "Article link copied to clipboard",
