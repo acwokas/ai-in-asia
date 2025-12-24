@@ -1,5 +1,5 @@
-const CACHE_NAME = 'aiinasia-v3';
-const IMAGE_CACHE = 'aiinasia-images-v3';
+const CACHE_NAME = 'aiinasia-v4';
+const IMAGE_CACHE = 'aiinasia-images-v4';
 const MAX_IMAGE_CACHE_SIZE = 100;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -99,6 +99,16 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
+    // IMPORTANT: Do not cache backend API calls (prevents stale homepage/article data)
+    if (
+      url.hostname.includes('supabase.co') &&
+      (url.pathname.startsWith('/rest/v1/') ||
+        url.pathname.startsWith('/auth/v1/') ||
+        url.pathname.startsWith('/functions/v1/'))
+    ) {
+      event.respondWith(fetch(request));
+      return;
+    }
     // Handle crawler requests for article pages
     if (isCrawler(userAgent) && url.origin === self.location.origin && url.pathname.includes('/')) {
       const pathParts = url.pathname.split('/').filter(p => p);
