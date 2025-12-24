@@ -414,10 +414,39 @@ const Article = () => {
     }
   };
 
+  // Use SEO-friendly share URLs that route through the edge function
+  // Social platforms will receive proper meta tags from the edge function
+  const categorySlug = article?.categories?.slug || category || "news";
+  const articleSlug = article?.slug || cleanSlug || "";
+  const articleTitle = article?.title || "";
+
+  const getPublicArticleUrl = () => {
+    const rawCanonical = (article?.canonical_url || "").trim();
+
+    // Some rows have a bad canonical_url (e.g. homepage). Ignore those.
+    if (rawCanonical) {
+      try {
+        const u = new URL(rawCanonical);
+        if (u.hostname === "aiinasia.com") {
+          const cleanedPath = (u.pathname || "/").replace(/\/+$/g, "");
+          if (cleanedPath && cleanedPath !== "/") {
+            return `https://aiinasia.com${cleanedPath}`;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (articleSlug) return `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    return categorySlug ? `https://aiinasia.com/category/${categorySlug}` : "https://aiinasia.com/";
+  };
+
   const handleShare = async () => {
-    console.log('[Article] Share clicked');
-    // Always use the production URL, not window.location.href (which could be preview domain)
-    const articleUrl = article?.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    console.log("[Article] Share clicked");
+
+    // Always share a stable production URL (never the preview domain)
+    const articleUrl = getPublicArticleUrl();
     const shareData = {
       title: article?.title || "",
       text: [article?.excerpt || "", articleUrl].filter(Boolean).join("\n\n"),
@@ -477,36 +506,42 @@ const Article = () => {
     }
   };
 
-  // Use SEO-friendly share URLs that route through the edge function
-  // Social platforms will receive proper meta tags from the edge function
-  const categorySlug = article?.categories?.slug || category || 'news';
-  const articleSlug = article?.slug || cleanSlug || '';
-  const articleTitle = article?.title || '';
-
   const handleTwitterShare = () => {
     const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
     const text = encodeURIComponent(articleTitle);
-    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${text}`, '_blank', 'width=600,height=400');
+    window.open(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${text}`,
+      "_blank",
+      "width=600,height=400"
+    );
   };
 
   const handleLinkedInShare = () => {
     const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      "_blank",
+      "width=600,height=400"
+    );
   };
 
   const handleFacebookShare = () => {
     const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      "_blank",
+      "width=600,height=400"
+    );
   };
 
   const handleInstagramShare = async () => {
     try {
-      await navigator.clipboard.writeText(article?.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`);
+      await navigator.clipboard.writeText(getPublicArticleUrl());
       toast({
         title: "Link copied!",
         description: "Share this link in your Instagram story or post",
       });
-    } catch (err) {
+    } catch {
       toast({
         title: "Share on Instagram",
         description: "Copy the article link and share it on Instagram",
@@ -517,19 +552,21 @@ const Article = () => {
   const handleRedditShare = () => {
     const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/render-meta-tags?path=${encodeURIComponent(`/${categorySlug}/${articleSlug}`)}`;
     const text = encodeURIComponent(articleTitle);
-    window.open(`https://reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${text}`, '_blank', 'width=600,height=400');
+    window.open(
+      `https://reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${text}`,
+      "_blank",
+      "width=600,height=400"
+    );
   };
 
   const handleWhatsAppShare = () => {
-    // WhatsApp uses direct URL since users will click it
-    const directUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    const directUrl = getPublicArticleUrl();
     const text = encodeURIComponent(`${articleTitle}\n\n${directUrl}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   const handleEmailShare = () => {
-    // Email uses direct URL since users will click it
-    const directUrl = `https://aiinasia.com/${categorySlug}/${articleSlug}`;
+    const directUrl = getPublicArticleUrl();
     const subject = encodeURIComponent(articleTitle);
     const body = encodeURIComponent(`Check out this article:\n\n${articleTitle}\n${directUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
@@ -1016,20 +1053,20 @@ const Article = () => {
         <meta property="og:site_name" content="AI in ASIA" />
         <meta property="og:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
         <meta property="og:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta property="og:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/og-image.png'} />
+        <meta property="og:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/icons/aiinasia-512.png'} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`} />
+        <meta property="og:url" content={getPublicArticleUrl()} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@aiinasia" />
         <meta name="twitter:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
         <meta name="twitter:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta name="twitter:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/og-image.png'} />
+        <meta name="twitter:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/icons/aiinasia-512.png'} />
         {isPreview ? (
           <meta name="robots" content="noindex, nofollow" />
         ) : (
-          <link rel="canonical" href={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`} />
+          <link rel="canonical" href={getPublicArticleUrl()} />
         )}
       </Helmet>
 
