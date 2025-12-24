@@ -1053,7 +1053,7 @@ const Article = () => {
         <meta property="og:site_name" content="AI in ASIA" />
         <meta property="og:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
         <meta property="og:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta property="og:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/icons/aiinasia-512.png'} />
+        <meta property="og:image" content="https://aiinasia.com/icons/aiinasia-512.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="article" />
@@ -1062,7 +1062,7 @@ const Article = () => {
         <meta name="twitter:site" content="@aiinasia" />
         <meta name="twitter:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
         <meta name="twitter:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta name="twitter:image" content={article.featured_image_url ? (article.featured_image_url.startsWith('http') ? article.featured_image_url : `https://aiinasia.com${article.featured_image_url}`) : 'https://aiinasia.com/icons/aiinasia-512.png'} />
+        <meta name="twitter:image" content="https://aiinasia.com/icons/aiinasia-512.png" />
         {isPreview ? (
           <meta name="robots" content="noindex, nofollow" />
         ) : (
