@@ -99,7 +99,7 @@ const Index = () => {
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["homepage-articles"],
-    staleTime: 60 * 1000, // 1 minute - ensure fresh content on homepage
+    staleTime: 10 * 1000, // 10 seconds - ensure fresh content on homepage
     queryFn: async () => {
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
