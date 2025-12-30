@@ -207,6 +207,12 @@ All colors MUST be HSL.
   .prose h3 {
     @apply text-2xl md:text-3xl mt-6 mb-3;
   }
+
+  .prose hr,
+  article hr {
+    @apply my-10 border-0 border-t;
+    border-color: hsl(var(--border));
+  }
   
   .youtube-embed {
     /* Make embeds robust against older inline styles (height:0/overflow:hidden/absolute positioning) */
