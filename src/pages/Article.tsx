@@ -813,6 +813,42 @@ const Article = () => {
               block.includes('youtube.com/embed')) {
             return block;
           }
+          // Check for headings (must be at start of block)
+          if (block.startsWith('### ')) {
+            return `<h3 class="text-2xl font-semibold mt-8 mb-4">${block.substring(4)}</h3>`;
+          }
+          if (block.startsWith('## ')) {
+            return `<h2 class="text-3xl font-bold mt-12 mb-6 text-foreground">${block.substring(3)}</h2>`;
+          }
+          if (block.startsWith('# ')) {
+            return `<h1 class="text-4xl font-bold mt-8 mb-4">${block.substring(2)}</h1>`;
+          }
+          // Check for blockquotes
+          if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
+            const quoteContent = block.substring(2);
+            return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8">
+              <p class="italic text-lg text-foreground/90 leading-relaxed">${quoteContent}</p>
+            </blockquote>`;
+          }
+          // Check for unordered lists
+          if (block.includes('\n- ') || block.startsWith('- ')) {
+            const items = block.split('\n')
+              .filter(line => line.trim().startsWith('- '))
+              .map(line => `<li class="leading-relaxed mb-2">${line.trim().substring(2)}</li>`)
+              .join('');
+            return `<ul class="pl-6 my-6 space-y-1">${items}</ul>`;
+          }
+          // Check for ordered lists
+          if (/^\d+\.\s/.test(block) || /\n\d+\.\s/.test(block)) {
+            const items = block.split('\n')
+              .filter(line => /^\d+\.\s/.test(line.trim()))
+              .map(line => {
+                const content = line.trim().replace(/^\d+\.\s/, '');
+                return `<li>${content}</li>`;
+              })
+              .join('');
+            return `<ol>${items}</ol>`;
+          }
           // Otherwise wrap in paragraph
           return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
         });
