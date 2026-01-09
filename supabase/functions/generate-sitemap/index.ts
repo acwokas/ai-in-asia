@@ -21,9 +21,51 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const baseUrl = "https://aiinasia.com";
 
-    // Check if this is a category-specific sitemap request
+    // Check if this is a category-specific sitemap request or main sitemap
     if (categorySlug && categorySlug.endsWith('.xml')) {
-      const slug = categorySlug.replace('.xml', '');
+      const slug = categorySlug.replace('sitemap-', '').replace('.xml', '');
+      
+      // Handle main sitemap (static pages)
+      if (slug === 'main') {
+        let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+        
+        const staticPages = [
+          { loc: '/', priority: 1.0, changefreq: 'daily' },
+          { loc: '/about', priority: 0.8, changefreq: 'monthly' },
+          { loc: '/contact', priority: 0.6, changefreq: 'monthly' },
+          { loc: '/tools', priority: 0.8, changefreq: 'weekly' },
+          { loc: '/guides', priority: 0.8, changefreq: 'weekly' },
+          { loc: '/events', priority: 0.7, changefreq: 'weekly' },
+          { loc: '/newsletter', priority: 0.7, changefreq: 'weekly' },
+          { loc: '/privacy', priority: 0.3, changefreq: 'yearly' },
+          { loc: '/terms', priority: 0.3, changefreq: 'yearly' },
+          { loc: '/cookie-policy', priority: 0.3, changefreq: 'yearly' },
+          { loc: '/editorial-standards', priority: 0.5, changefreq: 'yearly' },
+          { loc: '/policy-atlas', priority: 0.7, changefreq: 'weekly' },
+        ];
+        
+        const today = new Date().toISOString().split('T')[0];
+        staticPages.forEach(page => {
+          sitemap += `  <url>
+    <loc>${baseUrl}${page.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>\n`;
+        });
+        
+        sitemap += '</urlset>';
+        
+        return new Response(sitemap, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/xml",
+            "Cache-Control": "public, max-age=3600",
+            "Last-Modified": new Date().toUTCString(),
+          },
+        });
+      }
       
       // Fetch category
       const { data: category } = await supabase
@@ -114,20 +156,22 @@ serve(async (req) => {
       .eq("status", "published")
       .order("updated_at", { ascending: false });
 
-    // Build sitemap index
+    // Build sitemap index - use edge function URLs for sub-sitemaps
+    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/generate-sitemap`;
+    
     let sitemapIndex = '<?xml version="1.0" encoding="UTF-8"?>\n';
     sitemapIndex += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
     // Main sitemap with static pages
     sitemapIndex += `  <sitemap>
-    <loc>${baseUrl}/sitemap-main.xml</loc>
+    <loc>${edgeFunctionUrl}/sitemap-main.xml</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>\n`;
 
     // Category-specific sitemaps
     categories?.forEach((category: any) => {
       sitemapIndex += `  <sitemap>
-    <loc>${baseUrl}/sitemap-${category.slug}.xml</loc>
+    <loc>${edgeFunctionUrl}/sitemap-${category.slug}.xml</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>\n`;
     });
