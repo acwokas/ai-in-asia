@@ -51,22 +51,19 @@ function parseSignals(content: any): Signal[] {
     textContent = extractTextFromContent(content);
   }
 
-  // Clean up the text content first
-  textContent = textContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  // Convert HTML div tags to newlines for easier parsing
+  textContent = textContent
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<div[^>]*>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\n{3,}/g, '\n\n');
 
-  // Try to split by signal patterns: ##1. or ## 1. or **1. or 1. at start of line
-  const signalSplitRegex = /(?=(?:^|\n)(?:##?\s*)?(\d+)[\.\:]\s+)/g;
-  const sections = textContent.split(signalSplitRegex).filter(s => s && s.trim() && isNaN(parseInt(s)));
-  
-  // If split didn't work well, try alternative approach
-  if (sections.length < 2) {
-    // Try splitting by explicit patterns
-    const altSections = textContent.split(/\n(?=##?\s*\d+[\.\:])/);
-    if (altSections.length > 1) {
-      sections.length = 0;
-      sections.push(...altSections.filter(s => s.trim()));
-    }
-  }
+  // Split by signal patterns: ##1. or ## 1. or just 1. at start
+  const sections = textContent.split(/(?=##?\s*\d+[\.\:])/g).filter(s => s.trim());
 
   for (const section of sections) {
     // Extract signal number
