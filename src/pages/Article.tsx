@@ -32,6 +32,7 @@ import ExitIntentOverlay from "@/components/ExitIntentOverlay";
 import ArticleSaveButton from "@/components/ArticleSaveButton";
 import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
 import { useRecentArticles } from "@/hooks/useRecentArticles";
+import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -716,6 +717,36 @@ const Article = () => {
         </main>
         <Footer />
       </div>
+    );
+  }
+
+  // Render 3-Before-9 template for that article type
+  if (article.article_type === 'three_before_nine') {
+    return (
+      <>
+        <Header />
+        <ThreeBeforeNineTemplate 
+          article={{
+            id: article.id,
+            title: article.title,
+            slug: article.slug,
+            content: article.content,
+            excerpt: article.excerpt || "Three AI signals worth knowing before your first coffee.",
+            published_at: article.published_at || '',
+            updated_at: article.updated_at,
+            featured_image_url: article.featured_image_url || undefined,
+            meta_title: article.meta_title || undefined,
+            meta_description: article.meta_description || undefined,
+            tldr_snapshot: article.tldr_snapshot as any,
+            author: article.authors ? {
+              name: article.authors.name,
+              slug: article.authors.slug,
+              avatar_url: article.authors.avatar_url || undefined
+            } : undefined
+          }}
+        />
+        <Footer />
+      </>
     );
   }
 

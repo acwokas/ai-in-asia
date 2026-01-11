@@ -1113,6 +1113,36 @@ export type Database = {
           },
         ]
       }
+      briefing_subscriptions: {
+        Row: {
+          briefing_type: string
+          email: string
+          id: string
+          is_active: boolean
+          subscribed_at: string
+          unsubscribed_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          briefing_type?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          briefing_type?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       bulk_link_operations: {
         Row: {
           articles_modified: number
@@ -3323,6 +3353,7 @@ export type Database = {
         | "policy_article"
         | "top_lists"
         | "editors_note"
+        | "three_before_nine"
       newsletter_status: "draft" | "scheduled" | "sending" | "sent" | "failed"
       policy_applies_to_type: "commercial_ai" | "public_sector_ai" | "both"
       policy_regulatory_impact_type: "low" | "medium" | "high"
@@ -3473,6 +3504,7 @@ export const Constants = {
         "policy_article",
         "top_lists",
         "editors_note",
+        "three_before_nine",
       ],
       newsletter_status: ["draft", "scheduled", "sending", "sent", "failed"],
       policy_applies_to_type: ["commercial_ai", "public_sector_ai", "both"],
