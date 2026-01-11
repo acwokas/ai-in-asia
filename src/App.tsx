@@ -110,6 +110,7 @@ const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
 const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
 const ImportNewsletterSubscribers = lazy(() => import("./pages/ImportNewsletterSubscribers"));
+const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -279,6 +280,8 @@ const App = () => (
               <Route path="/admin/newsletter-analytics" element={<NewsletterAnalytics />} />
               <Route path="/admin/site-analytics" element={<SiteAnalytics />} />
               <Route path="/admin/import-subscribers" element={<ImportNewsletterSubscribers />} />
+              {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
+              <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}
