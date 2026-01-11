@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Clock, ChevronRight, ExternalLink } from "lucide-react";
+import { Clock, ChevronRight } from "lucide-react";
 import { Helmet } from "react-helmet";
-import Comments from "@/components/Comments";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { cn } from "@/lib/utils";
@@ -343,12 +342,6 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         </div>
       </main>
 
-      {/* Comments Section */}
-      <div className="bg-slate-800/30">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          <Comments articleId={article.id} />
-        </div>
-      </div>
 
       {/* Recent Editions */}
       <div className="bg-slate-900 border-t border-slate-800">
