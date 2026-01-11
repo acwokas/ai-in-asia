@@ -1092,7 +1092,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     setAuthorId('efae4a91-4c99-4ac3-bfef-21f81d6e7551'); // Intelligence Desk
                     setFeaturedImage('/images/3-before-9-hero.png');
                     setFeaturedImageAlt('3 Before 9 - Your daily AI intelligence briefing');
-                    setExcerpt('Your essential AI intelligence briefing. Three signals that matter, delivered before 9am.');
+                    setExcerpt('Your essential AI intelligence briefing. Three signals that matter, delivered before your first cup of coffee.');
                     setSeoTitle(`3 Before 9: AI News for ${displayDate} | AI in Asia`);
                     setMetaDescription('Three essential AI developments you need to know before 9am. Expert analysis on what matters for business leaders in Asia.');
                     setFocusKeyphrase('AI news Asia');
