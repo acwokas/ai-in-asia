@@ -429,7 +429,7 @@ const GuideDetail = () => {
         ))}
         
         {/* Open Graph Image */}
-        <meta property="og:image" content={guide.image_prompt ? `https://aiinasia.com/guides/${guide.slug}-og.png` : 'https://aiinasia.com/icons/aiinasia-512.png?v=2'} />
+        <meta property="og:image" content={'https://aiinasia.com/favicon.png'} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={pageTitle} />
@@ -440,7 +440,7 @@ const GuideDetail = () => {
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:site" content="@aiinasia" />
-        <meta name="twitter:image" content={guide.image_prompt ? `https://aiinasia.com/guides/${guide.slug}-og.png` : 'https://aiinasia.com/icons/aiinasia-512.png?v=2'} />
+        <meta name="twitter:image" content={'https://aiinasia.com/favicon.png'} />
         <meta name="twitter:image:alt" content={pageTitle} />
         
         {/* Additional SEO */}
