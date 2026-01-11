@@ -1078,7 +1078,27 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
               <div>
                 <Label htmlFor="article-type">Article Type</Label>
-                <Select value={articleType} onValueChange={setArticleType}>
+                <Select value={articleType} onValueChange={(value) => {
+                  setArticleType(value);
+                  // Auto-fill fields for 3-Before-9 briefings
+                  if (value === 'three_before_nine' && !initialData?.id) {
+                    const today = new Date();
+                    const dateStr = format(today, 'yyyy-MM-dd');
+                    const displayDate = format(today, 'MMMM d, yyyy');
+                    
+                    setTitle(`3 Before 9: ${displayDate}`);
+                    setSlug(`3-before-9-${dateStr}`);
+                    setPrimaryCategoryId('65520fa1-c045-4a40-b7ae-418d22026a0e'); // News category
+                    setAuthorId('efae4a91-4c99-4ac3-bfef-21f81d6e7551'); // Intelligence Desk
+                    setFeaturedImage('/images/3-before-9-hero.png');
+                    setFeaturedImageAlt('3 Before 9 - Your daily AI intelligence briefing');
+                    setExcerpt('Your essential AI intelligence briefing. Three signals that matter, delivered before 9am.');
+                    setSeoTitle(`3 Before 9: AI News for ${displayDate} | AI in Asia`);
+                    setMetaDescription('Three essential AI developments you need to know before 9am. Expert analysis on what matters for business leaders in Asia.');
+                    setFocusKeyphrase('AI news Asia');
+                    setFeaturedOnHomepage(false);
+                  }
+                }}>
                   <SelectTrigger id="article-type">
                     <SelectValue />
                   </SelectTrigger>
