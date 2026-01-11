@@ -1097,6 +1097,9 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     setMetaDescription('Three essential AI developments you need to know before 9am. Expert analysis on what matters for business leaders in Asia.');
                     setFocusKeyphrase('AI news Asia');
                     setFeaturedOnHomepage(false);
+                    // Set default TLDR snapshot fields for 3-Before-9
+                    setWhoShouldPayAttention('AI leaders, founders, enterprise decision-makers, and teams deploying AI across Asia.');
+                    setWhatChangesNext('Regulatory expectations tighten, infrastructure buildout accelerates, and enterprise AI governance matures.');
                   }
                 }}>
                   <SelectTrigger id="article-type">
