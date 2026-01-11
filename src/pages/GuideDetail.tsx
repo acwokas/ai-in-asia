@@ -428,12 +428,20 @@ const GuideDetail = () => {
           <meta key={i} property="article:tag" content={tag.trim()} />
         ))}
         
+        {/* Open Graph Image */}
+        <meta property="og:image" content={guide.image_prompt ? `https://aiinasia.com/guides/${guide.slug}-og.png` : 'https://aiinasia.com/icons/aiinasia-512.png?v=2'} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={pageTitle} />
+        
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={canonicalUrl} />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:site" content="@aiaborhood" />
+        <meta name="twitter:site" content="@aiinasia" />
+        <meta name="twitter:image" content={guide.image_prompt ? `https://aiinasia.com/guides/${guide.slug}-og.png` : 'https://aiinasia.com/icons/aiinasia-512.png?v=2'} />
+        <meta name="twitter:image:alt" content={pageTitle} />
         
         {/* Additional SEO */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
