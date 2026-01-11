@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Clock, ChevronRight } from "lucide-react";
+import { Clock, ChevronRight, ExternalLink } from "lucide-react";
 import { Helmet } from "react-helmet";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
@@ -11,6 +11,7 @@ interface Signal {
   title: string;
   explainer: string;
   whyItMatters: string;
+  readMoreUrl?: string;
   isBonus?: boolean;
 }
 
@@ -106,6 +107,23 @@ function parseSignals(content: any): Signal[] {
     
     let explainer = '';
     let whyItMatters = '';
+    let readMoreUrl = '';
+    
+    // Extract "Read more" link from any line
+    const allText = lines.join('\n');
+    const linkPatterns = [
+      /Read more:\s*\[([^\]]+)\]\(([^)]+)\)/i,  // Markdown: [text](url)
+      /Read more:\s*\[?(https?:\/\/[^\s\]\)]+)\]?/i,  // Plain URL or [url]
+      /\[Read more\]\(([^)]+)\)/i,  // [Read more](url)
+    ];
+    
+    for (const pattern of linkPatterns) {
+      const match = allText.match(pattern);
+      if (match) {
+        readMoreUrl = match[2] || match[1];
+        break;
+      }
+    }
     
     if (whyMattersIdx > 0) {
       explainer = lines.slice(startIdx, whyMattersIdx).join(' ').trim();
@@ -122,19 +140,25 @@ function parseSignals(content: any): Signal[] {
       const remainingLines = [whyLine, ...lines.slice(whyMattersIdx + 1)].filter(l => l.trim());
       whyItMatters = remainingLines.join(' ').trim();
       
-      // Remove any "Read more:" links
-      whyItMatters = whyItMatters.replace(/\s*Read more:.*$/i, '').trim();
+      // Remove any "Read more:" links from whyItMatters
+      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
+      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]\)]+\]?/gi, '').trim();
+      whyItMatters = whyItMatters.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
     } else {
       explainer = lines.slice(startIdx).join(' ').trim();
-      // Remove any "Read more:" links from explainer
-      explainer = explainer.replace(/\s*Read more:.*$/i, '').trim();
     }
+    
+    // Clean links from explainer too
+    explainer = explainer.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
+    explainer = explainer.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]\)]+\]?/gi, '').trim();
+    explainer = explainer.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
 
     signals.push({
       number,
       title: cleanHtml(title),
       explainer: cleanHtml(explainer),
       whyItMatters: cleanHtml(whyItMatters),
+      readMoreUrl: readMoreUrl || undefined,
       isBonus: false
     });
   }
@@ -291,7 +315,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                   {signal.explainer}
                 </p>
                 {signal.whyItMatters && (
-                  <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 pr-4 py-3 rounded-r-lg">
+                  <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 pr-4 py-3 rounded-r-lg mb-4">
                     <p className="text-sm font-semibold text-amber-400 mb-1">
                       Why it matters for Asia
                     </p>
@@ -299,6 +323,17 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                       {signal.whyItMatters}
                     </p>
                   </div>
+                )}
+                {signal.readMoreUrl && (
+                  <a 
+                    href={signal.readMoreUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors group"
+                  >
+                    <span>Read more</span>
+                    <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </a>
                 )}
               </div>
             </article>
