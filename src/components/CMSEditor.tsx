@@ -1088,6 +1088,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <SelectItem value="policy_article">Policy Article</SelectItem>
                     <SelectItem value="top_lists">Top Lists</SelectItem>
                     <SelectItem value="editors_note">Editor's Note</SelectItem>
+                    <SelectItem value="three_before_nine">3-Before-9</SelectItem>
                   </SelectContent>
         </Select>
               </div>
