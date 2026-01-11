@@ -51,91 +51,89 @@ function parseSignals(content: any): Signal[] {
     textContent = extractTextFromContent(content);
   }
 
-  // Parse signals from text
-  // Match patterns like "## 1. Title" or "## Bonus signal" or just numbered headings
-  const signalRegex = /##\s*(\d+|Bonus)[\.:]\s*(.+?)(?=\n##|\n*$)/gs;
-  const matches = textContent.matchAll(signalRegex);
+  // Clean up the text content first
+  textContent = textContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-  for (const match of matches) {
-    const isBonus = match[1].toLowerCase() === 'bonus';
-    const number = isBonus ? 4 : parseInt(match[1]);
-    const fullText = match[2].trim();
+  // Try to split by signal patterns: ##1. or ## 1. or **1. or 1. at start of line
+  const signalSplitRegex = /(?=(?:^|\n)(?:##?\s*)?(\d+)[\.\:]\s+)/g;
+  const sections = textContent.split(signalSplitRegex).filter(s => s && s.trim() && isNaN(parseInt(s)));
+  
+  // If split didn't work well, try alternative approach
+  if (sections.length < 2) {
+    // Try splitting by explicit patterns
+    const altSections = textContent.split(/\n(?=##?\s*\d+[\.\:])/);
+    if (altSections.length > 1) {
+      sections.length = 0;
+      sections.push(...altSections.filter(s => s.trim()));
+    }
+  }
+
+  for (const section of sections) {
+    // Extract signal number
+    const numMatch = section.match(/^(?:##?\s*)?(\d+)[\.\:]\s*/);
+    if (!numMatch) continue;
     
-    // Split into title and rest
-    const lines = fullText.split('\n').filter(l => l.trim());
-    const title = lines[0]?.replace(/<[^>]*>/g, '').trim() || '';
+    const number = parseInt(numMatch[1]);
+    const rest = section.slice(numMatch[0].length);
+    
+    // First line after number is the title
+    const lines = rest.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length === 0) continue;
+    
+    // Title might run into the explainer - check for common patterns
+    let title = lines[0];
+    let startIdx = 1;
+    
+    // If title is very long and contains sentence patterns, it might include explainer
+    if (title.length > 100) {
+      // Try to find where title ends (first lowercase letter after initial phrase)
+      const titleEnd = title.match(/^[^.]+[.!?]?\s*(?=[A-Z])/);
+      if (titleEnd) {
+        const explainerPart = title.slice(titleEnd[0].length);
+        title = titleEnd[0].trim();
+        if (explainerPart) {
+          lines.splice(1, 0, explainerPart);
+        }
+      }
+    }
     
     // Find "Why it matters" section
-    const whyMattersIdx = lines.findIndex(l => 
-      l.toLowerCase().includes('why it matters') || 
-      l.toLowerCase().includes('why this matters')
-    );
+    let whyMattersIdx = -1;
+    for (let i = startIdx; i < lines.length; i++) {
+      if (lines[i].toLowerCase().includes('why it matters') || 
+          lines[i].toLowerCase().includes('why this matters') ||
+          lines[i].match(/^\*?\*?why\s+it\s+matters/i)) {
+        whyMattersIdx = i;
+        break;
+      }
+    }
     
     let explainer = '';
     let whyItMatters = '';
     
     if (whyMattersIdx > 0) {
-      explainer = lines.slice(1, whyMattersIdx).join('\n').trim();
-      whyItMatters = lines.slice(whyMattersIdx + 1).join('\n').trim();
-      // If why it matters is on same line
-      if (!whyItMatters && lines[whyMattersIdx]) {
-        const afterColon = lines[whyMattersIdx].split(/matters?( for Asia)?/i)[2];
-        if (afterColon) whyItMatters = afterColon.trim();
+      explainer = lines.slice(startIdx, whyMattersIdx).join(' ').trim();
+      
+      // Extract "Why it matters" content - might be inline or on next lines
+      let whyLine = lines[whyMattersIdx];
+      const colonMatch = whyLine.match(/why\s+it\s+matters[^:]*:\s*/i);
+      if (colonMatch) {
+        whyLine = whyLine.slice(colonMatch.index! + colonMatch[0].length);
+      } else {
+        whyLine = whyLine.replace(/^\*?\*?why\s+it\s+matters[^:]*:?\s*/i, '');
       }
+      
+      const remainingLines = [whyLine, ...lines.slice(whyMattersIdx + 1)].filter(l => l.trim());
+      whyItMatters = remainingLines.join(' ').trim();
+      
+      // Remove any "Read more:" links
+      whyItMatters = whyItMatters.replace(/\s*Read more:.*$/i, '').trim();
     } else {
-      explainer = lines.slice(1).join('\n').trim();
+      explainer = lines.slice(startIdx).join(' ').trim();
+      // Remove any "Read more:" links from explainer
+      explainer = explainer.replace(/\s*Read more:.*$/i, '').trim();
     }
 
-    signals.push({
-      number,
-      title,
-      explainer: cleanHtml(explainer),
-      whyItMatters: cleanHtml(whyItMatters),
-      isBonus
-    });
-  }
-
-  // Fallback: try simpler parsing if regex fails
-  if (signals.length === 0) {
-    const simpleSignals = parseSimpleFormat(textContent);
-    return simpleSignals;
-  }
-
-  return signals;
-}
-
-function parseSimpleFormat(text: string): Signal[] {
-  const signals: Signal[] = [];
-  const sections = text.split(/(?=##?\s*\d+[\.:])/).filter(s => s.trim());
-  
-  for (const section of sections) {
-    const numberMatch = section.match(/##?\s*(\d+)[\.:]\s*/);
-    if (!numberMatch) continue;
-    
-    const number = parseInt(numberMatch[1]);
-    const rest = section.slice(numberMatch[0].length);
-    const lines = rest.split('\n').filter(l => l.trim());
-    
-    const title = lines[0]?.replace(/<[^>]*>/g, '').trim() || '';
-    
-    const whyIdx = lines.findIndex(l => 
-      l.toLowerCase().includes('why it matters') ||
-      l.toLowerCase().includes('**why')
-    );
-    
-    let explainer = '';
-    let whyItMatters = '';
-    
-    if (whyIdx > 0) {
-      explainer = lines.slice(1, whyIdx).join(' ').trim();
-      whyItMatters = lines.slice(whyIdx).join(' ')
-        .replace(/\*\*why.*?\*\*/gi, '')
-        .replace(/why it matters.*?:/gi, '')
-        .trim();
-    } else {
-      explainer = lines.slice(1).join(' ').trim();
-    }
-    
     signals.push({
       number,
       title: cleanHtml(title),
@@ -144,9 +142,9 @@ function parseSimpleFormat(text: string): Signal[] {
       isBonus: false
     });
   }
-  
+
   // Check for bonus signal
-  const bonusMatch = text.match(/##?\s*Bonus\s*(?:signal)?[:\s]*(.+?)(?=##|That's today|$)/is);
+  const bonusMatch = textContent.match(/(?:##?\s*)?Bonus\s*(?:signal)?[:\.\s]*(.+?)(?=##|That's today|$)/is);
   if (bonusMatch) {
     signals.push({
       number: 4,
@@ -156,9 +154,14 @@ function parseSimpleFormat(text: string): Signal[] {
       isBonus: true
     });
   }
-  
+
+  // Sort by number
+  signals.sort((a, b) => a.number - b.number);
+
   return signals;
 }
+
+// Removed parseSimpleFormat - consolidated into main parseSignals function
 
 function extractTextFromContent(content: any): string {
   if (!content?.content) return '';
@@ -274,54 +277,49 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
       {/* Signals */}
       <main className="max-w-3xl mx-auto px-6 py-8 md:py-12">
-        <div className="space-y-8 md:space-y-10">
+        <div className="space-y-10 md:space-y-12">
           {signals.filter(s => !s.isBonus).map((signal, idx) => (
-            <article key={signal.number} className="relative">
-              {/* Signal Number */}
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-900 font-bold text-lg">
+            <article key={signal.number} className="relative bg-slate-800/40 rounded-xl p-6 md:p-8 border border-slate-700/50">
+              {/* Signal Number Badge */}
+              <div className="absolute -top-5 left-6">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg shadow-amber-500/20">
                   {signal.number}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg md:text-xl font-semibold text-white mb-3 leading-tight">
-                    {signal.title}
-                  </h2>
-                  <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-4">
-                    {signal.explainer}
-                  </p>
-                  {signal.whyItMatters && (
-                    <div className="border-l-2 border-amber-500/50 pl-4 py-1">
-                      <p className="text-amber-200/80 text-sm italic">
-                        <span className="font-medium text-amber-400 not-italic">Why it matters for Asia:</span>{' '}
-                        {signal.whyItMatters}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
               
-              {/* Divider */}
-              {idx < signals.filter(s => !s.isBonus).length - 1 && (
-                <div className="mt-8 border-b border-slate-700/50" />
-              )}
+              <div className="pt-2">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-4 leading-tight">
+                  {signal.title}
+                </h2>
+                <p className="text-slate-200 text-base md:text-lg leading-relaxed mb-5">
+                  {signal.explainer}
+                </p>
+                {signal.whyItMatters && (
+                  <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 pr-4 py-3 rounded-r-lg">
+                    <p className="text-sm font-semibold text-amber-400 mb-1">
+                      Why it matters for Asia
+                    </p>
+                    <p className="text-amber-100 text-sm md:text-base leading-relaxed">
+                      {signal.whyItMatters}
+                    </p>
+                  </div>
+                )}
+              </div>
             </article>
           ))}
 
           {/* Bonus Signal */}
           {signals.find(s => s.isBonus) && (
-            <div className="relative mt-10">
-              <div className="absolute -top-4 left-0 right-0 border-t border-dashed border-amber-500/30" />
-              <div className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold uppercase tracking-wide">
-                    Bonus
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                      {signals.find(s => s.isBonus)?.explainer}
-                    </p>
-                  </div>
-                </div>
+            <div className="relative mt-10 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-xl p-6 md:p-8 border border-amber-500/30">
+              <div className="absolute -top-3 left-6">
+                <span className="px-3 py-1 rounded-full bg-amber-500 text-slate-900 text-xs font-bold uppercase tracking-wide shadow-lg">
+                  Bonus Signal
+                </span>
+              </div>
+              <div className="pt-2">
+                <p className="text-slate-100 text-base md:text-lg leading-relaxed">
+                  {signals.find(s => s.isBonus)?.explainer}
+                </p>
               </div>
             </div>
           )}
