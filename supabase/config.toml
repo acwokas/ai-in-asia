@@ -122,3 +122,6 @@ verify_jwt = true
 
 [functions.bulk-update-tldr-context]
 verify_jwt = true
+
+[functions.validate-article-links]
+verify_jwt = true

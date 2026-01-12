@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check, Sparkles } from "lucide-react";
+import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check, Sparkles, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { LinkValidator } from "@/components/LinkValidator";
 
 interface CMSEditorProps {
   initialData?: any;
@@ -2107,6 +2108,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Link Validator - Check external links before publishing */}
+      <div className="mt-6">
+        <LinkValidator content={content} />
+      </div>
 
       <div className="flex justify-end gap-4 mt-6">
         <Button onClick={handleSave}>
