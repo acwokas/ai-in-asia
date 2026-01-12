@@ -2111,7 +2111,25 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
       {/* Link Validator - Check external links before publishing */}
       <div className="mt-6">
-        <LinkValidator content={content} />
+        <LinkValidator 
+          content={content} 
+          onApplyFix={(originalUrl, newUrl, newText) => {
+            // Find and replace the markdown link in content
+            // Match both [any text](originalUrl) and bare originalUrl patterns
+            const escapedUrl = originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            
+            // Replace markdown links first: [text](url) -> [newText](newUrl)
+            const markdownLinkRegex = new RegExp(`\\[([^\\]]+)\\]\\(${escapedUrl}\\)`, 'g');
+            let updatedContent = content.replace(markdownLinkRegex, `[${newText}](${newUrl})`);
+            
+            // Also replace any bare URLs (not in markdown format)
+            if (updatedContent === content) {
+              updatedContent = content.replace(new RegExp(escapedUrl, 'g'), newUrl);
+            }
+            
+            setContent(updatedContent);
+          }}
+        />
       </div>
 
       <div className="flex justify-end gap-4 mt-6">
