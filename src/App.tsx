@@ -282,6 +282,7 @@ const App = () => (
               <Route path="/admin/import-subscribers" element={<ImportNewsletterSubscribers />} />
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
+              <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}
