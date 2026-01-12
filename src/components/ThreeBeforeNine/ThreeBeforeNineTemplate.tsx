@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Clock, ChevronRight, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { Clock, ChevronRight, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { cn } from "@/lib/utils";
+import { useAdminRole } from "@/hooks/useAdminRole";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Signal {
   number: number;
@@ -27,6 +34,8 @@ interface ThreeBeforeNineTemplateProps {
     featured_image_url?: string;
     meta_title?: string;
     meta_description?: string;
+    status?: string;
+    view_count?: number;
     tldr_snapshot?: {
       whoShouldPayAttention?: string;
       whatChangesNext?: string;
@@ -223,6 +232,45 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
   
   const tldr = article.tldr_snapshot as { whoShouldPayAttention?: string; whatChangesNext?: string } | null;
   const canonicalUrl = `https://aiinasia.com/news/${article.slug}`;
+  
+  const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAdminView, setShowAdminView] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const handlePublish = async () => {
+    if (!article || !isAdmin) return;
+
+    setIsPublishing(true);
+    try {
+      const { error } = await supabase
+        .from('articles')
+        .update({ 
+          status: 'published',
+          published_at: new Date().toISOString()
+        })
+        .eq('id', article.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Article published",
+        description: "The article is now live",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["article", article.slug] });
+    } catch (error) {
+      console.error("Error publishing article:", error);
+      toast({
+        title: "Error",
+        description: "Failed to publish article",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -240,6 +288,94 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         <meta name="twitter:description" content={article.meta_description || article.excerpt} />
         <meta name="twitter:image" content="https://aiinasia.com/images/3-before-9-hero.png" />
       </Helmet>
+
+      {/* Admin Controls */}
+      {!isLoadingAdmin && isAdmin && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Edit className="h-4 w-4 text-amber-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-white">Admin Controls</span>
+              {article.status !== 'published' && (
+                <Badge variant="outline" className="ml-2 border-amber-500/50 text-amber-400">
+                  {article.status}
+                </Badge>
+              )}
+              <span className="text-xs text-slate-400 ml-2">
+                {article.view_count || 0} views
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAdminView(!showAdminView)}
+                className="cursor-pointer border-slate-600 text-slate-200 hover:bg-slate-700"
+              >
+                {showAdminView ? (
+                  <>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Normal View
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-4 w-4 mr-2" />
+                    Admin View
+                  </>
+                )}
+              </Button>
+              {article.status !== 'published' && (
+                <Button
+                  size="sm"
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="cursor-pointer bg-amber-500 text-slate-900 hover:bg-amber-400"
+                >
+                  {isPublishing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Publish Now
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="cursor-pointer border-slate-600 text-slate-200 hover:bg-slate-700"
+              >
+                <Link to={`/editor?id=${article.id}`}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Article
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Debug Info */}
+      {!isLoadingAdmin && isAdmin && showAdminView && (
+        <div className="bg-slate-800/80 border-b border-slate-700">
+          <div className="max-w-3xl mx-auto px-6 py-4 space-y-2">
+            <h3 className="text-sm font-semibold text-white mb-2">Article Metadata</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><span className="text-slate-400">ID:</span> <span className="text-slate-200">{article.id}</span></div>
+              <div><span className="text-slate-400">Status:</span> <span className="text-slate-200">{article.status || 'published'}</span></div>
+              <div><span className="text-slate-400">Slug:</span> <span className="text-slate-200">{article.slug}</span></div>
+              <div><span className="text-slate-400">Views:</span> <span className="text-slate-200">{article.view_count || 0}</span></div>
+              <div><span className="text-slate-400">Published:</span> <span className="text-slate-200">{article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Not published'}</span></div>
+              <div><span className="text-slate-400">Updated:</span> <span className="text-slate-200">{article.updated_at ? new Date(article.updated_at).toLocaleDateString() : '-'}</span></div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Compact Header */}
       <header className="relative">
