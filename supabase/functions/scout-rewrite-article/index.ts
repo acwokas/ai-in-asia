@@ -89,14 +89,17 @@ INTERNAL & EXTERNAL LINKING:
 AVAILABLE ARTICLES FOR INTERNAL LINKING:
 ${articlesList}
 
-FORMATTING REQUIREMENTS:
-- Use ## for H2 headings (main sections)
+FORMATTING REQUIREMENTS (MANDATORY - YOU MUST FOLLOW THESE):
+- YOU MUST include 2-4 H2 headings using ## syntax to break up the article into sections
+- Every article MUST have multiple ## headings to structure the content logically
+- Example heading format: ## The Rise of AI Regulation or ## What This Means for Businesses
 - Use > for blockquotes (for emphasis or notable quotes)
 - Use **bold** for emphasis sparingly
 - Use *italic* for subtle emphasis or terms
 - Keep paragraphs relatively short (2-4 sentences typically)
 - Use bullet points with - when listing items
 - Add line breaks between sections for readability
+- DO NOT start the article with a heading - begin with an introductory paragraph first
 
 CONTENT APPROACH:
 - Completely rewrite from a fresh angle, not just rephrasing
@@ -115,7 +118,7 @@ COMMENT CTA (REQUIRED):
 - Make it feel natural and relevant to the article's topic
 - Place it as the final line of the article
 
-Return ONLY the rewritten markdown content with embedded links and CTA, nothing else.`;
+Return ONLY the rewritten markdown content with embedded links and CTA, nothing else. The content MUST include multiple ## headings.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
