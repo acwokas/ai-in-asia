@@ -80,9 +80,11 @@ TONE AND STYLE:
 INTERNAL & EXTERNAL LINKING:
 - Naturally integrate 2-4 internal links to our existing articles using relevant anchor text
 - Add at least 1 authoritative external link to support claims (research papers, official reports, major publications)
-- External links MUST use this format: [text](url)^  - the ^ makes them open in new tabs
-- Internal links MUST use EXACT URL from list including /category/slug format: [text](/category/article-slug)
+- ALL links MUST use pure Markdown syntax - NEVER use HTML tags like <a> or attributes like target="_blank"
+- External links format: [anchor text](https://example.com)^ - the trailing ^ indicates it opens in new tab
+- Internal links format: [anchor text](/category/article-slug) - use EXACT URL from the article list including /category/slug
 - NEVER use [text](/article-slug) format - always include the category from the provided list
+- NEVER output HTML link attributes - only use markdown [text](url) syntax
 - Place links where they add value, not forced
 - Make anchor text natural and descriptive
 
