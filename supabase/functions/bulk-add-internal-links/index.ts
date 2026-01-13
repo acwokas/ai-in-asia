@@ -182,10 +182,11 @@ CRITICAL RULES:
   * Official company blogs: Google AI Blog, OpenAI Blog, Microsoft Research, Meta AI
   * Government/international: WHO, UN, EU official sites, .gov domains
   * Wikipedia for factual references
-- NEVER use URLs you're unsure about - only use domains you know are stable
-- External links MUST use markdown format with ^ indicator: [anchor text](url)^
-- Internal links MUST use markdown with EXACT URL from list including /category/slug format: [text](/category/article-slug)
+- ALL links MUST use pure Markdown syntax - NEVER use HTML tags like <a> or attributes like target="_blank" or rel=""
+- External links format: [anchor text](https://example.com)^ - the trailing ^ indicates it opens in new tab
+- Internal links format: [anchor text](/category/article-slug) - use EXACT URL from list
 - NEVER use [text](/article-slug) format for internal links - always include the category
+- NEVER output HTML link attributes like target="_blank" or rel="noopener noreferrer" - only use markdown [text](url) syntax
 - Only modify the content to add links - preserve all existing text, formatting, headings, paragraphs
 - Make anchor text natural and contextual (2-5 words maximum)
 - Seamlessly integrate links into sentences - NEVER expose raw URLs as text

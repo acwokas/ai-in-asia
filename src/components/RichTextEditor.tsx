@@ -268,11 +268,12 @@ const RichTextEditor = ({
       .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1')
       .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1')
       .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1')
-      // Convert links - preserve target="_blank" with ^ marker
-      .replace(/<a[^>]*href="([^"]*)"[^>]*target="_blank"[^>]*>(.*?)<\/a>/g, '[$2]($1)^')
-      .replace(/<a[^>]*target="_blank"[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, '[$2]($1)^')
-      // Convert regular links
-      .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, '[$2]($1)')
+      // Convert links - preserve target="_blank" with ^ marker (handles various attribute orders)
+      .replace(/<a\s+[^>]*?href="([^"]*)"[^>]*?target="_blank"[^>]*?>(.*?)<\/a>/gi, '[$2]($1)^')
+      .replace(/<a\s+[^>]*?target="_blank"[^>]*?href="([^"]*)"[^>]*?>(.*?)<\/a>/gi, '[$2]($1)^')
+      .replace(/<a\s+[^>]*?href="([^"]*)"[^>]*?rel="[^"]*"[^>]*?target="_blank"[^>]*?>(.*?)<\/a>/gi, '[$2]($1)^')
+      // Convert regular links (must be after target="_blank" patterns)
+      .replace(/<a\s+[^>]*?href="([^"]*)"[^>]*?>(.*?)<\/a>/gi, '[$2]($1)')
       // Convert ordered lists first
       .replace(/<ol[^>]*>(.*?)<\/ol>/gs, (match, content) => {
         let counter = 1;
