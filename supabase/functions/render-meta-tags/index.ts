@@ -90,9 +90,15 @@ Deno.serve(async (req) => {
     // Prepare meta data
     const title = cleanText(article.meta_title || article.title);
     const description = cleanText(article.meta_description || article.excerpt);
-    const imageUrl = article.featured_image_url?.startsWith('http')
+    // Use article's featured image, with cache-busting and fallback to site icon
+    const rawImageUrl = article.featured_image_url?.startsWith('http')
       ? article.featured_image_url
-      : `https://aiinasia.com${article.featured_image_url}`;
+      : article.featured_image_url 
+        ? `https://aiinasia.com${article.featured_image_url}`
+        : null;
+    const imageUrl = rawImageUrl 
+      ? `${rawImageUrl}${rawImageUrl.includes('?') ? '&' : '?'}v=3`
+      : 'https://aiinasia.com/icons/aiinasia-512.png?v=3';
     const articleUrl = `https://aiinasia.com/${article.categories?.slug || 'news'}/${article.slug}`;
     const authorName = article.authors?.name || 'AI in Asia';
 
