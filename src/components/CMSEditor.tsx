@@ -834,7 +834,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
 
     setIsGeneratingImagePrompts(true);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke("generate-image-prompts", {
         body: { title, content },
@@ -842,55 +842,77 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
       if (error) throw error;
 
-      if (data?.ideogram) {
-        // Parse the prompts from the response
+      // New structured format (preferred)
+      if (Array.isArray(data?.prompts) && data.prompts.length > 0) {
+        const normalized = data.prompts.map((p: any) => ({
+          title: p.title,
+          prompt: p.prompt,
+          explanation: p.explanation ?? "",
+        }));
+        setImagePrompts(normalized);
+        toast({
+          title: "Prompts Generated!",
+          description: `Scout has created ${normalized.length} custom image prompts`,
+        });
+        return;
+      }
+
+      // Legacy fallback (string parsing)
+      if (typeof data?.ideogram === "string" && data.ideogram.trim()) {
         const parsePrompts = (text: string) => {
-          const prompts = [];
-          // Split by numbered sections like "1.", "2.", etc. or "###"
+          const prompts: Array<{ title: string; prompt: string; explanation: string }> = [];
           const sections = text.split(/(?=\d+\.\s+[A-Z])/);
-          
+
           for (const section of sections) {
             if (!section.trim()) continue;
-            
-            // Extract title (first line)
-            const lines = section.split('\n').filter(l => l.trim());
+
+            const lines = section.split("\n").filter((l) => l.trim());
             if (lines.length === 0) continue;
-            
+
             const titleMatch = lines[0].match(/\d+\.\s+(.+)/);
-            const title = titleMatch ? titleMatch[1] : lines[0];
-            
-            // Extract prompt (text before "Why it works:")
-            const whyIndex = section.indexOf('Why it works:');
-            let prompt = '';
-            let explanation = '';
-            
+            const t = titleMatch ? titleMatch[1] : lines[0];
+
+            const whyIndex = section.indexOf("Why it works:");
+            let prompt = "";
+            let explanation = "";
+
             if (whyIndex > -1) {
-              prompt = section.substring(0, whyIndex).replace(/\d+\.\s+.+\n/, '').trim();
+              prompt = section
+                .substring(0, whyIndex)
+                .replace(/\d+\.\s+.+\n/, "")
+                .trim();
               explanation = section.substring(whyIndex + 14).trim();
             } else {
-              prompt = section.replace(/\d+\.\s+.+\n/, '').trim();
+              prompt = section.replace(/\d+\.\s+.+\n/, "").trim();
             }
-            
+
             if (prompt) {
-              prompts.push({ title, prompt, explanation });
+              prompts.push({ title: t, prompt, explanation: explanation || "" });
             }
           }
-          
+
           return prompts;
         };
-        
+
         const parsedPrompts = parsePrompts(data.ideogram);
         setImagePrompts(parsedPrompts);
         toast({
           title: "Prompts Generated!",
           description: `Scout has created ${parsedPrompts.length} custom image prompts`,
         });
+        return;
       }
+
+      toast({
+        title: "Error",
+        description: "No prompts returned from the generator",
+        variant: "destructive",
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to generate image prompts",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsGeneratingImagePrompts(false);
