@@ -135,7 +135,7 @@ function extractLinks(content: string): { url: string; anchorText: string; type:
   return links;
 }
 
-// Use OpenAI to find alternative sources and rewrite
+// Use OpenAI with web search to find alternative sources
 async function findAlternativeAndRewrite(
   brokenLink: { url: string; anchorText: string; context: string },
   openAIApiKey: string
@@ -143,102 +143,104 @@ async function findAlternativeAndRewrite(
   try {
     console.log(`Finding alternative for: ${brokenLink.anchorText} (${brokenLink.url})`);
     
-    const systemPrompt = `You are a senior editor at a leading AI news publication focused on Asia. Your task is to find alternative sources for broken links from tier-1 publications.
-
-TIER 1 SOURCES (prefer these in order):
-${TIER1_SOURCES.join(', ')}
+    // Use Lovable AI gateway with web search capability
+    const systemPrompt = `You are a research assistant helping to find replacement URLs for broken links. 
 
 CRITICAL RULES:
-1. ONLY suggest URLs from well-known, established publications
-2. The alternative MUST cover the same topic/story as the original
-3. Prefer recent articles (2024-2025) from tier-1 sources
-4. If you cannot find a suitable alternative, say "NO_ALTERNATIVE"
-5. The rewritten text should flow naturally with the original context`;
+1. Use web search to find REAL, WORKING articles on the same topic
+2. NEVER fabricate or guess URLs - only return URLs you have verified exist
+3. Prefer tier-1 sources: Reuters, BBC, NYT, WSJ, Guardian, Bloomberg, TechCrunch, Wired, The Verge, MIT Tech Review, SCMP, Nikkei Asia
+4. The alternative must cover the SAME topic as the original broken link
+5. If you cannot find a verified working URL, respond with NO_ALTERNATIVE
 
-    const userPrompt = `A broken link needs to be replaced:
+Return a JSON object with:
+- alternativeUrl: the verified working URL (or "NO_ALTERNATIVE")
+- alternativeSource: publication name
+- rewrittenText: natural anchor text for the link`;
+
+    const userPrompt = `Find a working replacement for this broken link:
 
 Original anchor text: "${brokenLink.anchorText}"
 Broken URL: ${brokenLink.url}
-Surrounding context: "${brokenLink.context}"
+Context: "${brokenLink.context.slice(0, 200)}"
 
-Find an alternative from a tier-1 source and provide a rewrite. Respond using the suggest_alternative function.`;
+Search the web for a current, working article on the same topic from a reputable source. Return ONLY verified URLs.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Use Lovable AI gateway which supports web search
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
+        web_search_options: {
+          search_context_size: "medium"
+        },
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "suggest_alternative",
-              description: "Suggest an alternative URL and rewritten text for a broken link",
-              parameters: {
-                type: "object",
-                properties: {
-                  alternativeUrl: { 
-                    type: "string",
-                    description: "The full URL of the alternative article from a tier-1 source. Use 'NO_ALTERNATIVE' if none found."
-                  },
-                  alternativeSource: { 
-                    type: "string",
-                    description: "The name of the publication (e.g., 'Reuters', 'BBC', 'TechCrunch')"
-                  },
-                  rewrittenText: { 
-                    type: "string",
-                    description: "The rewritten anchor text that fits the context naturally"
-                  },
-                  confidence: {
-                    type: "string",
-                    enum: ["high", "medium", "low"],
-                    description: "Confidence that this alternative covers the same topic"
-                  }
-                },
-                required: ["alternativeUrl", "alternativeSource", "rewrittenText", "confidence"]
-              }
-            }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "suggest_alternative" } },
-        temperature: 0.3,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('AI API error:', response.status, errorText);
       return null;
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall || toolCall.function.name !== 'suggest_alternative') {
-      console.log('No tool call in response');
+    const content = data.choices?.[0]?.message?.content || '';
+    console.log('AI response:', content);
+
+    // Parse the response - try to extract JSON or structured data
+    let alternativeUrl = '';
+    let alternativeSource = '';
+    let rewrittenText = '';
+
+    // Try to parse as JSON first
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        alternativeUrl = parsed.alternativeUrl || parsed.url || '';
+        alternativeSource = parsed.alternativeSource || parsed.source || '';
+        rewrittenText = parsed.rewrittenText || parsed.text || brokenLink.anchorText;
+      }
+    } catch {
+      // Try to extract URL from plain text
+      const urlMatch = content.match(/https?:\/\/[^\s\]\)\"\'<>]+/);
+      if (urlMatch && !content.includes('NO_ALTERNATIVE')) {
+        alternativeUrl = urlMatch[0].replace(/[.,;:!?]+$/, ''); // Remove trailing punctuation
+        // Try to extract source name
+        const sourceMatch = content.match(/(?:from|source|by)\s+([A-Z][a-zA-Z\s&]+)/i);
+        alternativeSource = sourceMatch ? sourceMatch[1].trim() : 'Unknown Source';
+        rewrittenText = brokenLink.anchorText;
+      }
+    }
+
+    if (!alternativeUrl || alternativeUrl === 'NO_ALTERNATIVE' || alternativeUrl.includes('NO_ALTERNATIVE')) {
+      console.log('No suitable alternative found');
       return null;
     }
 
-    const args = JSON.parse(toolCall.function.arguments);
+    // CRITICAL: Validate the suggested URL actually works before returning
+    console.log(`Validating suggested URL: ${alternativeUrl}`);
+    const validation = await validateUrl(alternativeUrl);
     
-    if (args.alternativeUrl === 'NO_ALTERNATIVE' || args.confidence === 'low') {
-      console.log('No suitable alternative found or low confidence');
+    if (!validation.isValid) {
+      console.log(`Suggested URL is also broken (${validation.status || validation.error}), rejecting`);
       return null;
     }
 
-    console.log(`Found alternative: ${args.alternativeSource} - ${args.alternativeUrl}`);
+    console.log(`Found verified alternative: ${alternativeSource} - ${alternativeUrl}`);
     
     return {
-      alternativeUrl: args.alternativeUrl,
-      alternativeSource: args.alternativeSource,
-      rewrittenText: args.rewrittenText
+      alternativeUrl,
+      alternativeSource,
+      rewrittenText
     };
   } catch (error) {
     console.error('Error finding alternative:', error);
