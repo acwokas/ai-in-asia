@@ -42,7 +42,9 @@ const RichTextEditor = ({
   const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
   const [showSocialEmbedDialog, setShowSocialEmbedDialog] = useState(false);
-  const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '', size: 'large' as 'small' | 'medium' | 'large' });
+  const [imageData, setImageData] = useState({ url: '', caption: '', alt: '', description: '', size: 'large' as 'small' | 'medium' | 'large', filename: '' });
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [linkData, setLinkData] = useState({ url: '', text: '', openInNewTab: false });
   const [tableData, setTableData] = useState({ rows: 3, columns: 3, hasHeader: true });
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -441,10 +443,10 @@ const RichTextEditor = ({
     try {
       toast({
         title: "Optimizing image...",
-        description: "Compressing and uploading image for best performance",
+        description: "Compressing for best performance",
       });
 
-      // Compress image before upload
+      // Compress image before showing dialog
       const compressedFile = await compressImage(file, {
         maxWidth: 1920,
         maxHeight: 1080,
@@ -457,54 +459,45 @@ const RichTextEditor = ({
       
       console.log(`Image compressed: ${originalSizeMB}MB → ${compressedSizeMB}MB`);
 
-      // Generate filename from keyphrase synonyms if available
-      const timestamp = Date.now();
-      const fileExt = compressedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-      
-      let baseName: string;
+      // Generate suggested filename from keyphrase synonyms if available
+      let suggestedName: string;
       if (keyphraseSynonyms && keyphraseSynonyms.trim()) {
-        // Parse synonyms (comma-separated) and cycle through them
         const synonyms = keyphraseSynonyms.split(',').map(s => s.trim()).filter(s => s.length > 0);
         if (synonyms.length > 0) {
           const synonymIndex = imageUploadCounterRef.current % synonyms.length;
-          baseName = synonyms[synonymIndex];
+          suggestedName = synonyms[synonymIndex];
           imageUploadCounterRef.current++;
         } else {
-          baseName = file.name.replace(/\.[^/.]+$/, '');
+          suggestedName = file.name.replace(/\.[^/.]+$/, '');
         }
       } else {
-        baseName = file.name.replace(/\.[^/.]+$/, '');
+        suggestedName = file.name.replace(/\.[^/.]+$/, '');
       }
-      
-      const sanitizedBaseName = generateSlug(baseName);
-      const fileName = `${sanitizedBaseName}-${timestamp}.${fileExt}`;
-      const filePath = `content/${fileName}`;
 
-      // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from('article-images')
-        .upload(filePath, compressedFile);
+      // Create preview URL for the dialog
+      const previewUrl = URL.createObjectURL(compressedFile);
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('article-images')
-        .getPublicUrl(filePath);
-
-      // Show dialog with the uploaded URL
-      setImageData({ url: publicUrl, caption: '', alt: '', description: '', size: 'large' });
+      // Store the file and show dialog for user to edit filename
+      setPendingImageFile(compressedFile);
+      setImageData({ 
+        url: previewUrl, 
+        caption: '', 
+        alt: '', 
+        description: '', 
+        size: 'large',
+        filename: suggestedName 
+      });
       setShowImageDialog(true);
 
       toast({
-        title: "Image uploaded",
-        description: `Optimized and uploaded (${originalSizeMB}MB → ${compressedSizeMB}MB)`,
+        title: "Image ready",
+        description: `Optimized (${originalSizeMB}MB → ${compressedSizeMB}MB). Edit filename and click Insert.`,
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error processing image:', error);
       toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image",
+        title: "Processing failed",
+        description: error instanceof Error ? error.message : "Failed to process image",
         variant: "destructive",
       });
     } finally {
@@ -513,58 +506,101 @@ const RichTextEditor = ({
     }
   };
 
-  const handleInsertImage = () => {
-    if (!imageData.url) return;
+  const handleInsertImage = async () => {
+    if (!pendingImageFile && !imageData.url) return;
     
-    // Restore the saved selection
-    if (savedSelectionRef.current) {
-      const selection = window.getSelection();
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(savedSelectionRef.current);
+    setIsUploadingImage(true);
+    
+    try {
+      let finalUrl = imageData.url;
+      
+      // If we have a pending file, upload it now with the user-specified filename
+      if (pendingImageFile) {
+        const timestamp = Date.now();
+        const fileExt = pendingImageFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const sanitizedFilename = generateSlug(imageData.filename || 'image');
+        const fileName = `${sanitizedFilename}-${timestamp}.${fileExt}`;
+        const filePath = `content/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('article-images')
+          .upload(filePath, pendingImageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('article-images')
+          .getPublicUrl(filePath);
+        
+        finalUrl = publicUrl;
+        
+        // Clean up the blob preview URL
+        if (imageData.url.startsWith('blob:')) {
+          URL.revokeObjectURL(imageData.url);
+        }
+        
+        toast({
+          title: "Image uploaded",
+          description: `Saved as ${fileName}`,
+        });
       }
-    }
-    
-    // Focus the editor before inserting
-    editorRef.current?.focus();
-    
-    execCommand('insertImage', imageData.url);
-    
-    // Add alt text and other attributes after insertion
-    setTimeout(() => {
-      const imgs = editorRef.current?.querySelectorAll('img');
-      if (imgs && imgs.length > 0) {
-        // Get the last inserted image
-        const imgElement = imgs[imgs.length - 1] as HTMLImageElement;
-        
-        if (imageData.alt) imgElement.setAttribute('alt', imageData.alt);
-        if (imageData.description) imgElement.setAttribute('title', imageData.description);
-        if (imageData.size) imgElement.setAttribute('data-size', imageData.size);
-        
-        // Apply size class based on selection
-        const sizeClass = imageData.size === 'small' ? 'max-w-xs' : imageData.size === 'medium' ? 'max-w-md' : 'max-w-full';
-        imgElement.className = `rounded-lg h-auto ${sizeClass}`;
-        
-        // Add caption as a wrapper
-        if (imageData.caption) {
-          const figure = document.createElement('figure');
-          const figcaption = document.createElement('figcaption');
-          figcaption.textContent = imageData.caption;
-          figcaption.className = 'text-sm text-muted-foreground mt-2 text-center italic';
-          
-          imgElement.parentNode?.insertBefore(figure, imgElement);
-          figure.appendChild(imgElement);
-          figure.appendChild(figcaption);
+      
+      // Restore the saved selection
+      if (savedSelectionRef.current) {
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(savedSelectionRef.current);
         }
       }
       
-      // Trigger input event to update the markdown
-      handleInput();
-    }, 100);
-    
-    setShowImageDialog(false);
-    setImageData({ url: '', caption: '', alt: '', description: '', size: 'large' });
-    savedSelectionRef.current = null;
+      // Focus the editor before inserting
+      editorRef.current?.focus();
+      
+      execCommand('insertImage', finalUrl);
+      
+      // Add alt text and other attributes after insertion
+      setTimeout(() => {
+        const imgs = editorRef.current?.querySelectorAll('img');
+        if (imgs && imgs.length > 0) {
+          const imgElement = imgs[imgs.length - 1] as HTMLImageElement;
+          
+          if (imageData.alt) imgElement.setAttribute('alt', imageData.alt);
+          if (imageData.description) imgElement.setAttribute('title', imageData.description);
+          if (imageData.size) imgElement.setAttribute('data-size', imageData.size);
+          
+          const sizeClass = imageData.size === 'small' ? 'max-w-xs' : imageData.size === 'medium' ? 'max-w-md' : 'max-w-full';
+          imgElement.className = `rounded-lg h-auto ${sizeClass}`;
+          
+          if (imageData.caption) {
+            const figure = document.createElement('figure');
+            const figcaption = document.createElement('figcaption');
+            figcaption.textContent = imageData.caption;
+            figcaption.className = 'text-sm text-muted-foreground mt-2 text-center italic';
+            
+            imgElement.parentNode?.insertBefore(figure, imgElement);
+            figure.appendChild(imgElement);
+            figure.appendChild(figcaption);
+          }
+        }
+        
+        handleInput();
+      }, 100);
+      
+      setShowImageDialog(false);
+      setImageData({ url: '', caption: '', alt: '', description: '', size: 'large', filename: '' });
+      setPendingImageFile(null);
+      savedSelectionRef.current = null;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleInsertLink = () => {
@@ -1212,7 +1248,8 @@ const RichTextEditor = ({
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setImageData({ url: '', caption: '', alt: '', description: '', size: 'large' });
+                      setImageData({ url: '', caption: '', alt: '', description: '', size: 'large', filename: '' });
+                      setPendingImageFile(null);
                       if (imageInputRef.current) {
                         imageInputRef.current.value = '';
                       }
@@ -1222,6 +1259,20 @@ const RichTextEditor = ({
                     Remove Image
                   </Button>
                 </div>
+              </div>
+            )}
+            {pendingImageFile && (
+              <div>
+                <Label htmlFor="image-filename">Filename (SEO-friendly)</Label>
+                <Input
+                  id="image-filename"
+                  placeholder="Enter filename for the image"
+                  value={imageData.filename}
+                  onChange={(e) => setImageData({ ...imageData, filename: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Will be saved as: {generateSlug(imageData.filename || 'image')}-[timestamp].jpg
+                </p>
               </div>
             )}
             <div>
@@ -1269,7 +1320,9 @@ const RichTextEditor = ({
             <Button variant="outline" onClick={() => setShowImageDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleInsertImage}>Insert Image</Button>
+            <Button onClick={handleInsertImage} disabled={isUploadingImage}>
+              {isUploadingImage ? 'Uploading...' : 'Insert Image'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
