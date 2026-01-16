@@ -1024,7 +1024,7 @@ const RichTextEditor = ({
       />
       
       {/* Sticky toolbar that follows viewport scroll */}
-      <div className="sticky top-20 z-[100] flex items-center gap-1 p-2 border border-input rounded-t-md bg-background flex-wrap shadow-sm">
+      <div className="sticky top-20 z-40 flex items-center gap-1 p-2 border border-input rounded-t-md bg-background flex-wrap shadow-sm">
         <Button
           type="button"
           variant="ghost"
