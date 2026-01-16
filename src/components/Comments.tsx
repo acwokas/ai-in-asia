@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { 
   MessageCircle, User, ChevronDown, Check, X, 
   Sparkles, RefreshCw, Trash2, Edit2, Eye, EyeOff,
@@ -257,7 +258,7 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin, isLoading: isAdminLoading } = useAdminRole();
   const [authorName, setAuthorName] = useState("");
   const [authorEmail, setAuthorEmail] = useState("");
   const [content, setContent] = useState("");
@@ -271,28 +272,12 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [submittingReply, setSubmittingReply] = useState(false);
   const { toast } = useToast();
 
+  // Fetch comments when admin status is determined
   useEffect(() => {
-    checkAdminStatus();
-  }, []);
-
-  useEffect(() => {
-    fetchComments();
-  }, [articleId, isAdmin]);
-
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsAdmin(false);
-      return;
+    if (!isAdminLoading) {
+      fetchComments();
     }
-
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id);
-
-    setIsAdmin(roles?.some(r => r.role === "admin") || false);
-  };
+  }, [articleId, isAdmin, isAdminLoading]);
 
   const fetchComments = async () => {
     try {
