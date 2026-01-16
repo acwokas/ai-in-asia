@@ -1327,6 +1327,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   onChange={setContent}
                   onSelect={setSelectedText}
                   placeholder="Start writing your article..."
+                  keyphraseSynonyms={keyphraseSynonyms}
                 />
               </div>
 

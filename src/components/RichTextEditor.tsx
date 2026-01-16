@@ -19,6 +19,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  keyphraseSynonyms?: string;
 }
 
 const RichTextEditor = ({
@@ -28,11 +29,13 @@ const RichTextEditor = ({
   placeholder = "Start writing...",
   label,
   className,
+  keyphraseSynonyms,
 }: RichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const savedSelectionRef = useRef<Range | null>(null);
   const [isEmpty, setIsEmpty] = useState(!value);
+  const imageUploadCounterRef = useRef(0);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [showTableDialog, setShowTableDialog] = useState(false);
@@ -454,10 +457,25 @@ const RichTextEditor = ({
       
       console.log(`Image compressed: ${originalSizeMB}MB → ${compressedSizeMB}MB`);
 
-      // Generate filename
+      // Generate filename from keyphrase synonyms if available
       const timestamp = Date.now();
       const fileExt = compressedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      
+      let baseName: string;
+      if (keyphraseSynonyms && keyphraseSynonyms.trim()) {
+        // Parse synonyms (comma-separated) and cycle through them
+        const synonyms = keyphraseSynonyms.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        if (synonyms.length > 0) {
+          const synonymIndex = imageUploadCounterRef.current % synonyms.length;
+          baseName = synonyms[synonymIndex];
+          imageUploadCounterRef.current++;
+        } else {
+          baseName = file.name.replace(/\.[^/.]+$/, '');
+        }
+      } else {
+        baseName = file.name.replace(/\.[^/.]+$/, '');
+      }
+      
       const sanitizedBaseName = generateSlug(baseName);
       const fileName = `${sanitizedBaseName}-${timestamp}.${fileExt}`;
       const filePath = `content/${fileName}`;
