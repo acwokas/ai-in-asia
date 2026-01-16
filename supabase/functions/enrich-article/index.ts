@@ -180,26 +180,10 @@ Return ONLY valid JSON with these exact keys: entities, keyphrases, topics, summ
             throw new Error(`Invalid AI response format: ${parseError instanceof Error ? parseError.message : 'Parse failed'}`);
           }
 
-          // Generate embedding for semantic search
-          const embeddingResponse = await fetch('https://ai.gateway.lovable.dev/v1/embeddings', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${lovableApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'text-embedding-004',
-              input: fullText.substring(0, 8000),
-            }),
-          });
-
+          // Note: Embedding generation is disabled as the embeddings endpoint is not available
+          // Future enhancement: re-enable when embeddings API becomes available
           let embedding = null;
-          if (embeddingResponse.ok) {
-            const embeddingData = await embeddingResponse.json();
-            embedding = embeddingData.data[0].embedding;
-          } else {
-            console.warn('Failed to generate embedding, continuing without it');
-          }
+          console.log('Skipping embedding generation (not available)');
 
           // Find related articles using simple keyword matching (will be enhanced with vector search later)
           const { data: relatedArticles } = await supabase
