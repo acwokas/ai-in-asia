@@ -70,6 +70,7 @@ const Header = memo(() => {
               <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
               <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">Policy Atlas</Link>
+              <div className="h-4 w-px bg-primary mx-2" />
               <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5">
                 Saved
                 {savedCount > 0 && (
@@ -78,7 +79,6 @@ const Header = memo(() => {
                   </span>
                 )}
               </Link>
-              <div className="h-4 w-px bg-primary mx-2" />
             </nav>
           </div>
 
