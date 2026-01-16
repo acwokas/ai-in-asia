@@ -506,6 +506,26 @@ const AIComments = () => {
     }
   };
 
+  const handleAutoRegenerateGood = () => {
+    if (!qualityData?.results) return;
+    
+    const goodQualityArticles = qualityData.results
+      .filter((r: any) => r.qualityScore >= 60 && r.qualityScore < 80)
+      .map((r: any) => r.articleId);
+
+    if (goodQualityArticles.length === 0) {
+      toast({
+        title: "No 'Good' Articles",
+        description: "No articles with 'Good' quality scores (60-79) found.",
+      });
+      return;
+    }
+
+    if (confirm(`This will delete and regenerate comments for ${goodQualityArticles.length} articles with 'Good' quality scores (60-79). Continue?`)) {
+      autoRegenerateMutation.mutate(goodQualityArticles);
+    }
+  };
+
   const handleQueueBulkOperation = async (categoryId?: string, regenerateAll: boolean = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -717,6 +737,21 @@ const AIComments = () => {
               )}
               Analyze Comment Quality
             </Button>
+            {qualityData && qualityData.summary.good > 0 && (
+              <Button
+                onClick={handleAutoRegenerateGood}
+                disabled={autoRegenerateMutation.isPending}
+                variant="outline"
+                className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+              >
+                {autoRegenerateMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Regenerate Good ({qualityData.summary.good})
+              </Button>
+            )}
             {qualityData && qualityData.flaggedArticles > 0 && (
               <Button
                 onClick={handleAutoRegenerate}
