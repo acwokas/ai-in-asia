@@ -121,31 +121,48 @@ export default function KnowledgeEngine() {
   // Enrich batch of articles
   const enrichBatchMutation = useMutation({
     mutationFn: async (limit: number) => {
-      // First get enriched article IDs
-      const { data: enrichedArticles } = await supabase
-        .from('articles_enriched')
-        .select('article_id');
-      
-      const enrichedIds = enrichedArticles?.map(a => a.article_id) || [];
-      
-      // Get unenriched articles
-      const query = supabase
-        .from('articles')
-        .select('id')
-        .eq('status', 'published')
-        .limit(limit);
-      
-      // Only apply not.in filter if there are enriched IDs
-      const { data: articles, error: fetchError } = enrichedIds.length > 0
-        ? await query.not('id', 'in', enrichedIds)
-        : await query;
+      // IMPORTANT: Avoid PostgREST `not.in` with a large ID list (can cause 400 Bad Request)
+      // Instead: page through published articles and filter out already-enriched ones.
+      const PAGE_SIZE = Math.min(250, Math.max(100, limit * 5));
+      const MAX_PAGES = 20;
 
-      if (fetchError) throw fetchError;
-      if (!articles || articles.length === 0) {
+      const collected: string[] = [];
+      let offset = 0;
+
+      while (collected.length < limit && offset / PAGE_SIZE < MAX_PAGES) {
+        const { data: candidates, error: candidatesError } = await supabase
+          .from('articles')
+          .select('id')
+          .eq('status', 'published')
+          .order('published_at', { ascending: false, nullsFirst: false })
+          .range(offset, offset + PAGE_SIZE - 1);
+
+        if (candidatesError) throw candidatesError;
+        if (!candidates || candidates.length === 0) break;
+
+        const candidateIds = candidates.map(c => c.id);
+
+        const { data: enrichedRows, error: enrichedError } = await supabase
+          .from('articles_enriched')
+          .select('article_id')
+          .in('article_id', candidateIds);
+
+        if (enrichedError) throw enrichedError;
+
+        const enrichedSet = new Set((enrichedRows ?? []).map(r => r.article_id));
+        for (const id of candidateIds) {
+          if (!enrichedSet.has(id)) collected.push(id);
+          if (collected.length >= limit) break;
+        }
+
+        offset += PAGE_SIZE;
+      }
+
+      if (collected.length === 0) {
         throw new Error('No unenriched articles found');
       }
 
-      const articleIds = articles.map(a => a.id);
+      const articleIds = collected.slice(0, limit);
       const batchId = crypto.randomUUID();
 
       // Create queue entry
@@ -158,7 +175,7 @@ export default function KnowledgeEngine() {
 
       // Call enrichment function
       const { data, error } = await supabase.functions.invoke('enrich-article', {
-        body: { article_ids: articleIds, batch_id: batchId }
+        body: { article_ids: articleIds, batch_id: batchId },
       });
 
       if (error) throw error;
