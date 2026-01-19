@@ -125,3 +125,6 @@ verify_jwt = true
 
 [functions.validate-article-links]
 verify_jwt = true
+
+[functions.assign-article-category]
+verify_jwt = true
