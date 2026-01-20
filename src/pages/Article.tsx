@@ -835,7 +835,9 @@ const Article = () => {
       if (consolidated.includes('prompt-box')) {
         // First, extract all prompt-box elements and replace with placeholders
         // This ensures text before/after prompt boxes is correctly separated
-        const promptBoxRegex = /<div class="prompt-box"[^>]*>[\s\S]*?<\/div>\s*<\/div>/g;
+        // The prompt-box structure: <div class="prompt-box" ...>...<div class="prompt-box-content">...</div>...</div>
+        // We need to match the complete prompt-box including any trailing <br> before closing
+        const promptBoxRegex = /<div\s+class="prompt-box"[^>]*>[\s\S]*?<div\s+class="prompt-box-content"[^>]*>[\s\S]*?<\/div>(?:\s*<br\s*\/?>)*\s*<\/div>/gi;
         const promptBoxes: string[] = [];
         let contentWithPlaceholders = consolidated.replace(promptBoxRegex, (match) => {
           const index = promptBoxes.length;
