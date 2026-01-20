@@ -833,15 +833,30 @@ const Article = () => {
       
       // If content contains prompt cards, sanitize and render as HTML after markdown processing
       if (consolidated.includes('prompt-box')) {
-        // Split by double line breaks first
-        const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
+        // First, extract all prompt-box elements and replace with placeholders
+        // This ensures text before/after prompt boxes is correctly separated
+        const promptBoxRegex = /<div class="prompt-box"[^>]*>[\s\S]*?<\/div>\s*<\/div>/g;
+        const promptBoxes: string[] = [];
+        let contentWithPlaceholders = consolidated.replace(promptBoxRegex, (match) => {
+          const index = promptBoxes.length;
+          promptBoxes.push(match);
+          return `\n\n__PROMPT_BOX_${index}__\n\n`;
+        });
         
-        // Join back with proper spacing but don't process blocks individually
-        // This preserves the exact layout with prompt cards
+        // Split by double line breaks
+        const blocks = contentWithPlaceholders.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
+        
+        // Process each block
         const htmlBlocks = blocks.map(block => {
-          // If it's a prompt-box or social embed, return as-is
-          if (block.includes('prompt-box') || 
-              block.includes('twitter-tweet') || 
+          // Check if this is a prompt-box placeholder and restore it
+          const placeholderMatch = block.match(/^__PROMPT_BOX_(\d+)__$/);
+          if (placeholderMatch) {
+            const index = parseInt(placeholderMatch[1], 10);
+            return promptBoxes[index];
+          }
+          
+          // If it's a social embed, return as-is
+          if (block.includes('twitter-tweet') || 
               block.includes('instagram-media') || 
               block.includes('tiktok-embed') ||
               block.includes('youtube.com/embed')) {
@@ -889,7 +904,7 @@ const Article = () => {
         
         const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
           ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
-          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime']
+          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
         });
         return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
       }
