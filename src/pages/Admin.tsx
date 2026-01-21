@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench, Link2, Activity, Clock } from "lucide-react";
+import { Loader2, FileText, Users, Tag, Folder, MessageSquare, Mail, BarChart, Home, Pencil, Trash2, Plus, Upload, X, ExternalLink, Settings, Calendar, Wrench, Link2, Activity, Clock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import AIToolsManager from "./AIToolsManager";
@@ -951,6 +951,20 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.comments || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate("/profile")}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Profile</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">{user?.email}</div>
+              <p className="text-xs text-muted-foreground mt-1">Click to view profile</p>
             </CardContent>
           </Card>
         </div>
