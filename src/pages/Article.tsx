@@ -124,12 +124,11 @@ const Article = () => {
       
       if (!articleData?.id) return 0;
       
-      // Count approved real comments
+      // Count approved real comments from public view (excludes author_email for privacy)
       const { count: realCount } = await supabase
-        .from("comments")
+        .from("comments_public")
         .select("*", { count: "exact", head: true })
-        .eq("article_id", articleData.id)
-        .eq("approved", true);
+        .eq("article_id", articleData.id);
       
       // Count published AI comments
       const { count: aiCount } = await supabase

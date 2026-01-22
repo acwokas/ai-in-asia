@@ -672,9 +672,9 @@ const Category = () => {
     staleTime: 0,
     refetchOnMount: 'always',
     queryFn: async () => {
-      // Fetch specific featured authors: Adrian Watkins, Victoria Watkins, Koo Ping Shung
+      // Fetch specific featured authors using public view to avoid exposing email
       const { data, error } = await supabase
-        .from("authors")
+        .from("authors_public")
         .select("id, name, slug, bio, avatar_url, job_title, article_count")
         .in("name", ["Adrian Watkins", "Victoria Watkins", "Koo Ping Shung"]);
 

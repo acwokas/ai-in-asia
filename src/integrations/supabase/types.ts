@@ -3167,10 +3167,12 @@ export type Database = {
           id: string | null
           is_featured: boolean | null
           job_title: string | null
+          linkedin_url: string | null
           name: string | null
           slug: string | null
           twitter_handle: string | null
           updated_at: string | null
+          website_url: string | null
         }
         Insert: {
           article_count?: number | null
@@ -3180,10 +3182,12 @@ export type Database = {
           id?: string | null
           is_featured?: boolean | null
           job_title?: string | null
+          linkedin_url?: string | null
           name?: string | null
           slug?: string | null
           twitter_handle?: string | null
           updated_at?: string | null
+          website_url?: string | null
         }
         Update: {
           article_count?: number | null
@@ -3193,10 +3197,12 @@ export type Database = {
           id?: string | null
           is_featured?: boolean | null
           job_title?: string | null
+          linkedin_url?: string | null
           name?: string | null
           slug?: string | null
           twitter_handle?: string | null
           updated_at?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }
