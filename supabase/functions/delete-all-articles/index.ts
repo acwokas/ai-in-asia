@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { requireAdmin, getUserFromAuth } from '../_shared/requireAdmin.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,40 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    // Create client with user's auth token to verify identity
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const user = await getUserFromAuth(supabaseAuth, authHeader)
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    // Verify admin role
+    await requireAdmin(supabaseAuth, user.id)
+
+    // Now create admin client for operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -22,7 +57,7 @@ Deno.serve(async (req) => {
       }
     )
 
-    console.log('Starting to delete all articles...')
+    console.log(`Admin ${user.email} starting to delete all articles...`)
 
     // Delete ALL URL mappings first (unconditionally, since we're doing a full reset)
     console.log('Deleting ALL URL mappings...')
@@ -76,7 +111,7 @@ Deno.serve(async (req) => {
         .neq('id', '00000000-0000-0000-0000-000000000000')
     }
 
-    console.log(`Successfully deleted ${articleIds.length} articles`)
+    console.log(`Admin ${user.email} successfully deleted ${articleIds.length} articles`)
 
     return new Response(
       JSON.stringify({ 
@@ -93,11 +128,15 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in delete-all-articles:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    
+    // Return 403 for admin role errors
+    const status = errorMessage === 'Admin role required' ? 403 : 400
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status 
       }
     )
   }

@@ -45,8 +45,9 @@ const Search = () => {
   const { data: authors } = useQuery({
     queryKey: ["authors"],
     queryFn: async () => {
+      // Use public view to avoid exposing sensitive fields like email
       const { data } = await supabase
-        .from("authors")
+        .from("authors_public")
         .select("id, name, slug")
         .order("name");
       return data || [];

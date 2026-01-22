@@ -281,12 +281,11 @@ const Comments = ({ articleId }: CommentsProps) => {
 
   const fetchComments = async () => {
     try {
-      // Fetch approved real comments
+      // Fetch approved real comments from public view (excludes author_email for privacy)
       const { data: approvedData, error: approvedError } = await supabase
-        .from("comments")
+        .from("comments_public")
         .select("*")
         .eq("article_id", articleId)
-        .eq("approved", true)
         .order("created_at", { ascending: false });
 
       if (approvedError) throw approvedError;

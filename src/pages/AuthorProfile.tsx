@@ -32,8 +32,9 @@ const AuthorProfile = () => {
   const { data: author, isLoading: authorLoading } = useQuery({
     queryKey: ["author", slug],
     queryFn: async () => {
+      // Use public view to avoid exposing sensitive fields like email
       const { data, error } = await supabase
-        .from("authors")
+        .from("authors_public")
         .select("*")
         .eq("slug", slug)
         .single();
