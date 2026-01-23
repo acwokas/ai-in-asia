@@ -7,10 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Save, Upload, Loader2, Info, Plus, Pencil, CalendarIcon, Clock, ExternalLink, Wand2, Copy, Check, Sparkles, Link2 } from "lucide-react";
+import { Save, Upload, Loader2, Plus, Pencil, CalendarIcon, ExternalLink, Wand2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
@@ -22,58 +21,15 @@ import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LinkValidator } from "@/components/LinkValidator";
+import { convertJsonbToMarkdown, generateSlug } from "@/lib/markdownConversion";
+import { AuthorDialog, HeadlineDialog, ImagePromptsCard } from "@/components/editor";
 
 interface CMSEditorProps {
   initialData?: any;
   onSave?: (data: any) => void;
 }
 
-// Helper function to convert JSONB content to markdown
-const convertJsonbToMarkdown = (jsonbContent: any): string => {
-  if (!jsonbContent) return "";
-  if (typeof jsonbContent === "string") return jsonbContent;
-  if (!Array.isArray(jsonbContent)) return "";
-  
-  let listCounter = 0;
-  let currentListType = '';
-  
-  return jsonbContent.map((block: any) => {
-    if (!block || !block.type) return "";
-    
-    // Reset counter when switching list types
-    if (block.type !== currentListType) {
-      listCounter = 0;
-      currentListType = block.type;
-    }
-    
-    switch (block.type) {
-      case "paragraph":
-        return block.content || "";
-      case "heading":
-        const level = block.attrs?.level || 2;
-        const prefix = "#".repeat(level);
-        return `${prefix} ${block.content || ""}`;
-      case "bulletList":
-      case "listItem":
-        // Handle both flat lists and nested content
-        if (Array.isArray(block.content)) {
-          return block.content.map((item: any) => `- ${item.content || item}`).join("\n");
-        }
-        return `- ${block.content || ""}`;
-      case "orderedList":
-        // Handle both flat lists and nested content  
-        if (Array.isArray(block.content)) {
-          return block.content.map((item: any, idx: number) => `${idx + 1}. ${item.content || item}`).join("\n");
-        }
-        listCounter++;
-        return `${listCounter}. ${block.content || ""}`;
-      case "blockquote":
-        return `> ${block.content || ""}`;
-      default:
-        return block.content || "";
-    }
-  }).join("\n\n");
-};
+// convertJsonbToMarkdown is now imported from @/lib/markdownConversion
 
 const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [title, setTitle] = useState(initialData?.title || "");
@@ -286,13 +242,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
   });
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .replace(/\/+$/g, ""); // Remove trailing slashes
-  };
+  // generateSlug is now imported from @/lib/markdownConversion
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -1331,97 +1281,22 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 />
               </div>
 
-              <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
-                      <Wand2 className="h-4 w-4" />
-                      Image Generation Prompts
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Generate AI prompts for featured images based on your article content
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateImagePrompts}
-                    disabled={isGeneratingImagePrompts || !title || !content}
-                    className="bg-[#10b981] hover:bg-[#059669] text-white border-0"
-                  >
-                    {isGeneratingImagePrompts ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Assist: Image Prompt
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {imagePrompts && imagePrompts.length > 0 && (
-                  <div className="space-y-4 mt-4">
-                    {imagePrompts.map((prompt, index) => (
-                      <Card key={index} className="bg-cyan-500/10 border-cyan-500/20">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base flex items-center gap-2">
-                              <Sparkles className="h-4 w-4 text-cyan-500" />
-                              {index + 1}. {prompt.title}
-                            </CardTitle>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={async () => {
-                                await navigator.clipboard.writeText(prompt.prompt);
-                                setCopiedPrompt(index);
-                                setTimeout(() => setCopiedPrompt(null), 2000);
-                                toast({
-                                  title: "Copied!",
-                                  description: "Prompt copied to clipboard",
-                                });
-                              }}
-                            >
-                              {copiedPrompt === index ? (
-                                <>
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Copied
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="h-4 w-4 mr-1" />
-                                  Copy
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div>
-                            <Label className="text-cyan-600 font-medium mb-2 block">Prompt</Label>
-                            <div className="text-sm p-3 bg-background border border-border rounded-md">
-                              {prompt.prompt}
-                            </div>
-                          </div>
-                          {prompt.explanation && (
-                            <div>
-                              <Label className="text-cyan-600 font-medium mb-2 block">Why it works</Label>
-                              <div className="text-sm p-3 bg-background border border-border rounded-md text-muted-foreground">
-                                {prompt.explanation}
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImagePromptsCard
+                imagePrompts={imagePrompts}
+                copiedPrompt={copiedPrompt}
+                onCopyPrompt={async (prompt, index) => {
+                  await navigator.clipboard.writeText(prompt);
+                  setCopiedPrompt(index);
+                  setTimeout(() => setCopiedPrompt(null), 2000);
+                  toast({
+                    title: "Copied!",
+                    description: "Prompt copied to clipboard",
+                  });
+                }}
+                isGenerating={isGeneratingImagePrompts}
+                onGenerate={handleGenerateImagePrompts}
+                disabled={!title || !content}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -1897,166 +1772,24 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       </Tabs>
 
       {/* Author Dialog */}
-      <Dialog open={showAuthorDialog} onOpenChange={setShowAuthorDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{isEditingAuthor ? 'Edit Author' : 'Create New Author'}</DialogTitle>
-            <DialogDescription>
-              {isEditingAuthor ? 'Update author information' : 'Add a new author to the system'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="author-name">Name *</Label>
-              <Input
-                id="author-name"
-                value={authorForm.name}
-                onChange={(e) => setAuthorForm({ ...authorForm, name: e.target.value })}
-                placeholder="Author name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-slug">Slug</Label>
-              <Input
-                id="author-slug"
-                value={authorForm.slug}
-                onChange={(e) => setAuthorForm({ ...authorForm, slug: e.target.value })}
-                placeholder="author-slug (auto-generated if empty)"
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-job-title">Job Title</Label>
-              <Input
-                id="author-job-title"
-                value={authorForm.job_title}
-                onChange={(e) => setAuthorForm({ ...authorForm, job_title: e.target.value })}
-                placeholder="Chief Editor, Senior Writer, etc."
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-email">Email</Label>
-              <Input
-                id="author-email"
-                type="email"
-                value={authorForm.email}
-                onChange={(e) => setAuthorForm({ ...authorForm, email: e.target.value })}
-                placeholder="author@example.com"
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-bio">Bio</Label>
-              <Textarea
-                id="author-bio"
-                value={authorForm.bio}
-                onChange={(e) => setAuthorForm({ ...authorForm, bio: e.target.value })}
-                placeholder="Brief biography..."
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-avatar">Avatar Image</Label>
-              <Input
-                id="author-avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="cursor-pointer"
-              />
-              {(avatarPreview || authorForm.avatar_url) && (
-                <div className="mt-2">
-                  <img
-                    src={avatarPreview || authorForm.avatar_url}
-                    alt="Avatar preview"
-                    className="w-20 h-20 rounded-full object-cover border border-border"
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="author-twitter">Twitter Handle</Label>
-              <Input
-                id="author-twitter"
-                value={authorForm.twitter_handle}
-                onChange={(e) => setAuthorForm({ ...authorForm, twitter_handle: e.target.value })}
-                placeholder="@username"
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-linkedin">LinkedIn URL</Label>
-              <Input
-                id="author-linkedin"
-                value={authorForm.linkedin_url}
-                onChange={(e) => setAuthorForm({ ...authorForm, linkedin_url: e.target.value })}
-                placeholder="https://linkedin.com/in/username"
-              />
-            </div>
-            <div>
-              <Label htmlFor="author-website">Website URL</Label>
-              <Input
-                id="author-website"
-                value={authorForm.website_url}
-                onChange={(e) => setAuthorForm({ ...authorForm, website_url: e.target.value })}
-                placeholder="https://example.com"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAuthorDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveAuthor} disabled={!authorForm.name.trim()}>
-              {isEditingAuthor ? 'Update Author' : 'Create Author'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AuthorDialog
+        open={showAuthorDialog}
+        onOpenChange={setShowAuthorDialog}
+        isEditing={isEditingAuthor}
+        authorForm={authorForm}
+        onAuthorFormChange={setAuthorForm}
+        avatarPreview={avatarPreview}
+        onAvatarChange={handleAvatarChange}
+        onSave={handleSaveAuthor}
+      />
 
       {/* Headline Selection Dialog */}
-      <Dialog open={showHeadlineDialog} onOpenChange={setShowHeadlineDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Select Your Headline</DialogTitle>
-            <DialogDescription>
-              Choose the headline that works best. Your selection will update the title and slug.
-            </DialogDescription>
-          </DialogHeader>
-          {headlineOptions && (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-muted-foreground">Recommended</Label>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary whitespace-normal"
-                  onClick={() => handleSelectHeadline(headlineOptions.best)}
-                >
-                  <span className="text-sm">{headlineOptions.best}</span>
-                </Button>
-              </div>
-              
-              {headlineOptions.alternatives.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Alternatives</Label>
-                  {headlineOptions.alternatives.map((alt, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      className="w-full justify-start text-left h-auto py-3 px-4 hover:bg-muted whitespace-normal"
-                      onClick={() => handleSelectHeadline(alt)}
-                    >
-                      <span className="text-sm">{alt}</span>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowHeadlineDialog(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <HeadlineDialog
+        open={showHeadlineDialog}
+        onOpenChange={setShowHeadlineDialog}
+        headlineOptions={headlineOptions}
+        onSelectHeadline={handleSelectHeadline}
+      />
 
       <Card className="mt-6">
         <CardHeader>
