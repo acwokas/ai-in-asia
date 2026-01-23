@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, TrendingUp, BookMarked, Award, Zap, User as UserIcon, Upload, Save } from 'lucide-react';
+import { Loader2, TrendingUp, BookMarked, Award, Zap, User as UserIcon, Upload, Save, Settings } from 'lucide-react';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { compressImage } from '@/lib/imageCompression';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +63,7 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAdminRole();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
@@ -602,6 +604,14 @@ const Profile = () => {
                 <Badge className={`${levelInfo.color} text-white`}>
                   {levelInfo.name}
                 </Badge>
+                {isAdmin && (
+                  <Button asChild variant="outline" size="sm" className="ml-2">
+                    <Link to="/admin">
+                      <Settings className="h-4 w-4 mr-1" />
+                      Admin
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
             <Button onClick={handleSignOut} variant="outline">
