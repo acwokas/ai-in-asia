@@ -376,6 +376,8 @@ const Article = () => {
             featured_image_url: article.featured_image_url || undefined,
             meta_title: article.meta_title || undefined,
             meta_description: article.meta_description || undefined,
+            status: article.status,
+            view_count: article.view_count,
             tldr_snapshot: article.tldr_snapshot as any,
             author: article.authors ? {
               name: article.authors.name,
