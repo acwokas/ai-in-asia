@@ -8,3 +8,6 @@ export {
   PromptDialog, 
   SocialEmbedDialog 
 } from './EditorDialogs';
+export { AuthorDialog } from './AuthorDialog';
+export { HeadlineDialog } from './HeadlineDialog';
+export { ImagePromptsCard } from './ImagePromptsCard';
