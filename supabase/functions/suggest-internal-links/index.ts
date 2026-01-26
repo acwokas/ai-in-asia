@@ -136,7 +136,17 @@ Return ONLY valid JSON:
       throw new Error("Invalid JSON response from AI");
     }
 
-    const linkSuggestions = JSON.parse(jsonMatch[0]);
+    let linkSuggestions = JSON.parse(jsonMatch[0]);
+
+    // Sanitize any lovable.app/dev URLs to relative paths in suggestions
+    if (linkSuggestions.internalLinks) {
+      linkSuggestions.internalLinks = linkSuggestions.internalLinks.map((link: any) => ({
+        ...link,
+        articleUrl: link.articleUrl
+          ?.replace(/https?:\/\/[a-zA-Z0-9-]+\.lovable\.app/, '')
+          ?.replace(/https?:\/\/(?:www\.)?aiinasia\.com/, '')
+      }));
+    }
 
     return new Response(
       JSON.stringify({ 
