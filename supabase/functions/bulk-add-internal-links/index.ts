@@ -55,6 +55,20 @@ function removeInvalidExternalLinks(content: string, invalidUrls: string[]): str
   return updatedContent;
 }
 
+// Sanitize content to replace any Lovable preview URLs with aiinasia.com domain
+function sanitizeLovableUrls(content: string): string {
+  // Replace any lovable.app or id-preview URLs with relative paths
+  // Pattern: https://something.lovable.app/category/slug or https://id-preview--xxx.lovable.app/category/slug
+  const lovableUrlPattern = /\[([^\]]+)\]\(https?:\/\/[a-zA-Z0-9-]+\.lovable\.app(\/[^)]+)\)\^?/g;
+  let sanitized = content.replace(lovableUrlPattern, '[$1]($2)');
+  
+  // Also handle any full aiinasia.com URLs and convert to relative paths for consistency
+  const fullUrlPattern = /\[([^\]]+)\]\(https?:\/\/(?:www\.)?aiinasia\.com(\/[^)]+)\)\^?/g;
+  sanitized = sanitized.replace(fullUrlPattern, '[$1]($2)');
+  
+  return sanitized;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -259,6 +273,9 @@ Return ONLY the updated content with links added. Do not change any other aspect
           updatedContent = removeInvalidExternalLinks(updatedContent, invalidUrls);
           console.log(`Removed ${invalidUrls.length} invalid external links from article: ${article.title}`);
         }
+
+        // Sanitize any lovable.app/dev URLs to relative paths
+        updatedContent = sanitizeLovableUrls(updatedContent);
 
         // Update the article if not a dry run
         if (!dryRun) {
