@@ -1828,6 +1828,7 @@ export type Database = {
       }
       newsletter_editions: {
         Row: {
+          ai_generated_at: string | null
           comments_count_override: number | null
           created_at: string
           created_by: string | null
@@ -1853,6 +1854,7 @@ export type Database = {
           worth_watching: string | null
         }
         Insert: {
+          ai_generated_at?: string | null
           comments_count_override?: number | null
           created_at?: string
           created_by?: string | null
@@ -1878,6 +1880,7 @@ export type Database = {
           worth_watching?: string | null
         }
         Update: {
+          ai_generated_at?: string | null
           comments_count_override?: number | null
           created_at?: string
           created_by?: string | null
@@ -2237,6 +2240,7 @@ export type Database = {
       }
       newsletter_top_stories: {
         Row: {
+          ai_summary: string | null
           article_id: string
           created_at: string
           edition_id: string
@@ -2246,6 +2250,7 @@ export type Database = {
           position: number
         }
         Insert: {
+          ai_summary?: string | null
           article_id: string
           created_at?: string
           edition_id: string
@@ -2255,6 +2260,7 @@ export type Database = {
           position: number
         }
         Update: {
+          ai_summary?: string | null
           article_id?: string
           created_at?: string
           edition_id?: string
