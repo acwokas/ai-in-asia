@@ -334,6 +334,59 @@ Return a JSON object with "title" and "content" keys. The title should reference
       }
     }
 
+    // Generate A/B Subject Lines based on content
+    console.log('Generating A/B subject lines...');
+    const subjectPrompt = `You are an email marketing expert for AI in ASIA, a publication covering AI across Asia.
+
+Based on this week's newsletter content:
+
+TOP STORIES:
+${articlesContext}
+
+TRENDS: ${worthWatching.trends?.content || 'N/A'}
+POLICY: ${worthWatching.policy?.content || 'N/A'}
+
+Generate 2 compelling email subject lines (A/B test variants) that:
+1. Are under 50 characters each
+2. NO emojis
+3. Create curiosity or urgency
+4. Reference specific content from this week
+5. Variant A: Focus on the lead story or biggest theme
+6. Variant B: Use a different angle - could be a question, a number, or contrarian take
+
+Return a JSON object with "subject_a" and "subject_b" keys. Return ONLY valid JSON.`;
+
+    let subjectLineA = edition.subject_line || 'This week in AI across Asia';
+    let subjectLineB = edition.subject_line_variant_b || 'AI in ASIA Weekly Brief';
+
+    const subjectResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [{ role: 'user', content: subjectPrompt }],
+        max_tokens: 150,
+        temperature: 0.8,
+      }),
+    });
+
+    if (subjectResponse.ok) {
+      const subjectData = await subjectResponse.json();
+      const subjectContent = subjectData.choices?.[0]?.message?.content?.trim() || '';
+      try {
+        const cleaned = subjectContent.replace(/```json\n?|\n?```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (parsed.subject_a) subjectLineA = parsed.subject_a;
+        if (parsed.subject_b) subjectLineB = parsed.subject_b;
+        console.log('Generated subject lines:', { subjectLineA, subjectLineB });
+      } catch (e) {
+        console.error('Failed to parse subject lines JSON:', e);
+      }
+    }
+
     // Generate one-sentence summaries for each article
     console.log('Generating article summaries...');
     const summaries: ArticleSummary[] = [];
@@ -379,12 +432,14 @@ Return ONLY the sentence, no quotes.`;
       }
     }
 
-    // Update the edition with generated content
+    // Update the edition with generated content including subject lines
     const { error: updateError } = await supabase
       .from('newsletter_editions')
       .update({
         editor_note: editorNote,
         worth_watching: worthWatching,
+        subject_line: subjectLineA,
+        subject_line_variant_b: subjectLineB,
         ai_generated_at: new Date().toISOString(),
       })
       .eq('id', edition_id);
@@ -410,6 +465,10 @@ Return ONLY the sentence, no quotes.`;
         success: true,
         editor_note: editorNote,
         worth_watching: worthWatching,
+        subject_lines: {
+          a: subjectLineA,
+          b: subjectLineB,
+        },
         summaries,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
