@@ -523,11 +523,9 @@ const Admin = () => {
         {/* Quick Actions */}
         <AdminQuickActions
           scrapingEvents={adminActions.scrapingEvents}
-          fixingDates={adminActions.fixingDates}
           refreshingContent={adminActions.refreshingContent}
           cleaningMarkup={adminActions.cleaningMarkup}
           onScrapeEvents={adminActions.handleScrapeEvents}
-          onFixDates={adminActions.handleFixArticleDates}
           onRefreshContent={adminActions.handleRefreshFeaturedContent}
           onCleanMarkup={adminActions.handleCleanWordPressMarkup}
         />
@@ -565,8 +563,10 @@ const Admin = () => {
               calculatingReadingTimes={adminActions.calculatingReadingTimes}
               readingTimeProgress={adminActions.readingTimeProgress}
               autoScheduling={adminActions.autoScheduling}
+              fixingDates={adminActions.fixingDates}
               onCalculateReadingTimes={adminActions.handleCalculateReadingTimes}
               onAutoScheduleComments={adminActions.handleAutoScheduleComments}
+              onFixDates={adminActions.handleFixArticleDates}
             />
           </TabsContent>
 
