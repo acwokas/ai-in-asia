@@ -7,22 +7,18 @@ import {
 
 interface AdminQuickActionsProps {
   scrapingEvents: boolean;
-  fixingDates: boolean;
   refreshingContent: boolean;
   cleaningMarkup: boolean;
   onScrapeEvents: () => void;
-  onFixDates: () => void;
   onRefreshContent: () => void;
   onCleanMarkup: () => void;
 }
 
 export const AdminQuickActions = ({
   scrapingEvents,
-  fixingDates,
   refreshingContent,
   cleaningMarkup,
   onScrapeEvents,
-  onFixDates,
   onRefreshContent,
   onCleanMarkup,
 }: AdminQuickActionsProps) => {
@@ -49,9 +45,6 @@ export const AdminQuickActions = ({
             </Button>
             <Button onClick={() => navigate("/admin/bulk-seo")} variant="outline" className="justify-start">
               Bulk SEO Generation
-            </Button>
-            <Button onClick={() => navigate("/admin/bulk-tldr")} variant="outline" className="justify-start">
-              Bulk TLDR Context
             </Button>
             <Button onClick={() => navigate("/admin/calendar")} variant="outline" className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20">
               <Calendar className="h-4 w-4 mr-2" />
@@ -102,24 +95,6 @@ export const AdminQuickActions = ({
                 <>
                   <Calendar className="h-4 w-4 mr-2" />
                   Scrape AI Events
-                </>
-              )}
-            </Button>
-            <Button 
-              onClick={onFixDates} 
-              variant="outline" 
-              className="justify-start bg-amber-500/10 border-amber-500 text-amber-700 hover:bg-amber-500/20"
-              disabled={fixingDates}
-            >
-              {fixingDates ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Fixing Dates...
-                </>
-              ) : (
-                <>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Fix Article Dates from CSV
                 </>
               )}
             </Button>

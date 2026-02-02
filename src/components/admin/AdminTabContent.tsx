@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { 
-  ExternalLink, Loader2, Wrench, Clock 
+  ExternalLink, Loader2, Wrench, Clock, Calendar 
 } from "lucide-react";
 import AIToolsManager from "@/pages/AIToolsManager";
 
@@ -141,16 +141,20 @@ interface AdminMigrationTabProps {
   calculatingReadingTimes: boolean;
   readingTimeProgress: { current: number; total: number };
   autoScheduling: boolean;
+  fixingDates: boolean;
   onCalculateReadingTimes: () => void;
   onAutoScheduleComments: () => void;
+  onFixDates: () => void;
 }
 
 export const AdminMigrationTab = ({
   calculatingReadingTimes,
   readingTimeProgress,
   autoScheduling,
+  fixingDates,
   onCalculateReadingTimes,
   onAutoScheduleComments,
+  onFixDates,
 }: AdminMigrationTabProps) => {
   const navigate = useNavigate();
 
@@ -203,6 +207,27 @@ export const AdminMigrationTab = ({
             </Button>
             <Button onClick={() => navigate("/admin/assign-categories")} variant="outline" className="justify-start">
               Auto-Assign Categories
+            </Button>
+            <Button onClick={() => navigate("/admin/bulk-tldr")} variant="outline" className="justify-start">
+              Bulk TLDR Context
+            </Button>
+            <Button 
+              onClick={onFixDates} 
+              variant="outline" 
+              className="justify-start bg-amber-500/10 border-amber-500 text-amber-700 hover:bg-amber-500/20"
+              disabled={fixingDates}
+            >
+              {fixingDates ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Fixing Dates...
+                </>
+              ) : (
+                <>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Fix Article Dates from CSV
+                </>
+              )}
             </Button>
             <div className="col-span-full">
               <Button 
