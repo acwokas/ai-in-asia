@@ -1829,6 +1829,9 @@ export type Database = {
       newsletter_editions: {
         Row: {
           ai_generated_at: string | null
+          avg_pages_per_visit: number | null
+          avg_time_on_site_seconds: number | null
+          click_through_rate: number | null
           comments_count_override: number | null
           created_at: string
           created_by: string | null
@@ -1848,13 +1851,18 @@ export type Database = {
           subject_line: string
           subject_line_variant_b: string | null
           total_clicked: number | null
+          total_clicks: number | null
           total_opened: number | null
           total_sent: number | null
+          unique_clicks: number | null
           updated_at: string
           worth_watching: Json | null
         }
         Insert: {
           ai_generated_at?: string | null
+          avg_pages_per_visit?: number | null
+          avg_time_on_site_seconds?: number | null
+          click_through_rate?: number | null
           comments_count_override?: number | null
           created_at?: string
           created_by?: string | null
@@ -1874,13 +1882,18 @@ export type Database = {
           subject_line: string
           subject_line_variant_b?: string | null
           total_clicked?: number | null
+          total_clicks?: number | null
           total_opened?: number | null
           total_sent?: number | null
+          unique_clicks?: number | null
           updated_at?: string
           worth_watching?: Json | null
         }
         Update: {
           ai_generated_at?: string | null
+          avg_pages_per_visit?: number | null
+          avg_time_on_site_seconds?: number | null
+          click_through_rate?: number | null
           comments_count_override?: number | null
           created_at?: string
           created_by?: string | null
@@ -1900,8 +1913,10 @@ export type Database = {
           subject_line?: string
           subject_line_variant_b?: string | null
           total_clicked?: number | null
+          total_clicks?: number | null
           total_opened?: number | null
           total_sent?: number | null
+          unique_clicks?: number | null
           updated_at?: string
           worth_watching?: Json | null
         }
@@ -1944,6 +1959,77 @@ export type Database = {
           used_count?: number | null
         }
         Relationships: []
+      }
+      newsletter_link_clicks: {
+        Row: {
+          article_id: string | null
+          clicked_at: string
+          edition_id: string
+          id: string
+          ip_hash: string | null
+          link_type: string | null
+          link_url: string
+          send_id: string | null
+          session_id: string | null
+          subscriber_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          clicked_at?: string
+          edition_id: string
+          id?: string
+          ip_hash?: string | null
+          link_type?: string | null
+          link_url: string
+          send_id?: string | null
+          session_id?: string | null
+          subscriber_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          clicked_at?: string
+          edition_id?: string
+          id?: string
+          ip_hash?: string | null
+          link_type?: string | null
+          link_url?: string
+          send_id?: string | null
+          session_id?: string | null
+          subscriber_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_link_clicks_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_link_clicks_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_editions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_link_clicks_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_sends"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_link_clicks_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       newsletter_mystery_links: {
         Row: {
@@ -2282,6 +2368,79 @@ export type Database = {
             columns: ["edition_id"]
             isOneToOne: false
             referencedRelation: "newsletter_editions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_user_journeys: {
+        Row: {
+          articles_read: string[] | null
+          click_id: string | null
+          converted_to_signup: boolean | null
+          created_at: string
+          deepest_scroll_depth: number | null
+          edition_id: string
+          ended_at: string | null
+          id: string
+          landing_page: string
+          pages_visited: number | null
+          session_id: string
+          started_at: string
+          subscriber_id: string | null
+          total_time_seconds: number | null
+        }
+        Insert: {
+          articles_read?: string[] | null
+          click_id?: string | null
+          converted_to_signup?: boolean | null
+          created_at?: string
+          deepest_scroll_depth?: number | null
+          edition_id: string
+          ended_at?: string | null
+          id?: string
+          landing_page: string
+          pages_visited?: number | null
+          session_id: string
+          started_at?: string
+          subscriber_id?: string | null
+          total_time_seconds?: number | null
+        }
+        Update: {
+          articles_read?: string[] | null
+          click_id?: string | null
+          converted_to_signup?: boolean | null
+          created_at?: string
+          deepest_scroll_depth?: number | null
+          edition_id?: string
+          ended_at?: string | null
+          id?: string
+          landing_page?: string
+          pages_visited?: number | null
+          session_id?: string
+          started_at?: string
+          subscriber_id?: string | null
+          total_time_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_user_journeys_click_id_fkey"
+            columns: ["click_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_link_clicks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_user_journeys_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_editions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_user_journeys_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_subscribers"
             referencedColumns: ["id"]
           },
         ]
@@ -3345,6 +3504,10 @@ export type Database = {
       }
       increment_article_views: {
         Args: { article_id: string }
+        Returns: undefined
+      }
+      increment_newsletter_opens: {
+        Args: { edition_uuid: string }
         Returns: undefined
       }
       update_reading_streak: { Args: { p_user_id: string }; Returns: undefined }

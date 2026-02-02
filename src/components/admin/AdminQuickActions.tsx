@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail 
+  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp 
 } from "lucide-react";
 
 interface AdminQuickActionsProps {
@@ -49,6 +49,10 @@ export const AdminQuickActions = ({
             <Button onClick={() => navigate("/admin/calendar")} variant="outline" className="justify-start bg-blue-500/10 border-blue-500 text-blue-700 hover:bg-blue-500/20">
               <Calendar className="h-4 w-4 mr-2" />
               Content Calendar
+            </Button>
+            <Button onClick={() => navigate("/admin/newsletter-performance")} variant="outline" className="justify-start bg-purple-500/10 border-purple-500 text-purple-700 hover:bg-purple-500/20">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Newsletter Analytics
             </Button>
             <Button 
               onClick={onRefreshContent} 
