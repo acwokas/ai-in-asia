@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Home } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Home, Sparkles } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -28,6 +28,7 @@ import {
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [editData, setEditData] = useState({
     editorNote: "",
@@ -138,6 +139,30 @@ export default function NewsletterManager() {
       editor_note: editData.editorNote || null,
       worth_watching: editData.worthWatching || null,
     });
+  };
+
+  const handleGenerateAIContent = async () => {
+    if (!latestEdition) return;
+    
+    setIsGeneratingContent(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-newsletter-content", {
+        body: { edition_id: latestEdition.id },
+      });
+
+      if (error) throw error;
+
+      toast.success("AI content generated successfully!");
+      setEditData({
+        editorNote: data.editor_note || "",
+        worthWatching: data.worth_watching || "",
+      });
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate AI content");
+    } finally {
+      setIsGeneratingContent(false);
+    }
   };
 
   const editorNoteWordCount = editData.editorNote.trim().split(/\s+/).filter(Boolean).length;
@@ -329,7 +354,25 @@ export default function NewsletterManager() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t flex gap-3">
+                  <Button 
+                    onClick={handleGenerateAIContent} 
+                    variant="outline"
+                    disabled={isGeneratingContent || !latestEdition}
+                    className="bg-purple-500/10 border-purple-500 text-purple-700 hover:bg-purple-500/20"
+                  >
+                    {isGeneratingContent ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate with AI
+                      </>
+                    )}
+                  </Button>
                   <Button onClick={handleSaveContent} disabled={updateEditionMutation.isPending}>
                     {updateEditionMutation.isPending ? (
                       <>

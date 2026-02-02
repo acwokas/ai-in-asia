@@ -49,36 +49,70 @@ export const AutomationStatus = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-6 border-l-4 border-l-primary">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 border-l-4 border-l-primary">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Calendar className="h-5 w-5 text-primary" />
+              <Calendar className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-1">Daily News Scraping</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Runs daily at 9:00 AM UTC
+              <h3 className="font-semibold text-sm mb-1">Weekly Newsletter</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                Fridays at 10:00 AM UTC
               </p>
               <Badge variant="outline" className="text-xs">
-                Cron: 0 9 * * *
+                Auto-Generate + Send
               </Badge>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 border-l-4 border-l-accent">
+        <Card className="p-4 border-l-4 border-l-amber-500">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-accent/10 rounded-lg">
-              <Zap className="h-5 w-5 text-accent" />
+            <div className="p-2 bg-amber-500/10 rounded-lg">
+              <Zap className="h-4 w-4 text-amber-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-1">Weekly Newsletter Generation</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Runs every Friday at 10:00 AM UTC
+              <h3 className="font-semibold text-sm mb-1">3-Before-9</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                Weekdays at 8:00 AM UTC
               </p>
               <Badge variant="outline" className="text-xs">
-                Cron: 0 10 * * 5
+                Auto-Generate + Send
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 border-l-4 border-l-green-500">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm mb-1">AI Content</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                Editor's Note & Summaries
+              </p>
+              <Badge variant="outline" className="text-xs">
+                On Demand
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 border-l-4 border-l-blue-500">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Clock className="h-4 w-4 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm mb-1">Daily Digest</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                For logged-in users
+              </p>
+              <Badge variant="outline" className="text-xs">
+                Daily at 8:00 AM
               </Badge>
             </div>
           </div>
@@ -131,17 +165,24 @@ export const AutomationStatus = () => {
         )}
       </Card>
 
-      <Card className="p-6 bg-primary/5 border-primary/20">
+      <Card className="p-6 bg-green-500/5 border-green-500/20">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-primary/10 rounded-full">
-            <Zap className="h-5 w-5 text-primary" />
+          <div className="p-2 bg-green-500/10 rounded-full">
+            <Zap className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <h4 className="font-semibold mb-2">Automation is Active</h4>
-            <p className="text-sm text-muted-foreground">
-              The newsletter system automatically scrapes news daily and generates 
-              newsletters every Friday. You can still manually trigger these operations 
-              from the respective tabs if needed.
+            <h4 className="font-semibold mb-2">Full Automation Active</h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              The newsletter system automatically:
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li>Generates weekly newsletter every Friday with AI content</li>
+              <li>Sends newsletter to all subscribers automatically</li>
+              <li>Creates 3-Before-9 briefings every weekday morning</li>
+              <li>Sends briefings to subscribed readers</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-3 italic">
+              You can still manually trigger operations or edit content before sending.
             </p>
           </div>
         </div>

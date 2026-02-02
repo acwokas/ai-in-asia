@@ -128,3 +128,24 @@ verify_jwt = true
 
 [functions.assign-article-category]
 verify_jwt = true
+
+[functions.generate-newsletter-content]
+verify_jwt = true
+
+[functions.auto-send-newsletter]
+verify_jwt = false
+
+[functions.generate-three-before-nine]
+verify_jwt = false
+
+[functions.send-three-before-nine]
+verify_jwt = false
+
+[functions.auto-refresh-featured-content]
+verify_jwt = false
+
+[functions.send-daily-digest]
+verify_jwt = false
+
+[functions.publish-scheduled-comments]
+verify_jwt = false
