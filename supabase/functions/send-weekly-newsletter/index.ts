@@ -271,15 +271,23 @@ Deno.serve(async (req) => {
       const testSubscriber = { id: 'test-subscriber', email: test_email };
       const html = await generateNewsletterHTML(edition, testSubscriber, testSendId, supabase);
 
-      await resend.emails.send({
+      console.log('Calling Resend API...');
+      const { data: emailResult, error: emailError } = await resend.emails.send({
         from: 'AI in ASIA <newsletter@aiinasia.com>',
         to: test_email,
         subject: `[TEST] ${edition.subject_line}`,
         html,
       });
 
+      if (emailError) {
+        console.error('Resend API error:', emailError);
+        throw new Error(`Failed to send email: ${emailError.message}`);
+      }
+
+      console.log('Test email sent successfully:', emailResult);
+
       return new Response(
-        JSON.stringify({ success: true, message: 'Test email sent' }),
+        JSON.stringify({ success: true, message: 'Test email sent', emailId: emailResult?.id }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
