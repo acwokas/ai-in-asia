@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -24,6 +24,12 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
@@ -33,6 +39,9 @@ export default function NewsletterManager() {
   const [isGeneratingSubjectLines, setIsGeneratingSubjectLines] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState("");
   const [editData, setEditData] = useState({
     editorNote: "",
     worthWatching: null as WorthWatching | null,
@@ -229,6 +238,27 @@ interface WorthWatching {
     }
   };
 
+  const handleViewPreview = async () => {
+    if (!latestEdition) return;
+    
+    setIsLoadingPreview(true);
+    setIsPreviewOpen(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("preview-newsletter", {
+        body: { edition_id: latestEdition.id },
+      });
+
+      if (error) throw error;
+
+      setPreviewHtml(data.html);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load preview");
+      setIsPreviewOpen(false);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
   const editorNoteWordCount = editData.editorNote.trim().split(/\s+/).filter(Boolean).length;
 
   return (
@@ -340,6 +370,14 @@ interface WorthWatching {
               </div>
 
               <div className="flex gap-2 mt-6">
+                <Button onClick={handleViewPreview} variant="outline" disabled={isLoadingPreview}>
+                  {isLoadingPreview ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4 mr-2" />
+                  )}
+                  View Newsletter
+                </Button>
                 <Button onClick={handleSendTest} variant="outline">
                   <Eye className="h-4 w-4 mr-2" />
                   Send Test Email
@@ -623,6 +661,28 @@ interface WorthWatching {
         </Tabs>
       </div>
       <Footer />
+
+      {/* Newsletter Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Newsletter Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto border rounded-lg bg-white">
+            {isLoadingPreview ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <iframe
+                srcDoc={previewHtml}
+                title="Newsletter Preview"
+                className="w-full h-[70vh] border-0"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
