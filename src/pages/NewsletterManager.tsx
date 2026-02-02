@@ -30,6 +30,7 @@ export default function NewsletterManager() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [isGeneratingEditorNote, setIsGeneratingEditorNote] = useState(false);
+  const [isGeneratingSubjectLines, setIsGeneratingSubjectLines] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
   const [editData, setEditData] = useState({
@@ -206,6 +207,26 @@ interface WorthWatching {
     }
   };
 
+  const handleGenerateSubjectLines = async () => {
+    if (!latestEdition) return;
+    
+    setIsGeneratingSubjectLines(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-newsletter-content", {
+        body: { edition_id: latestEdition.id, sections: ["subject_lines"] },
+      });
+
+      if (error) throw error;
+
+      toast.success("Subject lines generated!");
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate subject lines");
+    } finally {
+      setIsGeneratingSubjectLines(false);
+    }
+  };
+
   const editorNoteWordCount = editData.editorNote.trim().split(/\s+/).filter(Boolean).length;
 
   return (
@@ -285,13 +306,34 @@ interface WorthWatching {
           {latestEdition && (
             <>
               <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Subject Line A</Label>
-                  <p className="text-sm mt-1 font-mono bg-muted p-2 rounded">{latestEdition.subject_line}</p>
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">A/B Subject Lines</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGenerateSubjectLines}
+                    disabled={isGeneratingSubjectLines}
+                    className="bg-purple-500/10 border-purple-500/50 text-purple-700 hover:bg-purple-500/20"
+                  >
+                    {isGeneratingSubjectLines ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Generate New
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">Subject Line B (A/B Test)</Label>
-                  <p className="text-sm mt-1 font-mono bg-muted p-2 rounded">{latestEdition.subject_line_variant_b}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 border rounded-lg">
+                    <Label className="text-xs text-muted-foreground">Variant A</Label>
+                    <p className="text-sm mt-1 font-medium">{latestEdition.subject_line}</p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <Label className="text-xs text-muted-foreground">Variant B</Label>
+                    <p className="text-sm mt-1 font-medium">{latestEdition.subject_line_variant_b}</p>
+                  </div>
                 </div>
               </div>
 
