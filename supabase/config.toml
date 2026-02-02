@@ -149,3 +149,6 @@ verify_jwt = false
 
 [functions.publish-scheduled-comments]
 verify_jwt = false
+
+[functions.track-newsletter-click]
+verify_jwt = false

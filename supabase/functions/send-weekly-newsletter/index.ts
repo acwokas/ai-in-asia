@@ -11,16 +11,71 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const SITE_URL = 'https://aiinasia.com';
 
+// Helper to create tracked links
+function createTrackedLink(
+  baseUrl: string,
+  sendId: string,
+  editionId: string,
+  subscriberId: string,
+  linkType: string,
+  articleId?: string
+): string {
+  const trackingUrl = new URL(`${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-click`);
+  trackingUrl.searchParams.set('sid', sendId);
+  trackingUrl.searchParams.set('eid', editionId);
+  trackingUrl.searchParams.set('sub', subscriberId);
+  trackingUrl.searchParams.set('type', linkType);
+  trackingUrl.searchParams.set('url', baseUrl);
+  if (articleId) {
+    trackingUrl.searchParams.set('aid', articleId);
+  }
+  return trackingUrl.toString();
+}
+
+// Helper to create open tracking pixel URL
+function createOpenTrackingPixel(sendId: string, editionId: string): string {
+  const pixelUrl = new URL(`${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-click`);
+  pixelUrl.searchParams.set('action', 'open');
+  pixelUrl.searchParams.set('sid', sendId);
+  pixelUrl.searchParams.set('eid', editionId);
+  return pixelUrl.toString();
+}
+
+// Helper to create unsubscribe URL
+function createUnsubscribeUrl(sendId: string, editionId: string, subscriberId: string): string {
+  const unsubUrl = new URL(`${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-click`);
+  unsubUrl.searchParams.set('action', 'unsubscribe');
+  unsubUrl.searchParams.set('sid', sendId);
+  unsubUrl.searchParams.set('eid', editionId);
+  unsubUrl.searchParams.set('sub', subscriberId);
+  return unsubUrl.toString();
+}
+
+interface WorthWatchingSection {
+  title: string;
+  content: string;
+}
+
+interface WorthWatching {
+  trends?: WorthWatchingSection | null;
+  events?: WorthWatchingSection | null;
+  spotlight?: WorthWatchingSection | null;
+  policy?: WorthWatchingSection | null;
+}
+
 async function generateNewsletterHTML(
   edition: any,
   subscriber: any,
-  trackingId: string,
+  sendId: string,
   supabase: any
 ): Promise<string> {
+  const editionId = edition.id;
+  const subscriberId = subscriber.id;
+
   // Fetch top stories for "This Week's Signals" section
   const { data: topStories } = await supabase
     .from('newsletter_top_stories')
-    .select('article_id, position, articles(id, title, slug, excerpt)')
+    .select('article_id, position, ai_summary, articles(id, title, slug, excerpt)')
     .eq('edition_id', edition.id)
     .order('position')
     .limit(4);
@@ -42,7 +97,58 @@ async function generateNewsletterHTML(
     year: 'numeric',
   });
 
-  // Newsletter HTML following the exact editorial structure
+  // Parse worth_watching sections
+  const worthWatching: WorthWatching = edition.worth_watching || {};
+
+  // Build Worth Watching HTML
+  let worthWatchingHtml = '';
+  if (worthWatching.trends || worthWatching.events || worthWatching.spotlight || worthWatching.policy) {
+    worthWatchingHtml = `
+    <div style="margin-bottom: 32px;">
+      <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Worth Watching</h2>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          ${worthWatching.trends ? `
+          <td width="50%" style="padding: 10px; vertical-align: top;">
+            <div style="background: #eff6ff; border-left: 3px solid #3b82f6; padding: 12px; border-radius: 4px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: #1d4ed8; margin: 0 0 8px 0;">📈 ${worthWatching.trends.title}</h4>
+              <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.5;">${worthWatching.trends.content}</p>
+            </div>
+          </td>
+          ` : '<td width="50%"></td>'}
+          ${worthWatching.events ? `
+          <td width="50%" style="padding: 10px; vertical-align: top;">
+            <div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 12px; border-radius: 4px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: #b45309; margin: 0 0 8px 0;">📅 ${worthWatching.events.title}</h4>
+              <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.5;">${worthWatching.events.content}</p>
+            </div>
+          </td>
+          ` : '<td width="50%"></td>'}
+        </tr>
+        <tr>
+          ${worthWatching.spotlight ? `
+          <td width="50%" style="padding: 10px; vertical-align: top;">
+            <div style="background: #f0fdf4; border-left: 3px solid #22c55e; padding: 12px; border-radius: 4px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: #15803d; margin: 0 0 8px 0;">🏢 ${worthWatching.spotlight.title}</h4>
+              <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.5;">${worthWatching.spotlight.content}</p>
+            </div>
+          </td>
+          ` : '<td width="50%"></td>'}
+          ${worthWatching.policy ? `
+          <td width="50%" style="padding: 10px; vertical-align: top;">
+            <div style="background: #faf5ff; border-left: 3px solid #a855f7; padding: 12px; border-radius: 4px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: #7e22ce; margin: 0 0 8px 0;">⚖️ ${worthWatching.policy.title}</h4>
+              <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.5;">${worthWatching.policy.content}</p>
+            </div>
+          </td>
+          ` : '<td width="50%"></td>'}
+        </tr>
+      </table>
+    </div>
+    `;
+  }
+
+  // Newsletter HTML following the exact editorial structure with tracked links
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -52,13 +158,16 @@ async function generateNewsletterHTML(
   <title>AI in ASIA Weekly Brief</title>
 </head>
 <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.7; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-  <!-- Tracking pixel -->
-  <img src="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/article-images/tracking-pixel.gif?id=${trackingId}" width="1" height="1" alt="" style="display: none;" />
+  <!-- Tracking pixel for opens -->
+  <img src="${createOpenTrackingPixel(sendId, editionId)}" width="1" height="1" alt="" style="display: none;" />
   
   <!-- Header -->
   <div style="text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #e5e5e5;">
-    <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0; letter-spacing: -0.5px;">AI in ASIA Weekly Brief</h1>
+    <a href="${createTrackedLink(SITE_URL, sendId, editionId, subscriberId, 'header')}" style="text-decoration: none;">
+      <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0; letter-spacing: -0.5px;">AI in ASIA Weekly Brief</h1>
+    </a>
     <p style="font-size: 16px; color: #666666; margin: 0; font-style: italic;">What matters in artificial intelligence across Asia.</p>
+    <p style="font-size: 14px; color: #888888; margin: 8px 0 0 0;">${editionDateFormatted}</p>
   </div>
 
   <!-- Editor's Note -->
@@ -73,31 +182,26 @@ async function generateNewsletterHTML(
   ${topStories && topStories.length > 0 ? `
   <div style="margin-bottom: 32px;">
     <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">This Week's Signals</h2>
-    ${topStories.map((story: any) => `
-    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0;">
+    ${topStories.map((story: any, index: number) => `
+    <div style="margin-bottom: 20px; padding-bottom: 20px; ${index < topStories.length - 1 ? 'border-bottom: 1px solid #f0f0f0;' : ''}">
       <h3 style="font-size: 17px; font-weight: 600; margin: 0 0 8px 0;">
-        <a href="${SITE_URL}/article/${story.articles.slug}" style="color: #1a1a1a; text-decoration: none;">${story.articles.title}</a>
+        <a href="${createTrackedLink(`/article/${story.articles.slug}`, sendId, editionId, subscriberId, 'article', story.articles.id)}" style="color: #1a1a1a; text-decoration: none;">${story.articles.title}</a>
       </h3>
-      <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.6;">${story.articles.excerpt || ''}</p>
+      <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.6;">${story.ai_summary || story.articles.excerpt || ''}</p>
     </div>
     `).join('')}
   </div>
   ` : ''}
 
-  <!-- Worth Watching -->
-  ${edition.worth_watching ? `
-  <div style="margin-bottom: 32px;">
-    <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Worth Watching</h2>
-    <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.8;">${edition.worth_watching}</p>
-  </div>
-  ` : ''}
+  <!-- Worth Watching (4 sections) -->
+  ${worthWatchingHtml}
 
   <!-- From the AI Policy Atlas -->
   ${policyArticle ? `
   <div style="margin-bottom: 32px; padding: 20px; background-color: #f8f9fa; border-left: 3px solid #1a1a1a;">
     <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">From the AI Policy Atlas</h2>
     <p style="font-size: 16px; margin: 0;">
-      <a href="${SITE_URL}/article/${policyArticle.slug}" style="color: #1a1a1a; text-decoration: underline;">${policyArticle.title}</a>
+      <a href="${createTrackedLink(`/article/${policyArticle.slug}`, sendId, editionId, subscriberId, 'policy_atlas', policyArticle.id)}" style="color: #1a1a1a; text-decoration: underline;">${policyArticle.title}</a>
     </p>
     ${policyArticle.country || policyArticle.region ? `
     <p style="font-size: 14px; color: #666666; margin: 8px 0 0 0;">Explore the latest regulatory developments${policyArticle.country ? ` in ${policyArticle.country}` : ''}${policyArticle.region ? ` across ${policyArticle.region}` : ''}.</p>
@@ -109,16 +213,19 @@ async function generateNewsletterHTML(
   <div style="margin-bottom: 32px; padding-top: 24px; border-top: 1px solid #e5e5e5;">
     <h2 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif;">Before You Go</h2>
     <p style="font-size: 15px; color: #555555; margin: 0 0 12px 0; line-height: 1.7;">AI in ASIA publishes independent, Asia-first coverage of how artificial intelligence is built, regulated, and used across the region.</p>
-    <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.7;">New articles are published throughout the week.</p>
+    <p style="font-size: 15px; color: #555555; margin: 0; line-height: 1.7;">
+      <a href="${createTrackedLink('/articles', sendId, editionId, subscriberId, 'cta')}" style="color: #1a1a1a; text-decoration: underline;">Read more articles</a> or 
+      <a href="${createTrackedLink('/guides', sendId, editionId, subscriberId, 'cta')}" style="color: #1a1a1a; text-decoration: underline;">explore our guides</a>.
+    </p>
   </div>
 
   <!-- Footer -->
   <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e5e5e5;">
     <p style="font-size: 13px; color: #888888; margin: 0 0 8px 0;">
-      <a href="${SITE_URL}" style="color: #1a1a1a; text-decoration: none;">AI in ASIA</a>
+      <a href="${createTrackedLink(SITE_URL, sendId, editionId, subscriberId, 'footer')}" style="color: #1a1a1a; text-decoration: none;">AI in ASIA</a>
     </p>
     <p style="font-size: 12px; color: #aaaaaa; margin: 0;">
-      <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/track-newsletter-engagement?tid=${trackingId}&action=unsubscribe" style="color: #888888; text-decoration: underline;">Unsubscribe</a>
+      <a href="${createUnsubscribeUrl(sendId, editionId, subscriberId)}" style="color: #888888; text-decoration: underline;">Unsubscribe</a>
     </p>
   </div>
 </body>
@@ -160,9 +267,9 @@ Deno.serve(async (req) => {
     if (test_email) {
       console.log(`Sending test email to ${test_email}`);
       
-      const testSubscriber = { email: test_email };
-      const trackingId = crypto.randomUUID();
-      const html = await generateNewsletterHTML(edition, testSubscriber, trackingId, supabase);
+      const testSendId = crypto.randomUUID();
+      const testSubscriber = { id: 'test-subscriber', email: test_email };
+      const html = await generateNewsletterHTML(edition, testSubscriber, testSendId, supabase);
 
       await resend.emails.send({
         from: 'AI in ASIA <newsletter@aiinasia.com>',
@@ -205,24 +312,32 @@ Deno.serve(async (req) => {
     let sentCount = 0;
     let failedCount = 0;
 
-    // Send to group A
-    for (const subscriber of groupA) {
+    // Helper function to send to a subscriber
+    const sendToSubscriber = async (subscriber: any, variant: string, subjectLine: string) => {
       try {
-        const trackingId = crypto.randomUUID();
-        const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
+        // Create send record first to get ID
+        const { data: sendRecord } = await supabase
+          .from('newsletter_sends')
+          .insert({
+            edition_id: edition.id,
+            subscriber_id: subscriber.id,
+            variant,
+            sent_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+
+        if (!sendRecord) {
+          throw new Error('Failed to create send record');
+        }
+
+        const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
         await resend.emails.send({
           from: 'AI in ASIA <newsletter@aiinasia.com>',
           to: subscriber.email,
-          subject: edition.subject_line,
+          subject: subjectLine,
           html,
-        });
-
-        await supabase.from('newsletter_sends').insert({
-          edition_id: edition.id,
-          subscriber_id: subscriber.id,
-          variant: 'A',
-          sent_at: new Date().toISOString(),
         });
 
         sentCount++;
@@ -230,62 +345,23 @@ Deno.serve(async (req) => {
         console.error(`Failed to send to ${subscriber.email}:`, error);
         failedCount++;
       }
+    };
+
+    // Send to group A
+    for (const subscriber of groupA) {
+      await sendToSubscriber(subscriber, 'A', edition.subject_line);
     }
 
     // Send to group B
     for (const subscriber of groupB) {
-      try {
-        const trackingId = crypto.randomUUID();
-        const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
-
-        await resend.emails.send({
-          from: 'AI in ASIA <newsletter@aiinasia.com>',
-          to: subscriber.email,
-          subject: edition.subject_line_variant_b || edition.subject_line,
-          html,
-        });
-
-        await supabase.from('newsletter_sends').insert({
-          edition_id: edition.id,
-          subscriber_id: subscriber.id,
-          variant: 'B',
-          sent_at: new Date().toISOString(),
-        });
-
-        sentCount++;
-      } catch (error) {
-        console.error(`Failed to send to ${subscriber.email}:`, error);
-        failedCount++;
-      }
+      await sendToSubscriber(subscriber, 'B', edition.subject_line_variant_b || edition.subject_line);
     }
 
-    // Send remaining with variant A
+    // Send remaining with variant A (winner - in future could auto-select based on early results)
     console.log(`Sending to remaining ${remaining.length} subscribers`);
 
     for (const subscriber of remaining) {
-      try {
-        const trackingId = crypto.randomUUID();
-        const html = await generateNewsletterHTML(edition, subscriber, trackingId, supabase);
-
-        await resend.emails.send({
-          from: 'AI in ASIA <newsletter@aiinasia.com>',
-          to: subscriber.email,
-          subject: edition.subject_line,
-          html,
-        });
-
-        await supabase.from('newsletter_sends').insert({
-          edition_id: edition.id,
-          subscriber_id: subscriber.id,
-          variant: 'winner',
-          sent_at: new Date().toISOString(),
-        });
-
-        sentCount++;
-      } catch (error) {
-        console.error(`Failed to send to ${subscriber.email}:`, error);
-        failedCount++;
-      }
+      await sendToSubscriber(subscriber, 'winner', edition.subject_line);
 
       // Batch delay
       if (sentCount % 100 === 0) {
