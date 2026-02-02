@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Home, Sparkles } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -29,7 +29,9 @@ export default function NewsletterManager() {
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [isGeneratingEditorNote, setIsGeneratingEditorNote] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
   const [editData, setEditData] = useState({
     editorNote: "",
     worthWatching: null as WorthWatching | null,
@@ -154,6 +156,31 @@ interface WorthWatching {
     });
   };
 
+  const handleGenerateEditorNote = async () => {
+    if (!latestEdition) return;
+    
+    setIsGeneratingEditorNote(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-newsletter-content", {
+        body: { edition_id: latestEdition.id, sections: ["editor_note"] },
+      });
+
+      if (error) throw error;
+
+      toast.success("Editor's Note generated!");
+      setEditData(prev => ({
+        ...prev,
+        editorNote: data.editor_note || "",
+      }));
+      setIsEditingEditorNote(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate Editor's Note");
+    } finally {
+      setIsGeneratingEditorNote(false);
+    }
+  };
+
   const handleGenerateAIContent = async () => {
     if (!latestEdition) return;
     
@@ -170,6 +197,7 @@ interface WorthWatching {
         editorNote: data.editor_note || "",
         worthWatching: data.worth_watching || null,
       });
+      setIsEditingEditorNote(false);
       refetch();
     } catch (error: any) {
       toast.error(error.message || "Failed to generate AI content");
@@ -332,24 +360,94 @@ interface WorthWatching {
               </p>
               
               <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label htmlFor="editor-note">Editor's Note</Label>
-                    <span className={`text-xs ${editorNoteWordCount > 80 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {editorNoteWordCount}/80 words
-                    </span>
+                {/* Editor's Note Section */}
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-base font-semibold">Editor's Note</Label>
+                      <span className={`text-xs ${editorNoteWordCount > 80 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        ({editorNoteWordCount}/80 words)
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleGenerateEditorNote}
+                        disabled={isGeneratingEditorNote || !latestEdition}
+                        className="bg-purple-500/10 border-purple-500/50 text-purple-700 hover:bg-purple-500/20"
+                      >
+                        {isGeneratingEditorNote ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <>
+                            <Sparkles className="h-3 w-3 mr-1" />
+                            Generate
+                          </>
+                        )}
+                      </Button>
+                      {!isEditingEditorNote && editData.editorNote && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setIsEditingEditorNote(true)}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <Textarea
-                    id="editor-note"
-                    rows={4}
-                    placeholder="One short paragraph setting context for the week. This can reference themes such as regulation, platforms, adoption, or regional signals. Keep this under 80 words."
-                    value={editData.editorNote}
-                    onChange={(e) => setEditData({ ...editData, editorNote: e.target.value })}
-                    className="font-serif"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Set the context for this week. Reference themes like regulation, platforms, adoption, or regional signals.
-                  </p>
+
+                  {isEditingEditorNote || !editData.editorNote ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        id="editor-note"
+                        rows={4}
+                        placeholder="One short paragraph setting context for the week. This can reference themes such as regulation, platforms, adoption, or regional signals. Keep this under 80 words."
+                        value={editData.editorNote}
+                        onChange={(e) => setEditData({ ...editData, editorNote: e.target.value })}
+                        className="font-serif"
+                      />
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-muted-foreground">
+                          Reference themes like regulation, platforms, adoption, or regional signals.
+                        </p>
+                        {isEditingEditorNote && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditData(prev => ({
+                                  ...prev,
+                                  editorNote: latestEdition?.editor_note || "",
+                                }));
+                                setIsEditingEditorNote(false);
+                              }}
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                handleSaveContent();
+                                setIsEditingEditorNote(false);
+                              }}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-muted/50 rounded-md font-serif text-sm leading-relaxed">
+                      {editData.editorNote}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
