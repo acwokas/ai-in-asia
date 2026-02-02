@@ -63,6 +63,8 @@ interface WorthWatching {
       if (error) throw error;
       return data;
     },
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   // Load existing content when edition loads
