@@ -32,8 +32,20 @@ export default function NewsletterManager() {
   const [isSending, setIsSending] = useState(false);
   const [editData, setEditData] = useState({
     editorNote: "",
-    worthWatching: "",
+    worthWatching: null as WorthWatching | null,
   });
+
+interface WorthWatchingSection {
+  title: string;
+  content: string;
+}
+
+interface WorthWatching {
+  trends: WorthWatchingSection | null;
+  events: WorthWatchingSection | null;
+  spotlight: WorthWatchingSection | null;
+  policy: WorthWatchingSection | null;
+}
 
   const { data: latestEdition, refetch } = useQuery({
     queryKey: ["newsletter-latest-edition"],
@@ -53,9 +65,10 @@ export default function NewsletterManager() {
   // Load existing content when edition loads
   useEffect(() => {
     if (latestEdition) {
+      const worthWatching = (latestEdition as any).worth_watching;
       setEditData({
         editorNote: latestEdition.editor_note || "",
-        worthWatching: (latestEdition as any).worth_watching || "",
+        worthWatching: worthWatching && typeof worthWatching === 'object' ? worthWatching : null,
       });
     }
   }, [latestEdition]);
@@ -155,7 +168,7 @@ export default function NewsletterManager() {
       toast.success("AI content generated successfully!");
       setEditData({
         editorNote: data.editor_note || "",
-        worthWatching: data.worth_watching || "",
+        worthWatching: data.worth_watching || null,
       });
       refetch();
     } catch (error: any) {
@@ -339,19 +352,61 @@ export default function NewsletterManager() {
                   </p>
                 </div>
 
-                <div>
-                  <Label htmlFor="worth-watching">Worth Watching</Label>
-                  <Textarea
-                    id="worth-watching"
-                    rows={4}
-                    placeholder="One short paragraph highlighting a forward-looking signal. This may reference a policy timeline, platform trend, or regional shift. Avoid predictions framed as certainty."
-                    value={editData.worthWatching}
-                    onChange={(e) => setEditData({ ...editData, worthWatching: e.target.value })}
-                    className="mt-2 font-serif"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Highlight a forward-looking signal. Reference policy timelines, platform trends, or regional shifts.
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Worth Watching Sections</Label>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    Four AI-generated sections covering trends, events, company spotlight, and policy updates.
                   </p>
+                  
+                  {editData.worthWatching ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Emerging Trends */}
+                      <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                        <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                          📈 {editData.worthWatching.trends?.title || 'Emerging Trends'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {editData.worthWatching.trends?.content || 'No trends generated yet.'}
+                        </p>
+                      </div>
+
+                      {/* Upcoming Events */}
+                      <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                        <h4 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
+                          📅 {editData.worthWatching.events?.title || 'Upcoming Events'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {editData.worthWatching.events?.content || 'No events generated yet.'}
+                        </p>
+                      </div>
+
+                      {/* Company Spotlight */}
+                      <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg">
+                        <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                          🏢 {editData.worthWatching.spotlight?.title || 'Company Spotlight'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {editData.worthWatching.spotlight?.content || 'No spotlight generated yet.'}
+                        </p>
+                      </div>
+
+                      {/* Policy Watch */}
+                      <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-lg">
+                        <h4 className="font-semibold text-purple-700 mb-2 flex items-center gap-2">
+                          ⚖️ {editData.worthWatching.policy?.title || 'Policy Watch'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {editData.worthWatching.policy?.content || 'No policy updates generated yet.'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6 bg-muted/50 rounded-lg text-center">
+                      <p className="text-muted-foreground">
+                        Click "Generate with AI" to create all four Worth Watching sections.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t flex gap-3">

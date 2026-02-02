@@ -12,6 +12,18 @@ interface ArticleSummary {
   category: string;
 }
 
+interface WorthWatchingSection {
+  title: string;
+  content: string;
+}
+
+interface WorthWatching {
+  trends: WorthWatchingSection | null;
+  events: WorthWatchingSection | null;
+  spotlight: WorthWatchingSection | null;
+  policy: WorthWatchingSection | null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -66,6 +78,23 @@ Deno.serve(async (req) => {
       throw new Error('No top stories found for this edition');
     }
 
+    // Fetch upcoming events for events section
+    const { data: upcomingEvents } = await supabase
+      .from('events')
+      .select('title, city, country, start_date, event_type')
+      .gte('start_date', new Date().toISOString())
+      .order('start_date')
+      .limit(5);
+
+    // Fetch recent policy articles for policy section
+    const { data: policyArticles } = await supabase
+      .from('articles')
+      .select('title, excerpt, country, policy_status')
+      .eq('article_type', 'policy')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(3);
+
     // Build context about this week's articles
     const articleSummaries = topStories.map((story: any) => ({
       title: story.articles.title,
@@ -97,30 +126,16 @@ Write a concise Editor's Note (60-80 words) that:
 
 Return ONLY the paragraph text, no headers or quotes.`;
 
-    const worthWatchingPrompt = `You are an editor for AI in ASIA, a publication covering artificial intelligence across Asia.
-
-Based on this week's top stories:
-${articlesContext}
-
-Write a "Worth Watching" paragraph (50-70 words) that:
-1. Highlights a forward-looking signal or trend
-2. May reference policy timelines, platform trends, or regional shifts
-3. Avoids predictions framed as certainty - use language like "signals suggest", "worth monitoring"
-4. Does NOT use bullet points or lists
-5. Focuses on what readers should keep an eye on next
-
-Return ONLY the paragraph text, no headers or quotes.`;
-
     // Call Lovable AI for Editor's Note
     console.log('Generating Editor\'s Note...');
-    const editorNoteResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    const editorNoteResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: 'You are an expert AI news editor writing for a business audience in Asia. Be concise, authoritative, and insightful.' },
           { role: 'user', content: editorNotePrompt }
@@ -139,33 +154,185 @@ Return ONLY the paragraph text, no headers or quotes.`;
     const editorNoteData = await editorNoteResponse.json();
     const editorNote = editorNoteData.choices?.[0]?.message?.content?.trim() || '';
 
-    // Call Lovable AI for Worth Watching
-    console.log('Generating Worth Watching...');
-    const worthWatchingResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    // Generate Worth Watching sections
+    console.log('Generating Worth Watching sections...');
+    const worthWatching: WorthWatching = {
+      trends: null,
+      events: null,
+      spotlight: null,
+      policy: null,
+    };
+
+    // 1. Emerging AI Trends
+    const trendsPrompt = `You are an editor for AI in ASIA, a publication covering artificial intelligence across Asia.
+
+Based on this week's top stories:
+${articlesContext}
+
+Write a "Emerging AI Trends" section (40-60 words) that:
+1. Identifies 2-3 rising trends or themes spotted across recent coverage
+2. Examples: 'Edge AI adoption accelerating in Southeast Asia', 'Enterprise LLM deployments maturing'
+3. Uses language like "signals suggest", "momentum building around"
+4. Focuses on patterns, not individual stories
+
+Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
+
+    const trendsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are an expert AI news editor writing for a business audience in Asia. Focus on forward-looking trends and signals.' },
-          { role: 'user', content: worthWatchingPrompt }
-        ],
-        max_tokens: 250,
+        model: 'google/gemini-3-flash-preview',
+        messages: [{ role: 'user', content: trendsPrompt }],
+        max_tokens: 200,
         temperature: 0.7,
       }),
     });
 
-    if (!worthWatchingResponse.ok) {
-      const error = await worthWatchingResponse.text();
-      console.error('Worth Watching API error:', error);
-      throw new Error(`Failed to generate worth watching: ${error}`);
+    if (trendsResponse.ok) {
+      const trendsData = await trendsResponse.json();
+      const trendsContent = trendsData.choices?.[0]?.message?.content?.trim() || '';
+      try {
+        const cleaned = trendsContent.replace(/```json\n?|\n?```/g, '').trim();
+        worthWatching.trends = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('Failed to parse trends JSON:', e);
+        worthWatching.trends = { title: 'Emerging Trends', content: trendsContent };
+      }
     }
 
-    const worthWatchingData = await worthWatchingResponse.json();
-    const worthWatching = worthWatchingData.choices?.[0]?.message?.content?.trim() || '';
+    // 2. Upcoming Events
+    const eventsContext = upcomingEvents?.map((e: any) => 
+      `- ${e.title} (${e.city}, ${e.country}) - ${new Date(e.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    ).join('\n') || 'No upcoming events found.';
+
+    const eventsPrompt = `You are an editor for AI in ASIA, a publication covering AI events across Asia.
+
+Upcoming AI events:
+${eventsContext}
+
+Write an "Upcoming Events" section (40-60 words) that:
+1. Highlights 2-3 notable AI events, conferences, or webinars happening soon
+2. Mentions the event names, locations, and dates
+3. Uses an informative, calendar-like tone
+4. Encourages readers to mark their calendars
+
+Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
+
+    const eventsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [{ role: 'user', content: eventsPrompt }],
+        max_tokens: 200,
+        temperature: 0.7,
+      }),
+    });
+
+    if (eventsResponse.ok) {
+      const eventsData = await eventsResponse.json();
+      const eventsContent = eventsData.choices?.[0]?.message?.content?.trim() || '';
+      try {
+        const cleaned = eventsContent.replace(/```json\n?|\n?```/g, '').trim();
+        worthWatching.events = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('Failed to parse events JSON:', e);
+        worthWatching.events = { title: 'Mark Your Calendar', content: eventsContent };
+      }
+    }
+
+    // 3. Company/Startup Spotlight
+    const spotlightPrompt = `You are an editor for AI in ASIA, a publication covering AI companies across Asia.
+
+Based on this week's top stories:
+${articlesContext}
+
+Write a "Company Spotlight" section (40-60 words) that:
+1. Highlights 1-2 AI companies or startups making moves in Asia
+2. Focus on companies mentioned in the articles or related to the themes
+3. Brief context on what they're doing and why it matters
+4. Use phrases like "worth keeping an eye on", "emerging player"
+
+Return a JSON object with "title" and "content" keys. The title should name the company/companies featured. Return ONLY valid JSON.`;
+
+    const spotlightResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [{ role: 'user', content: spotlightPrompt }],
+        max_tokens: 200,
+        temperature: 0.7,
+      }),
+    });
+
+    if (spotlightResponse.ok) {
+      const spotlightData = await spotlightResponse.json();
+      const spotlightContent = spotlightData.choices?.[0]?.message?.content?.trim() || '';
+      try {
+        const cleaned = spotlightContent.replace(/```json\n?|\n?```/g, '').trim();
+        worthWatching.spotlight = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('Failed to parse spotlight JSON:', e);
+        worthWatching.spotlight = { title: 'Companies to Watch', content: spotlightContent };
+      }
+    }
+
+    // 4. Policy & Regulation Watch
+    const policyContext = policyArticles?.map((p: any) => 
+      `- ${p.title} (${p.country || 'Asia'}): ${p.excerpt?.slice(0, 100) || 'Policy update'}`
+    ).join('\n') || 'No recent policy updates found.';
+
+    const policyPrompt = `You are an editor for AI in ASIA, a publication covering AI policy and regulation across Asia.
+
+Recent policy developments:
+${policyContext}
+
+And this week's coverage context:
+${articlesContext}
+
+Write a "Policy Watch" section (40-60 words) that:
+1. Summarizes pending or recently announced AI policies, regulations, or government initiatives
+2. Focus on Asian markets: China, India, Singapore, Japan, Korea, Southeast Asia
+3. Use language like "regulators are signaling", "framework expected by", "consultation period closes"
+4. Help readers understand what's at stake for their business
+
+Return a JSON object with "title" and "content" keys. The title should reference the key regulatory focus. Return ONLY valid JSON.`;
+
+    const policyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [{ role: 'user', content: policyPrompt }],
+        max_tokens: 200,
+        temperature: 0.7,
+      }),
+    });
+
+    if (policyResponse.ok) {
+      const policyData = await policyResponse.json();
+      const policyContent = policyData.choices?.[0]?.message?.content?.trim() || '';
+      try {
+        const cleaned = policyContent.replace(/```json\n?|\n?```/g, '').trim();
+        worthWatching.policy = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('Failed to parse policy JSON:', e);
+        worthWatching.policy = { title: 'Regulation Watch', content: policyContent };
+      }
+    }
 
     // Generate one-sentence summaries for each article
     console.log('Generating article summaries...');
@@ -185,7 +352,7 @@ The sentence should:
 
 Return ONLY the sentence, no quotes.`;
 
-      const summaryResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+      const summaryResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${lovableApiKey}`,
@@ -246,7 +413,6 @@ Return ONLY the sentence, no quotes.`;
         summaries,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
-          worth_watching: worthWatching.split(/\s+/).length,
         },
       }),
       {

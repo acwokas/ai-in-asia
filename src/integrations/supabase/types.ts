@@ -1851,7 +1851,7 @@ export type Database = {
           total_opened: number | null
           total_sent: number | null
           updated_at: string
-          worth_watching: string | null
+          worth_watching: Json | null
         }
         Insert: {
           ai_generated_at?: string | null
@@ -1877,7 +1877,7 @@ export type Database = {
           total_opened?: number | null
           total_sent?: number | null
           updated_at?: string
-          worth_watching?: string | null
+          worth_watching?: Json | null
         }
         Update: {
           ai_generated_at?: string | null
@@ -1903,7 +1903,7 @@ export type Database = {
           total_opened?: number | null
           total_sent?: number | null
           updated_at?: string
-          worth_watching?: string | null
+          worth_watching?: Json | null
         }
         Relationships: [
           {
