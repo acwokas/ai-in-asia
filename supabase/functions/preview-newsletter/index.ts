@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SITE_URL = 'https://aiinasia.com';
-const LOGO_URL = 'https://aiinasia.com/logos/aiinasia-wordmark.png';
+const LOGO_URL = 'https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/aiinasia-wordmark.png';
 const ICON_URL = 'https://aiinasia.com/icons/aiinasia-512.png';
 
 interface WorthWatchingSection {
