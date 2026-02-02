@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const SITE_URL = 'https://aiinasia.com';
+const LOGO_URL = 'https://aiinasia.com/icons/aiinasia-512.png';
 
 interface WorthWatchingSection {
   title: string;
@@ -34,33 +35,45 @@ function generateNewsletterHTML(
 
   const worthWatching: WorthWatching = edition.worth_watching || {};
 
-  // Generate article cards HTML
-  const articlesHtml = topStories?.map((story: any, index: number) => `
+  // Generate featured story (first article - full width with image)
+  const featuredStory = topStories?.[0];
+  const remainingStories = topStories?.slice(1) || [];
+
+  const featuredHtml = featuredStory ? `
     <tr>
-      <td style="padding: 0 0 20px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+      <td style="padding: 0 0 24px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          ${featuredStory.articles.featured_image_url ? `
           <tr>
-            <td style="padding: 24px;">
+            <td>
+              <a href="${SITE_URL}/article/${featuredStory.articles.slug}" style="display: block;">
+                <img src="${featuredStory.articles.featured_image_url}" alt="${featuredStory.articles.title}" width="100%" style="display: block; width: 100%; height: auto; max-height: 280px; object-fit: cover;" />
+              </a>
+            </td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 28px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
-                    <span style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Signal ${index + 1}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top: 12px;">
-                    <a href="${SITE_URL}/article/${story.articles.slug}" style="color: #0f172a; text-decoration: none; font-size: 20px; font-weight: 700; line-height: 1.3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${story.articles.title}</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top: 12px;">
-                    <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0; font-family: Georgia, 'Times New Roman', serif;">${story.ai_summary || story.articles.excerpt || ''}</p>
+                    <span style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🔥 Lead Story</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding-top: 16px;">
-                    <a href="${SITE_URL}/article/${story.articles.slug}" style="display: inline-block; color: #6366f1; font-size: 14px; font-weight: 600; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                      Read full story →
+                    <a href="${SITE_URL}/article/${featuredStory.articles.slug}" style="color: #0f172a; text-decoration: none; font-size: 24px; font-weight: 800; line-height: 1.25; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${featuredStory.articles.title}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 14px;">
+                    <p style="color: #475569; font-size: 16px; line-height: 1.7; margin: 0; font-family: Georgia, 'Times New Roman', serif;">${featuredStory.ai_summary || featuredStory.articles.excerpt || ''}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px;">
+                    <a href="${SITE_URL}/article/${featuredStory.articles.slug}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                      Read Full Story →
                     </a>
                   </td>
                 </tr>
@@ -70,68 +83,91 @@ function generateNewsletterHTML(
         </table>
       </td>
     </tr>
-  `).join('') || '';
+  ` : '';
 
-  // Worth Watching cards
+  // Generate remaining article cards with thumbnails
+  const articlesHtml = remainingStories.map((story: any, index: number) => `
+    <tr>
+      <td style="padding: 0 0 16px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
+          <tr>
+            ${story.articles.featured_image_url ? `
+            <td width="140" style="vertical-align: top;">
+              <a href="${SITE_URL}/article/${story.articles.slug}" style="display: block;">
+                <img src="${story.articles.featured_image_url}" alt="" width="140" height="140" style="display: block; width: 140px; height: 140px; object-fit: cover;" />
+              </a>
+            </td>
+            ` : ''}
+            <td style="padding: 20px; vertical-align: top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <span style="display: inline-block; background: #f1f5f9; color: #6366f1; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Signal ${index + 2}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 8px;">
+                    <a href="${SITE_URL}/article/${story.articles.slug}" style="color: #0f172a; text-decoration: none; font-size: 17px; font-weight: 700; line-height: 1.3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${story.articles.title}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 8px;">
+                    <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin: 0; font-family: Georgia, 'Times New Roman', serif;">${(story.ai_summary || story.articles.excerpt || '').slice(0, 120)}...</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `).join('');
+
+  // Worth Watching cards with icons
   const worthWatchingCards = [];
   if (worthWatching.trends) {
-    worthWatchingCards.push({
-      icon: '📈',
-      color: '#3b82f6',
-      bgColor: '#eff6ff',
-      ...worthWatching.trends
-    });
+    worthWatchingCards.push({ icon: '📈', color: '#3b82f6', bgColor: '#eff6ff', borderColor: '#3b82f6', ...worthWatching.trends });
   }
   if (worthWatching.events) {
-    worthWatchingCards.push({
-      icon: '📅',
-      color: '#f59e0b',
-      bgColor: '#fffbeb',
-      ...worthWatching.events
-    });
+    worthWatchingCards.push({ icon: '📅', color: '#f59e0b', bgColor: '#fffbeb', borderColor: '#f59e0b', ...worthWatching.events });
   }
   if (worthWatching.spotlight) {
-    worthWatchingCards.push({
-      icon: '🏢',
-      color: '#22c55e',
-      bgColor: '#f0fdf4',
-      ...worthWatching.spotlight
-    });
+    worthWatchingCards.push({ icon: '🚀', color: '#22c55e', bgColor: '#f0fdf4', borderColor: '#22c55e', ...worthWatching.spotlight });
   }
   if (worthWatching.policy) {
-    worthWatchingCards.push({
-      icon: '⚖️',
-      color: '#a855f7',
-      bgColor: '#faf5ff',
-      ...worthWatching.policy
-    });
+    worthWatchingCards.push({ icon: '⚖️', color: '#a855f7', bgColor: '#faf5ff', borderColor: '#a855f7', ...worthWatching.policy });
   }
 
   const worthWatchingHtml = worthWatchingCards.length > 0 ? `
     <tr>
-      <td style="padding: 40px 0;">
+      <td style="padding: 32px 0;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td style="padding-bottom: 20px;">
-              <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Worth Watching</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <span style="font-size: 24px; vertical-align: middle;">👀</span>
+                    <span style="font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">Worth Watching</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           ${worthWatchingCards.map(card => `
           <tr>
             <td style="padding-bottom: 12px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: ${card.bgColor}; border-radius: 12px; border-left: 4px solid ${card.color};">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: ${card.bgColor}; border-radius: 12px; border-left: 4px solid ${card.borderColor};">
                 <tr>
-                  <td style="padding: 16px 20px;">
+                  <td style="padding: 18px 20px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td>
-                          <span style="font-size: 16px; margin-right: 8px;">${card.icon}</span>
-                          <span style="font-size: 14px; font-weight: 700; color: ${card.color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${card.title}</span>
+                        <td width="40" style="vertical-align: top;">
+                          <span style="font-size: 24px;">${card.icon}</span>
                         </td>
-                      </tr>
-                      <tr>
-                        <td style="padding-top: 8px;">
-                          <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5; font-family: Georgia, 'Times New Roman', serif;">${card.content}</p>
+                        <td style="vertical-align: top;">
+                          <span style="font-size: 15px; font-weight: 700; color: ${card.color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${card.title}</span>
+                          <p style="margin: 6px 0 0 0; font-size: 14px; color: #374151; line-height: 1.6; font-family: Georgia, 'Times New Roman', serif;">${card.content}</p>
                         </td>
                       </tr>
                     </table>
@@ -161,146 +197,147 @@ function generateNewsletterHTML(
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #0f172a; -webkit-font-smoothing: antialiased;">
   
   <!-- Wrapper -->
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f172a;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         
         <!-- Container -->
         <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
           
-          <!-- Hero Header -->
+          <!-- Hero Header with Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); border-radius: 16px 16px 0 0; padding: 48px 40px; text-align: center;">
+            <td style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); padding: 40px 40px 48px 40px; text-align: center;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
                     <a href="${SITE_URL}" style="text-decoration: none;">
-                      <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                        AI in <span style="background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ASIA</span>
+                      <img src="${LOGO_URL}" alt="AI in ASIA" width="80" height="80" style="display: block; width: 80px; height: 80px; border-radius: 20px; margin: 0 auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 20px;">
+                    <a href="${SITE_URL}" style="text-decoration: none;">
+                      <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                        Weekly Brief
                       </h1>
                     </a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding-top: 8px;">
-                    <p style="margin: 0; font-size: 15px; color: #94a3b8; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">Weekly Brief</p>
+                    <p style="margin: 0; font-size: 15px; color: #94a3b8; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">What matters in artificial intelligence across Asia</p>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 20px;">
-                    <span style="display: inline-block; background: rgba(255,255,255,0.1); color: #e2e8f0; font-size: 13px; padding: 8px 16px; border-radius: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${editionDateFormatted}</span>
+                  <td align="center" style="padding-top: 24px;">
+                    <span style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; font-size: 12px; font-weight: 600; padding: 10px 20px; border-radius: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${editionDateFormatted}</span>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Main Content Area -->
+          <!-- Editor's Note - Distinctive styling -->
+          ${edition.editor_note ? `
           <tr>
-            <td style="background: #f8fafc; padding: 40px 32px;">
-              
-              <!-- Editor's Note -->
-              ${edition.editor_note ? `
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 40px;">
-                <tr>
-                  <td>
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-                      <tr>
-                        <td style="background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); height: 4px;"></td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 24px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                              <td>
-                                <span style="font-size: 13px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Editor's Note</span>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding-top: 16px;">
-                                <p style="margin: 0; font-size: 16px; color: #334155; line-height: 1.8; font-family: Georgia, 'Times New Roman', serif;">${edition.editor_note}</p>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              ` : ''}
-
-              <!-- This Week's Signals -->
-              ${topStories && topStories.length > 0 ? `
+            <td style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 32px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding-bottom: 20px;">
-                    <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">This Week's Signals</h2>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">✍️ Editor's Note</span>
                   </td>
                 </tr>
+                <tr>
+                  <td style="padding-top: 14px;">
+                    <p style="margin: 0; font-size: 17px; color: #ffffff; line-height: 1.75; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">"${edition.editor_note}"</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- Main Content Area -->
+          <tr>
+            <td style="background: #f1f5f9; padding: 32px 24px;">
+              
+              <!-- Section Header -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td>
+                    <span style="font-size: 24px; vertical-align: middle;">📡</span>
+                    <span style="font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">This Week's Signals</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Featured Story -->
+              ${featuredHtml}
+
+              <!-- Remaining Stories -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 ${articlesHtml}
               </table>
-              ` : ''}
 
               <!-- Worth Watching -->
               ${worthWatchingHtml}
 
-              <!-- Policy Atlas Feature -->
-              ${policyArticle ? `
-              <tr>
-                <td style="padding-top: 20px;">
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; overflow: hidden;">
-                    <tr>
-                      <td style="padding: 28px;">
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                          <tr>
-                            <td>
-                              <span style="font-size: 12px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🗺️ From the AI Policy Atlas</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding-top: 12px;">
-                              <a href="${SITE_URL}/article/${policyArticle.slug}" style="color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; line-height: 1.4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${policyArticle.title}</a>
-                            </td>
-                          </tr>
-                          ${policyArticle.country || policyArticle.region ? `
-                          <tr>
-                            <td style="padding-top: 8px;">
-                              <p style="margin: 0; font-size: 14px; color: #94a3b8; font-family: Georgia, 'Times New Roman', serif;">Explore the latest regulatory developments${policyArticle.country ? ` in ${policyArticle.country}` : ''}${policyArticle.region ? ` across ${policyArticle.region}` : ''}.</p>
-                            </td>
-                          </tr>
-                          ` : ''}
-                          <tr>
-                            <td style="padding-top: 16px;">
-                              <a href="${SITE_URL}/article/${policyArticle.slug}" style="display: inline-block; background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); color: #ffffff; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Policy →</a>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              ` : ''}
-
             </td>
           </tr>
 
-          <!-- CTA Section -->
+          <!-- Policy Atlas Feature -->
+          ${policyArticle ? `
           <tr>
-            <td style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 32px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 32px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="center">
-                    <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Stay ahead of the curve</h3>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; color: #a5b4fc; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🗺️ From the AI Policy Atlas</span>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 12px;">
-                    <p style="margin: 0; font-size: 15px; color: rgba(255,255,255,0.85); font-family: Georgia, 'Times New Roman', serif;">Explore more coverage on AI across Asia.</p>
+                  <td style="padding-top: 14px;">
+                    <a href="${SITE_URL}/article/${policyArticle.slug}" style="color: #ffffff; text-decoration: none; font-size: 20px; font-weight: 700; line-height: 1.35; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${policyArticle.title}</a>
+                  </td>
+                </tr>
+                ${policyArticle.country || policyArticle.region ? `
+                <tr>
+                  <td style="padding-top: 10px;">
+                    <p style="margin: 0; font-size: 14px; color: #c7d2fe; font-family: Georgia, 'Times New Roman', serif;">Explore the latest regulatory developments${policyArticle.country ? ` in ${policyArticle.country}` : ''}${policyArticle.region ? ` across ${policyArticle.region}` : ''}.</p>
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding-top: 20px;">
+                    <a href="${SITE_URL}/article/${policyArticle.slug}" style="display: inline-block; background: #ffffff; color: #312e81; font-size: 13px; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Policy →</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- CTA Section -->
+          <tr>
+            <td style="background: #ffffff; padding: 40px 32px; text-align: center;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <span style="font-size: 32px;">🚀</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 16px;">
+                    <h3 style="margin: 0; font-size: 22px; font-weight: 800; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Stay ahead of the curve</h3>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 10px;">
+                    <p style="margin: 0; font-size: 15px; color: #64748b; font-family: Georgia, 'Times New Roman', serif;">Explore more AI coverage from across Asia.</p>
                   </td>
                 </tr>
                 <tr>
@@ -308,10 +345,10 @@ function generateNewsletterHTML(
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td style="padding-right: 12px;">
-                          <a href="${SITE_URL}/articles" style="display: inline-block; background: #ffffff; color: #6366f1; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Read Articles</a>
+                          <a href="${SITE_URL}/articles" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Read Articles</a>
                         </td>
                         <td>
-                          <a href="${SITE_URL}/guides" style="display: inline-block; background: rgba(255,255,255,0.15); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Guides</a>
+                          <a href="${SITE_URL}/guides" style="display: inline-block; background: #f1f5f9; color: #0f172a; font-size: 14px; font-weight: 600; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Guides</a>
                         </td>
                       </tr>
                     </table>
@@ -327,11 +364,16 @@ function generateNewsletterHTML(
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <a href="${SITE_URL}" style="color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">AI in ASIA</a>
+                    <img src="${LOGO_URL}" alt="AI in ASIA" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 12px; margin: 0 auto;" />
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding-top: 16px;">
+                    <a href="${SITE_URL}" style="color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">AI in ASIA</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 8px;">
                     <p style="margin: 0; font-size: 13px; color: #64748b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                       Independent, Asia-first AI coverage.
                     </p>
@@ -389,10 +431,10 @@ Deno.serve(async (req) => {
       throw new Error('Edition not found');
     }
 
-    // Fetch top stories
+    // Fetch top stories with featured images
     const { data: topStories } = await supabase
       .from('newsletter_top_stories')
-      .select('article_id, position, ai_summary, articles(id, title, slug, excerpt)')
+      .select('article_id, position, ai_summary, articles(id, title, slug, excerpt, featured_image_url)')
       .eq('edition_id', edition_id)
       .order('position')
       .limit(4);
