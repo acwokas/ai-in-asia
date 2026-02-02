@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 const SITE_URL = 'https://aiinasia.com';
-const LOGO_URL = 'https://aiinasia.com/icons/aiinasia-512.png';
+const LOGO_URL = 'https://aiinasia.com/logos/aiinasia-wordmark.png';
+const ICON_URL = 'https://aiinasia.com/icons/aiinasia-512.png';
 
 interface WorthWatchingSection {
   title: string;
@@ -123,19 +124,19 @@ function generateNewsletterHTML(
     </tr>
   `).join('');
 
-  // Worth Watching cards with icons
+  // Worth Watching cards with icons - fixed colors for readability
   const worthWatchingCards = [];
   if (worthWatching.trends) {
-    worthWatchingCards.push({ icon: '📈', color: '#3b82f6', bgColor: '#eff6ff', borderColor: '#3b82f6', ...worthWatching.trends });
+    worthWatchingCards.push({ icon: '📈', color: '#1e40af', bgColor: '#eff6ff', borderColor: '#3b82f6', textColor: '#1e3a5f', ...worthWatching.trends });
   }
   if (worthWatching.events) {
-    worthWatchingCards.push({ icon: '📅', color: '#f59e0b', bgColor: '#fffbeb', borderColor: '#f59e0b', ...worthWatching.events });
+    worthWatchingCards.push({ icon: '📅', color: '#b45309', bgColor: '#fffbeb', borderColor: '#f59e0b', textColor: '#78350f', ...worthWatching.events });
   }
   if (worthWatching.spotlight) {
-    worthWatchingCards.push({ icon: '🚀', color: '#22c55e', bgColor: '#f0fdf4', borderColor: '#22c55e', ...worthWatching.spotlight });
+    worthWatchingCards.push({ icon: '🚀', color: '#166534', bgColor: '#f0fdf4', borderColor: '#22c55e', textColor: '#14532d', ...worthWatching.spotlight });
   }
   if (worthWatching.policy) {
-    worthWatchingCards.push({ icon: '⚖️', color: '#a855f7', bgColor: '#faf5ff', borderColor: '#a855f7', ...worthWatching.policy });
+    worthWatchingCards.push({ icon: '⚖️', color: '#7e22ce', bgColor: '#faf5ff', borderColor: '#a855f7', textColor: '#581c87', ...worthWatching.policy });
   }
 
   const worthWatchingHtml = worthWatchingCards.length > 0 ? `
@@ -167,7 +168,7 @@ function generateNewsletterHTML(
                         </td>
                         <td style="vertical-align: top;">
                           <span style="font-size: 15px; font-weight: 700; color: ${card.color}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${card.title}</span>
-                          <p style="margin: 6px 0 0 0; font-size: 14px; color: #374151; line-height: 1.6; font-family: Georgia, 'Times New Roman', serif;">${card.content}</p>
+                          <p style="margin: 6px 0 0 0; font-size: 14px; color: ${card.textColor}; line-height: 1.6; font-family: Georgia, 'Times New Roman', serif;">${card.content}</p>
                         </td>
                       </tr>
                     </table>
@@ -209,22 +210,20 @@ function generateNewsletterHTML(
           
           <!-- Hero Header with Logo -->
           <tr>
-            <td style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); padding: 40px 40px 48px 40px; text-align: center;">
+            <td style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); padding: 40px 40px 32px 40px; text-align: center;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
                     <a href="${SITE_URL}" style="text-decoration: none;">
-                      <img src="${LOGO_URL}" alt="AI in ASIA" width="80" height="80" style="display: block; width: 80px; height: 80px; border-radius: 20px; margin: 0 auto;" />
+                      <img src="${LOGO_URL}" alt="AI in ASIA" width="280" style="display: block; width: 280px; max-width: 100%; height: auto; margin: 0 auto;" />
                     </a>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 20px;">
-                    <a href="${SITE_URL}" style="text-decoration: none;">
-                      <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                        Weekly Brief
-                      </h1>
-                    </a>
+                  <td align="center" style="padding-top: 24px;">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                      Weekly Brief
+                    </h1>
                   </td>
                 </tr>
                 <tr>
@@ -233,7 +232,7 @@ function generateNewsletterHTML(
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 24px;">
+                  <td align="center" style="padding-top: 20px;">
                     <span style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; font-size: 12px; font-weight: 600; padding: 10px 20px; border-radius: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${editionDateFormatted}</span>
                   </td>
                 </tr>
@@ -241,19 +240,36 @@ function generateNewsletterHTML(
             </td>
           </tr>
 
-          <!-- Editor's Note - Distinctive styling -->
-          ${edition.editor_note ? `
+          <!-- Warm Welcome Section -->
           <tr>
-            <td style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 32px;">
+            <td style="background: #ffffff; padding: 32px 40px; border-bottom: 1px solid #e2e8f0;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
-                    <span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">✍️ Editor's Note</span>
+                    <p style="margin: 0; font-size: 17px; color: #334155; line-height: 1.7; font-family: Georgia, 'Times New Roman', serif;">
+                      👋 <strong style="color: #0f172a;">Welcome back!</strong> Here's your curated roundup of the most significant AI developments shaping Asia this week. From groundbreaking research to policy shifts, we've distilled the noise into signals that matter.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Editor's Note - Multi-paragraph with spacing -->
+          ${edition.editor_note ? `
+          <tr>
+            <td style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 36px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">✍️ Editor's Note</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding-top: 14px;">
-                    <p style="margin: 0; font-size: 17px; color: #ffffff; line-height: 1.75; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">"${edition.editor_note}"</p>
+                  <td style="padding-top: 18px;">
+                    ${edition.editor_note.split(/\n\n|\. (?=[A-Z])/).slice(0, 3).map((paragraph: string, idx: number) => `
+                      <p style="margin: ${idx === 0 ? '0' : '16px 0 0 0'}; font-size: 16px; color: #ffffff; line-height: 1.8; font-family: Georgia, 'Times New Roman', serif; ${idx === 0 ? 'font-style: italic;' : ''}">${idx === 0 ? '"' : ''}${paragraph.trim()}${idx === 0 ? '"' : ''}</p>
+                    `).join('')}
                   </td>
                 </tr>
               </table>
@@ -360,28 +376,32 @@ function generateNewsletterHTML(
 
           <!-- Footer -->
           <tr>
-            <td style="background: #0f172a; border-radius: 0 0 16px 16px; padding: 32px; text-align: center;">
+            <td style="background: #0f172a; border-radius: 0 0 16px 16px; padding: 40px 32px; text-align: center;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <img src="${LOGO_URL}" alt="AI in ASIA" width="48" height="48" style="display: block; width: 48px; height: 48px; border-radius: 12px; margin: 0 auto;" />
+                    <img src="${ICON_URL}" alt="AI in ASIA" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 14px; margin: 0 auto;" />
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 16px;">
-                    <a href="${SITE_URL}" style="color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">AI in ASIA</a>
+                  <td align="center" style="padding-top: 20px;">
+                    <a href="${SITE_URL}" style="text-decoration: none;">
+                      <img src="${LOGO_URL}" alt="AI in ASIA" width="160" style="display: block; width: 160px; max-width: 100%; height: auto; margin: 0 auto;" />
+                    </a>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 8px;">
-                    <p style="margin: 0; font-size: 13px; color: #64748b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                  <td align="center" style="padding-top: 12px;">
+                    <p style="margin: 0; font-size: 14px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                       Independent, Asia-first AI coverage.
                     </p>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 20px;">
-                    <a href="#" style="color: #94a3b8; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Unsubscribe</a>
+                  <td align="center" style="padding-top: 24px;">
+                    <a href="#" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Unsubscribe</a>
+                    <span style="color: #475569; margin: 0 8px;">•</span>
+                    <a href="${SITE_URL}/privacy" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Privacy</a>
                   </td>
                 </tr>
               </table>
