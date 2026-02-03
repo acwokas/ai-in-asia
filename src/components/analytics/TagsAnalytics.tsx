@@ -19,6 +19,7 @@ interface Article {
   ai_tags: string[] | null;
   primary_category_id: string | null;
   published_at: string | null;
+  article_type: string | null;
 }
 
 interface PageStats {
@@ -102,7 +103,17 @@ export function TagsAnalytics({
     articlesData.forEach(article => {
       const allTags = [...(article.topic_tags || []), ...(article.ai_tags || [])];
       const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
-      const articlePath = `/${categorySlug}/${article.slug}`;
+      
+      // Construct path based on article type
+      let articlePath: string;
+      if (article.article_type === 'policy_article') {
+        // Policy articles use /ai-policy-atlas/{region}/{slug}
+        articlePath = `/ai-policy-atlas/${categorySlug}/${article.slug}`;
+      } else {
+        // Standard articles use /{category}/{slug}
+        articlePath = `/${categorySlug}/${article.slug}`;
+      }
+      
       const stats = pageStats[articlePath];
 
       allTags.forEach(tag => {
