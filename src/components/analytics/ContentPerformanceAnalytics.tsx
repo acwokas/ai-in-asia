@@ -20,6 +20,7 @@ interface Article {
   primary_category_id: string | null;
   published_at: string | null;
   content: any;
+  article_type: string | null;
 }
 
 interface PageStats {
@@ -58,14 +59,22 @@ export function ContentPerformanceAnalytics({
     [categoriesData]
   );
 
+  // Helper to get article path based on type
+  const getArticlePath = (article: Article) => {
+    const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+    if (article.article_type === 'policy_article') {
+      return `/ai-policy-atlas/${categorySlug}/${article.slug}`;
+    }
+    return `/${categorySlug}/${article.slug}`;
+  };
+
   // Image vs No-Image performance
   const imageImpact = useMemo(() => {
     const withImage = { count: 0, views: 0, totalTime: 0, totalScroll: 0, scrollCount: 0 };
     const withoutImage = { count: 0, views: 0, totalTime: 0, totalScroll: 0, scrollCount: 0 };
 
     articlesData.forEach(article => {
-      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
-      const articlePath = `/${categorySlug}/${article.slug}`;
+      const articlePath = getArticlePath(article);
       const stats = pageStats[articlePath];
       
       const target = article.featured_image_url ? withImage : withoutImage;
@@ -114,8 +123,7 @@ export function ContentPerformanceAnalytics({
       else if (readTime <= 15) bucket = 'Long (7-15 min)';
       else bucket = 'Very Long (15+ min)';
 
-      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
-      const articlePath = `/${categorySlug}/${article.slug}`;
+      const articlePath = getArticlePath(article);
       const stats = pageStats[articlePath];
 
       buckets[bucket].count++;
@@ -140,8 +148,7 @@ export function ContentPerformanceAnalytics({
   const scatterData = useMemo(() => {
     return articlesData
       .map(article => {
-        const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
-        const articlePath = `/${categorySlug}/${article.slug}`;
+        const articlePath = getArticlePath(article);
         const stats = pageStats[articlePath];
         return {
           readTime: article.reading_time_minutes || 3,
@@ -151,7 +158,7 @@ export function ContentPerformanceAnalytics({
       })
       .filter(a => a.views > 0)
       .slice(0, 100); // Limit for performance
-  }, [articlesData, categoryLookup, pageStats]);
+  }, [articlesData, categoryLookup, pageStats, getArticlePath]);
 
   // Related articles effectiveness (inferred from sessions that visit multiple articles)
   const relatedArticlesEffectiveness = useMemo(() => {
