@@ -1,0 +1,926 @@
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Header from "@/components/Header";
+import { 
+  TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
+  AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
+  ChevronRight, ExternalLink, Target, Zap, Users, Activity,
+  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map
+} from "lucide-react";
+import { format, subDays, startOfDay, endOfDay, differenceInDays } from "date-fns";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area, Treemap, Sankey, Layer
+} from "recharts";
+
+const COLORS = ['hsl(var(--primary))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+
+// Content health status based on views and recency
+const getContentHealth = (views: number, avgViews: number, daysSincePublish: number) => {
+  const viewRatio = views / Math.max(avgViews, 1);
+  
+  if (views === 0) return { status: 'dead', color: 'bg-gray-500', label: 'Never Viewed', icon: Ghost };
+  if (daysSincePublish < 7 && views > 0) return { status: 'new', color: 'bg-blue-500', label: 'New Content', icon: Zap };
+  if (viewRatio > 2) return { status: 'hot', color: 'bg-red-500', label: 'Hot', icon: Flame };
+  if (viewRatio > 1) return { status: 'performing', color: 'bg-green-500', label: 'Performing Well', icon: TrendingUp };
+  if (viewRatio > 0.5) return { status: 'average', color: 'bg-yellow-500', label: 'Average', icon: Minus };
+  return { status: 'cold', color: 'bg-cyan-500', label: 'Cold', icon: Snowflake };
+};
+
+const ContentInsights = () => {
+  const [dateRange, setDateRange] = useState("30");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
+  const endDate = endOfDay(new Date());
+
+  // Fetch all pageviews with aggregation
+  const { data: pageviewsData, isLoading: pageviewsLoading } = useQuery({
+    queryKey: ["content-insights-pageviews", dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("analytics_pageviews")
+        .select("page_path, time_on_page_seconds, scroll_depth_percent, session_id, viewed_at, is_exit")
+        .gte("viewed_at", startDate.toISOString())
+        .lte("viewed_at", endDate.toISOString())
+        .limit(10000);
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch all published articles to identify never-viewed ones
+  const { data: articlesData, isLoading: articlesLoading } = useQuery({
+    queryKey: ["content-insights-articles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, slug, published_at, view_count, primary_category_id, article_type")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch categories for mapping
+  const { data: categoriesData } = useQuery({
+    queryKey: ["content-insights-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug");
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Static pages to track
+  const staticPages = [
+    { path: '/privacy', name: 'Privacy Policy', expected: 'low' },
+    { path: '/terms', name: 'Terms of Service', expected: 'low' },
+    { path: '/cookie-policy', name: 'Cookie Policy', expected: 'low' },
+    { path: '/about', name: 'About', expected: 'medium' },
+    { path: '/contact', name: 'Contact', expected: 'medium' },
+    { path: '/editorial-standards', name: 'Editorial Standards', expected: 'low' },
+    { path: '/media-and-partners', name: 'Media & Partners', expected: 'low' },
+    { path: '/contribute', name: 'Contribute', expected: 'low' },
+    { path: '/newsletter', name: 'Newsletter', expected: 'medium' },
+    { path: '/guides', name: 'Guides', expected: 'medium' },
+    { path: '/tools', name: 'AI Tools', expected: 'medium' },
+    { path: '/prompts', name: 'Prompts', expected: 'medium' },
+    { path: '/events', name: 'Events', expected: 'low' },
+    { path: '/ai-policy-atlas', name: 'AI Policy Atlas', expected: 'medium' },
+  ];
+
+  // Category pages to track
+  const categoryPages = [
+    { path: '/news', name: 'News' },
+    { path: '/business', name: 'Business' },
+    { path: '/life', name: 'Life' },
+    { path: '/learn', name: 'Learn' },
+    { path: '/create', name: 'Create' },
+    { path: '/voices', name: 'Voices' },
+  ];
+
+  // Aggregate pageview data
+  const pageStats = useMemo(() => {
+    const stats: Record<string, { 
+      views: number; 
+      uniqueSessions: Set<string>; 
+      totalTime: number; 
+      totalScroll: number; 
+      scrollCount: number;
+      exits: number;
+    }> = {};
+    
+    pageviewsData?.forEach(pv => {
+      const path = pv.page_path?.split('?')[0] || '/';
+      if (!stats[path]) {
+        stats[path] = { 
+          views: 0, 
+          uniqueSessions: new Set(), 
+          totalTime: 0, 
+          totalScroll: 0,
+          scrollCount: 0,
+          exits: 0
+        };
+      }
+      stats[path].views++;
+      stats[path].uniqueSessions.add(pv.session_id);
+      stats[path].totalTime += pv.time_on_page_seconds || 0;
+      if (pv.scroll_depth_percent && pv.scroll_depth_percent > 0) {
+        stats[path].totalScroll += pv.scroll_depth_percent;
+        stats[path].scrollCount++;
+      }
+      if (pv.is_exit) stats[path].exits++;
+    });
+    
+    return stats;
+  }, [pageviewsData]);
+
+  // Calculate average views for comparison
+  const avgArticleViews = useMemo(() => {
+    const articlePaths = Object.entries(pageStats)
+      .filter(([path]) => path.match(/^\/[^/]+\/[^/]+$/) && !path.startsWith('/admin') && !path.startsWith('/editor'))
+      .map(([, stats]) => stats.views);
+    
+    if (articlePaths.length === 0) return 1;
+    return articlePaths.reduce((a, b) => a + b, 0) / articlePaths.length;
+  }, [pageStats]);
+
+  // Get static page performance
+  const staticPageStats = useMemo(() => {
+    return staticPages.map(page => {
+      const stats = pageStats[page.path];
+      return {
+        ...page,
+        views: stats?.views || 0,
+        uniqueVisitors: stats?.uniqueSessions?.size || 0,
+        avgTime: stats?.views ? Math.round(stats.totalTime / stats.views) : 0,
+        avgScroll: stats?.scrollCount ? Math.round(stats.totalScroll / stats.scrollCount) : 0,
+      };
+    }).sort((a, b) => b.views - a.views);
+  }, [pageStats]);
+
+  // Get category page performance
+  const categoryPageStats = useMemo(() => {
+    return categoryPages.map(page => {
+      const stats = pageStats[page.path];
+      return {
+        ...page,
+        views: stats?.views || 0,
+        uniqueVisitors: stats?.uniqueSessions?.size || 0,
+        avgTime: stats?.views ? Math.round(stats.totalTime / stats.views) : 0,
+        exitRate: stats?.views ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
+      };
+    }).sort((a, b) => b.views - a.views);
+  }, [pageStats]);
+
+  // Get top performing articles
+  const topArticles = useMemo(() => {
+    return Object.entries(pageStats)
+      .filter(([path]) => {
+        // Match article paths like /category/slug
+        return path.match(/^\/[^/]+\/[^/]+$/) && 
+               !path.startsWith('/admin') && 
+               !path.startsWith('/editor') &&
+               !path.startsWith('/author');
+      })
+      .map(([path, stats]) => ({
+        path,
+        views: stats.views,
+        uniqueVisitors: stats.uniqueSessions.size,
+        avgTime: stats.views > 0 ? Math.round(stats.totalTime / stats.views) : 0,
+        avgScroll: stats.scrollCount > 0 ? Math.round(stats.totalScroll / stats.scrollCount) : 0,
+        exitRate: stats.views > 0 ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
+        health: getContentHealth(stats.views, avgArticleViews, 30),
+      }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 20);
+  }, [pageStats, avgArticleViews]);
+
+  // Get cold/neglected articles
+  const coldArticles = useMemo(() => {
+    return Object.entries(pageStats)
+      .filter(([path]) => {
+        return path.match(/^\/[^/]+\/[^/]+$/) && 
+               !path.startsWith('/admin') && 
+               !path.startsWith('/editor');
+      })
+      .map(([path, stats]) => ({
+        path,
+        views: stats.views,
+        health: getContentHealth(stats.views, avgArticleViews, 30),
+      }))
+      .filter(a => a.health.status === 'cold' || a.health.status === 'dead')
+      .sort((a, b) => a.views - b.views)
+      .slice(0, 20);
+  }, [pageStats, avgArticleViews]);
+
+  // Get never-viewed articles (from articles table)
+  const neverViewedArticles = useMemo(() => {
+    if (!articlesData) return [];
+    
+    const viewedPaths = new Set(Object.keys(pageStats));
+    const categoryMapData = categoriesData?.map(c => [c.id, c.slug] as const) || [];
+    const categoryLookup = Object.fromEntries(categoryMapData);
+    return articlesData
+      .filter(article => {
+        const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+        const articlePath = `/${categorySlug}/${article.slug}`;
+        return !viewedPaths.has(articlePath) && (article.view_count === 0 || article.view_count === null);
+      })
+      .map(article => {
+        const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+        const daysSincePublish = article.published_at 
+          ? differenceInDays(new Date(), new Date(article.published_at))
+          : 999;
+        return {
+          ...article,
+          path: `/${categorySlug}/${article.slug}`,
+          daysSincePublish,
+        };
+      })
+      .slice(0, 30);
+  }, [articlesData, pageStats, categoriesData]);
+
+  // Content type breakdown
+  const contentTypeBreakdown = useMemo(() => {
+    const types: Record<string, number> = {
+      'Homepage': 0,
+      'Articles': 0,
+      'Categories': 0,
+      'Static Pages': 0,
+      'Guides': 0,
+      'Tools/Prompts': 0,
+      'Other': 0,
+    };
+
+    Object.entries(pageStats).forEach(([pagePath, stats]) => {
+      if (pagePath === '/') types['Homepage'] += stats.views;
+      else if (pagePath.match(/^\/[^/]+\/[^/]+$/) && !pagePath.startsWith('/admin')) types['Articles'] += stats.views;
+      else if (categoryPages.some(c => c.path === pagePath)) types['Categories'] += stats.views;
+      else if (staticPages.some(s => s.path === pagePath)) types['Static Pages'] += stats.views;
+      else if (pagePath.startsWith('/guides')) types['Guides'] += stats.views;
+      else if (pagePath.startsWith('/tools') || pagePath.startsWith('/prompts')) types['Tools/Prompts'] += stats.views;
+      else if (!pagePath.startsWith('/admin') && !pagePath.startsWith('/editor')) types['Other'] += stats.views;
+    });
+
+    return Object.entries(types)
+      .filter(([, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+  }, [pageStats]);
+
+  // User flow patterns
+  const userFlows = useMemo(() => {
+    const flowCounts: Record<string, number> = {};
+    const sessionPages: Record<string, Array<{ path: string; time: string }>> = {};
+    
+    pageviewsData?.forEach(pv => {
+      const path = pv.page_path?.split('?')[0] || '/';
+      if (path.startsWith('/admin') || path.startsWith('/editor')) return;
+      
+      if (!sessionPages[pv.session_id]) sessionPages[pv.session_id] = [];
+      sessionPages[pv.session_id].push({ path, time: pv.viewed_at });
+    });
+
+    // Sort each session's pages by time and create flows
+    Object.values(sessionPages).forEach(pages => {
+      pages.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+      
+      if (pages.length >= 2) {
+        for (let i = 0; i < Math.min(pages.length - 1, 3); i++) {
+          const flow = `${pages[i].path} → ${pages[i + 1].path}`;
+          flowCounts[flow] = (flowCounts[flow] || 0) + 1;
+        }
+      }
+    });
+
+    return Object.entries(flowCounts)
+      .map(([flow, count]) => ({ flow, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15);
+  }, [pageviewsData]);
+
+  // Entry/landing pages
+  const landingPages = useMemo(() => {
+    const landings: Record<string, number> = {};
+    const sessionFirstPages: Record<string, { path: string; time: string }> = {};
+    
+    pageviewsData?.forEach(pv => {
+      const path = pv.page_path?.split('?')[0] || '/';
+      if (path.startsWith('/admin') || path.startsWith('/editor')) return;
+      
+      if (!sessionFirstPages[pv.session_id] || 
+          new Date(pv.viewed_at) < new Date(sessionFirstPages[pv.session_id].time)) {
+        sessionFirstPages[pv.session_id] = { path, time: pv.viewed_at };
+      }
+    });
+
+    Object.values(sessionFirstPages).forEach(({ path }) => {
+      landings[path] = (landings[path] || 0) + 1;
+    });
+
+    return Object.entries(landings)
+      .map(([path, count]) => ({ path, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [pageviewsData]);
+
+  // Exit pages
+  const exitPages = useMemo(() => {
+    const exits: Record<string, number> = {};
+    
+    Object.entries(pageStats).forEach(([pagePath, stats]) => {
+      if (!pagePath.startsWith('/admin') && !pagePath.startsWith('/editor') && stats.exits > 0) {
+        exits[pagePath] = stats.exits;
+      }
+    });
+
+    return Object.entries(exits)
+      .map(([exitPath, count]) => ({ path: exitPath, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [pageStats]);
+
+  const isLoading = pageviewsLoading || articlesLoading;
+
+  // Summary stats
+  const totalViews = Object.values(pageStats).reduce((sum, s) => sum + s.views, 0);
+  const totalArticleViews = topArticles.reduce((sum, a) => sum + a.views, 0);
+  const neverViewedCount = neverViewedArticles.length;
+  const coldContentCount = coldArticles.length;
+
+  const formatDuration = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-8 w-8 text-primary" />
+              Content Insights
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Understand what content performs, what's neglected, and how users flow through your site
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Last 7 days</SelectItem>
+                <SelectItem value="14">Last 14 days</SelectItem>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="60">Last 60 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" asChild>
+              <Link to="/admin/site-analytics">
+                Full Analytics <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                Total Pageviews
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{totalViews.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">Last {dateRange} days</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Flame className="h-4 w-4 text-orange-500" />
+                Hot Articles
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{topArticles.filter(a => a.health.status === 'hot').length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Performing 2x+ above average</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Snowflake className="h-4 w-4 text-cyan-500" />
+                Cold Content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{coldContentCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">Below average engagement</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-red-500/20 bg-red-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-red-600 flex items-center gap-2">
+                <Ghost className="h-4 w-4" />
+                Never Viewed
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-red-600">{neverViewedCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">Published but zero views</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="articles">Articles</TabsTrigger>
+            <TabsTrigger value="static">Static Pages</TabsTrigger>
+            <TabsTrigger value="flows">User Flows</TabsTrigger>
+            <TabsTrigger value="dead">Dead Content</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Content Type Breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Content Type Breakdown</CardTitle>
+                  <CardDescription>Where are your pageviews going?</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[300px]" />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={contentTypeBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                          outerRadius={100}
+                          dataKey="value"
+                        >
+                          {contentTypeBreakdown.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Category Performance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Category Performance</CardTitle>
+                  <CardDescription>How each category is performing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[300px]" />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={categoryPageStats} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="name" width={80} />
+                        <Tooltip />
+                        <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Top Entry & Exit Points */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ArrowUpRight className="h-5 w-5 text-green-500" />
+                    Top Entry Points
+                  </CardTitle>
+                  <CardDescription>Where users land first</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[250px]">
+                    <div className="space-y-2">
+                      {landingPages.map((page, i) => (
+                        <div key={page.path} className="flex items-center justify-between py-2 border-b last:border-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-sm w-6">{i + 1}.</span>
+                            <span className="text-sm truncate max-w-[200px]">{page.path}</span>
+                          </div>
+                          <Badge variant="secondary">{page.count} entries</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ArrowDownRight className="h-5 w-5 text-red-500" />
+                    Top Exit Points
+                  </CardTitle>
+                  <CardDescription>Where users leave</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[250px]">
+                    <div className="space-y-2">
+                      {exitPages.map((page, i) => (
+                        <div key={page.path} className="flex items-center justify-between py-2 border-b last:border-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-sm w-6">{i + 1}.</span>
+                            <span className="text-sm truncate max-w-[200px]">{page.path}</span>
+                          </div>
+                          <Badge variant="destructive">{page.count} exits</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Articles Tab */}
+          <TabsContent value="articles" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Performing Articles</CardTitle>
+                <CardDescription>Your best content by pageviews with engagement metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[400px]" />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Article</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Views</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Unique</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Avg Time</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Scroll %</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Exit Rate</th>
+                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topArticles.map((article) => {
+                          const HealthIcon = article.health.icon;
+                          return (
+                            <tr key={article.path} className="border-b hover:bg-muted/50">
+                              <td className="py-3 px-2">
+                                <Link 
+                                  to={article.path} 
+                                  className="text-sm hover:text-primary flex items-center gap-1 max-w-[300px] truncate"
+                                >
+                                  {article.path}
+                                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                </Link>
+                              </td>
+                              <td className="text-right py-3 px-2 font-medium">{article.views}</td>
+                              <td className="text-right py-3 px-2 text-muted-foreground">{article.uniqueVisitors}</td>
+                              <td className="text-right py-3 px-2 text-muted-foreground">{formatDuration(article.avgTime)}</td>
+                              <td className="text-right py-3 px-2">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Progress value={article.avgScroll} className="w-16 h-2" />
+                                  <span className="text-sm text-muted-foreground w-10">{article.avgScroll}%</span>
+                                </div>
+                              </td>
+                              <td className="text-right py-3 px-2 text-muted-foreground">{article.exitRate}%</td>
+                              <td className="text-center py-3 px-2">
+                                <Badge className={`${article.health.color} text-white`}>
+                                  <HealthIcon className="h-3 w-3 mr-1" />
+                                  {article.health.label}
+                                </Badge>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Static Pages Tab */}
+          <TabsContent value="static" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Static & Utility Pages</CardTitle>
+                <CardDescription>Performance of non-article pages like Privacy Policy, About, Contact, etc.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[400px]" />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Page</th>
+                          <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Path</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Views</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Unique</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Avg Time</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Scroll %</th>
+                          <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Expected</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {staticPageStats.map((page) => (
+                          <tr key={page.path} className="border-b hover:bg-muted/50">
+                            <td className="py-3 px-2 font-medium">{page.name}</td>
+                            <td className="py-3 px-2">
+                              <Link 
+                                to={page.path} 
+                                className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
+                              >
+                                {page.path}
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            </td>
+                            <td className="text-right py-3 px-2 font-medium">
+                              {page.views === 0 ? (
+                                <span className="text-red-500">0</span>
+                              ) : (
+                                page.views
+                              )}
+                            </td>
+                            <td className="text-right py-3 px-2 text-muted-foreground">{page.uniqueVisitors}</td>
+                            <td className="text-right py-3 px-2 text-muted-foreground">{formatDuration(page.avgTime)}</td>
+                            <td className="text-right py-3 px-2">
+                              <div className="flex items-center justify-end gap-2">
+                                <Progress value={page.avgScroll} className="w-16 h-2" />
+                                <span className="text-sm text-muted-foreground w-10">{page.avgScroll}%</span>
+                              </div>
+                            </td>
+                            <td className="text-center py-3 px-2">
+                              <Badge variant={page.expected === 'low' ? 'secondary' : 'default'}>
+                                {page.expected}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-2">Insights</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {staticPageStats.filter(p => p.views === 0).length > 0 && (
+                          <li className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                            {staticPageStats.filter(p => p.views === 0).length} static pages have zero views in the selected period
+                          </li>
+                        )}
+                        {staticPageStats.find(p => p.path === '/privacy' && p.views === 0) && (
+                          <li className="flex items-center gap-2">
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            Privacy Policy has no views - this is common as users rarely visit policy pages
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* User Flows Tab */}
+          <TabsContent value="flows" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Map className="h-5 w-5" />
+                  User Journey Patterns
+                </CardTitle>
+                <CardDescription>Most common page-to-page navigation flows</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[400px]" />
+                ) : (
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-3">
+                      {userFlows.map((flow, i) => (
+                        <div key={flow.flow} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground font-medium w-8">{i + 1}.</span>
+                            <span className="text-sm font-mono">{flow.flow}</span>
+                          </div>
+                          <Badge variant="outline">{flow.count} times</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Flow Visualization placeholder */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top User Paths</CardTitle>
+                <CardDescription>Visual representation of how users navigate</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[300px]" />
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={userFlows.slice(0, 10)} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis type="number" />
+                      <YAxis type="category" dataKey="flow" width={250} tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Dead Content Tab */}
+          <TabsContent value="dead" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Never Viewed */}
+              <Card className="border-red-500/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-red-600">
+                    <Ghost className="h-5 w-5" />
+                    Never Viewed Articles
+                  </CardTitle>
+                  <CardDescription>Published content with zero pageviews</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[400px]" />
+                  ) : neverViewedArticles.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Zap className="h-12 w-12 text-green-500 mb-4" />
+                      <p className="font-medium">All content has been viewed!</p>
+                      <p className="text-sm text-muted-foreground">Great job on content distribution</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[400px]">
+                      <div className="space-y-3">
+                        {neverViewedArticles.map((article) => (
+                          <div key={article.id} className="p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                            <Link 
+                              to={article.path}
+                              className="font-medium text-sm hover:text-primary line-clamp-2"
+                            >
+                              {article.title}
+                            </Link>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                              <span>{article.path}</span>
+                              <span>•</span>
+                              <span>{article.daysSincePublish} days old</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Cold Content */}
+              <Card className="border-cyan-500/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-cyan-600">
+                    <Snowflake className="h-5 w-5" />
+                    Cold Content
+                  </CardTitle>
+                  <CardDescription>Articles with below-average engagement</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[400px]" />
+                  ) : coldArticles.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Flame className="h-12 w-12 text-orange-500 mb-4" />
+                      <p className="font-medium">All content is performing well!</p>
+                      <p className="text-sm text-muted-foreground">No cold content detected</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[400px]">
+                      <div className="space-y-3">
+                        {coldArticles.map((article) => (
+                          <div key={article.path} className="flex items-center justify-between p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                            <Link 
+                              to={article.path}
+                              className="text-sm hover:text-primary truncate max-w-[200px]"
+                            >
+                              {article.path}
+                            </Link>
+                            <Badge variant="secondary">{article.views} views</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recommendations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {neverViewedArticles.length > 5 && (
+                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <AlertTriangle className="h-6 w-6 text-red-500 mb-2" />
+                      <h4 className="font-medium">Promote Dead Content</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {neverViewedArticles.length} articles have never been viewed. Consider sharing on social media or featuring in newsletters.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {coldArticles.length > 10 && (
+                    <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                      <Snowflake className="h-6 w-6 text-cyan-500 mb-2" />
+                      <h4 className="font-medium">Refresh Cold Content</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Consider updating headlines, adding internal links, or improving SEO for underperforming articles.
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <TrendingUp className="h-6 w-6 text-green-500 mb-2" />
+                    <h4 className="font-medium">Double Down on Winners</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Create follow-up content for your top-performing articles to capitalize on proven topics.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default ContentInsights;

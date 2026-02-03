@@ -106,6 +106,7 @@ const GuidesImport = lazy(() => import("./pages/GuidesImport"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const NewsletterPerformance = lazy(() => import("./pages/NewsletterPerformance"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
+const ContentInsights = lazy(() => import("./pages/ContentInsights"));
 const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
 const Contribute = lazy(() => import("./pages/Contribute"));
@@ -281,6 +282,7 @@ const App = () => (
               <Route path="/admin/newsletter-analytics" element={<NewsletterAnalytics />} />
               <Route path="/admin/newsletter-performance" element={<NewsletterPerformance />} />
               <Route path="/admin/site-analytics" element={<SiteAnalytics />} />
+              <Route path="/admin/content-insights" element={<ContentInsights />} />
               <Route path="/admin/import-subscribers" element={<ImportNewsletterSubscribers />} />
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
