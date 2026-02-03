@@ -343,25 +343,46 @@ const ContentInsights = () => {
       .slice(0, 50);
   }, [pageStats, avgArticleViews]);
 
-  // Get cold/neglected articles
+  // Get cold/neglected articles - filter by recency (3-180 days old)
   const coldArticles = useMemo(() => {
+    if (!articlesData) return [];
+    
+    const categoryMapData = categoriesData?.map(c => [c.id, c.slug] as const) || [];
+    const categoryLookup = Object.fromEntries(categoryMapData);
+    
+    // Build a map of article paths to their publish dates
+    const articlePathToDate: Record<string, number> = {};
+    articlesData.forEach(article => {
+      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+      const path = `/${categorySlug}/${article.slug}`;
+      const daysSince = article.published_at 
+        ? differenceInDays(new Date(), new Date(article.published_at))
+        : 999;
+      articlePathToDate[path] = daysSince;
+    });
+    
     return Object.entries(pageStats)
       .filter(([path]) => {
         return path.match(/^\/[^/]+\/[^/]+$/) && 
                !path.startsWith('/admin') && 
                !path.startsWith('/editor');
       })
-      .map(([path, stats]) => ({
-        path,
-        views: stats.views,
-        health: getContentHealth(stats.views, avgArticleViews, 30),
-      }))
-      .filter(a => a.health.status === 'cold')
+      .map(([path, stats]) => {
+        const daysSincePublish = articlePathToDate[path] ?? 999;
+        return {
+          path,
+          views: stats.views,
+          daysSincePublish,
+          health: getContentHealth(stats.views, avgArticleViews, daysSincePublish),
+        };
+      })
+      // Filter: must be 3-180 days old (not too new, not too old)
+      .filter(a => a.health.status === 'cold' && a.daysSincePublish >= 3 && a.daysSincePublish <= 180)
       .sort((a, b) => a.views - b.views)
       .slice(0, 50);
-  }, [pageStats, avgArticleViews]);
+  }, [pageStats, avgArticleViews, articlesData, categoriesData]);
 
-  // Get never-viewed articles (from articles table)
+  // Get never-viewed articles (from articles table) - filter by recency (3-180 days old)
   const neverViewedArticles = useMemo(() => {
     if (!articlesData) return [];
     
@@ -372,7 +393,14 @@ const ContentInsights = () => {
       .filter(article => {
         const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
         const articlePath = `/${categorySlug}/${article.slug}`;
-        return !viewedPaths.has(articlePath) && (article.view_count === 0 || article.view_count === null);
+        const daysSincePublish = article.published_at 
+          ? differenceInDays(new Date(), new Date(article.published_at))
+          : 999;
+        // Filter: not viewed, no view count, AND 3-180 days old
+        return !viewedPaths.has(articlePath) && 
+               (article.view_count === 0 || article.view_count === null) &&
+               daysSincePublish >= 3 && 
+               daysSincePublish <= 180;
       })
       .map(article => {
         const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
