@@ -108,7 +108,7 @@ const ContentInsights = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("id, title, slug, published_at, view_count, primary_category_id, article_type, topic_tags, ai_tags")
+        .select("id, title, slug, published_at, view_count, primary_category_id, article_type, topic_tags, ai_tags, featured_image_url, reading_time_minutes, content")
         .eq("status", "published")
         .order("published_at", { ascending: false });
       
