@@ -67,12 +67,11 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
 
   const fetchComments = async () => {
     try {
-      // Fetch approved comments
+      // Fetch approved comments using the public view (excludes author_email for security)
       const { data: approvedData, error: approvedError } = await supabase
-        .from("guide_comments")
+        .from("guide_comments_public")
         .select("*")
         .eq("guide_id", guideId)
-        .eq("approved", true)
         .order("created_at", { ascending: false });
 
       if (approvedError) throw approvedError;
