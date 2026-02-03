@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
@@ -33,7 +34,8 @@ import {
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
   AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
   ChevronRight, ExternalLink, Target, Zap, Users, Activity,
-  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers, Tags, List, Globe
+  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers, Tags, List, Globe,
+  Copy, Check, Play
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, differenceInDays } from "date-fns";
 import {
@@ -62,6 +64,12 @@ const ContentInsights = () => {
   const [neverViewedDialogOpen, setNeverViewedDialogOpen] = useState(false);
   const [engagementDialogOpen, setEngagementDialogOpen] = useState(false);
   const [selectedEngagementSegment, setSelectedEngagementSegment] = useState<{ name: string; articles: Array<{ path: string; count: number }> } | null>(null);
+  
+  // Recommendation dialog states
+  const [promoteDeadDialogOpen, setPromoteDeadDialogOpen] = useState(false);
+  const [refreshColdDialogOpen, setRefreshColdDialogOpen] = useState(false);
+  const [doubleDownDialogOpen, setDoubleDownDialogOpen] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
 
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
@@ -702,6 +710,111 @@ const ContentInsights = () => {
     const secs = seconds % 60;
     return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   };
+
+  // Generate AI prompts for recommendations
+  const generatePromoteDeadPrompt = useCallback(() => {
+    const articleList = neverViewedArticles.slice(0, 10).map(a => `- ${a.title} (${a.path})`).join('\n');
+    return `I have ${neverViewedArticles.length} articles on my AI news site (aiinasia.com) that have never been viewed. Please help me create a promotion strategy.
+
+**Never-viewed articles (sample of top 10):**
+${articleList}
+
+**Tasks:**
+1. **Social Media Posts**: Create 3 engaging social media posts (Twitter/LinkedIn) for the most promising articles. Use hooks, emojis where appropriate, and include a call-to-action.
+
+2. **Newsletter Feature**: Write a short teaser paragraph (50 words max) to feature one of these articles in our next newsletter.
+
+3. **Content Audit**: Identify which articles might need headline improvements to increase click-through rates. Suggest improved headlines for 3 articles.
+
+4. **Internal Linking**: Suggest which popular pages on the site could link to these dead articles to give them initial traffic.
+
+Please provide actionable, copy-paste-ready content.`;
+  }, [neverViewedArticles]);
+
+  const generateRefreshColdPrompt = useCallback(() => {
+    const articleList = coldArticles.slice(0, 10).map(a => `- ${a.path} (${a.views} views)`).join('\n');
+    return `I have ${coldArticles.length} underperforming articles on my AI news site (aiinasia.com) that are getting below-average engagement. Please help me refresh them.
+
+**Cold content (sample of top 10 lowest performers):**
+${articleList}
+
+**Tasks:**
+1. **Headline Analysis**: Review the URLs and suggest more compelling, click-worthy headlines for 5 articles. Focus on curiosity gaps, numbers, and power words.
+
+2. **SEO Quick Wins**: Suggest meta description improvements and focus keyphrases for 3 articles based on their topics.
+
+3. **Content Updates**: Identify what type of updates would make these articles more valuable:
+   - Add recent statistics/data
+   - Include expert quotes
+   - Add comparison tables
+   - Update with 2024/2025 developments
+
+4. **Internal Linking Strategy**: Suggest which of our hot/trending articles should link to these cold articles to boost their visibility.
+
+Please provide specific, actionable recommendations.`;
+  }, [coldArticles]);
+
+  const generateDoubleDownPrompt = useCallback(() => {
+    const hotArticleList = topArticles
+      .filter(a => a.health.status === 'hot')
+      .slice(0, 5)
+      .map(a => `- ${a.path} (${a.views} views, ${formatDuration(a.avgTime)} avg time)`).join('\n');
+    
+    return `I have several high-performing articles on my AI news site (aiinasia.com). I want to capitalize on these proven topics to create more successful content.
+
+**Top performing articles:**
+${hotArticleList}
+
+**Tasks:**
+
+## 1. Find Related Keywords
+For each winning article, identify:
+- 3-5 long-tail keyword variations we could target
+- Related questions people are searching for (People Also Ask style)
+- Emerging subtopics we haven't covered yet
+
+## 2. Internal Linking Suggestions
+Identify which OTHER articles on the site should link TO these winners to:
+- Pass SEO authority
+- Improve topic clusters
+- Create content hubs around winning themes
+
+Suggest specific anchor text phrases to use.
+
+## 3. Follow-up Content Ideas
+For each winner, suggest 2-3 follow-up article ideas:
+- A deeper dive into a specific aspect
+- An updated version with new developments
+- A practical guide/how-to based on the topic
+- An opinion/analysis piece on implications
+
+## 4. Social Repurposing Ideas
+For each winning article, provide:
+- 3 Twitter/X thread angles (first tweet hook + thread structure)
+- 1 LinkedIn carousel concept (slide titles)
+- 2 newsletter snippet ideas (subject line + teaser)
+- 1 short-form video script outline (30-60 seconds)
+
+## 5. Content Calendar
+Create a 2-week content calendar that strategically schedules:
+- The follow-up articles
+- Social media promotion
+- Newsletter features
+- Internal linking updates
+
+Please be specific and provide copy-paste-ready content where possible.`;
+  }, [topArticles, formatDuration]);
+
+  const copyPromptToClipboard = useCallback(async (prompt: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopiedPrompt(type);
+      toast.success("Prompt copied to clipboard!");
+      setTimeout(() => setCopiedPrompt(null), 2000);
+    } catch (err) {
+      toast.error("Failed to copy prompt");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -1672,31 +1785,43 @@ const ContentInsights = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {neverViewedArticles.length > 5 && (
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div 
+                      className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 cursor-pointer hover:bg-red-500/20 transition-colors"
+                      onClick={() => setPromoteDeadDialogOpen(true)}
+                    >
                       <AlertTriangle className="h-6 w-6 text-red-500 mb-2" />
                       <h4 className="font-medium">Promote Dead Content</h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         {neverViewedArticles.length} articles have never been viewed. Consider sharing on social media or featuring in newsletters.
                       </p>
+                      <p className="text-xs text-primary mt-2">Click for actions →</p>
                     </div>
                   )}
                   
                   {coldArticles.length > 10 && (
-                    <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                    <div 
+                      className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20 cursor-pointer hover:bg-cyan-500/20 transition-colors"
+                      onClick={() => setRefreshColdDialogOpen(true)}
+                    >
                       <Snowflake className="h-6 w-6 text-cyan-500 mb-2" />
                       <h4 className="font-medium">Refresh Cold Content</h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         Consider updating headlines, adding internal links, or improving SEO for underperforming articles.
                       </p>
+                      <p className="text-xs text-primary mt-2">Click for actions →</p>
                     </div>
                   )}
                   
-                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div 
+                    className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 cursor-pointer hover:bg-green-500/20 transition-colors"
+                    onClick={() => setDoubleDownDialogOpen(true)}
+                  >
                     <TrendingUp className="h-6 w-6 text-green-500 mb-2" />
                     <h4 className="font-medium">Double Down on Winners</h4>
                     <p className="text-sm text-muted-foreground mt-1">
                       Create follow-up content for your top-performing articles to capitalize on proven topics.
                     </p>
+                    <p className="text-xs text-primary mt-2">Click for actions →</p>
                   </div>
                 </div>
               </CardContent>
@@ -1861,6 +1986,235 @@ const ContentInsights = () => {
                 )}
               </div>
             </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Promote Dead Content Dialog */}
+        <Dialog open={promoteDeadDialogOpen} onOpenChange={setPromoteDeadDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[85vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Promote Dead Content
+              </DialogTitle>
+              <DialogDescription>
+                {neverViewedArticles.length} articles have never been viewed. Choose an action below.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => copyPromptToClipboard(generatePromoteDeadPrompt(), 'promoteDead')}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      {copiedPrompt === 'promoteDead' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-primary" />}
+                      <h4 className="font-medium">Copy AI Prompt</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Copy a detailed prompt to paste into ChatGPT/Claude. Includes article list and specific tasks for social posts, newsletter teasers, and headline improvements.
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Link to="/newsletter-manager" onClick={() => setPromoteDeadDialogOpen(false)} className="block">
+                  <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Play className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Add to Newsletter</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Open the Newsletter Manager to feature these articles in your next newsletter issue.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <h4 className="font-medium mb-2 text-sm">Sample Articles to Promote:</h4>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2">
+                    {neverViewedArticles.slice(0, 15).map((article) => (
+                      <div key={article.path} className="flex items-center justify-between text-sm">
+                        <Link 
+                          to={article.path} 
+                          className="hover:text-primary truncate max-w-[400px]"
+                          onClick={() => setPromoteDeadDialogOpen(false)}
+                        >
+                          {article.title}
+                        </Link>
+                        <span className="text-muted-foreground text-xs">{article.path}</span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Refresh Cold Content Dialog */}
+        <Dialog open={refreshColdDialogOpen} onOpenChange={setRefreshColdDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[85vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Snowflake className="h-5 w-5 text-cyan-500" />
+                Refresh Cold Content
+              </DialogTitle>
+              <DialogDescription>
+                {coldArticles.length} articles are underperforming. Choose an action below.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => copyPromptToClipboard(generateRefreshColdPrompt(), 'refreshCold')}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      {copiedPrompt === 'refreshCold' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-primary" />}
+                      <h4 className="font-medium">Copy AI Prompt</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Copy a detailed prompt for headline analysis, SEO quick wins, content updates, and internal linking strategy.
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Link to="/admin/bulk-seo" onClick={() => setRefreshColdDialogOpen(false)} className="block">
+                  <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Play className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Bulk SEO Generation</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Open the bulk SEO tool to regenerate meta titles and descriptions for these articles.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <h4 className="font-medium mb-2 text-sm">Cold Articles (lowest engagement):</h4>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2">
+                    {coldArticles.slice(0, 15).map((article) => (
+                      <div key={article.path} className="flex items-center justify-between text-sm">
+                        <Link 
+                          to={article.path} 
+                          className="hover:text-primary truncate max-w-[350px]"
+                          onClick={() => setRefreshColdDialogOpen(false)}
+                        >
+                          {article.path}
+                        </Link>
+                        <Badge variant="secondary" className="text-xs">{article.views} views</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Double Down on Winners Dialog */}
+        <Dialog open={doubleDownDialogOpen} onOpenChange={setDoubleDownDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[85vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+                Double Down on Winners
+              </DialogTitle>
+              <DialogDescription>
+                Capitalize on your top-performing content. Choose an action below.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => copyPromptToClipboard(generateDoubleDownPrompt(), 'doubleDown')}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      {copiedPrompt === 'doubleDown' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-primary" />}
+                      <h4 className="font-medium">Copy AI Prompt</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Comprehensive prompt including: related keywords, internal linking suggestions, follow-up content ideas, social repurposing (threads, carousels, video scripts), and a 2-week content calendar.
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Link to="/editor" onClick={() => setDoubleDownDialogOpen(false)} className="block">
+                  <Card className="cursor-pointer hover:border-primary transition-colors h-full">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Play className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Create New Article</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Open the editor to start creating a follow-up article based on your winning content.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-green-500/5">
+                <h4 className="font-medium mb-2 text-sm flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-orange-500" />
+                  Your Top Performers:
+                </h4>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2">
+                    {topArticles
+                      .filter(a => a.health.status === 'hot')
+                      .slice(0, 10)
+                      .map((article, i) => (
+                        <div key={article.path} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="text-muted-foreground w-5 flex-shrink-0">{i + 1}.</span>
+                            <Link 
+                              to={article.path} 
+                              className="hover:text-primary truncate"
+                              onClick={() => setDoubleDownDialogOpen(false)}
+                            >
+                              {article.path}
+                            </Link>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge variant="secondary" className="text-xs">{article.views} views</Badge>
+                            <span className="text-xs text-muted-foreground">{formatDuration(article.avgTime)} avg</span>
+                          </div>
+                        </div>
+                      ))}
+                    {topArticles.filter(a => a.health.status === 'hot').length === 0 && (
+                      <p className="text-sm text-muted-foreground">No hot articles in this time period. Try extending the date range.</p>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2 text-sm">Prompt includes these additional steps:</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3 w-3 text-green-500" />
+                    Find related long-tail keywords
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3 w-3 text-green-500" />
+                    Internal linking suggestions
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3 w-3 text-green-500" />
+                    Social repurposing (threads, carousels, videos)
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3 w-3 text-green-500" />
+                    2-week content calendar
+                  </div>
+                </div>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </main>
