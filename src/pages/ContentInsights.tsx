@@ -16,7 +16,7 @@ import {
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
   AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
   ChevronRight, ExternalLink, Target, Zap, Users, Activity,
-  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map
+  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, differenceInDays } from "date-fns";
 import {
@@ -208,19 +208,60 @@ const ContentInsights = () => {
     }).sort((a, b) => b.views - a.views);
   }, [pageStats]);
 
-  // Get category page performance
+  // Get category page performance - aggregate article views by category
   const categoryPageStats = useMemo(() => {
-    return categoryPages.map(page => {
+    if (!articlesData || !categoriesData) return [];
+    
+    // Create category lookup
+    const categoryLookup = Object.fromEntries(
+      categoriesData.map(c => [c.id, c.slug])
+    );
+    const categoryNames = Object.fromEntries(
+      categoriesData.map(c => [c.slug, c.name])
+    );
+    
+    // Aggregate views by category
+    const categoryViews: Record<string, { views: number; articles: number; totalTime: number; sessions: Set<string> }> = {};
+    
+    articlesData.forEach(article => {
+      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'uncategorized';
+      const articlePath = `/${categorySlug}/${article.slug}`;
+      const stats = pageStats[articlePath];
+      
+      if (!categoryViews[categorySlug]) {
+        categoryViews[categorySlug] = { views: 0, articles: 0, totalTime: 0, sessions: new Set() };
+      }
+      
+      categoryViews[categorySlug].articles++;
+      if (stats) {
+        categoryViews[categorySlug].views += stats.views;
+        categoryViews[categorySlug].totalTime += stats.totalTime;
+        stats.uniqueSessions.forEach(s => categoryViews[categorySlug].sessions.add(s));
+      }
+    });
+    
+    // Also add category landing page views
+    categoryPages.forEach(page => {
+      const slug = page.path.replace('/', '');
       const stats = pageStats[page.path];
-      return {
-        ...page,
-        views: stats?.views || 0,
-        uniqueVisitors: stats?.uniqueSessions?.size || 0,
-        avgTime: stats?.views ? Math.round(stats.totalTime / stats.views) : 0,
-        exitRate: stats?.views ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
-      };
-    }).sort((a, b) => b.views - a.views);
-  }, [pageStats]);
+      if (stats && categoryViews[slug]) {
+        categoryViews[slug].views += stats.views;
+        stats.uniqueSessions.forEach(s => categoryViews[slug].sessions.add(s));
+      }
+    });
+    
+    return Object.entries(categoryViews)
+      .filter(([slug]) => slug !== 'uncategorized')
+      .map(([slug, data]) => ({
+        name: categoryNames[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
+        slug,
+        views: data.views,
+        articles: data.articles,
+        avgViewsPerArticle: data.articles > 0 ? Math.round(data.views / data.articles) : 0,
+        uniqueVisitors: data.sessions.size,
+      }))
+      .sort((a, b) => b.views - a.views);
+  }, [pageStats, articlesData, categoriesData]);
 
   // Get top performing articles
   const topArticles = useMemo(() => {
@@ -317,23 +358,36 @@ const ContentInsights = () => {
       .map(([name, value]) => ({ name, value }));
   }, [pageStats]);
 
-  // User flow patterns
-  const userFlows = useMemo(() => {
-    const flowCounts: Record<string, number> = {};
-    const sessionPages: Record<string, Array<{ path: string; time: string }>> = {};
+  // Session data for cross-pollination analysis
+  const sessionAnalysis = useMemo(() => {
+    const sessionPages: Record<string, Array<{ path: string; time: string; scroll: number; timeOnPage: number }>> = {};
     
     pageviewsData?.forEach(pv => {
       const path = pv.page_path?.split('?')[0] || '/';
       if (path.startsWith('/admin') || path.startsWith('/editor')) return;
       
       if (!sessionPages[pv.session_id]) sessionPages[pv.session_id] = [];
-      sessionPages[pv.session_id].push({ path, time: pv.viewed_at });
+      sessionPages[pv.session_id].push({ 
+        path, 
+        time: pv.viewed_at,
+        scroll: pv.scroll_depth_percent || 0,
+        timeOnPage: pv.time_on_page_seconds || 0
+      });
     });
 
-    // Sort each session's pages by time and create flows
+    // Sort each session's pages by time
     Object.values(sessionPages).forEach(pages => {
       pages.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-      
+    });
+
+    return sessionPages;
+  }, [pageviewsData]);
+
+  // User flow patterns
+  const userFlows = useMemo(() => {
+    const flowCounts: Record<string, number> = {};
+    
+    Object.values(sessionAnalysis).forEach(pages => {
       if (pages.length >= 2) {
         for (let i = 0; i < Math.min(pages.length - 1, 3); i++) {
           const flow = `${pages[i].path} → ${pages[i + 1].path}`;
@@ -346,7 +400,144 @@ const ContentInsights = () => {
       .map(([flow, count]) => ({ flow, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 15);
+  }, [sessionAnalysis]);
+
+  // Article-to-article flows (cross-pollination)
+  const articleToArticleFlows = useMemo(() => {
+    const flowCounts: Record<string, number> = {};
+    
+    Object.values(sessionAnalysis).forEach(pages => {
+      // Filter to only article pages
+      const articlePages = pages.filter(p => 
+        p.path.match(/^\/[^/]+\/[^/]+$/) && 
+        !p.path.startsWith('/admin') && 
+        !p.path.startsWith('/author')
+      );
+      
+      if (articlePages.length >= 2) {
+        for (let i = 0; i < articlePages.length - 1; i++) {
+          const flow = `${articlePages[i].path} → ${articlePages[i + 1].path}`;
+          flowCounts[flow] = (flowCounts[flow] || 0) + 1;
+        }
+      }
+    });
+
+    return Object.entries(flowCounts)
+      .map(([flow, count]) => ({ flow, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+  }, [sessionAnalysis]);
+
+  // Session depth distribution
+  const sessionDepthDistribution = useMemo(() => {
+    const depths = { '1 page': 0, '2-3 pages': 0, '4-5 pages': 0, '6+ pages': 0 };
+    
+    Object.values(sessionAnalysis).forEach(pages => {
+      const count = pages.length;
+      if (count === 1) depths['1 page']++;
+      else if (count <= 3) depths['2-3 pages']++;
+      else if (count <= 5) depths['4-5 pages']++;
+      else depths['6+ pages']++;
+    });
+
+    return Object.entries(depths).map(([name, value]) => ({ name, value }));
+  }, [sessionAnalysis]);
+
+  // Engagement quality matrix
+  const engagementQuality = useMemo(() => {
+    const quality = { 
+      'Scanners': 0,      // Low scroll, low time
+      'Skimmers': 0,      // High scroll, low time
+      'Readers': 0,       // High scroll, high time
+      'Lingerers': 0      // Low scroll, high time
+    };
+    
+    pageviewsData?.forEach(pv => {
+      const path = pv.page_path?.split('?')[0] || '/';
+      if (!path.match(/^\/[^/]+\/[^/]+$/) || path.startsWith('/admin')) return;
+      
+      const scroll = pv.scroll_depth_percent || 0;
+      const time = pv.time_on_page_seconds || 0;
+      const highScroll = scroll >= 50;
+      const highTime = time >= 60; // 1 minute
+      
+      if (!highScroll && !highTime) quality['Scanners']++;
+      else if (highScroll && !highTime) quality['Skimmers']++;
+      else if (highScroll && highTime) quality['Readers']++;
+      else quality['Lingerers']++;
+    });
+
+    return Object.entries(quality).map(([name, value]) => ({ name, value }));
   }, [pageviewsData]);
+
+  // Content age vs performance
+  const contentAgePerformance = useMemo(() => {
+    if (!articlesData || !categoriesData) return [];
+    
+    const categoryLookup = Object.fromEntries(
+      categoriesData.map(c => [c.id, c.slug])
+    );
+    
+    const ageGroups: Record<string, { views: number; count: number }> = {
+      'Last 7 days': { views: 0, count: 0 },
+      '1-4 weeks': { views: 0, count: 0 },
+      '1-3 months': { views: 0, count: 0 },
+      '3-6 months': { views: 0, count: 0 },
+      '6+ months': { views: 0, count: 0 },
+    };
+    
+    articlesData.forEach(article => {
+      if (!article.published_at) return;
+      
+      const daysSincePublish = differenceInDays(new Date(), new Date(article.published_at));
+      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+      const articlePath = `/${categorySlug}/${article.slug}`;
+      const views = pageStats[articlePath]?.views || 0;
+      
+      let group: string;
+      if (daysSincePublish <= 7) group = 'Last 7 days';
+      else if (daysSincePublish <= 28) group = '1-4 weeks';
+      else if (daysSincePublish <= 90) group = '1-3 months';
+      else if (daysSincePublish <= 180) group = '3-6 months';
+      else group = '6+ months';
+      
+      ageGroups[group].views += views;
+      ageGroups[group].count++;
+    });
+
+    return Object.entries(ageGroups).map(([name, data]) => ({
+      name,
+      views: data.views,
+      articles: data.count,
+      avgViews: data.count > 0 ? Math.round(data.views / data.count) : 0
+    }));
+  }, [articlesData, categoriesData, pageStats]);
+
+  // Pages that drive internal navigation
+  const navigationDrivers = useMemo(() => {
+    const drivers: Record<string, { outbound: number; inbound: number }> = {};
+    
+    Object.values(sessionAnalysis).forEach(pages => {
+      for (let i = 0; i < pages.length; i++) {
+        if (!drivers[pages[i].path]) {
+          drivers[pages[i].path] = { outbound: 0, inbound: 0 };
+        }
+        if (i < pages.length - 1) drivers[pages[i].path].outbound++;
+        if (i > 0) drivers[pages[i].path].inbound++;
+      }
+    });
+
+    return Object.entries(drivers)
+      .filter(([path]) => path.match(/^\/[^/]+\/[^/]+$/) && !path.startsWith('/admin'))
+      .map(([path, data]) => ({
+        path,
+        outbound: data.outbound,
+        inbound: data.inbound,
+        ratio: data.inbound > 0 ? (data.outbound / data.inbound).toFixed(2) : 'N/A'
+      }))
+      .sort((a, b) => b.outbound - a.outbound)
+      .slice(0, 15);
+  }, [sessionAnalysis]);
 
   // Entry/landing pages
   const landingPages = useMemo(() => {
@@ -510,8 +701,9 @@ const ContentInsights = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="cross-pollination">Cross-Pollination</TabsTrigger>
             <TabsTrigger value="articles">Articles</TabsTrigger>
             <TabsTrigger value="static">Static Pages</TabsTrigger>
             <TabsTrigger value="flows">User Flows</TabsTrigger>
@@ -629,6 +821,278 @@ const ContentInsights = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Cross-Pollination Tab */}
+          <TabsContent value="cross-pollination" className="space-y-6">
+            {/* Session Depth & Engagement Quality */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Layers className="h-5 w-5" />
+                    Session Depth
+                  </CardTitle>
+                  <CardDescription>How many pages do users view per session?</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[250px]" />
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie
+                            data={sessionDepthDistribution}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={40}
+                            outerRadius={80}
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                          >
+                            {sessionDepthDistribution.map((_, index) => (
+                              <Cell key={`depth-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>{sessionDepthDistribution.find(d => d.name !== '1 page')?.value || 0}</strong> sessions viewed 2+ pages — opportunity for cross-pollination
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Engagement Quality
+                  </CardTitle>
+                  <CardDescription>Reader behavior on articles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[250px]" />
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={engagementQuality}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                        <div className="p-2 bg-muted/50 rounded">
+                          <strong>Scanners:</strong> &lt;50% scroll, &lt;1min
+                        </div>
+                        <div className="p-2 bg-muted/50 rounded">
+                          <strong>Skimmers:</strong> 50%+ scroll, &lt;1min
+                        </div>
+                        <div className="p-2 bg-green-500/10 rounded">
+                          <strong>Readers:</strong> 50%+ scroll, 1min+ ✓
+                        </div>
+                        <div className="p-2 bg-muted/50 rounded">
+                          <strong>Lingerers:</strong> &lt;50% scroll, 1min+
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Article-to-Article Flows */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shuffle className="h-5 w-5 text-primary" />
+                  Article-to-Article Navigation
+                </CardTitle>
+                <CardDescription>
+                  Which articles drive readers to other articles? This shows cross-pollination patterns.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[400px]" />
+                ) : articleToArticleFlows.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Link2 className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="font-medium">Limited cross-pollination detected</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Most sessions view only one article. Consider adding more internal links.
+                    </p>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-2">
+                      {articleToArticleFlows.map((flow, i) => (
+                        <div key={flow.flow} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-muted-foreground font-medium w-6 flex-shrink-0">{i + 1}.</span>
+                            <span className="text-sm font-mono truncate">{flow.flow}</span>
+                          </div>
+                          <Badge className="flex-shrink-0">{flow.count} times</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Navigation Drivers & Content Age */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="h-5 w-5" />
+                    Navigation Drivers
+                  </CardTitle>
+                  <CardDescription>Articles that send users to other content</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[300px]" />
+                  ) : (
+                    <ScrollArea className="h-[300px]">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2">Article</th>
+                            <th className="text-right py-2">Outbound</th>
+                            <th className="text-right py-2">Inbound</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {navigationDrivers.map((item) => (
+                            <tr key={item.path} className="border-b last:border-0">
+                              <td className="py-2 truncate max-w-[180px]">
+                                <Link to={item.path} className="hover:text-primary text-xs">
+                                  {item.path}
+                                </Link>
+                              </td>
+                              <td className="text-right py-2">
+                                <Badge variant="secondary" className="text-xs">{item.outbound}</Badge>
+                              </td>
+                              <td className="text-right py-2">
+                                <Badge variant="outline" className="text-xs">{item.inbound}</Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Content Age vs Performance
+                  </CardTitle>
+                  <CardDescription>Are newer or older articles getting more traffic?</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[300px]" />
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={contentAgePerformance}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis />
+                          <Tooltip 
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-popover border rounded-lg p-2 text-sm">
+                                    <p className="font-medium">{data.name}</p>
+                                    <p>{data.views} views from {data.articles} articles</p>
+                                    <p className="text-muted-foreground">Avg: {data.avgViews} views/article</p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Bar dataKey="avgViews" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Avg Views" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm">
+                        {contentAgePerformance.length > 0 && (
+                          <p className="text-muted-foreground">
+                            {contentAgePerformance[0].avgViews > contentAgePerformance[contentAgePerformance.length - 1].avgViews
+                              ? "📈 Newer content is performing better — keep publishing fresh articles"
+                              : "📚 Older content has strong evergreen value — consider updating with fresh info"}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Category Cross-Navigation */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Category Performance Detail</CardTitle>
+                <CardDescription>Views per category with article breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[200px]" />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3">Category</th>
+                          <th className="text-right py-3">Total Views</th>
+                          <th className="text-right py-3">Articles</th>
+                          <th className="text-right py-3">Avg/Article</th>
+                          <th className="text-right py-3">Unique Visitors</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categoryPageStats.map((cat) => (
+                          <tr key={cat.slug} className="border-b last:border-0 hover:bg-muted/50">
+                            <td className="py-3 font-medium">
+                              <Link to={`/${cat.slug}`} className="hover:text-primary flex items-center gap-1">
+                                {cat.name}
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            </td>
+                            <td className="text-right py-3">{cat.views.toLocaleString()}</td>
+                            <td className="text-right py-3 text-muted-foreground">{cat.articles}</td>
+                            <td className="text-right py-3">
+                              <Badge variant={cat.avgViewsPerArticle > avgArticleViews ? "default" : "secondary"}>
+                                {cat.avgViewsPerArticle}
+                              </Badge>
+                            </td>
+                            <td className="text-right py-3 text-muted-foreground">{cat.uniqueVisitors}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Articles Tab */}
