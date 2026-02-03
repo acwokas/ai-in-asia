@@ -234,6 +234,36 @@ export function DiscoveryAnalytics({
 
   return (
     <div className="space-y-6">
+      {/* Traffic Concentration - moved to top */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5" />
+            Traffic Concentration
+          </CardTitle>
+          <CardDescription>Are a few articles getting most of the views?</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-4 rounded-lg bg-muted/50">
+              <p className="text-3xl font-bold">{entryPointAnalysis.concentration}%</p>
+              <p className="text-sm text-muted-foreground">of views go to top 10 articles</p>
+            </div>
+            <div className="flex-1 p-3 bg-muted/30 rounded-lg">
+              <p className="text-sm">
+                {entryPointAnalysis.concentration >= 50 ? (
+                  <>⚠️ High concentration. Consider promoting more content to diversify traffic.</>
+                ) : entryPointAnalysis.concentration >= 30 ? (
+                  <>📊 Moderate concentration. Good mix of evergreen and new content.</>
+                ) : (
+                  <>✅ Well-distributed traffic across your content library.</>
+                )}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Search Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -405,36 +435,6 @@ export function DiscoveryAnalytics({
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Traffic Concentration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
-            Traffic Concentration
-          </CardTitle>
-          <CardDescription>Are a few articles getting most of the views?</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-4 rounded-lg bg-muted/50">
-              <p className="text-3xl font-bold">{entryPointAnalysis.concentration}%</p>
-              <p className="text-sm text-muted-foreground">of views go to top 10 articles</p>
-            </div>
-            <div className="flex-1 p-3 bg-muted/30 rounded-lg">
-              <p className="text-sm">
-                {entryPointAnalysis.concentration >= 50 ? (
-                  <>⚠️ High concentration. Consider promoting more content to diversify traffic.</>
-                ) : entryPointAnalysis.concentration >= 30 ? (
-                  <>📊 Moderate concentration. Good mix of evergreen and new content.</>
-                ) : (
-                  <>✅ Well-distributed traffic across your content library.</>
-                )}
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
