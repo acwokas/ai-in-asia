@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Header from "@/components/Header";
 import { 
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
@@ -40,6 +41,9 @@ const getContentHealth = (views: number, avgViews: number, daysSincePublish: num
 const ContentInsights = () => {
   const [dateRange, setDateRange] = useState("30");
   const [activeTab, setActiveTab] = useState("overview");
+  const [hotDialogOpen, setHotDialogOpen] = useState(false);
+  const [coldDialogOpen, setColdDialogOpen] = useState(false);
+  const [neverViewedDialogOpen, setNeverViewedDialogOpen] = useState(false);
 
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
@@ -210,7 +214,7 @@ const ContentInsights = () => {
         health: getContentHealth(stats.views, avgArticleViews, 30),
       }))
       .sort((a, b) => b.views - a.views)
-      .slice(0, 20);
+      .slice(0, 50);
   }, [pageStats, avgArticleViews]);
 
   // Get cold/neglected articles
@@ -226,9 +230,9 @@ const ContentInsights = () => {
         views: stats.views,
         health: getContentHealth(stats.views, avgArticleViews, 30),
       }))
-      .filter(a => a.health.status === 'cold' || a.health.status === 'dead')
+      .filter(a => a.health.status === 'cold')
       .sort((a, b) => a.views - b.views)
-      .slice(0, 20);
+      .slice(0, 50);
   }, [pageStats, avgArticleViews]);
 
   // Get never-viewed articles (from articles table)
@@ -255,7 +259,7 @@ const ContentInsights = () => {
           daysSincePublish,
         };
       })
-      .slice(0, 30);
+      .slice(0, 50);
   }, [articlesData, pageStats, categoriesData]);
 
   // Content type breakdown
@@ -425,7 +429,10 @@ const ContentInsights = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card 
+            className="cursor-pointer hover:border-orange-500/50 transition-colors"
+            onClick={() => setHotDialogOpen(true)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-500" />
@@ -435,10 +442,14 @@ const ContentInsights = () => {
             <CardContent>
               <div className="text-3xl font-bold">{topArticles.filter(a => a.health.status === 'hot').length}</div>
               <p className="text-xs text-muted-foreground mt-1">Performing 2x+ above average</p>
+              <p className="text-xs text-primary mt-2">Click to view list →</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card 
+            className="cursor-pointer hover:border-cyan-500/50 transition-colors"
+            onClick={() => setColdDialogOpen(true)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Snowflake className="h-4 w-4 text-cyan-500" />
@@ -448,10 +459,14 @@ const ContentInsights = () => {
             <CardContent>
               <div className="text-3xl font-bold">{coldContentCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Below average engagement</p>
+              <p className="text-xs text-primary mt-2">Click to view list →</p>
             </CardContent>
           </Card>
           
-          <Card className="border-red-500/20 bg-red-500/5">
+          <Card 
+            className="border-red-500/20 bg-red-500/5 cursor-pointer hover:border-red-500/50 transition-colors"
+            onClick={() => setNeverViewedDialogOpen(true)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-red-600 flex items-center gap-2">
                 <Ghost className="h-4 w-4" />
@@ -461,6 +476,7 @@ const ContentInsights = () => {
             <CardContent>
               <div className="text-3xl font-bold text-red-600">{neverViewedCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Published but zero views</p>
+              <p className="text-xs text-red-600 mt-2">Click to view list →</p>
             </CardContent>
           </Card>
         </div>
@@ -918,6 +934,127 @@ const ContentInsights = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Hot Articles Dialog */}
+        <Dialog open={hotDialogOpen} onOpenChange={setHotDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Flame className="h-5 w-5 text-orange-500" />
+                Hot Articles
+              </DialogTitle>
+              <DialogDescription>
+                Articles performing 2x or more above average engagement
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-2">
+                {topArticles
+                  .filter(a => a.health.status === 'hot')
+                  .map((article, i) => (
+                    <div key={article.path} className="flex items-center justify-between py-3 border-b last:border-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="text-muted-foreground text-sm w-6 flex-shrink-0">{i + 1}.</span>
+                        <Link 
+                          to={article.path} 
+                          className="text-sm hover:text-primary truncate flex-1"
+                          onClick={() => setHotDialogOpen(false)}
+                        >
+                          {article.path}
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <Badge variant="secondary">{article.views} views</Badge>
+                        <span className="text-xs text-muted-foreground">{formatDuration(article.avgTime)} avg</span>
+                      </div>
+                    </div>
+                  ))}
+                {topArticles.filter(a => a.health.status === 'hot').length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">No hot articles in this time period</p>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Cold Content Dialog */}
+        <Dialog open={coldDialogOpen} onOpenChange={setColdDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Snowflake className="h-5 w-5 text-cyan-500" />
+                Cold Content
+              </DialogTitle>
+              <DialogDescription>
+                Articles with below average engagement that could use attention
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-2">
+                {coldArticles.map((article, i) => (
+                  <div key={article.path} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-muted-foreground text-sm w-6 flex-shrink-0">{i + 1}.</span>
+                      <Link 
+                        to={article.path} 
+                        className="text-sm hover:text-primary truncate flex-1"
+                        onClick={() => setColdDialogOpen(false)}
+                      >
+                        {article.path}
+                      </Link>
+                    </div>
+                    <Badge variant="outline" className="flex-shrink-0">{article.views} views</Badge>
+                  </div>
+                ))}
+                {coldArticles.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">No cold content found</p>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Never Viewed Dialog */}
+        <Dialog open={neverViewedDialogOpen} onOpenChange={setNeverViewedDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <Ghost className="h-5 w-5" />
+                Never Viewed Articles
+              </DialogTitle>
+              <DialogDescription>
+                Published articles with zero recorded views — consider promoting or reviewing
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-2">
+                {neverViewedArticles.map((article, i) => (
+                  <div key={article.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-muted-foreground text-sm w-6 flex-shrink-0">{i + 1}.</span>
+                      <div className="flex-1 min-w-0">
+                        <Link 
+                          to={article.path} 
+                          className="text-sm hover:text-primary block truncate"
+                          onClick={() => setNeverViewedDialogOpen(false)}
+                        >
+                          {article.title}
+                        </Link>
+                        <span className="text-xs text-muted-foreground">{article.path}</span>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="flex-shrink-0 text-muted-foreground">
+                      {article.daysSincePublish}d ago
+                    </Badge>
+                  </div>
+                ))}
+                {neverViewedArticles.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">All articles have been viewed!</p>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
