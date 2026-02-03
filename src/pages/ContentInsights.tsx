@@ -52,6 +52,8 @@ const ContentInsights = () => {
   const [hotDialogOpen, setHotDialogOpen] = useState(false);
   const [coldDialogOpen, setColdDialogOpen] = useState(false);
   const [neverViewedDialogOpen, setNeverViewedDialogOpen] = useState(false);
+  const [engagementDialogOpen, setEngagementDialogOpen] = useState(false);
+  const [selectedEngagementSegment, setSelectedEngagementSegment] = useState<{ name: string; articles: Array<{ path: string; count: number }> } | null>(null);
 
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
@@ -125,6 +127,12 @@ const ContentInsights = () => {
         referrer_domain: string | null;
         landing_page: string | null;
         exit_page: string | null;
+        device_type: string | null;
+        browser: string | null;
+        page_count: number | null;
+        duration_seconds: number | null;
+        user_id: string | null;
+        is_bounce: boolean | null;
       }> = [];
       
       let offset = 0;
@@ -134,7 +142,7 @@ const ContentInsights = () => {
       while (hasMore) {
         const { data, error } = await supabase
           .from("analytics_sessions")
-          .select("session_id, referrer, referrer_domain, landing_page, exit_page")
+          .select("session_id, referrer, referrer_domain, landing_page, exit_page, device_type, browser, page_count, duration_seconds, user_id, is_bounce")
           .gte("started_at", startDate.toISOString())
           .lte("started_at", endDate.toISOString())
           .range(offset, offset + pageSize - 1);
@@ -493,12 +501,12 @@ const ContentInsights = () => {
   }, [sessionAnalysis]);
 
   // Engagement quality matrix
-  const engagementQuality = useMemo(() => {
-    const quality = { 
-      'Scanners': 0,      // Low scroll, low time
-      'Skimmers': 0,      // High scroll, low time
-      'Readers': 0,       // High scroll, high time
-      'Lingerers': 0      // Low scroll, high time
+  const engagementQualityData = useMemo(() => {
+    const quality: Record<string, { count: number; articles: Record<string, number> }> = { 
+      'Scanners': { count: 0, articles: {} },
+      'Skimmers': { count: 0, articles: {} },
+      'Readers': { count: 0, articles: {} },
+      'Lingerers': { count: 0, articles: {} }
     };
     
     pageviewsData?.forEach(pv => {
@@ -510,14 +518,29 @@ const ContentInsights = () => {
       const highScroll = scroll >= 50;
       const highTime = time >= 60; // 1 minute
       
-      if (!highScroll && !highTime) quality['Scanners']++;
-      else if (highScroll && !highTime) quality['Skimmers']++;
-      else if (highScroll && highTime) quality['Readers']++;
-      else quality['Lingerers']++;
+      let segment: string;
+      if (!highScroll && !highTime) segment = 'Scanners';
+      else if (highScroll && !highTime) segment = 'Skimmers';
+      else if (highScroll && highTime) segment = 'Readers';
+      else segment = 'Lingerers';
+      
+      quality[segment].count++;
+      quality[segment].articles[path] = (quality[segment].articles[path] || 0) + 1;
     });
 
-    return Object.entries(quality).map(([name, value]) => ({ name, value }));
+    return quality;
   }, [pageviewsData]);
+
+  const engagementQuality = useMemo(() => {
+    return Object.entries(engagementQualityData).map(([name, data]) => ({ 
+      name, 
+      value: data.count,
+      articles: Object.entries(data.articles)
+        .map(([path, count]) => ({ path, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 50)
+    }));
+  }, [engagementQualityData]);
 
   // Content age vs performance
   const contentAgePerformance = useMemo(() => {
@@ -1006,28 +1029,83 @@ const ContentInsights = () => {
                   ) : (
                     <>
                       <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={engagementQuality}>
+                        <BarChart 
+                          data={engagementQuality}
+                          onClick={(data) => {
+                            if (data && data.activePayload && data.activePayload[0]) {
+                              const segment = data.activePayload[0].payload;
+                              setSelectedEngagementSegment(segment);
+                              setEngagementDialogOpen(true);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
                           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                           <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          <Tooltip content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              return (
+                                <div className="bg-popover border rounded-lg p-2 text-sm">
+                                  <p className="font-medium">{data.name}</p>
+                                  <p>{data.value.toLocaleString()} pageviews</p>
+                                  <p className="text-xs text-primary mt-1">Click to view articles →</p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {engagementQuality.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.name === 'Readers' ? '#10b981' : 'hsl(var(--primary))'} 
+                                className="cursor-pointer hover:opacity-80"
+                              />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                       <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <div className="p-2 bg-muted/50 rounded">
+                        <div 
+                          className="p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
+                          onClick={() => {
+                            const segment = engagementQuality.find(e => e.name === 'Scanners');
+                            if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
+                          }}
+                        >
                           <strong>Scanners:</strong> &lt;50% scroll, &lt;1min
                         </div>
-                        <div className="p-2 bg-muted/50 rounded">
+                        <div 
+                          className="p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
+                          onClick={() => {
+                            const segment = engagementQuality.find(e => e.name === 'Skimmers');
+                            if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
+                          }}
+                        >
                           <strong>Skimmers:</strong> 50%+ scroll, &lt;1min
                         </div>
-                        <div className="p-2 bg-green-500/10 rounded">
+                        <div 
+                          className="p-2 bg-green-500/10 rounded cursor-pointer hover:bg-green-500/20 transition-colors"
+                          onClick={() => {
+                            const segment = engagementQuality.find(e => e.name === 'Readers');
+                            if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
+                          }}
+                        >
                           <strong>Readers:</strong> 50%+ scroll, 1min+ ✓
                         </div>
-                        <div className="p-2 bg-muted/50 rounded">
+                        <div 
+                          className="p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
+                          onClick={() => {
+                            const segment = engagementQuality.find(e => e.name === 'Lingerers');
+                            if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
+                          }}
+                        >
                           <strong>Lingerers:</strong> &lt;50% scroll, 1min+
                         </div>
                       </div>
+                      <p className="text-xs text-muted-foreground text-center mt-2">Click any bar or label to view articles</p>
                     </>
                   )}
                 </CardContent>
@@ -1686,6 +1764,45 @@ const ContentInsights = () => {
                 ))}
                 {neverViewedArticles.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">All articles have been viewed!</p>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+        {/* Engagement Segment Dialog */}
+        <Dialog open={engagementDialogOpen} onOpenChange={setEngagementDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                {selectedEngagementSegment?.name} Articles
+              </DialogTitle>
+              <DialogDescription>
+                {selectedEngagementSegment?.name === 'Scanners' && 'Low scroll depth (<50%), short time (<1min) — users leave quickly'}
+                {selectedEngagementSegment?.name === 'Skimmers' && 'High scroll depth (50%+), short time (<1min) — users scroll fast without reading'}
+                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) — engaged readers ✓'}
+                {selectedEngagementSegment?.name === 'Lingerers' && 'Low scroll depth (<50%), longer time (1min+) — stuck at top or distracted'}
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-2">
+                {selectedEngagementSegment?.articles.map((article, i) => (
+                  <div key={article.path} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-muted-foreground text-sm w-6 flex-shrink-0">{i + 1}.</span>
+                      <Link 
+                        to={article.path} 
+                        className="text-sm hover:text-primary truncate flex-1"
+                        onClick={() => setEngagementDialogOpen(false)}
+                      >
+                        {article.path}
+                      </Link>
+                    </div>
+                    <Badge variant="secondary" className="flex-shrink-0">{article.count} pageviews</Badge>
+                  </div>
+                ))}
+                {(!selectedEngagementSegment?.articles || selectedEngagementSegment.articles.length === 0) && (
+                  <p className="text-center text-muted-foreground py-8">No articles in this segment</p>
                 )}
               </div>
             </ScrollArea>
