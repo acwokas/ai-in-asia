@@ -2,3 +2,8 @@ export { ReferralFlows } from './ReferralFlows';
 export { ArticleTypeAnalytics } from './ArticleTypeAnalytics';
 export { TagsAnalytics } from './TagsAnalytics';
 export { ContentTypeBreakdown } from './ContentTypeBreakdown';
+export { TimeDeviceAnalytics } from './TimeDeviceAnalytics';
+export { UserBehaviorAnalytics } from './UserBehaviorAnalytics';
+export { ContentPerformanceAnalytics } from './ContentPerformanceAnalytics';
+export { DiscoveryAnalytics } from './DiscoveryAnalytics';
+export { NewsletterConversionAnalytics } from './NewsletterConversionAnalytics';
