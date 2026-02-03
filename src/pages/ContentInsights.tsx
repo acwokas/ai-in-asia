@@ -48,19 +48,47 @@ const ContentInsights = () => {
   const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
   const endDate = endOfDay(new Date());
 
-  // Fetch all pageviews with aggregation
+  // Fetch all pageviews with aggregation - paginated to overcome 1000 row limit
   const { data: pageviewsData, isLoading: pageviewsLoading } = useQuery({
     queryKey: ["content-insights-pageviews", dateRange],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("analytics_pageviews")
-        .select("page_path, time_on_page_seconds, scroll_depth_percent, session_id, viewed_at, is_exit")
-        .gte("viewed_at", startDate.toISOString())
-        .lte("viewed_at", endDate.toISOString())
-        .limit(10000);
+      const allData: Array<{
+        page_path: string | null;
+        time_on_page_seconds: number | null;
+        scroll_depth_percent: number | null;
+        session_id: string;
+        viewed_at: string;
+        is_exit: boolean | null;
+      }> = [];
       
-      if (error) throw error;
-      return data || [];
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("analytics_pageviews")
+          .select("page_path, time_on_page_seconds, scroll_depth_percent, session_id, viewed_at, is_exit")
+          .gte("viewed_at", startDate.toISOString())
+          .lte("viewed_at", endDate.toISOString())
+          .order("viewed_at", { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allData.push(...data);
+          offset += pageSize;
+          hasMore = data.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+        
+        // Safety limit to prevent infinite loops
+        if (offset > 50000) break;
+      }
+      
+      return allData;
     },
   });
 
