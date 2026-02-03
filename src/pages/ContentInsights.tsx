@@ -16,6 +16,11 @@ import { ReferralFlows } from "@/components/analytics/ReferralFlows";
 import { ArticleTypeAnalytics } from "@/components/analytics/ArticleTypeAnalytics";
 import { TagsAnalytics } from "@/components/analytics/TagsAnalytics";
 import { ContentTypeBreakdown } from "@/components/analytics/ContentTypeBreakdown";
+import { TimeDeviceAnalytics } from "@/components/analytics/TimeDeviceAnalytics";
+import { UserBehaviorAnalytics } from "@/components/analytics/UserBehaviorAnalytics";
+import { ContentPerformanceAnalytics } from "@/components/analytics/ContentPerformanceAnalytics";
+import { DiscoveryAnalytics } from "@/components/analytics/DiscoveryAnalytics";
+import { NewsletterConversionAnalytics } from "@/components/analytics/NewsletterConversionAnalytics";
 import { 
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
   AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
@@ -747,13 +752,16 @@ const ContentInsights = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 flex-wrap h-auto gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="time-device" className="gap-1">Time & Device</TabsTrigger>
             <TabsTrigger value="referrals" className="gap-1"><Globe className="h-3 w-3" />Referrals</TabsTrigger>
+            <TabsTrigger value="behavior" className="gap-1">Behavior</TabsTrigger>
             <TabsTrigger value="cross-pollination" className="gap-1"><Shuffle className="h-3 w-3" />Cross-Pollination</TabsTrigger>
+            <TabsTrigger value="content-perf" className="gap-1">Content Perf</TabsTrigger>
             <TabsTrigger value="article-types" className="gap-1"><List className="h-3 w-3" />Article Types</TabsTrigger>
             <TabsTrigger value="tags" className="gap-1"><Tags className="h-3 w-3" />Tags</TabsTrigger>
+            <TabsTrigger value="discovery">Discovery</TabsTrigger>
+            <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
             <TabsTrigger value="articles">Articles</TabsTrigger>
-            <TabsTrigger value="static">Static Pages</TabsTrigger>
-            <TabsTrigger value="flows">User Flows</TabsTrigger>
             <TabsTrigger value="dead">Dead Content</TabsTrigger>
           </TabsList>
 
@@ -881,10 +889,60 @@ const ContentInsights = () => {
             </div>
           </TabsContent>
 
+          {/* Time & Device Tab */}
+          <TabsContent value="time-device" className="space-y-6">
+            <TimeDeviceAnalytics 
+              pageviewsData={pageviewsData || []}
+              sessionsData={(sessionsData || []) as any}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
           {/* Referrals Tab */}
           <TabsContent value="referrals" className="space-y-6">
             <ReferralFlows 
               sessionsData={sessionsData || []}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Behavior Tab */}
+          <TabsContent value="behavior" className="space-y-6">
+            <UserBehaviorAnalytics 
+              sessionsData={(sessionsData || []) as any}
+              pageviewsData={pageviewsData || []}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Content Performance Tab */}
+          <TabsContent value="content-perf" className="space-y-6">
+            <ContentPerformanceAnalytics 
+              articlesData={(articlesData || []) as any}
+              categoriesData={categoriesData || []}
+              pageStats={pageStats}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Discovery Tab */}
+          <TabsContent value="discovery" className="space-y-6">
+            <DiscoveryAnalytics 
+              articlesData={(articlesData || []) as any}
+              categoriesData={categoriesData || []}
+              pageStats={pageStats}
+              startDate={startDate}
+              endDate={endDate}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Newsletter Tab */}
+          <TabsContent value="newsletter" className="space-y-6">
+            <NewsletterConversionAnalytics 
+              pageStats={pageStats}
+              startDate={startDate}
+              endDate={endDate}
               isLoading={isLoading}
             />
           </TabsContent>
