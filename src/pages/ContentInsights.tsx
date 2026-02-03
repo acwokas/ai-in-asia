@@ -12,18 +12,21 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Header from "@/components/Header";
+import { ReferralFlows } from "@/components/analytics/ReferralFlows";
+import { ArticleTypeAnalytics } from "@/components/analytics/ArticleTypeAnalytics";
+import { TagsAnalytics } from "@/components/analytics/TagsAnalytics";
+import { ContentTypeBreakdown } from "@/components/analytics/ContentTypeBreakdown";
 import { 
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
   AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
   ChevronRight, ExternalLink, Target, Zap, Users, Activity,
-  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers
+  ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers, Tags, List, Globe
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, differenceInDays } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, Treemap, Sankey, Layer
+  PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
-
 const COLORS = ['hsl(var(--primary))', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
 
 // Content health status based on views and recency
@@ -98,12 +101,53 @@ const ContentInsights = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("id, title, slug, published_at, view_count, primary_category_id, article_type")
+        .select("id, title, slug, published_at, view_count, primary_category_id, article_type, topic_tags, ai_tags")
         .eq("status", "published")
         .order("published_at", { ascending: false });
       
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Fetch sessions data for referral analysis
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ["content-insights-sessions", dateRange],
+    queryFn: async () => {
+      const allData: Array<{
+        session_id: string;
+        referrer: string | null;
+        referrer_domain: string | null;
+        landing_page: string | null;
+        exit_page: string | null;
+      }> = [];
+      
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("analytics_sessions")
+          .select("session_id, referrer, referrer_domain, landing_page, exit_page")
+          .gte("started_at", startDate.toISOString())
+          .lte("started_at", endDate.toISOString())
+          .range(offset, offset + pageSize - 1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allData.push(...data);
+          offset += pageSize;
+          hasMore = data.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+        
+        if (offset > 20000) break;
+      }
+      
+      return allData;
     },
   });
 
@@ -580,7 +624,7 @@ const ContentInsights = () => {
       .slice(0, 10);
   }, [pageStats]);
 
-  const isLoading = pageviewsLoading || articlesLoading;
+  const isLoading = pageviewsLoading || articlesLoading || sessionsLoading;
 
   // Summary stats
   const totalViews = Object.values(pageStats).reduce((sum, s) => sum + s.views, 0);
@@ -701,9 +745,12 @@ const ContentInsights = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 flex-wrap">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="cross-pollination">Cross-Pollination</TabsTrigger>
+            <TabsTrigger value="referrals" className="gap-1"><Globe className="h-3 w-3" />Referrals</TabsTrigger>
+            <TabsTrigger value="cross-pollination" className="gap-1"><Shuffle className="h-3 w-3" />Cross-Pollination</TabsTrigger>
+            <TabsTrigger value="article-types" className="gap-1"><List className="h-3 w-3" />Article Types</TabsTrigger>
+            <TabsTrigger value="tags" className="gap-1"><Tags className="h-3 w-3" />Tags</TabsTrigger>
             <TabsTrigger value="articles">Articles</TabsTrigger>
             <TabsTrigger value="static">Static Pages</TabsTrigger>
             <TabsTrigger value="flows">User Flows</TabsTrigger>
@@ -712,39 +759,15 @@ const ContentInsights = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Content Type Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Content Type Breakdown</CardTitle>
-                  <CardDescription>Where are your pageviews going?</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <Skeleton className="h-[300px]" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={contentTypeBreakdown}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                          outerRadius={100}
-                          dataKey="value"
-                        >
-                          {contentTypeBreakdown.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Enhanced Content Type Breakdown */}
+            <ContentTypeBreakdown 
+              pageStats={pageStats}
+              staticPages={staticPages}
+              categoryPages={categoryPages}
+              isLoading={isLoading}
+            />
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Category Performance */}
               <Card>
                 <CardHeader>
@@ -764,6 +787,41 @@ const ContentInsights = () => {
                         <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Content Mix</CardTitle>
+                  <CardDescription>Article types breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-[300px]" />
+                  ) : (
+                    <div className="space-y-4">
+                      {articlesData && (() => {
+                        const typeCounts: Record<string, number> = {};
+                        articlesData.forEach(a => {
+                          const type = a.article_type || 'standard';
+                          typeCounts[type] = (typeCounts[type] || 0) + 1;
+                        });
+                        const total = articlesData.length;
+                        return Object.entries(typeCounts)
+                          .sort(([,a], [,b]) => b - a)
+                          .map(([type, count]) => (
+                            <div key={type} className="space-y-1">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="capitalize">{type.replace(/_/g, ' ')}</span>
+                                <span className="text-muted-foreground">{count} ({Math.round(count/total*100)}%)</span>
+                              </div>
+                              <Progress value={count/total*100} className="h-2" />
+                            </div>
+                          ));
+                      })()}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -821,6 +879,14 @@ const ContentInsights = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Referrals Tab */}
+          <TabsContent value="referrals" className="space-y-6">
+            <ReferralFlows 
+              sessionsData={sessionsData || []}
+              isLoading={isLoading}
+            />
           </TabsContent>
 
           {/* Cross-Pollination Tab */}
@@ -1093,6 +1159,26 @@ const ContentInsights = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Article Types Tab */}
+          <TabsContent value="article-types" className="space-y-6">
+            <ArticleTypeAnalytics 
+              articlesData={articlesData || []}
+              categoriesData={categoriesData || []}
+              pageStats={pageStats}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+
+          {/* Tags Tab */}
+          <TabsContent value="tags" className="space-y-6">
+            <TagsAnalytics 
+              articlesData={articlesData || []}
+              categoriesData={categoriesData || []}
+              pageStats={pageStats}
+              isLoading={isLoading}
+            />
           </TabsContent>
 
           {/* Articles Tab */}
