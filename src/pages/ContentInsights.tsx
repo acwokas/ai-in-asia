@@ -1106,7 +1106,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                   <CardDescription>Where users land first</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[250px]">
+                  <ScrollArea className="h-[400px]">
                     <div className="space-y-2">
                       {landingPages.map((page, i) => (
                         <div key={page.path} className="flex items-center justify-between py-2 border-b last:border-0">
@@ -1131,7 +1131,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                   <CardDescription>Where users leave</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[250px]">
+                  <ScrollArea className="h-[400px]">
                     <div className="space-y-2">
                       {exitPages.map((page, i) => (
                         <div key={page.path} className="flex items-center justify-between py-2 border-b last:border-0">
