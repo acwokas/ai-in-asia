@@ -211,14 +211,20 @@ const ContentInsights = () => {
     { path: '/ai-policy-atlas', name: 'AI Policy Atlas', expected: 'medium' },
   ];
 
-  // Category pages to track
+  // Category pages to track - main site sections
   const categoryPages = [
-    { path: '/news', name: 'News' },
-    { path: '/business', name: 'Business' },
-    { path: '/life', name: 'Life' },
-    { path: '/learn', name: 'Learn' },
-    { path: '/create', name: 'Create' },
-    { path: '/voices', name: 'Voices' },
+    { path: '/', name: 'Home', slug: 'home' },
+    { path: '/news', name: 'News', slug: 'news' },
+    { path: '/business', name: 'Business', slug: 'business' },
+    { path: '/life', name: 'Life', slug: 'life' },
+    { path: '/learn', name: 'Learn', slug: 'learn' },
+    { path: '/create', name: 'Create', slug: 'create' },
+    { path: '/voices', name: 'Voices', slug: 'voices' },
+    { path: '/guides', name: 'Guides', slug: 'guides' },
+    { path: '/prompts', name: 'Prompts', slug: 'prompts' },
+    { path: '/tools', name: 'Tools', slug: 'tools' },
+    { path: '/events', name: 'Events', slug: 'events' },
+    { path: '/ai-policy-atlas', name: 'Policy Atlas', slug: 'policy-atlas' },
   ];
 
   // Aggregate pageview data
@@ -283,50 +289,69 @@ const ContentInsights = () => {
 
   // Get category page performance - aggregate article views by category
   const categoryPageStats = useMemo(() => {
-    if (!articlesData || !categoriesData) return [];
+    if (!articlesData) return [];
     
-    // Create category lookup
+    // Create category lookup from DB categories
     const categoryLookup = Object.fromEntries(
-      categoriesData.map(c => [c.id, c.slug])
-    );
-    const categoryNames = Object.fromEntries(
-      categoriesData.map(c => [c.slug, c.name])
+      (categoriesData || []).map(c => [c.id, c.slug])
     );
     
-    // Aggregate views by category
+    // Initialize all tracked categories
     const categoryViews: Record<string, { views: number; articles: number; totalTime: number; sessions: Set<string> }> = {};
+    categoryPages.forEach(cat => {
+      categoryViews[cat.slug] = { views: 0, articles: 0, totalTime: 0, sessions: new Set() };
+    });
     
+    // Aggregate article views by category
     articlesData.forEach(article => {
       const categorySlug = categoryLookup[article.primary_category_id || ''] || 'uncategorized';
       const articlePath = `/${categorySlug}/${article.slug}`;
       const stats = pageStats[articlePath];
       
-      if (!categoryViews[categorySlug]) {
-        categoryViews[categorySlug] = { views: 0, articles: 0, totalTime: 0, sessions: new Set() };
-      }
-      
-      categoryViews[categorySlug].articles++;
-      if (stats) {
-        categoryViews[categorySlug].views += stats.views;
-        categoryViews[categorySlug].totalTime += stats.totalTime;
-        stats.uniqueSessions.forEach(s => categoryViews[categorySlug].sessions.add(s));
+      // Only count if this category is in our tracked list
+      if (categoryViews[categorySlug]) {
+        categoryViews[categorySlug].articles++;
+        if (stats) {
+          categoryViews[categorySlug].views += stats.views;
+          categoryViews[categorySlug].totalTime += stats.totalTime;
+          stats.uniqueSessions.forEach(s => categoryViews[categorySlug].sessions.add(s));
+        }
       }
     });
     
-    // Also add category landing page views
+    // Add landing page views for each category
     categoryPages.forEach(page => {
-      const slug = page.path.replace('/', '');
       const stats = pageStats[page.path];
-      if (stats && categoryViews[slug]) {
-        categoryViews[slug].views += stats.views;
-        stats.uniqueSessions.forEach(s => categoryViews[slug].sessions.add(s));
+      if (stats && categoryViews[page.slug]) {
+        categoryViews[page.slug].views += stats.views;
+        stats.uniqueSessions.forEach(s => categoryViews[page.slug].sessions.add(s));
       }
     });
+    
+    // Add views for sub-paths (e.g., /guides/*, /prompts/*, /tools/*, /events/*)
+    const specialSections = ['guides', 'prompts', 'tools', 'events'];
+    Object.entries(pageStats).forEach(([path, stats]) => {
+      specialSections.forEach(section => {
+        if (path.startsWith(`/${section}/`) && categoryViews[section]) {
+          categoryViews[section].views += stats.views;
+          categoryViews[section].articles++; // Count as content items
+          stats.uniqueSessions.forEach(s => categoryViews[section].sessions.add(s));
+        }
+      });
+      // Policy atlas sub-paths
+      if ((path.startsWith('/ai-policy-atlas/') || path.startsWith('/policy/')) && categoryViews['policy-atlas']) {
+        categoryViews['policy-atlas'].views += stats.views;
+        categoryViews['policy-atlas'].articles++;
+        stats.uniqueSessions.forEach(s => categoryViews['policy-atlas'].sessions.add(s));
+      }
+    });
+    
+    // Map to array with names from categoryPages
+    const categoryNameMap = Object.fromEntries(categoryPages.map(c => [c.slug, c.name]));
     
     return Object.entries(categoryViews)
-      .filter(([slug]) => slug !== 'uncategorized')
       .map(([slug, data]) => ({
-        name: categoryNames[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
+        name: categoryNameMap[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
         slug,
         views: data.views,
         articles: data.articles,
