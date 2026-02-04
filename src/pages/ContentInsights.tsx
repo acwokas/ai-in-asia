@@ -364,6 +364,19 @@ const ContentInsights = () => {
 
   // Get top performing articles
   const topArticles = useMemo(() => {
+    // Build article path to publish date lookup
+    const categoryMapData = categoriesData?.map(c => [c.id, c.slug] as const) || [];
+    const categoryLookup = Object.fromEntries(categoryMapData);
+    const articlePathToDate: Record<string, number> = {};
+    articlesData?.forEach(article => {
+      const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
+      const path = `/${categorySlug}/${article.slug}`;
+      const daysSince = article.published_at 
+        ? differenceInDays(new Date(), new Date(article.published_at))
+        : 999;
+      articlePathToDate[path] = daysSince;
+    });
+
     return Object.entries(pageStats)
       .filter(([path]) => {
         // Match article paths like /category/slug
@@ -372,18 +385,22 @@ const ContentInsights = () => {
                !path.startsWith('/editor') &&
                !path.startsWith('/author');
       })
-      .map(([path, stats]) => ({
-        path,
-        views: stats.views,
-        uniqueVisitors: stats.uniqueSessions.size,
-        avgTime: stats.views > 0 ? Math.round(stats.totalTime / stats.views) : 0,
-        avgScroll: stats.scrollCount > 0 ? Math.round(stats.totalScroll / stats.scrollCount) : 0,
-        exitRate: stats.views > 0 ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
-        health: getContentHealth(stats.views, avgArticleViews, 30),
-      }))
+      .map(([path, stats]) => {
+        const daysSincePublish = articlePathToDate[path] ?? 999;
+        return {
+          path,
+          views: stats.views,
+          uniqueVisitors: stats.uniqueSessions.size,
+          avgTime: stats.views > 0 ? Math.round(stats.totalTime / stats.views) : 0,
+          avgScroll: stats.scrollCount > 0 ? Math.round(stats.totalScroll / stats.scrollCount) : 0,
+          exitRate: stats.views > 0 ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
+          daysSincePublish,
+          health: getContentHealth(stats.views, avgArticleViews, daysSincePublish),
+        };
+      })
       .sort((a, b) => b.views - a.views)
       .slice(0, 50);
-  }, [pageStats, avgArticleViews]);
+  }, [pageStats, avgArticleViews, articlesData, categoriesData]);
 
   // Get cold/neglected articles - filter by recency (3-180 days old)
   const coldArticles = useMemo(() => {
@@ -1926,7 +1943,8 @@ Please be specific and provide copy-paste-ready content where possible.`;
                           {article.path}
                         </Link>
                       </div>
-                      <div className="flex items-center gap-4 flex-shrink-0">
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-xs text-muted-foreground">{article.daysSincePublish}d live</span>
                         <Badge variant="secondary">{article.views} views</Badge>
                         <span className="text-xs text-muted-foreground">{formatDuration(article.avgTime)} avg</span>
                       </div>
@@ -1966,7 +1984,10 @@ Please be specific and provide copy-paste-ready content where possible.`;
                         {article.path}
                       </Link>
                     </div>
-                    <Badge variant="outline" className="flex-shrink-0">{article.views} views</Badge>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="text-xs text-muted-foreground">{article.daysSincePublish}d live</span>
+                      <Badge variant="outline">{article.views} views</Badge>
+                    </div>
                   </div>
                 ))}
                 {coldArticles.length === 0 && (
