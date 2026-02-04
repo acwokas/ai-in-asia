@@ -1050,25 +1050,45 @@ Please be specific and provide copy-paste-ready content where possible.`;
                     <Skeleton className="h-[300px]" />
                   ) : (
                     <div className="space-y-4">
-                      {articlesData && (() => {
-                        const typeCounts: Record<string, number> = {};
-                        articlesData.forEach(a => {
-                          const type = a.article_type || 'standard';
-                          typeCounts[type] = (typeCounts[type] || 0) + 1;
-                        });
-                        const total = articlesData.length;
-                        return Object.entries(typeCounts)
-                          .sort(([,a], [,b]) => b - a)
-                          .map(([type, count]) => (
-                            <div key={type} className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="capitalize">{type.replace(/_/g, ' ')}</span>
-                                <span className="text-muted-foreground">{count} ({Math.round(count/total*100)}%)</span>
-                              </div>
-                              <Progress value={count/total*100} className="h-2" />
+                      {/* Homepage views */}
+                      {(() => {
+                        const homeStats = pageStats['/'];
+                        const homeViews = homeStats?.views || 0;
+                        const totalViews = Object.values(pageStats).reduce((sum, s) => sum + s.views, 0);
+                        const homePercent = totalViews > 0 ? Math.round(homeViews / totalViews * 100) : 0;
+                        return (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium">Homepage</span>
+                              <span className="text-muted-foreground">{homeViews.toLocaleString()} views ({homePercent}%)</span>
                             </div>
-                          ));
+                            <Progress value={homePercent} className="h-2" />
+                          </div>
+                        );
                       })()}
+                      
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-xs text-muted-foreground mb-3">Article Types</p>
+                        {articlesData && (() => {
+                          const typeCounts: Record<string, number> = {};
+                          articlesData.forEach(a => {
+                            const type = a.article_type || 'standard';
+                            typeCounts[type] = (typeCounts[type] || 0) + 1;
+                          });
+                          const total = articlesData.length;
+                          return Object.entries(typeCounts)
+                            .sort(([,a], [,b]) => b - a)
+                            .map(([type, count]) => (
+                              <div key={type} className="space-y-1 mb-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="capitalize">{type.replace(/_/g, ' ')}</span>
+                                  <span className="text-muted-foreground">{count} ({Math.round(count/total*100)}%)</span>
+                                </div>
+                                <Progress value={count/total*100} className="h-2" />
+                              </div>
+                            ));
+                        })()}
+                      </div>
                     </div>
                   )}
                 </CardContent>
