@@ -1015,14 +1015,23 @@ Please be specific and provide copy-paste-ready content where possible.`;
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
-                    <Skeleton className="h-[300px]" />
+                    <Skeleton className="h-[400px]" />
                   ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={categoryPageStats} layout="vertical">
+                    <ResponsiveContainer width="100%" height={400}>
+                      <BarChart data={categoryPageStats} layout="vertical" margin={{ left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis type="number" />
-                        <YAxis type="category" dataKey="name" width={80} />
-                        <Tooltip />
+                        <XAxis type="number" tickFormatter={(value) => value.toLocaleString()} />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          width={100} 
+                          tick={{ fontSize: 12 }}
+                          tickLine={false}
+                        />
+                        <Tooltip 
+                          formatter={(value: number) => [value.toLocaleString(), 'Views']}
+                          contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
+                        />
                         <Bar dataKey="views" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
