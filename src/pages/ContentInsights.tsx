@@ -364,17 +364,21 @@ const ContentInsights = () => {
 
   // Get top performing articles
   const topArticles = useMemo(() => {
-    // Build article path to publish date lookup
+    // Build article path to publish date and view_count lookup
     const categoryMapData = categoriesData?.map(c => [c.id, c.slug] as const) || [];
     const categoryLookup = Object.fromEntries(categoryMapData);
-    const articlePathToDate: Record<string, number> = {};
+    const articlePathToData: Record<string, { daysSince: number; publishedAt: string | null; viewCount: number }> = {};
     articlesData?.forEach(article => {
       const categorySlug = categoryLookup[article.primary_category_id || ''] || 'news';
       const path = `/${categorySlug}/${article.slug}`;
       const daysSince = article.published_at 
         ? differenceInDays(new Date(), new Date(article.published_at))
         : 999;
-      articlePathToDate[path] = daysSince;
+      articlePathToData[path] = {
+        daysSince,
+        publishedAt: article.published_at || null,
+        viewCount: article.view_count || 0,
+      };
     });
 
     return Object.entries(pageStats)
@@ -386,7 +390,8 @@ const ContentInsights = () => {
                !path.startsWith('/author');
       })
       .map(([path, stats]) => {
-        const daysSincePublish = articlePathToDate[path] ?? 999;
+        const articleData = articlePathToData[path];
+        const daysSincePublish = articleData?.daysSince ?? 999;
         return {
           path,
           views: stats.views,
@@ -395,6 +400,8 @@ const ContentInsights = () => {
           avgScroll: stats.scrollCount > 0 ? Math.round(stats.totalScroll / stats.scrollCount) : 0,
           exitRate: stats.views > 0 ? ((stats.exits / stats.views) * 100).toFixed(1) : '0',
           daysSincePublish,
+          publishedAt: articleData?.publishedAt || null,
+          totalReads: articleData?.viewCount || 0,
           health: getContentHealth(stats.views, avgArticleViews, daysSincePublish),
         };
       })
@@ -1587,6 +1594,8 @@ Please be specific and provide copy-paste-ready content where possible.`;
                       <thead>
                         <tr className="border-b">
                           <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Article</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Published</th>
+                          <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Total Reads</th>
                           <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Views</th>
                           <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Unique</th>
                           <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Avg Time</th>
@@ -1609,6 +1618,10 @@ Please be specific and provide copy-paste-ready content where possible.`;
                                   <ExternalLink className="h-3 w-3 flex-shrink-0" />
                                 </Link>
                               </td>
+                              <td className="text-right py-3 px-2 text-muted-foreground text-xs">
+                                {article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, yyyy') : '—'}
+                              </td>
+                              <td className="text-right py-3 px-2 font-medium text-primary">{article.totalReads.toLocaleString()}</td>
                               <td className="text-right py-3 px-2 font-medium">{article.views}</td>
                               <td className="text-right py-3 px-2 text-muted-foreground">{article.uniqueVisitors}</td>
                               <td className="text-right py-3 px-2 text-muted-foreground">{formatDuration(article.avgTime)}</td>
