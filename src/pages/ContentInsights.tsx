@@ -32,7 +32,7 @@ import { DiscoveryAnalytics } from "@/components/analytics/DiscoveryAnalytics";
 import { NewsletterConversionAnalytics } from "@/components/analytics/NewsletterConversionAnalytics";
 import { 
   TrendingUp, TrendingDown, Eye, EyeOff, Clock, FileText, 
-  AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3,
+  AlertTriangle, ArrowRight, Flame, Snowflake, BarChart3, RefreshCw,
   ChevronRight, ExternalLink, Target, Zap, Users, Activity,
   ArrowUpRight, ArrowDownRight, Minus, Ghost, Map, Link2, Shuffle, Layers, Tags, List, Globe,
   Copy, Check, Play
@@ -75,7 +75,7 @@ const ContentInsights = () => {
   const endDate = endOfDay(new Date());
 
   // Fetch all pageviews with aggregation - paginated to overcome 1000 row limit
-  const { data: pageviewsData, isLoading: pageviewsLoading } = useQuery({
+  const { data: pageviewsData, isLoading: pageviewsLoading, refetch: refetchPageviews } = useQuery({
     queryKey: ["content-insights-pageviews", dateRange],
     queryFn: async () => {
       const allData: Array<{
@@ -119,7 +119,7 @@ const ContentInsights = () => {
   });
 
   // Fetch all published articles to identify never-viewed ones
-  const { data: articlesData, isLoading: articlesLoading } = useQuery({
+  const { data: articlesData, isLoading: articlesLoading, refetch: refetchArticles } = useQuery({
     queryKey: ["content-insights-articles"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -134,7 +134,7 @@ const ContentInsights = () => {
   });
 
   // Fetch sessions data for referral analysis
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+  const { data: sessionsData, isLoading: sessionsLoading, refetch: refetchSessions } = useQuery({
     queryKey: ["content-insights-sessions", dateRange],
     queryFn: async () => {
       const allData: Array<{
@@ -350,6 +350,7 @@ const ContentInsights = () => {
     const categoryNameMap = Object.fromEntries(categoryPages.map(c => [c.slug, c.name]));
     
     return Object.entries(categoryViews)
+      .filter(([slug]) => slug !== 'home') // Exclude home to avoid skewing chart scale
       .map(([slug, data]) => ({
         name: categoryNameMap[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
         slug,
@@ -889,6 +890,20 @@ Please be specific and provide copy-paste-ready content where possible.`;
                 <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => {
+                refetchPageviews();
+                refetchArticles();
+                refetchSessions();
+                toast.success("Refreshing data...");
+              }}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
             
             <Button variant="outline" asChild>
               <Link to="/admin/site-analytics">
