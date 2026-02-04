@@ -12,11 +12,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, CalendarRange, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { CalendarDays, CalendarRange, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Home } from "lucide-react";
 import { toast } from "sonner";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import Header from "@/components/Header";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 const DragAndDropCalendar = withDragAndDrop<CalendarEvent>(Calendar);
 
@@ -311,6 +320,26 @@ const ContentCalendar = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-16">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/"><Home className="h-4 w-4" /></Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/admin">Admin</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Content Calendar</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2 text-foreground">Content Calendar</h1>
