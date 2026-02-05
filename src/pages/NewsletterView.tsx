@@ -269,6 +269,24 @@ export default function NewsletterView() {
           )}
 
           {/* Worth Watching */}
+          {/* Mystery Link */}
+          {edition?.mysteryLink && (
+            <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-dashed">
+              <div className="text-center">
+                <h3 className="text-xl font-bold mb-2">🎲 Mystery Link</h3>
+                <p className="text-muted-foreground mb-4">
+                  This could link to absolutely anything...
+                </p>
+                <Button asChild variant="outline">
+                  <a href={edition.mysteryLink.url} target="_blank" rel="noopener noreferrer">
+                    Take a Chance <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Worth Watching */}
           {edition?.worth_watching && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4">👀 Worth Watching</h2>
@@ -364,23 +382,6 @@ export default function NewsletterView() {
                 </Button>
               </div>
             </div>
-          )}
-
-          {/* Mystery Link */}
-          {edition?.mysteryLink && (
-            <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-dashed">
-              <div className="text-center">
-                <h3 className="text-xl font-bold mb-2">🎲 Mystery Link</h3>
-                <p className="text-muted-foreground mb-4">
-                  This could link to absolutely anything...
-                </p>
-                <Button asChild variant="outline">
-                  <a href={edition.mysteryLink.url} target="_blank" rel="noopener noreferrer">
-                    Take a Chance <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              </div>
-            </Card>
           )}
 
           {/* Subscribe CTA */}
