@@ -1833,6 +1833,7 @@ export type Database = {
           avg_time_on_site_seconds: number | null
           click_through_rate: number | null
           comments_count_override: number | null
+          continuity_line: string | null
           created_at: string
           created_by: string | null
           edition_date: string
@@ -1865,6 +1866,7 @@ export type Database = {
           avg_time_on_site_seconds?: number | null
           click_through_rate?: number | null
           comments_count_override?: number | null
+          continuity_line?: string | null
           created_at?: string
           created_by?: string | null
           edition_date: string
@@ -1897,6 +1899,7 @@ export type Database = {
           avg_time_on_site_seconds?: number | null
           click_through_rate?: number | null
           comments_count_override?: number | null
+          continuity_line?: string | null
           created_at?: string
           created_by?: string | null
           edition_date?: string
