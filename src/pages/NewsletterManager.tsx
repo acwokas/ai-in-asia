@@ -239,11 +239,11 @@ interface WorthWatching {
       await supabase.functions.invoke("send-weekly-newsletter", {
         body: {
           edition_id: latestEdition.id,
-          test_email: "contact@aiinasia.com",
+          test_email: "me@adrianwatkins.com",
         },
       });
 
-      toast.success("Test email sent to contact@aiinasia.com");
+      toast.success("Test email sent to me@adrianwatkins.com");
     } catch (error: any) {
       toast.error(error.message || "Failed to send test");
     }
