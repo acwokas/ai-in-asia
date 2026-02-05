@@ -506,7 +506,7 @@ interface WorthWatching {
                   View Newsletter
                 </Button>
                 <Button 
-                  onClick={() => window.open(`/newsletter/archive/${latestEdition.edition_date}`, '_blank')}
+                  onClick={() => window.open(`/newsletter/archive/${latestEdition.edition_date}?preview=true`, '_blank')}
                   variant="outline"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />

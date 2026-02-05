@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -19,11 +19,13 @@ import {
 
 export default function NewsletterView() {
   const { date } = useParams<{ date: string }>();
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get("preview") === "true";
 
   const { data: edition, isLoading } = useQuery({
-    queryKey: ["newsletter-edition", date],
+    queryKey: ["newsletter-edition", date, isPreview],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("newsletter_editions")
         .select(`
           *,
@@ -33,9 +35,14 @@ export default function NewsletterView() {
             articles(id, title, slug, excerpt, featured_image_url)
           )
         `)
-        .eq("edition_date", date)
-        .eq("status", "sent")
-        .single();
+        .eq("edition_date", date);
+
+      // Only filter by sent status if not in preview mode
+      if (!isPreview) {
+        query = query.eq("status", "sent");
+      }
+
+      const { data, error } = await query.single();
 
       if (error) throw error;
 
