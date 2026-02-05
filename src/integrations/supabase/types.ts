@@ -1849,7 +1849,9 @@ export type Database = {
           meme_image_url: string | null
           mini_case_study: string | null
           permalink_url: string | null
+          roadmap_body: string | null
           roadmap_skip_if: string | null
+          roadmap_worth_it_if: string | null
           scheduled_send_time: string | null
           send_timezone: string
           status: Database["public"]["Enums"]["newsletter_status"]
@@ -1886,7 +1888,9 @@ export type Database = {
           meme_image_url?: string | null
           mini_case_study?: string | null
           permalink_url?: string | null
+          roadmap_body?: string | null
           roadmap_skip_if?: string | null
+          roadmap_worth_it_if?: string | null
           scheduled_send_time?: string | null
           send_timezone?: string
           status?: Database["public"]["Enums"]["newsletter_status"]
@@ -1923,7 +1927,9 @@ export type Database = {
           meme_image_url?: string | null
           mini_case_study?: string | null
           permalink_url?: string | null
+          roadmap_body?: string | null
           roadmap_skip_if?: string | null
+          roadmap_worth_it_if?: string | null
           scheduled_send_time?: string | null
           send_timezone?: string
           status?: Database["public"]["Enums"]["newsletter_status"]

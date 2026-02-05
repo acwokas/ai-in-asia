@@ -579,6 +579,8 @@ Return ONLY the sentence. No explanation.`;
 
       // Generate Roadmap (Worth it if / Skip if) based on upcoming events
       let roadmapSkipIf = '';
+      let roadmapBody = '';
+      let roadmapWorthItIf = '';
 
       if (shouldGenerateRoadmap) {
         console.log('Generating Roadmap...');
@@ -588,21 +590,37 @@ Return ONLY the sentence. No explanation.`;
           `- ${e.title} (${e.city}, ${e.country}) - ${new Date(e.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${e.event_type}`
         ).join('\n') || 'No upcoming events found.';
 
+        // Pick the first upcoming event as the featured event
+        const featuredEvent = upcomingEvents?.[0];
+        
+        if (featuredEvent) {
+          // Generate event description (roadmap body)
+          const eventDate = new Date(featuredEvent.start_date).toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long' 
+          });
+          roadmapBody = `${featuredEvent.title} takes place in ${featuredEvent.city}, ${featuredEvent.country} on ${eventDate}. ${featuredEvent.event_type === 'conference' ? 'A major gathering for' : 'An opportunity for'} AI professionals across the region.`;
+        }
+
         const roadmapPrompt = `You are an editor for AI in ASIA, writing the "Roadmap" section that highlights upcoming AI events.
 
-UPCOMING EVENTS:
+FEATURED EVENT:
+${featuredEvent ? `${featuredEvent.title} (${featuredEvent.city}, ${featuredEvent.country}) - ${featuredEvent.event_type}` : 'No events available'}
+
+OTHER UPCOMING EVENTS:
 ${eventsContext}
 
-Pick the MOST relevant event for our AI-focused professional audience and write:
-1. A "Skip if" fragment - a SHORT phrase (max 8 words) describing who should skip this event
+For the featured event, write TWO fragments:
+1. "Worth it if" - a SHORT phrase (max 10 words) describing who should attend
+2. "Skip if" - a SHORT phrase (max 10 words) describing who should skip
 
 Rules:
 - British English spelling
 - No em dashes
 - Be honest and practical, not promotional
-- "Skip if" should be genuinely useful (e.g., "Skip if: You're not in enterprise sales")
+- Both fragments should be genuinely useful (e.g., "You work in enterprise AI" / "You're not in enterprise sales")
 
-Return ONLY the "Skip if" fragment text (no label). For example: "You're not in enterprise sales"`;
+Return a JSON object with "worth_it_if" and "skip_if" keys. Return ONLY valid JSON.`;
 
         const roadmapResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
@@ -613,15 +631,24 @@ Return ONLY the "Skip if" fragment text (no label). For example: "You're not in 
           body: JSON.stringify({
             model: 'google/gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: roadmapPrompt }],
-            max_tokens: 50,
+            max_tokens: 100,
             temperature: 0.6,
           }),
         });
 
         if (roadmapResponse.ok) {
           const roadmapData = await roadmapResponse.json();
-          roadmapSkipIf = roadmapData.choices?.[0]?.message?.content?.trim() || '';
-          console.log('Generated roadmap skip if:', roadmapSkipIf);
+          const roadmapContent = roadmapData.choices?.[0]?.message?.content?.trim() || '';
+          try {
+            const cleaned = roadmapContent.replace(/```json\n?|\n?```/g, '').trim();
+            const parsed = JSON.parse(cleaned);
+            roadmapWorthItIf = parsed.worth_it_if || '';
+            roadmapSkipIf = parsed.skip_if || '';
+            console.log('Generated roadmap:', { roadmapBody, roadmapWorthItIf, roadmapSkipIf });
+          } catch (e) {
+            console.error('Failed to parse roadmap JSON:', e);
+            roadmapSkipIf = roadmapContent;
+          }
         }
       }
 
@@ -760,6 +787,12 @@ Return ONLY the sentence, no quotes.`;
      if (shouldGenerateRoadmap && roadmapSkipIf) {
        updateData.roadmap_skip_if = roadmapSkipIf;
      }
+     if (shouldGenerateRoadmap && roadmapBody) {
+       updateData.roadmap_body = roadmapBody;
+     }
+     if (shouldGenerateRoadmap && roadmapWorthItIf) {
+       updateData.roadmap_worth_it_if = roadmapWorthItIf;
+     }
 
     const { error: updateError } = await supabase
       .from('newsletter_editions')
@@ -799,6 +832,8 @@ Return ONLY the sentence, no quotes.`;
         adrians_take: adriansTake,
         collective_one_liner: collectiveOneLiner,
         roadmap_skip_if: roadmapSkipIf,
+        roadmap_body: roadmapBody,
+        roadmap_worth_it_if: roadmapWorthItIf,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
         },

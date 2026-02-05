@@ -65,8 +65,8 @@
    const worthWatching: WorthWatching = edition.worth_watching || {};
    const weeklyPromiseLine = edition.weekly_promise || '';
    const editorsNote = edition.editor_note || '';
-   const povTitle = edition.pov_title || '';
-   const povBody = edition.pov_body || '';
+  const adriansTake = edition.adrians_take || '';
+  const continuityLine = edition.continuity_line || '';
    const roadmapBody = edition.roadmap_body || '';
    const roadmapWorthItIf = edition.roadmap_worth_it_if || '';
    const roadmapSkipIf = edition.roadmap_skip_if || '';
@@ -519,7 +519,7 @@
            <!-- SECTION 5: ADRIAN'S TAKE (POV) -->
            <!-- (hide if empty) -->
            <!-- ================================ -->
-           ${povTitle || povBody ? `
+          ${adriansTake ? `
            <tr>
              <td style="background: #fef9c3; padding: 32px 40px;">
                <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -528,24 +528,35 @@
                      <span style="font-size: 12px; font-weight: 700; color: #a16207; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">💡 Adrian's Take</span>
                    </td>
                  </tr>
-                 ${povTitle ? `
-                 <tr>
-                   <td style="padding-top: 14px;">
-                     <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #78350f; line-height: 1.35; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${povTitle}</h3>
-                   </td>
-                 </tr>
-                 ` : ''}
-                 ${povBody ? `
                  <tr>
                    <td style="padding-top: 12px;">
-                     <p style="margin: 0; font-size: 16px; color: #92400e; line-height: 1.7; font-family: Georgia, 'Times New Roman', serif;">${povBody}</p>
+                    <p style="margin: 0; font-size: 16px; color: #92400e; line-height: 1.7; font-family: Georgia, 'Times New Roman', serif;">${adriansTake}</p>
                    </td>
                  </tr>
-                 ` : ''}
                </table>
              </td>
            </tr>
            ` : ''}
+
+          <!-- ================================ -->
+          <!-- CONTINUITY LINE -->
+          <!-- (hide if empty) -->
+          <!-- ================================ -->
+          ${continuityLine ? `
+          <tr>
+            <td style="background: #f8fafc; padding: 16px 40px; border-bottom: 1px solid #e2e8f0;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0; font-size: 14px; color: #64748b; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">
+                      ${continuityLine}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
  
            <!-- ================================ -->
            <!-- SECTION 6: THIS WEEK'S SIGNALS -->
