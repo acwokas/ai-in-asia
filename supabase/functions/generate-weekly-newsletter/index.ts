@@ -99,6 +99,8 @@ Deno.serve(async (req) => {
     const subjects = generateSubjectLines();
 
     // Create edition
+    const permalinkUrl = `/newsletter/archive/${targetDate}`;
+
     const { data: edition, error: editionError } = await supabase
       .from('newsletter_editions')
       .insert({
@@ -107,6 +109,7 @@ Deno.serve(async (req) => {
         subject_line_variant_b: subjects.b,
         status: 'draft',
         created_by: user?.id,
+        permalink_url: permalinkUrl,
       })
       .select()
       .single();
@@ -133,6 +136,7 @@ Deno.serve(async (req) => {
         edition_date: targetDate,
         top_stories_count: selectedArticles.length,
         subject_line: subjects.a,
+        permalink_url: permalinkUrl,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

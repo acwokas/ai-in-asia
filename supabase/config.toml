@@ -152,3 +152,30 @@ verify_jwt = false
 
 [functions.track-newsletter-click]
 verify_jwt = false
+
+[functions.forward-newsletter]
+verify_jwt = false
+
+[functions.preview-newsletter]
+verify_jwt = true
+
+[functions.get-mapbox-token]
+verify_jwt = false
+
+[functions.migrate-article-images]
+verify_jwt = true
+
+[functions.notify-search-engines]
+verify_jwt = true
+
+[functions.optimize-article-images]
+verify_jwt = true
+
+[functions.recompress-stored-images]
+verify_jwt = true
+
+[functions.fix-external-link-format]
+verify_jwt = true
+
+[functions.calculate-reading-times]
+verify_jwt = true
