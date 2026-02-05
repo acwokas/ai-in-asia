@@ -16,7 +16,7 @@ import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
  import { EditableNewsletterSection } from "@/components/newsletter/EditableNewsletterSection";
- import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail } from "lucide-react";
+ import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail, FlaskConical, Trophy } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -41,6 +41,8 @@ export default function NewsletterManager() {
   const [isGeneratingSubjectLines, setIsGeneratingSubjectLines] = useState(false);
    const [isGeneratingSection, setIsGeneratingSection] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isSendingABTest, setIsSendingABTest] = useState(false);
+  const [isSendingWinner, setIsSendingWinner] = useState(false);
   const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -271,17 +273,61 @@ interface WorthWatching {
     }
   };
 
+  const handleSendABTest = async () => {
+    if (!latestEdition) return;
+    
+    if (!confirm("Send A/B test to 10% + 10% of subscribers? You can send the winner to the rest later.")) {
+      return;
+    }
+
+    setIsSendingABTest(true);
+    try {
+      const { data } = await supabase.functions.invoke("send-weekly-newsletter", {
+        body: { edition_id: latestEdition.id, mode: 'ab_test' },
+      });
+
+      toast.success(`A/B test sent! Variant A: ${data.variant_a_sent}, Variant B: ${data.variant_b_sent}`);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send A/B test");
+    } finally {
+      setIsSendingABTest(false);
+    }
+  };
+
+  const handleSendWinner = async () => {
+    if (!latestEdition) return;
+    
+    if (!confirm("Send the winning variant to all remaining subscribers?")) {
+      return;
+    }
+
+    setIsSendingWinner(true);
+    try {
+      const { data } = await supabase.functions.invoke("send-weekly-newsletter", {
+        body: { edition_id: latestEdition.id, mode: 'send_winner' },
+      });
+
+      toast.success(`Winner: Variant ${data.winning_variant}! Sent to ${data.sent_to_remaining} subscribers. Open rates: A=${data.a_open_rate}%, B=${data.b_open_rate}%`);
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send winner");
+    } finally {
+      setIsSendingWinner(false);
+    }
+  };
+
   const handleSend = async () => {
     if (!latestEdition) return;
     
-    if (!confirm("Are you sure you want to send this newsletter to all subscribers?")) {
+    if (!confirm("Are you sure you want to send this newsletter to all subscribers at once? (Consider using A/B test first)")) {
       return;
     }
 
     setIsSending(true);
     try {
       await supabase.functions.invoke("send-weekly-newsletter", {
-        body: { edition_id: latestEdition.id },
+        body: { edition_id: latestEdition.id, mode: 'full' },
       });
 
       toast.success("Newsletter sending started!");
@@ -561,7 +607,7 @@ interface WorthWatching {
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-6">
+              <div className="flex flex-wrap gap-2 mt-6">
                 <Button onClick={handleViewPreview} variant="outline" disabled={isLoadingPreview}>
                   {isLoadingPreview ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -588,44 +634,162 @@ interface WorthWatching {
                   <Eye className="h-4 w-4 mr-2" />
                   Send Test Email
                 </Button>
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isSending || latestEdition.status === "sent"}
-                  variant={latestEdition.status === "sent" ? "secondary" : "default"}
-                >
-                  {isSending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      {latestEdition.status === "sent" ? "Already Sent" : "Send to All Subscribers"}
-                    </>
-                  )}
-                </Button>
               </div>
 
-              {latestEdition.total_sent > 0 && (
-                <div className="mt-6 p-4 bg-muted rounded-lg">
-                  <h3 className="font-semibold mb-2">Send Statistics</h3>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Sent:</span>{" "}
-                      <span className="font-semibold">{latestEdition.total_sent}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Opened:</span>{" "}
-                      <span className="font-semibold">{latestEdition.total_opened}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Clicked:</span>{" "}
-                      <span className="font-semibold">{latestEdition.total_clicked}</span>
+              {/* A/B Test Controls */}
+              <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <FlaskConical className="h-4 w-4" />
+                  A/B Test Send
+                </h3>
+                
+                {latestEdition.ab_test_phase === 'pending' && latestEdition.status !== 'sent' && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Step 1: Send to 10% of subscribers each (A + B variants) to test which subject line performs better.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSendABTest} 
+                        disabled={isSendingABTest}
+                        variant="outline"
+                      >
+                        {isSendingABTest ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Sending A/B Test...
+                          </>
+                        ) : (
+                          <>
+                            <FlaskConical className="h-4 w-4 mr-2" />
+                            Start A/B Test (20% of subscribers)
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        onClick={handleSend} 
+                        disabled={isSending}
+                        variant="secondary"
+                      >
+                        {isSending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-2" />
+                            Skip A/B Test (Send All)
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {latestEdition.ab_test_phase === 'testing' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 border rounded-lg bg-background">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Variant A</span>
+                          <Badge variant="outline">
+                            {latestEdition.variant_a_opened || 0} / {latestEdition.variant_a_sent || 0} opens
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{latestEdition.subject_line}</p>
+                        <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all"
+                            style={{ 
+                              width: `${latestEdition.variant_a_sent ? ((latestEdition.variant_a_opened || 0) / latestEdition.variant_a_sent * 100) : 0}%` 
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {latestEdition.variant_a_sent ? ((latestEdition.variant_a_opened || 0) / latestEdition.variant_a_sent * 100).toFixed(1) : 0}% open rate
+                        </p>
+                      </div>
+                      <div className="p-3 border rounded-lg bg-background">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Variant B</span>
+                          <Badge variant="outline">
+                            {latestEdition.variant_b_opened || 0} / {latestEdition.variant_b_sent || 0} opens
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{latestEdition.subject_line_variant_b}</p>
+                        <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all"
+                            style={{ 
+                              width: `${latestEdition.variant_b_sent ? ((latestEdition.variant_b_opened || 0) / latestEdition.variant_b_sent * 100) : 0}%` 
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {latestEdition.variant_b_sent ? ((latestEdition.variant_b_opened || 0) / latestEdition.variant_b_sent * 100).toFixed(1) : 0}% open rate
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Wait for opens to come in (recommended: 1-2 hours), then send the winner to remaining subscribers.
+                    </p>
+                    <Button 
+                      onClick={handleSendWinner} 
+                      disabled={isSendingWinner}
+                    >
+                      {isSendingWinner ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Sending Winner...
+                        </>
+                      ) : (
+                        <>
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Send Winner to Remaining Subscribers
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {(latestEdition.ab_test_phase === 'completed' || latestEdition.status === 'sent') && (
+                  <div className="space-y-3">
+                    {latestEdition.winning_variant && (
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm font-medium">
+                          Winner: Variant {latestEdition.winning_variant}
+                        </span>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Total Sent:</span>{" "}
+                        <span className="font-semibold">{latestEdition.total_sent}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Opened:</span>{" "}
+                        <span className="font-semibold">{latestEdition.total_opened}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Clicked:</span>{" "}
+                        <span className="font-semibold">{latestEdition.total_clicked}</span>
+                      </div>
+                    </div>
+                    {latestEdition.variant_a_sent > 0 && (
+                      <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                        <div>
+                          A: {latestEdition.variant_a_opened || 0}/{latestEdition.variant_a_sent} ({((latestEdition.variant_a_opened || 0) / latestEdition.variant_a_sent * 100).toFixed(1)}%)
+                        </div>
+                        <div>
+                          B: {latestEdition.variant_b_opened || 0}/{latestEdition.variant_b_sent || 0} ({latestEdition.variant_b_sent ? ((latestEdition.variant_b_opened || 0) / latestEdition.variant_b_sent * 100).toFixed(1) : 0}%)
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </Card>

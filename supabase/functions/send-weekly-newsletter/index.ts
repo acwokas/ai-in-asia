@@ -483,7 +483,8 @@ Deno.serve(async (req) => {
       await requireAdmin(supabase, user.id);
     }
 
-    const { edition_id, test_email } = await req.json();
+    const { edition_id, test_email, mode = 'full' } = await req.json();
+    // mode: 'ab_test' (send to 10% A + 10% B), 'send_winner' (send winner to remaining), 'full' (legacy)
 
     // Fetch edition
     const { data: edition, error: editionError } = await supabase
@@ -526,32 +527,25 @@ Deno.serve(async (req) => {
     }
 
     // Production send
-    console.log(`Starting production send for edition ${edition_id}`);
+    console.log(`Starting production send for edition ${edition_id}, mode: ${mode}`);
 
     // Fetch all active subscribers
-    const { data: subscribers } = await supabase
+    const { data: allSubscribers } = await supabase
       .from('newsletter_subscribers')
       .select('*')
       .eq('confirmed', true)
       .is('unsubscribed_at', null);
 
-    if (!subscribers || subscribers.length === 0) {
+    if (!allSubscribers || allSubscribers.length === 0) {
       throw new Error('No active subscribers found');
     }
 
-    console.log(`Found ${subscribers.length} active subscribers`);
-
-    // A/B test: split first 20% into two groups of 10% each
-    const totalSubscribers = subscribers.length;
-    const testGroupSize = Math.floor(totalSubscribers * 0.1);
-    
-    const shuffled = [...subscribers].sort(() => Math.random() - 0.5);
-    const groupA = shuffled.slice(0, testGroupSize);
-    const groupB = shuffled.slice(testGroupSize, testGroupSize * 2);
-    const remaining = shuffled.slice(testGroupSize * 2);
+    console.log(`Found ${allSubscribers.length} active subscribers`);
 
     let sentCount = 0;
     let failedCount = 0;
+    let variantASent = 0;
+    let variantBSent = 0;
 
     // Helper function to send to a subscriber
     const sendToSubscriber = async (subscriber: any, variant: string, subjectLine: string) => {
@@ -582,56 +576,197 @@ Deno.serve(async (req) => {
         });
 
         sentCount++;
+        if (variant === 'A') variantASent++;
+        if (variant === 'B') variantBSent++;
       } catch (error) {
         console.error(`Failed to send to ${subscriber.email}:`, error);
         failedCount++;
       }
     };
 
-    // Send to group A
-    for (const subscriber of groupA) {
-      await sendToSubscriber(subscriber, 'A', edition.subject_line);
-    }
+    if (mode === 'ab_test') {
+      // A/B TEST MODE: Send to 10% A + 10% B only
+      const totalSubscribers = allSubscribers.length;
+      const testGroupSize = Math.floor(totalSubscribers * 0.1);
+      
+      const shuffled = [...allSubscribers].sort(() => Math.random() - 0.5);
+      const groupA = shuffled.slice(0, testGroupSize);
+      const groupB = shuffled.slice(testGroupSize, testGroupSize * 2);
 
-    // Send to group B
-    for (const subscriber of groupB) {
-      await sendToSubscriber(subscriber, 'B', edition.subject_line_variant_b || edition.subject_line);
-    }
+      console.log(`A/B Test: Sending to ${groupA.length} (A) + ${groupB.length} (B) subscribers`);
 
-    // Send remaining with variant A (winner - in future could auto-select based on early results)
-    console.log(`Sending to remaining ${remaining.length} subscribers`);
-
-    for (const subscriber of remaining) {
-      await sendToSubscriber(subscriber, 'winner', edition.subject_line);
-
-      // Batch delay
-      if (sentCount % 100 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send to group A
+      for (const subscriber of groupA) {
+        await sendToSubscriber(subscriber, 'A', edition.subject_line);
       }
-    }
 
-    // Update edition
-    await supabase
-      .from('newsletter_editions')
-      .update({
-        status: 'sent',
-        total_sent: sentCount,
-      })
-      .eq('id', edition_id);
-
-    console.log(`Newsletter send complete: ${sentCount} sent, ${failedCount} failed`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        sent: sentCount,
-        failed: failedCount,
-        total: subscribers.length,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // Send to group B
+      for (const subscriber of groupB) {
+        await sendToSubscriber(subscriber, 'B', edition.subject_line_variant_b || edition.subject_line);
       }
-    );
+
+      // Update edition with A/B test stats
+      await supabase
+        .from('newsletter_editions')
+        .update({
+          ab_test_phase: 'testing',
+          ab_test_sent_at: new Date().toISOString(),
+          variant_a_sent: variantASent,
+          variant_b_sent: variantBSent,
+        })
+        .eq('id', edition_id);
+
+      console.log(`A/B test complete: A=${variantASent}, B=${variantBSent}`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          mode: 'ab_test',
+          variant_a_sent: variantASent,
+          variant_b_sent: variantBSent,
+          remaining: totalSubscribers - variantASent - variantBSent,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } else if (mode === 'send_winner') {
+      // SEND WINNER MODE: Determine winner and send to remaining subscribers
+      
+      // Get current open stats from newsletter_sends
+      const { data: variantAOpens } = await supabase
+        .from('newsletter_sends')
+        .select('id')
+        .eq('edition_id', edition_id)
+        .eq('variant', 'A')
+        .not('opened_at', 'is', null);
+
+      const { data: variantBOpens } = await supabase
+        .from('newsletter_sends')
+        .select('id')
+        .eq('edition_id', edition_id)
+        .eq('variant', 'B')
+        .not('opened_at', 'is', null);
+
+      const aOpens = variantAOpens?.length || 0;
+      const bOpens = variantBOpens?.length || 0;
+      const aSent = edition.variant_a_sent || 1;
+      const bSent = edition.variant_b_sent || 1;
+
+      const aOpenRate = aOpens / aSent;
+      const bOpenRate = bOpens / bSent;
+
+      const winningVariant = bOpenRate > aOpenRate ? 'B' : 'A';
+      const winningSubject = winningVariant === 'B' 
+        ? (edition.subject_line_variant_b || edition.subject_line)
+        : edition.subject_line;
+
+      console.log(`Winner: Variant ${winningVariant} (A: ${(aOpenRate * 100).toFixed(1)}%, B: ${(bOpenRate * 100).toFixed(1)}%)`);
+
+      // Get subscribers who haven't been sent to yet
+      const { data: alreadySent } = await supabase
+        .from('newsletter_sends')
+        .select('subscriber_id')
+        .eq('edition_id', edition_id);
+
+      const sentIds = new Set((alreadySent || []).map((s: any) => s.subscriber_id));
+      const remaining = allSubscribers.filter(s => !sentIds.has(s.id));
+
+      console.log(`Sending winner to ${remaining.length} remaining subscribers`);
+
+      for (const subscriber of remaining) {
+        await sendToSubscriber(subscriber, 'winner', winningSubject);
+        
+        // Batch delay
+        if (sentCount % 100 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Update edition
+      await supabase
+        .from('newsletter_editions')
+        .update({
+          status: 'sent',
+          ab_test_phase: 'completed',
+          ab_test_completed_at: new Date().toISOString(),
+          winning_variant: winningVariant,
+          variant_a_opened: aOpens,
+          variant_b_opened: bOpens,
+          total_sent: (edition.variant_a_sent || 0) + (edition.variant_b_sent || 0) + sentCount,
+        })
+        .eq('id', edition_id);
+
+      console.log(`Winner send complete: ${sentCount} sent to remaining subscribers`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          mode: 'send_winner',
+          winning_variant: winningVariant,
+          winning_subject: winningSubject,
+          a_open_rate: (aOpenRate * 100).toFixed(1),
+          b_open_rate: (bOpenRate * 100).toFixed(1),
+          sent_to_remaining: sentCount,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } else {
+      // LEGACY FULL MODE: Send to all at once (original behavior)
+      const totalSubscribers = allSubscribers.length;
+      const testGroupSize = Math.floor(totalSubscribers * 0.1);
+      
+      const shuffled = [...allSubscribers].sort(() => Math.random() - 0.5);
+      const groupA = shuffled.slice(0, testGroupSize);
+      const groupB = shuffled.slice(testGroupSize, testGroupSize * 2);
+      const remaining = shuffled.slice(testGroupSize * 2);
+
+      // Send to group A
+      for (const subscriber of groupA) {
+        await sendToSubscriber(subscriber, 'A', edition.subject_line);
+      }
+
+      // Send to group B
+      for (const subscriber of groupB) {
+        await sendToSubscriber(subscriber, 'B', edition.subject_line_variant_b || edition.subject_line);
+      }
+
+      // Send remaining with variant A
+      console.log(`Sending to remaining ${remaining.length} subscribers`);
+
+      for (const subscriber of remaining) {
+        await sendToSubscriber(subscriber, 'winner', edition.subject_line);
+
+        // Batch delay
+        if (sentCount % 100 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Update edition
+      await supabase
+        .from('newsletter_editions')
+        .update({
+          status: 'sent',
+          total_sent: sentCount,
+          ab_test_phase: 'completed',
+        })
+        .eq('id', edition_id);
+
+      console.log(`Newsletter send complete: ${sentCount} sent, ${failedCount} failed`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          sent: sentCount,
+          failed: failedCount,
+          total: allSubscribers.length,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
   } catch (error: any) {
     console.error('Error sending newsletter:', error);
     return new Response(

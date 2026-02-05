@@ -1828,6 +1828,9 @@ export type Database = {
       }
       newsletter_editions: {
         Row: {
+          ab_test_completed_at: string | null
+          ab_test_phase: string | null
+          ab_test_sent_at: string | null
           adrians_take: string | null
           ai_generated_at: string | null
           avg_pages_per_visit: number | null
@@ -1863,10 +1866,18 @@ export type Database = {
           total_sent: number | null
           unique_clicks: number | null
           updated_at: string
+          variant_a_opened: number | null
+          variant_a_sent: number | null
+          variant_b_opened: number | null
+          variant_b_sent: number | null
           weekly_promise: string | null
+          winning_variant: string | null
           worth_watching: Json | null
         }
         Insert: {
+          ab_test_completed_at?: string | null
+          ab_test_phase?: string | null
+          ab_test_sent_at?: string | null
           adrians_take?: string | null
           ai_generated_at?: string | null
           avg_pages_per_visit?: number | null
@@ -1902,10 +1913,18 @@ export type Database = {
           total_sent?: number | null
           unique_clicks?: number | null
           updated_at?: string
+          variant_a_opened?: number | null
+          variant_a_sent?: number | null
+          variant_b_opened?: number | null
+          variant_b_sent?: number | null
           weekly_promise?: string | null
+          winning_variant?: string | null
           worth_watching?: Json | null
         }
         Update: {
+          ab_test_completed_at?: string | null
+          ab_test_phase?: string | null
+          ab_test_sent_at?: string | null
           adrians_take?: string | null
           ai_generated_at?: string | null
           avg_pages_per_visit?: number | null
@@ -1941,7 +1960,12 @@ export type Database = {
           total_sent?: number | null
           unique_clicks?: number | null
           updated_at?: string
+          variant_a_opened?: number | null
+          variant_a_sent?: number | null
+          variant_b_opened?: number | null
+          variant_b_sent?: number | null
           weekly_promise?: string | null
+          winning_variant?: string | null
           worth_watching?: Json | null
         }
         Relationships: [
@@ -3559,6 +3583,10 @@ export type Database = {
       }
       increment_newsletter_opens: {
         Args: { edition_uuid: string }
+        Returns: undefined
+      }
+      increment_variant_opens: {
+        Args: { edition_uuid: string; variant_letter: string }
         Returns: undefined
       }
       update_reading_streak: { Args: { p_user_id: string }; Returns: undefined }
