@@ -125,6 +125,8 @@ interface WorthWatching {
 
  const handleGenerateFullNewsletter = async () => {
    setIsGeneratingFull(true);
+    let editionId: string | null = null;
+    
    try {
      // Step 1: Generate the newsletter edition
      toast.info("Step 1/2: Creating newsletter edition...");
@@ -132,10 +134,46 @@ interface WorthWatching {
        body: { edition_date: new Date().toISOString().split("T")[0] },
      });
 
-     if (editionError) throw editionError;
-     
-     const editionId = editionData.edition_id;
-     if (!editionId) throw new Error("Failed to get edition ID");
+      // Handle case where edition already exists - extract edition_id and continue
+      if (editionError) {
+        // Check if the error response contains an existing edition_id
+        try {
+          const errorBody = JSON.parse(editionError.message || '{}');
+          if (errorBody.edition_id) {
+            editionId = errorBody.edition_id;
+            toast.info("Edition already exists, regenerating content...");
+          } else {
+            throw editionError;
+          }
+        } catch {
+          // If we can't parse the error, check editionData which may contain the edition_id
+          if (editionData?.edition_id) {
+            editionId = editionData.edition_id;
+            toast.info("Edition already exists, regenerating content...");
+          } else {
+            throw editionError;
+          }
+        }
+      } else {
+        editionId = editionData?.edition_id;
+      }
+      
+      if (!editionId) {
+        // Last resort: use the latest edition from the database
+        const { data: latestEd } = await supabase
+          .from("newsletter_editions")
+          .select("id")
+          .order("edition_date", { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (latestEd?.id) {
+          editionId = latestEd.id;
+          toast.info("Using existing edition...");
+        } else {
+          throw new Error("Failed to get edition ID");
+        }
+      }
 
      // Step 2: Generate all AI content
      toast.info("Step 2/2: Generating AI content...");
@@ -152,12 +190,8 @@ interface WorthWatching {
      });
      refetch();
    } catch (error: any) {
-     // Handle case where edition already exists
-     if (error.message?.includes("already exists")) {
-       toast.error("An edition already exists for today. Use the AI content buttons to regenerate specific sections.");
-     } else {
-       toast.error(error.message || "Failed to generate newsletter");
-     }
+      console.error("Newsletter generation error:", error);
+      toast.error(error.message || "Failed to generate newsletter");
    } finally {
      setIsGeneratingFull(false);
    }
