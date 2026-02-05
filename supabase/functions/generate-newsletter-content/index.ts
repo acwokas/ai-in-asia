@@ -123,17 +123,18 @@ Deno.serve(async (req) => {
     let editorNote = edition.editor_note || '';
     
     if (shouldGenerateEditorNote) {
-      const editorNotePrompt = `You are an editor for AI in ASIA, a publication covering artificial intelligence across Asia. 
+      const editorNotePrompt = `You are an editor for AI in ASIA, writing for curious professionals.
 
 Based on this week's top stories:
 ${articlesContext}
 
-Write a concise Editor's Note (60-80 words) that:
-1. Sets context for what's happening in AI across Asia this week
-2. References 1-2 key themes (regulation, platforms, adoption, regional signals)
-3. Uses an authoritative but accessible editorial voice
-4. Does NOT use bullet points or lists
-5. Does NOT start with "This week" - be more creative
+Write a friendly, conversational Editor's Note (60-80 words) that:
+1. Gets straight to the point about what's happening in AI across Asia
+2. Picks 1-2 interesting themes and explains why they matter
+3. Writes like you're chatting with a smart friend over coffee - warm, clear, no jargon
+4. Uses short sentences and simple words (aim for 8th grade reading level)
+5. Does NOT use bullet points, lists, or start with "This week"
+6. Can include a touch of wit or a surprising observation
 
 Return ONLY the paragraph text, no headers or quotes.`;
 
@@ -147,11 +148,11 @@ Return ONLY the paragraph text, no headers or quotes.`;
         body: JSON.stringify({
           model: 'google/gemini-3-flash-preview',
           messages: [
-            { role: 'system', content: 'You are an expert AI news editor writing for a business audience in Asia. Be concise, authoritative, and insightful.' },
+            { role: 'system', content: 'You are a friendly AI news editor writing for curious professionals in Asia. Be warm, clear, and occasionally witty. Avoid corporate jargon - write like a human, not a press release.' },
             { role: 'user', content: editorNotePrompt }
           ],
           max_tokens: 300,
-          temperature: 0.7,
+          temperature: 0.8,
         }),
       });
 
@@ -178,16 +179,16 @@ Return ONLY the paragraph text, no headers or quotes.`;
       console.log('Generating Worth Watching sections...');
 
     // 1. Emerging AI Trends
-    const trendsPrompt = `You are an editor for AI in ASIA, a publication covering artificial intelligence across Asia.
+    const trendsPrompt = `You are an editor for AI in ASIA, writing for curious professionals.
 
 Based on this week's top stories:
 ${articlesContext}
 
-Write a "Emerging AI Trends" section (40-60 words) that:
-1. Identifies 2-3 rising trends or themes spotted across recent coverage
-2. Examples: 'Edge AI adoption accelerating in Southeast Asia', 'Enterprise LLM deployments maturing'
-3. Uses language like "signals suggest", "momentum building around"
-4. Focuses on patterns, not individual stories
+Write a punchy "Emerging AI Trends" section (40-60 words) that:
+1. Spots 2-3 interesting patterns from recent stories
+2. Explains them simply - your reader is smart but busy
+3. Uses plain language: "more companies are..." not "momentum building around..."
+4. Makes it feel exciting, not like a business report
 
 Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
 
@@ -227,11 +228,11 @@ Return a JSON object with "title" and "content" keys. The title should be a catc
 Upcoming AI events:
 ${eventsContext}
 
-Write an "Upcoming Events" section (40-60 words) that:
-1. Highlights 2-3 notable AI events, conferences, or webinars happening soon
-2. Mentions the event names, locations, and dates
-3. Uses an informative, calendar-like tone
-4. Encourages readers to mark their calendars
+Write a fun "Upcoming Events" section (40-60 words) that:
+1. Picks 2-3 events worth knowing about
+2. Tells readers what they'd actually get out of attending
+3. Keeps it casual - "If you're in Singapore next week..." vibes
+4. Makes events sound interesting, not corporate
 
 Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
 
@@ -262,16 +263,16 @@ Return a JSON object with "title" and "content" keys. The title should be a catc
     }
 
     // 3. Company/Startup Spotlight
-    const spotlightPrompt = `You are an editor for AI in ASIA, a publication covering AI companies across Asia.
+    const spotlightPrompt = `You are an editor for AI in ASIA, writing for curious professionals.
 
 Based on this week's top stories:
 ${articlesContext}
 
 Write a "Company Spotlight" section (40-60 words) that:
-1. Highlights 1-2 AI companies or startups making moves in Asia
-2. Focus on companies mentioned in the articles or related to the themes
-3. Brief context on what they're doing and why it matters
-4. Use phrases like "worth keeping an eye on", "emerging player"
+1. Highlights 1-2 AI companies doing interesting things in Asia
+2. Explains what they're up to in plain English
+3. Tells readers why they should care (in a sentence)
+4. Sounds like you're sharing a hot tip with a friend
 
 Return a JSON object with "title" and "content" keys. The title should name the company/companies featured. Return ONLY valid JSON.`;
 
@@ -315,10 +316,10 @@ And this week's coverage context:
 ${articlesContext}
 
 Write a "Policy Watch" section (40-60 words) that:
-1. Summarizes pending or recently announced AI policies, regulations, or government initiatives
-2. Focus on Asian markets: China, India, Singapore, Japan, Korea, Southeast Asia
-3. Use language like "regulators are signaling", "framework expected by", "consultation period closes"
-4. Help readers understand what's at stake for their business
+1. Explains what governments are doing about AI in simple terms
+2. Focus on Asia: China, India, Singapore, Japan, Korea, Southeast Asia
+3. Skip the legal jargon - tell readers what it actually means for them
+4. If it's boring news, find the interesting angle
 
 Return a JSON object with "title" and "content" keys. The title should reference the key regulatory focus. Return ONLY valid JSON.`;
 
@@ -365,13 +366,14 @@ ${articlesContext}
 TRENDS: ${worthWatching.trends?.content || 'N/A'}
 POLICY: ${worthWatching.policy?.content || 'N/A'}
 
-Generate 2 compelling email subject lines (A/B test variants) that:
+Generate 2 fun email subject lines (A/B test variants) that:
 1. Are under 50 characters each
 2. NO emojis
-3. Create curiosity or urgency
-4. Reference specific content from this week
-5. Variant A: Focus on the lead story or biggest theme
-6. Variant B: Use a different angle - could be a question, a number, or contrarian take
+3. Sound like a friend telling you something interesting
+4. Reference something specific from this week's content
+5. Variant A: The main hook - what's the most interesting thing?
+6. Variant B: Try a different angle - a question, a number, or a surprising take
+7. Avoid corporate-speak like "transforming", "landscape", "ecosystem"
 
 Return a JSON object with "subject_a" and "subject_b" keys. Return ONLY valid JSON.`;
 
@@ -417,10 +419,11 @@ Title: "${article.title}"
 Excerpt: ${article.excerpt || 'No excerpt available'}
 
 The sentence should:
-- Focus on the impact or significance
-- Be written for busy executives
+- Focus on why a reader would care
+- Use simple, everyday language (8th grade reading level)
 - NOT start with "This article" or "The article"
-- NOT use generic phrases like "explores", "discusses", "looks at"
+- NOT use jargon or buzzwords like "landscape", "ecosystem", "paradigm"
+- Sound like something you'd say out loud to a colleague
 
 Return ONLY the sentence, no quotes.`;
 
