@@ -9,6 +9,21 @@ const corsHeaders = {
 const SITE_URL = 'https://aiinasia.com';
 const LOGO_URL = 'https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/aiinasia-wordmark.png';
 
+interface ToolPrompt {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  url: string;
+}
+
+interface MysteryLink {
+  id: string;
+  title: string;
+  url: string;
+  description: string;
+}
+
 interface WorthWatchingSection {
   title: string;
   content: string;
@@ -24,7 +39,9 @@ interface WorthWatching {
 function generateNewsletterHTML(
   edition: any,
   topStories: any[],
-  policyArticle: any
+  policyArticle: any,
+  toolsPrompts: ToolPrompt[],
+  mysteryLinks: MysteryLink[]
 ): string {
   const editionDateFormatted = new Date(edition.edition_date).toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -37,6 +54,109 @@ function generateNewsletterHTML(
   const fullPermalinkUrl = `${SITE_URL}${permalinkUrl}`;
 
   const worthWatching: WorthWatching = edition.worth_watching || {};
+
+  // Generate Tools & Prompts section
+  const toolsPromptsHtml = toolsPrompts.length > 0 ? `
+    <tr>
+      <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td>
+              <span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🛠️ Tools & Prompts</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top: 8px;">
+              <p style="margin: 0; font-size: 15px; color: rgba(255,255,255,0.9); font-family: Georgia, 'Times New Roman', serif; font-style: italic;">Practical resources to enhance your AI workflow</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top: 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${toolsPrompts.map((item, idx) => `
+                <tr>
+                  <td style="padding-bottom: ${idx < toolsPrompts.length - 1 ? '12px' : '0'};">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: rgba(255,255,255,0.15); border-radius: 10px;">
+                      <tr>
+                        <td style="padding: 16px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td>
+                                <span style="display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: 6px;">${item.category}</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding-top: 6px;">
+                                <a href="${item.url}" style="color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${item.title}</a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding-top: 6px;">
+                                <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.5; font-family: Georgia, 'Times New Roman', serif;">${item.description || ''}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                `).join('')}
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  ` : '';
+
+  // Generate Mystery Links section
+  const mysteryLinksHtml = mysteryLinks.length > 0 ? `
+    <tr>
+      <td style="background: #ffffff; padding: 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td align="center">
+              <span style="font-size: 32px;">🔮</span>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top: 12px;">
+              <span style="font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Mystery Links</span>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top: 8px;">
+              <p style="margin: 0; font-size: 15px; color: #64748b; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">Curious discoveries from across the AI landscape</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top: 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${mysteryLinks.map((link, idx) => `
+                <tr>
+                  <td style="padding-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'}; border-bottom: ${idx < mysteryLinks.length - 1 ? '1px solid #e2e8f0' : 'none'}; margin-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'};">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'};">
+                      <tr>
+                        <td width="40" style="vertical-align: top;">
+                          <span style="display: inline-block; width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px; text-align: center; line-height: 32px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${idx + 1}</span>
+                        </td>
+                        <td style="vertical-align: top; padding-left: 12px;">
+                          <a href="${link.url}" style="color: #0f172a; text-decoration: none; font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${link.title}</a>
+                          ${link.description ? `<p style="margin: 6px 0 0 0; font-size: 14px; color: #64748b; line-height: 1.5; font-family: Georgia, 'Times New Roman', serif;">${link.description}</p>` : ''}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                `).join('')}
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  ` : '';
 
   // Generate featured story (first article - full width with image)
   const featuredStory = topStories?.[0];
@@ -339,6 +459,12 @@ function generateNewsletterHTML(
           </tr>
           ` : ''}
 
+          <!-- Tools & Prompts -->
+          ${toolsPromptsHtml}
+
+          <!-- Mystery Links -->
+          ${mysteryLinksHtml}
+
           <!-- CTA Section -->
           <tr>
             <td style="background: #ffffff; padding: 40px 32px; text-align: center;">
@@ -548,7 +674,27 @@ Deno.serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const html = generateNewsletterHTML(edition, topStories || [], policyArticle);
+    // Fetch active tools & prompts
+    const { data: toolsPrompts } = await supabase
+      .from('newsletter_tools_prompts')
+      .select('id, category, title, description, url')
+      .eq('is_active', true)
+      .limit(4);
+
+    // Fetch active mystery links
+    const { data: mysteryLinks } = await supabase
+      .from('newsletter_mystery_links')
+      .select('id, title, url, description')
+      .eq('is_active', true)
+      .limit(3);
+
+    const html = generateNewsletterHTML(
+      edition, 
+      topStories || [], 
+      policyArticle,
+      toolsPrompts || [],
+      mysteryLinks || []
+    );
 
     return new Response(
       JSON.stringify({ success: true, html }),
