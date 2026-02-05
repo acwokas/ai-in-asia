@@ -134,13 +134,6 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
       )}
 
 
-      {/* Continuity Line */}
-      {edition.continuity_line && (
-        <div className="text-center py-2">
-          <p className="text-sm text-muted-foreground italic">{edition.continuity_line}</p>
-        </div>
-      )}
- 
        {/* Hero Article */}
        {edition.heroArticle && (
          <Card className="overflow-hidden">
@@ -171,6 +164,10 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {edition.newsletter_top_stories && Array.isArray(edition.newsletter_top_stories) && edition.newsletter_top_stories.length > 0 && (
          <div>
            <h2 className={headingClass}>📚 This Week's Signals</h2>
+          {/* Continuity Line - directly under Signals heading */}
+          {edition.continuity_line && (
+            <p className="text-sm text-muted-foreground italic mb-4">{edition.continuity_line}</p>
+          )}
            <div className="space-y-4">
              {edition.newsletter_top_stories
                .sort((a, b) => a.position - b.position)
