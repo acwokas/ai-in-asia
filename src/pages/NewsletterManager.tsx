@@ -157,7 +157,12 @@ interface WorthWatching {
       } else {
         editionId = editionData?.edition_id;
       }
-      
+      // For Supabase functions, even on error the response body comes in 'data'
+      // Check if edition already exists (400 response with edition_id)
+      if (!editionId && editionData?.edition_id) {
+        editionId = editionData.edition_id;
+      }
+
       if (!editionId) {
         // Last resort: use the latest edition from the database
         const { data: latestEd } = await supabase
