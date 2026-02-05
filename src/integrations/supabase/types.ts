@@ -2375,6 +2375,33 @@ export type Database = {
           },
         ]
       }
+      newsletter_unsubscribes: {
+        Row: {
+          email: string
+          feedback: string | null
+          id: string
+          reason: string | null
+          source: string | null
+          unsubscribed_at: string
+        }
+        Insert: {
+          email: string
+          feedback?: string | null
+          id?: string
+          reason?: string | null
+          source?: string | null
+          unsubscribed_at?: string
+        }
+        Update: {
+          email?: string
+          feedback?: string | null
+          id?: string
+          reason?: string | null
+          source?: string | null
+          unsubscribed_at?: string
+        }
+        Relationships: []
+      }
       newsletter_user_journeys: {
         Row: {
           articles_read: string[] | null

@@ -483,7 +483,7 @@ function generateNewsletterHTML(
                 </tr>
                 <tr>
                   <td align="center" style="padding-top: 24px;">
-                    <a href="#" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Unsubscribe</a>
+                    <a href="${SITE_URL}/newsletter/unsubscribe" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Unsubscribe</a>
                     <span style="color: #475569; margin: 0 8px;">•</span>
                     <a href="${SITE_URL}/privacy" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Privacy</a>
                     <span style="color: #475569; margin: 0 8px;">•</span>

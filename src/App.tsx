@@ -115,6 +115,8 @@ const ImportNewsletterSubscribers = lazy(() => import("./pages/ImportNewsletterS
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -237,6 +239,7 @@ const App = () => (
               <Route path="/newsletter/archive/:date" element={<NewsletterView />} />
               <Route path="/newsletter-weekly" element={<NewsletterWeeklyLatest />} />
               <Route path="/newsletter/forward" element={<NewsletterForward />} />
+              <Route path="/newsletter/unsubscribe" element={<Unsubscribe />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
@@ -288,6 +291,7 @@ const App = () => (
               <Route path="/admin/site-analytics" element={<SiteAnalytics />} />
               <Route path="/admin/content-insights" element={<ContentInsights />} />
               <Route path="/admin/import-subscribers" element={<ImportNewsletterSubscribers />} />
+              <Route path="/admin/unsubscribes" element={<AdminUnsubscribes />} />
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />

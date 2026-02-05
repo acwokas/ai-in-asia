@@ -156,6 +156,9 @@ verify_jwt = false
 [functions.forward-newsletter]
 verify_jwt = false
 
+[functions.unsubscribe-newsletter]
+verify_jwt = false
+
 [functions.preview-newsletter]
 verify_jwt = true
 
