@@ -111,46 +111,37 @@ function generateNewsletterHTML(
   ` : '';
 
   // Generate Mystery Links section
-  const mysteryLinksHtml = mysteryLinks.length > 0 ? `
+  // Mystery Links: show a single enticing CTA linking to a random mystery link
+  const randomMysteryLink = mysteryLinks.length > 0 ? mysteryLinks[Math.floor(Math.random() * mysteryLinks.length)] : null;
+  const mysteryLinksHtml = randomMysteryLink ? `
     <tr>
-      <td style="background: #ffffff; padding: 32px;">
+      <td style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 40px 32px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td align="center">
-              <span style="font-size: 32px;">🔮</span>
+              <span style="font-size: 48px;">🔮</span>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top: 16px;">
+              <span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">The Mystery Link</span>
             </td>
           </tr>
           <tr>
             <td align="center" style="padding-top: 12px;">
-              <span style="font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Mystery Links</span>
+              <p style="margin: 0; font-size: 22px; color: #ffffff; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.4;">This could link to<br/>absolutely anything.</p>
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding-top: 8px;">
-              <p style="margin: 0; font-size: 15px; color: #64748b; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">Curious discoveries from across the AI landscape</p>
+            <td align="center" style="padding-top: 10px;">
+              <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.5); font-family: Georgia, 'Times New Roman', serif; font-style: italic;">Feeling lucky?</p>
             </td>
           </tr>
           <tr>
-            <td style="padding-top: 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                ${mysteryLinks.map((link, idx) => `
-                <tr>
-                  <td style="padding-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'}; border-bottom: ${idx < mysteryLinks.length - 1 ? '1px solid #e2e8f0' : 'none'}; margin-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'};">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-bottom: ${idx < mysteryLinks.length - 1 ? '16px' : '0'};">
-                      <tr>
-                        <td width="40" style="vertical-align: top;">
-                          <span style="display: inline-block; width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px; text-align: center; line-height: 32px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${idx + 1}</span>
-                        </td>
-                        <td style="vertical-align: top; padding-left: 12px;">
-                          <a href="${link.url}" style="color: #0f172a; text-decoration: none; font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${link.title}</a>
-                          ${link.description ? `<p style="margin: 6px 0 0 0; font-size: 14px; color: #64748b; line-height: 1.5; font-family: Georgia, 'Times New Roman', serif;">${link.description}</p>` : ''}
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                `).join('')}
-              </table>
+            <td align="center" style="padding-top: 24px;">
+              <a href="${randomMysteryLink.url}" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); color: #ffffff; font-size: 16px; font-weight: 700; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                Take Me There →
+              </a>
             </td>
           </tr>
         </table>
