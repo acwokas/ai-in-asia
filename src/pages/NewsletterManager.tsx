@@ -126,41 +126,71 @@ interface WorthWatching {
  const handleGenerateFullNewsletter = async () => {
    setIsGeneratingFull(true);
     let editionId: string | null = null;
+    const editionDate = new Date().toISOString().split("T")[0];
     
    try {
      // Step 1: Generate the newsletter edition
-     toast.info("Step 1/2: Creating newsletter edition...");
-     const { data: editionData, error: editionError } = await supabase.functions.invoke("generate-weekly-newsletter", {
-       body: { edition_date: new Date().toISOString().split("T")[0] },
-     });
+      toast.info("Step 1/2: Ensuring newsletter edition...");
 
-      // Handle case where edition already exists - extract edition_id and continue
-      if (editionError) {
-        // Check if the error response contains an existing edition_id
-        try {
-          const errorBody = JSON.parse(editionError.message || '{}');
-          if (errorBody.edition_id) {
-            editionId = errorBody.edition_id;
-            toast.info("Edition already exists, regenerating content...");
-          } else {
-            throw editionError;
-          }
-        } catch {
-          // If we can't parse the error, check editionData which may contain the edition_id
-          if (editionData?.edition_id) {
-            editionId = editionData.edition_id;
-            toast.info("Edition already exists, regenerating content...");
-          } else {
-            throw editionError;
+      // Avoid calling the backend function if today's edition already exists.
+      // This prevents a 400 response from being treated as an app error.
+      const { data: existingEdition } = await supabase
+        .from("newsletter_editions")
+        .select("id")
+        .eq("edition_date", editionDate)
+        .maybeSingle();
+
+      if (existingEdition?.id) {
+        editionId = existingEdition.id;
+        toast.info("Edition already exists, regenerating content...");
+      } else {
+        const { data: editionData, error: editionError } = await supabase.functions.invoke(
+          "generate-weekly-newsletter",
+          { body: { edition_date: editionDate } }
+        );
+
+        // Happy path: newly created edition
+        if (editionData?.edition_id) {
+          editionId = editionData.edition_id;
+        }
+
+        // If creation failed but error message contains JSON with edition_id, recover and continue
+        if (!editionId && editionError?.message) {
+          const jsonStart = editionError.message.indexOf("{");
+          if (jsonStart >= 0) {
+            try {
+              const parsed = JSON.parse(editionError.message.slice(jsonStart));
+              if (parsed?.edition_id) {
+                editionId = parsed.edition_id;
+                toast.info("Edition already exists, regenerating content...");
+              }
+            } catch {
+              // ignore parse failures
+            }
           }
         }
-      } else {
-        editionId = editionData?.edition_id;
+
+        // Some runtimes may still include the body in `data` even when `error` is present
+        if (!editionId && (editionData as any)?.edition_id) {
+          editionId = (editionData as any).edition_id;
+        }
+
+        // If we still don't have an editionId, the error is real
+        if (!editionId && editionError) throw editionError;
       }
-      // For Supabase functions, even on error the response body comes in 'data'
-      // Check if edition already exists (400 response with edition_id)
-      if (!editionId && editionData?.edition_id) {
-        editionId = editionData.edition_id;
+
+      if (!editionId) {
+        // Fallback: fetch by date (avoids picking the wrong edition)
+        const { data: byDate } = await supabase
+          .from("newsletter_editions")
+          .select("id")
+          .eq("edition_date", editionDate)
+          .maybeSingle();
+
+        if (byDate?.id) {
+          editionId = byDate.id;
+          toast.info("Using existing edition...");
+        }
       }
 
       if (!editionId) {
@@ -170,15 +200,15 @@ interface WorthWatching {
           .select("id")
           .order("edition_date", { ascending: false })
           .limit(1)
-          .single();
-        
+          .maybeSingle();
+
         if (latestEd?.id) {
           editionId = latestEd.id;
           toast.info("Using existing edition...");
-        } else {
-          throw new Error("Failed to get edition ID");
         }
       }
+
+      if (!editionId) throw new Error("Failed to get edition ID");
 
      // Step 2: Generate all AI content
      toast.info("Step 2/2: Generating AI content...");
