@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
      const shouldGenerateWeeklyPromise = generateAll || sections?.includes('weekly_promise');
      const shouldGenerateAdriansTake = generateAll || sections?.includes('adrians_take');
       const shouldGenerateCollectiveOneLiner = generateAll || sections?.includes('collective_one_liner');
+     const shouldGenerateRoadmap = generateAll || sections?.includes('roadmap');
 
     console.log(`Generating AI content for edition: ${edition_id}`, { sections, generateAll });
 
@@ -576,6 +577,54 @@ Return ONLY the sentence. No explanation.`;
         }
       }
 
+      // Generate Roadmap (Worth it if / Skip if) based on upcoming events
+      let roadmapSkipIf = '';
+
+      if (shouldGenerateRoadmap) {
+        console.log('Generating Roadmap...');
+        
+        // Use the upcoming events we already fetched
+        const eventsContext = upcomingEvents?.map((e: any) => 
+          `- ${e.title} (${e.city}, ${e.country}) - ${new Date(e.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${e.event_type}`
+        ).join('\n') || 'No upcoming events found.';
+
+        const roadmapPrompt = `You are an editor for AI in ASIA, writing the "Roadmap" section that highlights upcoming AI events.
+
+UPCOMING EVENTS:
+${eventsContext}
+
+Pick the MOST relevant event for our AI-focused professional audience and write:
+1. A "Skip if" fragment - a SHORT phrase (max 8 words) describing who should skip this event
+
+Rules:
+- British English spelling
+- No em dashes
+- Be honest and practical, not promotional
+- "Skip if" should be genuinely useful (e.g., "Skip if: You're not in enterprise sales")
+
+Return ONLY the "Skip if" fragment text (no label). For example: "You're not in enterprise sales"`;
+
+        const roadmapResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [{ role: 'user', content: roadmapPrompt }],
+            max_tokens: 50,
+            temperature: 0.6,
+          }),
+        });
+
+        if (roadmapResponse.ok) {
+          const roadmapData = await roadmapResponse.json();
+          roadmapSkipIf = roadmapData.choices?.[0]?.message?.content?.trim() || '';
+          console.log('Generated roadmap skip if:', roadmapSkipIf);
+        }
+      }
+
     // Generate A/B Subject Lines based on content (if requested)
     let subjectLineA = edition.subject_line || 'This week in AI across Asia';
     let subjectLineB = edition.subject_line_variant_b || 'AI in ASIA Weekly Brief';
@@ -708,6 +757,9 @@ Return ONLY the sentence, no quotes.`;
      if (shouldGenerateCollectiveOneLiner && collectiveOneLiner) {
        updateData.collective_one_liner = collectiveOneLiner;
      }
+     if (shouldGenerateRoadmap && roadmapSkipIf) {
+       updateData.roadmap_skip_if = roadmapSkipIf;
+     }
 
     const { error: updateError } = await supabase
       .from('newsletter_editions')
@@ -746,6 +798,7 @@ Return ONLY the sentence, no quotes.`;
         weekly_promise: weeklyPromise,
         adrians_take: adriansTake,
         collective_one_liner: collectiveOneLiner,
+        roadmap_skip_if: roadmapSkipIf,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
         },
