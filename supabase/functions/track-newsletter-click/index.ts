@@ -45,15 +45,32 @@ Deno.serve(async (req) => {
     if (action === 'open' && sendId) {
       console.log(`Tracking email open for send ${sendId}`);
       
-      await supabase
+      // Get the send record to check variant before updating
+      const { data: sendRecord } = await supabase
         .from('newsletter_sends')
-        .update({ opened_at: new Date().toISOString() })
+        .select('variant, opened_at')
         .eq('id', sendId)
-        .is('opened_at', null); // Only update if not already opened
+        .single();
 
-      // Update edition open count
-      if (editionId) {
-        await supabase.rpc('increment_newsletter_opens', { edition_uuid: editionId });
+      // Only update if not already opened
+      if (sendRecord && !sendRecord.opened_at) {
+        await supabase
+          .from('newsletter_sends')
+          .update({ opened_at: new Date().toISOString() })
+          .eq('id', sendId);
+
+        // Update edition open count
+        if (editionId) {
+          await supabase.rpc('increment_newsletter_opens', { edition_uuid: editionId });
+
+          // Also update variant-specific opens for A/B testing
+          if (sendRecord.variant === 'A' || sendRecord.variant === 'B') {
+            await supabase.rpc('increment_variant_opens', { 
+              edition_uuid: editionId, 
+              variant_letter: sendRecord.variant 
+            });
+          }
+        }
       }
 
       // Return 1x1 transparent gif
