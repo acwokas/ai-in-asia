@@ -55,6 +55,7 @@ Deno.serve(async (req) => {
     const shouldGenerateWorthWatching = generateAll || sections?.includes('worth_watching');
     const shouldGenerateSubjectLines = generateAll || sections?.includes('subject_lines');
     const shouldGenerateSummaries = generateAll || sections?.includes('summaries');
+     const shouldGenerateContinuity = generateAll || sections?.includes('continuity');
 
     console.log(`Generating AI content for edition: ${edition_id}`, { sections, generateAll });
 
@@ -86,6 +87,18 @@ Deno.serve(async (req) => {
       throw new Error('No top stories found for this edition');
     }
 
+     // Fetch last week's edition for continuity line
+     const lastWeekDate = new Date(edition.edition_date);
+     lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+     const { data: lastWeekEdition } = await supabase
+       .from('newsletter_editions')
+       .select('id, editor_note, subject_line, worth_watching')
+       .eq('status', 'sent')
+       .lt('edition_date', edition.edition_date)
+       .order('edition_date', { ascending: false })
+       .limit(1)
+       .single();
+
     // Fetch upcoming events for events section
     const { data: upcomingEvents } = await supabase
       .from('events')
@@ -113,6 +126,15 @@ Deno.serve(async (req) => {
     const articlesContext = articleSummaries
       .map((a: any, i: number) => `${i + 1}. "${a.title}" (${a.category}): ${a.excerpt}`)
       .join('\n');
+
+     // Build last week's context for continuity
+     let lastWeekContext = '';
+     if (lastWeekEdition) {
+       const lastWorthWatching = lastWeekEdition.worth_watching as WorthWatching | null;
+       lastWeekContext = `Last week's subject: "${lastWeekEdition.subject_line || 'N/A'}"
+Last week's editor note excerpt: ${lastWeekEdition.editor_note?.slice(0, 200) || 'N/A'}
+Last week's trends: ${lastWorthWatching?.trends?.content || 'N/A'}`;
+     }
 
     // Generate content using Lovable AI
     if (!lovableApiKey) {
@@ -350,6 +372,50 @@ Return a JSON object with "title" and "content" keys. The title should reference
     }
     } // End of shouldGenerateWorthWatching
 
+     // Generate Continuity Line (if requested and we have last week's data)
+     let continuityLine = '';
+
+     if (shouldGenerateContinuity && lastWeekEdition) {
+       console.log('Generating Continuity Line...');
+       const continuityPrompt = `You are an editor for AI in ASIA, writing a brief continuity line that links this week's newsletter to last week's theme.
+
+LAST WEEK'S CONTEXT:
+${lastWeekContext}
+
+THIS WEEK'S TOP STORIES:
+${articlesContext}
+
+Write exactly one sentence that:
+1. Links this week's signals to last week's theme
+2. Uses neutral phrasing like "builds on", "extends", or "echoes"
+3. Uses British English spelling
+4. Avoids dramatic or hype language
+5. Is understated and factual
+6. Does NOT use em dashes
+
+Return ONLY the sentence. No labels. No explanation.`;
+
+       const continuityResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+         method: 'POST',
+         headers: {
+           'Authorization': `Bearer ${lovableApiKey}`,
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           model: 'google/gemini-2.5-flash-lite',
+           messages: [{ role: 'user', content: continuityPrompt }],
+           max_tokens: 100,
+           temperature: 0.6,
+         }),
+       });
+
+       if (continuityResponse.ok) {
+         const continuityData = await continuityResponse.json();
+         continuityLine = continuityData.choices?.[0]?.message?.content?.trim() || '';
+         console.log('Generated continuity line:', continuityLine);
+       }
+     }
+
     // Generate A/B Subject Lines based on content (if requested)
     let subjectLineA = edition.subject_line || 'This week in AI across Asia';
     let subjectLineB = edition.subject_line_variant_b || 'AI in ASIA Weekly Brief';
@@ -470,6 +536,9 @@ Return ONLY the sentence, no quotes.`;
       updateData.subject_line = subjectLineA;
       updateData.subject_line_variant_b = subjectLineB;
     }
+     if (shouldGenerateContinuity && continuityLine) {
+       updateData.continuity_line = continuityLine;
+     }
 
     const { error: updateError } = await supabase
       .from('newsletter_editions')
@@ -504,6 +573,7 @@ Return ONLY the sentence, no quotes.`;
           b: subjectLineB,
         },
         summaries,
+         continuity_line: continuityLine,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
         },
