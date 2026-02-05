@@ -69,12 +69,14 @@ Deno.serve(async (req) => {
 
     const { data: topArticles } = await supabase
       .from('articles')
-      .select('id, title, primary_category_id')
+      .select('id, title, primary_category_id, article_type')
       .eq('status', 'published')
+      .neq('article_type', 'three_before_nine')
+      .neq('article_type', 'editors_note')
       .gte('published_at', sevenDaysAgo.toISOString())
       .order('view_count', { ascending: false })
       .order('like_count', { ascending: false })
-      .limit(10);
+      .limit(15);
 
     if (!topArticles || topArticles.length === 0) {
       throw new Error('No published articles found for newsletter');
