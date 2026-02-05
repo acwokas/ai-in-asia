@@ -97,7 +97,7 @@
                <table width="100%" cellpadding="0" cellspacing="0" border="0">
                  <tr>
                    <td>
-                     <span style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🔥 Lead Story</span>
+                     <span style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">🔥 Lead Signal</span>
                    </td>
                  </tr>
                  <tr>
@@ -113,7 +113,7 @@
                  <tr>
                    <td style="padding-top: 20px;">
                      <a href="${SITE_URL}/article/${featuredStory.articles.slug}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                       Read Full Story →
+                       Read Full Signal →
                      </a>
                    </td>
                  </tr>
