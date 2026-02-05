@@ -255,6 +255,11 @@ export default function NewsletterView() {
                           <p className="text-sm text-muted-foreground">
                             {story.ai_summary || story.articles.excerpt}
                           </p>
+                          <Button asChild variant="link" className="px-0 mt-2">
+                            <Link to={`/${story.articles.categories?.slug || 'article'}/${story.articles.slug}`}>
+                              Read Full Article →
+                            </Link>
+                          </Button>
                         </div>
                       </div>
                     </Card>
@@ -284,6 +289,11 @@ export default function NewsletterView() {
                       <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).events?.title || 'Upcoming Events'}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).events?.content}</p>
+                    <Button asChild variant="link" className="px-0 mt-2">
+                      <Link to="/events">
+                        View All Events →
+                      </Link>
+                    </Button>
                   </Card>
                 )}
                 {(edition.worth_watching as WorthWatching).spotlight && (
@@ -302,6 +312,11 @@ export default function NewsletterView() {
                       <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).policy?.title || 'Policy Watch'}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).policy?.content}</p>
+                    <Button asChild variant="link" className="px-0 mt-2">
+                      <Link to="/policy-atlas">
+                        Explore Policy Atlas →
+                      </Link>
+                    </Button>
                   </Card>
                 )}
               </div>
@@ -328,17 +343,25 @@ export default function NewsletterView() {
                     <h3 className="font-semibold mb-1">{item.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
                     {item.url && (
-                      <a 
-                        href={item.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                      >
-                        Explore <ExternalLink className="h-3 w-3" />
-                      </a>
+                      <Button asChild variant="outline" size="sm">
+                        <a 
+                          href={item.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          {item.category === 'tool' ? 'Try It Out' : 'Copy Prompt'} <ExternalLink className="ml-2 h-3 w-3" />
+                        </a>
+                      </Button>
                     )}
                   </Card>
                 ))}
+              </div>
+              <div className="text-center mt-4">
+                <Button asChild variant="ghost">
+                  <Link to="/tools">
+                    Browse All AI Tools →
+                  </Link>
+                </Button>
               </div>
             </div>
           )}
