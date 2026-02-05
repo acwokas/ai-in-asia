@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
      const shouldGenerateContinuity = generateAll || sections?.includes('continuity');
      const shouldGenerateWeeklyPromise = generateAll || sections?.includes('weekly_promise');
      const shouldGenerateAdriansTake = generateAll || sections?.includes('adrians_take');
-     const shouldGenerateCollectiveOneLiner = sections?.includes('collective_one_liner');
+      const shouldGenerateCollectiveOneLiner = generateAll || sections?.includes('collective_one_liner');
 
     console.log(`Generating AI content for edition: ${edition_id}`, { sections, generateAll });
 
