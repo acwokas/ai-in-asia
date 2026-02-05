@@ -266,7 +266,7 @@ export default function NewsletterPerformance() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link to="/newsletter-manager">Manage Newsletter</Link>
+              <Link to="/admin/newsletter-manager">Manage Newsletter</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/newsletter-analytics">Subscriber Stats</Link>

@@ -234,12 +234,12 @@ const App = () => (
               <Route path="/ai-policy-atlas/:region/:slug" element={<Article />} />
               <Route path="/ask-scout" element={<AskScout />} />
               <Route path="/newsletter" element={<Newsletter />} />
-              <Route path="/newsletter-manager" element={<NewsletterManager />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />
               <Route path="/newsletter/archive/:date" element={<NewsletterView />} />
               <Route path="/newsletter-weekly" element={<NewsletterWeeklyLatest />} />
               <Route path="/newsletter/forward" element={<NewsletterForward />} />
               <Route path="/newsletter/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/admin/newsletter-manager" element={<NewsletterManager />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
