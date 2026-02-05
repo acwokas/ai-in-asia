@@ -1828,10 +1828,12 @@ export type Database = {
       }
       newsletter_editions: {
         Row: {
+          adrians_take: string | null
           ai_generated_at: string | null
           avg_pages_per_visit: number | null
           avg_time_on_site_seconds: number | null
           click_through_rate: number | null
+          collective_one_liner: string | null
           comments_count_override: number | null
           continuity_line: string | null
           created_at: string
@@ -1847,6 +1849,7 @@ export type Database = {
           meme_image_url: string | null
           mini_case_study: string | null
           permalink_url: string | null
+          roadmap_skip_if: string | null
           scheduled_send_time: string | null
           send_timezone: string
           status: Database["public"]["Enums"]["newsletter_status"]
@@ -1858,13 +1861,16 @@ export type Database = {
           total_sent: number | null
           unique_clicks: number | null
           updated_at: string
+          weekly_promise: string | null
           worth_watching: Json | null
         }
         Insert: {
+          adrians_take?: string | null
           ai_generated_at?: string | null
           avg_pages_per_visit?: number | null
           avg_time_on_site_seconds?: number | null
           click_through_rate?: number | null
+          collective_one_liner?: string | null
           comments_count_override?: number | null
           continuity_line?: string | null
           created_at?: string
@@ -1880,6 +1886,7 @@ export type Database = {
           meme_image_url?: string | null
           mini_case_study?: string | null
           permalink_url?: string | null
+          roadmap_skip_if?: string | null
           scheduled_send_time?: string | null
           send_timezone?: string
           status?: Database["public"]["Enums"]["newsletter_status"]
@@ -1891,13 +1898,16 @@ export type Database = {
           total_sent?: number | null
           unique_clicks?: number | null
           updated_at?: string
+          weekly_promise?: string | null
           worth_watching?: Json | null
         }
         Update: {
+          adrians_take?: string | null
           ai_generated_at?: string | null
           avg_pages_per_visit?: number | null
           avg_time_on_site_seconds?: number | null
           click_through_rate?: number | null
+          collective_one_liner?: string | null
           comments_count_override?: number | null
           continuity_line?: string | null
           created_at?: string
@@ -1913,6 +1923,7 @@ export type Database = {
           meme_image_url?: string | null
           mini_case_study?: string | null
           permalink_url?: string | null
+          roadmap_skip_if?: string | null
           scheduled_send_time?: string | null
           send_timezone?: string
           status?: Database["public"]["Enums"]["newsletter_status"]
@@ -1924,6 +1935,7 @@ export type Database = {
           total_sent?: number | null
           unique_clicks?: number | null
           updated_at?: string
+          weekly_promise?: string | null
           worth_watching?: Json | null
         }
         Relationships: [

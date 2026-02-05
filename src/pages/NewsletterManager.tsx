@@ -15,6 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
+ import { EditableNewsletterSection } from "@/components/newsletter/EditableNewsletterSection";
  import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail } from "lucide-react";
 import {
   Breadcrumb,
@@ -38,6 +39,7 @@ export default function NewsletterManager() {
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [isGeneratingEditorNote, setIsGeneratingEditorNote] = useState(false);
   const [isGeneratingSubjectLines, setIsGeneratingSubjectLines] = useState(false);
+   const [isGeneratingSection, setIsGeneratingSection] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -46,6 +48,13 @@ export default function NewsletterManager() {
   const [editData, setEditData] = useState({
     editorNote: "",
     worthWatching: null as WorthWatching | null,
+     weeklyPromise: "",
+     adriansTake: "",
+     continuityLine: "",
+     collectiveOneLiner: "",
+     roadmapBody: "",
+     roadmapWorthItIf: "",
+     roadmapSkipIf: "",
   });
 
 interface WorthWatchingSection {
@@ -81,9 +90,17 @@ interface WorthWatching {
   useEffect(() => {
     if (latestEdition) {
       const worthWatching = (latestEdition as any).worth_watching;
+       const ed = latestEdition as any;
       setEditData({
         editorNote: latestEdition.editor_note || "",
         worthWatching: worthWatching && typeof worthWatching === 'object' ? worthWatching : null,
+         weeklyPromise: ed.weekly_promise || "",
+         adriansTake: ed.adrians_take || "",
+         continuityLine: ed.continuity_line || "",
+         collectiveOneLiner: ed.collective_one_liner || "",
+         roadmapBody: ed.roadmap_body || "",
+         roadmapWorthItIf: ed.roadmap_worth_it_if || "",
+         roadmapSkipIf: ed.roadmap_skip_if || "",
       });
     }
   }, [latestEdition]);
@@ -219,10 +236,15 @@ interface WorthWatching {
      if (contentError) throw contentError;
 
      toast.success("Full newsletter generated successfully!");
-     setEditData({
-       editorNote: contentData.editor_note || "",
-       worthWatching: contentData.worth_watching || null,
-     });
+      setEditData(prev => ({
+        ...prev,
+        editorNote: contentData.editor_note || prev.editorNote,
+        worthWatching: contentData.worth_watching || prev.worthWatching,
+        weeklyPromise: contentData.weekly_promise || prev.weeklyPromise,
+        adriansTake: contentData.adrians_take || prev.adriansTake,
+        continuityLine: contentData.continuity_line || prev.continuityLine,
+        collectiveOneLiner: contentData.collective_one_liner || prev.collectiveOneLiner,
+      }));
      refetch();
    } catch (error: any) {
       console.error("Newsletter generation error:", error);
@@ -275,8 +297,46 @@ interface WorthWatching {
     updateEditionMutation.mutate({
       editor_note: editData.editorNote || null,
       worth_watching: editData.worthWatching || null,
+       weekly_promise: editData.weeklyPromise || null,
+       adrians_take: editData.adriansTake || null,
+       continuity_line: editData.continuityLine || null,
+       collective_one_liner: editData.collectiveOneLiner || null,
+       roadmap_body: editData.roadmapBody || null,
+       roadmap_worth_it_if: editData.roadmapWorthItIf || null,
+       roadmap_skip_if: editData.roadmapSkipIf || null,
     });
   };
+
+   const handleGenerateSection = async (section: string) => {
+     if (!latestEdition) return;
+     
+     setIsGeneratingSection(section);
+     try {
+       const { data, error } = await supabase.functions.invoke("generate-newsletter-content", {
+         body: { edition_id: latestEdition.id, sections: [section] },
+       });
+
+       if (error) throw error;
+
+       toast.success(`${section.replace(/_/g, ' ')} generated!`);
+       
+       // Update local state based on which section was generated
+       setEditData(prev => ({
+         ...prev,
+         ...(data.weekly_promise && { weeklyPromise: data.weekly_promise }),
+         ...(data.adrians_take && { adriansTake: data.adrians_take }),
+         ...(data.continuity_line && { continuityLine: data.continuity_line }),
+         ...(data.collective_one_liner && { collectiveOneLiner: data.collective_one_liner }),
+         ...(data.editor_note && { editorNote: data.editor_note }),
+       }));
+       
+       refetch();
+     } catch (error: any) {
+       toast.error(error.message || `Failed to generate ${section}`);
+     } finally {
+       setIsGeneratingSection(null);
+     }
+   };
 
   const handleGenerateEditorNote = async () => {
     if (!latestEdition) return;
@@ -315,10 +375,15 @@ interface WorthWatching {
       if (error) throw error;
 
       toast.success("AI content generated successfully!");
-      setEditData({
-        editorNote: data.editor_note || "",
-        worthWatching: data.worth_watching || null,
-      });
+      setEditData(prev => ({
+        ...prev,
+        editorNote: data.editor_note || prev.editorNote,
+        worthWatching: data.worth_watching || prev.worthWatching,
+        weeklyPromise: data.weekly_promise || prev.weeklyPromise,
+        adriansTake: data.adrians_take || prev.adriansTake,
+        continuityLine: data.continuity_line || prev.continuityLine,
+        collectiveOneLiner: data.collective_one_liner || prev.collectiveOneLiner,
+      }));
       setIsEditingEditorNote(false);
       refetch();
     } catch (error: any) {
@@ -584,94 +649,124 @@ interface WorthWatching {
               
               <div className="space-y-6">
                 {/* Editor's Note Section */}
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-base font-semibold">Editor's Note</Label>
-                      <span className={`text-xs ${editorNoteWordCount > 80 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        ({editorNoteWordCount}/80 words)
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleGenerateEditorNote}
-                        disabled={isGeneratingEditorNote || !latestEdition}
-                        className="bg-purple-500/10 border-purple-500/50 text-purple-700 hover:bg-purple-500/20"
-                      >
-                        {isGeneratingEditorNote ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <>
-                            <Sparkles className="h-3 w-3 mr-1" />
-                            Generate
-                          </>
-                        )}
-                      </Button>
-                      {!isEditingEditorNote && editData.editorNote && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditingEditorNote(true)}
-                        >
-                          <Pencil className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                 <EditableNewsletterSection
+                   label="Weekly Promise"
+                   description="One sentence framing the core tension of the week. Max 25 words."
+                   value={editData.weeklyPromise}
+                   onChange={(val) => setEditData(prev => ({ ...prev, weeklyPromise: val }))}
+                   onGenerate={() => handleGenerateSection("weekly_promise")}
+                   onSave={handleSaveContent}
+                   isGenerating={isGeneratingSection === "weekly_promise"}
+                   isSaving={updateEditionMutation.isPending}
+                   maxWords={25}
+                   placeholder="e.g. This week, AI governance moved from abstract debate to operational reality."
+                   rows={2}
+                   disabled={!latestEdition}
+                 />
 
-                  {isEditingEditorNote || !editData.editorNote ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        id="editor-note"
-                        rows={4}
-                        placeholder="One short paragraph setting context for the week. This can reference themes such as regulation, platforms, adoption, or regional signals. Keep this under 80 words."
-                        value={editData.editorNote}
-                        onChange={(e) => setEditData({ ...editData, editorNote: e.target.value })}
-                        className="font-serif"
-                      />
-                      <div className="flex justify-between items-center">
-                        <p className="text-xs text-muted-foreground">
-                          Reference themes like regulation, platforms, adoption, or regional signals.
-                        </p>
-                        {isEditingEditorNote && (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditData(prev => ({
-                                  ...prev,
-                                  editorNote: latestEdition?.editor_note || "",
-                                }));
-                                setIsEditingEditorNote(false);
-                              }}
-                            >
-                              <X className="h-3 w-3 mr-1" />
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                handleSaveContent();
-                                setIsEditingEditorNote(false);
-                              }}
-                            >
-                              <Check className="h-3 w-3 mr-1" />
-                              Save
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-muted/50 rounded-md font-serif text-sm leading-relaxed">
-                      {editData.editorNote}
-                    </div>
-                  )}
-                </div>
+                 <EditableNewsletterSection
+                   label="Editor's Note"
+                   description="One short paragraph setting context for the week. Under 80 words."
+                   value={editData.editorNote}
+                   onChange={(val) => setEditData(prev => ({ ...prev, editorNote: val }))}
+                   onGenerate={handleGenerateEditorNote}
+                   onSave={handleSaveContent}
+                   isGenerating={isGeneratingEditorNote}
+                   isSaving={updateEditionMutation.isPending}
+                   maxWords={80}
+                   placeholder="Reference themes like regulation, platforms, adoption, or regional signals."
+                   rows={4}
+                   disabled={!latestEdition}
+                 />
+
+                 <EditableNewsletterSection
+                   label="Adrian's Take"
+                   description="2-3 sentence POV on the week's theme. Personal voice."
+                   value={editData.adriansTake}
+                   onChange={(val) => setEditData(prev => ({ ...prev, adriansTake: val }))}
+                   onGenerate={() => handleGenerateSection("adrians_take")}
+                   onSave={handleSaveContent}
+                   isGenerating={isGeneratingSection === "adrians_take"}
+                   isSaving={updateEditionMutation.isPending}
+                   maxWords={60}
+                   placeholder="Share a personal observation or opinion on this week's signals."
+                   rows={3}
+                   disabled={!latestEdition}
+                 />
+
+                 <EditableNewsletterSection
+                   label="Continuity Line"
+                   description="Links this week's signals to last week's theme. One sentence."
+                   value={editData.continuityLine}
+                   onChange={(val) => setEditData(prev => ({ ...prev, continuityLine: val }))}
+                   onGenerate={() => handleGenerateSection("continuity")}
+                   onSave={handleSaveContent}
+                   isGenerating={isGeneratingSection === "continuity"}
+                   isSaving={updateEditionMutation.isPending}
+                   placeholder="e.g. This builds on last week's signal about enterprise AI moving from pilots to procurement."
+                   rows={2}
+                   disabled={!latestEdition}
+                 />
+
+                 <EditableNewsletterSection
+                   label="WithThePowerOf.AI Explainer"
+                   description="One-line explanation of the collective. Max 14 words."
+                   value={editData.collectiveOneLiner}
+                   onChange={(val) => setEditData(prev => ({ ...prev, collectiveOneLiner: val }))}
+                   onGenerate={() => handleGenerateSection("collective_one_liner")}
+                   onSave={handleSaveContent}
+                   isGenerating={isGeneratingSection === "collective_one_liner"}
+                   isSaving={updateEditionMutation.isPending}
+                   maxWords={14}
+                   placeholder="e.g. Independent tools and resources we build alongside our editorial work."
+                   rows={2}
+                   disabled={!latestEdition}
+                 />
+
+                 {/* Roadmap Section */}
+                 <div className="p-4 border rounded-lg border-amber-500/30 bg-amber-500/5">
+                   <Label className="text-base font-semibold text-amber-700 mb-3 block">📅 Roadmap</Label>
+                   <p className="text-xs text-muted-foreground mb-4">
+                     Featured upcoming event with "Worth it if / Skip if" guidance.
+                   </p>
+                   <div className="space-y-3">
+                     <div>
+                       <Label className="text-sm text-muted-foreground">Event Description</Label>
+                       <Textarea
+                         rows={2}
+                         placeholder="Brief description of the upcoming event..."
+                         value={editData.roadmapBody}
+                         onChange={(e) => setEditData(prev => ({ ...prev, roadmapBody: e.target.value }))}
+                         className="mt-1"
+                         disabled={!latestEdition}
+                       />
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       <div>
+                         <Label className="text-sm text-green-700">✓ Worth it if...</Label>
+                         <Textarea
+                           rows={2}
+                           placeholder="You're interested in..."
+                           value={editData.roadmapWorthItIf}
+                           onChange={(e) => setEditData(prev => ({ ...prev, roadmapWorthItIf: e.target.value }))}
+                           className="mt-1"
+                           disabled={!latestEdition}
+                         />
+                       </div>
+                       <div>
+                         <Label className="text-sm text-red-700">✗ Skip if...</Label>
+                         <Textarea
+                           rows={2}
+                           placeholder="You're looking for..."
+                           value={editData.roadmapSkipIf}
+                           onChange={(e) => setEditData(prev => ({ ...prev, roadmapSkipIf: e.target.value }))}
+                           className="mt-1"
+                           disabled={!latestEdition}
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
 
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Worth Watching Sections</Label>

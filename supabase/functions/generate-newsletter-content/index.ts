@@ -56,6 +56,9 @@ Deno.serve(async (req) => {
     const shouldGenerateSubjectLines = generateAll || sections?.includes('subject_lines');
     const shouldGenerateSummaries = generateAll || sections?.includes('summaries');
      const shouldGenerateContinuity = generateAll || sections?.includes('continuity');
+     const shouldGenerateWeeklyPromise = generateAll || sections?.includes('weekly_promise');
+     const shouldGenerateAdriansTake = generateAll || sections?.includes('adrians_take');
+     const shouldGenerateCollectiveOneLiner = sections?.includes('collective_one_liner');
 
     console.log(`Generating AI content for edition: ${edition_id}`, { sections, generateAll });
 
@@ -416,6 +419,141 @@ Return ONLY the sentence. No labels. No explanation.`;
        }
      }
 
+      // Generate Weekly Promise (if requested)
+      let weeklyPromise = '';
+
+      if (shouldGenerateWeeklyPromise) {
+        console.log('Generating Weekly Promise...');
+        const weeklyPromisePrompt = `You are an editor for AI in ASIA.
+
+Based on this week's top stories:
+${articlesContext}
+
+Write a SINGLE sentence (maximum 25 words) that frames the core tension of the week.
+
+Rules:
+- Maximum 25 words
+- British English spelling
+- No em dashes (use commas or full stops instead)
+- No buzzwords or hype language
+- Practical and grounded tone
+
+Examples of good tension framing:
+- "This week, AI governance moved from abstract debate to operational reality."
+- "Enterprises across Asia are asking the same question: build or buy?"
+
+Return ONLY the sentence. No labels. No explanation.`;
+
+        const weeklyPromiseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [{ role: 'user', content: weeklyPromisePrompt }],
+            max_tokens: 80,
+            temperature: 0.6,
+          }),
+        });
+
+        if (weeklyPromiseResponse.ok) {
+          const weeklyPromiseData = await weeklyPromiseResponse.json();
+          weeklyPromise = weeklyPromiseData.choices?.[0]?.message?.content?.trim() || '';
+          console.log('Generated weekly promise:', weeklyPromise);
+        }
+      }
+
+      // Generate Adrian's Take (if requested)
+      let adriansTake = '';
+
+      if (shouldGenerateAdriansTake) {
+        console.log('Generating Adrian\'s Take...');
+        const adriansTakePrompt = `You are Adrian Watkins, editor of AI in ASIA.
+
+Based on this week's top stories:
+${articlesContext}
+
+Write a 2-3 sentence personal observation or opinion on this week's theme.
+
+Rules:
+- Maximum 60 words total
+- British English spelling
+- No em dashes (use commas or full stops instead)
+- Personal voice, like you're sharing a thought with a friend
+- Can include mild wit or a surprising observation
+- Avoid corporate jargon
+
+Return ONLY the sentences. No labels. No explanation.`;
+
+        const adriansTakeResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [{ role: 'user', content: adriansTakePrompt }],
+            max_tokens: 150,
+            temperature: 0.7,
+          }),
+        });
+
+        if (adriansTakeResponse.ok) {
+          const adriansTakeData = await adriansTakeResponse.json();
+          adriansTake = adriansTakeData.choices?.[0]?.message?.content?.trim() || '';
+          console.log('Generated Adrian\'s Take:', adriansTake);
+        }
+      }
+
+      // Generate Collective One-Liner (if specifically requested)
+      let collectiveOneLiner = '';
+
+      if (shouldGenerateCollectiveOneLiner) {
+        console.log('Generating Collective One-Liner...');
+        const collectivePrompt = `Write a one-sentence explainer for the "WithThePowerOf.AI" collective.
+
+Rules:
+- Maximum 14 words
+- British English spelling
+- No em dashes
+- No buzzwords or marketing language
+- Practical and grounded
+- Clear enough for a first-time reader
+
+Good examples:
+- "Practical side projects we are building alongside AIinASIA."
+- "Independent tools and experiments connected to AIinASIA's research."
+
+Bad examples (avoid):
+- "A bold ecosystem redefining the future of AI."
+- "An innovative platform empowering creators."
+
+Return ONLY the sentence. No explanation.`;
+
+        const collectiveResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-lite',
+            messages: [{ role: 'user', content: collectivePrompt }],
+            max_tokens: 50,
+            temperature: 0.5,
+          }),
+        });
+
+        if (collectiveResponse.ok) {
+          const collectiveData = await collectiveResponse.json();
+          collectiveOneLiner = collectiveData.choices?.[0]?.message?.content?.trim() || '';
+          console.log('Generated collective one-liner:', collectiveOneLiner);
+        }
+      }
+
     // Generate A/B Subject Lines based on content (if requested)
     let subjectLineA = edition.subject_line || 'This week in AI across Asia';
     let subjectLineB = edition.subject_line_variant_b || 'AI in ASIA Weekly Brief';
@@ -539,6 +677,15 @@ Return ONLY the sentence, no quotes.`;
      if (shouldGenerateContinuity && continuityLine) {
        updateData.continuity_line = continuityLine;
      }
+     if (shouldGenerateWeeklyPromise && weeklyPromise) {
+       updateData.weekly_promise = weeklyPromise;
+     }
+     if (shouldGenerateAdriansTake && adriansTake) {
+       updateData.adrians_take = adriansTake;
+     }
+     if (shouldGenerateCollectiveOneLiner && collectiveOneLiner) {
+       updateData.collective_one_liner = collectiveOneLiner;
+     }
 
     const { error: updateError } = await supabase
       .from('newsletter_editions')
@@ -574,6 +721,9 @@ Return ONLY the sentence, no quotes.`;
         },
         summaries,
          continuity_line: continuityLine,
+        weekly_promise: weeklyPromise,
+        adrians_take: adriansTake,
+        collective_one_liner: collectiveOneLiner,
         word_counts: {
           editor_note: editorNote.split(/\s+/).length,
         },
