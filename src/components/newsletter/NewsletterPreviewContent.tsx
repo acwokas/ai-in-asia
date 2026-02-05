@@ -1,7 +1,7 @@
  import { Link } from "react-router-dom";
  import { Card } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
- import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink } from "lucide-react";
+import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink, Map, User } from "lucide-react";
  import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
  
  interface WorthWatchingItem {
@@ -59,6 +59,13 @@
    edition_date: string;
    subject_line: string;
    editor_note?: string;
+  weekly_promise?: string;
+  adrians_take?: string;
+  continuity_line?: string;
+  collective_one_liner?: string;
+  roadmap_body?: string;
+  roadmap_worth_it_if?: string;
+  roadmap_skip_if?: string;
    worth_watching?: WorthWatching;
    heroArticle?: HeroArticle;
    newsletter_top_stories?: TopStory[];
@@ -118,6 +125,31 @@
            <p className="text-muted-foreground">{edition.editor_note}</p>
          </Card>
        )}
+
+      {/* Weekly Promise */}
+      {edition.weekly_promise && (
+        <Card className={`${cardPadding} bg-muted/30 border-none text-center`}>
+          <p className="text-lg italic text-primary font-medium">"{edition.weekly_promise}"</p>
+        </Card>
+      )}
+
+      {/* Adrian's Take */}
+      {edition.adrians_take && (
+        <Card className={`${cardPadding} border-l-4 border-accent`}>
+          <div className="flex items-center gap-2 mb-3">
+            <User className="h-5 w-5 text-accent-foreground" />
+            <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>Adrian's Take</h2>
+          </div>
+          <p className="text-muted-foreground">{edition.adrians_take}</p>
+        </Card>
+      )}
+
+      {/* Continuity Line */}
+      {edition.continuity_line && (
+        <div className="text-center py-2">
+          <p className="text-sm text-muted-foreground italic">{edition.continuity_line}</p>
+        </div>
+      )}
  
        {/* Hero Article */}
        {edition.heroArticle && (
@@ -255,6 +287,31 @@
            </div>
          </div>
        )}
+
+    {/* Roadmap */}
+    {edition.roadmap_body && (
+      <Card className={`${cardPadding} bg-gradient-to-br from-sky-900 to-sky-800 text-white`}>
+        <div className="flex items-center gap-2 mb-3">
+          <Map className="h-5 w-5" />
+          <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>🗺️ Roadmap</h2>
+        </div>
+        <p className="mb-4 opacity-90">{edition.roadmap_body}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {edition.roadmap_worth_it_if && (
+            <div className="bg-white/10 rounded-lg p-3">
+              <span className="text-green-300 font-semibold text-sm">✓ Worth it if:</span>
+              <p className="text-sm mt-1 opacity-90">{edition.roadmap_worth_it_if}</p>
+            </div>
+          )}
+          {edition.roadmap_skip_if && (
+            <div className="bg-white/10 rounded-lg p-3">
+              <span className="text-red-300 font-semibold text-sm">✗ Skip if:</span>
+              <p className="text-sm mt-1 opacity-90">{edition.roadmap_skip_if}</p>
+            </div>
+          )}
+        </div>
+      </Card>
+    )}
  
        {/* Tools & Prompts */}
        {edition.toolsPrompts && edition.toolsPrompts.length > 0 && (
