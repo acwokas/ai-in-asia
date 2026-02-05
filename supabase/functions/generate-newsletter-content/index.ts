@@ -378,9 +378,14 @@ Return a JSON object with "title" and "content" keys. The title should reference
      // Generate Continuity Line (if requested and we have last week's data)
      let continuityLine = '';
 
-     if (shouldGenerateContinuity && lastWeekEdition) {
+      if (shouldGenerateContinuity) {
        console.log('Generating Continuity Line...');
-       const continuityPrompt = `You are an editor for AI in ASIA, writing a brief continuity line that links this week's newsletter to last week's theme.
+       
+       // Different prompt based on whether we have last week's data
+       let continuityPrompt = '';
+       
+       if (lastWeekEdition && lastWeekContext) {
+         continuityPrompt = `You are an editor for AI in ASIA, writing a brief continuity line that links this week's newsletter to last week's theme.
 
 LAST WEEK'S CONTEXT:
 ${lastWeekContext}
@@ -397,6 +402,23 @@ Write exactly one sentence that:
 6. Does NOT use em dashes
 
 Return ONLY the sentence. No labels. No explanation.`;
+       } else {
+         // First edition or no previous sent edition - create a welcoming intro line
+         continuityPrompt = `You are an editor for AI in ASIA, writing a brief opening line for this week's newsletter.
+
+THIS WEEK'S TOP STORIES:
+${articlesContext}
+
+Write exactly one sentence that:
+1. Sets the scene for this week's coverage
+2. Uses neutral phrasing like "This week brings", "We're seeing", or "Across the region"
+3. Uses British English spelling
+4. Avoids dramatic or hype language
+5. Is understated and factual
+6. Does NOT use em dashes
+
+Return ONLY the sentence. No labels. No explanation.`;
+       }
 
        const continuityResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
          method: 'POST',
