@@ -518,23 +518,8 @@
 
           <!-- ================================ -->
           <!-- CONTINUITY LINE -->
-          <!-- (hide if empty) -->
+          <!-- (moved to under Signals header) -->
           <!-- ================================ -->
-          ${continuityLine ? `
-          <tr>
-            <td style="background: #f8fafc; padding: 16px 40px; border-bottom: 1px solid #e2e8f0;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td align="center">
-                    <p style="margin: 0; font-size: 14px; color: #64748b; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">
-                      ${continuityLine}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          ` : ''}
  
            <!-- ================================ -->
            <!-- SECTION 6: THIS WEEK'S SIGNALS -->
@@ -544,13 +529,22 @@
              <td style="background: #f1f5f9; padding: 32px 24px;">
                
                <!-- Section Header -->
-               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 16px;">
                  <tr>
                    <td style="background: #f1f5f9;">
                      <span style="font-size: 24px; vertical-align: middle;">📡</span>
                      <span style="font-size: 14px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">This Week's Signals</span>
                    </td>
                  </tr>
+                  ${continuityLine ? `
+                  <tr>
+                    <td style="padding-top: 8px; background: #f1f5f9;">
+                      <p style="margin: 0; font-size: 14px; color: #64748b; font-family: Georgia, 'Times New Roman', serif; font-style: italic;">
+                        ${continuityLine}
+                      </p>
+                    </td>
+                  </tr>
+                  ` : ''}
                </table>
  
                <!-- Lead Story -->
