@@ -6,8 +6,9 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
-import { Mail, Share2 } from "lucide-react";
+import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -16,6 +17,18 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+
+interface WorthWatchingItem {
+  title?: string;
+  content?: string;
+}
+
+interface WorthWatching {
+  trends?: WorthWatchingItem;
+  events?: WorthWatchingItem;
+  spotlight?: WorthWatchingItem;
+  policy?: WorthWatchingItem;
+}
 
 export default function NewsletterView() {
   const { date } = useParams<{ date: string }>();
@@ -32,7 +45,8 @@ export default function NewsletterView() {
           newsletter_top_stories(
             article_id,
             position,
-            articles(id, title, slug, excerpt, featured_image_url)
+            ai_summary,
+            articles(id, title, slug, excerpt, featured_image_url, primary_category_id, categories:primary_category_id(slug))
           )
         `)
         .eq("edition_date", date);
@@ -51,14 +65,31 @@ export default function NewsletterView() {
       if (data?.hero_article_id) {
         const { data: hero } = await supabase
           .from("articles")
-          .select("id, title, slug, excerpt, featured_image_url")
+          .select("id, title, slug, excerpt, featured_image_url, primary_category_id, categories:primary_category_id(slug)")
           .eq("id", data.hero_article_id)
           .single();
 
         heroArticle = hero;
       }
 
-      return { ...data, heroArticle };
+      // Fetch tools & prompts
+      const { data: toolsPrompts } = await supabase
+        .from('newsletter_tools_prompts')
+        .select('id, category, title, description, url')
+        .eq('is_active', true)
+        .limit(4);
+
+      // Fetch a random mystery link
+      const { data: mysteryLinks } = await supabase
+        .from('newsletter_mystery_links')
+        .select('id, title, url, description')
+        .eq('is_active', true);
+      
+      const randomMysteryLink = mysteryLinks && mysteryLinks.length > 0 
+        ? mysteryLinks[Math.floor(Math.random() * mysteryLinks.length)]
+        : null;
+
+      return { ...data, heroArticle, toolsPrompts, mysteryLink: randomMysteryLink };
     },
   });
 
@@ -177,7 +208,7 @@ export default function NewsletterView() {
             <Card className="mb-8 overflow-hidden">
               {edition.heroArticle.featured_image_url && (
                 <img
-                  src={edition.heroArticle.featured_image_url}
+                  src={getOptimizedHeroImage(edition.heroArticle.featured_image_url)}
                   alt={edition.heroArticle.title}
                   className="w-full h-64 object-cover"
                 />
@@ -190,7 +221,7 @@ export default function NewsletterView() {
                   {edition.heroArticle.excerpt}
                 </p>
                 <Button asChild>
-                  <Link to={`/article/${edition.heroArticle.slug}`}>
+                  <Link to={`/${edition.heroArticle.categories?.slug || 'article'}/${edition.heroArticle.slug}`}>
                     Read More
                   </Link>
                 </Button>
@@ -201,24 +232,132 @@ export default function NewsletterView() {
           {/* Top Stories */}
           {edition?.newsletter_top_stories && Array.isArray(edition.newsletter_top_stories) && edition.newsletter_top_stories.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">📚 Top Stories</h2>
+              <h2 className="text-2xl font-bold mb-4">📚 This Week's Signals</h2>
               <div className="space-y-4">
                 {edition.newsletter_top_stories
                   .sort((a: any, b: any) => a.position - b.position)
                   .map((story: any) => story.articles && (
-                    <Card key={story.article_id} className="p-4">
-                      <Link to={`/article/${story.articles.slug}`}>
-                        <h3 className="text-lg font-semibold hover:text-primary transition-colors mb-2">
-                          {story.articles.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {story.articles.excerpt}
-                        </p>
-                      </Link>
+                    <Card key={story.article_id} className="overflow-hidden">
+                      <div className="flex flex-col sm:flex-row">
+                        {story.articles.featured_image_url && (
+                          <img
+                            src={getOptimizedThumbnail(story.articles.featured_image_url, 300, 200)}
+                            alt={story.articles.title}
+                            className="w-full sm:w-48 h-32 object-cover"
+                          />
+                        )}
+                        <div className="p-4 flex-1">
+                          <Link to={`/${story.articles.categories?.slug || 'article'}/${story.articles.slug}`}>
+                            <h3 className="text-lg font-semibold hover:text-primary transition-colors mb-2">
+                              {story.articles.title}
+                            </h3>
+                          </Link>
+                          <p className="text-sm text-muted-foreground">
+                            {story.ai_summary || story.articles.excerpt}
+                          </p>
+                        </div>
+                      </div>
                     </Card>
                   ))}
               </div>
             </div>
+          )}
+
+          {/* Worth Watching */}
+          {edition?.worth_watching && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">👀 Worth Watching</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(edition.worth_watching as WorthWatching).trends && (
+                  <Card className="p-4 border-l-4 border-l-primary">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).trends?.title || 'Emerging Trends'}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).trends?.content}</p>
+                  </Card>
+                )}
+                {(edition.worth_watching as WorthWatching).events && (
+                  <Card className="p-4 border-l-4 border-l-accent">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="h-5 w-5 text-accent-foreground" />
+                      <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).events?.title || 'Upcoming Events'}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).events?.content}</p>
+                  </Card>
+                )}
+                {(edition.worth_watching as WorthWatching).spotlight && (
+                  <Card className="p-4 border-l-4 border-l-secondary">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building2 className="h-5 w-5 text-secondary-foreground" />
+                      <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).spotlight?.title || 'Company Spotlight'}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).spotlight?.content}</p>
+                  </Card>
+                )}
+                {(edition.worth_watching as WorthWatching).policy && (
+                  <Card className="p-4 border-l-4 border-l-muted">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Scale className="h-5 w-5 text-muted-foreground" />
+                      <h3 className="font-semibold">{(edition.worth_watching as WorthWatching).policy?.title || 'Policy Watch'}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{(edition.worth_watching as WorthWatching).policy?.content}</p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Tools & Prompts */}
+          {edition?.toolsPrompts && edition.toolsPrompts.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">🛠️ Tools & Prompts</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {edition.toolsPrompts.map((item: any) => (
+                  <Card key={item.id} className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      {item.category === 'tool' ? (
+                        <Wrench className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      )}
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                        {item.category}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold mb-1">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
+                    {item.url && (
+                      <a 
+                        href={item.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        Explore <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mystery Link */}
+          {edition?.mysteryLink && (
+            <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-dashed">
+              <div className="text-center">
+                <h3 className="text-xl font-bold mb-2">🎲 Mystery Link</h3>
+                <p className="text-muted-foreground mb-4">
+                  This could link to absolutely anything...
+                </p>
+                <Button asChild variant="outline">
+                  <a href={edition.mysteryLink.url} target="_blank" rel="noopener noreferrer">
+                    Take a Chance <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </Card>
           )}
 
           {/* Subscribe CTA */}
