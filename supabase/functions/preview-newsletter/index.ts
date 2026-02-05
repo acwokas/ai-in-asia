@@ -8,7 +8,6 @@ const corsHeaders = {
 
 const SITE_URL = 'https://aiinasia.com';
 const LOGO_URL = 'https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/aiinasia-wordmark.png';
-const ICON_URL = 'https://aiinasia.com/icons/aiinasia-512.png';
 
 interface WorthWatchingSection {
   title: string;
@@ -461,14 +460,8 @@ function generateNewsletterHTML(
                   </td>
                 </tr>
 
-                <!-- Logo and Branding -->
                 <tr>
                   <td align="center" style="padding-top: 32px;">
-                    <img src="${ICON_URL}" alt="AI in ASIA" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 14px; margin: 0 auto;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding-top: 20px;">
                     <a href="${SITE_URL}" style="text-decoration: none;">
                       <img src="${LOGO_URL}" alt="AI in ASIA" width="160" style="display: block; width: 160px; max-width: 100%; height: auto; margin: 0 auto;" />
                     </a>
