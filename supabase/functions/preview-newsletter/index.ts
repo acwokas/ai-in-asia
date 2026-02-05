@@ -34,6 +34,9 @@ function generateNewsletterHTML(
     year: 'numeric',
   });
 
+  const permalinkUrl = edition.permalink_url || `/newsletter/archive/${edition.edition_date}`;
+  const fullPermalinkUrl = `${SITE_URL}${permalinkUrl}`;
+
   const worthWatching: WorthWatching = edition.worth_watching || {};
 
   // Generate featured story (first article - full width with image)
@@ -378,8 +381,89 @@ function generateNewsletterHTML(
           <tr>
             <td style="background: #0f172a; border-radius: 0 0 16px 16px; padding: 40px 32px; text-align: center;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <!-- Forward to a Friend -->
                 <tr>
-                  <td align="center">
+                  <td style="padding-bottom: 32px; border-bottom: 1px solid #1e293b;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #1e293b; border-radius: 12px; padding: 24px;">
+                      <tr>
+                        <td style="padding: 24px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center">
+                                <span style="font-size: 28px;">📨</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 12px;">
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Know someone who'd enjoy this?
+                                </h3>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 8px;">
+                                <p style="margin: 0; font-size: 14px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Share the AI in ASIA Weekly Brief with a colleague or friend.
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 16px;">
+                                <a href="${SITE_URL}/newsletter/forward?edition=${edition.id}" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Forward This Newsletter →
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Someone sent you this? CTA -->
+                <tr>
+                  <td style="padding: 32px 0; border-bottom: 1px solid #1e293b;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px;">
+                      <tr>
+                        <td style="padding: 24px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center">
+                                <span style="font-size: 24px;">💡</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 12px;">
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Someone sent you this?
+                                </h3>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 8px;">
+                                <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.9); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Get AI in ASIA delivered to your inbox every week.
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding-top: 16px;">
+                                <a href="${SITE_URL}/newsletter?ref=forwarded" style="display: inline-block; background: #ffffff; color: #6366f1; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                                  Subscribe Free
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Logo and Branding -->
+                <tr>
+                  <td align="center" style="padding-top: 32px;">
                     <img src="${ICON_URL}" alt="AI in ASIA" width="56" height="56" style="display: block; width: 56px; height: 56px; border-radius: 14px; margin: 0 auto;" />
                   </td>
                 </tr>
@@ -402,6 +486,8 @@ function generateNewsletterHTML(
                     <a href="#" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Unsubscribe</a>
                     <span style="color: #475569; margin: 0 8px;">•</span>
                     <a href="${SITE_URL}/privacy" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Privacy</a>
+                    <span style="color: #475569; margin: 0 8px;">•</span>
+                    <a href="${fullPermalinkUrl}" style="color: #64748b; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">View in browser</a>
                   </td>
                 </tr>
               </table>

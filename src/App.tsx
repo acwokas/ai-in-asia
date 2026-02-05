@@ -113,6 +113,8 @@ const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
 const ImportNewsletterSubscribers = lazy(() => import("./pages/ImportNewsletterSubscribers"));
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
+const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
+const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -233,6 +235,8 @@ const App = () => (
               <Route path="/newsletter-manager" element={<NewsletterManager />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />
               <Route path="/newsletter/archive/:date" element={<NewsletterView />} />
+              <Route path="/newsletter-weekly" element={<NewsletterWeeklyLatest />} />
+              <Route path="/newsletter/forward" element={<NewsletterForward />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
