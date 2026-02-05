@@ -34,6 +34,7 @@ import {
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
+ const [isGeneratingFull, setIsGeneratingFull] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [isGeneratingEditorNote, setIsGeneratingEditorNote] = useState(false);
   const [isGeneratingSubjectLines, setIsGeneratingSubjectLines] = useState(false);
@@ -121,6 +122,46 @@ interface WorthWatching {
       setIsGenerating(false);
     }
   };
+
+ const handleGenerateFullNewsletter = async () => {
+   setIsGeneratingFull(true);
+   try {
+     // Step 1: Generate the newsletter edition
+     toast.info("Step 1/2: Creating newsletter edition...");
+     const { data: editionData, error: editionError } = await supabase.functions.invoke("generate-weekly-newsletter", {
+       body: { edition_date: new Date().toISOString().split("T")[0] },
+     });
+
+     if (editionError) throw editionError;
+     
+     const editionId = editionData.edition_id;
+     if (!editionId) throw new Error("Failed to get edition ID");
+
+     // Step 2: Generate all AI content
+     toast.info("Step 2/2: Generating AI content...");
+     const { data: contentData, error: contentError } = await supabase.functions.invoke("generate-newsletter-content", {
+       body: { edition_id: editionId },
+     });
+
+     if (contentError) throw contentError;
+
+     toast.success("Full newsletter generated successfully!");
+     setEditData({
+       editorNote: contentData.editor_note || "",
+       worthWatching: contentData.worth_watching || null,
+     });
+     refetch();
+   } catch (error: any) {
+     // Handle case where edition already exists
+     if (error.message?.includes("already exists")) {
+       toast.error("An edition already exists for today. Use the AI content buttons to regenerate specific sections.");
+     } else {
+       toast.error(error.message || "Failed to generate newsletter");
+     }
+   } finally {
+     setIsGeneratingFull(false);
+   }
+ };
 
   const handleSendTest = async () => {
     if (!latestEdition) return;
@@ -320,9 +361,26 @@ interface WorthWatching {
               )}
             </div>
             <div className="flex gap-2">
-              {!latestEdition && (
-                <Button onClick={handleGenerate} disabled={isGenerating}>
-                  {isGenerating ? (
+             <Button 
+               onClick={handleGenerateFullNewsletter} 
+               disabled={isGeneratingFull}
+               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+             >
+               {isGeneratingFull ? (
+                 <>
+                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                   Generating...
+                 </>
+               ) : (
+                 <>
+                   <Sparkles className="h-4 w-4 mr-2" />
+                   Generate Full Newsletter
+                 </>
+               )}
+             </Button>
+             {!latestEdition && (
+               <Button onClick={handleGenerate} disabled={isGenerating} variant="outline">
+                 {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Generating...
