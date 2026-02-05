@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
-import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink } from "lucide-react";
+ import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Share2 } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -30,6 +30,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+ import { NewsletterPreviewContent, NewsletterEditionData } from "@/components/newsletter/NewsletterPreviewContent";
+ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function NewsletterManager() {
   const queryClient = useQueryClient();
@@ -42,7 +44,7 @@ export default function NewsletterManager() {
   const [isEditingEditorNote, setIsEditingEditorNote] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState("");
+   const [previewData, setPreviewData] = useState<NewsletterEditionData | null>(null);
   const [editData, setEditData] = useState({
     editorNote: "",
     worthWatching: null as WorthWatching | null,
@@ -354,13 +356,57 @@ interface WorthWatching {
     setIsLoadingPreview(true);
     setIsPreviewOpen(true);
     try {
-      const { data, error } = await supabase.functions.invoke("preview-newsletter", {
-        body: { edition_id: latestEdition.id },
-      });
+       // Fetch hero article
+       let heroArticle = null;
+       if (latestEdition.hero_article_id) {
+         const { data: hero } = await supabase
+           .from("articles")
+           .select("id, title, slug, excerpt, featured_image_url, primary_category_id, categories:primary_category_id(slug)")
+           .eq("id", latestEdition.hero_article_id)
+           .single();
+         heroArticle = hero;
+       }
 
-      if (error) throw error;
+       // Fetch top stories
+       const { data: topStories } = await supabase
+         .from("newsletter_top_stories")
+         .select(`
+           article_id,
+           position,
+           ai_summary,
+           articles(id, title, slug, excerpt, featured_image_url, primary_category_id, categories:primary_category_id(slug))
+         `)
+         .eq("edition_id", latestEdition.id)
+         .order("position");
 
-      setPreviewHtml(data.html);
+       // Fetch tools & prompts
+       const { data: toolsPrompts } = await supabase
+         .from('newsletter_tools_prompts')
+         .select('id, category, title, description, url')
+         .eq('is_active', true)
+         .limit(4);
+ 
+       // Fetch a random mystery link
+       const { data: mysteryLinks } = await supabase
+         .from('newsletter_mystery_links')
+         .select('id, title, url, description')
+         .eq('is_active', true);
+       
+       const randomMysteryLink = mysteryLinks && mysteryLinks.length > 0 
+         ? mysteryLinks[Math.floor(Math.random() * mysteryLinks.length)]
+         : null;
+ 
+       setPreviewData({
+         id: latestEdition.id,
+         edition_date: latestEdition.edition_date,
+         subject_line: latestEdition.subject_line || 'Newsletter Preview',
+         editor_note: latestEdition.editor_note || undefined,
+         worth_watching: latestEdition.worth_watching as any,
+         heroArticle: heroArticle || undefined,
+         newsletter_top_stories: topStories || [],
+         toolsPrompts: toolsPrompts || [],
+         mysteryLink: randomMysteryLink || undefined,
+       });
     } catch (error: any) {
       toast.error(error.message || "Failed to load preview");
       setIsPreviewOpen(false);
@@ -798,23 +844,29 @@ interface WorthWatching {
 
       {/* Newsletter Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Newsletter Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-auto border rounded-lg bg-white">
+           <ScrollArea className="flex-1 max-h-[75vh]">
+             <div className="p-4">
             {isLoadingPreview ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            ) : (
-              <iframe
-                srcDoc={previewHtml}
-                title="Newsletter Preview"
-                className="w-full h-[70vh] border-0"
-              />
+             ) : previewData ? (
+               <NewsletterPreviewContent 
+                 edition={previewData} 
+                 showHeader={true}
+                 isCompact={true}
+               />
+             ) : (
+               <div className="text-center text-muted-foreground py-8">
+                 No preview data available
+               </div>
             )}
-          </div>
+             </div>
+           </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
