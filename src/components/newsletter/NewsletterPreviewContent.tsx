@@ -133,16 +133,6 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
         </Card>
       )}
 
-      {/* Adrian's Take */}
-      {edition.adrians_take && (
-        <Card className={`${cardPadding} border-l-4 border-accent`}>
-          <div className="flex items-center gap-2 mb-3">
-            <User className="h-5 w-5 text-accent-foreground" />
-            <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>Adrian's Take</h2>
-          </div>
-          <p className="text-muted-foreground">{edition.adrians_take}</p>
-        </Card>
-      )}
 
       {/* Continuity Line */}
       {edition.continuity_line && (
@@ -355,6 +345,17 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
            </div>
          </div>
        )}
+
+      {/* Adrian's Take - positioned after Tools & Prompts */}
+      {edition.adrians_take && (
+        <Card className={`${cardPadding} border-l-4 border-accent`}>
+          <div className="flex items-center gap-2 mb-3">
+            <User className="h-5 w-5 text-accent-foreground" />
+            <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>💡 Adrian's Take</h2>
+          </div>
+          <p className="text-muted-foreground">{edition.adrians_take}</p>
+        </Card>
+      )}
      </div>
    );
  }

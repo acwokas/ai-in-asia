@@ -515,28 +515,6 @@
            </tr>
            ` : ''}
  
-           <!-- ================================ -->
-           <!-- SECTION 5: ADRIAN'S TAKE (POV) -->
-           <!-- (hide if empty) -->
-           <!-- ================================ -->
-          ${adriansTake ? `
-           <tr>
-             <td style="background: #fef9c3; padding: 32px 40px;">
-               <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                 <tr>
-                   <td>
-                     <span style="font-size: 12px; font-weight: 700; color: #a16207; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">💡 Adrian's Take</span>
-                   </td>
-                 </tr>
-                 <tr>
-                   <td style="padding-top: 12px;">
-                    <p style="margin: 0; font-size: 16px; color: #92400e; line-height: 1.7; font-family: Georgia, 'Times New Roman', serif;">${adriansTake}</p>
-                   </td>
-                 </tr>
-               </table>
-             </td>
-           </tr>
-           ` : ''}
 
           <!-- ================================ -->
           <!-- CONTINUITY LINE -->
@@ -601,6 +579,29 @@
            <!-- ================================ -->
            ${toolsPromptsHtml}
  
+          <!-- ================================ -->
+          <!-- SECTION 9.5: ADRIAN'S TAKE (POV) -->
+          <!-- (moved after Tools & Prompts) -->
+          <!-- ================================ -->
+          ${adriansTake ? `
+          <tr>
+            <td style="background: #fef9c3; padding: 32px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; color: #a16207; text-transform: uppercase; letter-spacing: 1.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">💡 Adrian's Take</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 12px;">
+                    <p style="margin: 0; font-size: 16px; color: #92400e; line-height: 1.7; font-family: Georgia, 'Times New Roman', serif;">${adriansTake}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
+
            <!-- ================================ -->
            <!-- SECTION 10: MYSTERY LINK -->
            <!-- ================================ -->
