@@ -254,15 +254,15 @@ function generateNewsletterHTML(
 
   const worthWatchingHtml = worthWatchingCards.length > 0 ? `
     <tr>
-      <td style="padding: 32px 0;">
+       <td style="padding: 32px 0; background: #f1f5f9;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td style="padding-bottom: 20px;">
+             <td style="padding-bottom: 20px; background: #f1f5f9;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
                     <span style="font-size: 24px; vertical-align: middle;">👀</span>
-                    <span style="font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">Worth Watching</span>
+                     <span style="font-size: 14px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">Worth Watching</span>
                   </td>
                 </tr>
               </table>
@@ -397,9 +397,9 @@ function generateNewsletterHTML(
               <!-- Section Header -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
                 <tr>
-                  <td>
+                   <td style="background: #f1f5f9;">
                     <span style="font-size: 24px; vertical-align: middle;">📡</span>
-                    <span style="font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">This Week's Signals</span>
+                     <span style="font-size: 14px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; vertical-align: middle; margin-left: 8px;">This Week's Signals</span>
                   </td>
                 </tr>
               </table>
