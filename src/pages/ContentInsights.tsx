@@ -2118,7 +2118,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                   </CardContent>
                 </Card>
                 
-                <Link to="/newsletter-manager" onClick={() => setPromoteDeadDialogOpen(false)} className="block">
+                <Link to="/admin/newsletter-manager" onClick={() => setPromoteDeadDialogOpen(false)} className="block">
                   <Card className="cursor-pointer hover:border-primary transition-colors h-full">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-2">

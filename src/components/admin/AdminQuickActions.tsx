@@ -126,7 +126,7 @@ export const AdminQuickActions = ({
         <div>
           <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Content Management</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Button onClick={() => navigate("/newsletter-manager")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+            <Button onClick={() => navigate("/admin/newsletter-manager")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
               <Mail className="h-4 w-4 mr-2" />
               Newsletter Manager
             </Button>

@@ -337,7 +337,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/newsletter-manager")}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/newsletter-manager")}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Mail className="h-8 w-8 text-primary" />
