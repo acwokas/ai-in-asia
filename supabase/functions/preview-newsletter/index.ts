@@ -434,7 +434,7 @@
                    </td>
                  </tr>
                  <tr>
-                   <td align="center" style="padding-top: 24px;">
+                  <td align="center" style="padding-top: 12px;">
                      <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                        Weekly Brief
                      </h1>
