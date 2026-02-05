@@ -15,7 +15,7 @@ import { ToolsPromptsManager } from "@/components/newsletter/ToolsPromptsManager
 import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager";
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
- import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink } from "lucide-react";
+ import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -503,14 +503,21 @@ interface WorthWatching {
                   ) : (
                     <FileText className="h-4 w-4 mr-2" />
                   )}
-                  View Newsletter
+                   Preview Email
                 </Button>
                 <Button 
-                  onClick={() => window.open(`/newsletter/archive/${latestEdition.edition_date}?preview=true`, '_blank')}
+                   onClick={() => window.open(`/newsletter/email-preview/${latestEdition.id}`, '_blank')}
                   variant="outline"
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open in New Tab
+                   <Mail className="h-4 w-4 mr-2" />
+                   Email Full Screen
+                 </Button>
+                 <Button 
+                   onClick={() => window.open(`/newsletter/archive/${latestEdition.edition_date}?preview=true`, '_blank')}
+                   variant="outline"
+                 >
+                   <ExternalLink className="h-4 w-4 mr-2" />
+                   Web Archive View
                 </Button>
                 <Button onClick={handleSendTest} variant="outline">
                   <Eye className="h-4 w-4 mr-2" />

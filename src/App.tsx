@@ -84,7 +84,8 @@ const AskScout = lazy(() => import("./pages/AskScout"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
-const NewsletterView = lazy(() => import("./pages/NewsletterView"));
+ const NewsletterView = lazy(() => import("./pages/NewsletterView"));
+ const NewsletterEmailPreview = lazy(() => import("./pages/NewsletterEmailPreview"));
 const UploadAuthorAvatars = lazy(() => import("./pages/UploadAuthorAvatars"));
 const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments"));
 const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
@@ -236,6 +237,7 @@ const App = () => (
               <Route path="/newsletter" element={<Newsletter />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />
               <Route path="/newsletter/archive/:date" element={<NewsletterView />} />
+               <Route path="/newsletter/email-preview/:id" element={<NewsletterEmailPreview />} />
               <Route path="/newsletter-weekly" element={<NewsletterWeeklyLatest />} />
               <Route path="/newsletter/forward" element={<NewsletterForward />} />
               <Route path="/newsletter/unsubscribe" element={<Unsubscribe />} />
