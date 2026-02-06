@@ -182,3 +182,6 @@ verify_jwt = true
 
 [functions.calculate-reading-times]
 verify_jwt = true
+
+[functions.monitor-scheduled-publishing]
+verify_jwt = false
