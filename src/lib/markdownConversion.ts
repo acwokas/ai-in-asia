@@ -14,107 +14,162 @@ export const generateSlug = (text: string): string => {
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown) return "";
 
-  // First, preserve any existing HTML (prompt boxes, YouTube embeds, iframes) by converting to placeholders
+  // Preserve any existing HTML blocks (prompt boxes, embeds) using placeholders.
+  // This prevents our markdown-to-html logic from corrupting complex pasted HTML.
   const preservedMatches: string[] = [];
+  const hasPromptBoxes = markdown.includes("prompt-box");
 
-  const hasPromptBoxes = markdown.includes('prompt-box');
+  const preserve = (input: string, regex: RegExp) =>
+    input.replace(regex, (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    });
 
-  // Preserve prompt boxes
-  let processed = markdown.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
-    const index = preservedMatches.length;
-    preservedMatches.push(match);
-    return `__PRESERVED_${index}__`;
-  });
+  // Preserve prompt boxes (must capture the full structure; single </div> is not enough)
+  let processed = preserve(
+    markdown,
+    /<div\s+class="prompt-box"[^>]*>[\s\S]*?<div\s+class="prompt-box-content"[^>]*>[\s\S]*?<\/div>(?:\s*<br\s*\/?>(?:\s*)?)*\s*<\/div>/gi
+  );
 
   // Preserve YouTube embeds
-  processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
-    const index = preservedMatches.length;
-    preservedMatches.push(match);
-    return `__PRESERVED_${index}__`;
-  });
+  processed = preserve(processed, /<div\s+class="youtube-embed"[^>]*>[\s\S]*?<\/div>/gi);
 
   // Preserve social media embeds (Twitter, Instagram, TikTok)
-  processed = processed.replace(/<div class="social-embed[^"]*"[^>]*>.*?<\/div>/gs, (match) => {
-    const index = preservedMatches.length;
-    preservedMatches.push(match);
-    return `__PRESERVED_${index}__`;
-  });
+  processed = preserve(processed, /<div\s+class="social-embed[^\"]*"[^>]*>[\s\S]*?<\/div>/gi);
 
   if (!hasPromptBoxes) {
     // Normalize simple <div> wrappers from pasted content so markdown headings are detectable
     processed = processed
-      .replace(/<div>\s*<\/div>/g, '\n\n')
-      .replace(/<\/div>\s*<div>/g, '\n\n')
-      .replace(/<\/?div>/g, '');
+      .replace(/<div>\s*<\/div>/g, "\n\n")
+      .replace(/<\/div>\s*<div>/g, "\n\n")
+      .replace(/<\/?div>/g, "");
   }
 
-  // More robust line-by-line markdown handling, especially for headings
+  const applyInline = (text: string) => {
+    return text
+      // Links with new tab marker (^)
+      .replace(
+        /\[(.+?)\]\((.+?)\)\^/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+      )
+      // Regular links
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+      // Bold then italic (avoid eating **bold**)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+  };
+
   const lines = processed.split(/\r?\n/);
-  const htmlLines = lines.map((line) => {
+  const blocks: string[] = [];
+
+  let paragraphLines: string[] = [];
+  let listType: "ul" | "ol" | null = null;
+  let listItems: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraphLines.length === 0) return;
+    const raw = paragraphLines.join("\n").trim();
+    paragraphLines = [];
+    if (!raw) return;
+    const htmlText = applyInline(raw).replace(/\n/g, "<br>");
+    blocks.push(`<p>${htmlText}</p>`);
+  };
+
+  const flushList = () => {
+    if (!listType || listItems.length === 0) {
+      listType = null;
+      listItems = [];
+      return;
+    }
+
+    const itemsHtml = listItems.map((item) => `<li>${applyInline(item)}</li>`).join("");
+    blocks.push(`<${listType}>${itemsHtml}</${listType}>`);
+    listType = null;
+    listItems = [];
+  };
+
+  for (const line of lines) {
     const trimmed = line.trim();
 
-    // Headings (support up to ### for now)
+    // Blank line => paragraph/list boundary
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    // Restore-preserved placeholders should pass through as-is
+    if (/^__PRESERVED_\d+__$/.test(trimmed)) {
+      flushParagraph();
+      flushList();
+      blocks.push(trimmed);
+      continue;
+    }
+
+    // Headings
     if (/^###\s+/.test(trimmed)) {
-      return `<h3>${trimmed.replace(/^###\s+/, "")}</h3>`;
+      flushParagraph();
+      flushList();
+      blocks.push(`<h3>${applyInline(trimmed.replace(/^###\s+/, ""))}</h3>`);
+      continue;
     }
     if (/^##\s+/.test(trimmed)) {
-      return `<h2>${trimmed.replace(/^##\s+/, "")}</h2>`;
+      flushParagraph();
+      flushList();
+      blocks.push(`<h2>${applyInline(trimmed.replace(/^##\s+/, ""))}</h2>`);
+      continue;
     }
     if (/^#\s+/.test(trimmed)) {
-      return `<h1>${trimmed.replace(/^#\s+/, "")}</h1>`;
+      flushParagraph();
+      flushList();
+      blocks.push(`<h1>${applyInline(trimmed.replace(/^#\s+/, ""))}</h1>`);
+      continue;
     }
 
     // Blockquote
     if (/^>\s+/.test(trimmed)) {
-      return `<blockquote>${trimmed.replace(/^>\s+/, "")}</blockquote>`;
+      flushParagraph();
+      flushList();
+      blocks.push(`<blockquote>${applyInline(trimmed.replace(/^>\s+/, ""))}</blockquote>`);
+      continue;
     }
 
-    // Unordered list item
+    // Unordered list
     if (/^-\s+/.test(trimmed)) {
-      return `<li>${trimmed.replace(/^-\s+/, "")}</li>`;
+      flushParagraph();
+      if (listType && listType !== "ul") flushList();
+      listType = "ul";
+      listItems.push(trimmed.replace(/^-\s+/, ""));
+      continue;
     }
 
-    // Ordered list item
+    // Ordered list
     if (/^\d+\.\s+/.test(trimmed)) {
-      return `<li>${trimmed.replace(/^\d+\.\s+/, "")}</li>`;
+      flushParagraph();
+      if (listType && listType !== "ol") flushList();
+      listType = "ol";
+      listItems.push(trimmed.replace(/^\d+\.\s+/, ""));
+      continue;
     }
 
-    // Empty line
-    if (trimmed === "") {
-      return "";
+    // If line is already an HTML block, keep it (but don't mix inside <p>)
+    if (/^<(h[1-6]|p|ul|ol|li|blockquote|div|iframe|table|hr)\b/i.test(trimmed)) {
+      flushParagraph();
+      flushList();
+      blocks.push(trimmed);
+      continue;
     }
 
-    // Fallback paragraph text (inline formatting and links will be handled later)
-    return trimmed;
-  });
-
-  let html = htmlLines.join("\n");
-
-  // Inline formatting and links
-  html = html
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    // Handle links with new tab marker (^)
-    .replace(/\[(.+?)\]\((.+?)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    // Handle regular links
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-
-  // Group consecutive list items into <ul> / <ol>
-  html = html
-    .replace(/(?:<li>.*?<\/li>\n?)+/gs, (match) => {
-      // If it already has a parent list, leave as is
-      if (/<ul>|<ol>/.test(match)) return match;
-      // Heuristic: treat as unordered list for now
-      return `<ul>${match}</ul>`;
-    })
-    // Convert single line-breaks to <br> and double to paragraph breaks
-    .replace(/\n{2,}/g, "</p><p>")
-    .replace(/\n/g, "<br>");
-
-  // Wrap entire content in a paragraph if it doesn't start with a block-level element
-  if (!/^\s*<(h[1-6]|ul|ol|blockquote|div|table|p|iframe)/i.test(html)) {
-    html = `<p>${html}</p>`;
+    // Default => paragraph content
+    if (listType) flushList();
+    paragraphLines.push(trimmed);
   }
+
+  flushParagraph();
+  flushList();
+
+  let html = blocks.join("\n\n");
 
   // Restore preserved elements
   preservedMatches.forEach((preserved, index) => {
@@ -134,23 +189,26 @@ export const convertHtmlToMarkdown = (html: string): string => {
   
   // First, preserve YouTube embeds, iframes, and prompt boxes by converting them to placeholder markers
   const preservedMatches: string[] = [];
-  
-  // Preserve prompt boxes
-  let processed = html.replace(/<div class="prompt-box"[^>]*>.*?<\/div>/gs, (match) => {
-    const index = preservedMatches.length;
-    preservedMatches.push(match);
-    return `__PRESERVED_${index}__`;
-  });
-  
+
+  // Preserve prompt boxes (capture full structure)
+  let processed = html.replace(
+    /<div\s+class="prompt-box"[^>]*>[\s\S]*?<div\s+class="prompt-box-content"[^>]*>[\s\S]*?<\/div>(?:\s*<br\s*\/?>(?:\s*)?)*\s*<\/div>/gi,
+    (match) => {
+      const index = preservedMatches.length;
+      preservedMatches.push(match);
+      return `__PRESERVED_${index}__`;
+    }
+  );
+
   // Preserve YouTube embeds
-  processed = processed.replace(/<div class="youtube-embed"[^>]*>.*?<\/div>/gs, (match) => {
+  processed = processed.replace(/<div\s+class="youtube-embed"[^>]*>[\s\S]*?<\/div>/gi, (match) => {
     const index = preservedMatches.length;
     preservedMatches.push(match);
     return `__PRESERVED_${index}__`;
   });
 
   // Preserve social media embeds (Twitter, Instagram, TikTok)
-  processed = processed.replace(/<div class="social-embed[^"]*"[^>]*>.*?<\/div>/gs, (match) => {
+  processed = processed.replace(/<div\s+class="social-embed[^\"]*"[^>]*>[\s\S]*?<\/div>/gi, (match) => {
     const index = preservedMatches.length;
     preservedMatches.push(match);
     return `__PRESERVED_${index}__`;

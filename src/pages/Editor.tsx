@@ -47,18 +47,19 @@ const Editor = () => {
     }
   };
 
-  // Article edit query - already optimized (only runs when editing)
+  // Article edit query - always refetch on mount in preview/editor to avoid stale or truncated content
   const { data: article, isLoading } = useQuery({
     queryKey: ["article-edit", articleId],
     enabled: !!articleId && !!user,
-    staleTime: 60 * 1000, // 1 minute cache - article data while editing
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
         .select("*")
         .eq("id", articleId)
         .maybeSingle();
-      
+
       if (error) throw error;
       if (!data) {
         toast({
