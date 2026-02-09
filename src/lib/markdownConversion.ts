@@ -179,6 +179,8 @@ export const convertHtmlToMarkdown = (html: string): string => {
     .replace(/(<\/ol>)([^\n])/g, '$1\n\n$2');
   
   let markdown = normalized
+    // Strip span elements but keep their content (before other conversions)
+    .replace(/<span[^>]*>(.*?)<\/span>/gs, '$1')
     // Convert inline formatting first
     .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
     .replace(/<b>(.*?)<\/b>/g, '**$1**')
@@ -215,6 +217,7 @@ export const convertHtmlToMarkdown = (html: string): string => {
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
     // Clean up excessive line breaks
     .replace(/\n{3,}/g, '\n\n')
     .trim();
