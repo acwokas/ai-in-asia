@@ -381,7 +381,7 @@
            ` : ''}
            <tr>
              <td align="center" style="padding-top: 20px;">
-               <a href="mailto:hello@aiinasia.com?subject=Reader%20Response" style="display: inline-block; background: #92400e; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+               <a href="mailto:contact@aiinasia.com?subject=Reader%20Response" style="display: inline-block; background: #92400e; color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                  Reply to this email →
                </a>
              </td>

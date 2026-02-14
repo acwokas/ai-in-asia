@@ -159,7 +159,7 @@ const Contact = () => {
                 <Mail className="h-6 w-6 text-primary mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">Email</h3>
-                  <p className="text-muted-foreground">editorial@aiinasia.com</p>
+                  <p className="text-muted-foreground">contact@aiinasia.com</p>
                 </div>
               </div>
               
@@ -175,7 +175,7 @@ const Contact = () => {
                 <Phone className="h-6 w-6 text-primary mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">Media Enquiries</h3>
-                  <p className="text-muted-foreground">press@aiinasia.com</p>
+                  <p className="text-muted-foreground">contact@aiinasia.com</p>
                 </div>
               </div>
             </div>
@@ -183,7 +183,7 @@ const Contact = () => {
             <div className="bg-muted/50 rounded-lg p-6 mt-8">
               <h3 className="font-semibold mb-2">For Partnership Opportunities</h3>
               <p className="text-sm text-muted-foreground">
-                Interested in advertising, sponsored content, or strategic partnerships? Contact our partnerships team at partnerships@aiinasia.com
+                Interested in advertising, sponsored content, or strategic partnerships? Contact our partnerships team at contact@aiinasia.com
               </p>
             </div>
           </div>

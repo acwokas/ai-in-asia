@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
     for (const subscriber of subscribers) {
       try {
         await resend.emails.send({
-          from: 'AI in ASIA <briefing@aiinasia.com>',
+          from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: `3-Before-9 · ${dateFormatted}`,
           html: emailHtml,

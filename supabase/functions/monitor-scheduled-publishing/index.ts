@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'AI in ASIA <alerts@aiinasia.com>',
+            from: 'AI in ASIA <contact@aiinasia.com>',
             to: ['me@adrianwatkins.com'],
             subject: `🚨 ALERT: ${overdueCount} article${overdueCount > 1 ? 's' : ''} failed to publish`,
             html: emailHtml,
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                from: 'AI in ASIA <alerts@aiinasia.com>',
+                from: 'AI in ASIA <contact@aiinasia.com>',
                 to: ['me@adrianwatkins.com'],
                 subject: `✅ AUTO-FIXED: ${result.successCount} article${result.successCount > 1 ? 's' : ''} published`,
                 html: `
