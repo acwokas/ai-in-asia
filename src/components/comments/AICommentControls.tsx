@@ -12,8 +12,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { 
-  Sparkles, RefreshCw, Trash2, Edit2, Eye, EyeOff, Loader2, ChevronDown, User 
+  Sparkles, RefreshCw, Trash2, Edit2, Eye, EyeOff, Loader2, ChevronDown, User, Calendar 
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Comment, formatCommentWithEmojis } from "./CommentThread";
 
 interface AICommentControlsProps {
@@ -29,6 +31,7 @@ interface AICommentControlsProps {
   onPublishComment: (commentId: string, publish: boolean) => void;
   onEditComment: (comment: Comment) => void;
   onDeleteComment: (commentId: string) => void;
+  onUpdateCommentDate?: (commentId: string, newDate: string) => void;
 }
 
 export const AICommentControls = ({
@@ -44,6 +47,7 @@ export const AICommentControls = ({
   onPublishComment,
   onEditComment,
   onDeleteComment,
+  onUpdateCommentDate,
 }: AICommentControlsProps) => {
   const unpublishedCount = aiComments.filter(c => !c.published).length;
   const publishedCount = aiComments.filter(c => c.published).length;
@@ -171,6 +175,28 @@ export const AICommentControls = ({
                     >
                       {comment.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </Button>
+                    {onUpdateCommentDate && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" title="Change date">
+                            <Calendar className="h-3.5 w-3.5" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-3" align="end">
+                          <label className="text-xs font-medium text-muted-foreground mb-1 block">Publish date</label>
+                          <Input
+                            type="date"
+                            defaultValue={comment.comment_date ? new Date(comment.comment_date).toISOString().split('T')[0] : ''}
+                            className="w-auto text-sm"
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                onUpdateCommentDate(comment.id, new Date(e.target.value).toISOString());
+                              }
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
                     <Button
                       size="icon"
                       variant="ghost"
