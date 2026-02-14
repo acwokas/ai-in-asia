@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { generateSlug } from "@/lib/markdownConversion";
 
 interface ImageData {
@@ -174,27 +174,41 @@ export const LinkDialog = ({
       </DialogHeader>
       <div className="space-y-4">
         <div>
+          <Label htmlFor="link-url">URL</Label>
+          <div className="flex gap-2">
+            <Input
+              id="link-url"
+              placeholder="https://example.com"
+              value={linkData.url}
+              onChange={(e) => setLinkData({ ...linkData, url: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onInsert();
+                }
+              }}
+              className="flex-1"
+            />
+            {isEditingLink && linkData.url && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 flex-shrink-0 text-destructive hover:text-destructive"
+                onClick={() => setLinkData({ ...linkData, url: '' })}
+                title="Clear URL"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+        <div>
           <Label htmlFor="link-text">Link Text</Label>
           <Input
             id="link-text"
             placeholder="Click here"
             value={linkData.text}
             onChange={(e) => setLinkData({ ...linkData, text: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="link-url">URL</Label>
-          <Input
-            id="link-url"
-            placeholder="https://example.com"
-            value={linkData.url}
-            onChange={(e) => setLinkData({ ...linkData, url: e.target.value })}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                onInsert();
-              }
-            }}
           />
         </div>
         <div className="flex items-center space-x-2">
