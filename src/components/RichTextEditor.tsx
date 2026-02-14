@@ -662,8 +662,7 @@ const RichTextEditor = ({
           break;
         case 'k':
           e.preventDefault();
-          saveSelection();
-          setShowLinkDialog(true);
+          handleFormat('link');
           break;
       }
     }
