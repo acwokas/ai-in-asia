@@ -31,6 +31,7 @@ const Comments = ({ articleId }: CommentsProps) => {
     handleUnpublishAll,
     handleDeleteAiComment,
     handleSaveEdit,
+    handleUpdateCommentDate,
     handleApprove,
     handleReject,
     handleSubmitComment,
@@ -120,6 +121,7 @@ const Comments = ({ articleId }: CommentsProps) => {
             onPublishComment={handlePublishComment}
             onEditComment={handleEditComment}
             onDeleteComment={handleDeleteAiComment}
+            onUpdateCommentDate={handleUpdateCommentDate}
           />
         )}
 

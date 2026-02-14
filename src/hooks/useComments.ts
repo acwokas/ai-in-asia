@@ -236,6 +236,32 @@ export const useComments = (articleId: string) => {
     }
   };
 
+  const handleUpdateCommentDate = async (commentId: string, newDate: string) => {
+    try {
+      const selectedDate = new Date(newDate);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      const shouldPublish = selectedDate <= today;
+
+      const updateData: { comment_date: string; published?: boolean } = { comment_date: newDate };
+      if (shouldPublish) {
+        updateData.published = true;
+      }
+
+      const { error } = await supabase.from("ai_generated_comments").update(updateData).eq("id", commentId);
+      if (error) throw error;
+      toast({
+        title: shouldPublish ? "Date updated & published" : "Date updated",
+        description: shouldPublish
+          ? "The comment date is today or earlier, so it has been published."
+          : "The comment date has been updated. It will auto-publish when the date arrives.",
+      });
+      fetchComments();
+    } catch (error) {
+      toast({ title: "Failed to update date", description: "Please try again later.", variant: "destructive" });
+    }
+  };
+
   const handleApprove = async (commentId: string) => {
     try {
       const { error } = await supabase.from("comments").update({ approved: true }).eq("id", commentId);
@@ -340,6 +366,7 @@ export const useComments = (articleId: string) => {
     handleUnpublishAll,
     handleDeleteAiComment,
     handleSaveEdit,
+    handleUpdateCommentDate,
     handleApprove,
     handleReject,
     handleSubmitComment,
