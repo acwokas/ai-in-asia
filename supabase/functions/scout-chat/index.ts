@@ -46,13 +46,20 @@ serve(async (req) => {
       },
     });
 
-    // Get user session
-    const { data: { user } } = await supabase.auth.getUser();
+    // Require authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    // Query limit logic
-    let queryLimit = 3; // Default for non-logged in users
+    if (!user || authError) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required. Please sign in to use Scout.' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
-    if (user) {
+    // Query limit logic based on user level
+    let queryLimit = 10; // Default for authenticated users
+    
+    {
       // Get user stats to determine level
       const { data: stats } = await supabase
         .from('user_stats')
@@ -80,7 +87,7 @@ serve(async (req) => {
       .from('scout_queries')
       .select('query_count')
       .eq('query_date', today)
-      .eq('user_id', user?.id || null)
+      .eq('user_id', user.id)
       .maybeSingle();
 
     const currentCount = queryData?.query_count || 0;
@@ -88,9 +95,7 @@ serve(async (req) => {
     if (currentCount >= queryLimit) {
       return new Response(
         JSON.stringify({ 
-          error: user 
-            ? `Daily query limit reached (${queryLimit} queries). Read more articles to unlock more queries!`
-            : 'Daily query limit reached (3 queries). Sign in for more queries!' 
+          error: `Daily query limit reached (${queryLimit} queries). Read more articles to unlock more queries!`
         }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -102,12 +107,12 @@ serve(async (req) => {
         .from('scout_queries')
         .update({ query_count: currentCount + 1 })
         .eq('query_date', today)
-        .eq('user_id', user?.id || null);
+        .eq('user_id', user.id);
     } else {
       await supabase
         .from('scout_queries')
         .insert({ 
-          user_id: user?.id || null, 
+          user_id: user.id, 
           query_date: today, 
           query_count: 1 
         });
@@ -229,14 +234,16 @@ Guidelines:
       
       if (toolCall.function.name === 'search_articles') {
         const args = JSON.parse(toolCall.function.arguments);
-        console.log('Searching for:', args.query);
+        // Sanitize query for use in ilike patterns
+        const sanitizedQuery = args.query.replace(/[%_\\]/g, '\\$&').slice(0, 200);
+        console.log('Searching for:', sanitizedQuery);
         
         // First search by title and excerpt
         const { data: titleExcerptResults } = await supabase
           .from('articles')
           .select('id, title, slug, excerpt, content')
           .eq('status', 'published')
-          .or(`title.ilike.%${args.query}%,excerpt.ilike.%${args.query}%`)
+          .or(`title.ilike.%${sanitizedQuery}%,excerpt.ilike.%${sanitizedQuery}%`)
           .limit(5);
         
         // Then get ALL published articles to search content (no limit)
@@ -262,7 +269,7 @@ Guidelines:
             .join(' ')
             .toLowerCase();
           
-          return contentText.includes(args.query.toLowerCase());
+          return contentText.includes(sanitizedQuery.toLowerCase());
         }) || [];
         
         // Combine and deduplicate results
@@ -274,14 +281,14 @@ Guidelines:
         const { data: events } = await supabase
           .from('events')
           .select('id, title, slug, description, start_date, location')
-          .or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%,location.ilike.%${args.query}%`)
+          .or(`title.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%,location.ilike.%${sanitizedQuery}%`)
           .limit(5);
         
         // Search AI tools
         const { data: tools } = await supabase
           .from('ai_tools')
           .select('id, name, description, url, category')
-          .or(`name.ilike.%${args.query}%,description.ilike.%${args.query}%,category.ilike.%${args.query}%`)
+          .or(`name.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%,category.ilike.%${sanitizedQuery}%`)
           .limit(5);
         
         console.log('Found articles:', articles?.length || 0, 'events:', events?.length || 0, 'tools:', tools?.length || 0);
@@ -376,9 +383,8 @@ Guidelines:
     });
   } catch (error) {
     console.error('Error in scout-chat function:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'An unexpected error occurred. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
