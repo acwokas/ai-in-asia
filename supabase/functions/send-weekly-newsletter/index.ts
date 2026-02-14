@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
 
       console.log('Calling Resend API...');
       const { data: emailResult, error: emailError } = await resend.emails.send({
-        from: 'AI in ASIA <newsletter@aiinasia.com>',
+        from: 'AI in ASIA <contact@aiinasia.com>',
         to: test_email,
         subject: `[TEST] ${edition.subject_line}`,
         html,
@@ -569,7 +569,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
         await resend.emails.send({
-          from: 'AI in ASIA <newsletter@aiinasia.com>',
+          from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: subjectLine,
           html,

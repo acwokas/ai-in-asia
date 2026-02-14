@@ -94,7 +94,7 @@ export const OrganizationStructuredData = () => {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "Editorial",
-      email: "editorial@aiinasia.com",
+      email: "contact@aiinasia.com",
     },
   };
 

@@ -126,7 +126,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "AI in ASIA <digest@aiinasia.com>",
+              from: "AI in ASIA <contact@aiinasia.com>",
               to: authUser.user.email,
               subject: `Your Daily AI Digest - ${new Date().toLocaleDateString()}`,
               html: emailHtml,

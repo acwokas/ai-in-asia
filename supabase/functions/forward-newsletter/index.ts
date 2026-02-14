@@ -221,7 +221,7 @@ import { Resend } from 'https://esm.sh/resend@2.0.0';
      // Send the email via Resend
      const resend = new Resend(resendApiKey);
      const emailResult = await resend.emails.send({
-       from: 'AI in ASIA <newsletter@aiinasia.com>',
+       from: 'AI in ASIA <contact@aiinasia.com>',
        to: [recipient_email],
        subject: `${sanitizedName} forwarded: ${edition.subject_line || 'AI in ASIA Weekly Brief'}`,
        html,
