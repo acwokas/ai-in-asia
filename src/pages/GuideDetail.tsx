@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { ArrowLeft, Copy, Check, Tag, User, Globe, Cpu, BookOpen, FileText, Target, Lightbulb, RefreshCw, PenTool, Wrench, Pin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -402,62 +402,22 @@ const GuideDetail = () => {
 
   return (
     <>
-      <Helmet>
-        {/* Primary Meta Tags */}
-        <title>{pageTitle} | AIinASIA</title>
-        <meta name="title" content={`${pageTitle} | AIinASIA`} />
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* Keywords */}
-        {guide.focus_keyphrase && (
-          <meta name="keywords" content={`${guide.focus_keyphrase}${guide.keyphrase_synonyms ? `, ${guide.keyphrase_synonyms}` : ''}${tags.length > 0 ? `, ${tags.join(', ')}` : ''}`} />
-        )}
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:site_name" content="AIinASIA" />
-        <meta property="og:locale" content="en_US" />
-        <meta property="article:published_time" content={guide.created_at} />
-        <meta property="article:modified_time" content={guide.updated_at} />
-        <meta property="article:section" content={guide.guide_category} />
-        {tags.map((tag, i) => (
-          <meta key={i} property="article:tag" content={tag.trim()} />
-        ))}
-        
-        {/* Open Graph Image */}
-        <meta property="og:image" content={'https://aiinasia.com/favicon.png'} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={pageTitle} />
-        
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={canonicalUrl} />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:site" content="@aiinasia" />
-        <meta name="twitter:image" content={'https://aiinasia.com/favicon.png'} />
-        <meta name="twitter:image:alt" content={pageTitle} />
-        
-        {/* Additional SEO */}
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="author" content="AIinASIA" />
-        <meta name="geo.region" content={guide.geo || 'APAC'} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-        {faqStructuredData && (
-          <script type="application/ld+json">
-            {JSON.stringify(faqStructuredData)}
-          </script>
-        )}
-      </Helmet>
+      <SEOHead
+        title={pageTitle}
+        description={pageDescription}
+        canonical={canonicalUrl}
+        ogType="article"
+        ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
+        ogImageAlt={pageTitle}
+        articleMeta={{
+          publishedTime: guide.created_at,
+          modifiedTime: guide.updated_at,
+          author: "AI in ASIA",
+          section: guide.guide_category,
+          tags: tags.map(t => t.trim()),
+        }}
+        schemaJson={faqStructuredData ? [structuredData, faqStructuredData] : structuredData}
+      />
 
       <Header />
 

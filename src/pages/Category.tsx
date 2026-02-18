@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArticleCard from "@/components/ArticleCard";
@@ -728,18 +728,11 @@ const Category = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>{category?.name || 'Category'} - AI News & Insights | AI in ASIA</title>
-        <meta name="description" content={category?.description || `Explore the latest ${category?.name} articles, news, and insights on AI in ASIA. Expert coverage of artificial intelligence developments across Asia.`} />
-        <link rel="canonical" href={`https://aiinasia.com/category/${category?.slug}`} />
-        <meta property="og:title" content={`${category?.name} - AI News & Insights | AI in ASIA`} />
-        <meta property="og:description" content={category?.description || `Explore the latest ${category?.name} articles.`} />
-        <meta property="og:url" content={`https://aiinasia.com/category/${category?.slug}`} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${category?.name} - AI News & Insights | AI in ASIA`} />
-        <meta name="twitter:description" content={category?.description || `Explore the latest ${category?.name} articles.`} />
-      </Helmet>
+      <SEOHead
+        title={`${category?.name || 'Category'} - AI News & Insights`}
+        description={category?.description || `Explore the latest ${category?.name} articles, news, and insights on AI in ASIA. Expert coverage of artificial intelligence developments across Asia.`}
+        canonical={`https://aiinasia.com/category/${category?.slug}`}
+      />
 
       {category && (
         <BreadcrumbStructuredData

@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -139,19 +139,13 @@ const AuthorProfile = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>{author?.name || 'Author'} - Author Profile | AI in ASIA</title>
-        <meta name="description" content={author?.bio || `Read articles by ${author?.name}. ${totalArticles} articles published.`} />
-        <link rel="canonical" href={`https://aiinasia.com/author/${author?.slug}`} />
-        <meta property="og:title" content={`${author?.name} - Author Profile`} />
-        <meta property="og:description" content={author?.bio || `Read articles by ${author?.name}`} />
-        <meta property="og:url" content={`https://aiinasia.com/author/${author?.slug}`} />
-        {author?.avatar_url && <meta property="og:image" content={author.avatar_url} />}
-        <meta property="og:type" content="profile" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={`${author?.name} - Author Profile`} />
-        <meta name="twitter:description" content={author?.bio || `Read articles by ${author?.name}`} />
-      </Helmet>
+      <SEOHead
+        title={`${author?.name || 'Author'} - Author Profile`}
+        description={author?.bio || `Read articles by ${author?.name}. ${totalArticles} articles published.`}
+        canonical={`https://aiinasia.com/author/${author?.slug}`}
+        ogImage={author?.avatar_url || undefined}
+        ogType="profile"
+      />
 
       {author && (
         <PersonStructuredData

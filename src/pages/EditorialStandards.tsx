@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,14 +15,11 @@ import {
 const EditorialStandards = () => {
   return (
     <>
-      <Helmet>
-        <title>How AI in ASIA Works | Editorial Standards | AI in ASIA</title>
-        <meta
-          name="description"
-          content="AI in ASIA is an Asia-first editorial platform covering artificial intelligence as it is built, regulated, and used across the region. Learn about our editorial standards and approach."
-        />
-        <link rel="canonical" href="https://aiinasia.com/editorial-standards" />
-      </Helmet>
+      <SEOHead
+        title="How AI in ASIA Works | Editorial Standards"
+        description="AI in ASIA is an Asia-first editorial platform covering artificial intelligence as it is built, regulated, and used across the region. Learn about our editorial standards and approach."
+        canonical="https://aiinasia.com/editorial-standards"
+      />
 
       <Header />
 

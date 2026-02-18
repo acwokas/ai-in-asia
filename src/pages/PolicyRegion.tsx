@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -123,6 +124,11 @@ const PolicyRegion = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title={`${regionData?.name || 'Region'} - AI Policy Atlas`}
+        description={regionData?.description || `Explore AI policy and regulation in ${regionData?.name || 'this region'}. Coverage of governance frameworks and developments.`}
+        canonical={`https://aiinasia.com/ai-policy-atlas/${region}`}
+      />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12">

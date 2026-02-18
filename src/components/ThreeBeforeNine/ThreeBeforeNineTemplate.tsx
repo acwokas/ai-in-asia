@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Clock, ChevronRight, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { cn } from "@/lib/utils";
@@ -274,20 +274,13 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <Helmet>
-        <title>{article.meta_title || article.title} | AI in ASIA</title>
-        <meta name="description" content={article.meta_description || article.excerpt} />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={article.meta_title || article.title} />
-        <meta property="og:description" content={article.meta_description || article.excerpt} />
-        <meta property="og:image" content="https://aiinasia.com/images/3-before-9-hero.png" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={article.meta_title || article.title} />
-        <meta name="twitter:description" content={article.meta_description || article.excerpt} />
-        <meta name="twitter:image" content="https://aiinasia.com/images/3-before-9-hero.png" />
-      </Helmet>
+      <SEOHead
+        title={article.meta_title || article.title}
+        description={article.meta_description || article.excerpt || ''}
+        canonical={canonicalUrl}
+        ogImage="https://aiinasia.com/images/3-before-9-hero.png"
+        ogType="article"
+      />
 
       {/* Admin Controls */}
       {!isLoadingAdmin && isAdmin && (

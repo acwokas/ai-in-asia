@@ -10,7 +10,7 @@
  import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
  import { Textarea } from "@/components/ui/textarea";
  import { toast } from "sonner";
- import { Helmet } from "react-helmet";
+ import SEOHead from "@/components/SEOHead";
  import { MailX, Loader2, Check, Home, Heart } from "lucide-react";
  import {
    Breadcrumb,
@@ -74,10 +74,7 @@
    if (isSuccess) {
      return (
        <>
-         <Helmet>
-           <title>Unsubscribed | AI in ASIA</title>
-           <meta name="robots" content="noindex" />
-         </Helmet>
+         <SEOHead title="Unsubscribed" description="You have been unsubscribed from the AI in ASIA newsletter." noIndex={true} />
          <Header />
          <div className="container mx-auto px-4 py-12 min-h-screen">
            <Card className="p-12 text-center max-w-lg mx-auto">
@@ -110,11 +107,7 @@
  
    return (
      <>
-       <Helmet>
-         <title>Unsubscribe | AI in ASIA</title>
-         <meta name="description" content="Unsubscribe from the AI in ASIA newsletter." />
-         <meta name="robots" content="noindex" />
-       </Helmet>
+       <SEOHead title="Unsubscribe" description="Unsubscribe from the AI in ASIA newsletter." noIndex={true} />
  
        <Header />
        <div className="container mx-auto px-4 py-12 min-h-screen">

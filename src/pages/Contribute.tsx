@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,16 +17,11 @@ import { CheckCircle2, XCircle, FileText, Mail } from "lucide-react";
 const Contribute = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Contribute to AI in ASIA - Guest Contributor Guidelines</title>
-        <meta name="description" content="AI in ASIA welcomes guest contributions from people working with artificial intelligence across the region. Learn about our submission guidelines and editorial standards." />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://aiinasia.com/contribute" />
-        <meta property="og:title" content="Contribute to AI in ASIA" />
-        <meta property="og:description" content="AI in ASIA welcomes guest contributions from people working with artificial intelligence across the region." />
-        <meta property="og:url" content="https://aiinasia.com/contribute" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SEOHead
+        title="Contribute to AI in ASIA - Guest Contributor Guidelines"
+        description="AI in ASIA welcomes guest contributions from people working with artificial intelligence across the region. Learn about our submission guidelines and editorial standards."
+        canonical="https://aiinasia.com/contribute"
+      />
 
       <Header />
 

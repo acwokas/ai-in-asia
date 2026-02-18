@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
 import {
   Breadcrumb,
@@ -146,22 +146,12 @@ const Events = () => {
 
   return (
     <>
-      <Helmet>
-        <title>AI Events & Conferences Calendar | AI in ASIA</title>
-        <meta name="description" content="Discover upcoming AI conferences, summits, and workshops across Asia Pacific and globally. Stay updated with the latest artificial intelligence events." />
-        <link rel="canonical" href="https://aiinasia.com/events" />
-        <meta property="og:title" content="AI Events & Conferences Calendar | AI in ASIA" />
-        <meta property="og:description" content="Discover upcoming AI conferences, summits, and workshops across Asia Pacific and globally." />
-        <meta property="og:url" content="https://aiinasia.com/events" />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://aiinasia.com/og-image.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Events & Conferences Calendar | AI in ASIA" />
-        <meta name="twitter:description" content="Discover upcoming AI conferences and events across Asia Pacific." />
-        <meta name="twitter:image" content="https://aiinasia.com/og-image.png" />
-      </Helmet>
+      <SEOHead
+        title="AI Events & Conferences Calendar"
+        description="Discover upcoming AI conferences, summits, and workshops across Asia Pacific and globally. Stay updated with the latest artificial intelligence events."
+        canonical="https://aiinasia.com/events"
+        ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
+      />
       
       {/* Event Structured Data for Featured Events */}
       {featuredEvents && featuredEvents.map((event) => (

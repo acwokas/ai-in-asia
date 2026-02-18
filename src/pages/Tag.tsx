@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArticleCard from "@/components/ArticleCard";
@@ -72,18 +72,11 @@ const Tag = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>{tag?.name || 'Tag'} - Tagged Articles | AI in ASIA</title>
-        <meta name="description" content={tag?.description || `Explore articles tagged with ${tag?.name}. ${articles?.length || 0} articles covering AI news, insights, and developments.`} />
-        <link rel="canonical" href={`https://aiinasia.com/tag/${tag?.slug}`} />
-        <meta property="og:title" content={`${tag?.name} - Tagged Articles | AI in ASIA`} />
-        <meta property="og:description" content={tag?.description || `Explore articles tagged with ${tag?.name}.`} />
-        <meta property="og:url" content={`https://aiinasia.com/tag/${tag?.slug}`} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${tag?.name} - Tagged Articles | AI in ASIA`} />
-        <meta name="twitter:description" content={tag?.description || `Explore articles tagged with ${tag?.name}.`} />
-      </Helmet>
+      <SEOHead
+        title={`${tag?.name || 'Tag'} - Tagged Articles`}
+        description={tag?.description || `Explore articles tagged with ${tag?.name}. ${articles?.length || 0} articles covering AI news, insights, and developments.`}
+        canonical={`https://aiinasia.com/tag/${tag?.slug}`}
+      />
 
       <BreadcrumbStructuredData
         items={[

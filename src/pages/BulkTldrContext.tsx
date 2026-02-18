@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -273,9 +273,11 @@ const BulkTldrContext = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Bulk Update TL;DR Context | Admin</title>
-      </Helmet>
+      <SEOHead
+        title="Bulk Update TL;DR Context | Admin"
+        description="Admin tool for bulk updating TL;DR context on articles."
+        noIndex={true}
+      />
       <Header />
       <main className="container mx-auto px-4 py-8 min-h-screen">
         <div className="max-w-4xl mx-auto">
