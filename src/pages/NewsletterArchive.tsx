@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { Mail, Calendar, TrendingUp } from "lucide-react";
 import {
   Breadcrumb,
@@ -33,11 +33,11 @@ export default function NewsletterArchive() {
 
   return (
     <>
-      <Helmet>
-        <title>Newsletter Archive | AI in ASIA</title>
-        <meta name="description" content="Browse past editions of the AI in ASIA newsletter. Catch up on weekly AI insights, breaking news, and expert analysis." />
-        <link rel="canonical" href="https://aiinasia.com/newsletter/archive" />
-      </Helmet>
+      <SEOHead
+        title="Newsletter Archive"
+        description="Browse past editions of the AI in ASIA newsletter. Catch up on weekly AI insights, breaking news, and expert analysis."
+        canonical="https://aiinasia.com/newsletter/archive"
+      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

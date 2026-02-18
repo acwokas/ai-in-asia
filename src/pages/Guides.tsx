@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { 
   Search, BookOpen, Cpu, Sparkles, ArrowRight, 
   Zap, Target, Wrench, BookMarked, Code, UserCog,
@@ -162,13 +162,11 @@ const Guides = () => {
 
   return (
     <>
-      <Helmet>
-        <title>AI Guides & Prompts - Master AI Tools with Practical Tutorials | AIinASIA</title>
-        <meta
-          name="description"
-          content="Explore our collection of AI guides, tutorials, prompt packs, and frameworks. Learn to master ChatGPT, Claude, Gemini, Midjourney and more."
-        />
-      </Helmet>
+      <SEOHead
+        title="AI Guides & Prompts - Master AI Tools with Practical Tutorials"
+        description="Explore our collection of AI guides, tutorials, prompt packs, and frameworks. Learn to master ChatGPT, Claude, Gemini, Midjourney and more."
+        canonical="https://aiinasia.com/guides"
+      />
 
       <Header />
 

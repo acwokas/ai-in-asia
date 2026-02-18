@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -117,18 +117,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Contact AI in ASIA - Get In Touch</title>
-        <meta name="description" content="Contact AI in ASIA for story tips, partnership enquiries, or general questions. We're here to help with your AI news and insights needs." />
-        <link rel="canonical" href="https://aiinasia.com/contact" />
-        <meta property="og:title" content="Contact AI in ASIA - Get In Touch" />
-        <meta property="og:description" content="Contact AI in ASIA for story tips, partnership enquiries, or general questions." />
-        <meta property="og:url" content="https://aiinasia.com/contact" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Contact AI in ASIA" />
-        <meta name="twitter:description" content="Get in touch with AI in ASIA for story tips and enquiries." />
-      </Helmet>
+      <SEOHead
+        title="Contact AI in ASIA - Get In Touch"
+        description="Contact AI in ASIA for story tips, partnership enquiries, or general questions. We're here to help with your AI news and insights needs."
+        canonical="https://aiinasia.com/contact"
+      />
 
       <Header />
       

@@ -9,7 +9,7 @@
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
  import { toast } from "sonner";
- import { Helmet } from "react-helmet";
+ import SEOHead from "@/components/SEOHead";
  import { Send, Mail, Loader2, Check, Home } from "lucide-react";
  import {
    Breadcrumb,
@@ -143,9 +143,7 @@
    if (isSuccess) {
      return (
        <>
-         <Helmet>
-           <title>Newsletter Forwarded | AI in ASIA</title>
-         </Helmet>
+         <SEOHead title="Newsletter Forwarded" description="The newsletter has been forwarded successfully." noIndex={true} />
          <Header />
          <div className="container mx-auto px-4 py-12 min-h-screen">
            <Card className="p-12 text-center max-w-md mx-auto">
@@ -177,11 +175,7 @@
  
    return (
      <>
-       <Helmet>
-         <title>Forward Newsletter | AI in ASIA</title>
-         <meta name="description" content="Share the AI in ASIA Weekly Brief with a colleague or friend." />
-         <meta name="robots" content="noindex" />
-       </Helmet>
+       <SEOHead title="Forward Newsletter" description="Share the AI in ASIA Weekly Brief with a colleague or friend." noIndex={true} />
  
        <Header />
        <div className="container mx-auto px-4 py-12 min-h-screen">

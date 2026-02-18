@@ -16,7 +16,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 
 const newsletterSchema = z.object({
   email: z.string()
@@ -103,18 +103,11 @@ const Newsletter = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Subscribe to Newsletter | AI in ASIA</title>
-        <meta name="description" content="Get weekly AI insights, breaking news, and expert analysis delivered straight to your inbox. Join thousands of AI enthusiasts across Asia." />
-        <link rel="canonical" href="https://aiinasia.com/newsletter" />
-        <meta property="og:title" content="Subscribe to Newsletter | AI in ASIA" />
-        <meta property="og:description" content="Get weekly AI insights, breaking news, and expert analysis delivered straight to your inbox." />
-        <meta property="og:url" content="https://aiinasia.com/newsletter" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Subscribe to AI in ASIA Newsletter" />
-        <meta name="twitter:description" content="Get weekly AI insights delivered to your inbox." />
-      </Helmet>
+      <SEOHead
+        title="Subscribe to Newsletter"
+        description="Get weekly AI insights, breaking news, and expert analysis delivered straight to your inbox. Join thousands of AI enthusiasts across Asia."
+        canonical="https://aiinasia.com/newsletter"
+      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

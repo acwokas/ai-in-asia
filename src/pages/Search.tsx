@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -285,18 +285,12 @@ const Search = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Search AI Articles | AI in ASIA</title>
-        <meta name="description" content="Search for AI news, insights, and articles on AI in ASIA. Find the latest coverage on artificial intelligence across Asia with advanced filtering." />
-        <link rel="canonical" href="https://aiinasia.com/search" />
-        <meta property="og:title" content="Search AI Articles | AI in ASIA" />
-        <meta property="og:description" content="Search for AI news, insights, and articles on AI in ASIA." />
-        <meta property="og:url" content="https://aiinasia.com/search" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Search AI Articles | AI in ASIA" />
-        <meta name="twitter:description" content="Search for AI news and articles on AI in ASIA." />
-      </Helmet>
+      <SEOHead
+        title="Search AI Articles"
+        description="Search for AI news, insights, and articles on AI in ASIA. Find the latest coverage on artificial intelligence across Asia with advanced filtering."
+        canonical="https://aiinasia.com/search"
+        noIndex={true}
+      />
 
       <Header />
       

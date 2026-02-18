@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -53,10 +53,11 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Page Not Found - 404 | AI in ASIA</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <SEOHead
+        title="Page Not Found - 404"
+        description="The page you're looking for doesn't exist or has been moved."
+        noIndex={true}
+      />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">

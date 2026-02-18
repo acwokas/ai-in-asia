@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -27,10 +27,11 @@ export const ArticleNotFound = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Article Not Found - 404 | AI in ASIA</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <SEOHead
+        title="Article Not Found - 404"
+        description="The article you're looking for doesn't exist."
+        noIndex={true}
+      />
       <Header />
       <main className="flex-1 flex items-center justify-center">
         <div className="text-center">

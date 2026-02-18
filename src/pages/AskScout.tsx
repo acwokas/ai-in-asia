@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 
 interface Message {
   role: "user" | "assistant";
@@ -192,10 +192,11 @@ const AskScout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Ask Scout - AI Assistant | AI in ASIA</title>
-        <meta name="description" content="Ask Scout anything about AI developments, trends, and news across Asia. Your AI-powered assistant for AI in ASIA." />
-      </Helmet>
+      <SEOHead
+        title="Ask Scout - AI Assistant"
+        description="Ask Scout anything about AI developments, trends, and news across Asia. Your AI-powered assistant for AI in ASIA."
+        noIndex={true}
+      />
       
       <Header />
       

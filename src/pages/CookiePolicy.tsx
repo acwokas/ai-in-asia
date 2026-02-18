@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -13,6 +14,11 @@ import {
 const CookiePolicy = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Cookie Policy"
+        description="Learn how AI in ASIA uses cookies to improve your browsing experience. Details on essential, analytics, and preference cookies."
+        canonical="https://aiinasia.com/cookie-policy"
+      />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">

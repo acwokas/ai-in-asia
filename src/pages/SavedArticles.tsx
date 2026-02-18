@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet';
+import SEOHead from "@/components/SEOHead";
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -26,11 +26,11 @@ const SavedArticles = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Helmet>
-        <title>Saved Articles | AI in ASIA</title>
-        <meta name="description" content="Your saved articles from AI in ASIA. Read later without an account - saved items live on this device only." />
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <SEOHead
+        title="Saved Articles"
+        description="Your saved articles from AI in ASIA. Read later without an account - saved items live on this device only."
+        noIndex={true}
+      />
       
       <Header />
       

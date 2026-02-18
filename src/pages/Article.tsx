@@ -32,7 +32,7 @@ import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, Bookmark, MessageCircle } from "lucide-react";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -397,35 +397,23 @@ const Article = () => {
     <>
       <ReadingProgressBar />
       
-      <Helmet>
-        <title>{((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} | AI in ASIA</title>
-        <meta name="description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta name="author" content={article.authors?.name || 'AI in ASIA'} />
-        <meta property="article:published_time" content={article.published_at || ''} />
-        <meta property="article:modified_time" content={article.updated_at || ''} />
-        <meta property="article:author" content={article.authors?.name || ''} />
-        <meta property="article:section" content={article.categories?.name || ''} />
-        <meta property="og:site_name" content="AI in ASIA" />
-        <meta property="og:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
-        <meta property="og:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta property="og:image" content={article.featured_image_url || 'https://aiinasia.com/favicon.png'} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={article.featured_image_alt || article.title} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={shareHandlers.getPublicArticleUrl()} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@aiinasia" />
-        <meta name="twitter:title" content={(article.meta_title || article.title).replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")} />
-        <meta name="twitter:description" content={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')} />
-        <meta name="twitter:image" content={article.featured_image_url || 'https://aiinasia.com/favicon.png'} />
-        <meta name="twitter:image:alt" content={article.featured_image_alt || article.title} />
-        {isPreview ? (
-          <meta name="robots" content="noindex, nofollow" />
-        ) : (
-          <link rel="canonical" href={shareHandlers.getPublicArticleUrl()} />
-        )}
-      </Helmet>
+      <SEOHead
+        title={((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+        description={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')}
+        canonical={isPreview ? undefined : shareHandlers.getPublicArticleUrl()}
+        ogImage={article.featured_image_url || 'https://aiinasia.com/icons/aiinasia-512.png?v=3'}
+        ogImageAlt={article.featured_image_alt || article.title}
+        ogImageWidth="1200"
+        ogImageHeight="630"
+        ogType="article"
+        noIndex={isPreview}
+        articleMeta={{
+          publishedTime: article.published_at || '',
+          modifiedTime: article.updated_at || '',
+          author: article.authors?.name || 'AI in ASIA',
+          section: article.categories?.name || '',
+        }}
+      />
 
       <ArticleStructuredData
         title={article.title}

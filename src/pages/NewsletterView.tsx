@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
  import { Mail } from "lucide-react";
 import { toast } from "sonner";
  import { NewsletterPreviewContent, NewsletterEditionData } from "@/components/newsletter/NewsletterPreviewContent";
@@ -132,11 +132,11 @@ export default function NewsletterView() {
 
   return (
     <>
-      <Helmet>
-        <title>{edition.subject_line} | AI in ASIA Newsletter</title>
-        <meta name="description" content={`Read the AI in ASIA newsletter from ${new Date(edition.edition_date).toLocaleDateString()}`} />
-        <link rel="canonical" href={`https://aiinasia.com/newsletter/archive/${date}`} />
-      </Helmet>
+      <SEOHead
+        title={`${edition.subject_line} | AI in ASIA Newsletter`}
+        description={`Read the AI in ASIA newsletter from ${new Date(edition.edition_date).toLocaleDateString()}`}
+        canonical={`https://aiinasia.com/newsletter/archive/${date}`}
+      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

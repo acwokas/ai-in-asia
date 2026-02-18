@@ -12,7 +12,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Search, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import SEOHead from "@/components/SEOHead";
 import { TopListItem } from "@/components/TopListsEditor";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import promptAndGoLogo from "@/assets/promptandgo-logo.png";
@@ -320,10 +320,11 @@ const AllPrompts = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>All AI Prompts - Complete Collection | AI in ASIA</title>
-        <meta name="description" content="Browse our complete collection of AI prompts for ChatGPT, Gemini, Claude, and more. Filter by difficulty, use case, and AI model." />
-      </Helmet>
+      <SEOHead
+        title="All AI Prompts - Complete Collection"
+        description="Browse our complete collection of AI prompts for ChatGPT, Gemini, Claude, and more. Filter by difficulty, use case, and AI model."
+        canonical="https://aiinasia.com/prompts"
+      />
 
       <Header />
 
