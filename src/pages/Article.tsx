@@ -20,6 +20,7 @@ import FollowButton from "@/components/FollowButton";
 import ContinueReading from "@/components/ContinueReading";
 import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
 import NextArticleProgress from "@/components/NextArticleProgress";
+import MobileActionBar from "@/components/MobileActionBar";
 import { useRecentArticles } from "@/hooks/useRecentArticles";
 import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
@@ -471,8 +472,8 @@ const Article = () => {
                 <p className="text-xl text-muted-foreground mb-6">{article.excerpt}</p>
               )}
 
-              {/* Author info row */}
-              <div className="flex flex-col md:flex-row md:items-center gap-4 pb-6 border-b border-border relative z-20">
+              {/* Author info row - Desktop */}
+              <div className="hidden md:flex md:items-center gap-4 pb-6 border-b border-border relative z-20">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   {article.authors?.slug ? (
                     <Link to={`/author/${article.authors.slug}`}>
@@ -515,22 +516,34 @@ const Article = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                  <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2">
-                    {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
-                    {article.categories && <FollowButton followType="category" followId={article.categories.id} followName={article.categories.name} />}
+                <div className="flex flex-wrap items-center gap-2">
+                  {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
+                  {article.categories && <FollowButton followType="category" followId={article.categories.id} followName={article.categories.name} />}
+                  <Button variant="outline" size="icon" onClick={handleBookmark} title={isBookmarked ? "Remove bookmark" : "Bookmark article"} className="h-8 w-8 cursor-pointer">
+                    <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                  </Button>
+                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
+                    <FontSizeControl />
                   </div>
-                  <div className="flex items-center gap-2 ml-auto md:ml-0">
-                    <Button variant="outline" size="icon" onClick={handleBookmark} title={isBookmarked ? "Remove bookmark" : "Bookmark article"} className="h-8 w-8 cursor-pointer">
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                    </Button>
-                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
-                      <FontSizeControl />
-                    </div>
-                    <Button variant="outline" size="icon" onClick={shareHandlers.handleShare} title="Share article" className="h-8 w-8 cursor-pointer">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button variant="outline" size="icon" onClick={shareHandlers.handleShare} title="Share article" className="h-8 w-8 cursor-pointer">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Author info row - Mobile (simplified) */}
+              <div className="flex md:hidden items-center gap-3 pb-4 border-b border-border">
+                {article.authors?.avatar_url ? (
+                  <Link to={`/author/${article.authors?.slug}`}>
+                    <img src={article.authors.avatar_url} alt={article.authors?.name || ''} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                  </Link>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
+                )}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
+                  <span className="font-semibold text-foreground truncate">By {article.authors?.name || 'Anonymous'}</span>
+                  <span>•</span>
+                  <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min</span>
                 </div>
               </div>
             </header>
@@ -546,10 +559,10 @@ const Article = () => {
 
             {/* Featured Image */}
             {article.featured_image_url && (
-              <div className="mb-8">
-                <img src={article.featured_image_url} alt={article.featured_image_alt || article.title} className="w-full rounded-lg" loading="eager" />
+              <div className="mb-8 -mx-4 md:mx-0">
+                <img src={article.featured_image_url} alt={article.featured_image_alt || article.title} className="w-full md:rounded-lg" loading="eager" />
                 {article.featured_image_caption && (
-                  <p className="text-sm text-muted-foreground text-center mt-2">{article.featured_image_caption}</p>
+                  <p className="text-sm text-muted-foreground text-center mt-2 px-4 md:px-0">{article.featured_image_caption}</p>
                 )}
               </div>
             )}
@@ -625,6 +638,13 @@ const Article = () => {
         </main>
 
         <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
+
+        {/* Mobile Floating Action Bar */}
+        <MobileActionBar
+          isBookmarked={isBookmarked}
+          onBookmark={handleBookmark}
+          onShare={shareHandlers.handleShare}
+        />
         
         <Footer />
       </div>

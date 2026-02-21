@@ -230,6 +230,24 @@ All colors MUST be HSL.
     @apply text-2xl md:text-3xl mt-6 mb-3;
   }
 
+  /* Article prose reading experience */
+  .article-content {
+    line-height: 1.8;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .article-content p {
+    margin-bottom: 1.5em;
+  }
+
+  @media (max-width: 768px) {
+    .article-content {
+      font-size: 1.125rem;
+    }
+  }
+
   .prose hr,
   article hr {
     @apply my-10 border-0 border-t;
