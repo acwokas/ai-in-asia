@@ -57,7 +57,7 @@ const Article = () => {
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   
-  const [pointsToastShown, setPointsToastShown] = useState(false);
+  
   
   const cleanSlug = slug?.replace(/\/+$/g, '');
   const urlParams = new URLSearchParams(window.location.search);
@@ -251,11 +251,26 @@ const Article = () => {
         completed: true
       });
 
-      if (!isPreview && !pointsToastShown) {
-        setPointsToastShown(true);
-        setTimeout(() => {
-          toast({ title: "✨ +10 points", description: "Keep reading to level up!", duration: 3000 });
-        }, 1500);
+      if (!isPreview) {
+        const lastToastTime = parseInt(sessionStorage.getItem('last-points-toast') || '0');
+        const now = Date.now();
+        const articleCount = parseInt(sessionStorage.getItem('articles-read-session') || '0') + 1;
+        sessionStorage.setItem('articles-read-session', String(articleCount));
+        
+        // Show toast only on 1st, 5th, and 10th article in a session
+        const milestones = [1, 5, 10];
+        if (milestones.includes(articleCount) && (now - lastToastTime > 60000)) {
+          sessionStorage.setItem('last-points-toast', String(now));
+          setTimeout(() => {
+            const messages = {
+              1: { title: "✨ +10 points", description: "Keep reading to level up!" },
+              5: { title: "🔥 5 articles today!", description: "You're on a roll - 50 points earned" },
+              10: { title: "🏆 10 articles!", description: "You're a power reader - 100 points earned" },
+            };
+            const msg = messages[articleCount as keyof typeof messages];
+            if (msg) toast({ ...msg, duration: 3000 });
+          }, 2000);
+        }
       }
     }
   };
