@@ -127,15 +127,17 @@ export function TableOfContentsSidebar({ contentSelector = ".article-content", m
   if (headings.length < minHeadings || readingTime < minReadingTime) return null;
 
   return (
-    <aside className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <div>
       <div className="border border-border rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-foreground">
           <List className="h-4 w-4" />
           <span>Contents</span>
         </div>
-        <TocLinks headings={headings} activeId={activeId} />
+        <div className="max-h-[45vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.3)_rgba(255,255,255,0.15)]">
+          <TocLinks headings={headings} activeId={activeId} />
+        </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
