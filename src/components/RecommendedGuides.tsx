@@ -93,9 +93,9 @@ const RecommendedGuides = () => {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <BookOpen className="h-6 w-6 text-primary" />
-              <h2 className="text-[22px] md:text-[28px] font-bold">Guides & Tutorials</h2>
+              <h2 className="text-[22px] md:text-[28px] font-bold text-white">Guides & Tutorials</h2>
             </div>
-            <p className="text-[15px] text-muted-foreground leading-[1.6]">
+            <p className="text-[15px] text-[hsl(210,20%,70%)] leading-[1.6]">
               Master AI tools with step-by-step learning resources
             </p>
           </div>
