@@ -700,6 +700,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         policy_sections: state.policySections,
         comparison_tables: state.comparisonTables,
         local_resources: state.localResources,
+        sources: state.sources,
         topic_tags: state.topicTags,
         policy_status: state.policyStatus || null,
         policy_effective_date: state.policyEffectiveDate || null,

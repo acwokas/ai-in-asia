@@ -425,6 +425,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 policySections={state.policySections}
                 comparisonTables={state.comparisonTables}
                 localResources={state.localResources}
+                sources={state.sources}
                 topicTags={state.topicTags}
                 policyStatus={state.policyStatus}
                 policyEffectiveDate={state.policyEffectiveDate}
@@ -437,6 +438,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 onPolicySectionsChange={state.setPolicySections}
                 onComparisonTablesChange={state.setComparisonTables}
                 onLocalResourcesChange={state.setLocalResources}
+                onSourcesChange={state.setSources}
                 onTopicTagsChange={state.setTopicTags}
                 onPolicyStatusChange={state.setPolicyStatus}
                 onPolicyEffectiveDateChange={state.setPolicyEffectiveDate}
