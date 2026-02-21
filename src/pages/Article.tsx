@@ -650,7 +650,6 @@ const Article = () => {
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
                   <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
-                    <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
                     <GoogleAd slot="sidebar" />
                   </div>
                 </div>
