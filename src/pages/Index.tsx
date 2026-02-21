@@ -445,14 +445,13 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Trending ticker */}
-        <TrendingStrip />
-
         {/* 3 Before 9 Daily Briefing — compact banner */}
         <Suspense fallback={null}>
           <ThreeBeforeNineLanding />
         </Suspense>
 
+        {/* Trending ticker */}
+        <TrendingStrip />
 
         {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
