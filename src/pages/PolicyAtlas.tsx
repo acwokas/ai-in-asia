@@ -265,7 +265,7 @@ const PolicyAtlas = () => {
           </div>
           <div className="mt-6 text-center">
             <Button variant="outline" asChild>
-              <Link to="/ai-policy-atlas/global-comparison" className="flex items-center gap-2">
+              <Link to="/ai-policy-atlas/updates" className="flex items-center gap-2">
                 View all policy updates
                 <ArrowRight className="h-4 w-4" />
               </Link>
