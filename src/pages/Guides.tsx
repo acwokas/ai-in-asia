@@ -60,13 +60,13 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
   </button>
 );
 
-const AdSlot = () => (
-  <div className="col-span-full flex flex-col items-center gap-1 py-4">
+const AdCard = () => (
+  <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col items-center justify-center p-4 gap-2 min-h-[280px]">
     <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Advertisement</span>
     <div
       id="guides-ad-1"
-      className="flex items-center justify-center rounded-lg border-2 border-dashed border-border"
-      style={{ width: 300, height: 250, background: "#1a1a1a" }}
+      className="flex items-center justify-center"
+      style={{ width: 300, height: 250, maxWidth: "100%" }}
     >
       <span className="text-sm text-muted-foreground/40">Ad</span>
     </div>
@@ -210,10 +210,7 @@ const Guides = () => {
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
 
-  // Split guides into before-ad (first 3) and after-ad for desktop,
-  // or first 2 and after for mobile (handled via CSS)
-  const AD_POSITION_DESKTOP = 3;
-  const AD_POSITION_MOBILE = 2;
+  const AD_POSITION = 3;
 
   return (
     <>
@@ -400,21 +397,8 @@ const Guides = () => {
                   {filteredGuides.map((g: any, idx: number) => {
                     const elements: React.ReactNode[] = [];
 
-                    // Desktop ad after position 3, mobile ad after position 2
-                    // We insert the ad before this card if it's at the right position
-                    if (idx === AD_POSITION_DESKTOP) {
-                      elements.push(
-                        <div key="ad-desktop" className="hidden lg:contents">
-                          <AdSlot />
-                        </div>
-                      );
-                    }
-                    if (idx === AD_POSITION_MOBILE) {
-                      elements.push(
-                        <div key="ad-mobile" className="lg:hidden contents">
-                          <AdSlot />
-                        </div>
-                      );
+                    if (idx === AD_POSITION) {
+                      elements.push(<AdCard key="ad-card" />);
                     }
 
                     elements.push(<GuideCard key={g.id} g={g} />);
