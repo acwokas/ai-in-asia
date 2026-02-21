@@ -8,12 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Copy, Check, ChevronDown, ExternalLink } from "lucide-react";
+import { Search, Copy, Check, ChevronRight, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import promptAndGoLogo from "@/assets/promptandgo-logo.png";
 
 const platformColors: Record<string, string> = {
   ChatGPT: "bg-emerald-500/20 text-emerald-400",
@@ -42,16 +39,14 @@ const sortOptions = [
 
 const AllPrompts = () => {
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [platformFilter, setPlatformFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Fetch prompts with guide info
   const { data: prompts, isLoading } = useQuery({
     queryKey: ["guide-prompts-library"],
     queryFn: async () => {
@@ -65,7 +60,6 @@ const AllPrompts = () => {
     },
   });
 
-  // Fetch guide count
   const { data: guideCount } = useQuery({
     queryKey: ["guide-count-for-prompts"],
     queryFn: async () => {
@@ -82,7 +76,6 @@ const AllPrompts = () => {
     if (!prompts) return [];
     let filtered = [...prompts];
 
-    // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -93,19 +86,14 @@ const AllPrompts = () => {
       );
     }
 
-    // Platform
     if (platformFilter !== "All") {
-      filtered = filtered.filter((p) =>
-        p.platforms?.includes(platformFilter)
-      );
+      filtered = filtered.filter((p) => p.platforms?.includes(platformFilter));
     }
 
-    // Category
     if (categoryFilter !== "All") {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     }
 
-    // Sort
     if (sortBy === "newest") {
       filtered.sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
     } else if (sortBy === "most-copied") {
@@ -122,11 +110,11 @@ const AllPrompts = () => {
     return filtered;
   }, [prompts, searchQuery, platformFilter, categoryFilter, sortBy]);
 
-  const copyPrompt = async (text: string, id: string) => {
+  const copyPrompt = async (text: string, id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     try {
       await navigator.clipboard.writeText(text);
       setCopiedId(id);
-      // Increment copy count
       supabase
         .from("ai_guide_prompts")
         .update({ copy_count: (prompts?.find(p => p.id === id)?.copy_count || 0) + 1 })
@@ -139,96 +127,11 @@ const AllPrompts = () => {
     }
   };
 
-  const toggleCard = (id: string) => {
-    setExpandedCards(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggleExpand = (id: string) => {
+    setExpandedId(prev => (prev === id ? null : id));
   };
 
   const totalPrompts = prompts?.length || 0;
-
-  // Insert ad after every 6 cards
-  const renderPromptCards = () => {
-    const cards: React.ReactNode[] = [];
-    filteredPrompts.forEach((prompt, index) => {
-      const guide = prompt.ai_guides as any;
-      const isExpanded = !isMobile || expandedCards.has(prompt.id);
-
-      cards.push(
-        <div key={prompt.id} className="border border-border rounded-lg bg-card overflow-hidden">
-          {isMobile ? (
-            <Collapsible open={expandedCards.has(prompt.id)} onOpenChange={() => toggleCard(prompt.id)}>
-              <CollapsibleTrigger className="w-full text-left px-5 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-2 min-w-0">
-                    <h3 className="font-semibold text-sm leading-tight">{prompt.prompt_title}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      From: <Link to={`/guides/${guide?.slug}`} className="text-primary hover:underline" onClick={e => e.stopPropagation()}>{guide?.title}</Link>
-                    </p>
-                    {prompt.platforms && prompt.platforms.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {prompt.platforms.map((p: string) => (
-                          <Badge key={p} className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}>{p}</Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground flex-shrink-0 mt-1 transition-transform ${expandedCards.has(prompt.id) ? "rotate-180" : ""}`} />
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-5 pb-5 space-y-3">
-                  <PromptCodeBlock text={prompt.prompt_text} id={prompt.id} copiedId={copiedId} onCopy={copyPrompt} />
-                  {prompt.what_to_expect && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">{prompt.what_to_expect}</p>
-                  )}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ) : (
-            <div className="px-5 py-5 space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 min-w-0">
-                  <h3 className="font-semibold text-base leading-tight">{prompt.prompt_title}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    From: <Link to={`/guides/${guide?.slug}`} className="text-primary hover:underline">{guide?.title}</Link>
-                  </p>
-                </div>
-                {prompt.platforms && prompt.platforms.length > 0 && (
-                  <div className="flex flex-wrap gap-1 flex-shrink-0">
-                    {prompt.platforms.map((p: string) => (
-                      <Badge key={p} className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}>{p}</Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <PromptCodeBlock text={prompt.prompt_text} id={prompt.id} copiedId={copiedId} onCopy={copyPrompt} />
-              {prompt.what_to_expect && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{prompt.what_to_expect}</p>
-              )}
-            </div>
-          )}
-        </div>
-      );
-
-      // Ad slot after every 6 cards
-      if ((index + 1) % 6 === 0 && index < filteredPrompts.length - 1) {
-        cards.push(
-          <div key={`ad-${index}`} className="flex flex-col items-center gap-1 py-4">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">Advertisement</span>
-            <div className="w-[300px] h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
-              <span className="text-xs text-muted-foreground/40">Ad slot</span>
-            </div>
-          </div>
-        );
-      }
-    });
-
-    return cards;
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -242,8 +145,8 @@ const AllPrompts = () => {
       <main className="flex-1">
         {/* Hero */}
         <div className="bg-card border-b border-border">
-          <div className="max-w-3xl mx-auto px-4 py-8 md:py-10 text-center space-y-4">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">AI Prompt Library</h1>
+          <div className="max-w-[720px] mx-auto px-4 py-8 md:py-10 text-center space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Prompt Library</h1>
             <p className="text-muted-foreground text-base md:text-lg">
               Every prompt from every guide. Tested, specific, ready to paste.
             </p>
@@ -264,10 +167,9 @@ const AllPrompts = () => {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="border-b border-border bg-background sticky top-0 z-20">
-          <div className="max-w-3xl mx-auto px-4 py-3 space-y-3">
-            {/* Platform pills */}
+        {/* Sticky Filters */}
+        <div className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-20">
+          <div className="max-w-[720px] mx-auto px-4 py-3 space-y-2">
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               <span className="text-xs text-muted-foreground flex-shrink-0">Platform:</span>
               {platforms.map((p) => (
@@ -283,7 +185,6 @@ const AllPrompts = () => {
               ))}
             </div>
 
-            {/* Category + Sort */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               <span className="text-xs text-muted-foreground flex-shrink-0">Category:</span>
               {categories.map((c) => (
@@ -312,18 +213,23 @@ const AllPrompts = () => {
                 ))}
               </div>
             </div>
+
+            {/* Result count */}
+            <p className="text-xs text-muted-foreground">
+              Showing {filteredPrompts.length} of {totalPrompts} prompts
+            </p>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-[720px] mx-auto px-4 py-8">
           {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="border border-border rounded-lg p-5 space-y-3">
-                  <Skeleton className="h-5 w-2/3" />
-                  <Skeleton className="h-3 w-1/3" />
-                  <Skeleton className="h-24 w-full" />
+            <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="border-b border-border py-3 flex items-center gap-3">
+                  <Skeleton className="h-4 w-4 flex-shrink-0" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-24 ml-auto" />
                 </div>
               ))}
             </div>
@@ -341,15 +247,190 @@ const AllPrompts = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-8">
-              {renderPromptCards()}
+            <div className="divide-y divide-border">
+              {filteredPrompts.map((prompt, index) => {
+                const guide = prompt.ai_guides as any;
+                const isExpanded = expandedId === prompt.id;
+                const isCopied = copiedId === prompt.id;
+
+                return (
+                  <div key={prompt.id}>
+                    {/* Collapsed row */}
+                    <div
+                      className="flex items-center gap-3 py-3.5 cursor-pointer group"
+                      onClick={() => toggleExpand(prompt.id)}
+                    >
+                      <ChevronRight
+                        className={`h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <h3 className="font-semibold text-sm leading-tight truncate group-hover:text-primary transition-colors">
+                          {prompt.prompt_title}
+                        </h3>
+                        <span className="text-xs text-muted-foreground truncate hidden sm:inline">
+                          <Link
+                            to={`/guides/${guide?.slug}`}
+                            className="hover:text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {guide?.title}
+                          </Link>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {prompt.platforms && prompt.platforms.length > 0 && (
+                          <div className="hidden sm:flex gap-1">
+                            {prompt.platforms.map((p: string) => (
+                              <Badge
+                                key={p}
+                                className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
+                              >
+                                {p}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        {prompt.category && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 hidden md:inline-flex">
+                            {prompt.category}
+                          </Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 flex-shrink-0"
+                          onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
+                        >
+                          {isCopied ? (
+                            <Check className="h-3.5 w-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Mobile meta (always visible) */}
+                    {!isExpanded && (
+                      <div className="flex items-center gap-2 pb-3 pl-7 sm:hidden">
+                        <span className="text-xs text-muted-foreground truncate">
+                          <Link
+                            to={`/guides/${guide?.slug}`}
+                            className="hover:text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {guide?.title}
+                          </Link>
+                        </span>
+                        {prompt.platforms && (
+                          <div className="flex gap-1 ml-auto flex-shrink-0">
+                            {prompt.platforms.map((p: string) => (
+                              <Badge
+                                key={p}
+                                className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
+                              >
+                                {p}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Expanded content */}
+                    <div
+                      className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-[2000px] opacity-100 pb-5" : "max-h-0 opacity-0"}`}
+                    >
+                      <div className="pl-7 space-y-3">
+                        {/* Mobile platforms + category when expanded */}
+                        <div className="flex flex-wrap items-center gap-1.5 sm:hidden">
+                          {prompt.platforms?.map((p: string) => (
+                            <Badge
+                              key={p}
+                              className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
+                            >
+                              {p}
+                            </Badge>
+                          ))}
+                          {prompt.category && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              {prompt.category}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Source on mobile */}
+                        <p className="text-xs text-muted-foreground sm:hidden">
+                          From:{" "}
+                          <Link to={`/guides/${guide?.slug}`} className="text-primary hover:underline">
+                            {guide?.title}
+                          </Link>
+                        </p>
+
+                        {/* Code block */}
+                        <div className="relative group/code">
+                          <pre className="bg-muted/60 border border-border rounded-md p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-[300px] overflow-y-auto">
+                            {prompt.prompt_text}
+                          </pre>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-2 right-2 h-8 gap-1.5 text-xs opacity-0 group-hover/code:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
+                            onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
+                          >
+                            {isCopied ? (
+                              <>
+                                <Check className="h-3.5 w-3.5" />
+                                Copied ✓
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3.5 w-3.5" />
+                                Copy
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        {prompt.what_to_expect && (
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            <span className="font-medium text-foreground">What to expect:</span>{" "}
+                            {prompt.what_to_expect}
+                          </p>
+                        )}
+
+                        <Link
+                          to={`/guides/${guide?.slug}`}
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          View in guide <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Ad slot after every 6 */}
+                    {(index + 1) % 6 === 0 && index < filteredPrompts.length - 1 && (
+                      <div className="flex flex-col items-center gap-1 py-6">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">
+                          Advertisement
+                        </span>
+                        <div className="w-[300px] h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground/40">Ad slot</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {/* PromptAndGo CTA */}
           <div className="mt-12 border border-teal-500/30 rounded-lg bg-card p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex-1 space-y-2">
-              <p className="font-semibold text-foreground">Want to customise these prompts for your specific use case?</p>
+              <p className="font-semibold text-foreground">
+                Want to customise these prompts for your specific use case?
+              </p>
               <p className="text-sm text-muted-foreground">
                 PromptAndGo.ai can optimise any prompt for your platform and audience.
               </p>
@@ -367,25 +448,5 @@ const AllPrompts = () => {
     </div>
   );
 };
-
-// Code block sub-component
-function PromptCodeBlock({ text, id, copiedId, onCopy }: { text: string; id: string; copiedId: string | null; onCopy: (text: string, id: string) => void }) {
-  const isCopied = copiedId === id;
-  return (
-    <div className="relative group">
-      <pre className="bg-muted/60 border border-border rounded-md p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-[300px] overflow-y-auto">
-        {text}
-      </pre>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute top-2 right-2 h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
-        onClick={() => onCopy(text, id)}
-      >
-        {isCopied ? <><Check className="h-3.5 w-3.5" />Copied ✓</> : <><Copy className="h-3.5 w-3.5" />Copy</>}
-      </Button>
-    </div>
-  );
-}
 
 export default AllPrompts;
