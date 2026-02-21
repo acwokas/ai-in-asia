@@ -77,6 +77,11 @@ ALT3: [alternative option 3]`;
         userPrompt = `Here is the current headline:\n${content}`;
         break;
       
+      case 'custom':
+        systemPrompt = context?.systemPrompt || 'You are Scout, a helpful AI assistant. Use British English.';
+        userPrompt = content;
+        break;
+      
       default:
         throw new Error('Invalid action');
     }
