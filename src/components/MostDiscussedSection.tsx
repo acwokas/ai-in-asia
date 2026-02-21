@@ -100,7 +100,7 @@ export default function MostDiscussedSection() {
           <p className="text-[13px] text-muted-foreground/60 mt-1">This week</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
           {articles.map((article, index) => {
             const categorySlug = article.categories?.slug || "news";
             const isTop = index === 0;

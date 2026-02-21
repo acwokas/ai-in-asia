@@ -39,7 +39,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         query = query.not("id", "in", `(${excludeIds.join(",")})`);
       }
 
-      const { data, error } = await query.limit(6);
+      const { data, error } = await query.not("title", "ilike", "%3 Before 9%").limit(6);
 
       if (error) throw error;
       return data;
@@ -115,7 +115,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         </div>
 
         {/* Remaining articles */}
-        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
           {restArticles.map((article: any) => (
             <ArticleCard
               key={article.id}
