@@ -163,10 +163,19 @@ const Category = () => {
     },
   });
 
-  // Deep cuts: evergreen articles older than 30 days, ordered by views
+  // Collect all article IDs already shown on the page
+  const displayedArticleIds = useMemo(() => {
+    const ids: string[] = [];
+    if (articles?.[0]?.id) ids.push(articles[0].id);
+    articles?.slice(1, 5).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    (mostReadArticles || articles?.slice(5, 9) || []).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    return ids;
+  }, [articles, mostReadArticles]);
+
+  // Deep cuts: evergreen articles older than 30 days, ordered by views, excluding displayed articles
   const { data: deepCutsArticles } = useQuery({
-    queryKey: ["category-deep-cuts", slug],
-    enabled: enableSecondaryQueries && !!category?.id,
+    queryKey: ["category-deep-cuts", slug, displayedArticleIds],
+    enabled: enableSecondaryQueries && !!category?.id && displayedArticleIds.length > 0,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
       if (!category?.id) return [];
@@ -183,7 +192,7 @@ const Category = () => {
           .lt("articles.published_at", cutoff);
         if (error) throw error;
         return (data?.map(item => item.articles) || [])
-          .filter(Boolean)
+          .filter((a: any) => a && !displayedArticleIds.includes(a.id))
           .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
           .slice(0, 3);
       }
@@ -194,6 +203,7 @@ const Category = () => {
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .lt("published_at", cutoff)
+        .not("id", "in", `(${displayedArticleIds.join(",")})`)
         .order("view_count", { ascending: false })
         .limit(3);
       if (error) throw error;
