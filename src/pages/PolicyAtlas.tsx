@@ -153,12 +153,35 @@ const PolicyAtlas = () => {
     staleTime: 300000,
   });
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "AI Policy Atlas",
+    "description": "A comprehensive tracker of artificial intelligence governance frameworks, regulations, and policy developments across regions worldwide, with a focus on Asia-Pacific.",
+    "url": "https://aiinasia.com/ai-policy-atlas",
+    "creator": {
+      "@type": "Organization",
+      "name": "AI in ASIA",
+      "url": "https://aiinasia.com"
+    },
+    "keywords": ["AI policy", "artificial intelligence regulation", "AI governance", "digital governance", "Asia-Pacific AI policy"],
+    "temporalCoverage": "2024/..",
+    "spatialCoverage": {
+      "@type": "Place",
+      "name": "Global"
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="AI Policy Atlas - Mapping Digital Governance"
         description="Explore AI policy, regulation, and governance frameworks across Asia and the world. Compare approaches by region."
         canonical="https://aiinasia.com/ai-policy-atlas"
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <Header />
       
