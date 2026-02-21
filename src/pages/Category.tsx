@@ -184,7 +184,7 @@ const Category = () => {
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
+          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, topic_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published");
         if (error) throw error;
@@ -196,7 +196,7 @@ const Category = () => {
 
       const { data, error } = await supabase
         .from("articles")
-        .select("id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
+        .select("id, slug, title, published_at, view_count, ai_tags, topic_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .not("id", "in", `(${displayedArticleIds.join(",")})`)
@@ -257,6 +257,39 @@ const Category = () => {
     }
   }, [selectedFilter]);
 
+  // Dynamic filter pills derived from fetched articles' tags
+  const dynamicFilters = useMemo(() => {
+    const allArticles = [
+      ...(articles || []),
+      ...(mostReadArticles || []),
+      ...(deepCutsArticles || []),
+    ];
+    if (allArticles.length === 0) return ["All"];
+    const tagCounts: Record<string, number> = {};
+    const seenIds = new Set<string>();
+    for (const article of allArticles) {
+      if (!article?.id || seenIds.has(article.id)) continue;
+      seenIds.add(article.id);
+      const combined = [
+        ...(article.ai_tags || []),
+        ...(article.topic_tags || []),
+      ];
+      const seen = new Set<string>();
+      for (const tag of combined) {
+        const lower = (tag || '').toLowerCase().trim();
+        if (!lower || lower === 'featured' || seen.has(lower)) continue;
+        seen.add(lower);
+        tagCounts[lower] = (tagCounts[lower] || 0) + 1;
+      }
+    }
+    const qualifying = Object.entries(tagCounts)
+      .filter(([, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([tag]) => tag.charAt(0).toUpperCase() + tag.slice(1));
+    return ["All", ...qualifying];
+  }, [articles, mostReadArticles, deepCutsArticles]);
+
   // Other categories for cross-nav
   const otherCategories = Object.entries(CATEGORY_CONFIG).filter(([k]) => k !== slug).map(([k, v]) => ({ slug: k, ...v }));
 
@@ -300,7 +333,7 @@ const Category = () => {
           </div>
           <div style={{ width: 1, height: 20, background: TOKENS.BORDER, flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-            {cfg.filters.map((f) => (
+            {dynamicFilters.map((f) => (
               <button
                 key={f}
                 onClick={() => setSelectedFilter(f)}
