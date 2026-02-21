@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import EventCard from "@/components/events/EventCard";
 import { cn } from "@/lib/utils";
 
+// Interfaces, types, constants
 interface FinderEvent {
   id: string;
   title: string;
@@ -71,7 +72,6 @@ const BUDGETS = [
   "No budget limit",
 ];
 
-// Map user regions to event regions
 const REGION_MAP: Record<string, string[]> = {
   "Southeast Asia": ["APAC"],
   "East Asia": ["APAC"],
@@ -82,7 +82,6 @@ const REGION_MAP: Record<string, string[]> = {
   "Middle East & Africa": ["Middle East & Africa", "EMEA"],
 };
 
-// Map roles to preferred event types
 const ROLE_TYPE_MAP: Record<string, string[]> = {
   "Developer / Engineer": ["workshop", "hackathon", "conference"],
   "Product / PM": ["conference", "summit", "meetup"],
@@ -92,7 +91,6 @@ const ROLE_TYPE_MAP: Record<string, string[]> = {
   "Other": [],
 };
 
-// Topic keywords for fuzzy matching
 const TOPIC_KEYWORDS: Record<string, string[]> = {
   "LLMs & Generative AI": ["llm", "generative", "gpt", "language model", "chatgpt", "gen ai", "genai", "large language"],
   "Computer Vision": ["computer vision", "image recognition", "visual", "object detection", "cv"],
@@ -168,40 +166,31 @@ export default function EventsFinder({ events }: EventsFinderProps) {
       const eType = event.event_type.toLowerCase();
       const text = `${event.title} ${event.description || ""}`.toLowerCase();
 
-      // Region match (weight 3)
       if (regionCodes.includes(event.region)) score += 3;
-
-      // Type match (weight 2)
       if (roleTypes.includes(eType)) score += 2;
 
-      // Topic match (weight 1 per keyword hit, max 3)
       let topicHits = 0;
       for (const kw of topicKws) {
         if (text.includes(kw)) { topicHits++; if (topicHits >= 3) break; }
       }
       score += topicHits;
 
-      // Budget match (weight 1)
       const isFree = text.includes("free") || eType.includes("free");
       if (budget === "Free events only") {
         if (isFree) score += 1;
       } else if (budget === "No budget limit") {
         score += 1;
       } else {
-        // Under $500 or Under $1000 — can't precisely check, give partial credit
         score += 0.5;
       }
 
-      const maxScore = 3 + 2 + 3 + 1; // 9
       const matchLevel: MatchLevel = score >= 5 ? "great" : score >= 3 ? "good" : "partial";
 
       return { ...event, score, matchLevel };
     });
 
-    // Sort by score desc, then by date asc
     scored.sort((a, b) => b.score - a.score || new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 
-    // If no good matches, fallback to region events
     const meaningful = scored.filter((e) => e.score >= 2);
     if (meaningful.length === 0) {
       const regionFallback = events
@@ -228,10 +217,10 @@ export default function EventsFinder({ events }: EventsFinderProps) {
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+        "px-5 py-2 rounded-[20px] text-sm font-medium transition-all duration-200 border cursor-pointer",
         selected
           ? "bg-primary text-primary-foreground border-primary shadow-sm"
-          : "bg-transparent text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+          : "bg-transparent text-foreground/80 border-foreground/20 hover:border-foreground/40 hover:text-foreground"
       )}
     >
       {label}
@@ -302,11 +291,9 @@ export default function EventsFinder({ events }: EventsFinderProps) {
                 <span className="text-xs text-muted-foreground">
                   Step {step + 1} of 4 — {STEPS[step].label}
                 </span>
-                {step > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {STEPS[step].multi ? "Select multiple" : "Select one"}
-                  </span>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  {STEPS[step].multi ? "Select multiple" : "Select one"}
+                </span>
               </div>
               <Progress value={((step + 1) / 4) * 100} className="h-1.5" />
             </div>
@@ -315,7 +302,7 @@ export default function EventsFinder({ events }: EventsFinderProps) {
             <h3 className="text-lg font-bold mb-4">{STEPS[step].question}</h3>
 
             {/* Options */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2.5 mb-6">
               {step === 0 &&
                 ROLES.map((r) => (
                   <PillButton key={r} label={r} selected={role === r} onClick={() => setRole(r)} />

@@ -32,6 +32,12 @@ const getFormatFromLocation = (location: string): string => {
   return "In-Person";
 };
 
+const FORMAT_STYLES: Record<string, string> = {
+  "In-Person": "bg-[hsl(122_39%_49%/0.15)] text-[hsl(122_39%_49%)] border-[hsl(122_39%_49%/0.2)]",
+  "Virtual": "bg-[hsl(291_47%_51%/0.15)] text-[hsl(291_47%_60%)] border-[hsl(291_47%_51%/0.2)]",
+  "Hybrid": "bg-[hsl(36_100%_50%/0.15)] text-[hsl(36_100%_65%)] border-[hsl(36_100%_50%/0.2)]",
+};
+
 const getCountdown = (startDate: string, endDate: string | null) => {
   const now = new Date();
   const start = new Date(startDate);
@@ -163,9 +169,7 @@ const EventCard = ({ event }: EventCardProps) => {
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <Badge className="bg-primary/15 text-primary border-primary/20 hover:bg-primary/20">{event.event_type}</Badge>
           <Badge variant="outline" className="text-muted-foreground">{event.region}</Badge>
-          <Badge variant="secondary" className="text-xs">
-            {eventFormat}
-          </Badge>
+          <Badge className={`text-xs ${FORMAT_STYLES[eventFormat] || ""}`}>{eventFormat}</Badge>
           <div className={`ml-auto flex items-center gap-1.5 text-xs font-medium ${countdown.style}`}>
             {countdown.pulse && (
               <span className="relative flex h-2 w-2">
@@ -193,18 +197,18 @@ const EventCard = ({ event }: EventCardProps) => {
           )}
         </h3>
 
-        {/* Row 3: Metadata */}
+        {/* Row 3: Metadata — wider spacing */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground mb-2">
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 shrink-0" />
             {formatSmartDate(event.start_date, event.end_date)}
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             {event.city}, {event.country}
           </span>
           {domain && (
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1">
               <LinkIcon className="w-3.5 h-3.5 shrink-0" />
               {domain}
             </span>
