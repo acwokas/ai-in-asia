@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -37,19 +37,20 @@ const Header = memo(() => {
   const { savedArticles } = useSavedArticles();
   const savedCount = savedArticles.length;
 
-  const { data: userPoints } = useQuery({
+  const { data: userStats } = useQuery({
     queryKey: ["header-user-stats", user?.id],
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data } = await supabase
         .from("user_stats")
-        .select("points")
+        .select("points, level, streak_days")
         .eq("user_id", user!.id)
         .maybeSingle();
-      return data?.points ?? 0;
+      return { points: data?.points ?? 0, level: data?.level ?? 'Explorer', streak_days: data?.streak_days ?? 0 };
     },
   });
+  const userPoints = userStats?.points;
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
@@ -173,10 +174,23 @@ const Header = memo(() => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                            {userStats && (
+                              <div className="px-2 pb-2 pt-1 space-y-0.5">
+                                <p className="text-xs font-medium text-foreground">{userStats.level}</p>
+                                <p className="text-xs text-muted-foreground">🔥 {userStats.streak_days} day streak</p>
+                                <p className="text-xs text-muted-foreground">⚡ {userStats.points} points</p>
+                              </div>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <Link to="/profile" className="cursor-pointer">
                                 Profile
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to="/profile?tab=achievements" className="cursor-pointer">
+                                <Award className="mr-2 h-4 w-4" />
+                                Achievements
                               </Link>
                             </DropdownMenuItem>
                             {isAdmin && (
