@@ -39,7 +39,7 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-export type ViewMode = "list" | "calendar";
+export type ViewMode = "list" | "calendar" | "map";
 
 export interface EventFilters {
   region: string;
@@ -299,11 +299,14 @@ export default function EventsFilterBar({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              className={cn("p-2 transition-colors", viewMode === "map" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}
+              onClick={() => onViewModeChange("map")}
+            >
               <MapPinned className="h-4 w-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Map View — Coming soon</TooltipContent>
+          <TooltipContent>Map View</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

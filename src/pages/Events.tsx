@@ -17,6 +17,7 @@ import { EventStructuredData } from "@/components/StructuredData";
 import EventsFilterBar, { type EventFilters, type ViewMode } from "@/components/events/EventsFilterBar";
 import EventAlertSignup from "@/components/events/EventAlertSignup";
 import EventsCalendarView from "@/components/events/EventsCalendarView";
+import EventsMapView from "@/components/events/EventsMapView";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -380,11 +381,22 @@ const Events = () => {
               {/* Event Alert Signup */}
               <EventAlertSignup />
 
-              {/* View: Calendar or List */}
+              {/* View: Calendar, Map, or List */}
               {viewMode === "calendar" ? (
                 <section>
                   <EventsCalendarView events={upcomingEvents} />
-                  {/* Submit CTA */}
+                  <div className="text-center mt-12 mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Know of an event we're missing?{" "}
+                      <Link to="/events/submit" className="text-primary hover:underline">
+                        Submit it here →
+                      </Link>
+                    </p>
+                  </div>
+                </section>
+              ) : viewMode === "map" ? (
+                <section>
+                  <EventsMapView events={[...featuredEvents, ...upcomingEvents]} />
                   <div className="text-center mt-12 mb-4">
                     <p className="text-sm text-muted-foreground">
                       Know of an event we're missing?{" "}
