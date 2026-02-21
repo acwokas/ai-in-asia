@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -264,24 +264,83 @@ const Header = memo(() => {
           </TooltipProvider>
         </div>
 
+        {/* Mobile menu backdrop */}
         {isMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border max-h-[calc(100vh-6rem)] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-            <div className="flex flex-col space-y-3">
-              <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
-              <Link to="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</Link>
-              <Link to="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</Link>
-              <Link to="/category/life" className="text-sm font-medium hover:text-primary transition-colors">Life</Link>
-              <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
-              <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
-              <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
-              <div className="h-px bg-primary my-2" />
-              <Link to="/guides" className="text-sm font-medium hover:text-primary transition-colors">Guides</Link>
-              <Link to="/prompts" className="text-sm font-medium hover:text-primary transition-colors">Prompts</Link>
-              <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
-              <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
-              <div className="h-px bg-primary my-2" />
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors">Policy Atlas</Link>
-              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-2">
+          <div
+            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+
+        {/* Mobile slide-in menu */}
+        <nav
+          className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-50 md:hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+        >
+          <div className="flex flex-col p-5">
+            {/* Close button */}
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold text-lg">Menu</span>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Search */}
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsSearchOpen(true); }}
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors"
+            >
+              <Search className="h-4 w-4 flex-shrink-0" />
+              <span>Search articles...</span>
+              <kbd className="ml-auto text-xs border border-border rounded px-1.5 py-0.5">⌘K</kbd>
+            </button>
+
+            {/* Categories */}
+            <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
+            <div className="flex flex-col space-y-1 mb-4">
+              {[
+                { to: "/category/news", label: "News" },
+                { to: "/category/business", label: "Business" },
+                { to: "/category/life", label: "Life" },
+                { to: "/category/learn", label: "Learn" },
+                { to: "/category/create", label: "Create" },
+                { to: "/category/voices", label: "Voices" },
+              ].map(({ to, label }) => (
+                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="font-medium py-1.5 hover:text-primary transition-colors">
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="border-t border-border my-2" />
+
+            {/* Discover */}
+            <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 mt-2">Discover</span>
+            <div className="flex flex-col space-y-1 mb-4">
+              {[
+                { to: "/guides", label: "Guides" },
+                { to: "/prompts", label: "Prompts" },
+                { to: "/tools", label: "Tools" },
+                { to: "/events", label: "Events" },
+                { to: "/ai-policy-atlas", label: "Policy Atlas" },
+              ].map(({ to, label }) => (
+                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 hover:text-primary transition-colors">
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="border-t border-border my-2" />
+
+            {/* Your Account */}
+            <div className="flex items-center gap-2 mb-2 mt-2">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Your Account</span>
+              {user && userStats && (
+                <span className="text-xs text-muted-foreground">— ⚡ {userStats.points} pts</span>
+              )}
+            </div>
+            <div className="flex flex-col space-y-1 mb-4">
+              <Link to="/saved" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 hover:text-primary transition-colors flex items-center gap-2">
                 <Bookmark className="h-4 w-4" />
                 Saved Articles
                 {savedCount > 0 && (
@@ -290,68 +349,42 @@ const Header = memo(() => {
                   </span>
                 )}
               </Link>
-              <div className="h-px bg-primary my-2" />
-              <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</Link>
-              <form onSubmit={handleSearch} className="pt-2">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search articles..."
-                    className="w-full pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </form>
-              {!user && (
-                <div className="pt-2">
-                  <Button variant="default" className="w-full" asChild>
-                    <Link to="/auth">Sign In</Link>
-                  </Button>
-                </div>
-              )}
-              {user && (
+              {user ? (
                 <>
-                  <div className="pt-2">
-                    <Button variant="default" className="w-full" asChild>
-                      <Link to="/profile">Profile</Link>
-                    </Button>
-                  </div>
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 hover:text-primary transition-colors flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Profile
+                  </Link>
                   {isAdmin && (
-                    <div>
-                      <Button variant="destructive" className="w-full" asChild>
-                        <Link to="/admin">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin
-                        </Link>
-                      </Button>
-                    </div>
+                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 text-destructive hover:text-destructive/80 transition-colors flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </Link>
                   )}
-                  <div>
-                    <Button variant="outline" className="w-full" onClick={signOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </div>
+                  <button onClick={() => { signOut(); setIsMenuOpen(false); }} className="text-sm py-1.5 hover:text-primary transition-colors flex items-center gap-2 text-left">
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
                 </>
-              )}
-              <div className="flex items-center gap-2 pt-2 border-t border-border">
-                <NotificationPreferences />
-                <ReadingQueue />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleTheme}
-                  aria-label="Toggle theme"
-                  className="h-10 w-10"
-                >
-                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              ) : (
+                <Button variant="default" className="w-full mt-1" asChild>
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
                 </Button>
-              </div>
+              )}
             </div>
-          </nav>
-        )}
+
+            <div className="border-t border-border my-2" />
+
+            {/* Bottom actions */}
+            <div className="flex items-center gap-2 mt-2">
+              <NotificationPreferences />
+              <ReadingQueue />
+              <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="h-10 w-10">
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+        </nav>
       </div>
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
