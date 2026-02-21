@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { TrendingUp, Users, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { MPUAd } from "@/components/GoogleAds";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -573,15 +573,6 @@ const Index = () => {
           })()}
         </section>
 
-        {/* Ad placement — between article grid and Most Discussed */}
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col items-center">
-            <span className="text-[11px] text-[hsl(210,12%,50%)] uppercase tracking-wider mb-2">Advertisement</span>
-            <div className="block mx-auto">
-              <MPUAd />
-            </div>
-          </div>
-        </div>
 
         {/* Section divider */}
         <div className="border-t border-border/30" />
