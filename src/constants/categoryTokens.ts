@@ -49,6 +49,14 @@ export const CATEGORY_CONFIG = {
     desc: "Opinion, analysis, and commentary from AI practitioners and thinkers",
     filters: ["All", "Deep Dive", "Business", "Opinion", "Asia", "Heritage"],
   },
+  policy: {
+    accent: "#eab308",
+    glow: "rgba(234, 179, 8, 0.15)",
+    emoji: "⚖️",
+    label: "Policy",
+    desc: "AI regulation, governance frameworks, and government strategy across Asia-Pacific",
+    filters: ["All"],
+  },
 } as const;
 
 export type CategorySlug = keyof typeof CATEGORY_CONFIG;
