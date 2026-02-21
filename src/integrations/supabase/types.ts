@@ -1806,11 +1806,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          editorial_note: string | null
           end_date: string | null
           event_type: string
           id: string
           image_url: string | null
           is_featured: boolean | null
+          is_sponsored: boolean
           location: string
           organizer: string | null
           region: string
@@ -1830,11 +1832,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          editorial_note?: string | null
           end_date?: string | null
           event_type?: string
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
+          is_sponsored?: boolean
           location: string
           organizer?: string | null
           region?: string
@@ -1854,11 +1858,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          editorial_note?: string | null
           end_date?: string | null
           event_type?: string
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
+          is_sponsored?: boolean
           location?: string
           organizer?: string | null
           region?: string

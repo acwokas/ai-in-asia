@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, ExternalLink, Globe, Loader2, Search, ArrowRight } from "lucide-react";
 import EventCard from "@/components/events/EventCard";
+import FeaturedEventCard, { type FeaturedEvent } from "@/components/events/FeaturedEventCard";
 import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
@@ -40,6 +41,8 @@ interface Event {
   is_featured: boolean;
   organizer: string | null;
   status: string;
+  editorial_note?: string | null;
+  is_sponsored?: boolean;
 }
 
 const EVENTS_PER_PAGE = 20;
@@ -349,13 +352,22 @@ const Events = () => {
             </div>
           ) : (
             <>
-              {/* Featured Events */}
+              {/* Editor's Picks */}
               {featuredEvents && featuredEvents.length > 0 && (
-                <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-6">Featured Events</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {featuredEvents.map((event) => (
-                      <EventCard key={event.id} event={event} />
+                <section className="mb-0 -mx-4 px-4 py-12 md:py-14 border-t border-b border-border/30"
+                  style={{ background: "hsl(var(--card) / 0.4)" }}
+                >
+                  <div className="mb-8">
+                    <h2 className="text-2xl md:text-3xl font-extrabold mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      Editor's Picks
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Hand-picked events our editorial team recommends
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {featuredEvents.slice(0, 3).map((event) => (
+                      <FeaturedEventCard key={event.id} event={event as FeaturedEvent} />
                     ))}
                   </div>
                 </section>
