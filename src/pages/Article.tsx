@@ -36,6 +36,7 @@ import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
+import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
 
 // Extracted components and hooks
 import {
@@ -666,6 +667,17 @@ const Article = () => {
                 </div>
               </aside>
             </div>
+          </div>
+
+          {/* You Might Also Like */}
+          <div className="container mx-auto px-4 max-w-[720px]">
+            <ArticleYouMightAlsoLike
+              articleId={article.id}
+              categoryId={article.primary_category_id || undefined}
+              categorySlug={article.categories?.slug}
+              tags={article.ai_tags}
+              topicTags={article.topic_tags}
+            />
           </div>
 
           {/* Comments */}
