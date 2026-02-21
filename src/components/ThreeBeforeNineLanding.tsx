@@ -25,9 +25,11 @@ const ThreeBeforeNineLanding = memo(() => {
     },
   });
 
-  if (!data) return null;
+  if (!data || !data.published_at) return null;
 
-  const pubDate = new Date(data.published_at!);
+  const pubDate = new Date(data.published_at);
+  if (isNaN(pubDate.getTime())) return null;
+
   const tldr = data.tldr_snapshot as any;
   const bullets: string[] = tldr?.bullets || [];
   const thumbnails: string[] = tldr?.thumbnails || [];
