@@ -33,6 +33,7 @@ const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
 const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike"));
 const ForYouSection = lazy(() => import("@/components/ForYouSection"));
+const UnreadBookmarksNudge = lazy(() => import("@/components/UnreadBookmarksNudge"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
@@ -790,6 +791,13 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Unread Bookmarks Nudge */}
+        {user && (
+          <Suspense fallback={null}>
+            <UnreadBookmarksNudge />
+          </Suspense>
+        )}
 
         {/* Recommended For You - Interest-based */}
         {user && (
