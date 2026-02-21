@@ -20,6 +20,7 @@ import { ToolFinderQuiz } from "@/components/category/tools/ToolFinderQuiz";
 import { PromptBuilder } from "@/components/category/tools/PromptBuilder";
 import { PromptStudio } from "@/components/category/tools/PromptStudio";
 import { OpinionPoll } from "@/components/category/tools/OpinionPoll";
+import { PolicyTracker } from "@/components/category/tools/PolicyTracker";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 
@@ -34,6 +35,7 @@ const TOOL_MAP: Record<string, React.FC> = {
   learn: PromptBuilder,
   create: PromptStudio,
   voices: OpinionPoll,
+  policy: PolicyTracker,
 };
 
 // Derive editorial tag from article data
