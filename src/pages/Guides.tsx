@@ -210,7 +210,7 @@ const Guides = () => {
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
 
-  const AD_POSITION = 3;
+  
 
   return (
     <>
@@ -351,7 +351,7 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* Guides Grid */}
+        {/* Guides Grid + Sidebar */}
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
             {isLoading ? (
@@ -393,17 +393,27 @@ const Guides = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredGuides.map((g: any, idx: number) => {
-                    const elements: React.ReactNode[] = [];
+                <div className="flex gap-8">
+                  {/* Main guide grid */}
+                  <div className="flex-1 min-w-0">
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                      {filteredGuides.map((g: any) => (
+                        <GuideCard key={g.id} g={g} />
+                      ))}
+                    </div>
+                  </div>
 
-                    if (idx === AD_POSITION) {
-                      elements.push(<AdCard key="ad-card" />);
-                    }
+                  {/* Right sidebar ad — desktop only */}
+                  <div className="hidden lg:block w-[300px] shrink-0">
+                    <div className="sticky top-24">
+                      <AdCard />
+                    </div>
+                  </div>
+                </div>
 
-                    elements.push(<GuideCard key={g.id} g={g} />);
-                    return elements;
-                  })}
+                {/* Mobile/tablet ad — below first few cards */}
+                <div className="lg:hidden mt-8">
+                  <AdCard />
                 </div>
               </>
             ) : (
