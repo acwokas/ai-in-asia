@@ -249,9 +249,9 @@ const App = () => (
               <Route path="/prompts" element={<AllPrompts />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
+              <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />
               <Route path="/ai-policy-atlas/:category/:slug" element={<Article />} />
               <Route path="/ai-policy-atlas/:region" element={<PolicyRegion />} />
-              <Route path="/policy-comparison" element={<PolicyComparison />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/redirects" element={<Redirects />} />
               <Route path="/admin" element={<AdminLayout />}>
