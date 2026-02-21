@@ -642,7 +642,7 @@ const Category = () => {
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {paths.map((p, i) => (
                       <div key={i} style={staggerStyle(revealPaths.visible, i)}>
-                        <LearningPathCard path={p} />
+                        <LearningPathCard path={p} categorySlug={slug || "news"} />
                       </div>
                     ))}
                   </div>
@@ -864,18 +864,19 @@ function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor
   );
 }
 
-function LearningPathCard({ path }: { path: { emoji: string; title: string; desc: string; articles: number; time: string; color: string } }) {
+function LearningPathCard({ path, categorySlug }: { path: { slug: string; emoji: string; title: string; desc: string; articles: number; time: string; color: string }; categorySlug: string }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <div
+    <Link
+      to={`/category/${categorySlug}/learn/${path.slug}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
+        display: "flex",
+        flexDirection: "column",
         padding: 24,
         borderRadius: 14,
         minHeight: 160,
-        display: "flex",
-        flexDirection: "column",
         position: "relative",
         overflow: "hidden",
         background: TOKENS.CARD_BG,
@@ -884,6 +885,7 @@ function LearningPathCard({ path }: { path: { emoji: string; title: string; desc
         boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.3)" : "none",
         transition: "all 0.25s ease",
         cursor: "pointer",
+        textDecoration: "none",
       }}
     >
       {/* Radial gradient overlay */}
@@ -905,19 +907,22 @@ function LearningPathCard({ path }: { path: { emoji: string; title: string; desc
             {path.articles} articles - {path.time}
           </span>
           {/* Arrow indicator */}
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={path.color}
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: hovered ? 1 : 0.4, transform: hovered ? "translateX(3px)" : "translateX(0)", transition: "all 0.25s ease", flexShrink: 0 }}
-          >
-            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif", opacity: hovered ? 1 : 0.5, transition: "opacity 0.25s ease", display: "flex", alignItems: "center", gap: 4 }}>
+            Start path
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={path.color}
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: hovered ? "translateX(3px)" : "translateX(0)", transition: "transform 0.25s ease" }}
+            >
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </span>
         </div>
 
         {/* Progress bar */}
         <div style={{ height: 4, borderRadius: 4, background: "#1a1d25", marginTop: 12 }} />
       </div>
-    </div>
+    </Link>
   );
 }
 
