@@ -215,6 +215,18 @@ const Category = () => {
     return articles.filter((a: any) => new Date(a.published_at) > weekAgo).length;
   }, [articles]);
 
+  // Helper to extract tag names from article_tags relation
+  const getArticleTagNames = (article: any): string[] => {
+    const relationTags = (article.article_tags || [])
+      .map((at: any) => at.tags?.name)
+      .filter(Boolean);
+    return [
+      ...relationTags,
+      ...(article.ai_tags || []),
+      ...(article.topic_tags || []),
+    ];
+  };
+
   // Client-side filter helper
   const matchesFilter = (article: any) => {
     if (selectedFilter === "All") return true;
@@ -254,18 +266,6 @@ const Category = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [selectedFilter]);
-
-  // Helper to extract tag names from article_tags relation
-  const getArticleTagNames = (article: any): string[] => {
-    const relationTags = (article.article_tags || [])
-      .map((at: any) => at.tags?.name)
-      .filter(Boolean);
-    return [
-      ...relationTags,
-      ...(article.ai_tags || []),
-      ...(article.topic_tags || []),
-    ];
-  };
 
   // Dynamic filter pills derived from fetched articles' tags
   const dynamicFilters = useMemo(() => {
