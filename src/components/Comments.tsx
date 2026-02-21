@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useComments } from "@/hooks/useComments";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   CommentThread,
   AICommentControls,
@@ -16,6 +17,7 @@ interface CommentsProps {
 }
 
 const Comments = ({ articleId }: CommentsProps) => {
+  const { user } = useAuth();
   const {
     comments,
     aiComments,
@@ -51,6 +53,14 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [replyContent, setReplyContent] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
 
+  // Pre-fill for logged-in users
+  useEffect(() => {
+    if (user) {
+      setAuthorName(user.user_metadata?.full_name || user.user_metadata?.first_name || user.email?.split('@')[0] || 'User');
+      setAuthorEmail(user.email || '');
+    }
+  }, [user]);
+
   // Calculate total comments including replies
   const countAllComments = (comments: Comment[]): number => {
     return comments.reduce((total, comment) => {
@@ -62,10 +72,12 @@ const Comments = ({ articleId }: CommentsProps) => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const success = await handleSubmitComment(authorName, authorEmail, content);
+    const success = await handleSubmitComment(authorName, authorEmail, content, user?.id);
     if (success) {
-      setAuthorName("");
-      setAuthorEmail("");
+      if (!user) {
+        setAuthorName("");
+        setAuthorEmail("");
+      }
       setContent("");
       setIsNotRobot(false);
     }
@@ -177,6 +189,8 @@ const Comments = ({ articleId }: CommentsProps) => {
               setIsNotRobot={setIsNotRobot}
               submitting={submitting}
               onSubmit={handleFormSubmit}
+              isLoggedIn={!!user}
+              displayName={authorName}
             />
           </>
         )}
