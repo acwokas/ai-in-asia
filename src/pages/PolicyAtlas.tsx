@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Search, Globe, FileText, GitCompare } from "lucide-react";
+import { Search, Globe, FileText, GitCompare, ArrowRight } from "lucide-react";
 import PolicyMap from "@/components/PolicyMap";
 
 const PolicyAtlas = () => {
@@ -100,7 +100,7 @@ const PolicyAtlas = () => {
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
         .order('updated_at', { ascending: false })
-        .limit(5);
+        .limit(8);
       
       if (error) throw error;
       return data;
@@ -262,6 +262,14 @@ const PolicyAtlas = () => {
                 </Card>
               </Link>
             ))}
+          </div>
+          <div className="mt-6 text-center">
+            <Button variant="outline" asChild>
+              <Link to="/ai-policy-atlas/global-comparison" className="flex items-center gap-2">
+                View all policy updates
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
 
