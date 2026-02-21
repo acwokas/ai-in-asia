@@ -165,29 +165,8 @@ const ArticleHeader = ({
         {article.categories?.name || 'Article'}
       </Badge>
       
-      {/* Category Sponsor */}
-      {sponsor && (
-        <div className="mb-6 pb-4 border-b border-border/40">
-          <a
-            href={sponsor.sponsor_website_url}
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            className="flex items-center gap-3 group"
-            onClick={onSponsorClick}
-          >
-            <img
-              src={sponsor.sponsor_logo_url}
-              alt={sponsor.sponsor_name}
-              className="h-6 object-contain group-hover:scale-105 transition-transform"
-            />
-            {sponsor.sponsor_tagline && (
-              <span className="text-xs text-muted-foreground italic hidden sm:inline">
-                {sponsor.sponsor_tagline}
-              </span>
-            )}
-          </a>
-        </div>
-      )}
+      
+
       
       <h1 className="headline text-4xl md:text-5xl mb-4">
         {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}

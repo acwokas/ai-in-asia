@@ -47,7 +47,6 @@ import {
   ArticleAdminControls,
   ArticleAdminDebug,
   ArticleBreadcrumbs,
-  ArticleSponsorBanner,
   ArticleAuthorBio,
 } from "@/components/article";
 import { createShareHandlers } from "@/hooks/useArticleActions";
@@ -109,22 +108,8 @@ const Article = () => {
   // Load social embeds
   useSocialEmbeds([article?.content]);
 
-  // Fetch sponsor
-  const { data: sponsor } = useQuery({
-    queryKey: ["category-sponsor", article?.categories?.id],
-    enabled: !!article?.categories?.id,
-    queryFn: async () => {
-      if (!article?.categories?.id) return null;
-      const { data, error } = await supabase
-        .from("category_sponsors")
-        .select("*")
-        .eq("category_id", article.categories.id)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+
+
 
   // Fetch comment count (after article loads)
   const { data: commentCount = 0 } = useQuery({
@@ -513,9 +498,7 @@ const Article = () => {
               <Badge className="mb-4" style={{ backgroundColor: getCategoryColor(article.categories?.slug), color: '#fff' }}>
                 {article.categories?.name || 'Article'}
               </Badge>
-              {sponsor && (
-                <ArticleSponsorBanner sponsor={sponsor} categoryName={article.categories?.name || ''} />
-              )}
+              
               <h1 className="article-hero-title text-foreground mb-4">
                 {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
               </h1>
@@ -539,12 +522,8 @@ const Article = () => {
             </div>
           )}
 
-          {/* Sponsor banner (below hero when hero exists) */}
-          {article.featured_image_url && sponsor && (
-            <div className="container mx-auto max-w-[1080px] px-4 mt-4">
-              <ArticleSponsorBanner sponsor={sponsor} categoryName={article.categories?.name || ''} />
-            </div>
-          )}
+
+
 
           {/* Breadcrumbs (below hero when hero exists) */}
           {article.featured_image_url && (
