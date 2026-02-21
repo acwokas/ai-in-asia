@@ -24,6 +24,8 @@ import NotificationPrompt from "@/components/NotificationPrompt";
 import WhatsChanged from "@/components/WhatsChanged";
 import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
 
+const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
+
 // Lazy load below-the-fold components for faster initial page load
 const StockTicker = lazy(() => import("@/components/StockTicker"));
 const PerplexityCometPromo = lazy(() => import("@/components/PerplexityCometPromo"));
@@ -841,6 +843,11 @@ const Index = () => {
         <section className="container mx-auto px-4">
           <WhatsChanged />
         </section>
+
+        {/* Most Discussed This Week */}
+        <Suspense fallback={null}>
+          <MostDiscussedSection />
+        </Suspense>
 
         {/* Continue Reading - Based on recently viewed articles */}
         <section className="container mx-auto px-4 py-8">
