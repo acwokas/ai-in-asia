@@ -1,11 +1,13 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Bookmark, X } from "lucide-react";
 import ArticleCard from "@/components/ArticleCard";
 import { Button } from "@/components/ui/button";
+
+const DISMISS_KEY = "unread_bookmarks_nudge_dismissed";
 
 interface ForYouSectionProps {
   excludeIds?: string[];
@@ -13,6 +15,31 @@ interface ForYouSectionProps {
 
 const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
   const { user } = useAuth();
+  const [bookmarksDismissed, setBookmarksDismissed] = useState(
+    () => sessionStorage.getItem(DISMISS_KEY) === "1"
+  );
+
+  // Fetch unread bookmarks count
+  const { data: unreadCount } = useQuery({
+    queryKey: ["unread-bookmarks-count", user?.id],
+    enabled: !!user?.id && !bookmarksDismissed,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data: bookmarks } = await supabase
+        .from("bookmarks")
+        .select("article_id")
+        .eq("user_id", user!.id);
+      if (!bookmarks?.length) return 0;
+      const articleIds = bookmarks.map((b) => b.article_id);
+      const { data: readArticles } = await supabase
+        .from("reading_history")
+        .select("article_id")
+        .eq("user_id", user!.id)
+        .in("article_id", articleIds);
+      const readSet = new Set((readArticles || []).map((r) => r.article_id));
+      return articleIds.filter((id) => !readSet.has(id)).length;
+    },
+  });
 
   // Fetch user interests
   const { data: interests } = useQuery({
@@ -70,7 +97,6 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
       if (error) throw error;
       if (!data) return [];
 
-      // Filter out already-read and excluded articles
       const allExclude = new Set([...excludeIds, ...(readArticleIds || [])]);
       return data.filter(a => !allExclude.has(a.id)).slice(0, 6);
     },
@@ -78,10 +104,36 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
 
   if (!user) return null;
 
-  // User has no interests set — show prompt
+  const handleDismissBookmarks = () => {
+    sessionStorage.setItem(DISMISS_KEY, "1");
+    setBookmarksDismissed(true);
+  };
+
+  // Show bookmarks nudge even without interest-based articles
+  const showBookmarksNudge = !bookmarksDismissed && !!unreadCount && unreadCount > 0;
+
+  // User has no interests set — show prompt (with optional bookmarks nudge)
   if (interests && interests.length === 0) {
     return (
-      <section className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        {showBookmarksNudge && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-accent/30 px-4 py-3 mb-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <Bookmark className="h-4 w-4 shrink-0 text-primary" />
+              <p className="text-sm text-muted-foreground truncate">
+                You have <span className="font-medium text-foreground">{unreadCount}</span> saved article{unreadCount !== 1 ? "s" : ""} waiting
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/saved">Read Now</Link>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDismissBookmarks} aria-label="Dismiss">
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="bg-muted/30 border border-border rounded-lg p-6 text-center">
           <Sparkles className="h-6 w-6 text-primary mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">
@@ -95,11 +147,53 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
     );
   }
 
-  // No matching articles — fail silently
-  if (!articles || articles.length === 0) return null;
+  // No matching articles — still show bookmarks nudge if applicable
+  if (!articles || articles.length === 0) {
+    if (!showBookmarksNudge) return null;
+    return (
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-accent/30 px-4 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Bookmark className="h-4 w-4 shrink-0 text-primary" />
+            <p className="text-sm text-muted-foreground truncate">
+              You have <span className="font-medium text-foreground">{unreadCount}</span> saved article{unreadCount !== 1 ? "s" : ""} waiting
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/saved">Read Now</Link>
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDismissBookmarks} aria-label="Dismiss">
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="container mx-auto px-4 py-8">
+    <section className="container mx-auto px-4 py-12 md:py-16">
+      {/* Unread Bookmarks Nudge - folded in as a small banner */}
+      {showBookmarksNudge && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-accent/30 px-4 py-3 mb-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <Bookmark className="h-4 w-4 shrink-0 text-primary" />
+            <p className="text-sm text-muted-foreground truncate">
+              You have <span className="font-medium text-foreground">{unreadCount}</span> saved article{unreadCount !== 1 ? "s" : ""} waiting
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/saved">Read Now</Link>
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDismissBookmarks} aria-label="Dismiss">
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 mb-6">
         <Sparkles className="h-6 w-6 text-primary" />
         <h2 className="headline text-2xl">Recommended For You</h2>
