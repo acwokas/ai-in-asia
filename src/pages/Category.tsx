@@ -51,6 +51,7 @@ import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 
 const StockTicker = lazy(() => import("@/components/StockTicker"));
+const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
 
 // Category visual identity config
 const categoryIdentity: Record<string, { bg: string; description: string }> = {
@@ -808,10 +809,14 @@ const Category = () => {
 
       <Header />
       
-      {/* Stock Ticker — Business category only */}
-      {(slug === "business" || slug === "news") && (
+      {/* Stock Ticker for Business/News, 3B9 Ticker for others */}
+      {(slug === "business" || slug === "news") ? (
         <Suspense fallback={null}>
           <StockTicker />
+        </Suspense>
+      ) : (
+        <Suspense fallback={null}>
+          <ThreeBeforeNineTicker />
         </Suspense>
       )}
       
