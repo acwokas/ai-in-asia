@@ -230,20 +230,22 @@ const Category = () => {
   };
 
   // Client-side filter helper
-  const matchesFilter = (article: any) => {
-    if (selectedFilter === "All") return true;
-    const filterLower = selectedFilter.toLowerCase();
-    const allTags = getArticleTagNames(article).map((t: string) => t.toLowerCase());
-    const title = (article.title || '').toLowerCase();
-    return allTags.some((t: string) => t.includes(filterLower)) ||
-           title.includes(filterLower);
-  };
+  const matchesFilter = useMemo(() => {
+    return (article: any) => {
+      if (selectedFilter === "All") return true;
+      const filterLower = selectedFilter.toLowerCase();
+      const allTags = getArticleTagNames(article).map((t: string) => t.toLowerCase());
+      const title = (article.title || '').toLowerCase();
+      return allTags.some((t: string) => t.includes(filterLower)) ||
+             title.includes(filterLower);
+    };
+  }, [selectedFilter]);
 
   const featuredArticle = useMemo(() => {
     if (!articles) return undefined;
     if (selectedFilter === "All") return articles[0];
     return articles.find(matchesFilter);
-  }, [articles, selectedFilter]);
+  }, [articles, selectedFilter, matchesFilter]);
 
   // Latest sidebar - always unfiltered (4 most recent)
   const latestArticles = articles?.slice(1, 5) || [];
@@ -253,14 +255,14 @@ const Category = () => {
     const raw = mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
     if (selectedFilter === "All") return raw;
     return raw.filter(matchesFilter);
-  }, [mostReadArticles, articles, selectedFilter]);
+  }, [mostReadArticles, articles, selectedFilter, matchesFilter]);
 
   // Filtered deep cuts
   const filteredDeepCuts = useMemo(() => {
     if (!deepCutsArticles) return [];
     if (selectedFilter === "All") return deepCutsArticles;
     return deepCutsArticles.filter(matchesFilter);
-  }, [deepCutsArticles, selectedFilter]);
+  }, [deepCutsArticles, selectedFilter, matchesFilter]);
 
   // Scroll to top on filter change
   useEffect(() => {
