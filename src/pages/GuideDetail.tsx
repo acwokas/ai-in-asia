@@ -337,50 +337,55 @@ const GuideDetail = () => {
 
   const tags = guide.tags ? guide.tags.split(",") : [];
 
-  // Build structured data for SEO
-  const structuredData = {
+  const isPromptCollection = guide.guide_category === "Prompt List" || guide.guide_category === "Prompt Pack";
+
+  // Build Article schema (all pages)
+  const articleSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": isTutorial ? "HowTo" : "Article",
+    "@type": "Article",
     "headline": guide.title,
     "description": guide.meta_description || guide.excerpt || '',
-    "author": {
-      "@type": "Organization",
-      "name": "AIinASIA",
-      "url": "https://aiinasia.com"
-    },
+    "author": { "@type": "Person", "name": "Adrian Watkins" },
     "publisher": {
       "@type": "Organization",
-      "name": "AIinASIA",
+      "name": "AI in Asia",
       "url": "https://aiinasia.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://aiinasia.com/logos/aiinasia-logo.png"
-      }
+      "logo": { "@type": "ImageObject", "url": "https://aiinasia.com/logos/aiinasia-logo.png" }
     },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://aiinasia.com/guides/${guide.slug}`
-    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `https://aiinasia.com/guides/${guide.slug}` },
     "datePublished": guide.created_at,
     "dateModified": guide.updated_at,
-    ...(isTutorial && tutorialPrompts.length > 0 && {
-      "step": tutorialPrompts.map((prompt, idx) => ({
-        "@type": "HowToStep",
-        "position": idx + 1,
-        "name": prompt.headline || `Step ${idx + 1}`,
-        "text": prompt.text
-      }))
-    }),
-    ...(tags.length > 0 && {
-      "keywords": tags.join(", ")
-    }),
-    ...(guide.primary_platform && {
-      "about": {
-        "@type": "SoftwareApplication",
-        "name": guide.primary_platform
-      }
-    })
+    ...(tags.length > 0 && { "keywords": tags.join(", ") }),
+    ...(guide.primary_platform && { "about": { "@type": "SoftwareApplication", "name": guide.primary_platform } })
   };
+
+  // Build HowTo schema for tutorials/guides (Learn pillar)
+  const howToSteps = isTutorial
+    ? tutorialPrompts.filter(p => p.text).map((p, i) => ({ "@type": "HowToStep", "position": i + 1, "name": p.headline || `Step ${i + 1}`, "text": p.text }))
+    : bodySections.filter(s => s.heading && s.text).map((s, i) => ({ "@type": "HowToStep", "position": i + 1, "name": s.heading, "text": s.text }));
+
+  const howToSchema = (!isPromptCollection && howToSteps.length > 0) ? {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": guide.title,
+    "description": guide.meta_description || guide.excerpt || '',
+    "step": howToSteps,
+  } : null;
+
+  // Build ItemList schema for prompt collections (Prompts pillar)
+  const promptCount = regularPrompts.length + tutorialPrompts.length;
+  const promptListSchema = isPromptCollection ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": guide.title,
+    "description": guide.meta_description || guide.excerpt || '',
+    "numberOfItems": promptCount > 0 ? promptCount : undefined,
+  } : null;
+
+  // Combine all schemas
+  const allSchemas: Record<string, unknown>[] = [articleSchema];
+  if (howToSchema) allSchemas.push(howToSchema);
+  if (promptListSchema) allSchemas.push(promptListSchema);
 
   // FAQ structured data if FAQs exist
   const faqStructuredData = faqs.length > 0 ? {
@@ -416,7 +421,7 @@ const GuideDetail = () => {
           section: guide.guide_category,
           tags: tags.map(t => t.trim()),
         }}
-        schemaJson={faqStructuredData ? [structuredData, faqStructuredData] : structuredData}
+        schemaJson={faqStructuredData ? [...allSchemas, faqStructuredData] : allSchemas}
       />
 
       <Header />

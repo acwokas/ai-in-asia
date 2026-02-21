@@ -271,9 +271,28 @@ const Guides = () => {
   return (
     <>
       <SEOHead
-        title="AI Guides & Prompts - Master AI Tools with Practical Tutorials"
-        description="Explore our collection of AI guides, tutorials, prompt packs, and frameworks. Learn to master ChatGPT, Claude, Gemini, Midjourney and more."
+        title="AI Guides, Prompts & Tools"
+        description="Practical AI guides, ready-to-use prompt collections, and curated tool recommendations. Real techniques for practitioners across Asia. No theory, no filler."
         canonical="https://aiinasia.com/guides"
+        ogType="website"
+        ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
+        ogImageAlt="AI Guides, Prompts & Tools - AI in Asia"
+        schemaJson={(() => {
+          const itemListElements = (guides || []).slice(0, 10).map((g, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": g.title,
+            "url": `https://aiinasia.com/guides/${g.slug}`,
+          }));
+          return {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "AI Guides and Resources - AI in Asia",
+            "description": "Practical AI guides, prompts, and tool recommendations for practitioners across Asia",
+            "numberOfItems": totalCount,
+            "itemListElement": itemListElements,
+          };
+        })()}
       />
       <Header />
 
