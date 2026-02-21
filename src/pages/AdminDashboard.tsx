@@ -4,8 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Bell, TrendingUp, Mail, Calendar, Brain, MessageSquare, BarChart3, Eye, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -208,20 +207,16 @@ const AdminDashboard = () => {
 
   if (isLoadingAdmin) {
     return (
-      <>
-        <Header />
-        <div className="min-h-screen pt-20 px-4">
-          <div className="container mx-auto py-8">
-            <Skeleton className="h-12 w-64 mb-8" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} className="h-48" />
-              ))}
-            </div>
+      <div className="min-h-screen pt-20 px-4">
+        <div className="container mx-auto py-8">
+          <Skeleton className="h-12 w-64 mb-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-48" />
+            ))}
           </div>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
@@ -229,7 +224,6 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Header />
       <div className="min-h-screen pt-20 px-4 bg-background">
         <div className="container mx-auto py-8">
           <h1 className="headline text-4xl mb-8">Admin Dashboard</h1>
@@ -536,7 +530,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };
