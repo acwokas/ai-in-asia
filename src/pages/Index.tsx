@@ -198,10 +198,26 @@ const Index = () => {
     if (!baseTrendingArticles || baseTrendingArticles.length === 0) return [];
     const validBase = baseTrendingArticles;
     const validTrendingFeatured = trendingFeatured && (trendingFeatured as any).homepage_trending ? trendingFeatured : null;
+
+    // Recency-weighted: prioritize articles from last 30 days, then 60, then 90, then any
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const sortByRecencyTier = (articles: any[]) => {
+      return [...articles].sort((a, b) => {
+        const ageA = now - new Date(a.published_at).getTime();
+        const ageB = now - new Date(b.published_at).getTime();
+        const tierA = ageA <= 30 * dayMs ? 0 : ageA <= 60 * dayMs ? 1 : ageA <= 90 * dayMs ? 2 : 3;
+        const tierB = ageB <= 30 * dayMs ? 0 : ageB <= 60 * dayMs ? 1 : ageB <= 90 * dayMs ? 2 : 3;
+        if (tierA !== tierB) return tierA - tierB;
+        return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+      });
+    };
+
+    const sorted = sortByRecencyTier(validBase);
     if (validTrendingFeatured) {
-      return [validTrendingFeatured, ...validBase.filter((a: any) => a.id !== (validTrendingFeatured as any).id)];
+      return [validTrendingFeatured, ...sorted.filter((a: any) => a.id !== (validTrendingFeatured as any).id)];
     }
-    return validBase;
+    return sorted;
   })();
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {

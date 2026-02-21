@@ -130,7 +130,7 @@ const Category = () => {
       if (slug === 'voices' || slug === 'policy') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id!inner (name, slug))`)
+          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, is_trending, featured_on_homepage, article_tags(tags(name)), authors (name, slug), categories:primary_category_id!inner (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published");
         if (error) throw error;
@@ -141,7 +141,7 @@ const Category = () => {
       }
       const { data, error } = await supabase
         .from("articles")
-        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
+        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, is_trending, featured_on_homepage, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .order("published_at", { ascending: false });
@@ -279,9 +279,29 @@ const Category = () => {
     return allCategoryArticles.filter(matchesFilter);
   }, [allCategoryArticles, isFilterActive, matchesFilter]);
 
+  // Recency-weighted hero: prefer featured/trending articles from last 30/60/90 days
   const featuredArticle = useMemo(() => {
     if (isFilterActive) return filteredAllArticles[0];
-    return articles?.[0];
+    if (!articles || articles.length === 0) return null;
+
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const isFeaturedOrTrending = (a: any) => a.is_trending || a.featured_on_homepage;
+
+    for (const days of [30, 60, 90]) {
+      const cutoff = now - days * dayMs;
+      const candidate = articles.find(
+        (a: any) => isFeaturedOrTrending(a) && new Date(a.published_at).getTime() >= cutoff
+      );
+      if (candidate) return candidate;
+    }
+
+    // Fallback: any featured/trending article (newest first, already sorted)
+    const anyFeatured = articles.find((a: any) => isFeaturedOrTrending(a));
+    if (anyFeatured) return anyFeatured;
+
+    // Final fallback: newest article
+    return articles[0];
   }, [articles, isFilterActive, filteredAllArticles]);
 
   // Latest sidebar - filtered when a tag is active
@@ -289,16 +309,20 @@ const Category = () => {
     if (isFilterActive) {
       return filteredAllArticles.slice(1, 5);
     }
-    return articles?.slice(1, 5) || [];
-  }, [articles, isFilterActive, filteredAllArticles]);
+    // Exclude the hero article, show 4 most recent
+    return (articles || []).filter((a: any) => a.id !== featuredArticle?.id).slice(0, 4);
+  }, [articles, isFilterActive, filteredAllArticles, featuredArticle]);
 
-  // Featured grid - when filter active, show next 4 from filtered set
+  // Featured grid - show 4 most recent articles, excluding hero and latest sidebar
   const featuredGridArticles = useMemo(() => {
     if (isFilterActive) {
       return filteredAllArticles.slice(1, 5);
     }
-    return mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
-  }, [mostReadArticles, articles, isFilterActive, filteredAllArticles]);
+    const excludeIds = new Set([featuredArticle?.id, ...latestArticles.map((a: any) => a.id)].filter(Boolean));
+    return (allCategoryArticles || [])
+      .filter((a: any) => !excludeIds.has(a.id))
+      .slice(0, 4);
+  }, [allCategoryArticles, isFilterActive, filteredAllArticles, featuredArticle, latestArticles]);
 
   // Deep cuts - when filter active, show 3 oldest matching not in hero/featured
   const filteredDeepCuts = useMemo(() => {
