@@ -190,9 +190,17 @@ const CategoryAll = () => {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: TOKENS.BG, color: "#fff" }}>
       <SEOHead
-        title={`All ${category?.name || "Category"} Articles - AI in Asia`}
-        description={`Browse all ${category?.name} articles on AI in Asia.`}
+        title={`All ${cfg.label} Articles - AI in Asia`}
+        description={cfg.metaDesc}
         canonical={`https://aiinasia.com/category/${slug}/all`}
+        ogType="website"
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `All ${cfg.label} Articles - AI in Asia`,
+          "description": cfg.metaDesc,
+          "url": `https://aiinasia.com/category/${slug}/all`,
+        }}
       />
       {category && (
         <BreadcrumbStructuredData

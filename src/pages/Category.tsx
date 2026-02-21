@@ -380,12 +380,20 @@ const Category = () => {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: TOKENS.BG, color: "#fff" }}>
       <SEOHead
-        title={`${category?.name || 'Category'} - AI News & Insights`}
-        description={category?.description || `Explore the latest ${category?.name} articles on AI in ASIA.`}
-        canonical={`https://aiinasia.com/category/${category?.slug}`}
+        title={`${cfg.label} - AI in Asia`}
+        description={cfg.metaDesc}
+        canonical={`https://aiinasia.com/category/${slug}`}
+        ogType="website"
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `${cfg.label} - AI in Asia`,
+          "description": cfg.metaDesc,
+          "url": `https://aiinasia.com/category/${slug}`,
+        }}
       />
       {category && (
-        <BreadcrumbStructuredData items={[{ name: 'Home', url: 'https://aiinasia.com' }, { name: category.name, url: `https://aiinasia.com/category/${category.slug}` }]} />
+        <BreadcrumbStructuredData items={[{ name: 'Home', url: '/' }, { name: category.name, url: `/category/${category.slug}` }]} />
       )}
 
       <Header />

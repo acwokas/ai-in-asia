@@ -7,6 +7,7 @@ export const CATEGORY_CONFIG = {
     emoji: "📡",
     label: "News",
     desc: "Breaking developments and signals from the AI landscape across Asia-Pacific",
+    metaDesc: "Latest AI news, developments, and breaking stories from across Asia Pacific. Stay informed on the technology shaping the region.",
     filters: ["All", "Featured", "OpenAI", "Data & AI", "AGI", "AI Regulation"],
   },
   business: {
@@ -15,6 +16,7 @@ export const CATEGORY_CONFIG = {
     emoji: "💼",
     label: "Business",
     desc: "How AI is reshaping industries across Asia-Pacific",
+    metaDesc: "AI business strategy, enterprise adoption, and commercial insights for leaders across Asia Pacific.",
     filters: ["All", "AI in Asia", "AI Tools", "Future of Work", "Data Governance", "AI Implementation"],
   },
   life: {
@@ -23,6 +25,7 @@ export const CATEGORY_CONFIG = {
     emoji: "🌏",
     label: "Life",
     desc: "AI's impact on everyday life, health, culture, and society",
+    metaDesc: "How AI is changing daily life, health, education, and personal productivity across Asia.",
     filters: ["All", "AI Security", "AI & Culture", "AI Relationships", "AI Shopping", "APAC Integration"],
   },
   learn: {
@@ -31,6 +34,7 @@ export const CATEGORY_CONFIG = {
     emoji: "🎓",
     label: "Learn",
     desc: "Tutorials, explainers, and guides to sharpen your AI skills",
+    metaDesc: "AI tutorials, guides, and learning resources. Build practical AI skills with step-by-step content.",
     filters: ["All", "AI Productivity", "Generative AI", "ChatGPT", "AI Tools", "Beginner Guides"],
   },
   create: {
@@ -39,6 +43,7 @@ export const CATEGORY_CONFIG = {
     emoji: "🎨",
     label: "Create",
     desc: "Tools, prompts, and workflows for AI-powered creation",
+    metaDesc: "AI creative tools, prompt engineering, and content creation techniques. Make better work with AI.",
     filters: ["All", "AI Prompts", "AI Art", "Design AI", "Productivity Tools", "AI Workflows"],
   },
   voices: {
@@ -47,6 +52,7 @@ export const CATEGORY_CONFIG = {
     emoji: "🎙️",
     label: "Voices",
     desc: "Opinion, analysis, and commentary from AI practitioners and thinkers",
+    metaDesc: "Opinions, interviews, and perspectives from AI leaders, founders, and practitioners across Asia.",
     filters: ["All", "Deep Dive", "Business", "Opinion", "Asia", "Heritage"],
   },
   policy: {
@@ -55,6 +61,7 @@ export const CATEGORY_CONFIG = {
     emoji: "⚖️",
     label: "Policy",
     desc: "AI regulation, governance frameworks, and government strategy across Asia-Pacific",
+    metaDesc: "AI regulation, governance, and policy developments across Asian markets and governments.",
     filters: ["All"],
   },
 } as const;
