@@ -1,17 +1,20 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useState } from "react";
-import { Clock, ChevronRight, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
+import { Clock, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
-import { cn } from "@/lib/utils";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+const AMBER = "hsl(37, 78%, 60%)";
+const AMBER_BG = "hsla(37, 78%, 60%, 0.1)";
+const AMBER_BORDER = "hsla(37, 78%, 60%, 0.3)";
 
 interface Signal {
   number: number;
@@ -253,13 +256,13 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
       {/* Admin Controls */}
       {!isLoadingAdmin && isAdmin && (
-        <div className="bg-primary/10 border-b border-primary/30">
+        <div className="border-b" style={{ backgroundColor: AMBER_BG, borderColor: AMBER_BORDER }}>
           <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Edit className="h-4 w-4 text-primary flex-shrink-0" />
+              <Edit className="h-4 w-4 flex-shrink-0" style={{ color: AMBER }} />
               <span className="text-sm font-medium text-foreground">Admin Controls</span>
               {article.status !== 'published' && (
-                <Badge variant="outline" className="ml-2 border-primary/50 text-primary">
+                <Badge variant="outline" className="ml-2" style={{ borderColor: AMBER_BORDER, color: AMBER }}>
                   {article.status}
                 </Badge>
               )}
@@ -285,7 +288,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                   size="sm"
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="cursor-pointer"
+                  className="cursor-pointer text-white hover:opacity-90"
+                  style={{ backgroundColor: AMBER }}
                 >
                   {isPublishing ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Publishing...</>
@@ -324,16 +328,16 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
       {/* Hero Section */}
       <header className="relative bg-muted/50 border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-[60px] text-center">
-          <div className="flex items-center justify-center gap-2 text-base font-medium mb-6" style={{ color: 'hsl(37, 78%, 60%)' }}>
+          <div className="flex items-center justify-center gap-2 text-base font-medium mb-6" style={{ color: AMBER }}>
             <Clock className="h-4 w-4" />
             <span>{formattedDate}</span>
           </div>
           
           {/* Typographic lockup */}
           <h1 className="mb-4">
-            <span className="font-bold text-[64px] leading-none" style={{ color: 'hsl(37, 78%, 60%)' }}>3</span>
+            <span className="font-bold text-[64px] leading-none" style={{ color: AMBER }}>3</span>
             <span className="text-foreground font-normal text-[32px] mx-3">Before</span>
-            <span className="font-bold text-[64px] leading-none" style={{ color: 'hsl(37, 78%, 60%)' }}>9</span>
+            <span className="font-bold text-[64px] leading-none" style={{ color: AMBER }}>9</span>
           </h1>
           
           <p className="text-muted-foreground text-[20px] mb-2">
@@ -347,16 +351,16 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         <div className="bg-muted/50 border-y border-border">
           <div className="max-w-3xl mx-auto px-6 py-6 grid md:grid-cols-2 gap-6">
             {tldr.whoShouldPayAttention && (
-              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: 'hsl(37, 78%, 60%)' }}>
-                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'hsl(37, 78%, 60%)' }}>
+              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: AMBER }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: AMBER }}>
                   Who should pay attention
                 </h3>
                 <p className="text-foreground text-sm leading-relaxed">{tldr.whoShouldPayAttention}</p>
               </div>
             )}
             {tldr.whatChangesNext && (
-              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: 'hsl(37, 78%, 60%)' }}>
-                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'hsl(37, 78%, 60%)' }}>
+              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: AMBER }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: AMBER }}>
                   What changes next
                 </h3>
                 <p className="text-foreground text-sm leading-relaxed">{tldr.whatChangesNext}</p>
@@ -370,24 +374,41 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
       <main className="max-w-3xl mx-auto px-6 py-8 md:py-12">
         <div className="space-y-8">
           {signals.filter(s => !s.isBonus).map((signal) => (
-            <article key={signal.number} className="relative bg-card rounded-xl p-8 border border-border shadow-sm">
+            <article key={signal.number} className="relative bg-card rounded-xl p-6 sm:p-8 border border-border shadow-sm">
               {/* Signal Number Badge */}
-              <div className="absolute -top-5 left-8">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-[48px] leading-none w-[48px] h-[48px]" style={{ backgroundColor: 'hsl(37, 78%, 60%)' }}>
+              <div className="absolute -top-5 left-6 sm:left-8">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-[22px] leading-none"
+                  style={{ backgroundColor: AMBER, color: 'hsl(220, 15%, 10%)' }}
+                >
                   {signal.number}
                 </div>
               </div>
               
               <div className="pt-4">
-                <h2 className="text-[24px] font-bold text-foreground mb-4 leading-[1.3]">
-                  {signal.title}
-                </h2>
+                {/* Header area with title + thumbnail */}
+                <div className="flex gap-5 items-start">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-[24px] font-bold text-foreground mb-4 leading-[1.3] font-display">
+                      {signal.title}
+                    </h2>
+                  </div>
+                  {article.featured_image_url && (
+                    <img
+                      src={article.featured_image_url}
+                      alt=""
+                      className="hidden sm:block w-[200px] h-[120px] rounded-lg object-cover shrink-0"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+
                 <p className="text-foreground/90 text-base leading-[1.7] mb-6 max-w-[680px]">
                   {signal.explainer}
                 </p>
                 {signal.whyItMatters && (
-                  <div className="border-l-4 pl-5 pr-5 py-4 rounded-r-lg mb-5" style={{ borderColor: 'hsl(37, 78%, 60%)', backgroundColor: 'hsla(37, 78%, 60%, 0.1)' }}>
-                    <p className="text-sm font-bold mb-1" style={{ color: 'hsl(37, 78%, 60%)' }}>
+                  <div className="border-l-4 pl-5 pr-5 py-4 rounded-r-lg mb-5" style={{ borderColor: AMBER, backgroundColor: AMBER_BG }}>
+                    <p className="text-sm font-bold mb-1" style={{ color: AMBER }}>
                       Why it matters for Asia
                     </p>
                     <p className="text-foreground/80 text-[15px] leading-[1.7]">
@@ -401,7 +422,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-medium transition-colors group hover:opacity-80"
-                    style={{ color: 'hsl(37, 78%, 60%)' }}
+                    style={{ color: AMBER }}
                   >
                     <span>Read more</span>
                     <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -413,9 +434,9 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
           {/* Bonus Signal */}
           {signals.find(s => s.isBonus) && (
-            <div className="relative mt-10 rounded-xl p-8 border" style={{ backgroundColor: 'hsla(37, 78%, 60%, 0.1)', borderColor: 'hsla(37, 78%, 60%, 0.3)' }}>
+            <div className="relative mt-10 rounded-xl p-8 border" style={{ backgroundColor: AMBER_BG, borderColor: AMBER_BORDER }}>
               <div className="absolute -top-3 left-6">
-                <span className="px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-wide shadow-lg" style={{ backgroundColor: 'hsl(37, 78%, 60%)' }}>
+                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg" style={{ backgroundColor: AMBER, color: 'hsl(220, 15%, 10%)' }}>
                   Bonus Signal
                 </span>
               </div>
@@ -431,15 +452,15 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         {/* Outro */}
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-muted-foreground text-center mb-2">
-            That's today's <span className="font-medium" style={{ color: 'hsl(37, 78%, 60%)' }}>3-Before-9</span>.
+            That's today's <span className="font-medium" style={{ color: AMBER }}>3-Before-9</span>.
           </p>
           <p className="text-muted-foreground/70 text-sm text-center mb-8">
             Explore more at{' '}
-            <Link to="/" className="hover:opacity-80 transition-colors" style={{ color: 'hsl(37, 78%, 60%)' }}>
+            <Link to="/" className="hover:opacity-80 transition-colors" style={{ color: AMBER }}>
               AIinASIA.com
             </Link>
             {' '}or{' '}
-            <Link to="/contact" className="hover:opacity-80 transition-colors" style={{ color: 'hsl(37, 78%, 60%)' }}>
+            <Link to="/contact" className="hover:opacity-80 transition-colors" style={{ color: AMBER }}>
               share signals with us
             </Link>.
           </p>
