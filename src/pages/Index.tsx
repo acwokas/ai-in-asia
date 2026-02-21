@@ -502,7 +502,7 @@ const Index = () => {
                   to={`/${categorySlug}/${article.slug}`}
                   className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
                 >
-                  <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] md:h-[320px]' : 'h-[160px]'}`}>
+                  <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] max-h-[300px]' : 'h-[160px] max-h-[180px]'}`}>
                     <img
                       src={isLarge
                         ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 800, 400)
@@ -524,7 +524,7 @@ const Index = () => {
                       </Badge>
                     )}
                   </div>
-                  <div className={`${isLarge ? 'p-6' : 'p-5'}`}>
+                  <div className="p-4">
                     <span className="text-[13px] font-bold uppercase tracking-wider text-primary mb-2 block">
                       {article.categories?.name || "Uncategorized"}
                     </span>
@@ -534,9 +534,9 @@ const Index = () => {
                       {article.title}
                     </h3>
                     {isLarge && article.excerpt && (
-                      <p className="text-muted-foreground/70 text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
+                      <p className="text-[hsl(210,15%,72%)] text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
                     )}
-                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground/60 mt-3">
+                    <div className="flex items-center gap-2 text-[13px] text-[hsl(210,12%,60%)] mt-3">
                       {article.authors?.name && <span>{article.authors.name}</span>}
                       {article.authors?.name && article.published_at && <span>•</span>}
                       {article.published_at && (
@@ -574,10 +574,12 @@ const Index = () => {
         </section>
 
         {/* Ad placement — between article grid and Most Discussed */}
-        <div className="container mx-auto px-4 py-10">
+        <div className="container mx-auto px-4 py-12">
           <div className="flex flex-col items-center">
-            <span className="text-[11px] text-muted-foreground/40 uppercase tracking-wider mb-2">Advertisement</span>
-            <MPUAd />
+            <span className="text-[11px] text-[hsl(210,12%,50%)] uppercase tracking-wider mb-2">Advertisement</span>
+            <div className="block mx-auto">
+              <MPUAd />
+            </div>
           </div>
         </div>
 
