@@ -647,9 +647,10 @@ const Article = () => {
 
               {/* Right sidebar rail — desktop only */}
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
-                <div className="sticky top-[80px] w-[300px] overflow-hidden">
+                <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
-                  <div className="mt-6 w-[300px] max-w-[300px] overflow-hidden">
+                  <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
+                    <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
                     <GoogleAd slot="sidebar" />
                   </div>
                 </div>
