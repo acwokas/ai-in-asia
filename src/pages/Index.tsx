@@ -306,7 +306,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Trending Section - Left */}
             <div className="lg:col-span-3 order-2 lg:order-1">
-              <div className="bg-primary text-primary-foreground px-3 py-1.5 text-xs font-bold uppercase mb-6">
+              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase mb-6">
                 Trending
               </div>
               <div className="space-y-4">

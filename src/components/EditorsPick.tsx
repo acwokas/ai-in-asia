@@ -22,13 +22,13 @@ const EditorsPickComponent = ({ article }: EditorsPickProps) => {
   const categorySlug = article.categories?.slug || 'news';
   
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+    <Card className="overflow-hidden border-editorial/20 bg-gradient-to-br from-editorial/5 to-editorial/10">
       <Link 
         to={`/${categorySlug}/${article.slug}`}
         className="block group"
       >
         <div className="relative">
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full">
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-editorial text-editorial-foreground px-3 py-1 rounded-full">
             <Star className="h-4 w-4 fill-current" />
             <span className="text-xs font-bold uppercase">Editor's Pick</span>
           </div>
