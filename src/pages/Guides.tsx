@@ -245,13 +245,35 @@ const Guides = () => {
                 animation: "heroOrb2 10s ease-in-out infinite alternate",
               }}
             />
+            {/* Circuit-node pattern — visible on right, fades to transparent on left */}
             <div
-              className="absolute inset-0 opacity-[0.04]"
+              className="absolute inset-0"
               style={{
-                backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
+                maskImage: "linear-gradient(to right, transparent 10%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,1) 75%)",
+                WebkitMaskImage: "linear-gradient(to right, transparent 10%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,1) 75%)",
               }}
-            />
+            >
+              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.07 }}>
+                <defs>
+                  <pattern id="circuit-grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                    <circle cx="30" cy="30" r="2" fill="#5F72FF" />
+                    <circle cx="0" cy="0" r="1.5" fill="#5F72FF" />
+                    <circle cx="60" cy="0" r="1.5" fill="#5F72FF" />
+                    <circle cx="0" cy="60" r="1.5" fill="#5F72FF" />
+                    <circle cx="60" cy="60" r="1.5" fill="#5F72FF" />
+                    <line x1="0" y1="0" x2="30" y2="30" stroke="#5F72FF" strokeWidth="0.5" />
+                    <line x1="60" y1="0" x2="30" y2="30" stroke="#5F72FF" strokeWidth="0.5" />
+                    <line x1="30" y1="30" x2="60" y2="60" stroke="#5F72FF" strokeWidth="0.5" />
+                    <line x1="30" y1="30" x2="0" y2="60" stroke="#5F72FF" strokeWidth="0.5" />
+                    <line x1="30" y1="0" x2="30" y2="12" stroke="#5F72FF" strokeWidth="0.3" />
+                    <line x1="30" y1="48" x2="30" y2="60" stroke="#5F72FF" strokeWidth="0.3" />
+                    <line x1="0" y1="30" x2="12" y2="30" stroke="#5F72FF" strokeWidth="0.3" />
+                    <line x1="48" y1="30" x2="60" y2="30" stroke="#5F72FF" strokeWidth="0.3" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#circuit-grid)" />
+              </svg>
+            </div>
           </div>
 
           <div className="container relative mx-auto px-4 py-16 md:py-24">
