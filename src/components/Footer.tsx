@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/aiinasia-logo.png";
 import { z } from "zod";
+import { ExternalLink } from "lucide-react";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 
 const emailSchema = z.string()
@@ -14,19 +15,40 @@ const emailSchema = z.string()
   .email({ message: "Invalid email address" })
   .max(255, { message: "Email must be less than 255 characters" });
 
+const exploreLinks = [
+  { to: "/category/news", label: "News" },
+  { to: "/category/business", label: "Business" },
+  { to: "/category/life", label: "Life" },
+  { to: "/category/learn", label: "Learn" },
+  { to: "/category/create", label: "Create" },
+  { to: "/category/voices", label: "Voices" },
+  { to: "/tools", label: "Tools" },
+  { to: "/events", label: "Events" },
+  { to: "/ai-policy-atlas", label: "Policy Atlas" },
+];
+
+const companyLinks = [
+  { to: "/about", label: "About" },
+  { to: "/contact", label: "Contact" },
+  { to: "/editorial-standards", label: "Editorial Standards" },
+  { to: "/privacy", label: "Privacy Policy" },
+  { to: "/terms", label: "Terms of Service" },
+  { to: "/cookie-policy", label: "Cookie Policy" },
+];
+
 const Footer = memo(() => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(checkSubscribed());
   const { user } = useAuth();
   const { toast } = useToast();
+  const currentYear = new Date().getFullYear();
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Validate email
       const validatedEmail = emailSchema.parse(email);
 
       const { error } = await supabase
@@ -73,78 +95,95 @@ const Footer = memo(() => {
   };
 
   return (
-    <footer className="border-t border-border bg-muted/30 mt-16">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+    <footer className="bg-[hsl(0,0%,7%)] text-[hsl(0,0%,85%)] mt-16">
+      <div className="container mx-auto px-6 py-14">
+        {/* Row 1 — Three columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+          {/* Column 1: Brand */}
           <div>
-            <img src={logo} alt="AI in ASIA" className="h-24 mb-0 -ml-6" width={171} height={96} />
-            <p className="text-sm text-muted-foreground mb-4 -mt-4">
-              Your trusted source for AI news, insights and innovation across Asia.
+            <img src={logo} alt="AI in ASIA" className="h-20 -ml-4 mb-1" width={142} height={80} />
+            <p className="text-sm text-[hsl(0,0%,55%)] mb-5 -mt-2">
+              Asia-Pacific's source for AI news.
             </p>
+            <div className="flex items-center gap-4">
+              <a href="https://x.com/aiaborncurious" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" className="text-[hsl(0,0%,55%)] hover:text-white transition-colors">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </a>
+              <a href="https://www.linkedin.com/company/aiinasia" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-[hsl(0,0%,55%)] hover:text-white transition-colors">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+              </a>
+              <a href="https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-rss" target="_blank" rel="noopener noreferrer" aria-label="RSS Feed" className="text-[hsl(0,0%,55%)] hover:text-white transition-colors">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795 0 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.71-7.118-15.758-15.839-15.82zm0-8.18v4.819c12.951.115 23.357 10.71 23.497 23.625h4.503c-.145-15.761-12.958-28.558-28-28.444z" /></svg>
+              </a>
+            </div>
           </div>
 
+          {/* Column 2: Explore */}
           <div>
-            <h4 className="font-semibold mb-4">Content</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/category/news" className="hover:text-primary transition-colors">News</Link></li>
-              <li><Link to="/category/business" className="hover:text-primary transition-colors">Business</Link></li>
-              <li><Link to="/category/life" className="hover:text-primary transition-colors">Life</Link></li>
-              <li><Link to="/category/learn" className="hover:text-primary transition-colors">Learn</Link></li>
-              <li><Link to="/category/create" className="hover:text-primary transition-colors">Create</Link></li>
-              <li><Link to="/category/voices" className="hover:text-primary transition-colors">Voices</Link></li>
-              <li><Link to="/guides" className="hover:text-primary transition-colors">Guides</Link></li>
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Explore</h4>
+            <ul className="space-y-2.5 text-sm">
+              {exploreLinks.map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-[hsl(0,0%,55%)] hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Column 3: Company */}
           <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/prompts" className="hover:text-primary transition-colors">Prompts</Link></li>
-              <li><Link to="/tools" className="hover:text-primary transition-colors">Tools</Link></li>
-              <li><Link to="/events" className="hover:text-primary transition-colors">Events</Link></li>
-              <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Advertise</Link></li>
-              <li><a href="https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-rss" className="hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">RSS Feed</a></li>
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Company</h4>
+            <ul className="space-y-2.5 text-sm">
+              {companyLinks.map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-[hsl(0,0%,55%)] hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
+        </div>
 
-          <div>
-            <h4 className="font-semibold mb-4">AI in ASIA Brief</h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get weekly insights delivered to your inbox.
-            </p>
-            {!isSubscribed ? (
-              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+        {/* Row 2 — Newsletter */}
+        <div className="border-t border-[hsl(0,0%,15%)] pt-8 mb-8">
+          {!isSubscribed ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 max-w-xl">
+              <p className="text-sm text-[hsl(0,0%,55%)] shrink-0">Get the AI in ASIA Brief weekly:</p>
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 w-full sm:w-auto">
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="flex-1"
+                  className="flex-1 sm:w-56 h-9 bg-[hsl(0,0%,12%)] border-[hsl(0,0%,20%)] text-white placeholder:text-[hsl(0,0%,40%)] text-sm"
                 />
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" size="sm" disabled={isSubmitting} className="h-9 shrink-0">
                   {isSubmitting ? "..." : "Subscribe"}
                 </Button>
               </form>
-            ) : (
-              <p className="text-sm text-muted-foreground">✓ You're subscribed!</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p className="text-sm text-[hsl(0,0%,55%)]">✓ You're subscribed to the AI in ASIA Brief.</p>
+          )}
         </div>
 
-        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© 2026 AI in ASIA. All rights reserved.</p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-            <Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</Link>
-            <Link to="/editorial-standards" className="hover:text-primary transition-colors">Editorial Standards</Link>
-            <Link to="/contribute" className="hover:text-primary transition-colors">Contribute</Link>
-            <Link to="/media-and-partners" className="hover:text-primary transition-colors">Media and Partners</Link>
-          </div>
+        {/* Row 3 — Copyright + Collective */}
+        <div className="border-t border-[hsl(0,0%,15%)] pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-[hsl(0,0%,40%)]">
+          <p>© {currentYear} AI in ASIA. All rights reserved.</p>
+          <a
+            href="https://you.withthepowerof.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-[hsl(0,0%,65%)] transition-colors"
+          >
+            Part of the You.WithThePowerOf.AI collective
+            <ExternalLink className="h-3 w-3" />
+          </a>
         </div>
       </div>
     </footer>

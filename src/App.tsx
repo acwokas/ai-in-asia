@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 
 // Eager load critical components
 import GoogleAnalytics from "./components/GoogleAnalytics";
-import { CollectiveFooter } from "./components/CollectiveFooter";
+
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { Skeleton } from "./components/ui/skeleton";
@@ -295,7 +295,7 @@ const App = () => (
               <Route path="/:slug" element={<LegacyArticleRedirect />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <CollectiveFooter />
+            
           </Suspense>
           </AnalyticsProvider>
         </BrowserRouter>

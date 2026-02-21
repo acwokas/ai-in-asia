@@ -2,7 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { CollectiveFooter } from "@/components/CollectiveFooter";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -150,7 +150,6 @@ const EditorialStandards = () => {
       </main>
 
       <Footer />
-      <CollectiveFooter />
     </>
   );
 };
