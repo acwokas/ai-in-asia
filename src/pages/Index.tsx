@@ -34,6 +34,7 @@ const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
 const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike"));
 const ForYouSection = lazy(() => import("@/components/ForYouSection"));
 const UnreadBookmarksNudge = lazy(() => import("@/components/UnreadBookmarksNudge"));
+const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
@@ -418,6 +419,11 @@ const Index = () => {
         {/* SEO H1 - Primary page heading */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
         
+        {/* 3 Before 9 Daily Briefing */}
+        <Suspense fallback={null}>
+          <ThreeBeforeNineLanding />
+        </Suspense>
+
         {/* Hero Grid Section */}
         <section className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
