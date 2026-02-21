@@ -177,7 +177,7 @@ const Category = () => {
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, article_type, categories:primary_category_id (name, slug))`)
+          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published")
           .lt("articles.published_at", cutoff);
@@ -190,7 +190,7 @@ const Category = () => {
 
       const { data, error } = await supabase
         .from("articles")
-        .select("id, slug, title, published_at, view_count, ai_tags, article_type, categories:primary_category_id (name, slug)")
+        .select("id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .lt("published_at", cutoff)
@@ -385,16 +385,17 @@ const Category = () => {
                           transition: "border-color 0.2s ease",
                         }}
                       >
-                        <div
-                          style={{
-                            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            background: `${cfg.accent}1a`, color: cfg.accent,
-                            fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 13,
-                          }}
-                        >
-                          {i + 1}
-                        </div>
+                        {article.featured_image_url ? (
+                          <img
+                            src={article.featured_image_url}
+                            alt={article.featured_image_alt || article.title}
+                            style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
+                          />
+                        ) : (
+                          <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                            {cfg.emoji}
+                          </div>
+                        )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <h4 style={{ fontSize: 13, fontWeight: 600, color: "#e5e7eb", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                             {decodeHtml(article.title)}
@@ -441,13 +442,13 @@ const Category = () => {
                   <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {featuredGridArticles.map((article: any) => (
-                      <InteractiveCard
+                      <FeaturedCard
                         key={article.id}
-                        title={decodeHtml(article.title)}
-                        tag={cfg.label}
-                        tagColor={cfg.accent}
-                        meta={article.published_at ? new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : undefined}
-                        onClick={() => navigate(`/${article.categories?.slug || slug}/${article.slug}`)}
+                        article={article}
+                        cfg={cfg}
+                        slug={slug}
+                        imageHeight={140}
+                        navigate={navigate}
                       />
                     ))}
                   </div>
@@ -465,13 +466,15 @@ const Category = () => {
                   />
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 gap-3.5">
                     {deepCutsArticles.map((dc: any) => (
-                      <InteractiveCard
+                      <FeaturedCard
                         key={dc.id}
-                        title={decodeHtml(dc.title)}
+                        article={dc}
+                        cfg={cfg}
+                        slug={slug}
+                        imageHeight={120}
+                        navigate={navigate}
                         tag={getEditorialTag(dc)}
                         tagColor="#ef4444"
-                        meta={dc.published_at ? new Date(dc.published_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : undefined}
-                        onClick={() => navigate(`/${dc.categories?.slug || slug}/${dc.slug}`)}
                       />
                     ))}
                   </div>
@@ -551,6 +554,61 @@ const Category = () => {
 };
 
 // ─── Sub-components ───
+
+function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor }: { article: any; cfg: any; slug: string | undefined; imageHeight: number; navigate: any; tag?: string; tagColor?: string }) {
+  const [hovered, setHovered] = useState(false);
+  const displayTag = tag || cfg.label;
+  const displayTagColor = tagColor || cfg.accent;
+  const meta = article.published_at ? new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : undefined;
+
+  return (
+    <div
+      onClick={() => navigate(`/${article.categories?.slug || slug}/${article.slug}`)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 14,
+        background: hovered ? "#151820" : "#0d0e12",
+        border: `1px solid ${hovered ? `${displayTagColor}40` : "#1a1d25"}`,
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        transition: "all 0.25s ease",
+        cursor: "pointer",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ width: "100%", height: imageHeight, overflow: "hidden" }}>
+        {article.featured_image_url ? (
+          <img
+            src={article.featured_image_url}
+            alt={article.featured_image_alt || article.title}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transform: hovered ? "scale(1.03)" : "scale(1)",
+              transition: "transform 0.3s ease",
+            }}
+          />
+        ) : (
+          <div style={{ width: "100%", height: "100%", background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
+            {cfg.emoji}
+          </div>
+        )}
+      </div>
+      <div style={{ padding: "14px" }}>
+        {(displayTag || meta) && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            {displayTag && displayTagColor ? <GlowBadge color={displayTagColor} small>{displayTag}</GlowBadge> : <span />}
+            {meta && <span style={{ fontSize: 12, color: "#9ca3af" }}>{meta}</span>}
+          </div>
+        )}
+        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "#ffffff", lineHeight: 1.4, margin: 0 }}>
+          {decodeHtml(article.title)}
+        </h3>
+      </div>
+    </div>
+  );
+}
 
 function LearningPathCard({ path }: { path: { emoji: string; title: string; desc: string; articles: number; time: string; color: string } }) {
   const [hovered, setHovered] = useState(false);
