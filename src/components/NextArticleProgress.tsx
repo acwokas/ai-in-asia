@@ -49,8 +49,8 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
       const progress = Math.min((window.scrollY / scrollHeight) * 100, 100);
       setScrollProgress(progress);
       
-      // Show at 80%, hide at 95%
-      setIsVisible(progress >= 80 && progress < 95);
+      // Show at 85%, hide at 95%
+      setIsVisible(progress >= 85 && progress < 95);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
