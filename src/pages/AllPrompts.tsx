@@ -354,17 +354,29 @@ const AllPrompts = () => {
                   <div key={prompt.id}>
                     {/* Collapsed row */}
                     <div
-                      className="flex items-center gap-3 py-3.5 cursor-pointer group"
+                      className="flex items-start gap-3 py-3 cursor-pointer group rounded-md hover:bg-muted/40 transition-colors px-2 -mx-2"
                       onClick={() => toggleExpand(prompt.id)}
                     >
                       <ChevronRight
-                        className={`h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                        className={`h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
                       />
-                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                        <h3 className="font-semibold text-sm leading-tight truncate group-hover:text-primary transition-colors">
-                          {prompt.prompt_title}
-                        </h3>
-                        <span className="text-xs text-muted-foreground truncate hidden sm:inline">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3">
+                          <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
+                            {prompt.prompt_title}
+                          </h3>
+                          <span className="text-xs text-muted-foreground truncate hidden sm:inline flex-shrink min-w-0">
+                            <Link
+                              to={`/guides/${guide?.slug}`}
+                              className="hover:text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {guide?.title}
+                            </Link>
+                          </span>
+                        </div>
+                        {/* Mobile source */}
+                        <span className="text-xs text-muted-foreground sm:hidden">
                           <Link
                             to={`/guides/${guide?.slug}`}
                             className="hover:text-primary hover:underline"
@@ -392,47 +404,27 @@ const AllPrompts = () => {
                             {prompt.category}
                           </Badge>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 flex-shrink-0"
-                          onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
-                        >
-                          {isCopied ? (
-                            <Check className="h-3.5 w-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 flex-shrink-0"
+                            onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
+                          >
+                            {isCopied ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </Button>
+                          {isCopied && (
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-1 duration-150">
+                              Copied!
+                            </span>
                           )}
-                        </Button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Mobile meta (always visible) */}
-                    {!isExpanded && (
-                      <div className="flex items-center gap-2 pb-3 pl-7 sm:hidden">
-                        <span className="text-xs text-muted-foreground truncate">
-                          <Link
-                            to={`/guides/${guide?.slug}`}
-                            className="hover:text-primary hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {guide?.title}
-                          </Link>
-                        </span>
-                        {prompt.platforms && (
-                          <div className="flex gap-1 ml-auto flex-shrink-0">
-                            {prompt.platforms.map((p: string) => (
-                              <Badge
-                                key={p}
-                                className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
-                              >
-                                {p}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
 
                     {/* Expanded content */}
                     <div
@@ -456,17 +448,9 @@ const AllPrompts = () => {
                           )}
                         </div>
 
-                        {/* Source on mobile */}
-                        <p className="text-xs text-muted-foreground sm:hidden">
-                          From:{" "}
-                          <Link to={`/guides/${guide?.slug}`} className="text-primary hover:underline">
-                            {guide?.title}
-                          </Link>
-                        </p>
-
                         {/* Code block */}
                         <div className="relative group/code">
-                          <pre className="bg-muted/60 border border-border rounded-md p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-[300px] overflow-y-auto">
+                          <pre className="bg-muted/60 border border-border rounded-md p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto">
                             {prompt.prompt_text}
                           </pre>
                           <Button
@@ -505,13 +489,13 @@ const AllPrompts = () => {
                       </div>
                     </div>
 
-                    {/* Ad slot after every 6 */}
+                    {/* Ad slot after every 6 — full width, matching prompt rows */}
                     {(index + 1) % 6 === 0 && index < filteredPrompts.length - 1 && (
-                      <div className="flex flex-col items-center gap-1 py-6">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">
+                      <div className="border-t border-border py-6">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block mb-2">
                           Advertisement
                         </span>
-                        <div className="w-[300px] h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
+                        <div className="w-full max-w-full h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
                           <span className="text-xs text-muted-foreground/40">Ad slot</span>
                         </div>
                       </div>
