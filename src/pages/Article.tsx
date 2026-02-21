@@ -12,8 +12,6 @@ import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/St
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
 import { TopListsContent } from "@/components/TopListsContent";
-import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
-import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
@@ -21,12 +19,7 @@ import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
 import ContinueReading from "@/components/ContinueReading";
 import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
-import DeepDiveSection from "@/components/DeepDiveSection";
-import ExploreMoreButton from "@/components/ExploreMoreButton";
-import UpNextSidebar from "@/components/UpNextSidebar";
 import NextArticleProgress from "@/components/NextArticleProgress";
-import ExitIntentOverlay from "@/components/ExitIntentOverlay";
-import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
 import { useRecentArticles } from "@/hooks/useRecentArticles";
 import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
@@ -46,11 +39,9 @@ import {
   ArticleNotFound,
   ArticleAdminControls,
   ArticleAdminDebug,
-  ArticleRelatedSection,
   ArticleBreadcrumbs,
   ArticleSponsorBanner,
   ArticleAuthorBio,
-  getExternalLinkForCategory,
 } from "@/components/article";
 import { createShareHandlers } from "@/hooks/useArticleActions";
 
@@ -65,7 +56,7 @@ const Article = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [enableRelatedArticles, setEnableRelatedArticles] = useState(false);
+  
   const [pointsToastShown, setPointsToastShown] = useState(false);
   
   const cleanSlug = slug?.replace(/\/+$/g, '');
@@ -156,32 +147,6 @@ const Article = () => {
     },
   });
 
-  // Fetch related articles
-  const { data: relatedArticles } = useQuery({
-    queryKey: ["related-articles", article?.primary_category_id, article?.id],
-    enabled: enableRelatedArticles && !!article?.id,
-    staleTime: 10 * 60 * 1000,
-    queryFn: async () => {
-      const baseQuery = supabase
-        .from("articles")
-        .select(`*, authors (name, slug), categories:primary_category_id (name, slug)`)
-        .neq("id", article!.id)
-        .eq("status", "published")
-        .order("view_count", { ascending: false })
-        .order("published_at", { ascending: false })
-        .limit(3);
-
-      if (article?.primary_category_id) {
-        const { data, error } = await baseQuery.eq("primary_category_id", article.primary_category_id);
-        if (error) throw error;
-        return data;
-      }
-      
-      const { data, error } = await baseQuery;
-      if (error) throw error;
-      return data;
-    },
-  });
 
   // Effects
   useEffect(() => {
@@ -206,12 +171,6 @@ const Article = () => {
     }
   }, [article?.id]);
 
-  useEffect(() => {
-    if (article?.id) {
-      const timer = setTimeout(() => setEnableRelatedArticles(true), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [article?.id]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -400,7 +359,7 @@ const Article = () => {
     );
   }
 
-  const externalLink = getExternalLinkForCategory(article.categories?.name);
+  
 
   return (
     <>
@@ -611,79 +570,26 @@ const Article = () => {
               )}
             </div>
 
-            {/* Article Footer */}
-            <div className="mt-8 pt-6 border-t border-border">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 relative z-20">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  {article.authors?.slug ? (
-                    <Link to={`/author/${article.authors.slug}`}>
-                      {article.authors.avatar_url ? (
-                        <img src={article.authors.avatar_url} alt={article.authors.name} className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity flex-shrink-0" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary hover:opacity-80 transition-opacity flex-shrink-0" />
-                      )}
-                    </Link>
-                  ) : article.authors?.avatar_url ? (
-                    <img src={article.authors.avatar_url} alt={article.authors?.name || 'Anonymous'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 font-semibold">
-                      <User className="h-4 w-4 flex-shrink-0" />
-                      {article.authors?.slug ? (
-                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors truncate">{article.authors.name}</Link>
-                      ) : (
-                        <span className="truncate">{article.authors?.name || 'Anonymous'}</span>
-                      )}
-                    </div>
-                    {article.authors?.job_title && (
-                      <div className="text-sm text-muted-foreground truncate">{article.authors.job_title}</div>
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                      <Clock className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min read</span>
-                      <span>•</span>
-                      <span className="whitespace-nowrap">
-                        {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                      </span>
-                      <span>•</span>
-                      <button onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })} className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                        <MessageCircle className="h-3 w-3 flex-shrink-0" />
-                        <span className="whitespace-nowrap">{commentCount} comments</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                  <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2">
-                    {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
-                    {article.categories && <FollowButton followType="category" followId={article.categories.id} followName={article.categories.name} />}
-                  </div>
-                  <div className="flex items-center gap-2 ml-auto md:ml-0">
-                    <Button variant="outline" size="icon" onClick={handleBookmark} title={isBookmarked ? "Remove bookmark" : "Bookmark article"} className="h-8 w-8 cursor-pointer">
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                    </Button>
-                    <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
-                      <FontSizeControl />
-                    </div>
-                    <Button variant="outline" size="icon" onClick={shareHandlers.handleShare} title="Share article" className="h-8 w-8 cursor-pointer">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Article Reactions */}
             <ArticleReactions articleId={article.id} />
+
+            {/* Compact Author Footer */}
+            <div className="mt-8 pt-6 border-t border-border flex items-center gap-3">
+              {article.authors?.avatar_url && (
+                <Link to={`/author/${article.authors.slug}`}>
+                  <img src={article.authors.avatar_url} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
+                </Link>
+              )}
+              <div className="text-sm">
+                Written by <Link to={`/author/${article.authors?.slug}`} className="font-semibold hover:text-primary">{article.authors?.name}</Link>
+              </div>
+              {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
+            </div>
 
             {/* Author Bio */}
             <ArticleAuthorBio authors={article.authors} />
 
             <ShareThoughtsCTA commentCount={commentCount} />
-            <DeepDiveSection currentArticleId={article.id} tags={article.ai_tags} />
             <ContinueReading currentArticleId={article.id} categoryId={article.primary_category_id || undefined} categorySlug={article.categories?.slug} />
             {!isPreview && (
               <ReturnTriggerBlock
@@ -700,35 +606,9 @@ const Article = () => {
           <section id="comments-section" className="container mx-auto px-4 max-w-4xl mt-12">
             <Comments articleId={article.id} />
           </section>
-
-          {/* Recently Viewed */}
-          <section className="container mx-auto px-4 max-w-4xl mt-12">
-            <RecentlyViewedArticles excludeUrl={`/${article.categories?.slug || category || 'news'}/${article.slug}`} maxItems={5} title="Continue reading" />
-          </section>
-
-          {/* Inline Related */}
-          {article.categories?.id && (
-            <section className="container mx-auto px-4 max-w-4xl mt-12">
-              <InlineRelatedArticles currentArticleId={article.id} categoryId={article.categories.id} categorySlug={article.categories.slug} />
-            </section>
-          )}
-
-          {/* Related Articles */}
-          <ArticleRelatedSection relatedArticles={relatedArticles || []} externalLink={externalLink} />
-
-          {/* Prompt & Go Banner */}
-          {article.article_type === 'top_lists' && (
-            <section className="container mx-auto px-4 max-w-4xl mt-12">
-              <div className="text-sm text-muted-foreground mb-3 text-center">In partnership with</div>
-              <PromptAndGoBanner />
-            </section>
-          )}
         </main>
 
-        <ExploreMoreButton />
-        <UpNextSidebar currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
         <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
-        <ExitIntentOverlay currentArticleId={article.id} />
         
         <Footer />
       </div>
