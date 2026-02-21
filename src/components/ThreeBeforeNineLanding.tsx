@@ -64,72 +64,70 @@ const ThreeBeforeNineLanding = memo(() => {
   const fallbackImage = latest.featured_image_url;
 
   return (
-    <section className="container mx-auto px-4 py-8 md:py-12">
+    <section className="container mx-auto px-4 py-3 md:py-4">
       <div
         className="rounded-xl overflow-hidden dark:bg-gradient-to-br dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] bg-[hsl(220,20%,97%)]"
         style={{ border: `1px solid hsla(37, 78%, 60%, 0.2)` }}
       >
-        <div className="p-6 sm:p-8 md:p-10">
+        <div className="px-5 py-5 sm:px-6 sm:py-5">
 
-          {/* Header */}
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-4">
-              {/* Typographic lockup */}
+          {/* Header row */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
               <div className="flex items-baseline gap-1">
-                <span className="font-bold text-[36px] leading-none tracking-tight" style={{ color: AMBER_ACCENT }}>3</span>
-                <span className="text-muted-foreground text-[15px] font-normal mx-0.5">Before</span>
-                <span className="font-bold text-[36px] leading-none tracking-tight" style={{ color: AMBER_ACCENT }}>9</span>
+                <span className="font-bold text-[28px] leading-none tracking-tight" style={{ color: AMBER_ACCENT }}>3</span>
+                <span className="text-muted-foreground text-[13px] font-normal mx-0.5">Before</span>
+                <span className="font-bold text-[28px] leading-none tracking-tight" style={{ color: AMBER_ACCENT }}>9</span>
               </div>
-              <div className="h-6 w-px bg-border" />
-              <span className="text-muted-foreground text-[16px]">
+              <div className="h-5 w-px bg-border" />
+              <span className="text-muted-foreground text-[14px]">
                 {format(pubDate, "EEEE, d MMMM yyyy")}
               </span>
               {user && hasRead && (
-                <span className="flex items-center gap-1.5 text-xs text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
-                  <Check className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1 text-[11px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                  <Check className="h-3 w-3" />
                   Read
                 </span>
               )}
             </div>
             <Link
               to={`/${categorySlug}/${latest.slug}`}
-              className="text-[15px] font-medium flex items-center gap-1.5 hover:underline group"
+              className="text-[13px] font-medium flex items-center gap-1 hover:underline group"
               style={{ color: AMBER_ACCENT }}
             >
               Read full briefing
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
           {/* Explainer */}
-          <p className="mt-3 mb-3 text-[14px] font-normal" style={{ color: "#8899AA" }}>
+          <p className="mt-1.5 mb-1.5 text-[13px] font-normal text-muted-foreground">
             Three AI signals that matter, delivered before your first cup of coffee
           </p>
 
           {/* Divider */}
-          <div className="h-px bg-border/50 mb-5" />
+          <div className="h-px bg-border/50 mb-3" />
 
-          {/* The three signals */}
+          {/* The three signals — compact */}
           {bullets.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-1">
               {bullets.slice(0, 3).map((bullet, i) => (
                 <Link
                   key={i}
                   to={`/${categorySlug}/${latest.slug}`}
-                  className="flex gap-4 items-start group hover:bg-foreground/5 -mx-3 px-3 py-2 rounded-lg transition-colors"
+                  className="flex gap-3 items-start group hover:bg-foreground/5 -mx-2 px-2 py-1.5 rounded-md transition-colors"
                 >
-                  <span className="font-bold text-[28px] leading-none mt-0.5 shrink-0 w-8 text-center" style={{ color: AMBER_ACCENT }}>
+                  <span className="font-bold text-[22px] leading-none mt-0.5 shrink-0 w-6 text-center" style={{ color: AMBER_ACCENT }}>
                     {i + 1}
                   </span>
-                  <span className="text-foreground text-[17px] leading-[1.6] flex-1 group-hover:opacity-80 transition-opacity">
+                  <span className="text-foreground text-[15px] leading-[1.5] flex-1 group-hover:opacity-80 transition-opacity">
                     {bullet}
                   </span>
-                  {/* Thumbnail */}
                   {(thumbnails[i] || fallbackImage) && (
                     <img
                       src={thumbnails[i] || fallbackImage}
                       alt=""
-                      className="hidden sm:block w-[80px] h-[80px] rounded-lg object-cover shrink-0"
+                      className="hidden sm:block w-[64px] h-[64px] rounded-md object-cover shrink-0"
                       loading="lazy"
                     />
                   )}
@@ -139,37 +137,38 @@ const ThreeBeforeNineLanding = memo(() => {
           )}
 
           {/* Divider */}
-          <div className="h-px bg-border/50 my-5" />
+          <div className="h-px bg-border/50 my-3" />
 
-          {/* Footer */}
-          <div className="flex items-center flex-wrap gap-4">
+          {/* Footer — all on one line */}
+          <div className="flex items-center flex-wrap gap-3">
             <Button
               asChild
-              className="font-semibold gap-2 text-white hover:opacity-90"
+              size="sm"
+              className="font-semibold gap-1.5 text-white hover:opacity-90 h-8 text-[13px]"
               style={{ backgroundColor: AMBER_ACCENT }}
             >
               <Link to={`/${categorySlug}/${latest.slug}`}>
                 Read Today's Briefing
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
 
             {previous && (
               <Link
                 to={`/${(previous as any).categories?.slug || "news"}/${previous.slug}`}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 Yesterday's briefing →
               </Link>
             )}
-          </div>
 
-          {showWeekendNote && (
-            <p className="mt-4 flex items-center gap-1.5 text-[13px] text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              Next briefing: Monday morning
-            </p>
-          )}
+            {showWeekendNote && (
+              <span className="flex items-center gap-1 text-[12px] text-muted-foreground ml-auto">
+                <Clock className="h-3 w-3" />
+                Next briefing: Monday morning
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </section>
