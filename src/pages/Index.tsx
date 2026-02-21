@@ -31,6 +31,7 @@ const ForYouSection = lazy(() => import("@/components/ForYouSection"));
 const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import FirstVisitHero from "@/components/FirstVisitHero";
 
@@ -312,21 +313,21 @@ const Index = () => {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                       width={1280} height={480}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <Badge className="bg-primary text-primary-foreground text-xs">{featuredArticle.categories?.name || "Uncategorized"}</Badge>
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: getCategoryColor(featuredArticle.categories?.slug), padding: '6px 14px' }}>{featuredArticle.categories?.name || "Uncategorized"}</Badge>
                         {featuredArticle.is_trending && (
-                          <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
+                          <Badge className="text-white flex items-center gap-1 text-xs backdrop-blur-sm" style={{ backgroundColor: '#E06050', padding: '6px 14px' }}><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
                         {getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone) && (
-                          <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
+                          <Badge className="bg-emerald-600 text-white text-xs backdrop-blur-sm" style={{ padding: '6px 14px' }}>{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[26px] sm:text-[30px] md:text-[38px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[28px] sm:text-[34px] md:text-[42px] leading-[1.15] mb-2 line-clamp-3 group-hover:text-primary transition-colors" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
                         {featuredArticle.title}
                       </h2>
-                      <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{featuredArticle.excerpt}</p>
+                      <p className="text-[16px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block" style={{ color: '#B0BEC5' }}>{featuredArticle.excerpt}</p>
                       <div className="flex items-center gap-3 text-white/50 text-[12px]">
                         {featuredArticle.published_at && (
                           <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -355,18 +356,18 @@ const Index = () => {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                       width={1280} height={480}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <Badge className="bg-primary text-primary-foreground text-xs">{trendingArticles[0].categories?.name || "Uncategorized"}</Badge>
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: getCategoryColor(trendingArticles[0].categories?.slug), padding: '6px 14px' }}>{trendingArticles[0].categories?.name || "Uncategorized"}</Badge>
                         {trendingArticles[0].is_trending && (
-                          <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
+                          <Badge className="text-white flex items-center gap-1 text-xs backdrop-blur-sm" style={{ backgroundColor: '#E06050', padding: '6px 14px' }}><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[26px] sm:text-[30px] md:text-[38px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[28px] sm:text-[34px] md:text-[42px] leading-[1.15] mb-2 line-clamp-3 group-hover:text-primary transition-colors" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
                         {trendingArticles[0].title}
                       </h2>
-                      <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{trendingArticles[0].excerpt}</p>
+                      <p className="text-[16px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block" style={{ color: '#B0BEC5' }}>{trendingArticles[0].excerpt}</p>
                       <div className="flex items-center gap-3 text-white/50 text-[12px]">
                         {trendingArticles[0].published_at && <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                         <span>•</span>
@@ -404,7 +405,8 @@ const Index = () => {
                     <Link
                       key={article.id}
                       to={`/${categorySlug}/${article.slug}`}
-                      className="group flex gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200 flex-1"
+                      className="group flex gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-all duration-200 flex-1"
+                      style={{ borderLeft: `3px solid ${getCategoryColor(categorySlug)}` }}
                     >
                       <div className="relative w-[72px] h-[54px] overflow-hidden rounded-md flex-shrink-0">
                         <img
@@ -416,7 +418,7 @@ const Index = () => {
                         />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary mb-0.5">
+                        <span className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: getCategoryColor(categorySlug) }}>
                           {article.categories?.name || "Uncategorized"}
                         </span>
                         <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
@@ -504,7 +506,7 @@ const Index = () => {
                     )}
                   </div>
                   <div className="p-4">
-                    <span className="text-[13px] font-bold uppercase tracking-wider text-primary mb-2 block">
+                    <span className="text-[13px] font-bold uppercase tracking-wider mb-2 block" style={{ color: getCategoryColor(article.categories?.slug) }}>
                       {article.categories?.name || "Uncategorized"}
                     </span>
                     <h3 className={`font-bold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${

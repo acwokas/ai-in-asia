@@ -4,6 +4,7 @@ import { User, TrendingUp, MessageCircle } from "lucide-react";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { ReadingTimeIndicator } from "@/components/ReadingTimeIndicator";
+import { getCategoryColor } from "@/lib/categoryColors";
 
 interface ArticleCardProps {
   title: string;
@@ -43,7 +44,8 @@ const ArticleCard = ({
 
   // Single label: Freshness > Trending > Category
   const label = isNew ? "NEW" : isTrending ? "TRENDING" : category.toUpperCase();
-  const labelColor = isNew ? "text-editorial" : isTrending ? "text-editorial" : "text-primary";
+  const catColor = getCategoryColor(categorySlug);
+  const labelColor = isNew ? "text-editorial" : isTrending ? "text-editorial" : undefined;
 
   return (
     <article className={`article-card group hover:-translate-y-px hover:border-b-primary/50 transition-all duration-300 ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
@@ -63,7 +65,7 @@ const ArticleCard = ({
         </div>
         
         <div className="p-5 flex flex-col flex-1">
-          <span className={`text-xs font-bold uppercase tracking-wider ${labelColor} mb-2 flex items-center gap-1.5`}>
+          <span className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 ${labelColor || ''}`} style={labelColor ? undefined : { color: catColor }}>
             {isTrending && !isNew && <TrendingUp className="h-3 w-3" />}
             {label}
             {seriesPart && seriesTotal && (

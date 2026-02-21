@@ -26,9 +26,9 @@ const TrendingStrip = memo(() => {
     s.length > max ? s.slice(0, max).trimEnd() + "…" : s;
 
   return (
-    <div className="bg-muted/40 border-y border-border/40 overflow-hidden">
-      <div className="container mx-auto px-4 py-1.5 flex items-center gap-2 text-[13px] min-w-0">
-        <span className="font-bold text-primary shrink-0">Trending:</span>
+    <div className="overflow-hidden border-b" style={{ background: 'linear-gradient(90deg, hsl(215 40% 9%) 0%, hsl(215 35% 12%) 100%)', borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="container mx-auto px-4 py-[8px] flex items-center gap-2 text-[14px] min-w-0">
+        <span className="font-bold shrink-0" style={{ color: '#E5A54B' }}>Trending:</span>
         <div className="flex items-center gap-0 overflow-x-auto no-scrollbar min-w-0">
           {trending.map((a: any, i: number) => (
             <span key={a.id} className="flex items-center shrink-0">

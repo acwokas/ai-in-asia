@@ -67,7 +67,7 @@ const ThreeBeforeNineLanding = memo(() => {
     <section className="container mx-auto px-4 py-3 md:py-4">
       <div
         className="rounded-xl overflow-hidden dark:bg-gradient-to-br dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] bg-[hsl(220,20%,97%)]"
-        style={{ border: `1px solid hsla(37, 78%, 60%, 0.2)` }}
+        style={{ border: `1px solid hsla(37, 78%, 60%, 0.2)`, borderLeft: `4px solid ${AMBER_ACCENT}` }}
       >
         <div className="px-5 py-5 sm:px-6 sm:py-5">
 
