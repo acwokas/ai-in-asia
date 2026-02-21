@@ -224,6 +224,7 @@ export type Database = {
           tldr_bullet_1: string | null
           tldr_bullet_2: string | null
           tldr_bullet_3: string | null
+          topic_category: string | null
           topic_tags: string[] | null
           troubleshooting_and_advanced_tips: string | null
           troubleshooting_and_common_mistakes: string | null
@@ -320,6 +321,7 @@ export type Database = {
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          topic_category?: string | null
           topic_tags?: string[] | null
           troubleshooting_and_advanced_tips?: string | null
           troubleshooting_and_common_mistakes?: string | null
@@ -416,6 +418,7 @@ export type Database = {
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          topic_category?: string | null
           topic_tags?: string[] | null
           troubleshooting_and_advanced_tips?: string | null
           troubleshooting_and_common_mistakes?: string | null

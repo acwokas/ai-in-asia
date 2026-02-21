@@ -22,16 +22,69 @@ const diffColors: Record<string, string> = {
   advanced: "bg-red-500",
 };
 
+const DIFFICULTY_OPTIONS = ["All", "Beginner", "Intermediate", "Advanced"] as const;
+const PLATFORM_OPTIONS = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"] as const;
+const TOPIC_OPTIONS = [
+  "All",
+  "Content & Writing",
+  "Research & Analysis",
+  "SEO & Marketing",
+  "Strategy & Planning",
+  "Productivity",
+] as const;
+
+type FilterPillProps = {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+};
+
+const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
+  <button
+    onClick={onClick}
+    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
+      active
+        ? "bg-primary text-primary-foreground border-primary"
+        : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+    }`}
+  >
+    {label}
+  </button>
+);
+
 const Guides = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 250);
+
+  // Filters
+  const [difficulty, setDifficulty] = useState("All");
+  const [platforms, setPlatforms] = useState<Set<string>>(new Set(["All"]));
+  const [topic, setTopic] = useState("All");
+
+  const togglePlatform = (p: string) => {
+    if (p === "All") {
+      setPlatforms(new Set(["All"]));
+      return;
+    }
+    setPlatforms((prev) => {
+      const next = new Set(prev);
+      next.delete("All");
+      if (next.has(p)) {
+        next.delete(p);
+        if (next.size === 0) next.add("All");
+      } else {
+        next.add(p);
+      }
+      return next;
+    });
+  };
 
   const { data: guides, isLoading } = useQuery({
     queryKey: ["guides-index"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at")
+        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category")
         .eq("status", "published")
         .order("published_at", { ascending: false });
       if (error) throw error;
@@ -41,19 +94,40 @@ const Guides = () => {
 
   const filteredGuides = useMemo(() => {
     if (!guides) return [];
-    if (!debouncedSearch.trim()) return guides;
-    const q = debouncedSearch.toLowerCase();
-    return guides.filter(
-      (g) =>
-        g.title?.toLowerCase().includes(q) ||
-        g.one_line_description?.toLowerCase().includes(q) ||
-        g.pillar?.toLowerCase().includes(q) ||
-        g.difficulty?.toLowerCase().includes(q) ||
-        g.platform_tags?.some((t: string) => t.toLowerCase().includes(q))
-    );
-  }, [guides, debouncedSearch]);
+    return guides.filter((g) => {
+      // Search
+      if (debouncedSearch.trim()) {
+        const q = debouncedSearch.toLowerCase();
+        const matches =
+          g.title?.toLowerCase().includes(q) ||
+          g.one_line_description?.toLowerCase().includes(q) ||
+          g.pillar?.toLowerCase().includes(q) ||
+          g.difficulty?.toLowerCase().includes(q) ||
+          g.platform_tags?.some((t: string) => t.toLowerCase().includes(q));
+        if (!matches) return false;
+      }
+
+      // Difficulty
+      if (difficulty !== "All" && g.difficulty?.toLowerCase() !== difficulty.toLowerCase()) return false;
+
+      // Platform
+      if (!platforms.has("All")) {
+        const guidePlatforms = (g.platform_tags || []).map((t: string) => t.toLowerCase());
+        const match = Array.from(platforms).some((p) => guidePlatforms.includes(p.toLowerCase()));
+        if (!match) return false;
+      }
+
+      // Topic
+      if (topic !== "All") {
+        if (!g.topic_category || g.topic_category !== topic) return false;
+      }
+
+      return true;
+    });
+  }, [guides, debouncedSearch, difficulty, platforms, topic]);
 
   const guideCount = guides?.length ?? 0;
+  const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
 
   return (
     <>
@@ -70,7 +144,6 @@ const Guides = () => {
       <main className="min-h-screen bg-background">
         {/* Hero */}
         <section className="relative overflow-hidden border-b border-border" style={{ background: "#040405" }}>
-          {/* Animated gradient orbs */}
           <div className="absolute inset-0 overflow-hidden">
             <div
               className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20"
@@ -86,7 +159,6 @@ const Guides = () => {
                 animation: "heroOrb2 10s ease-in-out infinite alternate",
               }}
             />
-            {/* Dot grid overlay */}
             <div
               className="absolute inset-0 opacity-[0.04]"
               style={{
@@ -98,12 +170,9 @@ const Guides = () => {
 
           <div className="container relative mx-auto px-4 py-16 md:py-24">
             <div className="max-w-3xl">
-              {/* Tagline */}
               <p className="text-sm font-semibold tracking-widest uppercase text-muted-foreground mb-4">
                 AI in Asia Guides
               </p>
-
-              {/* Heading */}
               <h1 className="mb-5 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl" style={{ color: "#FFFFFF" }}>
                 Stop reading theory.{" "}
                 <span
@@ -117,14 +186,11 @@ const Guides = () => {
                   Start building.
                 </span>
               </h1>
-
-              {/* Subheading */}
               <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>
                 Step-by-step workflows, tested prompts, and worked examples for people who actually use AI at work.
                 Every guide written by a practitioner, not a content farm.
               </p>
 
-              {/* Stats bar */}
               <div className="flex items-center gap-4 text-sm mb-8" style={{ color: "rgba(255,255,255,0.45)" }}>
                 <span className="font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
                   {isLoading ? "—" : guideCount} guides
@@ -135,7 +201,6 @@ const Guides = () => {
                 <span>Free, no signup required</span>
               </div>
 
-              {/* Search bar */}
               <div className="relative max-w-xl">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "rgba(255,255,255,0.35)" }} />
                 <input
@@ -149,14 +214,37 @@ const Guides = () => {
                     border: "1px solid rgba(255,255,255,0.12)",
                     color: "#FFFFFF",
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
-                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
                 />
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Filter Bar */}
+        <section className="border-b border-border bg-card/50 py-4">
+          <div className="container mx-auto px-4 space-y-3 md:space-y-2">
+            {/* Row 1: Difficulty */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
+              {DIFFICULTY_OPTIONS.map((d) => (
+                <FilterPill key={d} label={d} active={difficulty === d} onClick={() => setDifficulty(d)} />
+              ))}
+            </div>
+            {/* Row 2: Platform */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
+              {PLATFORM_OPTIONS.map((p) => (
+                <FilterPill key={p} label={p} active={platforms.has(p)} onClick={() => togglePlatform(p)} />
+              ))}
+            </div>
+            {/* Row 3: Topic */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Topic</span>
+              {TOPIC_OPTIONS.map((t) => (
+                <FilterPill key={t} label={t} active={topic === t} onClick={() => setTopic(t)} />
+              ))}
             </div>
           </div>
         </section>
@@ -179,9 +267,10 @@ const Guides = () => {
               </div>
             ) : filteredGuides.length > 0 ? (
               <>
-                {debouncedSearch.trim() && (
+                {hasActiveFilters && (
                   <p className="text-sm text-muted-foreground mb-6">
-                    {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} matching "{debouncedSearch}"
+                    {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} found
+                    {debouncedSearch.trim() ? ` matching "${debouncedSearch}"` : ""}
                   </p>
                 )}
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -235,8 +324,8 @@ const Guides = () => {
               </>
             ) : (
               <div className="text-center py-16 text-muted-foreground">
-                {debouncedSearch.trim() ? (
-                  <p>No guides matching "{debouncedSearch}". Try a different search.</p>
+                {hasActiveFilters ? (
+                  <p>No guides match these filters. Try broadening your selection.</p>
                 ) : (
                   <p>No guides published yet. Check back soon!</p>
                 )}
@@ -248,7 +337,6 @@ const Guides = () => {
 
       <Footer />
 
-      {/* Hero animations */}
       <style>{`
         @keyframes heroGradientShift {
           0% { background-position: 0% 50%; }
