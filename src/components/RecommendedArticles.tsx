@@ -6,6 +6,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
+import { BusinessInAByteAd } from "./BusinessInAByteAd";
 
 interface RecommendedArticlesProps {
   excludeIds?: string[];
@@ -131,6 +132,11 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
               publishedAt={article.published_at}
             />
           ))}
+          {/* Ad card styled to match grid */}
+          <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
+            <span className="text-[11px] text-[hsl(210,12%,50%)] uppercase tracking-wider mb-3">Advertisement</span>
+            <BusinessInAByteAd />
+          </div>
         </div>
       </div>
     </section>
