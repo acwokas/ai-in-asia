@@ -30,6 +30,11 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     if (!Array.isArray(snapshot) && snapshot?.whatChangesNext) return snapshot.whatChangesNext;
     return "";
   });
+  const [signalImages, setSignalImages] = useState<string[]>(() => {
+    const snapshot = initialData?.tldr_snapshot;
+    if (!Array.isArray(snapshot) && snapshot?.signalImages) return snapshot.signalImages;
+    return ["", "", ""];
+  });
   const [isGeneratingTldr, setIsGeneratingTldr] = useState(false);
 
   // Article settings
@@ -160,6 +165,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     tldrSnapshot, setTldrSnapshot,
     whoShouldPayAttention, setWhoShouldPayAttention,
     whatChangesNext, setWhatChangesNext,
+    signalImages, setSignalImages,
     isGeneratingTldr, setIsGeneratingTldr,
     
     // Settings

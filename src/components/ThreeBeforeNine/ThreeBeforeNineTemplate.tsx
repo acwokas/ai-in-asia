@@ -42,6 +42,7 @@ interface ThreeBeforeNineTemplateProps {
     tldr_snapshot?: {
       whoShouldPayAttention?: string;
       whatChangesNext?: string;
+      signalImages?: string[];
     } | null;
     author?: {
       name: string;
@@ -213,7 +214,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
   const publishDate = article.published_at ? new Date(article.published_at) : new Date();
   const formattedDate = format(publishDate, "EEEE, d MMMM yyyy");
   
-  const tldr = article.tldr_snapshot as { whoShouldPayAttention?: string; whatChangesNext?: string } | null;
+  const tldr = article.tldr_snapshot as { whoShouldPayAttention?: string; whatChangesNext?: string; signalImages?: string[] } | null;
+  const signalImages = tldr?.signalImages || [];
   const canonicalUrl = `https://aiinasia.com/news/${article.slug}`;
   
   const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
@@ -393,14 +395,17 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                       {signal.title}
                     </h2>
                   </div>
-                  {article.featured_image_url && (
-                    <img
-                      src={article.featured_image_url}
-                      alt=""
-                      className="hidden sm:block w-[200px] h-[120px] rounded-lg object-cover shrink-0"
-                      loading="lazy"
-                    />
-                  )}
+                  {(() => {
+                    const imgUrl = signalImages[signal.number - 1] || article.featured_image_url;
+                    return imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt=""
+                        className="hidden sm:block w-[200px] h-[120px] rounded-lg object-cover shrink-0"
+                        loading="lazy"
+                      />
+                    ) : null;
+                  })()}
                 </div>
 
                 <p className="text-foreground/90 text-base leading-[1.7] mb-6 max-w-[680px]">
