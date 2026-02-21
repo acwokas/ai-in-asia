@@ -299,12 +299,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* 1. 3 Before 9 Daily Briefing */}
-        <Suspense fallback={null}>
-          <ThreeBeforeNineLanding />
-        </Suspense>
-
-        <Separator className="my-0" />
 
         {/* 2. Hero: Primary Story + Secondary Stories (CNET-style asymmetric) */}
         <section className="container mx-auto px-4 py-14 md:py-20">
@@ -462,6 +456,11 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* 3 Before 9 Daily Briefing — between hero and More Stories */}
+        <Suspense fallback={null}>
+          <ThreeBeforeNineLanding />
+        </Suspense>
 
         {/* Section divider */}
         <div className="border-t border-border/30" />

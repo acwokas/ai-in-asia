@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { Check, ChevronRight, Clock } from "lucide-react";
+import { Check, ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format, isWeekend, previousFriday, isToday, isYesterday } from "date-fns";
+import { format, isWeekend, isToday, isYesterday } from "date-fns";
 
 const ThreeBeforeNineLanding = memo(() => {
   const { user } = useAuth();
@@ -49,7 +49,6 @@ const ThreeBeforeNineLanding = memo(() => {
   const pubDate = new Date(latest.published_at!);
   const now = new Date();
 
-  // Only show if latest edition is from today, yesterday, or it's a weekend showing Friday's
   const isRecent = isToday(pubDate) || isYesterday(pubDate);
   const isWeekendNow = isWeekend(now);
 
@@ -58,77 +57,93 @@ const ThreeBeforeNineLanding = memo(() => {
   const tldr = latest.tldr_snapshot as any;
   const bullets: string[] = tldr?.bullets || [];
   const categorySlug = (latest as any).categories?.slug || "news";
-
   const showWeekendNote = isWeekendNow && !isToday(pubDate);
 
   return (
-    <section className="container mx-auto px-4 pt-6 pb-2">
-      <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
-        <div className="p-5 sm:p-6">
+    <section className="container mx-auto px-4 py-8 md:py-12">
+      <div className="rounded-xl border border-primary/15 dark:bg-gradient-to-br dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] bg-[hsl(220,20%,97%)] overflow-hidden">
+        <div className="p-6 sm:p-8 md:p-10">
+
           {/* Header */}
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-editorial font-bold text-xl tracking-tight">3</span>
-                <span className="text-muted-foreground text-sm font-medium">Before</span>
-                <span className="text-editorial font-bold text-xl tracking-tight">9</span>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              {/* Typographic lockup */}
+              <div className="flex items-baseline gap-1">
+                <span className="text-primary font-bold text-[36px] leading-none tracking-tight">3</span>
+                <span className="text-muted-foreground text-[15px] font-normal mx-0.5">Before</span>
+                <span className="text-primary font-bold text-[36px] leading-none tracking-tight">9</span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <span className="text-muted-foreground text-sm">
+              <div className="h-6 w-px bg-border" />
+              <span className="text-muted-foreground text-[16px]">
                 {format(pubDate, "EEEE, d MMMM yyyy")}
               </span>
+              {user && hasRead && (
+                <span className="flex items-center gap-1.5 text-xs text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
+                  <Check className="h-3.5 w-3.5" />
+                  Read
+                </span>
+              )}
             </div>
-            {user && hasRead && (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                <Check className="h-3.5 w-3.5" />
-                Read
-              </span>
-            )}
+            <Link
+              to={`/${categorySlug}/${latest.slug}`}
+              className="text-primary text-[15px] font-medium flex items-center gap-1.5 hover:underline group"
+            >
+              Read full briefing
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
-          {/* Headlines */}
+          {/* Divider */}
+          <div className="h-px bg-border/50 my-5" />
+
+          {/* The three signals */}
           {bullets.length > 0 && (
-            <ol className="space-y-2.5 mb-5">
+            <div className="space-y-4">
               {bullets.slice(0, 3).map((bullet, i) => (
-                <li key={i} className="flex gap-3 items-start">
-                  <span className="text-editorial/80 font-bold text-sm mt-0.5 shrink-0">
-                    {i + 1}.
+                <Link
+                  key={i}
+                  to={`/${categorySlug}/${latest.slug}`}
+                  className="flex gap-4 items-start group hover:bg-primary/5 -mx-3 px-3 py-2 rounded-lg transition-colors"
+                >
+                  <span className="text-primary font-bold text-[28px] leading-none mt-0.5 shrink-0 w-8 text-center">
+                    {i + 1}
                   </span>
-                  <span className="text-foreground text-sm leading-relaxed line-clamp-2">
+                  <span className="text-foreground text-[17px] leading-[1.6] group-hover:text-primary transition-colors">
                     {bullet}
                   </span>
-                </li>
+                </Link>
               ))}
-            </ol>
+            </div>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center flex-wrap gap-3">
+          {/* Divider */}
+          <div className="h-px bg-border/50 my-5" />
+
+          {/* Footer */}
+          <div className="flex items-center flex-wrap gap-4">
             <Button
               asChild
-              size="sm"
-              className="bg-editorial hover:bg-editorial/90 text-editorial-foreground font-semibold gap-1.5"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
             >
               <Link to={`/${categorySlug}/${latest.slug}`}>
                 Read Today's Briefing
-                <ChevronRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
 
             {previous && (
               <Link
                 to={`/${(previous as any).categories?.slug || "news"}/${previous.slug}`}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Yesterday's briefing →
               </Link>
             )}
           </div>
 
-          {/* Weekend note */}
           {showWeekendNote && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
+            <p className="mt-4 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" />
               Next briefing: Monday morning
             </p>
           )}
