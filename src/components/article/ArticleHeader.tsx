@@ -175,9 +175,6 @@ const ArticleHeader = ({
             className="flex items-center gap-3 group"
             onClick={onSponsorClick}
           >
-            <span className="text-xs text-muted-foreground font-medium">
-              In partnership with
-            </span>
             <img
               src={sponsor.sponsor_logo_url}
               alt={sponsor.sponsor_name}

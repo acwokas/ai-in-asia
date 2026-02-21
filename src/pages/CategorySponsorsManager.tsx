@@ -388,9 +388,6 @@ export default function CategorySponsorsManager() {
               {/* Preview Card - Matches Hero Layout */}
               <div className="lg:col-span-4">
                 <div className="bg-white dark:bg-white border border-primary/20 rounded-lg shadow-md p-6">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-6 text-center">
-                    In partnership with
-                  </p>
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-full flex items-center justify-center py-2">
                       <img

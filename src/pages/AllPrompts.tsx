@@ -342,7 +342,6 @@ const AllPrompts = () => {
               rel="noopener noreferrer sponsored"
               className="inline-flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              <span>In partnership with</span>
               <img
                 src={promptAndGoLogo}
                 alt="Prompt and Go AI"
@@ -654,9 +653,6 @@ const AllPrompts = () => {
 
           {/* Prompt and Go Banner at Bottom */}
           <div className="mt-12">
-            <div className="text-sm text-muted-foreground mb-2 text-center">
-              In partnership with
-            </div>
             <PromptAndGoBanner />
           </div>
         </div>

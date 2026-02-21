@@ -31,9 +31,6 @@ export const ArticleSponsorBanner = ({ sponsor, categoryName }: ArticleSponsorBa
         className="flex items-center gap-3 group"
         onClick={handleClick}
       >
-        <span className="text-xs text-muted-foreground font-medium">
-          In partnership with
-        </span>
         <img
           src={sponsor.sponsor_logo_url}
           alt={sponsor.sponsor_name}
