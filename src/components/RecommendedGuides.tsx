@@ -86,7 +86,7 @@ const RecommendedGuides = () => {
   };
 
   return (
-    <section className="bg-[hsl(210,40%,8%)]">
+    <section className="bg-[hsl(210,40%,8%)] py-12 md:py-16">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-8">
@@ -95,7 +95,7 @@ const RecommendedGuides = () => {
               <BookOpen className="h-6 w-6 text-primary" />
               <h2 className="text-[22px] md:text-[28px] font-bold">Guides & Tutorials</h2>
             </div>
-            <p className="text-[15px] text-muted-foreground/60 leading-[1.6]">
+            <p className="text-[15px] text-muted-foreground leading-[1.6]">
               Master AI tools with step-by-step learning resources
             </p>
           </div>
@@ -130,20 +130,20 @@ const RecommendedGuides = () => {
                 </div>
                 
                 {/* Title */}
-                <h3 className="font-semibold text-lg md:text-xl leading-[1.3] line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+                <h3 className="font-semibold text-lg md:text-xl leading-[1.3] line-clamp-2 mb-3 text-foreground group-hover:text-primary transition-colors">
                   {guide.title}
                 </h3>
                 
                 {/* Excerpt */}
                 {guide.excerpt && (
-                  <p className="text-[15px] text-muted-foreground/60 leading-[1.6] line-clamp-2 mb-4 flex-grow">
+                  <p className="text-[15px] text-muted-foreground leading-[1.6] line-clamp-2 mb-4 flex-grow">
                     {guide.excerpt}
                   </p>
                 )}
                 
                 {/* Meta footer */}
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/30">
-                  <div className="flex items-center gap-3 text-[13px] text-muted-foreground/50">
+                  <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" />
                       {guide.primary_platform}
