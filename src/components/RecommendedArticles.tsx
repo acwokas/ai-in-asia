@@ -71,7 +71,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         <h2 className="text-[28px] md:text-[30px] font-bold">You May Like</h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Featured recommended pick — wider first card */}
         <div className="lg:col-span-5">
           <Link
