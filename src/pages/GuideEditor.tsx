@@ -351,14 +351,52 @@ const GuideEditor = () => {
 
     const newData = { ...formData };
 
-    // Parse metadata
+    // --- METADATA EXTRACTION ---
     const metaText = sections["meta"] || "";
-    const difficultyMatch = metaText.match(/difficulty:\s*(beginner|intermediate|advanced)/i);
+
+    // 1. Title: look for # heading or **Title:** in meta
+    const h1Match = importText.match(/^#\s+(.+)$/m);
+    const titleMetaMatch = metaText.match(/\*?\*?Title:\*?\*?\s*(.+)/i);
+    if (h1Match) {
+      newData.title = stripMd(h1Match[1]);
+    } else if (titleMetaMatch) {
+      newData.title = stripMd(titleMetaMatch[1]);
+    }
+    // Auto-generate slug from title if we extracted one
+    if (newData.title && !id) {
+      newData.slug = generateSlug(newData.title);
+    }
+
+    // 2. Difficulty
+    const difficultyMatch = metaText.match(/\*?\*?Difficulty:\*?\*?\s*(beginner|intermediate|advanced)/i);
     if (difficultyMatch) newData.difficulty = difficultyMatch[1].toLowerCase();
-    const platformsMatch = metaText.match(/platforms?:\s*(.+)/i);
-    if (platformsMatch) newData.platform_tags = platformsMatch[1].split(",").map(p => stripMd(p)).filter(Boolean);
-    const descMatch = metaText.match(/description:\s*(.+)/i);
+
+    // 3. Platforms
+    const platformsMatch = metaText.match(/\*?\*?Platforms?:\*?\*?\s*(.+)/i);
+    if (platformsMatch) {
+      newData.platform_tags = platformsMatch[1].split(",").map(p => stripMd(p)).filter(Boolean);
+    }
+
+    // 4. Topic Tags
+    const tagsMatch = metaText.match(/\*?\*?Tags?:\*?\*?\s*(.+)/i);
+    if (tagsMatch) {
+      newData.topic_tags = tagsMatch[1].split(",").map(t => stripMd(t)).filter(Boolean).slice(0, 5);
+    }
+
+    // 5. One-line description
+    const descMatch = metaText.match(/\*?\*?Description:\*?\*?\s*(.+)/i);
     if (descMatch) newData.one_line_description = stripMd(descMatch[1]);
+
+    // 6. Read time (explicit, or calculated later)
+    const readTimeMatch = metaText.match(/\*?\*?Read\s*time:\*?\*?\s*(\d+)/i);
+    let explicitReadTime = readTimeMatch ? parseInt(readTimeMatch[1], 10) : 0;
+
+    // 7. Pillar
+    const pillarMatch = metaText.match(/\*?\*?Pillar:\*?\*?\s*(learn|prompts|toolbox)/i);
+    if (pillarMatch) {
+      newData.pillar = pillarMatch[1].toLowerCase();
+    }
+    // (pillar inference happens after content parsing below)
 
     // AI Snapshot
     const snapshotSection = sections["ai snapshot"] || sections["snapshot"] || "";
@@ -467,14 +505,87 @@ const GuideEditor = () => {
     // Strip title if it has markdown
     if (newData.title) newData.title = stripMd(newData.title);
 
-    // Calculate read time
-    newData.read_time_minutes = calculateReadTime(newData);
+    // --- POST-PARSE INFERENCE ---
+
+    // 7b. Pillar inference if not explicitly set
+    if (!pillarMatch) {
+      const hasSteps = newData.steps.some(s => s.content?.trim());
+      const hasWorkedExample = !!(newData.worked_example.prompt || newData.worked_example.output);
+      const promptHeavy = newData.guide_prompts.filter(p => p.prompt_text?.trim()).length >= 3 && !hasSteps;
+      const toolHeavy = newData.recommended_tools.filter(t => t.name?.trim()).length >= 3 && !hasSteps && !hasWorkedExample;
+
+      if (toolHeavy) newData.pillar = "toolbox";
+      else if (promptHeavy) newData.pillar = "prompts";
+      else newData.pillar = "learn";
+    }
+
+    // 8. Content type
+    const allTexts = [newData.why_this_matters, newData.next_steps, ...newData.snapshot_bullets,
+      ...newData.steps.map(s => s.content + " " + s.title),
+      newData.worked_example.prompt, newData.worked_example.output, newData.worked_example.editing_notes,
+      ...newData.guide_prompts.map(p => p.prompt_text + " " + p.what_to_expect),
+      ...newData.common_mistakes.map(m => m.title + " " + m.description),
+      ...newData.faq_items.map(f => f.question + " " + f.answer),
+    ];
+    const totalWords = allTexts.filter(Boolean).join(" ").split(/\s+/).length;
+
+    const tagsLower = newData.topic_tags.map(t => t.toLowerCase()).join(" ");
+    const titleLower = (newData.title || "").toLowerCase();
+    if (tagsLower.includes("role") || titleLower.includes("role guide")) {
+      newData.content_type = "Role Guide";
+    } else if (newData.pillar === "prompts") {
+      newData.content_type = "Prompt Collection";
+    } else if (newData.pillar === "toolbox") {
+      newData.content_type = "Tool Pick";
+    } else if (totalWords > 1500) {
+      newData.content_type = "Deep Dive";
+    } else {
+      newData.content_type = "Quick Guide";
+    }
+
+    // 6b. Read time: use explicit or calculate
+    if (explicitReadTime > 0) {
+      newData.read_time_minutes = explicitReadTime;
+    } else {
+      newData.read_time_minutes = Math.max(1, Math.round(totalWords / 238));
+    }
+
+    // 9. SEO fields
+    if (newData.title) {
+      const seoTitle = `${newData.title} | AI in Asia`;
+      newData.meta_title = seoTitle.length > 60 ? seoTitle.substring(0, 57) + "..." : seoTitle;
+    }
+    if (newData.one_line_description) {
+      newData.meta_description = newData.one_line_description.length > 160
+        ? newData.one_line_description.substring(0, 157) + "..."
+        : newData.one_line_description;
+    }
+    if (newData.topic_tags.length > 0) {
+      newData.focus_keyphrase = newData.topic_tags.slice(0, 3).join(" ");
+    }
+
+    // Always set status to draft
+    newData.status = "draft";
+
+    // Build parse results summary for toast
+    const parsed: string[] = [];
+    if (newData.title) parsed.push(`Title: ${newData.title}`);
+    if (newData.difficulty) parsed.push(`Difficulty: ${newData.difficulty}`);
+    if (newData.platform_tags.length) parsed.push(`Platforms: ${newData.platform_tags.join(", ")}`);
+    if (newData.topic_tags.length) parsed.push(`Tags: ${newData.topic_tags.join(", ")}`);
+    if (newData.read_time_minutes) parsed.push(`Read time: ${newData.read_time_minutes} min`);
+    if (newData.pillar) parsed.push(`Pillar: ${newData.pillar}${!pillarMatch ? " (auto-detected)" : ""}`);
 
     setFormData(newData);
     setHasChanges(true);
     setShowImport(false);
     setImportText("");
-    toast({ title: "Content Parsed", description: "Fields have been populated from your import." });
+    toast({
+      title: "Content Parsed ✓",
+      description: parsed.length > 0
+        ? parsed.map(p => `${p} ✓`).join(" · ")
+        : "Fields have been populated from your import.",
+    });
   };
 
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
