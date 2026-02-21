@@ -324,16 +324,16 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
       {/* Hero Section */}
       <header className="relative bg-muted/50 border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-[60px] text-center">
-          <div className="flex items-center justify-center gap-2 text-primary text-base font-medium mb-6">
+          <div className="flex items-center justify-center gap-2 text-base font-medium mb-6" style={{ color: 'hsl(37, 78%, 60%)' }}>
             <Clock className="h-4 w-4" />
             <span>{formattedDate}</span>
           </div>
           
           {/* Typographic lockup */}
           <h1 className="mb-4">
-            <span className="text-primary font-bold text-[64px] leading-none">3</span>
+            <span className="font-bold text-[64px] leading-none" style={{ color: 'hsl(37, 78%, 60%)' }}>3</span>
             <span className="text-foreground font-normal text-[32px] mx-3">Before</span>
-            <span className="text-primary font-bold text-[64px] leading-none">9</span>
+            <span className="font-bold text-[64px] leading-none" style={{ color: 'hsl(37, 78%, 60%)' }}>9</span>
           </h1>
           
           <p className="text-muted-foreground text-[20px] mb-2">
@@ -347,16 +347,16 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         <div className="bg-muted/50 border-y border-border">
           <div className="max-w-3xl mx-auto px-6 py-6 grid md:grid-cols-2 gap-6">
             {tldr.whoShouldPayAttention && (
-              <div className="bg-card rounded-lg p-5 border-l-4 border-primary">
-                <h3 className="text-primary text-xs font-semibold uppercase tracking-wide mb-2">
+              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: 'hsl(37, 78%, 60%)' }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'hsl(37, 78%, 60%)' }}>
                   Who should pay attention
                 </h3>
                 <p className="text-foreground text-sm leading-relaxed">{tldr.whoShouldPayAttention}</p>
               </div>
             )}
             {tldr.whatChangesNext && (
-              <div className="bg-card rounded-lg p-5 border-l-4 border-primary">
-                <h3 className="text-primary text-xs font-semibold uppercase tracking-wide mb-2">
+              <div className="bg-card rounded-lg p-5 border-l-4" style={{ borderColor: 'hsl(37, 78%, 60%)' }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'hsl(37, 78%, 60%)' }}>
                   What changes next
                 </h3>
                 <p className="text-foreground text-sm leading-relaxed">{tldr.whatChangesNext}</p>
@@ -373,7 +373,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
             <article key={signal.number} className="relative bg-card rounded-xl p-8 border border-border shadow-sm">
               {/* Signal Number Badge */}
               <div className="absolute -top-5 left-8">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-[48px] leading-none w-[48px] h-[48px]">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-[48px] leading-none w-[48px] h-[48px]" style={{ backgroundColor: 'hsl(37, 78%, 60%)' }}>
                   {signal.number}
                 </div>
               </div>
@@ -386,8 +386,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                   {signal.explainer}
                 </p>
                 {signal.whyItMatters && (
-                  <div className="bg-primary/10 border-l-4 border-primary pl-5 pr-5 py-4 rounded-r-lg mb-5">
-                    <p className="text-sm font-bold text-primary mb-1">
+                  <div className="border-l-4 pl-5 pr-5 py-4 rounded-r-lg mb-5" style={{ borderColor: 'hsl(37, 78%, 60%)', backgroundColor: 'hsla(37, 78%, 60%, 0.1)' }}>
+                    <p className="text-sm font-bold mb-1" style={{ color: 'hsl(37, 78%, 60%)' }}>
                       Why it matters for Asia
                     </p>
                     <p className="text-foreground/80 text-[15px] leading-[1.7]">
@@ -400,7 +400,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                     href={signal.readMoreUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors group"
+                    className="inline-flex items-center gap-2 text-sm font-medium transition-colors group hover:opacity-80"
+                    style={{ color: 'hsl(37, 78%, 60%)' }}
                   >
                     <span>Read more</span>
                     <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -412,9 +413,9 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
           {/* Bonus Signal */}
           {signals.find(s => s.isBonus) && (
-            <div className="relative mt-10 bg-primary/10 rounded-xl p-8 border border-primary/30">
+            <div className="relative mt-10 rounded-xl p-8 border" style={{ backgroundColor: 'hsla(37, 78%, 60%, 0.1)', borderColor: 'hsla(37, 78%, 60%, 0.3)' }}>
               <div className="absolute -top-3 left-6">
-                <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wide shadow-lg">
+                <span className="px-3 py-1 rounded-full text-white text-xs font-bold uppercase tracking-wide shadow-lg" style={{ backgroundColor: 'hsl(37, 78%, 60%)' }}>
                   Bonus Signal
                 </span>
               </div>
@@ -430,15 +431,15 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         {/* Outro */}
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-muted-foreground text-center mb-2">
-            That's today's <span className="text-primary font-medium">3-Before-9</span>.
+            That's today's <span className="font-medium" style={{ color: 'hsl(37, 78%, 60%)' }}>3-Before-9</span>.
           </p>
           <p className="text-muted-foreground/70 text-sm text-center mb-8">
             Explore more at{' '}
-            <Link to="/" className="text-primary hover:text-primary/80 transition-colors">
+            <Link to="/" className="hover:opacity-80 transition-colors" style={{ color: 'hsl(37, 78%, 60%)' }}>
               AIinASIA.com
             </Link>
             {' '}or{' '}
-            <Link to="/contact" className="text-primary hover:text-primary/80 transition-colors">
+            <Link to="/contact" className="hover:opacity-80 transition-colors" style={{ color: 'hsl(37, 78%, 60%)' }}>
               share signals with us
             </Link>.
           </p>
