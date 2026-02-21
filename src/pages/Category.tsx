@@ -809,7 +809,7 @@ const Category = () => {
       <Header />
       
       {/* Stock Ticker — Business category only */}
-      {slug === "business" && (
+      {(slug === "business" || slug === "news") && (
         <Suspense fallback={null}>
           <StockTicker />
         </Suspense>
