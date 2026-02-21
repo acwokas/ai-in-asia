@@ -126,6 +126,9 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
   const [localResources, setLocalResources] = useState(
     Array.isArray(initialData?.local_resources) ? initialData.local_resources : []
   );
+  const [sources, setSources] = useState(
+    Array.isArray(initialData?.sources) ? initialData.sources : []
+  );
   const [topicTags, setTopicTags] = useState<string[]>(
     Array.isArray(initialData?.topic_tags) ? initialData.topic_tags : []
   );
@@ -228,6 +231,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     policySections, setPolicySections,
     comparisonTables, setComparisonTables,
     localResources, setLocalResources,
+    sources, setSources,
     topicTags, setTopicTags,
     policyStatus, setPolicyStatus,
     policyEffectiveDate, setPolicyEffectiveDate,

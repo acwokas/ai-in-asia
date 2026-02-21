@@ -26,6 +26,12 @@ interface LocalResource {
   url: string;
 }
 
+interface Source {
+  title: string;
+  url: string;
+  description?: string;
+}
+
 interface PolicyArticleEditorProps {
   region: string;
   country: string;
@@ -33,6 +39,7 @@ interface PolicyArticleEditorProps {
   policySections: PolicySection[];
   comparisonTables: ComparisonTable[];
   localResources: LocalResource[];
+  sources: Source[];
   topicTags: string[];
   policyStatus: string;
   policyEffectiveDate: string;
@@ -45,6 +52,7 @@ interface PolicyArticleEditorProps {
   onPolicySectionsChange: (value: PolicySection[]) => void;
   onComparisonTablesChange: (value: ComparisonTable[]) => void;
   onLocalResourcesChange: (value: LocalResource[]) => void;
+  onSourcesChange: (value: Source[]) => void;
   onTopicTagsChange: (value: string[]) => void;
   onPolicyStatusChange: (value: string) => void;
   onPolicyEffectiveDateChange: (value: string) => void;
@@ -72,6 +80,7 @@ export const PolicyArticleEditor = ({
   policySections,
   comparisonTables,
   localResources,
+  sources,
   topicTags,
   policyStatus,
   policyEffectiveDate,
@@ -84,6 +93,7 @@ export const PolicyArticleEditor = ({
   onPolicySectionsChange,
   onComparisonTablesChange,
   onLocalResourcesChange,
+  onSourcesChange,
   onTopicTagsChange,
   onPolicyStatusChange,
   onPolicyEffectiveDateChange,
@@ -592,6 +602,62 @@ export const PolicyArticleEditor = ({
           <Button type="button" variant="outline" onClick={handleAddResource} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
             Add Resource
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Sources & References */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sources & References</CardTitle>
+          <CardDescription>Citations and source URLs for credibility</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {sources.map((source, index) => (
+            <div key={index} className="flex items-start gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-1">
+                <Input
+                  value={source.title}
+                  onChange={(e) => {
+                    const newSources = [...sources];
+                    newSources[index] = { ...newSources[index], title: e.target.value };
+                    onSourcesChange(newSources);
+                  }}
+                  placeholder="Source title..."
+                />
+                <Input
+                  value={source.url}
+                  onChange={(e) => {
+                    const newSources = [...sources];
+                    newSources[index] = { ...newSources[index], url: e.target.value };
+                    onSourcesChange(newSources);
+                  }}
+                  placeholder="https://..."
+                />
+                <Input
+                  value={source.description || ""}
+                  onChange={(e) => {
+                    const newSources = [...sources];
+                    newSources[index] = { ...newSources[index], description: e.target.value };
+                    onSourcesChange(newSources);
+                  }}
+                  placeholder="Description (optional)..."
+                />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onSourcesChange(sources.filter((_, i) => i !== index))}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+
+          <Button type="button" variant="outline" onClick={() => onSourcesChange([...sources, { title: "", url: "" }])} className="w-full">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Source
           </Button>
         </CardContent>
       </Card>

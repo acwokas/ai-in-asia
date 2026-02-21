@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, Shield, Globe, TrendingUp, BookOpen } from "lucide-react";
+import { ExternalLink, Shield, Globe, TrendingUp, BookOpen, FileText } from "lucide-react";
 import PolicyStatusPanel from "@/components/PolicyStatusPanel";
 import PolicyDisclaimer from "@/components/PolicyDisclaimer";
 
@@ -12,6 +12,7 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
   const policySections = Array.isArray(article.policy_sections) ? article.policy_sections : [];
   const comparisonTables = Array.isArray(article.comparison_tables) ? article.comparison_tables : [];
   const localResources = Array.isArray(article.local_resources) ? article.local_resources : [];
+  const sources = Array.isArray(article.sources) ? article.sources : [];
 
   return (
     <div className="space-y-12">
@@ -206,6 +207,42 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
                 </a>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sources & References */}
+      {sources.length > 0 && (
+        <Card className="overflow-hidden border border-border/50">
+          <CardHeader className="bg-muted/30 border-b border-border/50">
+            <CardTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
+              <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              Sources & References
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 md:p-6">
+            <ol className="space-y-3 list-decimal list-inside">
+              {sources.map((source: any, index: number) => (
+                <li key={index} className="text-sm text-muted-foreground leading-relaxed">
+                  {source.url ? (
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      {source.title}
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <span className="text-foreground">{source.title}</span>
+                  )}
+                  {source.description && (
+                    <span className="block mt-0.5 text-xs text-muted-foreground/80">{source.description}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       )}

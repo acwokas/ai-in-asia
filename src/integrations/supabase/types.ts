@@ -934,6 +934,7 @@ export type Database = {
           series_part: number | null
           series_total: number | null
           slug: string
+          sources: Json | null
           status: Database["public"]["Enums"]["article_status"]
           sticky: boolean | null
           title: string
@@ -1012,6 +1013,7 @@ export type Database = {
           series_part?: number | null
           series_total?: number | null
           slug: string
+          sources?: Json | null
           status?: Database["public"]["Enums"]["article_status"]
           sticky?: boolean | null
           title: string
@@ -1090,6 +1092,7 @@ export type Database = {
           series_part?: number | null
           series_total?: number | null
           slug?: string
+          sources?: Json | null
           status?: Database["public"]["Enums"]["article_status"]
           sticky?: boolean | null
           title?: string
