@@ -69,9 +69,9 @@ const ThreeBeforeNineLanding = memo(() => {
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-amber-400 font-bold text-xl tracking-tight">3</span>
+                <span className="text-editorial font-bold text-xl tracking-tight">3</span>
                 <span className="text-slate-400 text-sm font-medium">Before</span>
-                <span className="text-amber-400 font-bold text-xl tracking-tight">9</span>
+                <span className="text-editorial font-bold text-xl tracking-tight">9</span>
               </div>
               <div className="h-4 w-px bg-slate-700" />
               <span className="text-slate-400 text-sm">
@@ -91,7 +91,7 @@ const ThreeBeforeNineLanding = memo(() => {
             <ol className="space-y-2.5 mb-5">
               {bullets.slice(0, 3).map((bullet, i) => (
                 <li key={i} className="flex gap-3 items-start">
-                  <span className="text-amber-400/80 font-bold text-sm mt-0.5 shrink-0">
+                  <span className="text-editorial/80 font-bold text-sm mt-0.5 shrink-0">
                     {i + 1}.
                   </span>
                   <span className="text-slate-200 text-sm leading-relaxed line-clamp-2">
@@ -107,7 +107,7 @@ const ThreeBeforeNineLanding = memo(() => {
             <Button
               asChild
               size="sm"
-              className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold gap-1.5"
+              className="bg-editorial hover:bg-editorial/90 text-editorial-foreground font-semibold gap-1.5"
             >
               <Link to={`/${categorySlug}/${latest.slug}`}>
                 Read Today's Briefing

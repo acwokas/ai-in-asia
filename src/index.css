@@ -48,6 +48,9 @@ All colors MUST be HSL.
     --turquoise-accent: 188 60% 30%;
     --turquoise-bright: 188 70% 60%;
     
+    --editorial: 24 90% 50%;
+    --editorial-foreground: 0 0% 100%;
+    
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -89,6 +92,9 @@ All colors MUST be HSL.
     --turquoise-light: 188 70% 60%;
     --turquoise-accent: 188 60% 35%;
     --turquoise-bright: 188 70% 65%;
+    
+    --editorial: 30 85% 55%;
+    --editorial-foreground: 0 0% 100%;
     
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);

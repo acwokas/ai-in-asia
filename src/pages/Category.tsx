@@ -1048,7 +1048,7 @@ const Category = () => {
                     />
                   </div>
                   <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-center">
-                    <Badge className="w-fit mb-3 bg-green-800 text-white hover:bg-green-900">
+                    <Badge className="w-fit mb-3 bg-editorial text-editorial-foreground hover:bg-editorial/90">
                       Editor's Pick
                     </Badge>
                     <h2 className="headline text-2xl md:text-3xl mb-4 group-hover:text-primary transition-colors">
