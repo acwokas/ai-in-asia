@@ -1,11 +1,28 @@
-import { Bookmark, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import FollowButton from "@/components/FollowButton";
 
-const ReturnTriggerBlock = () => {
-  return null; // Hidden per user request
-  
+const ALLOWED_CATEGORIES = ["news", "business", "life"];
+
+interface ReturnTriggerBlockProps {
+  categorySlug?: string;
+  categoryId?: string;
+  categoryName?: string;
+  isBookmarked?: boolean;
+  onBookmark?: () => void;
+}
+
+const ReturnTriggerBlock = ({
+  categorySlug,
+  categoryId,
+  categoryName,
+  isBookmarked = false,
+  onBookmark,
+}: ReturnTriggerBlockProps) => {
   const { toast } = useToast();
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>('default');
 
@@ -17,33 +34,13 @@ const ReturnTriggerBlock = () => {
     }
   }, []);
 
-  const handleBookmarkPrompt = () => {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const shortcut = isMac ? '⌘+D' : 'Ctrl+D';
-    
-    toast({
-      title: "Add to bookmarks",
-      description: `Press ${shortcut} to bookmark this page in your browser`,
-    });
-  };
+  // Only show for allowed categories
+  if (!categorySlug || !ALLOWED_CATEGORIES.includes(categorySlug.toLowerCase())) {
+    return null;
+  }
 
   const handleNotificationRequest = async () => {
-    if (!('Notification' in window)) {
-      toast({
-        title: "Not supported",
-        description: "Your browser doesn't support notifications",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (Notification.permission === 'granted') {
-      toast({
-        title: "Already enabled",
-        description: "You'll be notified when this article is updated",
-      });
-      return;
-    }
+    if (!('Notification' in window)) return;
 
     if (Notification.permission === 'denied') {
       toast({
@@ -59,23 +56,16 @@ const ReturnTriggerBlock = () => {
       setNotificationPermission(permission);
       
       if (permission === 'granted') {
-        // Show a test notification
         new Notification('AIinASIA Updates', {
           body: "You'll now receive updates when articles change",
           icon: '/favicon.png',
         });
-        
         toast({
           title: "Notifications enabled",
           description: "You'll be notified when articles are updated",
         });
-      } else {
-        toast({
-          title: "Notifications not enabled",
-          description: "You can enable them later in browser settings",
-        });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Could not request notification permission",
@@ -84,35 +74,49 @@ const ReturnTriggerBlock = () => {
     }
   };
 
+  const showNotificationButton = notificationPermission !== 'unsupported' && notificationPermission !== 'granted';
+
   return (
-    <div className="my-8 p-6 bg-muted/50 border border-border rounded-lg">
-      <h3 className="text-lg font-semibold text-foreground mb-3">
-        This story isn't finished
+    <div className="my-8 p-5 bg-muted/40 border border-border/60 rounded-lg">
+      <h3 className="text-base font-semibold text-foreground mb-2">
+        This is a developing story
       </h3>
-      <p className="text-muted-foreground leading-relaxed mb-4">
-        We track how AI, platforms, policy, and adoption evolve across Asia.
-        This article may be updated as things change, with follow-ups and regional context.
+      <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+        We're tracking this across Asia-Pacific and may update with new developments, follow-ups and regional context.
       </p>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleBookmarkPrompt}
-          className="gap-2"
-        >
-          <Bookmark className="h-4 w-4" />
-          Bookmark this page
-        </Button>
-        {notificationPermission !== 'unsupported' && (
+      <div className="flex flex-wrap gap-2 items-center">
+        {onBookmark && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBookmark}
+            className="gap-2"
+          >
+            {isBookmarked ? (
+              <BookmarkCheck className="h-4 w-4 text-primary" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+            {isBookmarked ? "Bookmarked" : "Bookmark"}
+          </Button>
+        )}
+        {showNotificationButton && (
           <Button
             variant="outline"
             size="sm"
             onClick={handleNotificationRequest}
             className="gap-2"
           >
-            <Bell className={`h-4 w-4 ${notificationPermission === 'granted' ? 'fill-current' : ''}`} />
-            {notificationPermission === 'granted' ? 'Notifications on' : 'Alert me on updates'}
+            <Bell className="h-4 w-4" />
+            Alert me on updates
           </Button>
+        )}
+        {categoryId && categoryName && (
+          <FollowButton
+            followType="category"
+            followId={categoryId}
+            followName={categoryName}
+          />
         )}
       </div>
     </div>

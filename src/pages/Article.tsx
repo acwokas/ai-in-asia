@@ -681,7 +681,15 @@ const Article = () => {
             <ShareThoughtsCTA commentCount={commentCount} />
             <DeepDiveSection currentArticleId={article.id} tags={article.ai_tags} />
             <ContinueReading currentArticleId={article.id} categoryId={article.primary_category_id || undefined} categorySlug={article.categories?.slug} />
-            <ReturnTriggerBlock />
+            {!isPreview && (
+              <ReturnTriggerBlock
+                categorySlug={article.categories?.slug}
+                categoryId={article.categories?.id}
+                categoryName={article.categories?.name}
+                isBookmarked={isBookmarked}
+                onBookmark={handleBookmark}
+              />
+            )}
           </article>
 
           {/* Comments */}
