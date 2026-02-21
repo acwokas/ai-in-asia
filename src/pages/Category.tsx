@@ -120,8 +120,9 @@ const Category = () => {
     },
   });
 
-  const { data: articles, isLoading: articlesLoading } = useQuery({
-    queryKey: ["category-articles", slug],
+  // Fetch ALL articles for the category - same approach as CategoryAll page
+  const { data: allCategoryArticles, isLoading: articlesLoading } = useQuery({
+    queryKey: ["category-all-articles", slug],
     enabled: !!category?.id,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
@@ -131,22 +132,26 @@ const Category = () => {
           .from("article_categories")
           .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id!inner (name, slug))`)
           .eq("category_id", category.id)
-          .eq("articles.status", "published")
-          .limit(20);
+          .eq("articles.status", "published");
         if (error) throw error;
-        return data?.map(item => item.articles).filter(Boolean).sort((a: any, b: any) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()) || [];
+        return data
+          ?.map(item => item.articles)
+          .filter((a) => a && (slug !== 'voices' || a.authors?.name !== 'Intelligence Desk'))
+          .sort((a: any, b: any) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()) || [];
       }
       const { data, error } = await supabase
         .from("articles")
         .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
-        .order("published_at", { ascending: false })
-        .limit(20);
+        .order("published_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
+
+  // Default view uses first 20 for performance; allCategoryArticles is the full set
+  const articles = allCategoryArticles?.slice(0, 20) || null;
 
   const { data: mostReadArticles } = useQuery({
     queryKey: ["category-most-read", slug, articles?.[0]?.id],
@@ -229,85 +234,12 @@ const Category = () => {
     ];
   };
 
-  // Client-side filter helper - same logic as CategoryAll page
-  const matchesFilter = useMemo(() => {
-    return (article: any) => {
-      if (selectedFilter === "All") return true;
-      const filterLower = selectedFilter.toLowerCase();
-      const allTags = getArticleTagNames(article).map((t: string) => t.toLowerCase());
-      const title = (article.title || '').toLowerCase();
-      return allTags.some((t: string) => t.includes(filterLower)) ||
-             title.includes(filterLower);
-    };
-  }, [selectedFilter]);
-
-  // Combine ALL loaded articles for filtering (deduped) - matches CategoryAll approach
-  const allLoadedArticles = useMemo(() => {
-    const combined = [
-      ...(articles || []),
-      ...(mostReadArticles || []),
-      ...(deepCutsArticles || []),
-    ];
-    const seen = new Set<string>();
-    return combined.filter((a: any) => {
-      if (!a?.id || seen.has(a.id)) return false;
-      seen.add(a.id);
-      return true;
-    });
-  }, [articles, mostReadArticles, deepCutsArticles]);
-
-  // When filter is active, get ALL matching articles from combined set
-  const filteredAllArticles = useMemo(() => {
-    if (selectedFilter === "All") return [];
-    return allLoadedArticles.filter(matchesFilter);
-  }, [allLoadedArticles, selectedFilter, matchesFilter]);
-
-  const isFilterActive = selectedFilter !== "All";
-
-  const featuredArticle = useMemo(() => {
-    if (!articles) return undefined;
-    if (isFilterActive) return filteredAllArticles[0];
-    return articles[0];
-  }, [articles, isFilterActive, filteredAllArticles]);
-
-  // Latest sidebar - always unfiltered (4 most recent)
-  const latestArticles = articles?.slice(1, 5) || [];
-
-  // Featured grid - when filter active, show remaining filtered articles
-  const featuredGridArticles = useMemo(() => {
-    if (isFilterActive) {
-      return filteredAllArticles.slice(1, 5);
-    }
-    return mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
-  }, [mostReadArticles, articles, isFilterActive, filteredAllArticles]);
-
-  // Filtered deep cuts - when filter active, show more filtered articles
-  const filteredDeepCuts = useMemo(() => {
-    if (isFilterActive) {
-      return filteredAllArticles.slice(5, 8);
-    }
-    if (!deepCutsArticles) return [];
-    return deepCutsArticles;
-  }, [deepCutsArticles, isFilterActive, filteredAllArticles]);
-
-  // Scroll to top on filter change
-  useEffect(() => {
-    if (selectedFilter !== "All") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [selectedFilter]);
-
-  // Dynamic filter pills derived from fetched articles' tags
+  // Dynamic filter pills from ALL articles - same logic as CategoryAll page
   const dynamicFilters = useMemo(() => {
-    const allArticles = [
-      ...(articles || []),
-      ...(mostReadArticles || []),
-      ...(deepCutsArticles || []),
-    ];
-    if (allArticles.length === 0) return ["All"];
+    if (!allCategoryArticles || allCategoryArticles.length === 0) return ["All"];
     const tagCounts: Record<string, number> = {};
     const seenIds = new Set<string>();
-    for (const article of allArticles) {
+    for (const article of allCategoryArticles) {
       if (!article?.id || seenIds.has(article.id)) continue;
       seenIds.add(article.id);
       const combined = getArticleTagNames(article);
@@ -325,7 +257,56 @@ const Category = () => {
       .slice(0, 6)
       .map(([tag]) => tag.charAt(0).toUpperCase() + tag.slice(1));
     return ["All", ...qualifying];
-  }, [articles, mostReadArticles, deepCutsArticles]);
+  }, [allCategoryArticles]);
+
+  // Client-side filter helper - same logic as CategoryAll page
+  const matchesFilter = useMemo(() => {
+    return (article: any) => {
+      if (selectedFilter === "All") return true;
+      const filterLower = selectedFilter.toLowerCase();
+      const allTags = getArticleTagNames(article).map((t: string) => t.toLowerCase());
+      const title = (article.title || '').toLowerCase();
+      return allTags.some((t: string) => t.includes(filterLower)) ||
+             title.includes(filterLower);
+    };
+  }, [selectedFilter]);
+
+  const isFilterActive = selectedFilter !== "All";
+
+  // When filter is active, filter from the FULL article set
+  const filteredAllArticles = useMemo(() => {
+    if (!isFilterActive || !allCategoryArticles) return [];
+    return allCategoryArticles.filter(matchesFilter);
+  }, [allCategoryArticles, isFilterActive, matchesFilter]);
+
+  const featuredArticle = useMemo(() => {
+    if (isFilterActive) return filteredAllArticles[0];
+    return articles?.[0];
+  }, [articles, isFilterActive, filteredAllArticles]);
+
+  // Latest sidebar - always unfiltered (4 most recent)
+  const latestArticles = articles?.slice(1, 5) || [];
+
+  // Featured grid - when filter active, show next 4 from filtered set
+  const featuredGridArticles = useMemo(() => {
+    if (isFilterActive) {
+      return filteredAllArticles.slice(1, 5);
+    }
+    return mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
+  }, [mostReadArticles, articles, isFilterActive, filteredAllArticles]);
+
+  // Deep cuts - when filter active, show 3 oldest matching not in hero/featured
+  const filteredDeepCuts = useMemo(() => {
+    if (isFilterActive) {
+      const heroAndFeaturedIds = new Set(filteredAllArticles.slice(0, 5).map((a: any) => a.id));
+      return filteredAllArticles
+        .filter((a: any) => !heroAndFeaturedIds.has(a.id))
+        .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
+        .slice(0, 3);
+    }
+    if (!deepCutsArticles) return [];
+    return deepCutsArticles;
+  }, [deepCutsArticles, isFilterActive, filteredAllArticles]);
 
   // Other categories for cross-nav
   const otherCategories = Object.entries(CATEGORY_CONFIG).filter(([k]) => k !== slug).map(([k, v]) => ({ slug: k, ...v }));
@@ -630,7 +611,7 @@ const Category = () => {
                         flexShrink: 0,
                       }}
                     >
-                      View all {allLoadedArticles?.length || ""} articles &rarr;
+                      View all {allCategoryArticles?.length || ""} articles &rarr;
                     </Link>
                   }
                 />
