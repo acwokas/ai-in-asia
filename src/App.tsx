@@ -211,6 +211,31 @@ const App = () => (
               <Route path="/editor" element={<Editor />} />
               <Route path="/editor/:id" element={<Editor />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/ask-scout" element={<AskScout />} />
+              <Route path="/newsletter" element={<Newsletter />} />
+              <Route path="/newsletter/archive" element={<NewsletterArchive />} />
+              <Route path="/newsletter/weekly/latest" element={<NewsletterWeeklyLatest />} />
+              <Route path="/newsletter/forward/:id" element={<NewsletterForward />} />
+              <Route path="/newsletter/:id/email-preview" element={<NewsletterEmailPreview />} />
+              <Route path="/newsletter/:id" element={<NewsletterView />} />
+              <Route path="/saved" element={<SavedArticles />} />
+              <Route path="/editorial-standards" element={<EditorialStandards />} />
+              <Route path="/contribute" element={<Contribute />} />
+              <Route path="/media-and-partners" element={<MediaAndPartners />} />
+              <Route path="/prompts" element={<MyPrompts />} />
+              <Route path="/my-prompts" element={<MyPrompts />} />
+              <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
+              <Route path="/ai-policy-atlas/:region" element={<PolicyRegion />} />
+              <Route path="/policy-comparison" element={<PolicyComparison />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/redirects" element={<Redirects />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Admin />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
