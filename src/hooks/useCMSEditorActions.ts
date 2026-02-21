@@ -319,6 +319,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setTldrSnapshot(snapshot.bullets);
           state.setWhoShouldPayAttention(snapshot.whoShouldPayAttention || "");
           state.setWhatChangesNext(snapshot.whatChangesNext || "");
+          if (snapshot.signalImages) state.setSignalImages(snapshot.signalImages);
         } else if (Array.isArray(snapshot)) {
           state.setTldrSnapshot(snapshot);
         }
@@ -671,7 +672,8 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       tldr_snapshot: {
         bullets: state.tldrSnapshot,
         whoShouldPayAttention: state.whoShouldPayAttention,
-        whatChangesNext: state.whatChangesNext
+        whatChangesNext: state.whatChangesNext,
+        signalImages: state.signalImages
       },
       article_type: state.articleType,
       status: finalStatus,

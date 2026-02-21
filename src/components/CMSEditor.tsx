@@ -546,6 +546,9 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         onWhoChange={state.setWhoShouldPayAttention}
         onWhatChange={state.setWhatChangesNext}
         onGenerate={actions.handleGenerateTldr}
+        articleType={state.articleType}
+        signalImages={state.signalImages}
+        onSignalImagesChange={state.setSignalImages}
       />
 
       {/* Link Validator */}
