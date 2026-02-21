@@ -328,8 +328,8 @@ const Guides = () => {
         </section>
 
         {/* Filter Bar */}
-        <section className="border-b border-border bg-card/50 py-4">
-          <div className="container mx-auto px-4 space-y-3 md:space-y-2">
+        <section className="border-b border-border bg-card/50 py-4 overflow-visible">
+          <div className="container mx-auto px-4 space-y-3 md:space-y-2 overflow-visible">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
               {DIFFICULTY_OPTIONS.map((d) => (
