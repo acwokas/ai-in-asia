@@ -127,7 +127,7 @@ const Category = () => {
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id!inner (name, slug))`)
+          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id!inner (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published")
           .limit(20);
@@ -136,7 +136,7 @@ const Category = () => {
       }
       const { data, error } = await supabase
         .from("articles")
-        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug)`)
+        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
@@ -154,11 +154,11 @@ const Category = () => {
       if (!category?.id || !articles) return [];
       const excludeIds = [articles[0]?.id, ...(articles.slice(1, 5).map(a => a.id))].filter(Boolean);
       if (slug === 'voices') {
-        const { data, error } = await supabase.from("article_categories").select(`articles (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug))`).eq("category_id", category.id).eq("articles.status", "published");
+        const { data, error } = await supabase.from("article_categories").select(`articles (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug))`).eq("category_id", category.id).eq("articles.status", "published");
         if (error) throw error;
         return data?.map(item => item.articles).filter(article => article && article.authors?.name !== 'Intelligence Desk' && !excludeIds.includes(article.id)).sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4) || [];
       }
-      const { data, error } = await supabase.from("articles").select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug)`).eq("primary_category_id", category.id).eq("status", "published").not("id", "in", `(${excludeIds.join(",")})`).order("view_count", { ascending: false }).limit(4);
+      const { data, error } = await supabase.from("articles").select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`).eq("primary_category_id", category.id).eq("status", "published").not("id", "in", `(${excludeIds.join(",")})`).order("view_count", { ascending: false }).limit(4);
       if (error) throw error;
       return data;
     },
@@ -184,7 +184,7 @@ const Category = () => {
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, topic_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
+          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, topic_tags, article_tags(tags(name)), article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published");
         if (error) throw error;
@@ -196,7 +196,7 @@ const Category = () => {
 
       const { data, error } = await supabase
         .from("articles")
-        .select("id, slug, title, published_at, view_count, ai_tags, topic_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
+        .select("id, slug, title, published_at, view_count, ai_tags, topic_tags, article_tags(tags(name)), article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .not("id", "in", `(${displayedArticleIds.join(",")})`)
@@ -219,11 +219,9 @@ const Category = () => {
   const matchesFilter = (article: any) => {
     if (selectedFilter === "All") return true;
     const filterLower = selectedFilter.toLowerCase();
-    const tags = (article.ai_tags || []).map((t: string) => t.toLowerCase());
-    const topicTags = (article.topic_tags || []).map((t: string) => t.toLowerCase());
+    const allTags = getArticleTagNames(article).map((t: string) => t.toLowerCase());
     const title = (article.title || '').toLowerCase();
-    return tags.some((t: string) => t.includes(filterLower)) ||
-           topicTags.some((t: string) => t.includes(filterLower)) ||
+    return allTags.some((t: string) => t.includes(filterLower)) ||
            title.includes(filterLower);
   };
 
@@ -257,6 +255,18 @@ const Category = () => {
     }
   }, [selectedFilter]);
 
+  // Helper to extract tag names from article_tags relation
+  const getArticleTagNames = (article: any): string[] => {
+    const relationTags = (article.article_tags || [])
+      .map((at: any) => at.tags?.name)
+      .filter(Boolean);
+    return [
+      ...relationTags,
+      ...(article.ai_tags || []),
+      ...(article.topic_tags || []),
+    ];
+  };
+
   // Dynamic filter pills derived from fetched articles' tags
   const dynamicFilters = useMemo(() => {
     const allArticles = [
@@ -270,10 +280,7 @@ const Category = () => {
     for (const article of allArticles) {
       if (!article?.id || seenIds.has(article.id)) continue;
       seenIds.add(article.id);
-      const combined = [
-        ...(article.ai_tags || []),
-        ...(article.topic_tags || []),
-      ];
+      const combined = getArticleTagNames(article);
       const seen = new Set<string>();
       for (const tag of combined) {
         const lower = (tag || '').toLowerCase().trim();
