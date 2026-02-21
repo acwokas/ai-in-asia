@@ -494,27 +494,13 @@ const Index = () => {
 
             if (allGridArticles.length === 0) return null;
 
-            // Build rows of articles with alternating patterns
-            const rows: { articles: any[]; pattern: 'large-left' | 'equal' | 'large-right' }[] = [];
-            let idx = 0;
-            let rowIndex = 0;
-            while (idx < allGridArticles.length && rows.length < 6) {
-              const cyclePos = rowIndex % 4;
-              const pattern: 'large-left' | 'equal' | 'large-right' = cyclePos === 0 ? 'large-left' : cyclePos === 1 ? 'equal' : cyclePos === 2 ? 'large-right' : 'equal';
-              const count = pattern === 'equal' ? 3 : 2;
-              const slice = allGridArticles.slice(idx, idx + count);
-              if (slice.length > 0) rows.push({ articles: slice, pattern });
-              idx += count;
-              rowIndex++;
-            }
-
             const renderCard = (article: any, isLarge: boolean) => {
               const categorySlug = article.categories?.slug || 'news';
               return (
                 <Link
                   key={article.id}
                   to={`/${categorySlug}/${article.slug}`}
-                  className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                  className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
                 >
                   <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] md:h-[320px]' : 'h-[160px]'}`}>
                     <img
@@ -564,34 +550,35 @@ const Index = () => {
               );
             };
 
+            // Build items with explicit grid placement per the 7-article repeating pattern
+            const gridItems: { article: any; isLarge: boolean; colClass: string }[] = [];
+            allGridArticles.forEach((article: any, i: number) => {
+              const pos = i % 7;
+              if (pos === 0) {
+                // Featured: columns 1-2
+                gridItems.push({ article, isLarge: true, colClass: 'md:col-span-2' });
+              } else if (pos === 1) {
+                // Standard: column 3
+                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
+              } else if (pos >= 2 && pos <= 4) {
+                // Row of 3 equal standards
+                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
+              } else if (pos === 5) {
+                // Standard: column 1
+                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
+              } else {
+                // Featured: columns 2-3
+                gridItems.push({ article, isLarge: true, colClass: 'md:col-span-2' });
+              }
+            });
+
             return (
-              <div className="space-y-6">
-                {rows.map((row, ri) => {
-                  if (row.pattern === 'large-left') {
-                    return (
-                      <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {row.articles[0] && <div className="md:col-span-2">{renderCard(row.articles[0], true)}</div>}
-                        {row.articles[1] && <div className="md:col-span-1">{renderCard(row.articles[1], false)}</div>}
-                      </div>
-                    );
-                  }
-                  if (row.pattern === 'equal') {
-                    return (
-                      <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {row.articles.map((a: any) => (
-                          <div key={a.id}>{renderCard(a, false)}</div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  // large-right
-                  return (
-                    <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {row.articles[1] && <div className="md:col-span-1 order-2 md:order-1">{renderCard(row.articles[1], false)}</div>}
-                      {row.articles[0] && <div className="md:col-span-2 order-1 md:order-2">{renderCard(row.articles[0], true)}</div>}
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {gridItems.map(({ article, isLarge, colClass }) => (
+                  <div key={article.id} className={colClass}>
+                    {renderCard(article, isLarge)}
+                  </div>
+                ))}
               </div>
             );
           })()}
