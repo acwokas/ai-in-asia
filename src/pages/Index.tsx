@@ -462,89 +462,144 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Trending + Latest row below the hero */}
-        <section className="container mx-auto px-4 pb-8 md:pb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Trending */}
-            <div className="lg:col-span-4">
-              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase mb-4">
-                Trending
+        {/* Article Grid — alternating size-contrast rows */}
+        <section className="container mx-auto px-4 py-16 md:py-20">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase">
+                More Stories
               </div>
-              <div className="space-y-3">
-                {isLoading ? (
-                  [...Array(4)].map((_, i) => (
-                    <div key={i} className="flex gap-3">
-                      <Skeleton className="w-16 h-16 rounded flex-shrink-0" />
-                      <div className="flex-1"><Skeleton className="h-3 w-full mb-1" /><Skeleton className="h-3 w-2/3" /></div>
-                    </div>
-                  ))
-                ) : (trendingArticles?.filter((a: any) => a.slug) || []).slice(0, 5).map((article: any) => {
-                  const categorySlug = article.categories?.slug || 'news';
-                  return (
-                    <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="flex gap-3 group">
-                      <div className="relative w-16 h-16 overflow-hidden rounded flex-shrink-0">
-                        <img src={article.featured_image_url || "/placeholder.svg"} alt={article.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground mb-0.5">
-                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • {article.reading_time_minutes || 5} min
-                        </p>
-                        <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Latest */}
-            <div className="lg:col-span-5">
-              <div className="bg-secondary text-secondary-foreground px-3 py-1.5 text-xs font-bold uppercase mb-4">
-                Latest
-              </div>
-              <div className="space-y-3">
-                {isLoading ? (
-                  [...Array(5)].map((_, i) => (
-                    <div key={i} className="flex gap-3">
-                      <Skeleton className="w-16 h-16 rounded flex-shrink-0" />
-                      <div className="flex-1"><Skeleton className="h-3 w-full mb-1" /><Skeleton className="h-3 w-2/3" /></div>
-                    </div>
-                  ))
-                ) : (() => {
-                  const trendingIds = trendingArticles?.map((a: any) => a.id) || [];
-                  const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 3).map((a: any) => a.id) || [];
-                  const filteredLatest = latestArticles?.filter((article: any) =>
-                    article.slug &&
-                    article.id !== featuredArticle?.id &&
-                    !trendingIds.includes(article.id) &&
-                    !secondaryIds.includes(article.id)
-                  ) || [];
-
-                  return filteredLatest.slice(0, 6).map((article: any) => {
-                    const categorySlug = article.categories?.slug || 'news';
-                    return (
-                      <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="flex gap-3 group">
-                        <div className="relative w-16 h-16 overflow-hidden rounded flex-shrink-0">
-                          <img src={article.featured_image_url || "/placeholder.svg"} alt={article.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground mb-0.5">
-                            {article.categories?.name} • {article.reading_time_minutes || 5} min
-                          </p>
-                          <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                        </div>
-                      </Link>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-
-            {/* Ad unit */}
-            <div className="lg:col-span-3">
-              <MPUAd />
             </div>
           </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[...Array(9)].map((_, i) => (
+                <Skeleton key={i} className={`rounded-lg ${i % 4 === 0 ? 'md:col-span-2 h-72' : 'h-56'}`} />
+              ))}
+            </div>
+          ) : (() => {
+            // Combine all grid-eligible articles: trending + latest (excluding hero & secondary)
+            const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 3).map((a: any) => a.id) || [];
+            const allGridArticles = [
+              ...(trendingArticles?.filter((a: any) => a.slug) || []),
+              ...(latestArticles?.filter((a: any) =>
+                a.slug &&
+                a.id !== featuredArticle?.id &&
+                !secondaryIds.includes(a.id) &&
+                !(trendingArticles || []).some((t: any) => t.id === a.id)
+              ) || []),
+            ];
+
+            if (allGridArticles.length === 0) return null;
+
+            // Build rows of articles with alternating patterns
+            const rows: { articles: any[]; pattern: 'large-left' | 'equal' | 'large-right' }[] = [];
+            let idx = 0;
+            let rowIndex = 0;
+            while (idx < allGridArticles.length && rows.length < 4) {
+              const pattern = rowIndex % 3 === 0 ? 'large-left' : rowIndex % 3 === 1 ? 'equal' : 'large-right';
+              const count = pattern === 'equal' ? 3 : 3;
+              const slice = allGridArticles.slice(idx, idx + count);
+              if (slice.length > 0) rows.push({ articles: slice, pattern });
+              idx += count;
+              rowIndex++;
+            }
+
+            const renderCard = (article: any, isLarge: boolean) => {
+              const categorySlug = article.categories?.slug || 'news';
+              return (
+                <Link
+                  key={article.id}
+                  to={`/${categorySlug}/${article.slug}`}
+                  className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className={`relative overflow-hidden ${isLarge ? 'aspect-[16/10]' : 'aspect-[16/9]'}`}>
+                    <img
+                      src={isLarge
+                        ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 640, 400)
+                        : getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 225)
+                      }
+                      alt={article.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                    {article.is_trending && (
+                      <Badge className="absolute top-3 left-3 bg-orange-500 text-white flex items-center gap-1 text-xs">
+                        <TrendingUp className="h-3 w-3" />Trending
+                      </Badge>
+                    )}
+                    {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
+                      <Badge className="absolute top-3 right-3 bg-emerald-600 text-white text-xs">
+                        {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className={`${isLarge ? 'p-6' : 'p-5'}`}>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary mb-2 block">
+                      {article.categories?.name || "Uncategorized"}
+                    </span>
+                    <h3 className={`font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors ${
+                      isLarge ? 'text-[22px] md:text-2xl' : 'text-base md:text-lg'
+                    }`}>
+                      {article.title}
+                    </h3>
+                    {isLarge && article.excerpt && (
+                      <p className="text-muted-foreground text-sm line-clamp-2 mt-2">{article.excerpt}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3">
+                      {article.authors?.name && <span>{article.authors.name}</span>}
+                      {article.authors?.name && article.published_at && <span>•</span>}
+                      {article.published_at && (
+                        <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                      )}
+                      <span>•</span>
+                      <span>{article.reading_time_minutes || 5} min read</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            };
+
+            return (
+              <div className="space-y-6">
+                {rows.map((row, ri) => {
+                  if (row.pattern === 'large-left') {
+                    return (
+                      <div key={ri} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {row.articles[0] && <div className="md:col-span-2">{renderCard(row.articles[0], true)}</div>}
+                        {row.articles[1] && <div className="md:col-span-1">{renderCard(row.articles[1], false)}</div>}
+                        {row.articles[2] && <div className="md:col-span-1">{renderCard(row.articles[2], false)}</div>}
+                      </div>
+                    );
+                  }
+                  if (row.pattern === 'equal') {
+                    return (
+                      <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {row.articles.map((a: any) => (
+                          <div key={a.id}>{renderCard(a, false)}</div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  // large-right
+                  return (
+                    <div key={ri} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      {row.articles[1] && <div className="md:col-span-1 order-2 md:order-1">{renderCard(row.articles[1], false)}</div>}
+                      {row.articles[2] && <div className="md:col-span-1 order-3 md:order-2">{renderCard(row.articles[2], false)}</div>}
+                      {row.articles[0] && <div className="md:col-span-2 order-1 md:order-3">{renderCard(row.articles[0], true)}</div>}
+                    </div>
+                  );
+                })}
+
+                {/* Ad unit below grid */}
+                <div className="flex justify-center pt-4">
+                  <MPUAd />
+                </div>
+              </div>
+            );
+          })()}
         </section>
 
         <Separator />
