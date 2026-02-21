@@ -260,11 +260,12 @@ const Header = memo(() => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="md:hidden h-10 w-10"
+                    className="md:hidden h-10 w-10 relative"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     aria-label="Toggle menu"
                   >
                     <Menu className="h-5 w-5" />
+                    {user && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Menu</TooltipContent>
