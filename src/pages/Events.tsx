@@ -14,8 +14,9 @@ import FeaturedEventCard, { type FeaturedEvent } from "@/components/events/Featu
 import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
-import EventsFilterBar, { type EventFilters } from "@/components/events/EventsFilterBar";
+import EventsFilterBar, { type EventFilters, type ViewMode } from "@/components/events/EventsFilterBar";
 import EventAlertSignup from "@/components/events/EventAlertSignup";
+import EventsCalendarView from "@/components/events/EventsCalendarView";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -53,7 +54,7 @@ const Events = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   // Initialise filters from URL
   const [filters, setFilters] = useState<EventFilters>(() => ({
     region: searchParams.get("region") || "all",
@@ -342,6 +343,8 @@ const Events = () => {
           onFiltersChange={handleFiltersChange}
           filteredCount={filteredTotal}
           totalCount={events?.total ?? 0}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         {/* Events List */}
@@ -377,47 +380,65 @@ const Events = () => {
               {/* Event Alert Signup */}
               <EventAlertSignup />
 
-              {/* All Upcoming Events */}
-              <section>
-                <h2 className="text-2xl font-bold mb-6">All Upcoming Events</h2>
-                <div className="space-y-4">
-                  {upcomingEvents && upcomingEvents.length > 0 ? (
-                    <>
-                      {upcomingEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
+              {/* View: Calendar or List */}
+              {viewMode === "calendar" ? (
+                <section>
+                  <EventsCalendarView events={upcomingEvents} />
+                  {/* Submit CTA */}
+                  <div className="text-center mt-12 mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Know of an event we're missing?{" "}
+                      <Link to="/events/submit" className="text-primary hover:underline">
+                        Submit it here →
+                      </Link>
+                    </p>
+                  </div>
+                </section>
+              ) : (
+                <>
+                  {/* All Upcoming Events */}
+                  <section>
+                    <h2 className="text-2xl font-bold mb-6">All Upcoming Events</h2>
+                    <div className="space-y-4">
+                      {upcomingEvents && upcomingEvents.length > 0 ? (
+                        <>
+                          {upcomingEvents.map((event) => (
+                            <EventCard key={event.id} event={event} />
+                          ))}
 
-                      {events && events.total > page * EVENTS_PER_PAGE && (
-                        <div className="text-center mt-8">
-                          <Button onClick={() => setPage((p) => p + 1)} variant="outline" size="lg" disabled={isLoading}>
-                            Load More Events
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              ({page * EVENTS_PER_PAGE} of {events.total})
-                            </span>
-                          </Button>
-                        </div>
+                          {events && events.total > page * EVENTS_PER_PAGE && (
+                            <div className="text-center mt-8">
+                              <Button onClick={() => setPage((p) => p + 1)} variant="outline" size="lg" disabled={isLoading}>
+                                Load More Events
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                  ({page * EVENTS_PER_PAGE} of {events.total})
+                                </span>
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-12 text-center">
+                            <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-muted-foreground">No events found matching your filters.</p>
+                          </CardContent>
+                        </Card>
                       )}
-                    </>
-                  ) : (
-                    <Card>
-                      <CardContent className="p-12 text-center">
-                        <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">No events found matching your filters.</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                    </div>
 
-                {/* Submit CTA */}
-                <div className="text-center mt-12 mb-4">
-                  <p className="text-sm text-muted-foreground">
-                    Know of an event we're missing?{" "}
-                    <Link to="/events/submit" className="text-primary hover:underline">
-                      Submit it here →
-                    </Link>
-                  </p>
-                </div>
-              </section>
+                    {/* Submit CTA */}
+                    <div className="text-center mt-12 mb-4">
+                      <p className="text-sm text-muted-foreground">
+                        Know of an event we're missing?{" "}
+                        <Link to="/events/submit" className="text-primary hover:underline">
+                          Submit it here →
+                        </Link>
+                      </p>
+                    </div>
+                  </section>
+                </>
+              )}
             </>
           )}
         </main>
