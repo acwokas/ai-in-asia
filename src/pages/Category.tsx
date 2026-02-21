@@ -284,8 +284,13 @@ const Category = () => {
     return articles?.[0];
   }, [articles, isFilterActive, filteredAllArticles]);
 
-  // Latest sidebar - always unfiltered (4 most recent)
-  const latestArticles = articles?.slice(1, 5) || [];
+  // Latest sidebar - filtered when a tag is active
+  const latestArticles = useMemo(() => {
+    if (isFilterActive) {
+      return filteredAllArticles.slice(1, 5);
+    }
+    return articles?.slice(1, 5) || [];
+  }, [articles, isFilterActive, filteredAllArticles]);
 
   // Featured grid - when filter active, show next 4 from filtered set
   const featuredGridArticles = useMemo(() => {
@@ -525,7 +530,11 @@ const Category = () => {
                   {/* Latest sidebar */}
                   <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible scrollbar-hide">
                     <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", margin: "0 0 4px 0" }} className="hidden md:block">Latest</h3>
-                    {latestArticles.map((article: any, i: number) => (
+                    {latestArticles.length === 0 && isFilterActive ? (
+                      <div style={{ padding: "16px 14px", borderRadius: 14, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
+                        <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: 0 }}>No recent articles for this tag</p>
+                      </div>
+                    ) : latestArticles.map((article: any, i: number) => (
                       <Link
                         key={article.id}
                         to={`/${article.categories?.slug || slug}/${article.slug}`}
