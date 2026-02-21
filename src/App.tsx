@@ -106,6 +106,8 @@ const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 const Guides = lazy(() => import("./pages/Guides"));
 const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 const GuidesImport = lazy(() => import("./pages/GuidesImport"));
+const GuideEditor = lazy(() => import("./pages/GuideEditor"));
+const AdminGuides = lazy(() => import("./pages/AdminGuides"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const NewsletterPerformance = lazy(() => import("./pages/NewsletterPerformance"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
@@ -285,6 +287,7 @@ const App = () => (
                 <Route path="category-sponsors" element={<CategorySponsorsManager />} />
                 <Route path="404-analytics" element={<NotFoundAnalytics />} />
                 <Route path="guides-import" element={<GuidesImport />} />
+                <Route path="guides" element={<AdminGuides />} />
                 <Route path="newsletter-analytics" element={<NewsletterAnalytics />} />
                 <Route path="newsletter-performance" element={<NewsletterPerformance />} />
                 <Route path="newsletter-manager" element={<NewsletterManager />} />
@@ -298,6 +301,8 @@ const App = () => (
               <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
+              <Route path="/guide-editor" element={<GuideEditor />} />
+              <Route path="/guide-editor/:id" element={<GuideEditor />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}
               <Route path="/:slug" element={<LegacyArticleRedirect />} />
               <Route path="*" element={<NotFound />} />

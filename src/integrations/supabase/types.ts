@@ -140,6 +140,7 @@ export type Database = {
           advanced_tips_and_optimisation: string | null
           applied_examples: string | null
           audience_role: string | null
+          author_id: string | null
           body_intro: string | null
           body_section_1_heading: string | null
           body_section_1_text: string | null
@@ -149,33 +150,46 @@ export type Database = {
           body_section_3_text: string | null
           closing_cta: string | null
           closing_encouragement: string | null
+          common_mistakes: Json | null
+          content_type: string | null
           context_and_background: string | null
           created_at: string
           created_by: string | null
           deeper_explanations: string | null
+          difficulty: string | null
           excerpt: string | null
           expanded_steps: string | null
           faq_a1: string | null
           faq_a2: string | null
           faq_a3: string | null
+          faq_items: Json | null
           faq_q1: string | null
           faq_q2: string | null
           faq_q3: string | null
+          featured_image_alt: string | null
+          featured_image_url: string | null
           focus_keyphrase: string | null
           further_reading: string | null
           geo: string | null
           guide_category: string
+          guide_prompts: Json | null
           how_ai_helps_this_role: string | null
           id: string
           image_prompt: string | null
           interactive_elements: string | null
           interactive_exercises: string | null
+          is_editors_pick: boolean | null
           keyphrase_synonyms: string | null
           learning_objectives: string | null
           level: string
           meta_description: string | null
           meta_title: string | null
+          next_steps: string | null
+          one_line_description: string | null
           perfect_for: string | null
+          pillar: string | null
+          platform_tags: string[] | null
+          preview_code: string | null
           primary_platform: string
           prompt_1_headline: string | null
           prompt_1_label: string | null
@@ -186,31 +200,43 @@ export type Database = {
           prompt_3_headline: string | null
           prompt_3_label: string | null
           prompt_3_text: string | null
+          published_at: string | null
+          read_time_minutes: number | null
+          recommended_tools: Json | null
           recommended_tools_for_this_role: string | null
           role: string | null
           role_challenges_overview: string | null
+          scheduled_for: string | null
           seo_title: string | null
+          show_in_learning_paths: boolean | null
           slug: string
+          snapshot_bullets: string[] | null
+          status: string | null
           step_by_step_section_1_heading: string | null
           step_by_step_section_1_text: string | null
           step_by_step_section_2_heading: string | null
           step_by_step_section_2_text: string | null
           step_by_step_section_3_heading: string | null
           step_by_step_section_3_text: string | null
+          steps: Json | null
           tags: string | null
           title: string
           tldr_bullet_1: string | null
           tldr_bullet_2: string | null
           tldr_bullet_3: string | null
+          topic_tags: string[] | null
           troubleshooting_and_advanced_tips: string | null
           troubleshooting_and_common_mistakes: string | null
           updated_at: string
           variations_and_alternatives: string | null
+          why_this_matters: string | null
+          worked_example: Json | null
         }
         Insert: {
           advanced_tips_and_optimisation?: string | null
           applied_examples?: string | null
           audience_role?: string | null
+          author_id?: string | null
           body_intro?: string | null
           body_section_1_heading?: string | null
           body_section_1_text?: string | null
@@ -220,33 +246,46 @@ export type Database = {
           body_section_3_text?: string | null
           closing_cta?: string | null
           closing_encouragement?: string | null
+          common_mistakes?: Json | null
+          content_type?: string | null
           context_and_background?: string | null
           created_at?: string
           created_by?: string | null
           deeper_explanations?: string | null
+          difficulty?: string | null
           excerpt?: string | null
           expanded_steps?: string | null
           faq_a1?: string | null
           faq_a2?: string | null
           faq_a3?: string | null
+          faq_items?: Json | null
           faq_q1?: string | null
           faq_q2?: string | null
           faq_q3?: string | null
+          featured_image_alt?: string | null
+          featured_image_url?: string | null
           focus_keyphrase?: string | null
           further_reading?: string | null
           geo?: string | null
           guide_category: string
+          guide_prompts?: Json | null
           how_ai_helps_this_role?: string | null
           id?: string
           image_prompt?: string | null
           interactive_elements?: string | null
           interactive_exercises?: string | null
+          is_editors_pick?: boolean | null
           keyphrase_synonyms?: string | null
           learning_objectives?: string | null
           level: string
           meta_description?: string | null
           meta_title?: string | null
+          next_steps?: string | null
+          one_line_description?: string | null
           perfect_for?: string | null
+          pillar?: string | null
+          platform_tags?: string[] | null
+          preview_code?: string | null
           primary_platform: string
           prompt_1_headline?: string | null
           prompt_1_label?: string | null
@@ -257,31 +296,43 @@ export type Database = {
           prompt_3_headline?: string | null
           prompt_3_label?: string | null
           prompt_3_text?: string | null
+          published_at?: string | null
+          read_time_minutes?: number | null
+          recommended_tools?: Json | null
           recommended_tools_for_this_role?: string | null
           role?: string | null
           role_challenges_overview?: string | null
+          scheduled_for?: string | null
           seo_title?: string | null
+          show_in_learning_paths?: boolean | null
           slug: string
+          snapshot_bullets?: string[] | null
+          status?: string | null
           step_by_step_section_1_heading?: string | null
           step_by_step_section_1_text?: string | null
           step_by_step_section_2_heading?: string | null
           step_by_step_section_2_text?: string | null
           step_by_step_section_3_heading?: string | null
           step_by_step_section_3_text?: string | null
+          steps?: Json | null
           tags?: string | null
           title: string
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          topic_tags?: string[] | null
           troubleshooting_and_advanced_tips?: string | null
           troubleshooting_and_common_mistakes?: string | null
           updated_at?: string
           variations_and_alternatives?: string | null
+          why_this_matters?: string | null
+          worked_example?: Json | null
         }
         Update: {
           advanced_tips_and_optimisation?: string | null
           applied_examples?: string | null
           audience_role?: string | null
+          author_id?: string | null
           body_intro?: string | null
           body_section_1_heading?: string | null
           body_section_1_text?: string | null
@@ -291,33 +342,46 @@ export type Database = {
           body_section_3_text?: string | null
           closing_cta?: string | null
           closing_encouragement?: string | null
+          common_mistakes?: Json | null
+          content_type?: string | null
           context_and_background?: string | null
           created_at?: string
           created_by?: string | null
           deeper_explanations?: string | null
+          difficulty?: string | null
           excerpt?: string | null
           expanded_steps?: string | null
           faq_a1?: string | null
           faq_a2?: string | null
           faq_a3?: string | null
+          faq_items?: Json | null
           faq_q1?: string | null
           faq_q2?: string | null
           faq_q3?: string | null
+          featured_image_alt?: string | null
+          featured_image_url?: string | null
           focus_keyphrase?: string | null
           further_reading?: string | null
           geo?: string | null
           guide_category?: string
+          guide_prompts?: Json | null
           how_ai_helps_this_role?: string | null
           id?: string
           image_prompt?: string | null
           interactive_elements?: string | null
           interactive_exercises?: string | null
+          is_editors_pick?: boolean | null
           keyphrase_synonyms?: string | null
           learning_objectives?: string | null
           level?: string
           meta_description?: string | null
           meta_title?: string | null
+          next_steps?: string | null
+          one_line_description?: string | null
           perfect_for?: string | null
+          pillar?: string | null
+          platform_tags?: string[] | null
+          preview_code?: string | null
           primary_platform?: string
           prompt_1_headline?: string | null
           prompt_1_label?: string | null
@@ -328,28 +392,54 @@ export type Database = {
           prompt_3_headline?: string | null
           prompt_3_label?: string | null
           prompt_3_text?: string | null
+          published_at?: string | null
+          read_time_minutes?: number | null
+          recommended_tools?: Json | null
           recommended_tools_for_this_role?: string | null
           role?: string | null
           role_challenges_overview?: string | null
+          scheduled_for?: string | null
           seo_title?: string | null
+          show_in_learning_paths?: boolean | null
           slug?: string
+          snapshot_bullets?: string[] | null
+          status?: string | null
           step_by_step_section_1_heading?: string | null
           step_by_step_section_1_text?: string | null
           step_by_step_section_2_heading?: string | null
           step_by_step_section_2_text?: string | null
           step_by_step_section_3_heading?: string | null
           step_by_step_section_3_text?: string | null
+          steps?: Json | null
           tags?: string | null
           title?: string
           tldr_bullet_1?: string | null
           tldr_bullet_2?: string | null
           tldr_bullet_3?: string | null
+          topic_tags?: string[] | null
           troubleshooting_and_advanced_tips?: string | null
           troubleshooting_and_common_mistakes?: string | null
           updated_at?: string
           variations_and_alternatives?: string | null
+          why_this_matters?: string | null
+          worked_example?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_guides_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_guides_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_tools: {
         Row: {
