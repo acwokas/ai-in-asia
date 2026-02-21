@@ -241,6 +241,38 @@ All colors MUST be HSL.
     font-weight: 400;
     line-height: 1.85;
     max-width: 720px;
+    color: hsl(var(--foreground));
+  }
+
+  /* Force all text inside article body to be readable — override CMS inline styles */
+  .article-content p,
+  .article-content span,
+  .article-content li,
+  .article-content td,
+  .article-content th,
+  .article-content dd,
+  .article-content dt,
+  .article-content summary,
+  .article-content div:not([class]) {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .article-content strong,
+  .article-content b {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .article-content em,
+  .article-content i {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .article-content h2,
+  .article-content h3,
+  .article-content h4,
+  .article-content h5,
+  .article-content h6 {
+    color: hsl(var(--foreground)) !important;
   }
 
   .article-content p {

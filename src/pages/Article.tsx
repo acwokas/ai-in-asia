@@ -651,7 +651,6 @@ const Article = () => {
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
                   <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
-                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", color: "#BFC0C0", marginBottom: "0.25rem", textAlign: "center" }}>Advertisement</p>
                     <div style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(48,62,83,0.15)", borderRadius: "4px" }}>
                       <GoogleAd slot="sidebar" houseAdType="mpu" />
                     </div>
