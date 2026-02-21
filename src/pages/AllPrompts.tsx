@@ -163,7 +163,7 @@ const AllPrompts = () => {
       <main className="flex-1">
         {/* Hero */}
         <div className="bg-card border-b border-border">
-          <div className="max-w-[720px] mx-auto px-4 py-8 md:py-10 text-center space-y-4">
+          <div className="max-w-[1200px] mx-auto px-4 py-8 md:py-10 text-center space-y-4">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Prompt Library</h1>
             <p className="text-muted-foreground text-base md:text-lg">
               Every prompt from every guide. Tested, specific, ready to paste.
@@ -191,7 +191,7 @@ const AllPrompts = () => {
           const potdCopied = copiedId === promptOfTheDay.id;
           return (
             <div className="border-b border-border">
-              <div className="max-w-[720px] mx-auto px-4 py-6">
+              <div className="max-w-[1200px] mx-auto px-4 py-6">
                 <div className="border-l-2 border-primary rounded-r-lg bg-muted/30 p-4 md:p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -265,7 +265,7 @@ const AllPrompts = () => {
 
         {/* Sticky Filters */}
         <div className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-20">
-          <div className="max-w-[720px] mx-auto px-4 py-3 space-y-2">
+          <div className="max-w-[1200px] mx-auto px-4 py-3 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground flex-shrink-0">Platform:</span>
               {platforms.map((p) => (
@@ -319,7 +319,7 @@ const AllPrompts = () => {
         </div>
 
         {/* Content */}
-        <div className="max-w-[720px] mx-auto px-4 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 py-8">
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -489,8 +489,8 @@ const AllPrompts = () => {
                       </div>
                     </div>
 
-                    {/* Ad slot after every 6 — full width, matching prompt rows */}
-                    {(index + 1) % 6 === 0 && index < filteredPrompts.length - 1 && (
+                    {/* Single ad slot after the 6th prompt only */}
+                    {index === 5 && filteredPrompts.length > 6 && (
                       <div className="border-t border-border py-6">
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block mb-2">
                           Advertisement
