@@ -22,7 +22,7 @@ const exploreLinks = [
   { to: "/category/learn", label: "Learn" },
   { to: "/category/create", label: "Create" },
   { to: "/category/voices", label: "Voices" },
-  { to: "/tools", label: "Tools" },
+  { to: "/prompts", label: "Prompts" },
   { to: "/events", label: "Events" },
   { to: "/ai-policy-atlas", label: "Policy Atlas" },
 ];

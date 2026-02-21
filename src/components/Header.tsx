@@ -108,7 +108,7 @@ const Header = memo(() => {
                 <DropdownMenuContent align="start" className="bg-popover z-50">
                   <DropdownMenuItem asChild><Link to="/guides">Guides</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/prompts">Prompts</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/tools">Tools</Link></DropdownMenuItem>
+                  
                   <DropdownMenuItem asChild><Link to="/events">Events</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild><Link to="/ai-policy-atlas">Policy Atlas</Link></DropdownMenuItem>
@@ -307,7 +307,6 @@ const Header = memo(() => {
               {[
                 { to: "/guides", label: "Guides" },
                 { to: "/prompts", label: "Prompts" },
-                { to: "/tools", label: "Tools" },
                 { to: "/events", label: "Events" },
                 { to: "/ai-policy-atlas", label: "Policy Atlas" },
               ].map(({ to, label }) => (
