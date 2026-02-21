@@ -266,14 +266,14 @@ const AllPrompts = () => {
         {/* Sticky Filters */}
         <div className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-20">
           <div className="max-w-[720px] mx-auto px-4 py-3 space-y-2">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground flex-shrink-0">Platform:</span>
               {platforms.map((p) => (
                 <Button
                   key={p}
                   variant={platformFilter === p ? "default" : "outline"}
                   size="sm"
-                  className="h-7 text-xs flex-shrink-0"
+                  className="h-7 text-xs"
                   onClick={() => setPlatformFilter(p)}
                 >
                   {p}
@@ -281,33 +281,34 @@ const AllPrompts = () => {
               ))}
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground flex-shrink-0">Category:</span>
               {categories.map((c) => (
                 <Button
                   key={c}
                   variant={categoryFilter === c ? "default" : "outline"}
                   size="sm"
-                  className="h-7 text-xs flex-shrink-0"
+                  className="h-7 text-xs"
                   onClick={() => setCategoryFilter(c)}
                 >
                   {c}
                 </Button>
               ))}
-              <div className="ml-auto flex items-center gap-1 flex-shrink-0">
-                <span className="text-xs text-muted-foreground">Sort:</span>
-                {sortOptions.map((s) => (
-                  <Button
-                    key={s.value}
-                    variant={sortBy === s.value ? "secondary" : "ghost"}
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => setSortBy(s.value)}
-                  >
-                    {s.label}
-                  </Button>
-                ))}
-              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground flex-shrink-0">Sort:</span>
+              {sortOptions.map((s) => (
+                <Button
+                  key={s.value}
+                  variant={sortBy === s.value ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setSortBy(s.value)}
+                >
+                  {s.label}
+                </Button>
+              ))}
             </div>
 
             {/* Result count */}
