@@ -22,21 +22,18 @@ export default function MostDiscussedSection() {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const weekAgoISO = oneWeekAgo.toISOString();
 
-      // Get real comments from last 7 days grouped by article
       const { data: realComments } = await supabase
         .from("comments_public")
         .select("article_id, content, author_name, created_at")
         .gte("created_at", weekAgoISO)
         .eq("approved", true);
 
-      // Get published AI comments from last 7 days
       const { data: aiComments } = await supabase
         .from("ai_generated_comments")
         .select("article_id, content, created_at")
         .gte("created_at", weekAgoISO)
         .eq("published", true);
 
-      // Count comments per article
       const commentMap = new Map<string, { count: number; latest: { content: string; author_name: string; created_at: string } | null }>();
 
       for (const c of realComments || []) {
@@ -59,13 +56,11 @@ export default function MostDiscussedSection() {
 
       if (commentMap.size === 0) return [];
 
-      // Sort by count, take top 4
       const topArticleIds = [...commentMap.entries()]
         .sort((a, b) => b[1].count - a[1].count)
         .slice(0, 4)
         .map(([id]) => id);
 
-      // Fetch article details
       const { data: articleData } = await supabase
         .from("articles")
         .select("id, title, slug, categories:primary_category_id (name, slug)")
@@ -95,48 +90,58 @@ export default function MostDiscussedSection() {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <section className="container mx-auto px-4 py-8">
+    <section className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto lg:max-w-none">
-        <div className="mb-6">
-          <h2 className="headline text-2xl font-bold flex items-center gap-2">
+        <div className="mb-8">
+          <h2 className="headline text-[22px] md:text-[28px] font-bold flex items-center gap-2">
             <MessageCircle className="h-6 w-6 text-primary" />
             Most Discussed
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">This week</p>
+          <p className="text-[13px] text-muted-foreground/60 mt-1">This week</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {articles.map((article) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {articles.map((article, index) => {
             const categorySlug = article.categories?.slug || "news";
+            const isTop = index === 0;
             return (
               <Link
                 key={article.id}
                 to={`/${categorySlug}/${article.slug}`}
-                className="block border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/30 transition-all duration-300 bg-card"
+                className={`group block border border-border rounded-lg hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 bg-card relative overflow-hidden ${
+                  isTop ? 'p-6 sm:col-span-2 lg:col-span-1' : 'p-5'
+                }`}
               >
-                <div className="flex items-center gap-2 mb-2">
+                {/* Ranking number */}
+                <span className="text-[28px] md:text-[32px] font-bold text-primary/80 leading-none absolute top-3 right-4 select-none">
+                  {index + 1}
+                </span>
+
+                <div className="flex items-center gap-2 mb-3 pr-8">
                   {article.categories && (
                     <Badge variant="secondary" className="text-xs">
                       {article.categories.name}
                     </Badge>
                   )}
-                  <span className="flex items-center gap-1 text-xs font-medium text-primary ml-auto">
+                  <span className="flex items-center gap-1 text-[13px] font-semibold text-primary ml-auto mr-6">
                     <MessageCircle className="h-3.5 w-3.5" />
                     {article.totalComments}
                   </span>
                 </div>
 
-                <h3 className="font-semibold text-sm line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+                <h3 className={`font-semibold line-clamp-2 mb-3 group-hover:text-primary transition-colors leading-[1.3] ${
+                  isTop ? 'text-lg md:text-xl' : 'text-[15px]'
+                }`}>
                   {article.title}
                 </h3>
 
                 {article.latestComment && (
-                  <div className="border-t border-border pt-2 mt-auto">
-                    <p className="text-xs text-muted-foreground line-clamp-2 italic">
+                  <div className="border-t border-border/50 pt-3 mt-auto">
+                    <p className="text-[13px] text-muted-foreground/60 line-clamp-2 italic leading-[1.5]">
                       "{article.latestComment.content.slice(0, 100)}
                       {article.latestComment.content.length > 100 ? "…" : ""}"
                     </p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">
+                    <p className="text-[12px] text-muted-foreground/50 mt-1">
                       — {article.latestComment.author_name}
                     </p>
                   </div>
