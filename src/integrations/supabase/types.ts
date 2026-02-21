@@ -1799,6 +1799,30 @@ export type Database = {
         }
         Relationships: []
       }
+      event_alert_subscribers: {
+        Row: {
+          active: boolean
+          email: string
+          id: string
+          region_preference: string
+          subscribed_at: string
+        }
+        Insert: {
+          active?: boolean
+          email: string
+          id?: string
+          region_preference?: string
+          subscribed_at?: string
+        }
+        Update: {
+          active?: boolean
+          email?: string
+          id?: string
+          region_preference?: string
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           city: string

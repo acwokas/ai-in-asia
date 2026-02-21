@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
 import EventsFilterBar, { type EventFilters } from "@/components/events/EventsFilterBar";
+import EventAlertSignup from "@/components/events/EventAlertSignup";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -370,8 +371,11 @@ const Events = () => {
                       <FeaturedEventCard key={event.id} event={event as FeaturedEvent} />
                     ))}
                   </div>
-                </section>
+              </section>
               )}
+
+              {/* Event Alert Signup */}
+              <EventAlertSignup />
 
               {/* All Upcoming Events */}
               <section>
