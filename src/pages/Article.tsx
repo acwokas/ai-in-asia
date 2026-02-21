@@ -28,9 +28,10 @@ import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Share2, Bookmark, MessageCircle } from "lucide-react";
+import { User, Share2, Bookmark, MessageCircle, Clock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
+import { getCategoryColor } from "@/lib/categoryColors";
 import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
@@ -415,132 +416,147 @@ const Article = () => {
         <Header />
         
         <main className="flex-1">
-          <article className="container mx-auto px-4 py-8 max-w-4xl">
-            <ArticleBreadcrumbs
-              articleType={article.article_type}
-              categoryName={article.categories?.name}
-              categorySlug={article.categories?.slug}
-              articleTitle={article.title}
-            />
+          {/* Admin controls above hero */}
+          {(!isLoadingAdmin && isAdmin) && (
+            <div className="container mx-auto px-4 max-w-[1080px] pt-4">
+              <ArticleAdminControls
+                articleId={article.id}
+                articleStatus={article.status}
+                showAdminView={showAdminView}
+                isPublishing={isPublishing}
+                onToggleAdminView={() => setShowAdminView(!showAdminView)}
+                onPublish={handlePublish}
+              />
+              {showAdminView && <ArticleAdminDebug article={article} />}
+            </div>
+          )}
 
-            <header className="mb-8">
-              {isPreview && (
-                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                    🔒 Preview Mode - This article is not publicly visible
-                  </p>
-                </div>
-              )}
+          {isPreview && (
+            <div className="container mx-auto px-4 max-w-[1080px] pt-4">
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  🔒 Preview Mode - This article is not publicly visible
+                </p>
+              </div>
+            </div>
+          )}
 
-              {!isLoadingAdmin && isAdmin && (
-                <ArticleAdminControls
-                  articleId={article.id}
-                  articleStatus={article.status}
-                  showAdminView={showAdminView}
-                  isPublishing={isPublishing}
-                  onToggleAdminView={() => setShowAdminView(!showAdminView)}
-                  onPublish={handlePublish}
+          {/* Hero Image with overlay */}
+          {article.featured_image_url ? (
+            <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
+              <div className="article-hero rounded-lg">
+                <img
+                  src={article.featured_image_url}
+                  alt={article.featured_image_alt || article.title}
+                  loading="eager"
                 />
-              )}
+                <div className="article-hero-gradient" />
+                <div className="article-hero-content max-w-[1080px]">
+                  {/* Category badge */}
+                  <span
+                    className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full mb-3"
+                    style={{ backgroundColor: getCategoryColor(article.categories?.slug), color: '#fff' }}
+                  >
+                    {article.categories?.name || 'Article'}
+                  </span>
+                  
+                  <h1 className="article-hero-title">
+                    {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                  </h1>
+                  
+                  {article.excerpt && (
+                    <p className="article-hero-excerpt">{article.excerpt}</p>
+                  )}
 
-              {!isLoadingAdmin && isAdmin && showAdminView && (
-                <ArticleAdminDebug article={article} />
+                  {/* Byline row */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {article.authors?.avatar_url && (
+                      <Link to={`/author/${article.authors?.slug}`}>
+                        <img src={article.authors.avatar_url} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover border border-white/30" />
+                      </Link>
+                    )}
+                    <span className="text-white/90 text-sm font-semibold">{article.authors?.name || 'Anonymous'}</span>
+                    <span className="text-white/50 text-sm">•</span>
+                    <span className="text-white/70 text-sm">
+                      {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                    <span className="text-white/50 text-sm">•</span>
+                    <span className="text-white/70 text-sm flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {article.reading_time_minutes || 5} min read
+                    </span>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <Button variant="ghost" size="icon" onClick={handleBookmark} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10">
+                        <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={shareHandlers.handleShare} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {article.featured_image_caption && (
+                <p className="text-sm text-muted-foreground text-center mt-2">{article.featured_image_caption}</p>
               )}
-              
-              <Badge className="mb-4 bg-primary text-primary-foreground">
+            </div>
+          ) : (
+            /* No hero image — render title/meta in a standard block */
+            <div className="container mx-auto max-w-[1080px] px-4 pt-8">
+              <ArticleBreadcrumbs
+                articleType={article.article_type}
+                categoryName={article.categories?.name}
+                categorySlug={article.categories?.slug}
+                articleTitle={article.title}
+              />
+              <Badge className="mb-4" style={{ backgroundColor: getCategoryColor(article.categories?.slug), color: '#fff' }}>
                 {article.categories?.name || 'Article'}
               </Badge>
-              
               {sponsor && (
-                <ArticleSponsorBanner 
-                  sponsor={sponsor} 
-                  categoryName={article.categories?.name || ''} 
-                />
+                <ArticleSponsorBanner sponsor={sponsor} categoryName={article.categories?.name || ''} />
               )}
-              
-              <h1 className="headline text-4xl md:text-5xl mb-4">
+              <h1 className="article-hero-title text-foreground mb-4">
                 {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
               </h1>
-              
               {article.excerpt && (
                 <p className="text-xl text-muted-foreground mb-6">{article.excerpt}</p>
               )}
-
-              {/* Author info row - Desktop */}
-              <div className="hidden md:flex md:items-center gap-4 pb-6 border-b border-border relative z-20">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  {article.authors?.slug ? (
-                    <Link to={`/author/${article.authors.slug}`}>
-                      {article.authors.avatar_url ? (
-                        <img src={article.authors.avatar_url} alt={article.authors.name} className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity flex-shrink-0" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary hover:opacity-80 transition-opacity flex-shrink-0" />
-                      )}
-                    </Link>
-                  ) : article.authors?.avatar_url ? (
-                    <img src={article.authors.avatar_url} alt={article.authors?.name || 'Anonymous'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 font-semibold">
-                      <User className="h-4 w-4 flex-shrink-0" />
-                      {article.authors?.slug ? (
-                        <Link to={`/author/${article.authors.slug}`} className="hover:text-primary transition-colors truncate">{article.authors.name}</Link>
-                      ) : (
-                        <span className="truncate">{article.authors?.name || 'Anonymous'}</span>
-                      )}
-                    </div>
-                    {article.authors?.job_title && (
-                      <div className="text-sm text-muted-foreground truncate">{article.authors.job_title}</div>
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                      <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
-                      <span>•</span>
-                      <span className="whitespace-nowrap">
-                        {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                      </span>
-                      <span>•</span>
-                      <button onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })} className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                        <MessageCircle className="h-3 w-3 flex-shrink-0" />
-                        <span className="whitespace-nowrap">{commentCount} comments</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
-                  {article.categories && <FollowButton followType="category" followId={article.categories.id} followName={article.categories.name} />}
-                  <Button variant="outline" size="icon" onClick={handleBookmark} title={isBookmarked ? "Remove bookmark" : "Bookmark article"} className="h-8 w-8 cursor-pointer">
-                    <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                  </Button>
-                  <div className="flex items-center gap-1 border border-border rounded-md px-2 py-1 h-8">
-                    <FontSizeControl />
-                  </div>
-                  <Button variant="outline" size="icon" onClick={shareHandlers.handleShare} title="Share article" className="h-8 w-8 cursor-pointer">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Author info row - Mobile (simplified) */}
-              <div className="flex md:hidden items-center gap-3 pb-4 border-b border-border">
-                {article.authors?.avatar_url ? (
+              <div className="flex items-center gap-3 pb-6 border-b border-border text-sm text-muted-foreground flex-wrap">
+                {article.authors?.avatar_url && (
                   <Link to={`/author/${article.authors?.slug}`}>
-                    <img src={article.authors.avatar_url} alt={article.authors?.name || ''} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    <img src={article.authors.avatar_url} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover" />
                   </Link>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0" />
                 )}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-                  <span className="font-semibold text-foreground truncate">By {article.authors?.name || 'Anonymous'}</span>
-                  <span>•</span>
-                  <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
-                </div>
+                <span className="font-semibold text-foreground">{article.authors?.name || 'Anonymous'}</span>
+                <span>•</span>
+                <span>{article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
+                <span>•</span>
+                <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
               </div>
-            </header>
+            </div>
+          )}
 
+          {/* Sponsor banner (below hero when hero exists) */}
+          {article.featured_image_url && sponsor && (
+            <div className="container mx-auto max-w-[1080px] px-4 mt-4">
+              <ArticleSponsorBanner sponsor={sponsor} categoryName={article.categories?.name || ''} />
+            </div>
+          )}
+
+          {/* Breadcrumbs (below hero when hero exists) */}
+          {article.featured_image_url && (
+            <div className="container mx-auto max-w-[1080px] px-4 mt-4">
+              <ArticleBreadcrumbs
+                articleType={article.article_type}
+                categoryName={article.categories?.name}
+                categorySlug={article.categories?.slug}
+                articleTitle={article.title}
+              />
+            </div>
+          )}
+
+          {/* Two-column layout */}
+          <div className="container mx-auto max-w-[1080px] px-4" style={{ marginTop: '2.5rem' }}>
             {/* Series Navigation */}
             {article.series_id && (
               <SeriesNavigation 
@@ -550,36 +566,26 @@ const Article = () => {
               />
             )}
 
-            {/* Featured Image */}
-            {article.featured_image_url && (
-              <div className="mb-8 -mx-4 md:mx-0">
-                <img src={article.featured_image_url} alt={article.featured_image_alt || article.title} className="w-full md:rounded-lg" loading="eager" />
-                {article.featured_image_caption && (
-                  <p className="text-sm text-muted-foreground text-center mt-2 px-4 md:px-0">{article.featured_image_caption}</p>
-                )}
+            {/* TLDR */}
+            {article.tldr_snapshot && typeof article.tldr_snapshot === 'object' && (article.tldr_snapshot as any).bullets?.length > 0 && (
+              <div className="max-w-[720px]">
+                <TldrSnapshot 
+                  bullets={(article.tldr_snapshot as any).bullets}
+                  whoShouldPayAttention={(article.tldr_snapshot as any).whoShouldPayAttention}
+                  whatChangesNext={(article.tldr_snapshot as any).whatChangesNext}
+                />
               </div>
             )}
 
-            {/* TLDR */}
-            {article.tldr_snapshot && typeof article.tldr_snapshot === 'object' && (article.tldr_snapshot as any).bullets?.length > 0 && (
-              <TldrSnapshot 
-                bullets={(article.tldr_snapshot as any).bullets}
-                whoShouldPayAttention={(article.tldr_snapshot as any).whoShouldPayAttention}
-                whatChangesNext={(article.tldr_snapshot as any).whatChangesNext}
-              />
-            )}
+            {/* Mobile TOC */}
+            <div className="max-w-[720px]">
+              <TableOfContentsMobile readingTime={article.reading_time_minutes || 0} />
+            </div>
 
-            {/* Mobile TOC - between TLDR and content */}
-            <TableOfContentsMobile readingTime={article.reading_time_minutes || 0} />
-
-            {/* Article Content with optional TOC sidebar */}
-            <div className="xl:grid xl:grid-cols-12 xl:gap-8">
-              <div className="xl:col-span-8">
-                {/* Sidebar Ad */}
-                <div className="float-right ml-6 mb-6 hidden lg:block xl:hidden w-72">
-                  <GoogleAd slot="sidebar" />
-                </div>
-
+            {/* Desktop two-column / Tablet+Mobile single column */}
+            <div className="flex gap-10">
+              {/* Main reading column */}
+              <div className="min-w-0 flex-1 max-w-[720px]">
                 <div className="prose prose-lg max-w-none article-content">
                   {article.article_type === 'policy_article' ? (
                     <PolicyArticleContent article={article} />
@@ -595,49 +601,64 @@ const Article = () => {
                     renderArticleContent(article.content)
                   )}
                 </div>
+
+                {/* Reactions */}
+                <p className="text-sm text-muted-foreground mb-2" style={{ marginTop: '2rem' }}>What did you think?</p>
+                <ArticleReactions articleId={article.id} />
+
+                {/* Compact Author Footer */}
+                <div className="flex items-center gap-3" style={{ marginTop: '3.5rem', paddingTop: '1.5rem', borderTop: '1px solid hsl(var(--border))' }}>
+                  {article.authors?.avatar_url && (
+                    <Link to={`/author/${article.authors.slug}`}>
+                      <img src={article.authors.avatar_url} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
+                    </Link>
+                  )}
+                  <div className="text-sm">
+                    Written by <Link to={`/author/${article.authors?.slug}`} className="font-semibold hover:text-primary">{article.authors?.name}</Link>
+                  </div>
+                  {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
+                </div>
+
+                {/* Author Bio */}
+                <ArticleAuthorBio authors={article.authors} />
+
+                {/* Share Thoughts CTA */}
+                <div style={{ marginTop: '2.5rem' }}>
+                  <ShareThoughtsCTA commentCount={commentCount} />
+                </div>
+
+                {/* Related articles */}
+                <div style={{ marginTop: '2rem' }}>
+                  <ContinueReading currentArticleId={article.id} categoryId={article.primary_category_id || undefined} categorySlug={article.categories?.slug} />
+                </div>
+
+                {!isPreview && (
+                  <div style={{ marginTop: '2rem' }}>
+                    <ReturnTriggerBlock
+                      categorySlug={article.categories?.slug}
+                      categoryId={article.categories?.id}
+                      categoryName={article.categories?.name}
+                      isBookmarked={isBookmarked}
+                      onBookmark={handleBookmark}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Desktop TOC sidebar */}
-              <div className="xl:col-span-4">
-                <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
-              </div>
+              {/* Right sidebar rail — desktop only */}
+              <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0">
+                <div className="sticky top-[80px]">
+                  <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
+                  <div className="mt-6">
+                    <GoogleAd slot="sidebar" />
+                  </div>
+                </div>
+              </aside>
             </div>
-
-            {/* Article Reactions - immediately after content while reader is engaged */}
-            <p className="text-sm text-muted-foreground mb-2 mt-8">What did you think?</p>
-            <ArticleReactions articleId={article.id} />
-
-            {/* Compact Author Footer */}
-            <div className="mt-8 pt-6 border-t border-border flex items-center gap-3">
-              {article.authors?.avatar_url && (
-                <Link to={`/author/${article.authors.slug}`}>
-                  <img src={article.authors.avatar_url} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
-                </Link>
-              )}
-              <div className="text-sm">
-                Written by <Link to={`/author/${article.authors?.slug}`} className="font-semibold hover:text-primary">{article.authors?.name}</Link>
-              </div>
-              {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
-            </div>
-
-            {/* Author Bio */}
-            <ArticleAuthorBio authors={article.authors} />
-
-            <ShareThoughtsCTA commentCount={commentCount} />
-            <ContinueReading currentArticleId={article.id} categoryId={article.primary_category_id || undefined} categorySlug={article.categories?.slug} />
-            {!isPreview && (
-              <ReturnTriggerBlock
-                categorySlug={article.categories?.slug}
-                categoryId={article.categories?.id}
-                categoryName={article.categories?.name}
-                isBookmarked={isBookmarked}
-                onBookmark={handleBookmark}
-              />
-            )}
-          </article>
+          </div>
 
           {/* Comments */}
-          <section id="comments-section" className="container mx-auto px-4 max-w-4xl mt-12">
+          <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
             <Comments articleId={article.id} />
           </section>
         </main>

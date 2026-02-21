@@ -127,7 +127,7 @@ export function TableOfContentsSidebar({ contentSelector = ".article-content", m
   if (headings.length < minHeadings || readingTime < minReadingTime) return null;
 
   return (
-    <aside className="hidden xl:block sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <aside className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
       <div className="border border-border rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-foreground">
           <List className="h-4 w-4" />
@@ -148,7 +148,7 @@ export function TableOfContentsMobile({ contentSelector = ".article-content", mi
   if (headings.length < minHeadings || readingTime < minReadingTime) return null;
 
   return (
-    <div className="xl:hidden mb-6">
+    <div className="min-[1200px]:hidden mb-6">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex items-center justify-between w-full border border-border rounded-lg px-4 py-3 text-sm font-semibold hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-2">
