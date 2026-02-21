@@ -173,28 +173,24 @@ const Category = () => {
     return ids;
   }, [articles, mostReadArticles]);
 
-  // Deep cuts: evergreen articles older than 30 days, ordered by views, excluding displayed articles
+  // Deep cuts: oldest articles in category, excluding displayed articles, ordered by published_at ascending
   const { data: deepCutsArticles } = useQuery({
     queryKey: ["category-deep-cuts", slug, displayedArticleIds],
     enabled: enableSecondaryQueries && !!category?.id && displayedArticleIds.length > 0,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
       if (!category?.id) return [];
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const cutoff = thirtyDaysAgo.toISOString();
 
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
           .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug))`)
           .eq("category_id", category.id)
-          .eq("articles.status", "published")
-          .lt("articles.published_at", cutoff);
+          .eq("articles.status", "published");
         if (error) throw error;
         return (data?.map(item => item.articles) || [])
           .filter((a: any) => a && !displayedArticleIds.includes(a.id))
-          .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
+          .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
           .slice(0, 3);
       }
 
@@ -203,9 +199,8 @@ const Category = () => {
         .select("id, slug, title, published_at, view_count, ai_tags, article_type, featured_image_url, featured_image_alt, categories:primary_category_id (name, slug)")
         .eq("primary_category_id", category.id)
         .eq("status", "published")
-        .lt("published_at", cutoff)
         .not("id", "in", `(${displayedArticleIds.join(",")})`)
-        .order("view_count", { ascending: false })
+        .order("published_at", { ascending: true })
         .limit(3);
       if (error) throw error;
       return data;
