@@ -67,7 +67,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
     <section className="container mx-auto px-4">
       <div className="flex items-center gap-2 mb-8">
         <Sparkles className="h-6 w-6 text-primary" />
-        <h2 className="text-[22px] md:text-[28px] font-bold">You May Like</h2>
+        <h2 className="text-[28px] md:text-[30px] font-bold">You May Like</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

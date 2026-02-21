@@ -306,15 +306,15 @@ const Index = () => {
         <Separator className="my-0" />
 
         {/* 2. Hero: Primary Story + Secondary Stories (CNET-style asymmetric) */}
-        <section className="container mx-auto px-4 py-12 md:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <section className="container mx-auto px-4 py-14 md:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* PRIMARY STORY — left 8 cols (≈65%) */}
             <div className="lg:col-span-8">
               {isLoading ? (
                 <Skeleton className="h-[420px] md:h-[500px] rounded-lg" />
               ) : featuredArticle && featuredArticle.slug ? (
                 <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
-                  <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-lg">
+                  <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={featuredArticle.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(featuredArticle.featured_image_url, [640, 960, 1280]) : undefined}
@@ -357,7 +357,7 @@ const Index = () => {
                 </Link>
               ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
                 <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
-                  <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-lg">
+                  <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={trendingArticles[0].featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(trendingArticles[0].featured_image_url, [640, 960, 1280]) : undefined}
@@ -390,8 +390,8 @@ const Index = () => {
               ) : null}
             </div>
 
-            {/* SECONDARY STORIES — right 4 cols (≈35%), stacked */}
-            <div className="lg:col-span-4 flex flex-col gap-4">
+            {/* SECONDARY STORIES — right 4 cols (≈35%), stacked to match hero height */}
+            <div className="lg:col-span-4 flex flex-col gap-3 lg:h-[520px]">
               {isLoading ? (
                 <>
                   {[...Array(3)].map((_, i) => (
@@ -418,7 +418,7 @@ const Index = () => {
                     <Link
                       key={article.id}
                       to={`/${categorySlug}/${article.slug}`}
-                      className="group flex gap-4 p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200"
+                      className="group flex gap-4 p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200 flex-1"
                     >
                       <div className="relative w-[140px] h-[100px] md:h-[120px] overflow-hidden rounded-lg flex-shrink-0">
                         <img
@@ -466,10 +466,10 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* Article Grid — alternating size-contrast rows */}
-        <section className="container mx-auto px-4 py-16 md:py-24">
-          <div className="flex items-center justify-between mb-6 md:mb-8">
+        <section className="container mx-auto px-4 py-20 md:py-[80px]">
+          <div className="flex items-center justify-between mb-7">
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl md:text-[28px] font-bold">More Stories</h2>
+              <h2 className="text-[28px] md:text-[30px] font-bold">More Stories</h2>
             </div>
           </div>
 
@@ -542,7 +542,7 @@ const Index = () => {
                       {article.categories?.name || "Uncategorized"}
                     </span>
                     <h3 className={`font-semibold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
-                      isLarge ? 'text-xl md:text-2xl' : 'text-base md:text-lg'
+                      isLarge ? 'text-[22px] md:text-2xl' : 'text-base md:text-[18px]'
                     }`}>
                       {article.title}
                     </h3>
@@ -568,10 +568,12 @@ const Index = () => {
                 {rows.map((row, ri) => {
                   if (row.pattern === 'large-left') {
                     return (
-                      <div key={ri} className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        {row.articles[0] && <div className="md:col-span-2">{renderCard(row.articles[0], true)}</div>}
-                        {row.articles[1] && <div className="md:col-span-1">{renderCard(row.articles[1], false)}</div>}
-                        {row.articles[2] && <div className="md:col-span-1">{renderCard(row.articles[2], false)}</div>}
+                      <div key={ri} className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        {row.articles[0] && <div className="md:col-span-3">{renderCard(row.articles[0], true)}</div>}
+                        <div className="md:col-span-2 grid grid-cols-1 gap-6">
+                          {row.articles[1] && renderCard(row.articles[1], false)}
+                          {row.articles[2] && renderCard(row.articles[2], false)}
+                        </div>
                       </div>
                     );
                   }
@@ -586,29 +588,34 @@ const Index = () => {
                   }
                   // large-right
                   return (
-                    <div key={ri} className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                      {row.articles[1] && <div className="md:col-span-1 order-2 md:order-1">{renderCard(row.articles[1], false)}</div>}
-                      {row.articles[2] && <div className="md:col-span-1 order-3 md:order-2">{renderCard(row.articles[2], false)}</div>}
-                      {row.articles[0] && <div className="md:col-span-2 order-1 md:order-3">{renderCard(row.articles[0], true)}</div>}
+                    <div key={ri} className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                      <div className="md:col-span-2 grid grid-cols-1 gap-6 order-2 md:order-1">
+                        {row.articles[1] && renderCard(row.articles[1], false)}
+                        {row.articles[2] && renderCard(row.articles[2], false)}
+                      </div>
+                      {row.articles[0] && <div className="md:col-span-3 order-1 md:order-2">{renderCard(row.articles[0], true)}</div>}
                     </div>
                   );
                 })}
-
-                {/* Ad unit below grid */}
-                <div className="flex justify-center pt-4">
-                  <MPUAd />
-                </div>
               </div>
             );
           })()}
         </section>
+
+        {/* Ad placement — between article grid and Most Discussed */}
+        <div className="container mx-auto px-4 py-10">
+          <div className="flex flex-col items-center">
+            <span className="text-[11px] text-muted-foreground/40 uppercase tracking-wider mb-2">Advertisement</span>
+            <MPUAd />
+          </div>
+        </div>
 
         {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 3. For You Section (logged-in only, with UnreadBookmarksNudge folded in) */}
         {user && (
-          <div className="py-16 md:py-24">
+          <div className="py-14 md:py-20">
             <Suspense fallback={null}>
               <ForYouSection excludeIds={heroLatestIds} />
             </Suspense>
@@ -618,7 +625,7 @@ const Index = () => {
         {user && <div className="border-t border-border/30" />}
 
         {/* 4. Most Discussed This Week */}
-        <div className="py-16 md:py-24 bg-muted/10">
+        <div className="py-14 md:py-20 bg-muted/10">
           <Suspense fallback={null}>
             <MostDiscussedSection />
           </Suspense>
@@ -628,7 +635,7 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* 5. Recommended Articles ("You May Like") */}
-        <div className="py-16 md:py-24">
+        <div className="py-14 md:py-20">
           <Suspense fallback={
             <div className="container mx-auto px-4">
               <div className="space-y-4">
@@ -655,7 +662,7 @@ const Index = () => {
         {/* 6. Editor's Pick */}
         {editorsPick && (
           <>
-            <section className="container mx-auto px-4 py-16 md:py-24 bg-muted/10">
+            <section className="container mx-auto px-4 py-14 md:py-20 bg-muted/10">
               <EditorsPick article={editorsPick} />
             </section>
             <div className="border-t border-border/30" />
@@ -663,7 +670,7 @@ const Index = () => {
         )}
 
         {/* 7. Recommended Guides */}
-        <div className="py-16 md:py-24">
+        <div className="py-14 md:py-20">
           <RecommendedGuides />
         </div>
 
@@ -671,7 +678,7 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* 8. Upcoming Events */}
-        <div className="py-16 md:py-24 bg-muted/10">
+        <div className="py-14 md:py-20 bg-muted/10">
           <Suspense fallback={
             <div className="container mx-auto px-4">
               <div className="space-y-4">
@@ -694,10 +701,10 @@ const Index = () => {
         {/* 9. Featured Voices */}
         {(featuredAuthors && featuredAuthors.length > 0) && (
           <>
-            <section className="py-16 md:py-24">
+            <section className="py-14 md:py-20">
               <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                  <h2 className="headline text-2xl md:text-[28px] font-bold mb-3">Featured Voices</h2>
+                  <h2 className="headline text-[28px] md:text-[30px] font-bold mb-3">Featured Voices</h2>
                   <p className="text-muted-foreground text-lg">Meet the experts shaping AI discourse in Asia</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

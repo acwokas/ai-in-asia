@@ -93,7 +93,7 @@ export default function MostDiscussedSection() {
     <section className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto lg:max-w-none">
         <div className="mb-8">
-          <h2 className="headline text-[22px] md:text-[28px] font-bold flex items-center gap-2">
+          <h2 className="headline text-[28px] md:text-[30px] font-bold flex items-center gap-2">
             <MessageCircle className="h-6 w-6 text-primary" />
             Most Discussed
           </h2>
