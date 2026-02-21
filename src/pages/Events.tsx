@@ -18,6 +18,7 @@ import EventsFilterBar, { type EventFilters, type ViewMode } from "@/components/
 import EventAlertSignup from "@/components/events/EventAlertSignup";
 import EventsCalendarView from "@/components/events/EventsCalendarView";
 import EventsMapView from "@/components/events/EventsMapView";
+import EventsFinder from "@/components/events/EventsFinder";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -377,6 +378,9 @@ const Events = () => {
                   </div>
               </section>
               )}
+
+              {/* Events Finder Tool */}
+              <EventsFinder events={events?.events || []} />
 
               {/* Event Alert Signup */}
               <EventAlertSignup />
