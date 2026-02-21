@@ -284,11 +284,14 @@ export const useComments = (articleId: string) => {
     }
   };
 
-  const handleSubmitComment = async (authorName: string, authorEmail: string, content: string) => {
+  const handleSubmitComment = async (authorName: string, authorEmail: string, content: string, userId?: string) => {
     try {
+      const insertData: any = { article_id: articleId, author_name: authorName, author_email: authorEmail, content, approved: false };
+      if (userId) insertData.user_id = userId;
+
       const { data: newComment, error } = await supabase
         .from("comments")
-        .insert([{ article_id: articleId, author_name: authorName, author_email: authorEmail, content, approved: false }])
+        .insert([insertData])
         .select()
         .single();
 
@@ -303,6 +306,11 @@ export const useComments = (articleId: string) => {
       }
 
       toast({ title: "Comment submitted", description: "Your comment is awaiting moderation and will appear shortly." });
+      
+      if (userId) {
+        toast({ title: "✨ +15 points for commenting!", duration: 3000 });
+      }
+
       return true;
     } catch (error) {
       toast({ title: "Failed to submit comment", description: "Please try again later.", variant: "destructive" });
