@@ -1799,6 +1799,69 @@ export type Database = {
         }
         Relationships: []
       }
+      event_ad_slots: {
+        Row: {
+          alt_text: string | null
+          click_count: number
+          click_url: string | null
+          created_at: string
+          end_date: string | null
+          filter_region: string | null
+          filter_type: string | null
+          id: string
+          image_url: string | null
+          impression_count: number
+          is_active: boolean
+          name: string
+          position_index: number | null
+          slot_type: string
+          sponsor_logo_url: string | null
+          sponsor_name: string | null
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          click_count?: number
+          click_url?: string | null
+          created_at?: string
+          end_date?: string | null
+          filter_region?: string | null
+          filter_type?: string | null
+          id?: string
+          image_url?: string | null
+          impression_count?: number
+          is_active?: boolean
+          name: string
+          position_index?: number | null
+          slot_type: string
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          click_count?: number
+          click_url?: string | null
+          created_at?: string
+          end_date?: string | null
+          filter_region?: string | null
+          filter_type?: string | null
+          id?: string
+          image_url?: string | null
+          impression_count?: number
+          is_active?: boolean
+          name?: string
+          position_index?: number | null
+          slot_type?: string
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_alert_subscribers: {
         Row: {
           active: boolean

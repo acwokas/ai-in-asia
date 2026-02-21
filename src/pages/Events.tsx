@@ -19,6 +19,10 @@ import EventAlertSignup from "@/components/events/EventAlertSignup";
 import EventsCalendarView from "@/components/events/EventsCalendarView";
 import EventsMapView from "@/components/events/EventsMapView";
 import EventsFinder from "@/components/events/EventsFinder";
+import EventAdSlot from "@/components/events/EventAdSlot";
+import EventPostFilterAd from "@/components/events/EventPostFilterAd";
+import EventsSidebarAds from "@/components/events/EventsSidebarAds";
+import { useEventAdSlots, useAdSlotsByType } from "@/hooks/useEventAdSlots";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -57,6 +61,12 @@ const Events = () => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+
+  // Ad slots
+  const { data: adSlots } = useEventAdSlots();
+  const { midListBanners, sidebarSkyscraper, sidebarSquare, postFilter, alertsSponsor } = useAdSlotsByType(adSlots);
+
+
   // Initialise filters from URL
   const [filters, setFilters] = useState<EventFilters>(() => ({
     region: searchParams.get("region") || "all",
@@ -382,13 +392,18 @@ const Events = () => {
               {/* Events Finder Tool */}
               <EventsFinder events={events?.events || []} />
 
-              {/* Event Alert Signup */}
-              <EventAlertSignup />
+              {/* Event Alert Signup with optional sponsor */}
+              <EventAlertSignup sponsorName={alertsSponsor?.sponsor_name} sponsorLogoUrl={alertsSponsor?.sponsor_logo_url} sponsorUrl={alertsSponsor?.click_url} />
 
               {/* View: Calendar, Map, or List */}
               {viewMode === "calendar" ? (
                 <section>
-                  <EventsCalendarView events={upcomingEvents} />
+                  <div className="flex gap-6">
+                    <div className="flex-1 min-w-0">
+                      <EventsCalendarView events={upcomingEvents} />
+                    </div>
+                    <EventsSidebarAds skyscraper={sidebarSkyscraper} square={sidebarSquare} />
+                  </div>
                   <div className="text-center mt-12 mb-4">
                     <p className="text-sm text-muted-foreground">
                       Know of an event we're missing?{" "}
@@ -400,7 +415,12 @@ const Events = () => {
                 </section>
               ) : viewMode === "map" ? (
                 <section>
-                  <EventsMapView events={[...featuredEvents, ...upcomingEvents]} />
+                  <div className="flex gap-6">
+                    <div className="flex-1 min-w-0">
+                      <EventsMapView events={[...featuredEvents, ...upcomingEvents]} />
+                    </div>
+                    <EventsSidebarAds skyscraper={sidebarSkyscraper} square={sidebarSquare} />
+                  </div>
                   <div className="text-center mt-12 mb-4">
                     <p className="text-sm text-muted-foreground">
                       Know of an event we're missing?{" "}
@@ -412,14 +432,34 @@ const Events = () => {
                 </section>
               ) : (
                 <>
+                  {/* Post-filter recommendation ad */}
+                  <EventPostFilterAd
+                    postFilterSlots={postFilter}
+                    activeRegion={filters.region}
+                    activeType={filters.type}
+                    events={events?.events || []}
+                  />
+
                   {/* All Upcoming Events */}
                   <section>
                     <h2 className="text-2xl font-bold mb-6">All Upcoming Events</h2>
                     <div className="space-y-4">
                       {upcomingEvents && upcomingEvents.length > 0 ? (
                         <>
-                          {upcomingEvents.map((event) => (
-                            <EventCard key={event.id} event={event} />
+                          {upcomingEvents.map((event, index) => (
+                            <div key={event.id}>
+                              <EventCard event={event} />
+                              {/* Insert mid-list banner after every 8 cards */}
+                              {(index + 1) % 8 === 0 && (() => {
+                                const bannerIndex = Math.floor(index / 8);
+                                const banner = midListBanners[bannerIndex % midListBanners.length];
+                                return banner ? (
+                                  <div className="mt-4">
+                                    <EventAdSlot ad={banner} variant="banner" label="Advertisement" />
+                                  </div>
+                                ) : null;
+                              })()}
+                            </div>
                           ))}
 
                           {events && events.total > page * EVENTS_PER_PAGE && (
