@@ -1,8 +1,9 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Clock, User, TrendingUp, MessageCircle } from "lucide-react";
+import { User, TrendingUp, MessageCircle } from "lucide-react";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { ReadingTimeIndicator } from "@/components/ReadingTimeIndicator";
 
 interface ArticleCardProps {
   title: string;
@@ -97,10 +98,7 @@ const ArticleCard = ({
                   <span>{commentCount}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{readTime}</span>
-              </div>
+              <ReadingTimeIndicator minutes={parseInt(readTime) || 5} />
             </div>
           </div>
         </div>
