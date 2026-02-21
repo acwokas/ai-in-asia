@@ -21,10 +21,6 @@ export const PromptAndGoSponsor = () => {
         aria-label="Prompt and Go AI - Your AI prompt companion"
         onClick={handleClick}
       >
-        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-4 text-center">
-          In Partnership With
-        </div>
-        
         <div className="flex flex-col items-center justify-center space-y-4">
           <img
             src={promptAndGoLogo}
