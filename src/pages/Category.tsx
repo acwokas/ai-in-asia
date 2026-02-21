@@ -627,21 +627,52 @@ function LearningPathCard({ path }: { path: { emoji: string; title: string; desc
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        padding: "20px",
+        padding: 24,
         borderRadius: 14,
-        background: hovered ? `${path.color}08` : TOKENS.CARD_BG,
-        border: `1px solid ${hovered ? path.color + "40" : TOKENS.BORDER}`,
+        minHeight: 160,
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
+        background: TOKENS.CARD_BG,
+        border: `1px solid ${hovered ? path.color + "4d" : TOKENS.BORDER}`,
+        transform: hovered ? "translateY(-3px)" : "translateY(0)",
+        boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.3)" : "none",
         transition: "all 0.25s ease",
         cursor: "pointer",
       }}
     >
-      <span style={{ fontSize: 24, display: "block", marginBottom: 10 }}>{path.emoji}</span>
-      <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", margin: "0 0 4px 0" }}>{path.title}</h4>
-      <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 12px 0" }}>{path.desc}</p>
-      <span style={{ fontSize: 13, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
-        {path.articles} articles - {path.time}
-      </span>
-      <div style={{ height: 3, borderRadius: 2, background: TOKENS.BORDER, marginTop: 10 }} />
+      {/* Radial gradient overlay */}
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 10%, ${path.color}${hovered ? "24" : "14"}, transparent 60%)`, transition: "background 0.25s ease", pointerEvents: "none" }} />
+
+      {/* Content */}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* Emoji container */}
+        <div style={{ width: 52, height: 52, borderRadius: 12, background: `${path.color}1f`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+          <span style={{ fontSize: 36, lineHeight: 1 }}>{path.emoji}</span>
+        </div>
+
+        <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 15, color: "#f3f4f6", margin: "0 0 0 0", lineHeight: 1.3 }}>{path.title}</h4>
+        <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "6px 0 12px 0", lineHeight: 1.5 }}>{path.desc}</p>
+
+        {/* Bottom area */}
+        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
+            {path.articles} articles - {path.time}
+          </span>
+          {/* Arrow indicator */}
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={path.color}
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ opacity: hovered ? 1 : 0.4, transform: hovered ? "translateX(3px)" : "translateX(0)", transition: "all 0.25s ease", flexShrink: 0 }}
+          >
+            <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+          </svg>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ height: 4, borderRadius: 4, background: "#1a1d25", marginTop: 12 }} />
+      </div>
     </div>
   );
 }
