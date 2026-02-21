@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -71,6 +71,22 @@ const DEEP_CUTS: Record<string, { tag: string; title: string; date: string }[]> 
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
+function useRevealOnScroll() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, style: { opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: "opacity 0.8s ease, transform 0.8s ease" } as React.CSSProperties };
+}
+
 const Category = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -93,6 +109,13 @@ const Category = () => {
 
   // Reset filter when slug changes
   useEffect(() => { setSelectedFilter("All"); }, [slug]);
+
+  const revealPaths = useRevealOnScroll();
+  const revealTool = useRevealOnScroll();
+  const revealFeatured = useRevealOnScroll();
+  const revealDeep = useRevealOnScroll();
+  const revealCross = useRevealOnScroll();
+  const revealNewsletter = useRevealOnScroll();
 
   const cfg = CATEGORY_CONFIG[slug as CategorySlug] || CATEGORY_CONFIG.news;
   const paths = LEARNING_PATHS[slug || "news"] || [];
@@ -392,7 +415,7 @@ const Category = () => {
 
               {/* 6. FEATURED ARTICLES */}
               {featuredGridArticles.length > 0 && (
-                <section style={{ marginBottom: 48 }}>
+                <section ref={revealFeatured.ref} style={{ marginBottom: 48, ...revealFeatured.style }}>
                   <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {featuredGridArticles.map((article: any) => (
@@ -411,7 +434,7 @@ const Category = () => {
 
               {/* 7. DEEP CUTS */}
               {deepCuts.length > 0 && (
-                <section style={{ marginBottom: 48 }}>
+                <section ref={revealDeep.ref} style={{ marginBottom: 48, ...revealDeep.style }}>
                   <SectionHeader
                     title="Deep Cuts from the Archives"
                     emoji="💎"
@@ -443,7 +466,7 @@ const Category = () => {
               )}
 
               {/* 8. CROSS-CATEGORY NAVIGATION */}
-              <section style={{ marginBottom: 48 }}>
+              <section ref={revealCross.ref} style={{ marginBottom: 48, ...revealCross.style }}>
                 <SectionHeader title="Explore Other Categories" emoji="🌐" color={TOKENS.BRAND} />
                 <div className="flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto scrollbar-hide">
                   {otherCategories.map((cat) => (
@@ -453,7 +476,7 @@ const Category = () => {
               </section>
 
               {/* 9. NEWSLETTER CTA */}
-              <section style={{ marginBottom: 24 }}>
+              <section ref={revealNewsletter.ref} style={{ marginBottom: 24, ...revealNewsletter.style }}>
                 <div
                   style={{
                     borderRadius: 20,
