@@ -305,297 +305,244 @@ const Index = () => {
 
         <Separator className="my-0" />
 
-        {/* 2. Hero Grid (Trending + Featured + Latest) */}
-        <section className="container mx-auto px-4 py-12 md:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Trending Section - Left */}
-            <div className="lg:col-span-3 order-2 lg:order-1">
-              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase mb-6">
-                Trending
-              </div>
-              <div className="space-y-4">
+        {/* 2. Hero: Primary Story + Secondary Stories (CNET-style asymmetric) */}
+        <section className="container mx-auto px-4 py-8 md:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* PRIMARY STORY — left 8 cols (≈65%) */}
+            <div className="lg:col-span-8">
+              {isLoading ? (
+                <Skeleton className="h-[420px] md:h-[500px] rounded-lg" />
+              ) : featuredArticle && featuredArticle.slug ? (
+                <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
+                  <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-lg">
+                    <img
+                      src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
+                      srcSet={featuredArticle.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(featuredArticle.featured_image_url, [640, 960, 1280]) : undefined}
+                      sizes="(max-width: 768px) 100vw, 65vw"
+                      alt={featuredArticle.title}
+                      loading="eager" decoding="async" fetchPriority="high"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      width={1280} height={500}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <Badge className="bg-primary text-primary-foreground text-xs">{featuredArticle.categories?.name || "Uncategorized"}</Badge>
+                        {featuredArticle.is_trending && (
+                          <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
+                        )}
+                        {getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone) && (
+                          <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
+                        )}
+                      </div>
+                      <h2 className="text-white font-bold text-2xl sm:text-3xl md:text-[40px] md:leading-tight mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                        {featuredArticle.title}
+                      </h2>
+                      <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-3 max-w-2xl">{featuredArticle.excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/60 text-xs">
+                        {featuredArticle.published_at && (
+                          <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        )}
+                        <span>•</span>
+                        <span>{featuredArticle.reading_time_minutes || 5} min read</span>
+                        {featuredArticle.authors?.name && (
+                          <>
+                            <span>•</span>
+                            <span>{featuredArticle.authors.name}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
+                <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
+                  <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-lg">
+                    <img
+                      src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)}
+                      srcSet={trendingArticles[0].featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(trendingArticles[0].featured_image_url, [640, 960, 1280]) : undefined}
+                      sizes="(max-width: 768px) 100vw, 65vw"
+                      alt={trendingArticles[0].title}
+                      loading="eager" fetchPriority="high"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      width={1280} height={500}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <Badge className="bg-primary text-primary-foreground text-xs">{trendingArticles[0].categories?.name || "Uncategorized"}</Badge>
+                        {trendingArticles[0].is_trending && (
+                          <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
+                        )}
+                      </div>
+                      <h2 className="text-white font-bold text-2xl sm:text-3xl md:text-[40px] md:leading-tight mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                        {trendingArticles[0].title}
+                      </h2>
+                      <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-3 max-w-2xl">{trendingArticles[0].excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/60 text-xs">
+                        {trendingArticles[0].published_at && <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+                        <span>•</span>
+                        <span>{trendingArticles[0].reading_time_minutes || 5} min read</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ) : null}
+            </div>
+
+            {/* SECONDARY STORIES — right 4 cols (≈35%), stacked */}
+            <div className="lg:col-span-4 flex flex-col gap-4">
               {isLoading ? (
                 <>
-                  <div>
-                    <Skeleton className="aspect-video rounded-lg mb-2" />
-                    <Skeleton className="h-4 w-3/4 mb-1" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i}>
-                      <Skeleton className="aspect-[16/9] rounded-lg mb-2" />
-                      <Skeleton className="h-3 w-2/3 mb-1" />
-                      <Skeleton className="h-3 w-full" />
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <Skeleton className="w-[140px] h-[100px] rounded-lg flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
                     </div>
                   ))}
                 </>
               ) : (() => {
-                const filteredTrending = trendingArticles?.filter((article: any) => article.slug) || [];
-                const leftColumnCount = Math.min(5, filteredTrending.length);
-                
-                return filteredTrending.slice(0, leftColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || 'news';
-                  return (
-                <Link 
-                  key={article.id}
-                  to={`/${categorySlug}/${article.slug}`}
-                  className="block group"
-                >
-                  <div className={`relative ${index === 0 ? 'aspect-video' : 'aspect-[16/9]'} overflow-hidden rounded-lg mb-2`}>
-                    <img 
-                      src={article.featured_image_url || "/placeholder.svg"} 
-                      alt={article.title}
-                      loading="lazy"
-                      decoding="async"
-                      fetchPriority={index === 0 ? "high" : "low"}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
-                      {article.categories?.name || "Uncategorized"}
-                    </Badge>
-                    {article.is_trending && (
-                      <Badge className="absolute top-2 left-24 bg-orange-500 text-white flex items-center gap-1 text-xs">
-                        <TrendingUp className="h-3 w-3" />
-                        Trending
-                      </Badge>
-                    )}
-                    {index < 3 && getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
-                      <Badge className="absolute top-2 right-2 bg-emerald-600 text-white text-xs">
-                        {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
-                      </Badge>
-                    )}
-                    {index === 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                        <p className="text-white text-xs mb-1">
-                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
-                        </p>
-                        <h3 className="text-white font-bold text-base line-clamp-2 group-hover:text-primary transition-colors">
-                          {article.title}
-                        </h3>
-                      </div>
-                    )}
-                  </div>
-                  {index > 0 && (
-                    <>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
-                      </p>
-                      <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                        {article.title}
-                      </h3>
-                    </>
-                  )}
-                </Link>
-                );
-                });
-              })()}
-              </div>
-            </div>
-
-            {/* Featured Article - Center */}
-            <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              {isLoading ? (
-                <div><Skeleton className="h-[600px] rounded-lg" /></div>
-              ) : featuredArticle && featuredArticle.slug ? (
-                <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
-                  <div className="relative h-[600px] overflow-hidden rounded-lg">
-                    <img 
-                      src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)} 
-                      srcSet={featuredArticle.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(featuredArticle.featured_image_url, [640, 960, 1280]) : undefined}
-                      sizes="(max-width: 768px) 100vw, 640px"
-                      alt={featuredArticle.title}
-                      loading="eager" decoding="async" fetchPriority="high"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      width={640} height={600}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <Badge className="bg-primary text-primary-foreground">{featuredArticle.categories?.name || "Uncategorized"}</Badge>
-                        {featuredArticle.is_trending && (
-                          <Badge className="bg-orange-500 text-white flex items-center gap-1"><TrendingUp className="h-3 w-3" />Trending</Badge>
-                        )}
-                        {getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone) && (
-                          <Badge className="bg-emerald-600 text-white">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
-                        )}
-                      </div>
-                      <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">{featuredArticle.title}</h1>
-                      <p className="text-white/90 text-base line-clamp-3 mb-3">{featuredArticle.excerpt}</p>
-                      <div className="flex items-center gap-3 text-white/80 text-sm">
-                        {featuredArticle.published_at && <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>}
-                        {featuredArticle.published_at && <span>•</span>}
-                        <span>{featuredArticle.reading_time_minutes || 5} min read</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                trendingArticles.length > 0 && trendingArticles[0]?.slug && (
-                  <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
-                    <div className="relative h-[600px] overflow-hidden rounded-lg">
-                      <img 
-                        src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)} 
-                        srcSet={trendingArticles[0].featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(trendingArticles[0].featured_image_url, [640, 960, 1280]) : undefined}
-                        sizes="(max-width: 768px) 100vw, 640px"
-                        alt={trendingArticles[0].title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        width={640} height={600} fetchPriority="high"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-8">
-                        <div className="flex items-center gap-2 mb-3 flex-wrap">
-                          <Badge className="bg-primary text-primary-foreground">{trendingArticles[0].categories?.name || "Uncategorized"}</Badge>
-                          {trendingArticles[0].homepage_trending && (
-                            <Badge className="bg-orange-500 text-white flex items-center gap-1"><TrendingUp className="h-3 w-3" />Trending</Badge>
-                          )}
-                        </div>
-                        <h1 className="text-white font-bold text-3xl md:text-4xl mb-4 line-clamp-3 group-hover:text-primary transition-colors">{trendingArticles[0].title}</h1>
-                        <p className="text-white/90 text-base line-clamp-3 mb-3">{trendingArticles[0].excerpt}</p>
-                        <div className="flex items-center gap-3 text-white/80 text-sm">
-                          {trendingArticles[0].published_at && <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>}
-                          {(trendingArticles[0].published_at && (trendingArticles[0].reading_time_minutes || 5)) && <span>•</span>}
-                          <span>{trendingArticles[0].reading_time_minutes || 5} min read</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )
-              )}
-
-              {/* Two Medium Articles Stacked */}
-              <div className="space-y-6">
-                {isLoading ? (
-                  <>
-                    <Skeleton className="h-[280px] rounded-lg" />
-                    <Skeleton className="h-[280px] rounded-lg" />
-                  </>
-                ) : latestArticles?.filter((article: any) => 
+                // Gather secondary articles: next articles after the featured one
+                const secondaryArticles = latestArticles?.filter((article: any) =>
                   article.slug && article.id !== featuredArticle?.id
-                ).slice(0, 2).map((article: any) => {
+                ).slice(0, 3) || [];
+
+                return secondaryArticles.map((article: any, index: number) => {
                   const categorySlug = article.categories?.slug || 'news';
                   return (
-                  <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="block group">
-                    <div className="relative h-[280px] overflow-hidden rounded-lg">
-                      <img 
-                        src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 640, 280)} 
-                        srcSet={article.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(article.featured_image_url, [320, 640, 960]) : undefined}
-                        sizes="(max-width: 768px) 100vw, 640px"
-                        alt={article.title} loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        width={640} height={280}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <Badge className="bg-primary text-primary-foreground text-xs">{article.categories?.name || "Uncategorized"}</Badge>
+                    <Link
+                      key={article.id}
+                      to={`/${categorySlug}/${article.slug}`}
+                      className="group flex gap-4 p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200"
+                    >
+                      <div className="relative w-[140px] h-[100px] md:h-[120px] overflow-hidden rounded-lg flex-shrink-0">
+                        <img
+                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 280, 200)}
+                          alt={article.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          width={280} height={200}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                            {article.categories?.name || "Uncategorized"}
+                          </span>
                           {article.is_trending && (
-                            <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
+                            <TrendingUp className="h-3 w-3 text-orange-500" />
                           )}
                           {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
-                            <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}</Badge>
+                            <span className="text-xs text-emerald-500 font-medium">
+                              {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
+                            </span>
                           )}
                         </div>
-                        <h3 className="text-white font-bold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                        <p className="text-white/80 text-sm line-clamp-2 mb-2">{article.excerpt}</p>
-                        <div className="flex items-center gap-2 text-white/70 text-xs">
-                          {article.published_at && <span>{new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>}
-                          {article.published_at && <span>•</span>}
-                          <span>{article.reading_time_minutes || 5} min read</span>
+                        <h3 className="font-semibold text-base md:text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
+                          {article.published_at && (
+                            <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          )}
+                          <span>•</span>
+                          <span>{article.reading_time_minutes || 5} min</span>
                         </div>
                       </div>
+                    </Link>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        </section>
+
+        {/* Trending + Latest row below the hero */}
+        <section className="container mx-auto px-4 pb-8 md:pb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Trending */}
+            <div className="lg:col-span-4">
+              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase mb-4">
+                Trending
+              </div>
+              <div className="space-y-3">
+                {isLoading ? (
+                  [...Array(4)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <Skeleton className="w-16 h-16 rounded flex-shrink-0" />
+                      <div className="flex-1"><Skeleton className="h-3 w-full mb-1" /><Skeleton className="h-3 w-2/3" /></div>
                     </div>
-                  </Link>
-                );
+                  ))
+                ) : (trendingArticles?.filter((a: any) => a.slug) || []).slice(0, 5).map((article: any) => {
+                  const categorySlug = article.categories?.slug || 'news';
+                  return (
+                    <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="flex gap-3 group">
+                      <div className="relative w-16 h-16 overflow-hidden rounded flex-shrink-0">
+                        <img src={article.featured_image_url || "/placeholder.svg"} alt={article.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground mb-0.5">
+                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • {article.reading_time_minutes || 5} min
+                        </p>
+                        <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
+                      </div>
+                    </Link>
+                  );
                 })}
               </div>
             </div>
 
-            {/* Latest Articles - Right */}
-            <div className="lg:col-span-3 order-3">
-              <div className="mb-6"><MPUAd /></div>
-              <div className="bg-secondary text-secondary-foreground px-3 py-1.5 mb-6">
-                <div className="text-xs font-bold uppercase">Latest</div>
+            {/* Latest */}
+            <div className="lg:col-span-5">
+              <div className="bg-secondary text-secondary-foreground px-3 py-1.5 text-xs font-bold uppercase mb-4">
+                Latest
               </div>
-              <div className="space-y-4">
-              {isLoading ? (
-                <>
-                  {[...Array(2)].map((_, i) => (
-                    <div key={i}>
-                      <Skeleton className="aspect-video rounded-lg mb-2" />
-                      <Skeleton className="h-3 w-2/3 mb-1" />
-                      <Skeleton className="h-3 w-full" />
+              <div className="space-y-3">
+                {isLoading ? (
+                  [...Array(5)].map((_, i) => (
+                    <div key={i} className="flex gap-3">
+                      <Skeleton className="w-16 h-16 rounded flex-shrink-0" />
+                      <div className="flex-1"><Skeleton className="h-3 w-full mb-1" /><Skeleton className="h-3 w-2/3" /></div>
                     </div>
-                  ))}
-                  {[...Array(4)].map((_, i) => (
-                    <div key={`small-${i}`} className="flex gap-3">
-                      <Skeleton className="w-20 h-20 rounded" />
-                      <div className="flex-1">
-                        <Skeleton className="h-3 w-1/2 mb-1" />
-                        <Skeleton className="h-3 w-full" />
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : (() => {
-                const trendingIds = trendingArticles?.map((a: any) => a.id) || [];
-                const centerMediumArticleIds = latestArticles?.filter((a: any) => 
-                  a.slug && a.id !== featuredArticle?.id
-                ).slice(0, 2).map((a: any) => a.id) || [];
-                
-                const filteredLatest = latestArticles?.filter((article: any) => 
-                  article.slug && 
-                  article.id !== featuredArticle?.id &&
-                  !trendingIds.includes(article.id) &&
-                  !centerMediumArticleIds.includes(article.id)
-                ) || [];
-                const rightColumnCount = Math.min(6, filteredLatest.length);
-                
-                return filteredLatest.slice(0, rightColumnCount).map((article: any, index: number) => {
-                  const categorySlug = article.categories?.slug || 'news';
-                  return (
-                  <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="block group">
-                    {index < 2 ? (
-                      <div>
-                        <div className="relative aspect-video overflow-hidden rounded-lg mb-2">
-                          <img 
-                            src={article.featured_image_url || "/placeholder.svg"} 
-                            alt={article.title} loading="lazy"
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
-                            <Badge className="bg-secondary text-secondary-foreground text-xs">{article.categories?.name || "Uncategorized"}</Badge>
-                            {article.is_trending && (
-                              <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min read
-                        </p>
-                        <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                      </div>
-                    ) : (
-                      <div className="flex gap-3">
-                        <div className="relative w-20 h-20 overflow-hidden rounded flex-shrink-0">
-                          <img 
-                            src={article.featured_image_url || "/placeholder.svg"} 
-                            alt={article.title} loading="lazy"
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
+                  ))
+                ) : (() => {
+                  const trendingIds = trendingArticles?.map((a: any) => a.id) || [];
+                  const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 3).map((a: any) => a.id) || [];
+                  const filteredLatest = latestArticles?.filter((article: any) =>
+                    article.slug &&
+                    article.id !== featuredArticle?.id &&
+                    !trendingIds.includes(article.id) &&
+                    !secondaryIds.includes(article.id)
+                  ) || [];
+
+                  return filteredLatest.slice(0, 6).map((article: any) => {
+                    const categorySlug = article.categories?.slug || 'news';
+                    return (
+                      <Link key={article.id} to={`/${categorySlug}/${article.slug}`} className="flex gap-3 group">
+                        <div className="relative w-16 h-16 overflow-hidden rounded flex-shrink-0">
+                          <img src={article.featured_image_url || "/placeholder.svg"} alt={article.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {article.published_at && new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {article.published_at && '•'} {article.reading_time_minutes || 5} min
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {article.categories?.name} • {article.reading_time_minutes || 5} min
                           </p>
-                          <h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
+                          <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
                         </div>
-                      </div>
-                    )}
-                  </Link>
-                );
-                });
-              })()}
+                      </Link>
+                    );
+                  });
+                })()}
               </div>
+            </div>
+
+            {/* Ad unit */}
+            <div className="lg:col-span-3">
+              <MPUAd />
             </div>
           </div>
         </section>
