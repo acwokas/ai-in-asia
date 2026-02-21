@@ -8,6 +8,19 @@ import DOMPurify from "dompurify";
 
 import { InArticleAd } from "@/components/GoogleAds";
 
+/** Generate a URL-safe heading ID from text */
+export const generateHeadingId = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/^\d+\.\s*/, '') // strip leading "1. "
+    .replace(/[^\w\s-]/g, '') // strip special chars, emojis, punctuation
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
+
 // Process inline formatting for text content
 const processInlineFormatting = (text: string): string => {
   if (!text || typeof text !== 'string') return text;
@@ -116,13 +129,19 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         }
         
         if (block.startsWith('### ')) {
-          return `<h3 class="text-2xl font-semibold mt-8 mb-4">${block.substring(4)}</h3>`;
+          const text = block.substring(4);
+          const id = generateHeadingId(text);
+          return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
         }
         if (block.startsWith('## ')) {
-          return `<h2 class="text-3xl font-bold mt-12 mb-6 text-foreground">${block.substring(3)}</h2>`;
+          const text = block.substring(3);
+          const id = generateHeadingId(text);
+          return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
         }
         if (block.startsWith('# ')) {
-          return `<h1 class="text-4xl font-bold mt-8 mb-4">${block.substring(2)}</h1>`;
+          const text = block.substring(2);
+          const id = generateHeadingId(text);
+          return `<h1 id="${id}" class="text-4xl font-bold mt-8 mb-4">${text}</h1>`;
         }
         if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
           const quoteContent = block.substring(2);
@@ -152,7 +171,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
+        ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
       });
       
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
@@ -169,13 +188,19 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         return block;
       }
       if (block.startsWith('### ')) {
-        return `<h3 class="text-2xl font-semibold mt-8 mb-4">${block.substring(4)}</h3>`;
+        const text = block.substring(4);
+        const id = generateHeadingId(text);
+        return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
       }
       if (block.startsWith('## ')) {
-        return `<h2 class="text-3xl font-bold mt-12 mb-6 text-foreground">${block.substring(3)}</h2>`;
+        const text = block.substring(3);
+        const id = generateHeadingId(text);
+        return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
       if (block.startsWith('# ')) {
-        return `<h1 class="text-4xl font-bold mt-8 mb-4">${block.substring(2)}</h1>`;
+        const text = block.substring(2);
+        const id = generateHeadingId(text);
+        return `<h1 id="${id}" class="text-4xl font-bold mt-8 mb-4">${text}</h1>`;
       }
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteContent = block.substring(2);
@@ -211,14 +236,25 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     htmlBlocks.forEach((block, index) => {
       const sanitizedBlock = DOMPurify.sanitize(block, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
+        ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
       });
       
       finalBlocks.push(
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
-      
-      
+/** Generate a URL-safe heading ID from text */
+const generateHeadingId = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/^\d+\.\s*/, '') // strip leading "1. "
+    .replace(/[^\w\s-]/g, '') // strip special chars, emojis, punctuation
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
+
       if (index === adPosition && totalBlocks > 8) {
         finalBlocks.push(<InArticleAd key="ad-inline" />);
       }
@@ -266,8 +302,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
           const headingClasses = level === 1 ? "text-4xl font-bold mt-8 mb-4" :
                                level === 2 ? "text-3xl font-bold mt-8 mb-4" :
                                "text-2xl font-semibold mt-8 mb-4";
+          const headingId = generateHeadingId(block.content || '');
           return (
-            <HeadingTag key={index} className={headingClasses}>
+            <HeadingTag key={index} id={headingId} className={headingClasses}>
               {block.content}
             </HeadingTag>
           );
