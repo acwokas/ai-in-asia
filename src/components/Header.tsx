@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSavedArticles } from "@/hooks/useSavedArticles";
 import logo from "@/assets/aiinasia-logo.png";
+import SearchOverlay from "@/components/SearchOverlay";
 
 const Header = memo(() => {
   const [isDark, setIsDark] = useState(() => {
@@ -34,6 +35,7 @@ const Header = memo(() => {
     return !window.matchMedia('(prefers-color-scheme: light)').matches;
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -62,6 +64,18 @@ const Header = memo(() => {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  // Cmd+K / Ctrl+K to open search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -121,7 +135,7 @@ const Header = memo(() => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate('/search')}
+                    onClick={() => setIsSearchOpen(true)}
                     aria-label="Search"
                     className="flex lg:hidden h-10 w-10"
                   >
@@ -137,7 +151,7 @@ const Header = memo(() => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate('/search')}
+                    onClick={() => setIsSearchOpen(true)}
                     aria-label="Search"
                     className="hidden lg:flex h-10 w-10"
                   >
@@ -339,6 +353,7 @@ const Header = memo(() => {
           </nav>
         )}
       </div>
+      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 });
