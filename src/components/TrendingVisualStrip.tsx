@@ -34,7 +34,7 @@ const TrendingVisualStrip = memo(() => {
           Trending
         </span>
         <Link
-          to="/search"
+          to="/search?q=trending"
           className="text-[13px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
         >
           View all
