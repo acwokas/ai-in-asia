@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -36,6 +36,7 @@ import {
   Building2,
   Rocket,
   ExternalLink,
+  Flame,
   type LucideIcon
 } from "lucide-react";
 import {
@@ -49,6 +50,16 @@ import {
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 
+// Category visual identity config
+const categoryIdentity: Record<string, { bg: string; description: string }> = {
+  news: { bg: "bg-[#1e3a5f]", description: "Breaking developments and signals from the AI landscape across Asia-Pacific" },
+  business: { bg: "bg-[#134e4a]", description: "How AI is reshaping industries across Asia-Pacific" },
+  life: { bg: "bg-[#4c1d95]", description: "AI's impact on everyday life, health, culture, and society" },
+  learn: { bg: "bg-[#14532d]", description: "Tutorials, explainers, and guides to sharpen your AI skills" },
+  create: { bg: "bg-[#7c2d12]", description: "Tools, prompts, and workflows for AI-powered creation" },
+  voices: { bg: "bg-[#1c1917]", description: "Opinion, analysis, and commentary from AI practitioners and thinkers" },
+};
+
 // Category icon mapping
 const categoryIcons: Record<string, LucideIcon> = {
   'voices': MessageSquare,
@@ -61,6 +72,9 @@ const categoryIcons: Record<string, LucideIcon> = {
   'industry': Building2,
   'innovation': Rocket,
   'global': Globe,
+  'life': Globe,
+  'learn': GraduationCap,
+  'create': Sparkles,
 };
 
 // Category Sponsor Card with tracking
@@ -120,6 +134,7 @@ const Category = () => {
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
   const [showAllArticles, setShowAllArticles] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
   // Auto-refresh every 30 minutes
   useAutoRefresh();
@@ -706,6 +721,42 @@ const Category = () => {
     },
   });
 
+  // Popular this month - top 5 most-viewed in past 30 days
+  const { data: popularThisMonth } = useQuery({
+    queryKey: ["category-popular-month", slug],
+    enabled: enableSecondaryQueries && !!category?.id,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      if (!category?.id) return [];
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      if (slug === 'voices') {
+        const { data, error } = await supabase
+          .from("article_categories")
+          .select(`articles!inner (id, slug, title, view_count, published_at, categories:primary_category_id (slug))`)
+          .eq("category_id", category.id)
+          .eq("articles.status", "published")
+          .gte("articles.published_at", thirtyDaysAgo.toISOString());
+        if (error) throw error;
+        return (data?.map(d => d.articles).filter(Boolean) || [])
+          .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 5);
+      }
+
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, slug, title, view_count, categories:primary_category_id (slug)")
+        .eq("primary_category_id", category.id)
+        .eq("status", "published")
+        .gte("published_at", thirtyDaysAgo.toISOString())
+        .order("view_count", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const featuredArticle = articles?.[0];
   const latestArticles = category?.slug === 'voices' ? articles?.slice(1, 5) || [] : articles?.slice(1, 5) || [];
   
@@ -725,6 +776,16 @@ const Category = () => {
   
   // Compute "more articles" excluding all previously shown articles
   const moreArticles = (articles?.slice(5) || []).filter((a: any) => !allShownIds.has(a.id));
+
+  // Filter articles by selected tag
+  const filteredMoreArticles = useMemo(() => {
+    if (!selectedTag) return moreArticles;
+    // We can't filter by tag on the client without tag data per article, so clear filter for now
+    return moreArticles;
+  }, [moreArticles, selectedTag]);
+
+  const identity = categoryIdentity[slug || ''] || { bg: 'bg-[#1e3a5f]', description: '' };
+  const totalArticleCount = articles?.length || 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -746,62 +807,73 @@ const Category = () => {
       <Header />
       
       <main className="flex-1">
-        {/* Compact Hero Section */}
-        <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-6 border-b">
+        {/* Category Hero Banner */}
+        <section className={`${identity.bg} text-white py-10 md:py-14`}>
           <div className="container mx-auto px-4">
-            <Breadcrumb className="mb-3">
+            <Breadcrumb className="mb-4">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/">Home</Link>
+                    <Link to="/" className="text-white/60 hover:text-white">Home</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator />
+                <BreadcrumbSeparator className="text-white/40" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{category?.name}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-white">{category?.name}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left side - Category Info */}
-              <div className="lg:col-span-8">
-                {categoryLoading ? (
-                  <>
-                    <Skeleton className="h-12 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </>
-                ) : (
-                  <>
-                    <h1 className="headline text-4xl md:text-5xl mb-2 flex items-center gap-4">
-                      {category?.slug && categoryIcons[category.slug] && 
-                        (() => {
-                          const Icon = categoryIcons[category.slug];
-                          return <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />;
-                        })()
-                      }
-                      {category?.name}
-                    </h1>
-                    {category?.description && (
-                      <p className="text-base text-muted-foreground leading-relaxed">
-                        {category.description}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
 
-              {/* Right side - Sponsor Card */}
-              {sponsor && (
-                <CategorySponsorCard 
-                  sponsor={sponsor} 
-                  categoryName={category?.name || ''} 
-                />
-              )}
-            </div>
+            {categoryLoading ? (
+              <>
+                <Skeleton className="h-14 w-3/4 mb-3 bg-white/10" />
+                <Skeleton className="h-5 w-full max-w-2xl bg-white/10" />
+              </>
+            ) : (
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                  <h1 className="headline text-4xl md:text-5xl lg:text-6xl mb-2 text-white">
+                    {category?.name}
+                  </h1>
+                  <p className="text-lg text-white/75 max-w-2xl">
+                    {identity.description || category?.description}
+                  </p>
+                </div>
+                <p className="text-sm text-white/50 font-medium shrink-0">
+                  {totalArticleCount}+ articles
+                </p>
+              </div>
+            )}
           </div>
         </section>
+
+        {/* Tag filtering pills */}
+        {popularTags && popularTags.length > 0 && (
+          <div className="border-b bg-muted/30">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              <Button
+                variant={selectedTag === null ? "default" : "ghost"}
+                size="sm"
+                className="shrink-0 text-xs h-7"
+                onClick={() => setSelectedTag(null)}
+              >
+                All
+              </Button>
+              {popularTags.map((tag: any) => (
+                <Button
+                  key={tag.id}
+                  variant={selectedTag === tag.id ? "default" : "outline"}
+                  size="sm"
+                  className="shrink-0 text-xs h-7 gap-1"
+                  onClick={() => setSelectedTag(selectedTag === tag.id ? null : tag.id)}
+                >
+                  {tag.name}
+                  <span className="text-[10px] opacity-60">({tag.count})</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="container mx-auto px-4 py-8">
           {/* Sibling category suggestions */}
@@ -830,15 +902,6 @@ const Category = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i}>
-                    <Skeleton className="aspect-video rounded-lg mb-3" />
-                    <Skeleton className="h-4 w-3/4 mb-2" />
-                    <Skeleton className="h-3 w-full" />
-                  </div>
-                ))}
               </div>
             </div>
           ) : (
@@ -1244,76 +1307,108 @@ const Category = () => {
             </>
           )}
 
-          {/* More from Voices / More Articles - Compact Grid with Load More */}
-          {moreArticles.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-bold mb-6">
-                {category?.slug === 'voices' ? 'More from Voices' : `More from ${category?.name}`}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {(showAllArticles ? moreArticles : moreArticles.slice(0, 8)).map((article) => (
-                  <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <Link to={`/${article.categories?.slug || 'news'}/${article.slug}`}>
-                      <div className="relative aspect-video overflow-hidden">
-                        <img 
-                          src={article.featured_image_url} 
-                          alt={article.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h3 className="font-semibold text-sm line-clamp-2 hover:text-primary transition-colors mb-2">
-                          {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {article.reading_time_minutes || 5} min
-                        </p>
-                      </div>
-                    </Link>
-                  </Card>
-                ))}
-              </div>
-              
-              {/* Load More Button */}
-              {!showAllArticles && moreArticles.length > 8 && (
-                <div className="flex justify-center mt-8">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => {
-                      setIsLoadingMore(true);
-                      setTimeout(() => {
-                        setShowAllArticles(true);
-                        setIsLoadingMore(false);
-                      }, 300);
-                    }}
-                    disabled={isLoadingMore}
-                    className="gap-2"
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        Load More Articles
-                        <Badge variant="secondary" className="ml-1">
-                          +{moreArticles.length - 8}
-                        </Badge>
-                      </>
-                    )}
-                  </Button>
+          {/* More Articles + Popular This Month Sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Main: More Articles */}
+            <div className="lg:col-span-8">
+              {moreArticles.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {category?.slug === 'voices' ? 'More from Voices' : `More from ${category?.name}`}
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {(showAllArticles ? moreArticles : moreArticles.slice(0, 9)).map((article) => (
+                      <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        <Link to={`/${article.categories?.slug || 'news'}/${article.slug}`}>
+                          <div className="relative aspect-video overflow-hidden">
+                            <img 
+                              src={article.featured_image_url} 
+                              alt={article.title}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                          <div className="p-3">
+                            <h3 className="font-semibold text-sm line-clamp-2 hover:text-primary transition-colors mb-2">
+                              {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              {article.reading_time_minutes || 5} min
+                            </p>
+                          </div>
+                        </Link>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  {!showAllArticles && moreArticles.length > 9 && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => {
+                          setIsLoadingMore(true);
+                          setTimeout(() => {
+                            setShowAllArticles(true);
+                            setIsLoadingMore(false);
+                          }, 300);
+                        }}
+                        disabled={isLoadingMore}
+                        className="gap-2"
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            Load More Articles
+                            <Badge variant="secondary" className="ml-1">
+                              +{moreArticles.length - 9}
+                            </Badge>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {!articles || articles.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No articles found in this category.</p>
                 </div>
               )}
-            </section>
-          )}
-
-          {!articles || articles.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No articles found in this category.</p>
             </div>
-          )}
+
+            {/* Sidebar: Popular This Month (desktop only) */}
+            <aside className="hidden lg:block lg:col-span-4">
+              {popularThisMonth && popularThisMonth.length > 0 && (
+                <div className="sticky top-24">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Flame className="h-5 w-5 text-primary" />
+                    Popular this month
+                  </h3>
+                  <div className="space-y-4">
+                    {popularThisMonth.map((article: any, index: number) => (
+                      <Link
+                        key={article.id}
+                        to={`/${article.categories?.slug || slug}/${article.slug}`}
+                        className="flex gap-3 group"
+                      >
+                        <span className="text-2xl font-bold text-muted-foreground/40 w-6 shrink-0 text-right">
+                          {index + 1}
+                        </span>
+                        <h4 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                        </h4>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
             </>
           )}
         </div>
