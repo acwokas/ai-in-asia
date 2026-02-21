@@ -335,11 +335,11 @@ const Index = () => {
                           <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-2xl sm:text-3xl md:text-[40px] md:leading-tight mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[1.2] mb-3 line-clamp-3 group-hover:text-primary transition-colors">
                         {featuredArticle.title}
                       </h2>
-                      <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-3 max-w-2xl">{featuredArticle.excerpt}</p>
-                      <div className="flex items-center gap-3 text-white/60 text-xs">
+                      <p className="text-white/80 text-[15px] leading-[1.6] line-clamp-2 mb-3 max-w-2xl">{featuredArticle.excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/50 text-[13px]">
                         {featuredArticle.published_at && (
                           <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         )}
@@ -375,11 +375,11 @@ const Index = () => {
                           <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-2xl sm:text-3xl md:text-[40px] md:leading-tight mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[1.2] mb-3 line-clamp-3 group-hover:text-primary transition-colors">
                         {trendingArticles[0].title}
                       </h2>
-                      <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-3 max-w-2xl">{trendingArticles[0].excerpt}</p>
-                      <div className="flex items-center gap-3 text-white/60 text-xs">
+                      <p className="text-white/80 text-[15px] leading-[1.6] line-clamp-2 mb-3 max-w-2xl">{trendingArticles[0].excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/50 text-[13px]">
                         {trendingArticles[0].published_at && <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                         <span>•</span>
                         <span>{trendingArticles[0].reading_time_minutes || 5} min read</span>
@@ -443,10 +443,10 @@ const Index = () => {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-semibold text-base md:text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-lg md:text-xl leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
+                        <div className="flex items-center gap-2 text-[13px] text-muted-foreground/70 mt-1.5">
                           {article.published_at && (
                             <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                           )}
@@ -538,18 +538,18 @@ const Index = () => {
                     )}
                   </div>
                   <div className={`${isLarge ? 'p-6' : 'p-5'}`}>
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary mb-2 block">
+                    <span className="text-[13px] font-bold uppercase tracking-wider text-primary mb-2 block">
                       {article.categories?.name || "Uncategorized"}
                     </span>
-                    <h3 className={`font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors ${
-                      isLarge ? 'text-[22px] md:text-2xl' : 'text-base md:text-lg'
+                    <h3 className={`font-semibold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
+                      isLarge ? 'text-xl md:text-2xl' : 'text-base md:text-lg'
                     }`}>
                       {article.title}
                     </h3>
                     {isLarge && article.excerpt && (
-                      <p className="text-muted-foreground text-sm line-clamp-2 mt-2">{article.excerpt}</p>
+                      <p className="text-muted-foreground/70 text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3">
+                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground/60 mt-3">
                       {article.authors?.name && <span>{article.authors.name}</span>}
                       {article.authors?.name && article.published_at && <span>•</span>}
                       {article.published_at && (
