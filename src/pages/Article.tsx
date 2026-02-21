@@ -37,6 +37,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
 import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
+import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
 
 // Extracted components and hooks
 import {
@@ -487,12 +488,10 @@ const Article = () => {
                       <Clock className="h-3 w-3" />
                       {article.reading_time_minutes || 5} min read
                     </span>
-                    <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-1 ml-auto">
+                      <ArticleShareInline categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
                       <Button variant="ghost" size="icon" onClick={handleBookmark} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10">
                         <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={shareHandlers.handleShare} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10">
-                        <Share2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -534,6 +533,8 @@ const Article = () => {
                 <span>{article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
                 <span>•</span>
                 <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
+                <span>•</span>
+                <ArticleShareInline categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
               </div>
             </div>
           )}
@@ -670,7 +671,7 @@ const Article = () => {
           </div>
 
           {/* You Might Also Like */}
-          <div className="container mx-auto px-4 max-w-[720px]">
+          <div className="container mx-auto px-4 max-w-[720px]" data-section="you-might-also-like">
             <ArticleYouMightAlsoLike
               articleId={article.id}
               categoryId={article.primary_category_id || undefined}
@@ -687,6 +688,12 @@ const Article = () => {
         </main>
 
         <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
+
+        {/* Floating social share sidebar (desktop) */}
+        <ArticleShareFloating categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
+
+        {/* Mobile share bar */}
+        <ArticleShareMobileBar categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
 
         {/* Mobile Floating Action Bar */}
         <MobileActionBar
