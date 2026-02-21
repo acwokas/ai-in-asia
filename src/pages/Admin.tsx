@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -433,7 +433,6 @@ const Admin = () => {
   if (isAdmin === null) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
           <nav className="text-sm text-muted-foreground mb-6">
             <Link to="/" className="hover:text-primary inline-flex items-center gap-1">
@@ -455,7 +454,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      
       
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
