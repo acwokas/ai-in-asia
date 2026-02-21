@@ -150,6 +150,22 @@ const PolicyRegion = () => {
           )}
         </div>
 
+        {/* Country coverage badges */}
+        {articles && articles.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {Array.from(new Set(articles.filter(a => a.country).map(a => a.country))).sort().map(country => (
+              <Badge key={country} variant="secondary" className="text-sm">
+                {country}
+              </Badge>
+            ))}
+            {articles.some(a => !a.country) && (
+              <Badge variant="outline" className="text-sm">
+                Regional Overview
+              </Badge>
+            )}
+          </div>
+        )}
+
         {/* Articles List */}
         <div className="space-y-6">
           {articles && articles.length > 0 ? (
