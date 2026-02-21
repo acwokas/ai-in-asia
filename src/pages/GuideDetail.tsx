@@ -130,7 +130,7 @@ const GuideDetail = () => {
       )}
 
       <main className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
           <Link to="/guides" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to Guides
           </Link>
@@ -139,22 +139,20 @@ const GuideDetail = () => {
 
           {/* Default Next Steps fallback if none provided */}
           {!formData.next_steps && (
-            <div className="max-w-4xl mx-auto mb-12">
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-6 md:p-8">
+            <div className="mb-12">
+              <div className="bg-gradient-to-br from-teal-500/10 to-blue-500/10 rounded-xl p-6 md:p-8">
                 <h2 className="text-xl font-bold mb-3">Next Steps</h2>
                 <p className="text-muted-foreground">
                   Found this useful? We have plenty more practical guides covering everything from prompt engineering to automating your workflow.{" "}
-                  <Link to="/guides" className="text-primary hover:underline">Browse all guides</Link> or search for your next topic.
+                  <Link to="/guides" className="text-teal-400 hover:text-teal-300 underline">Browse all guides</Link> or search for your next topic.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Newsletter */}
-          <div className="max-w-4xl mx-auto">
-            <EndOfContentNewsletter />
-            <GuideComments guideId={g.id} />
-          </div>
+          {/* Newsletter & Comments */}
+          <EndOfContentNewsletter />
+          <GuideComments guideId={g.id} />
         </div>
       </main>
 
