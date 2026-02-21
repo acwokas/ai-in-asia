@@ -16,6 +16,7 @@ import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
+import { TableOfContentsSidebar, TableOfContentsMobile } from "@/components/TableOfContents";
 import FollowButton from "@/components/FollowButton";
 import ContinueReading from "@/components/ContinueReading";
 import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
@@ -576,26 +577,38 @@ const Article = () => {
               />
             )}
 
-            {/* Sidebar Ad */}
-            <div className="float-right ml-6 mb-6 hidden lg:block w-72">
-              <GoogleAd slot="sidebar" />
-            </div>
+            {/* Mobile TOC - between TLDR and content */}
+            <TableOfContentsMobile readingTime={article.reading_time_minutes || 0} />
 
-            {/* Article Content */}
-            <div className="prose prose-lg max-w-none article-content">
-              {article.article_type === 'policy_article' ? (
-                <PolicyArticleContent article={article} />
-              ) : article.article_type === 'top_lists' ? (
-                <TopListsContent
-                  items={article.top_list_items as any}
-                  introHtml={article.top_list_intro as string | undefined}
-                  outroHtml={article.top_list_outro as string | undefined}
-                />
-              ) : article.article_type === 'editors_note' ? (
-                <EditorNoteContent article={article} renderContent={renderArticleContent} />
-              ) : (
-                renderArticleContent(article.content)
-              )}
+            {/* Article Content with optional TOC sidebar */}
+            <div className="xl:grid xl:grid-cols-12 xl:gap-8">
+              <div className="xl:col-span-8">
+                {/* Sidebar Ad */}
+                <div className="float-right ml-6 mb-6 hidden lg:block xl:hidden w-72">
+                  <GoogleAd slot="sidebar" />
+                </div>
+
+                <div className="prose prose-lg max-w-none article-content">
+                  {article.article_type === 'policy_article' ? (
+                    <PolicyArticleContent article={article} />
+                  ) : article.article_type === 'top_lists' ? (
+                    <TopListsContent
+                      items={article.top_list_items as any}
+                      introHtml={article.top_list_intro as string | undefined}
+                      outroHtml={article.top_list_outro as string | undefined}
+                    />
+                  ) : article.article_type === 'editors_note' ? (
+                    <EditorNoteContent article={article} renderContent={renderArticleContent} />
+                  ) : (
+                    renderArticleContent(article.content)
+                  )}
+                </div>
+              </div>
+
+              {/* Desktop TOC sidebar */}
+              <div className="xl:col-span-4">
+                <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
+              </div>
             </div>
 
             {/* Article Reactions - immediately after content while reader is engaged */}
