@@ -18,7 +18,6 @@ import {
   AdminRecentArticlesTab,
   AdminPendingCommentsTab,
   AdminToolsTab,
-  AdminMigrationTab,
   AdminSettingsTab,
   GoogleAdsDialog,
   NewsletterDialog,
@@ -542,7 +541,6 @@ const Admin = () => {
             <TabsTrigger value="comments">Pending Comments</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="tools">AI Tools</TabsTrigger>
-            <TabsTrigger value="migration">Migration</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -566,17 +564,6 @@ const Admin = () => {
             <AdminToolsTab />
           </TabsContent>
 
-          <TabsContent value="migration" className="space-y-4">
-            <AdminMigrationTab
-              calculatingReadingTimes={adminActions.calculatingReadingTimes}
-              readingTimeProgress={adminActions.readingTimeProgress}
-              autoScheduling={adminActions.autoScheduling}
-              fixingDates={adminActions.fixingDates}
-              onCalculateReadingTimes={adminActions.handleCalculateReadingTimes}
-              onAutoScheduleComments={adminActions.handleAutoScheduleComments}
-              onFixDates={adminActions.handleFixArticleDates}
-            />
-          </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
             <AdminSettingsTab 
