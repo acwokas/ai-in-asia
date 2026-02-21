@@ -208,6 +208,8 @@ const App = () => (
               <Route path="/search" element={<Search />} />
               <Route path="/connection-test" element={<ConnectionTest />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/editor" element={<Editor />} />
+              <Route path="/editor/:id" element={<Editor />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Admin />} />
