@@ -24,6 +24,7 @@ import {
   NewsletterDialog,
   AuthorsDialog,
 } from "@/components/admin";
+import { AdminEngagementTab } from "@/components/admin/AdminEngagementTab";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -539,6 +540,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="articles">Recent Articles</TabsTrigger>
             <TabsTrigger value="comments">Pending Comments</TabsTrigger>
+            <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="tools">AI Tools</TabsTrigger>
             <TabsTrigger value="migration">Migration</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -554,6 +556,10 @@ const Admin = () => {
               onApprove={adminActions.approveComment}
               onDelete={adminActions.deleteComment}
             />
+          </TabsContent>
+
+          <TabsContent value="engagement" className="space-y-4">
+            <AdminEngagementTab />
           </TabsContent>
 
           <TabsContent value="tools" className="space-y-4">
