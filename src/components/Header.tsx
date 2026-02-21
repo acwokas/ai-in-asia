@@ -101,7 +101,7 @@ const Header = memo(() => {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-sm font-medium hover:!text-primary gap-1 px-2">
+                  <Button variant="ghost" size="sm" className="text-sm font-medium hover:!bg-white/10 hover:!text-white gap-1 px-2">
                     More <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
