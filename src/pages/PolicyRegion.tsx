@@ -7,7 +7,7 @@ import SEOHead from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Globe } from "lucide-react";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 
 const PolicyRegion = () => {
@@ -153,41 +153,64 @@ const PolicyRegion = () => {
         {/* Articles List */}
         <div className="space-y-6">
           {articles && articles.length > 0 ? (
-            articles.map((article) => (
-              <Link 
-                key={article.id} 
-                to={`/ai-policy-atlas/${region}/${article.slug}`}
-              >
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-semibold mb-3">
-                          {article.title}
-                        </h2>
-                        <p className="text-muted-foreground mb-4">
-                          {article.excerpt}
-                        </p>
-                        <div className="flex items-center gap-3 text-sm">
-                          {article.governance_maturity && (
-                            <Badge variant="secondary">
-                              {article.governance_maturity.replace(/_/g, ' ')}
-                            </Badge>
+            (() => {
+              const overviews = articles.filter(a => !a.country);
+              const countries = articles
+                .filter(a => !!a.country)
+                .sort((a, b) => (a.country || '').localeCompare(b.country || ''));
+
+              const renderCard = (article: typeof articles[0], isOverview: boolean) => (
+                <Link
+                  key={article.id}
+                  to={`/ai-policy-atlas/${region}/${article.slug}`}
+                >
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          {isOverview && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <Globe className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-xs font-medium text-primary uppercase tracking-wider">Regional Overview</span>
+                            </div>
                           )}
-                          {article.country && (
-                            <Badge variant="outline">{article.country}</Badge>
-                          )}
-                          <span className="text-muted-foreground">
-                            Updated {new Date(article.updated_at).toLocaleDateString()}
-                          </span>
+                          <h2 className="text-2xl font-semibold mb-3">
+                            {article.title}
+                          </h2>
+                          <p className="text-muted-foreground mb-4">
+                            {article.excerpt}
+                          </p>
+                          <div className="flex items-center gap-3 text-sm">
+                            {article.governance_maturity && (
+                              <Badge variant="secondary">
+                                {article.governance_maturity.replace(/_/g, ' ')}
+                              </Badge>
+                            )}
+                            {article.country && (
+                              <Badge variant="outline">{article.country}</Badge>
+                            )}
+                            <span className="text-muted-foreground">
+                              Updated {new Date(article.updated_at).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
+                        <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       </div>
-                      <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+
+              return (
+                <>
+                  {overviews.map(a => renderCard(a, true))}
+                  {overviews.length > 0 && countries.length > 0 && (
+                    <div className="border-t border-border/50 my-4" />
+                  )}
+                  {countries.map(a => renderCard(a, false))}
+                </>
+              );
+            })()
           ) : (
             <Card>
               <CardContent className="p-12 text-center">
