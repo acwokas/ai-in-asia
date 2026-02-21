@@ -58,6 +58,8 @@ const TrendingVisualStrip = memo(() => {
                 <img
                   src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 320, 200)}
                   alt={article.title}
+                  width={320}
+                  height={200}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
