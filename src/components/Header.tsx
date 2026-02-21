@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award, X, ChevronDown } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Bookmark, Zap, Award, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -29,11 +29,7 @@ import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
 
 const Header = memo(() => {
-  const [isDark, setIsDark] = useState(() => {
-    const stored = localStorage.getItem('theme');
-    if (stored) return stored === 'dark';
-    return !window.matchMedia('(prefers-color-scheme: light)').matches;
-  });
+  const [isDark] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,13 +53,12 @@ const Header = memo(() => {
     },
   });
   const userPoints = userStats?.points;
+
+  // Force dark mode always
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }, []);
 
   // Cmd+K / Ctrl+K to open search
   useEffect(() => {
@@ -77,12 +72,6 @@ const Header = memo(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark');
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,20 +160,6 @@ const Header = memo(() => {
               </Tooltip>
 
               <div className="hidden md:flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleTheme}
-                      aria-label="Toggle theme"
-                      className="h-10 w-10"
-                    >
-                      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isDark ? "Light mode" : "Dark mode"}</TooltipContent>
-                </Tooltip>
                 
                 <NotificationPreferences />
                 <ReadingQueue />
@@ -389,9 +364,6 @@ const Header = memo(() => {
             <div className="flex items-center gap-2 mt-2">
               <NotificationPreferences />
               <ReadingQueue />
-              <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="h-10 w-10">
-                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
             </div>
           </div>
         </nav>
