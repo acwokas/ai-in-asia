@@ -39,6 +39,8 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
+export type ViewMode = "list" | "calendar";
+
 export interface EventFilters {
   region: string;
   type: string;
@@ -102,6 +104,8 @@ interface Props {
   onFiltersChange: (filters: EventFilters) => void;
   filteredCount: number;
   totalCount: number;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
 }
 
 const FilterSelect = ({
@@ -139,6 +143,8 @@ export default function EventsFilterBar({
   onFiltersChange,
   filteredCount,
   totalCount,
+  viewMode,
+  onViewModeChange,
 }: Props) {
   const barRef = useRef<HTMLDivElement>(null);
   const [isSticky, setIsSticky] = useState(false);
@@ -271,7 +277,10 @@ export default function EventsFilterBar({
       <div className="flex items-center border border-border rounded-md overflow-hidden">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button className="p-2 bg-primary/15 text-primary">
+            <button
+              className={cn("p-2 transition-colors", viewMode === "list" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}
+              onClick={() => onViewModeChange("list")}
+            >
               <List className="h-4 w-4" />
             </button>
           </TooltipTrigger>
@@ -279,11 +288,14 @@ export default function EventsFilterBar({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              className={cn("p-2 transition-colors", viewMode === "calendar" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}
+              onClick={() => onViewModeChange("calendar")}
+            >
               <CalendarDays className="h-4 w-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent>Calendar View — Coming soon</TooltipContent>
+          <TooltipContent>Calendar View</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
