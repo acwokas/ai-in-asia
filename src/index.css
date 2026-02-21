@@ -832,3 +832,24 @@ blockquote.tiktok-embed {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Mapbox popup dark theme */
+.mapboxgl-popup-content {
+  background: hsl(220 20% 12%) !important;
+  border: 1px solid hsl(220 10% 20%) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+.mapboxgl-popup-close-button {
+  color: hsl(220 10% 60%) !important;
+  font-size: 18px !important;
+  padding: 4px 8px !important;
+}
+.mapboxgl-popup-close-button:hover {
+  color: #fff !important;
+  background: transparent !important;
+}
+.mapboxgl-popup-tip {
+  border-top-color: hsl(220 20% 12%) !important;
+}
