@@ -269,20 +269,30 @@ All colors MUST be HSL.
     text-decoration: underline;
   }
 
-  /* In-article image breakout */
+  /* In-article images: constrained on desktop, breakout on tablet/mobile */
   .article-content img {
-    max-width: 860px;
-    width: 860px;
-    margin-left: 50%;
-    transform: translateX(-50%);
+    max-width: 100%;
+    width: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1199px) {
     .article-content img {
-      max-width: 100%;
-      width: 100%;
-      margin-left: 0;
-      transform: none;
+      max-width: min(860px, 90vw);
+      width: min(860px, 90vw);
+      margin-left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .article-content img {
+      max-width: min(860px, 90vw);
+      width: min(860px, 90vw);
+      margin-left: 50%;
+      transform: translateX(-50%);
     }
   }
 
