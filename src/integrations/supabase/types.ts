@@ -171,7 +171,7 @@ export type Database = {
           focus_keyphrase: string | null
           further_reading: string | null
           geo: string | null
-          guide_category: string
+          guide_category: string | null
           guide_prompts: Json | null
           how_ai_helps_this_role: string | null
           id: string
@@ -267,7 +267,7 @@ export type Database = {
           focus_keyphrase?: string | null
           further_reading?: string | null
           geo?: string | null
-          guide_category: string
+          guide_category?: string | null
           guide_prompts?: Json | null
           how_ai_helps_this_role?: string | null
           id?: string
@@ -363,7 +363,7 @@ export type Database = {
           focus_keyphrase?: string | null
           further_reading?: string | null
           geo?: string | null
-          guide_category?: string
+          guide_category?: string | null
           guide_prompts?: Json | null
           how_ai_helps_this_role?: string | null
           id?: string

@@ -235,9 +235,19 @@ const GuideEditor = () => {
         read_time_minutes: readTime,
         featured_image_url: formData.featured_image_url || null,
         featured_image_alt: formData.featured_image_alt || null,
-        guide_category: formData.content_type || formData.guide_category || "Guide",
-        level: formData.difficulty ? formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1) : "Intermediate",
-        primary_platform: formData.platform_tags[0] || formData.primary_platform || "ChatGPT",
+        guide_category: (() => {
+          const p = formData.pillar;
+          const ct = formData.content_type;
+          if (p === 'learn' && ct === 'quick_guide') return 'Quick Guide';
+          if (p === 'learn' && ct === 'deep_dive') return 'Deep Dive';
+          if (p === 'learn' && ct === 'role_guide') return 'Role Guide';
+          if (p === 'prompts' && ct === 'prompt_collection') return 'Prompt Collection';
+          if (p === 'prompts' && ct === 'prompt_pack') return 'Prompt Pack';
+          if (p === 'toolbox' && ct === 'tool_pick') return 'Tool Pick';
+          return formData.guide_category || 'Guide';
+        })(),
+        level: formData.difficulty ? formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1) : formData.level || "Intermediate",
+        primary_platform: formData.platform_tags[0] || formData.primary_platform || "Generic",
         status: saveStatus,
         snapshot_bullets: formData.snapshot_bullets.filter(Boolean),
         why_this_matters: formData.why_this_matters || null,
