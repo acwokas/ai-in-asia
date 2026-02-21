@@ -17,6 +17,7 @@ import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import { TableOfContentsSidebar, TableOfContentsMobile } from "@/components/TableOfContents";
+import { ReadingTimeIndicator } from "@/components/ReadingTimeIndicator";
 import FollowButton from "@/components/FollowButton";
 import ContinueReading from "@/components/ContinueReading";
 import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
@@ -27,7 +28,7 @@ import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, Share2, Bookmark, MessageCircle } from "lucide-react";
+import { User, Share2, Bookmark, MessageCircle } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
@@ -380,7 +381,7 @@ const Article = () => {
 
   return (
     <>
-      <ReadingProgressBar />
+      <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} />
       
       <SEOHead
         title={((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
@@ -502,8 +503,7 @@ const Article = () => {
                       <div className="text-sm text-muted-foreground truncate">{article.authors.job_title}</div>
                     )}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                      <Clock className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min read</span>
+                      <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
                       <span>•</span>
                       <span className="whitespace-nowrap">
                         {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
@@ -544,7 +544,7 @@ const Article = () => {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
                   <span className="font-semibold text-foreground truncate">By {article.authors?.name || 'Anonymous'}</span>
                   <span>•</span>
-                  <span className="whitespace-nowrap">{article.reading_time_minutes || 5} min</span>
+                  <ReadingTimeIndicator minutes={article.reading_time_minutes || 5} />
                 </div>
               </div>
             </header>
