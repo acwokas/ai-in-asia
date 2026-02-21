@@ -247,3 +247,40 @@ self.addEventListener('fetch', (event) => {
     console.error('Service worker fetch error:', error);
   }
 });
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+  let data = { title: 'AI in ASIA', body: 'New update available', url: '/', icon: '/favicon.png' };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch (e) {
+    if (event.data) data.body = event.data.text();
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || '/favicon.png',
+      badge: '/favicon.png',
+      data: { url: data.url || '/' },
+    })
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});
