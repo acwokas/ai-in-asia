@@ -22,7 +22,13 @@ const regions = [
   { value: "Middle East & Africa", label: "Middle East & Africa" },
 ];
 
-const EventAlertSignup = () => {
+interface EventAlertSignupProps {
+  sponsorName?: string | null;
+  sponsorLogoUrl?: string | null;
+  sponsorUrl?: string | null;
+}
+
+const EventAlertSignup = ({ sponsorName, sponsorLogoUrl, sponsorUrl }: EventAlertSignupProps) => {
   const [dismissed, setDismissed] = useState(
     () => sessionStorage.getItem(DISMISSED_KEY) === "true"
   );
@@ -165,6 +171,23 @@ const EventAlertSignup = () => {
           </div>
         )}
       </div>
+      {/* Sponsor attribution */}
+      {sponsorName && (
+        <div className="container mx-auto max-w-5xl mt-3 flex items-center justify-center gap-2">
+          <span className="text-[10px] text-muted-foreground/40">Event alerts powered by</span>
+          {sponsorUrl ? (
+            <a href={sponsorUrl} target="_blank" rel="noopener noreferrer sponsored" className="inline-flex items-center gap-1.5">
+              {sponsorLogoUrl && <img src={sponsorLogoUrl} alt={sponsorName} className="h-3.5 w-auto" loading="lazy" />}
+              <span className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">{sponsorName}</span>
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-1.5">
+              {sponsorLogoUrl && <img src={sponsorLogoUrl} alt={sponsorName} className="h-3.5 w-auto" loading="lazy" />}
+              <span className="text-[10px] text-muted-foreground/60">{sponsorName}</span>
+            </span>
+          )}
+        </div>
+      )}
     </section>
   );
 };
