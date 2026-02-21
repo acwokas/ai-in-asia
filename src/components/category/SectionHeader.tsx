@@ -11,7 +11,7 @@ interface SectionHeaderProps {
 export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: SectionHeaderProps) => {
   return (
     <div style={{ marginBottom: subtitle ? 4 : 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
         {emoji && <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>}
         <span
           style={{
@@ -26,17 +26,19 @@ export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: Se
             position: "relative",
             zIndex: 1,
             flexShrink: 0,
+            flexGrow: 0,
           }}
         >
           {title}
         </span>
         <div
           style={{
-            flex: 1,
+            flexGrow: 1,
+            flexShrink: 1,
+            flexBasis: "auto",
+            minWidth: 0,
             height: 1,
             background: `linear-gradient(90deg, ${color}40, transparent)`,
-            flexShrink: 1,
-            minWidth: 0,
           }}
         />
         {rightAction}
