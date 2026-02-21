@@ -28,6 +28,7 @@ import NextArticleProgress from "@/components/NextArticleProgress";
 import ExitIntentOverlay from "@/components/ExitIntentOverlay";
 import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
 import { useRecentArticles } from "@/hooks/useRecentArticles";
+import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -674,6 +675,9 @@ const Article = () => {
                 </div>
               </div>
             </div>
+
+            {/* Article Reactions */}
+            <ArticleReactions articleId={article.id} />
 
             {/* Author Bio */}
             <ArticleAuthorBio authors={article.authors} />
