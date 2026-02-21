@@ -55,12 +55,15 @@ interface Event {
 
 const EVENTS_PER_PAGE = 20;
 
+type QuickPill = "this-week" | "this-month" | "apac" | "free" | null;
+
 const Events = () => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [activeQuickPill, setActiveQuickPill] = useState<QuickPill>(null);
 
   // Ad slots
   const { data: adSlots } = useEventAdSlots();
@@ -88,11 +91,44 @@ const Events = () => {
       if (next.date !== "all") params.set("date", next.date);
       if (next.price !== "all") params.set("price", next.price);
       setSearchParams(params, { replace: true });
+
+      // Sync quick pills with filter state
+      if (next.date === "this-week" && next.region === "all" && next.price === "all") {
+        setActiveQuickPill("this-week");
+      } else if (next.date === "this-month" && next.region === "all" && next.price === "all") {
+        setActiveQuickPill("this-month");
+      } else if (next.region === "APAC" && next.date === "all" && next.price === "all") {
+        setActiveQuickPill("apac");
+      } else if (next.price === "free" && next.date === "all" && next.region === "all") {
+        setActiveQuickPill("free");
+      } else {
+        setActiveQuickPill(null);
+      }
     },
     [setSearchParams]
   );
 
-  // Fetch all upcoming events (no server-side region filter anymore — filtering is client-side)
+  // Quick pill click handler
+  const handleQuickPill = useCallback(
+    (pill: QuickPill) => {
+      if (activeQuickPill === pill) {
+        // Deactivate
+        setActiveQuickPill(null);
+        handleFiltersChange({ ...filters, date: "all", region: "all", price: "all" });
+        return;
+      }
+      setActiveQuickPill(pill);
+      const next = { ...filters, date: "all", region: "all", price: "all" };
+      if (pill === "this-week") next.date = "this-week";
+      else if (pill === "this-month") next.date = "this-month";
+      else if (pill === "apac") next.region = "APAC";
+      else if (pill === "free") next.price = "free";
+      handleFiltersChange(next);
+    },
+    [activeQuickPill, filters, handleFiltersChange]
+  );
+
+  // Fetch all upcoming events
   const { data: events, isLoading } = useQuery({
     queryKey: ["events", page],
     staleTime: 5 * 60 * 1000,
@@ -181,7 +217,6 @@ const Events = () => {
         const loc = (e.location || "").toLowerCase();
         if (f === "virtual") return loc.includes("virtual") || loc.includes("online");
         if (f === "hybrid") return loc.includes("hybrid");
-        // in-person = not virtual
         return !loc.includes("virtual") && !loc.includes("online");
       });
     }
@@ -249,6 +284,13 @@ const Events = () => {
     return `${format(start, "MMM dd")} - ${format(end, "MMM dd, yyyy")}`;
   };
 
+  const quickPills: { id: QuickPill; label: string }[] = [
+    { id: "this-week", label: "This Week" },
+    { id: "this-month", label: "This Month" },
+    { id: "apac", label: "APAC" },
+    { id: "free", label: "Free Events" },
+  ];
+
   return (
     <>
       <SEOHead
@@ -282,8 +324,8 @@ const Events = () => {
           className="relative overflow-hidden"
           style={{
             background: `
-              radial-gradient(ellipse 60% 50% at 15% 20%, hsl(var(--primary) / 0.12) 0%, transparent 60%),
-              radial-gradient(ellipse 50% 40% at 85% 70%, rgba(95, 114, 255, 0.08) 0%, transparent 60%),
+              radial-gradient(800px 600px ellipse at 20% 40%, rgba(0, 212, 170, 0.08) 0%, transparent 70%),
+              radial-gradient(700px 500px ellipse at 80% 60%, rgba(95, 114, 255, 0.06) 0%, transparent 70%),
               linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)))
             `,
           }}
@@ -333,7 +375,7 @@ const Events = () => {
               {" "}countries — updated daily from 12+ sources
             </p>
 
-            <div className="max-w-[600px] mb-6">
+            <div className="max-w-[600px] mb-5">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -345,8 +387,26 @@ const Events = () => {
                 />
               </div>
             </div>
+
+            {/* Quick-filter pills */}
+            <div className="flex flex-wrap gap-2">
+              {quickPills.map((pill) => (
+                <button
+                  key={pill.id}
+                  onClick={() => handleQuickPill(pill.id)}
+                  className={`px-4 py-1.5 rounded-[20px] text-sm font-medium transition-all duration-200 ${
+                    activeQuickPill === pill.id
+                      ? "bg-primary text-primary-foreground border border-primary"
+                      : "bg-transparent text-foreground/80 border border-foreground/20 hover:border-foreground/40"
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          {/* Bottom fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
         </section>
 
         {/* Filter Bar */}
@@ -393,7 +453,9 @@ const Events = () => {
               <EventsFinder events={events?.events || []} />
 
               {/* Event Alert Signup with optional sponsor */}
-              <EventAlertSignup sponsorName={alertsSponsor?.sponsor_name} sponsorLogoUrl={alertsSponsor?.sponsor_logo_url} sponsorUrl={alertsSponsor?.click_url} />
+              <div className="my-12">
+                <EventAlertSignup sponsorName={alertsSponsor?.sponsor_name} sponsorLogoUrl={alertsSponsor?.sponsor_logo_url} sponsorUrl={alertsSponsor?.click_url} />
+              </div>
 
               {/* View: Calendar, Map, or List */}
               {viewMode === "calendar" ? (
@@ -472,6 +534,16 @@ const Events = () => {
                               </Button>
                             </div>
                           )}
+
+                          {/* Submit CTA below load more */}
+                          <div className="text-center mt-4 mb-8">
+                            <p className="text-sm text-muted-foreground">
+                              Know of an event we're missing?{" "}
+                              <Link to="/events/submit" className="text-primary hover:underline">
+                                Submit it here →
+                              </Link>
+                            </p>
+                          </div>
                         </>
                       ) : (
                         <Card>
@@ -481,16 +553,6 @@ const Events = () => {
                           </CardContent>
                         </Card>
                       )}
-                    </div>
-
-                    {/* Submit CTA */}
-                    <div className="text-center mt-12 mb-4">
-                      <p className="text-sm text-muted-foreground">
-                        Know of an event we're missing?{" "}
-                        <Link to="/events/submit" className="text-primary hover:underline">
-                          Submit it here →
-                        </Link>
-                      </p>
                     </div>
                   </section>
                 </>

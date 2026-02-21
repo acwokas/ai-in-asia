@@ -80,22 +80,22 @@ const EventAlertSignup = ({ sponsorName, sponsorLogoUrl, sponsorUrl }: EventAler
 
   return (
     <section
-      className="relative -mx-4 px-4 py-8 md:py-10 my-12 border-t border-b border-border/30"
+      className="relative rounded-xl"
       style={{
-        background:
-          "linear-gradient(135deg, hsl(var(--card) / 0.6) 0%, hsl(var(--card) / 0.3) 100%)",
+        background: "hsl(var(--card) / 0.6)",
+        border: "1px solid hsl(var(--foreground) / 0.1)",
       }}
     >
       {/* Dismiss */}
       <button
         onClick={handleDismiss}
-        className="absolute top-3 right-4 md:top-4 md:right-6 text-muted-foreground hover:text-foreground transition-colors"
+        className="absolute top-3 right-4 md:top-4 md:right-6 text-muted-foreground hover:text-foreground transition-colors z-10"
         aria-label="Dismiss"
       >
         <X className="w-4 h-4" />
       </button>
 
-      <div className="container mx-auto max-w-5xl">
+      <div className="px-6 py-6 md:px-8 md:py-7">
         {subscribed ? (
           <div className="flex items-center justify-center gap-3 py-4">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -109,14 +109,14 @@ const EventAlertSignup = ({ sponsorName, sponsorLogoUrl, sponsorUrl }: EventAler
           </div>
         ) : (
           <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-            {/* Left / Top */}
-            <div className="flex items-start gap-3 md:min-w-[260px] shrink-0">
+            {/* Left */}
+            <div className="flex items-start gap-3 md:min-w-[280px] shrink-0">
               <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center mt-0.5 shrink-0">
                 <Bell className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <h3
-                  className="text-lg font-extrabold leading-tight mb-1"
+                  className="text-lg md:text-xl font-extrabold leading-tight mb-1"
                   style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   Never Miss an AI Event
@@ -127,7 +127,7 @@ const EventAlertSignup = ({ sponsorName, sponsorLogoUrl, sponsorUrl }: EventAler
               </div>
             </div>
 
-            {/* Right / Bottom */}
+            {/* Right */}
             <div className="flex-1 space-y-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <Input
@@ -173,7 +173,7 @@ const EventAlertSignup = ({ sponsorName, sponsorLogoUrl, sponsorUrl }: EventAler
       </div>
       {/* Sponsor attribution */}
       {sponsorName && (
-        <div className="container mx-auto max-w-5xl mt-3 flex items-center justify-center gap-2">
+        <div className="px-6 pb-4 md:px-8 flex items-center justify-center gap-2">
           <span className="text-[10px] text-muted-foreground/40">Event alerts powered by</span>
           {sponsorUrl ? (
             <a href={sponsorUrl} target="_blank" rel="noopener noreferrer sponsored" className="inline-flex items-center gap-1.5">

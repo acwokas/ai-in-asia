@@ -24,6 +24,19 @@ interface FeaturedEventCardProps {
   event: FeaturedEvent;
 }
 
+const getFormatFromLocation = (location: string): string => {
+  const loc = (location || "").toLowerCase();
+  if (loc.includes("hybrid")) return "Hybrid";
+  if (loc.includes("virtual") || loc.includes("online")) return "Virtual";
+  return "In-Person";
+};
+
+const FORMAT_STYLES: Record<string, string> = {
+  "In-Person": "bg-[hsl(122_39%_49%/0.15)] text-[hsl(122_39%_49%)] border-[hsl(122_39%_49%/0.2)]",
+  "Virtual": "bg-[hsl(291_47%_51%/0.15)] text-[hsl(291_47%_60%)] border-[hsl(291_47%_51%/0.2)]",
+  "Hybrid": "bg-[hsl(36_100%_50%/0.15)] text-[hsl(36_100%_65%)] border-[hsl(36_100%_50%/0.2)]",
+};
+
 const getCountdown = (startDate: string, endDate: string | null) => {
   const now = new Date();
   const start = new Date(startDate);
@@ -36,7 +49,7 @@ const getCountdown = (startDate: string, endDate: string | null) => {
     return { label: "Happening Now", style: "text-primary", pulse: true };
   }
   const days = differenceInCalendarDays(start, now);
-  if (days === 1) return { label: "Starting Tomorrow", style: "text-primary font-semibold", pulse: false };
+  if (days === 1) return { label: "Tomorrow", style: "text-primary font-semibold", pulse: false };
   if (days <= 7) return { label: `In ${days} days`, style: "text-primary font-semibold", pulse: false };
   if (days <= 30) return { label: `In ${days} days`, style: "text-foreground", pulse: false };
   return { label: `In ${days} days`, style: "text-muted-foreground", pulse: false };
@@ -73,6 +86,7 @@ const generateICS = (event: FeaturedEvent): string => {
 const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
   const countdown = getCountdown(event.start_date, event.end_date);
   const isSponsored = event.is_sponsored === true;
+  const eventFormat = getFormatFromLocation(event.location);
 
   const handleAddToCalendar = () => {
     const ics = generateICS(event);
@@ -85,29 +99,32 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
     URL.revokeObjectURL(url);
   };
 
-  // Detect free from text heuristics
   const isFree =
     event.event_type.toLowerCase().includes("free") ||
     event.title.toLowerCase().includes("free") ||
     (event.description && event.description.toLowerCase().includes("free"));
 
   return (
-    <div className="relative group rounded-xl p-[1px] transition-all hover:shadow-lg hover:shadow-primary/5"
+    <div
+      className="relative group rounded-xl p-[1px] transition-all hover:shadow-lg"
       style={{
         background: isSponsored
           ? "linear-gradient(135deg, hsl(45 80% 55% / 0.4), hsl(35 90% 45% / 0.2), hsl(var(--border)))"
-          : "linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(230 100% 66% / 0.3), hsl(var(--border)))",
+          : "linear-gradient(135deg, hsl(var(--primary)), hsl(230 100% 66%), hsl(var(--border)))",
+        boxShadow: isSponsored
+          ? undefined
+          : "0 0 25px rgba(0, 212, 170, 0.1), 0 0 50px rgba(0, 212, 170, 0.05)",
       }}
     >
       <div className="rounded-[11px] bg-card p-5 md:p-6 h-full flex flex-col">
         {/* Top label + region */}
         <div className="flex items-center justify-between mb-3">
           {isSponsored ? (
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(45 80% 55%)" }}>
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: "hsl(45 80% 55%)" }}>
               Sponsored
             </span>
           ) : (
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-primary">
               Editor's Pick
             </span>
           )}
@@ -116,8 +133,8 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
           </Badge>
         </div>
 
-        {/* Event name */}
-        <h3 className="text-lg md:text-xl font-extrabold mb-3 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {/* Event name — slightly larger than regular cards */}
+        <h3 className="text-xl md:text-[1.35rem] font-extrabold mb-3 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {event.website_url ? (
             <a
               href={event.website_url}
@@ -132,21 +149,22 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
           )}
         </h3>
 
-        {/* Metadata row */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground mb-3">
-          <span className="inline-flex items-center gap-1.5">
+        {/* Metadata row — wider spacing */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground mb-3">
+          <span className="inline-flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 shrink-0" />
             {formatSmartDate(event.start_date, event.end_date)}
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             {event.city}, {event.country}
           </span>
         </div>
 
-        {/* Info pills row */}
+        {/* Info pills row — with format pill */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <Badge className="bg-primary/15 text-primary border-primary/20 text-xs">{event.event_type}</Badge>
+          <Badge className={`text-xs ${FORMAT_STYLES[eventFormat] || ""}`}>{eventFormat}</Badge>
           {isFree && (
             <span className="text-xs font-medium text-primary">Free</span>
           )}
@@ -160,7 +178,7 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
 
         {/* Editorial quote */}
         {event.editorial_note && (
-          <div className="border-l-2 border-primary/40 pl-3 mb-4">
+          <div className="border-l-2 border-primary pl-3 mb-4">
             <p className="text-sm italic text-muted-foreground/80 leading-relaxed">
               "{event.editorial_note}"
             </p>
