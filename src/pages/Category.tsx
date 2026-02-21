@@ -229,7 +229,7 @@ const Category = () => {
     ];
   };
 
-  // Client-side filter helper
+  // Client-side filter helper - same logic as CategoryAll page
   const matchesFilter = useMemo(() => {
     return (article: any) => {
       if (selectedFilter === "All") return true;
@@ -241,28 +241,54 @@ const Category = () => {
     };
   }, [selectedFilter]);
 
+  // Combine ALL loaded articles for filtering (deduped) - matches CategoryAll approach
+  const allLoadedArticles = useMemo(() => {
+    const combined = [
+      ...(articles || []),
+      ...(mostReadArticles || []),
+      ...(deepCutsArticles || []),
+    ];
+    const seen = new Set<string>();
+    return combined.filter((a: any) => {
+      if (!a?.id || seen.has(a.id)) return false;
+      seen.add(a.id);
+      return true;
+    });
+  }, [articles, mostReadArticles, deepCutsArticles]);
+
+  // When filter is active, get ALL matching articles from combined set
+  const filteredAllArticles = useMemo(() => {
+    if (selectedFilter === "All") return [];
+    return allLoadedArticles.filter(matchesFilter);
+  }, [allLoadedArticles, selectedFilter, matchesFilter]);
+
+  const isFilterActive = selectedFilter !== "All";
+
   const featuredArticle = useMemo(() => {
     if (!articles) return undefined;
-    if (selectedFilter === "All") return articles[0];
-    return articles.find(matchesFilter);
-  }, [articles, selectedFilter, matchesFilter]);
+    if (isFilterActive) return filteredAllArticles[0];
+    return articles[0];
+  }, [articles, isFilterActive, filteredAllArticles]);
 
   // Latest sidebar - always unfiltered (4 most recent)
   const latestArticles = articles?.slice(1, 5) || [];
 
-  // Featured grid - filtered
+  // Featured grid - when filter active, show remaining filtered articles
   const featuredGridArticles = useMemo(() => {
-    const raw = mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
-    if (selectedFilter === "All") return raw;
-    return raw.filter(matchesFilter);
-  }, [mostReadArticles, articles, selectedFilter, matchesFilter]);
+    if (isFilterActive) {
+      return filteredAllArticles.slice(1, 5);
+    }
+    return mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
+  }, [mostReadArticles, articles, isFilterActive, filteredAllArticles]);
 
-  // Filtered deep cuts
+  // Filtered deep cuts - when filter active, show more filtered articles
   const filteredDeepCuts = useMemo(() => {
+    if (isFilterActive) {
+      return filteredAllArticles.slice(5, 8);
+    }
     if (!deepCutsArticles) return [];
-    if (selectedFilter === "All") return deepCutsArticles;
-    return deepCutsArticles.filter(matchesFilter);
-  }, [deepCutsArticles, selectedFilter, matchesFilter]);
+    return deepCutsArticles;
+  }, [deepCutsArticles, isFilterActive, filteredAllArticles]);
 
   // Scroll to top on filter change
   useEffect(() => {
@@ -493,11 +519,11 @@ const Category = () => {
                           {decodeHtml(featuredArticle.title)}
                         </h2>
                         <p style={{ fontSize: 14, color: "#d1d5db", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
-                          {featuredArticle.excerpt?.slice(0, 160)}...
+                          {(featuredArticle as any).excerpt?.slice(0, 160)}...
                         </p>
                         <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: TOKENS.MUTED }}>
-                          <span>{featuredArticle.authors?.name}</span>
-                          <span>{featuredArticle.reading_time_minutes || 5} min read</span>
+                          <span>{(featuredArticle as any).authors?.name}</span>
+                          <span>{(featuredArticle as any).reading_time_minutes || 5} min read</span>
                         </div>
                       </div>
                     </Link>
@@ -604,7 +630,7 @@ const Category = () => {
                         flexShrink: 0,
                       }}
                     >
-                      View all {articles?.length || ""} articles &rarr;
+                      View all {allLoadedArticles?.length || ""} articles &rarr;
                     </Link>
                   }
                 />
@@ -657,7 +683,7 @@ const Category = () => {
               {/* 8. CROSS-CATEGORY NAVIGATION */}
               <section ref={revealCross.ref} style={{ marginBottom: 48, ...revealCross.style }}>
                 <SectionHeader title="Explore Other Categories" emoji="🌐" color={TOKENS.BRAND} />
-                <div className="flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto scrollbar-hide">
+                <div className="flex md:grid md:grid-cols-6 gap-3.5 overflow-x-auto scrollbar-hide">
                   {otherCategories.map((cat) => (
                     <CrossCategoryCard key={cat.slug} cat={cat} />
                   ))}
