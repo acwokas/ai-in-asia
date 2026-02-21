@@ -20,11 +20,10 @@ import RecommendedGuides from "@/components/RecommendedGuides";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
-import HomepageQuickLinks from "@/components/HomepageQuickLinks";
+import TrendingStrip from "@/components/TrendingStrip";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
 
-// Lazy load below-the-fold components
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
@@ -290,41 +289,28 @@ const Index = () => {
         {/* First-time visitor hero banner */}
         <FirstVisitHero />
 
-        {/* Value Proposition Strip — compact */}
-        <div className="bg-muted/50 border-b border-border/50">
-          <div className="container mx-auto px-4 py-1.5 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
-            <span>Asia-Pacific's source for AI news, tools, and analysis — covering what matters across 15+ countries</span>
-            <Link to="/about" className="text-primary hover:underline font-medium shrink-0">
-              Learn more
-            </Link>
-          </div>
-        </div>
+        {/* Trending strip — replaces the old value proposition banner */}
+        <TrendingStrip />
 
-
-        {/* 2. Hero: Quick Links Sidebar + Primary Story + Secondary Stories */}
-        <section className="container mx-auto px-4 pt-4 pb-4 md:pt-4 md:pb-4">
-          <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] lg:grid-cols-12 gap-4">
+        {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
+        <section className="container mx-auto px-4 pt-3 pb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            {/* QUICK LINKS SIDEBAR — xl only */}
-            <div className="hidden xl:block">
-              <HomepageQuickLinks />
-            </div>
-
-            {/* PRIMARY STORY — main hero */}
-            <div className="lg:col-span-8 xl:col-span-1">
+            {/* PRIMARY STORY */}
+            <div className="lg:col-span-8">
               {isLoading ? (
-                <Skeleton className="h-[380px] md:h-[460px] rounded-lg" />
+                <Skeleton className="h-[400px] md:h-[480px] rounded-lg" />
               ) : featuredArticle && featuredArticle.slug ? (
                 <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
-                  <div className="relative h-[380px] md:h-[460px] overflow-hidden rounded-lg">
+                  <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={featuredArticle.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(featuredArticle.featured_image_url, [640, 960, 1280]) : undefined}
-                      sizes="(max-width: 768px) 100vw, 55vw"
+                      sizes="(max-width: 768px) 100vw, 65vw"
                       alt={featuredArticle.title}
                       loading="eager" decoding="async" fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      width={1280} height={460}
+                      width={1280} height={480}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
@@ -337,7 +323,7 @@ const Index = () => {
                           <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[24px] sm:text-[28px] md:text-[36px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[26px] sm:text-[30px] md:text-[38px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
                         {featuredArticle.title}
                       </h2>
                       <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{featuredArticle.excerpt}</p>
@@ -359,15 +345,15 @@ const Index = () => {
                 </Link>
               ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
                 <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
-                  <div className="relative h-[380px] md:h-[460px] overflow-hidden rounded-lg">
+                  <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={trendingArticles[0].featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(trendingArticles[0].featured_image_url, [640, 960, 1280]) : undefined}
-                      sizes="(max-width: 768px) 100vw, 55vw"
+                      sizes="(max-width: 768px) 100vw, 65vw"
                       alt={trendingArticles[0].title}
                       loading="eager" fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      width={1280} height={460}
+                      width={1280} height={480}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
@@ -377,7 +363,7 @@ const Index = () => {
                           <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[24px] sm:text-[28px] md:text-[36px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[26px] sm:text-[30px] md:text-[38px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
                         {trendingArticles[0].title}
                       </h2>
                       <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{trendingArticles[0].excerpt}</p>
@@ -392,13 +378,13 @@ const Index = () => {
               ) : null}
             </div>
 
-            {/* SECONDARY STORIES — right column, 4 stories stacked compact */}
-            <div className="lg:col-span-4 xl:col-span-1 flex flex-col gap-2 lg:h-[460px]">
+            {/* SECONDARY STORIES — 4 compact items */}
+            <div className="lg:col-span-4 flex flex-col gap-[10px] lg:h-[480px]">
               {isLoading ? (
                 <>
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex gap-3">
-                      <Skeleton className="w-[80px] h-[60px] rounded-md flex-shrink-0" />
+                      <Skeleton className="w-[72px] h-[54px] rounded-md flex-shrink-0" />
                       <div className="flex-1 space-y-1.5">
                         <Skeleton className="h-3 w-16" />
                         <Skeleton className="h-4 w-full" />
@@ -412,7 +398,7 @@ const Index = () => {
                   article.slug && article.id !== featuredArticle?.id
                 ).slice(0, 4) || [];
 
-                return secondaryArticles.map((article: any, index: number) => {
+                return secondaryArticles.map((article: any) => {
                   const categorySlug = article.categories?.slug || 'news';
                   return (
                     <Link
@@ -420,28 +406,23 @@ const Index = () => {
                       to={`/${categorySlug}/${article.slug}`}
                       className="group flex gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200 flex-1"
                     >
-                      <div className="relative w-[80px] h-[60px] overflow-hidden rounded-md flex-shrink-0">
+                      <div className="relative w-[72px] h-[54px] overflow-hidden rounded-md flex-shrink-0">
                         <img
-                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 160, 120)}
+                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 144, 108)}
                           alt={article.title}
                           loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          width={160} height={120}
+                          width={144} height={108}
                         />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                            {article.categories?.name || "Uncategorized"}
-                          </span>
-                          {article.is_trending && (
-                            <TrendingUp className="h-3 w-3 text-orange-500" />
-                          )}
-                        </div>
-                        <h3 className="font-semibold text-[15px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary mb-0.5">
+                          {article.categories?.name || "Uncategorized"}
+                        </span>
+                        <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                        <div className="flex items-center gap-2 text-[12px] text-muted-foreground mt-0.5">
                           {article.published_at && (
                             <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                           )}
@@ -457,20 +438,17 @@ const Index = () => {
           </div>
         </section>
 
-        {/* 3 Before 9 Daily Briefing — compact, between hero and More Stories */}
+        {/* 3 Before 9 Daily Briefing — compact */}
         <Suspense fallback={null}>
           <ThreeBeforeNineLanding />
         </Suspense>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
-        {/* Article Grid — alternating size-contrast rows */}
+        {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <h2 className="text-[28px] md:text-[30px] font-bold">More Stories</h2>
-            </div>
+            <h2 className="text-[28px] md:text-[30px] font-bold">More Stories</h2>
           </div>
 
           {isLoading ? (
@@ -561,10 +539,7 @@ const Index = () => {
                 {allGridArticles.map((article: any, i: number) => {
                   const large = isFeatured(i);
                   return (
-                    <div
-                      key={article.id}
-                      className={large ? 'md:col-span-2' : ''}
-                    >
+                    <div key={article.id} className={large ? 'md:col-span-2' : ''}>
                       {renderCard(article, large)}
                     </div>
                   );
@@ -574,7 +549,6 @@ const Index = () => {
           })()}
         </section>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 3. For You Section (logged-in only, with UnreadBookmarksNudge folded in) */}
@@ -595,7 +569,6 @@ const Index = () => {
           </Suspense>
         </div>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 5. Recommended Articles ("You May Like") */}
@@ -620,7 +593,6 @@ const Index = () => {
           </Suspense>
         </div>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 6. Editor's Pick */}
@@ -638,7 +610,6 @@ const Index = () => {
           <RecommendedGuides />
         </div>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 8. Upcoming Events */}
@@ -659,7 +630,6 @@ const Index = () => {
           </Suspense>
         </div>
 
-        {/* Section divider */}
         <div className="border-t border-border/30" />
 
         {/* 9. Featured Voices */}
