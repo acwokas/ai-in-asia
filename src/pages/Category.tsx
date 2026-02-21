@@ -209,10 +209,10 @@ const Category = () => {
           transition: "all 0.3s ease",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 16px", display: "flex", alignItems: "center", gap: 12, overflowX: "auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 16px", display: "flex", alignItems: "center", gap: 12, overflowX: "auto" }} className="scrollbar-hide">
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, padding: "4px 12px", background: `${cfg.accent}15`, borderRadius: 10 }}>
             <span style={{ fontSize: 16 }}>{cfg.emoji}</span>
-            <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 13, color: cfg.accent }}>{cfg.label}</span>
+            <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 13, color: cfg.accent }} className="hidden sm:inline">{cfg.label}</span>
           </div>
           <div style={{ width: 1, height: 20, background: TOKENS.BORDER, flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -256,7 +256,7 @@ const Category = () => {
                 {categoryLoading ? (
                   <Skeleton className="h-12 w-64 mb-2" />
                 ) : (
-                  <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 38, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }}>
+                  <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }} className="text-2xl sm:text-3xl md:text-[38px]">
                     {category?.name}
                   </h1>
                 )}
@@ -273,7 +273,7 @@ const Category = () => {
 
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px 64px" }}>
           {articlesLoading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24 }}>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
               <Skeleton className="aspect-[16/10] rounded-2xl" />
               <div className="space-y-4">
                 {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
@@ -283,7 +283,7 @@ const Category = () => {
             <>
               {/* 3. HERO + LATEST SIDEBAR */}
               <section style={{ marginBottom: 48 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24 }}>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
                   {/* Hero card */}
                   {featuredArticle && (
                     <Link
@@ -295,8 +295,8 @@ const Category = () => {
                         overflow: "hidden",
                         border: `1px solid ${TOKENS.BORDER}`,
                         background: TOKENS.CARD_BG,
-                        minHeight: 420,
                       }}
+                      className="min-h-[280px] md:min-h-[420px]"
                     >
                       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at top right, ${cfg.accent}12, transparent 60%)` }} />
                       {featuredArticle.featured_image_url && (
@@ -327,12 +327,13 @@ const Category = () => {
                   )}
 
                   {/* Latest sidebar */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", margin: "0 0 4px 0" }}>Latest</h3>
+                  <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible scrollbar-hide">
+                    <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", margin: "0 0 4px 0" }} className="hidden md:block">Latest</h3>
                     {latestArticles.map((article: any, i: number) => (
                       <Link
                         key={article.id}
                         to={`/${article.categories?.slug || slug}/${article.slug}`}
+                        className="flex-shrink-0 md:flex-shrink min-w-[200px] md:min-w-0"
                         style={{
                           display: "flex",
                           gap: 12,
@@ -364,7 +365,7 @@ const Category = () => {
                         </div>
                       </Link>
                     ))}
-                    <BusinessInAByteAd />
+                    <div className="hidden md:block"><BusinessInAByteAd /></div>
                   </div>
                 </div>
               </section>
@@ -373,7 +374,7 @@ const Category = () => {
               {paths.length > 0 && (
                 <section style={{ marginBottom: 48 }}>
                   <SectionHeader title="Learning Paths" emoji="🗺️" color={cfg.accent} subtitle="Curated sequences to guide your reading" />
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+                  <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {paths.map((p, i) => (
                       <LearningPathCard key={i} path={p} />
                     ))}
@@ -393,7 +394,7 @@ const Category = () => {
               {featuredGridArticles.length > 0 && (
                 <section style={{ marginBottom: 48 }}>
                   <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {featuredGridArticles.map((article: any) => (
                       <InteractiveCard
                         key={article.id}
@@ -417,7 +418,7 @@ const Category = () => {
                     color="#ef4444"
                     subtitle="Editor-picked articles that are just as relevant today as when they were published."
                   />
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+                  <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 gap-3.5">
                     {deepCuts.map((dc, i) => (
                       <div
                         key={i}
@@ -444,7 +445,7 @@ const Category = () => {
               {/* 8. CROSS-CATEGORY NAVIGATION */}
               <section style={{ marginBottom: 48 }}>
                 <SectionHeader title="Explore Other Categories" emoji="🌐" color={TOKENS.BRAND} />
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}>
+                <div className="flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto scrollbar-hide">
                   {otherCategories.map((cat) => (
                     <CrossCategoryCard key={cat.slug} cat={cat} />
                   ))}
@@ -468,7 +469,7 @@ const Category = () => {
                   <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", margin: "0 0 24px 0" }}>
                     Get the best of {cfg.label} delivered to your inbox every week.
                   </p>
-                  <div style={{ display: "flex", justifyContent: "center", gap: 8, maxWidth: 440, margin: "0 auto" }}>
+                  <div className="flex flex-col min-[480px]:flex-row justify-center gap-2 max-w-[440px] mx-auto">
                     <input
                       type="email"
                       placeholder="you@example.com"
@@ -550,13 +551,15 @@ function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        padding: "18px",
-        borderRadius: 14,
-        background: hovered ? `${cat.accent}08` : TOKENS.CARD_BG,
-        border: `1px solid ${hovered ? cat.accent + "40" : TOKENS.BORDER}`,
-        cursor: "pointer",
-        transition: "all 0.25s ease",
-      }}
+      padding: "18px",
+      borderRadius: 14,
+      background: hovered ? `${cat.accent}08` : TOKENS.CARD_BG,
+      border: `1px solid ${hovered ? cat.accent + "40" : TOKENS.BORDER}`,
+      cursor: "pointer",
+      transition: "all 0.25s ease",
+      minWidth: 150,
+      flexShrink: 0,
+    }}
     >
       <span style={{ fontSize: 22, display: "block", marginBottom: 8 }}>{cat.emoji}</span>
       <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: cat.accent, margin: "0 0 4px 0" }}>{cat.label}</h4>
