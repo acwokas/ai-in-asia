@@ -53,20 +53,55 @@ function getEditorialTag(article: any): string {
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
-function useRevealOnScroll(delay = 0) {
+function useRevealOnScroll() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+          // Remove will-change after animation completes
+          const timer = setTimeout(() => {
+            if (el) el.style.willChange = 'auto';
+          }, 600);
+          return () => clearTimeout(timer);
+        }
+      },
       { threshold: 0.1 }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  return { ref, style: { opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.8s ease ${delay}ms, transform 0.8s ease ${delay}ms` } as React.CSSProperties };
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const dist = isMobile ? '12px' : '20px';
+  const dur = isMobile ? '0.3s' : '0.5s';
+  return {
+    ref,
+    visible,
+    style: {
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : `translateY(${dist})`,
+      transition: `opacity ${dur} ease-out, transform ${dur} ease-out`,
+      willChange: 'transform, opacity',
+    } as React.CSSProperties,
+  };
+}
+
+function staggerStyle(visible: boolean, index: number): React.CSSProperties {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const dist = isMobile ? '12px' : '20px';
+  const dur = isMobile ? '0.3s' : '0.5s';
+  const delay = `${index * 100}ms`;
+  return {
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'translateY(0)' : `translateY(${dist})`,
+    transition: `opacity ${dur} ease-out ${delay}, transform ${dur} ease-out ${delay}`,
+    willChange: 'transform, opacity',
+  };
 }
 
 const Category = () => {
@@ -92,13 +127,13 @@ const Category = () => {
   // Reset filter when slug changes
   useEffect(() => { setSelectedFilter("All"); }, [slug]);
 
-  const revealPaths = useRevealOnScroll(0);
-  const revealBanner = useRevealOnScroll(100);
-  const revealTool = useRevealOnScroll(200);
-  const revealFeatured = useRevealOnScroll(300);
-  const revealDeep = useRevealOnScroll(400);
-  const revealCross = useRevealOnScroll(500);
-  const revealNewsletter = useRevealOnScroll(600);
+  const revealPaths = useRevealOnScroll();
+  const revealBanner = useRevealOnScroll();
+  const revealTool = useRevealOnScroll();
+  const revealFeatured = useRevealOnScroll();
+  const revealDeep = useRevealOnScroll();
+  const revealCross = useRevealOnScroll();
+  const revealNewsletter = useRevealOnScroll();
 
   const cfg = CATEGORY_CONFIG[slug as CategorySlug] || CATEGORY_CONFIG.news;
   const paths = LEARNING_PATHS[slug || "news"] || [];
@@ -606,7 +641,9 @@ const Category = () => {
                   <SectionHeader title="Learning Paths" emoji="🗺️" color={cfg.accent} subtitle="Curated sequences to guide your reading" />
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {paths.map((p, i) => (
-                      <LearningPathCard key={i} path={p} />
+                      <div key={i} style={staggerStyle(revealPaths.visible, i)}>
+                        <LearningPathCard path={p} />
+                      </div>
                     ))}
                   </div>
                 </section>
@@ -650,15 +687,16 @@ const Category = () => {
                 />
                 {featuredGridArticles.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
-                    {featuredGridArticles.map((article: any) => (
-                      <FeaturedCard
-                        key={article.id}
-                        article={article}
-                        cfg={cfg}
-                        slug={slug}
-                        imageHeight={140}
-                        navigate={navigate}
-                      />
+                    {featuredGridArticles.map((article: any, i: number) => (
+                      <div key={article.id} style={staggerStyle(revealFeatured.visible, i)}>
+                        <FeaturedCard
+                          article={article}
+                          cfg={cfg}
+                          slug={slug}
+                          imageHeight={140}
+                          navigate={navigate}
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : selectedFilter !== "All" ? (
@@ -676,17 +714,18 @@ const Category = () => {
                 />
                 {filteredDeepCuts.length > 0 ? (
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 gap-3.5">
-                    {filteredDeepCuts.map((dc: any) => (
-                      <FeaturedCard
-                        key={dc.id}
-                        article={dc}
-                        cfg={cfg}
-                        slug={slug}
-                        imageHeight={120}
-                        navigate={navigate}
-                        tag={getEditorialTag(dc)}
-                        tagColor="#ef4444"
-                      />
+                    {filteredDeepCuts.map((dc: any, i: number) => (
+                      <div key={dc.id} style={staggerStyle(revealDeep.visible, i)}>
+                        <FeaturedCard
+                          article={dc}
+                          cfg={cfg}
+                          slug={slug}
+                          imageHeight={120}
+                          navigate={navigate}
+                          tag={getEditorialTag(dc)}
+                          tagColor="#ef4444"
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : selectedFilter !== "All" ? (
@@ -698,8 +737,10 @@ const Category = () => {
               <section ref={revealCross.ref} style={{ marginBottom: 48, ...revealCross.style }}>
                 <SectionHeader title="Explore Other Categories" emoji="🌐" color={TOKENS.BRAND} />
                 <div className="flex md:grid md:grid-cols-6 gap-3.5 overflow-x-auto scrollbar-hide">
-                  {otherCategories.map((cat) => (
-                    <CrossCategoryCard key={cat.slug} cat={cat} />
+                  {otherCategories.map((cat, i) => (
+                    <div key={cat.slug} style={staggerStyle(revealCross.visible, i)}>
+                      <CrossCategoryCard cat={cat} />
+                    </div>
                   ))}
                 </div>
               </section>
