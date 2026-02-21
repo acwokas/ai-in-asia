@@ -35,39 +35,18 @@ const TOOL_MAP: Record<string, React.FC> = {
   voices: OpinionPoll,
 };
 
-// Deep cuts per category (hardcoded for now)
-const DEEP_CUTS: Record<string, { tag: string; title: string; date: string }[]> = {
-  news: [
-    { tag: "Timeless", title: "The day Singapore became Asia's AI capital", date: "Mar 2025" },
-    { tag: "Essential", title: "Understanding China's AI governance model", date: "Jan 2025" },
-    { tag: "Guide", title: "How to read an AI policy document", date: "Nov 2024" },
-  ],
-  business: [
-    { tag: "How-To", title: "Building an AI business case your CFO will approve", date: "Feb 2025" },
-    { tag: "Essential", title: "The real cost of AI implementation in ASEAN", date: "Dec 2024" },
-    { tag: "Timeless", title: "Why 70% of enterprise AI projects fail", date: "Oct 2024" },
-  ],
-  life: [
-    { tag: "Guide", title: "A parent's guide to AI safety in schools", date: "Jan 2025" },
-    { tag: "Timeless", title: "How AI is reshaping healthcare across Asia", date: "Nov 2024" },
-    { tag: "Essential", title: "Digital privacy in the age of AI", date: "Sep 2024" },
-  ],
-  learn: [
-    { tag: "How-To", title: "Prompt engineering from zero to hero", date: "Mar 2025" },
-    { tag: "Guide", title: "The complete beginner's guide to AI tools", date: "Jan 2025" },
-    { tag: "Essential", title: "Understanding LLMs without a PhD", date: "Nov 2024" },
-  ],
-  create: [
-    { tag: "How-To", title: "Building a content pipeline with AI", date: "Feb 2025" },
-    { tag: "Timeless", title: "The art of AI-assisted design", date: "Dec 2024" },
-    { tag: "Guide", title: "Choosing the right AI image generator", date: "Oct 2024" },
-  ],
-  voices: [
-    { tag: "Essential", title: "Why Asia will lead the next AI wave", date: "Mar 2025" },
-    { tag: "Timeless", title: "The ethics of AI in developing nations", date: "Jan 2025" },
-    { tag: "Guide", title: "How practitioners are thinking about AGI", date: "Nov 2024" },
-  ],
-};
+// Derive editorial tag from article data
+function getEditorialTag(article: any): string {
+  const tags = (article.ai_tags || []).map((t: string) => t.toLowerCase());
+  const title = (article.title || '').toLowerCase();
+  if (tags.some((t: string) => t.includes('how-to') || t.includes('tutorial')) || title.includes('how to')) return 'How-To';
+  if (tags.some((t: string) => t.includes('guide')) || title.includes('guide')) return 'Guide';
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  if (article.published_at && new Date(article.published_at) < sixMonthsAgo) return 'Timeless';
+  if (tags.some((t: string) => t.includes('tool')) || article.article_type === 'tools') return 'Evergreen';
+  return 'Essential';
+}
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
@@ -119,7 +98,6 @@ const Category = () => {
 
   const cfg = CATEGORY_CONFIG[slug as CategorySlug] || CATEGORY_CONFIG.news;
   const paths = LEARNING_PATHS[slug || "news"] || [];
-  const deepCuts = DEEP_CUTS[slug || "news"] || [];
   const ToolComponent = TOOL_MAP[slug || "news"];
 
   // ──────────── EXISTING SUPABASE QUERIES (unchanged) ────────────
@@ -179,6 +157,44 @@ const Category = () => {
         return data?.map(item => item.articles).filter(article => article && article.authors?.name !== 'Intelligence Desk' && !excludeIds.includes(article.id)).sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4) || [];
       }
       const { data, error } = await supabase.from("articles").select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, authors (name, slug), categories:primary_category_id (name, slug)`).eq("primary_category_id", category.id).eq("status", "published").not("id", "in", `(${excludeIds.join(",")})`).order("view_count", { ascending: false }).limit(4);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Deep cuts: evergreen articles older than 30 days, ordered by views
+  const { data: deepCutsArticles } = useQuery({
+    queryKey: ["category-deep-cuts", slug],
+    enabled: enableSecondaryQueries && !!category?.id,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async () => {
+      if (!category?.id) return [];
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const cutoff = thirtyDaysAgo.toISOString();
+
+      if (slug === 'voices') {
+        const { data, error } = await supabase
+          .from("article_categories")
+          .select(`articles!inner (id, slug, title, published_at, view_count, ai_tags, article_type, categories:primary_category_id (name, slug))`)
+          .eq("category_id", category.id)
+          .eq("articles.status", "published")
+          .lt("articles.published_at", cutoff);
+        if (error) throw error;
+        return (data?.map(item => item.articles) || [])
+          .filter(Boolean)
+          .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 6);
+      }
+
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, slug, title, published_at, view_count, ai_tags, article_type, categories:primary_category_id (name, slug)")
+        .eq("primary_category_id", category.id)
+        .eq("status", "published")
+        .lt("published_at", cutoff)
+        .order("view_count", { ascending: false })
+        .limit(6);
       if (error) throw error;
       return data;
     },
@@ -433,7 +449,7 @@ const Category = () => {
               )}
 
               {/* 7. DEEP CUTS */}
-              {deepCuts.length > 0 && (
+              {deepCutsArticles && deepCutsArticles.length > 0 && (
                 <section ref={revealDeep.ref} style={{ marginBottom: 48, ...revealDeep.style }}>
                   <SectionHeader
                     title="Deep Cuts from the Archives"
@@ -442,24 +458,15 @@ const Category = () => {
                     subtitle="Editor-picked articles that are just as relevant today as when they were published."
                   />
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 gap-3.5">
-                    {deepCuts.map((dc, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          padding: "18px 20px",
-                          borderRadius: 14,
-                          background: TOKENS.CARD_BG,
-                          border: `1px solid ${TOKENS.BORDER}`,
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                          <GlowBadge color="#ef4444" small>{dc.tag}</GlowBadge>
-                          <span style={{ fontSize: 11, color: TOKENS.MUTED }}>{dc.date}</span>
-                        </div>
-                        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "#fff", lineHeight: 1.4, margin: 0 }}>
-                          {dc.title}
-                        </h3>
-                      </div>
+                    {deepCutsArticles.map((dc: any) => (
+                      <InteractiveCard
+                        key={dc.id}
+                        title={decodeHtml(dc.title)}
+                        tag={getEditorialTag(dc)}
+                        tagColor="#ef4444"
+                        meta={dc.published_at ? new Date(dc.published_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : undefined}
+                        onClick={() => navigate(`/${dc.categories?.slug || slug}/${dc.slug}`)}
+                      />
                     ))}
                   </div>
                 </section>
