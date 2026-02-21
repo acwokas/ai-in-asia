@@ -15,7 +15,7 @@ import { TopListsContent } from "@/components/TopListsContent";
 import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
-import FloatingNewsletterPopup from "@/components/FloatingNewsletterPopup";
+
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
@@ -729,7 +729,7 @@ const Article = () => {
         <UpNextSidebar currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
         <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
         <ExitIntentOverlay currentArticleId={article.id} />
-        <FloatingNewsletterPopup />
+        
         <Footer />
       </div>
     </>

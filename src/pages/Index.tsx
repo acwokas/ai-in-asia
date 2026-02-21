@@ -20,6 +20,7 @@ import ReadingStreakTracker from "@/components/ReadingStreakTracker";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import { GoogleDiscoverFollow } from "@/components/GoogleDiscoverFollow";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
+import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import WhatsChanged from "@/components/WhatsChanged";
 import RecentlyViewedArticles from "@/components/RecentlyViewedArticles";
@@ -87,7 +88,7 @@ const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null,
 const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
-  const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(false);
+  const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(checkSubscribed());
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -348,9 +349,11 @@ const Index = () => {
       if (error) throw error;
 
       setIsNewsletterSubscribed(true);
+      markNewsletterSubscribed();
+      await awardNewsletterPoints(user?.id ?? null, supabase);
       toast({
         title: "Successfully subscribed!",
-        description: "Welcome aboard! Check your inbox for our latest insights.",
+        description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Welcome aboard! Check your inbox for our latest insights.",
       });
       
       (e.target as HTMLFormElement).reset();

@@ -5,7 +5,7 @@
  */
 
 import DOMPurify from "dompurify";
-import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
+
 import { InArticleAd } from "@/components/GoogleAds";
 
 // Process inline formatting for text content
@@ -203,9 +203,8 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
     });
     
-    // Inject newsletter signup and ad after certain blocks
+    // Inject ad after certain blocks
     const totalBlocks = htmlBlocks.length;
-    const newsletterPosition = Math.floor(totalBlocks * 0.4);
     const adPosition = Math.floor(totalBlocks * 0.7);
     
     const finalBlocks: React.ReactNode[] = [];
@@ -219,9 +218,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
       
-      if (index === newsletterPosition && totalBlocks > 5) {
-        finalBlocks.push(<InlineNewsletterSignup key="newsletter-inline" />);
-      }
       
       if (index === adPosition && totalBlocks > 8) {
         finalBlocks.push(<InArticleAd key="ad-inline" />);
