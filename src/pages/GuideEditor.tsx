@@ -634,6 +634,7 @@ const GuideEditor = () => {
               pillar={formData.pillar}
               topicTags={formData.topic_tags}
               oneLineDescription={formData.one_line_description}
+              steps={formData.steps}
               onUpdateField={updateField}
             />
           </SectionCard>

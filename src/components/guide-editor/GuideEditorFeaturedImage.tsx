@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Copy, Check, RefreshCw, Upload, Loader2, Image } from "lucide-react";
 
+interface StepItem { step_number: number; title: string; content: string }
+
 interface GuideEditorFeaturedImageProps {
   imageUrl: string;
   imageAlt: string;
@@ -14,11 +16,16 @@ interface GuideEditorFeaturedImageProps {
   pillar: string;
   topicTags: string[];
   oneLineDescription: string;
+  steps: StepItem[];
   onUpdateField: (field: string, value: any) => void;
 }
 
+const slugifyTitle = (title: string): string => {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+};
+
 const GuideEditorFeaturedImage = ({
-  imageUrl, imageAlt, title, pillar, topicTags, oneLineDescription, onUpdateField,
+  imageUrl, imageAlt, title, pillar, topicTags, oneLineDescription, steps, onUpdateField,
 }: GuideEditorFeaturedImageProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,18 +44,33 @@ const GuideEditorFeaturedImage = ({
     }
     setGeneratingPrompts(true);
     try {
-      const systemPrompt = `You are an expert Midjourney prompt engineer. Generate exactly 2 Midjourney image prompts for a guide hero image. The image should be editorial, professional, and suitable for a dark-themed AI publication (AIinASIA.com). Requirements:
-- Dark moody backgrounds (deep navy, charcoal, or black)
-- Teal (#0D9488) and electric blue accent lighting or elements
-- Abstract, conceptual visualization of the topic - NOT literal representations
-- No text, no words, no letters in the image
-- Clean composition with breathing room for title overlay
-- Professional, modern, slightly futuristic aesthetic
-- --ar 16:9 --style raw --v 6.1
+      const systemPrompt = `You are an expert Midjourney prompt engineer creating hero images for AIinASIA.com, a dark-themed AI publication.
 
-Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
+Generate exactly 2 Midjourney prompts. Each must be specific to the guide topic provided.
 
-      const userPrompt = `Guide title: ${title}\nTopic tags: ${topicTags.join(", ")}\nPillar: ${pillar}\nOne-line description: ${oneLineDescription}`;
+PROMPT 1 - ABSTRACT/CONCEPTUAL:
+Create an abstract, artistic interpretation of the guide's core concept. Think metaphorical, not literal. Use shapes, light, energy, and spatial composition to evoke the feeling of the topic. No people, no screens, no devices.
+- Dark background (deep navy #0a0a1a or charcoal)
+- Teal (#0D9488) and electric blue as primary accent colors
+- Abstract geometric or organic forms
+- Atmospheric lighting, depth, cinematic feel
+- Clean composition with negative space on the left side for title overlay
+- No text, no words, no letters, no UI elements
+
+PROMPT 2 - TOPIC-SPECIFIC:
+Create a more representational (but still stylised and editorial) image directly connected to what the guide teaches. If the guide is about writing, show something evocative of writing. If about meetings, evoke collaboration. Still artistic, not stock-photo literal.
+- Same dark background and teal/blue color palette
+- Can include stylised objects, tools, or scenes related to the topic
+- Still no literal screenshots, no stock photo people, no text in image
+- Moody, professional, slightly futuristic
+- Clean composition with breathing room
+
+Both prompts must end with: --ar 16:9 --style raw --v 6.1
+
+Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No explanations, no preamble.`;
+
+      const stepTitles = steps.map(s => s.title).filter(Boolean).join(", ");
+      const userPrompt = `Guide title: ${title}\nTopic: ${topicTags.join(", ")}\nPillar: ${pillar}\nDescription: ${oneLineDescription}\nKey sections covered: ${stepTitles}`;
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-assistant`,
@@ -82,7 +104,6 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
       if (current) prompts.push(current.trim());
 
       if (prompts.length === 0) {
-        // Fallback: treat as two prompts split by double newline or just use the whole thing
         prompts.push(result.trim());
       }
 
@@ -120,12 +141,12 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
       setUploadProgress(50);
 
       const ext = compressed.name.split(".").pop() || "jpg";
-      const safeName = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50) : "guide";
-      const fileName = `guides/${safeName}-${Date.now()}.${ext}`;
+      const slug = title.trim() ? slugifyTitle(title) : `guide-untitled-${Date.now()}`;
+      const fileName = `guides/guide-${slug}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("article-images")
-        .upload(fileName, compressed, { contentType: compressed.type, upsert: false });
+        .upload(fileName, compressed, { contentType: compressed.type, upsert: true });
 
       if (uploadError) throw uploadError;
       setUploadProgress(80);
@@ -133,6 +154,12 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
       const { data: { publicUrl } } = supabase.storage.from("article-images").getPublicUrl(fileName);
       onUpdateField("featured_image_url", publicUrl);
       setUploadProgress(100);
+
+      // Auto-fill alt text if empty
+      if (!imageAlt && title.trim()) {
+        onUpdateField("featured_image_alt", `${title} - AI in Asia guide`);
+      }
+
       toast({ title: "Image uploaded successfully" });
     } catch (err: any) {
       console.error(err);
@@ -140,7 +167,7 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
     } finally {
       setTimeout(() => { setUploading(false); setUploadProgress(0); }, 500);
     }
-  }, [title, onUpdateField, toast]);
+  }, [title, imageAlt, onUpdateField, toast]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -161,12 +188,17 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
     try {
       new URL(trimmed);
       onUpdateField("featured_image_url", trimmed);
+      if (!imageAlt && title.trim()) {
+        onUpdateField("featured_image_alt", `${title} - AI in Asia guide`);
+      }
       setUrlInput("");
       toast({ title: "Image URL set" });
     } catch {
       toast({ title: "Invalid URL", variant: "destructive" });
     }
   };
+
+  const promptLabels = ["Abstract / Conceptual", "Topic-Specific"];
 
   return (
     <div className="space-y-6">
@@ -217,9 +249,9 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
         {midjourneyPrompts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {midjourneyPrompts.map((prompt, i) => (
-              <div key={i} className="bg-[hsl(222,47%,11%)] border border-border rounded-lg p-4 relative">
+              <div key={i} className="bg-card border border-border rounded-lg p-4 relative">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prompt {i + 1}</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{promptLabels[i] || `Prompt ${i + 1}`}</span>
                   <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => copyPrompt(prompt, i)}>
                     {copiedIndex === i ? <><Check className="h-3 w-3 mr-1" />Copied</> : <><Copy className="h-3 w-3 mr-1" />Copy</>}
                   </Button>
@@ -235,7 +267,6 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
       <div className="space-y-3">
         <h4 className="text-sm font-semibold">Upload Image</h4>
 
-        {/* Drag-drop zone */}
         <div
           className={`relative rounded-lg border-2 border-dashed transition-colors cursor-pointer p-8 text-center ${
             dragOver
@@ -269,7 +300,6 @@ Return ONLY the 2 prompts, clearly numbered as 1. and 2. Nothing else.`;
           )}
         </div>
 
-        {/* URL input */}
         <div className="flex gap-2">
           <Input
             placeholder="Or paste an image URL"
