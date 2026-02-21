@@ -585,7 +585,8 @@ const Article = () => {
               )}
             </div>
 
-            {/* Article Reactions */}
+            {/* Article Reactions - immediately after content while reader is engaged */}
+            <p className="text-sm text-muted-foreground mb-2 mt-8">What did you think?</p>
             <ArticleReactions articleId={article.id} />
 
             {/* Compact Author Footer */}
