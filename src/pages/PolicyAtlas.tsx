@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -14,6 +14,29 @@ import PolicyMap from "@/components/PolicyMap";
 
 const PolicyAtlas = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data: searchResults } = useQuery({
+    queryKey: ['policy-search', debouncedSearch],
+    queryFn: async () => {
+      if (!debouncedSearch || debouncedSearch.length < 2) return [];
+      const { data, error } = await supabase
+        .from('articles')
+        .select('id, title, slug, country, categories:primary_category_id(slug)')
+        .eq('article_type', 'policy_article')
+        .eq('status', 'published')
+        .or(`title.ilike.%${debouncedSearch}%,country.ilike.%${debouncedSearch}%,region.ilike.%${debouncedSearch}%`)
+        .limit(5);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!debouncedSearch && debouncedSearch.length >= 2,
+  });
 
   const { data: regions, isLoading: regionsLoading, error: regionsError } = useQuery({
     queryKey: ['policy-regions'],
@@ -158,6 +181,28 @@ const PolicyAtlas = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchResults && searchResults.length > 0 && (
+                <Card className="absolute top-full left-0 right-0 mt-1 z-50 bg-card border shadow-lg">
+                  <CardContent className="p-2">
+                    {searchResults.map((result) => (
+                      <Link
+                        key={result.id}
+                        to={`/ai-policy-atlas/${(result.categories as any)?.slug}/${result.slug}`}
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-muted transition-colors"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{result.title}</p>
+                          {result.country && (
+                            <p className="text-xs text-muted-foreground">{result.country}</p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
             </div>
             <Button asChild size="lg">
               <Link to="/ai-policy-atlas/compare" className="flex items-center gap-2">
@@ -208,28 +253,40 @@ const PolicyAtlas = () => {
               ))}
             </div>
           ) : regions && regions.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regions.map((region) => (
-                <Link key={region.id} to={`/ai-policy-atlas/${region.slug}`}>
-                  <Card className="hover:shadow-lg transition-shadow h-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5" />
-                        {region.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {region.description}
-                        {regionArticleCounts?.[region.id] && (
-                          <span className="block mt-1 text-xs text-primary font-medium">
-                            {regionArticleCounts[region.id]} {regionArticleCounts[region.id] === 1 ? 'entry' : 'entries'}
-                          </span>
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            (() => {
+              const q = debouncedSearch.toLowerCase();
+              const filtered = q.length >= 2
+                ? regions.filter(r => r.name?.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
+                : regions;
+              return filtered.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filtered.map((region) => (
+                    <Link key={region.id} to={`/ai-policy-atlas/${region.slug}`}>
+                      <Card className="hover:shadow-lg transition-shadow h-full">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Globe className="h-5 w-5" />
+                            {region.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {region.description}
+                            {regionArticleCounts?.[region.id] && (
+                              <span className="block mt-1 text-xs text-primary font-medium">
+                                {regionArticleCounts[region.id]} {regionArticleCounts[region.id] === 1 ? 'entry' : 'entries'}
+                              </span>
+                            )}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No regions match your search.
+                </div>
+              );
+            })()
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               No regions found. Please check your database.
