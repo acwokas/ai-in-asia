@@ -1823,6 +1823,83 @@ export type Database = {
         }
         Relationships: []
       }
+      event_submissions: {
+        Row: {
+          created_event_id: string | null
+          description: string | null
+          end_date: string
+          event_name: string
+          event_type: string
+          expected_attendance: number | null
+          id: string
+          is_hybrid: boolean
+          is_virtual: boolean
+          location: string
+          region: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          start_date: string
+          status: string
+          submitted_at: string
+          submitter_email: string
+          ticket_price: string | null
+          website_url: string
+        }
+        Insert: {
+          created_event_id?: string | null
+          description?: string | null
+          end_date: string
+          event_name: string
+          event_type: string
+          expected_attendance?: number | null
+          id?: string
+          is_hybrid?: boolean
+          is_virtual?: boolean
+          location: string
+          region: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          start_date: string
+          status?: string
+          submitted_at?: string
+          submitter_email: string
+          ticket_price?: string | null
+          website_url: string
+        }
+        Update: {
+          created_event_id?: string | null
+          description?: string | null
+          end_date?: string
+          event_name?: string
+          event_type?: string
+          expected_attendance?: number | null
+          id?: string
+          is_hybrid?: boolean
+          is_virtual?: boolean
+          location?: string
+          region?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          start_date?: string
+          status?: string
+          submitted_at?: string
+          submitter_email?: string
+          ticket_price?: string | null
+          website_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_submissions_created_event_id_fkey"
+            columns: ["created_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           city: string

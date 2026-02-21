@@ -87,6 +87,7 @@ const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
 const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
+const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const Tools = lazy(() => import("./pages/Tools"));
 const AskScout = lazy(() => import("./pages/AskScout"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
@@ -129,6 +130,7 @@ const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
+const AdminEventSubmissionsPage = lazy(() => import("./components/admin/AdminEventSubmissions"));
 
 // Lightweight skeleton loader for instant display
 const HomepageSkeleton = () => (
@@ -231,6 +233,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/events/submit" element={<SubmitEvent />} />
               <Route path="/tools" element={<ExternalRedirect url="https://adrianwatkins.com/tools" />} />
               <Route path="/ask-scout" element={<AskScout />} />
               <Route path="/newsletter" element={<Newsletter />} />
@@ -302,6 +305,7 @@ const App = () => (
                 <Route path="content-insights" element={<ContentInsights />} />
                 <Route path="import-subscribers" element={<ImportNewsletterSubscribers />} />
                 <Route path="unsubscribes" element={<AdminUnsubscribes />} />
+                <Route path="event-submissions" element={<AdminEventSubmissionsPage />} />
               </Route>
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />

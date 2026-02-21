@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
-import { Loader2, FileText, BarChart, Home, BookOpen } from "lucide-react";
+import { Loader2, FileText, BarChart, Home, BookOpen, CalendarCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import { TrendingSuggestions } from "@/components/TrendingSuggestions";
@@ -24,6 +24,7 @@ import {
   AuthorsDialog,
 } from "@/components/admin";
 import { AdminEngagementTab } from "@/components/admin/AdminEngagementTab";
+import AdminEventSubmissions from "@/components/admin/AdminEventSubmissions";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -542,6 +543,10 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="articles">Recent Articles</TabsTrigger>
             <TabsTrigger value="comments">Pending Comments</TabsTrigger>
+            <TabsTrigger value="event-submissions" className="flex items-center gap-1.5">
+              <CalendarCheck className="h-3.5 w-3.5" />
+              Event Submissions
+            </TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="tools">AI Tools</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -561,6 +566,10 @@ const Admin = () => {
 
           <TabsContent value="engagement" className="space-y-4">
             <AdminEngagementTab />
+          </TabsContent>
+
+          <TabsContent value="event-submissions" className="space-y-4">
+            <AdminEventSubmissions />
           </TabsContent>
 
           <TabsContent value="tools" className="space-y-4">
