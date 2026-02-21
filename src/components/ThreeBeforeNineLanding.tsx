@@ -63,23 +63,23 @@ const ThreeBeforeNineLanding = memo(() => {
 
   return (
     <section className="container mx-auto px-4 pt-6 pb-2">
-      <div className="rounded-xl bg-slate-900 dark:bg-slate-950 border border-slate-700/50 overflow-hidden">
+      <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
         <div className="p-5 sm:p-6">
           {/* Header */}
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-editorial font-bold text-xl tracking-tight">3</span>
-                <span className="text-slate-400 text-sm font-medium">Before</span>
+                <span className="text-muted-foreground text-sm font-medium">Before</span>
                 <span className="text-editorial font-bold text-xl tracking-tight">9</span>
               </div>
-              <div className="h-4 w-px bg-slate-700" />
-              <span className="text-slate-400 text-sm">
+              <div className="h-4 w-px bg-border" />
+              <span className="text-muted-foreground text-sm">
                 {format(pubDate, "EEEE, d MMMM yyyy")}
               </span>
             </div>
             {user && hasRead && (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+              <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                 <Check className="h-3.5 w-3.5" />
                 Read
               </span>
@@ -94,7 +94,7 @@ const ThreeBeforeNineLanding = memo(() => {
                   <span className="text-editorial/80 font-bold text-sm mt-0.5 shrink-0">
                     {i + 1}.
                   </span>
-                  <span className="text-slate-200 text-sm leading-relaxed line-clamp-2">
+                  <span className="text-foreground text-sm leading-relaxed line-clamp-2">
                     {bullet}
                   </span>
                 </li>
@@ -118,7 +118,7 @@ const ThreeBeforeNineLanding = memo(() => {
             {previous && (
               <Link
                 to={`/${(previous as any).categories?.slug || "news"}/${previous.slug}`}
-                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Yesterday's briefing →
               </Link>
@@ -127,7 +127,7 @@ const ThreeBeforeNineLanding = memo(() => {
 
           {/* Weekend note */}
           {showWeekendNote && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-500">
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               Next briefing: Monday morning
             </p>
