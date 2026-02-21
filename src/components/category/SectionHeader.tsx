@@ -12,7 +12,7 @@ export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: Se
   return (
     <div style={{ marginBottom: subtitle ? 4 : 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        {emoji && <span style={{ fontSize: 20 }}>{emoji}</span>}
+        {emoji && <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>}
         <span
           style={{
             fontFamily: "Poppins, sans-serif",
@@ -23,6 +23,9 @@ export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: Se
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
             whiteSpace: "nowrap",
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 0,
           }}
         >
           {title}
@@ -32,6 +35,8 @@ export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: Se
             flex: 1,
             height: 1,
             background: `linear-gradient(90deg, ${color}40, transparent)`,
+            flexShrink: 1,
+            minWidth: 0,
           }}
         />
         {rightAction}
