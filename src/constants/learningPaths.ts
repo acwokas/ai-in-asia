@@ -35,4 +35,10 @@ export const LEARNING_PATHS: Record<string, { emoji: string; title: string; desc
     { emoji: "🔮", title: "Future Predictions", desc: "Where we're heading", articles: 4, time: "30 min", color: "#f59e0b" },
     { emoji: "💬", title: "Practitioner Stories", desc: "From the field", articles: 6, time: "1.5 hrs", color: "#22c55e" },
   ],
+  policy: [
+    { emoji: "📜", title: "ASEAN AI Governance", desc: "Regional frameworks compared", articles: 5, time: "1 hr", color: "#eab308" },
+    { emoji: "🏛️", title: "China's AI Regulatory Model", desc: "Pre-deployment to enforcement", articles: 4, time: "45 min", color: "#ef4444" },
+    { emoji: "🌐", title: "Global AI Policy Landscape", desc: "EU, US, and Asia compared", articles: 6, time: "1.5 hrs", color: "#3b82f6" },
+    { emoji: "🛡️", title: "AI Safety Standards", desc: "From principles to practice", articles: 4, time: "30 min", color: "#22c55e" },
+  ],
 };

@@ -395,6 +395,55 @@ const Category = () => {
           </div>
         </section>
 
+        {/* Policy Atlas Banner - only on Policy category */}
+        {slug === "policy" && (
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px 24px" }}>
+            <Link
+              to="/ai-policy-atlas"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 16,
+                padding: "20px 24px",
+                borderRadius: 16,
+                background: "linear-gradient(135deg, rgba(234,179,8,0.08), transparent)",
+                border: "1px solid rgba(234,179,8,0.2)",
+                textDecoration: "none",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 28, flexShrink: 0 }}>🌐</span>
+                <div>
+                  <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff" }}>AI Policy Atlas</div>
+                  <div style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", lineHeight: 1.4 }}>
+                    Interactive tracker of AI regulation across Asia-Pacific. Explore frameworks, timelines, and government positions.
+                  </div>
+                </div>
+              </div>
+              <span
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  background: "#eab308",
+                  color: "#000",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                Open Policy Atlas <span style={{ fontSize: 14 }}>&rarr;</span>
+              </span>
+            </Link>
+          </div>
+        )}
+
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px 64px" }}>
           {articlesLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
@@ -448,6 +497,14 @@ const Category = () => {
                         </div>
                       </div>
                     </Link>
+                  ) : slug === "policy" && selectedFilter === "All" ? (
+                    <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, flexDirection: "column", gap: 16 }} className="min-h-[280px] md:min-h-[420px]">
+                      <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, textAlign: "center" }}>Policy coverage launching soon.</p>
+                      <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", textAlign: "center" }}>Explore the AI Policy Atlas in the meantime.</p>
+                      <Link to="/ai-policy-atlas" style={{ padding: "10px 20px", borderRadius: 10, background: "#eab308", color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                        Open Policy Atlas &rarr;
+                      </Link>
+                    </div>
                   ) : selectedFilter !== "All" ? (
                     <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }} className="min-h-[280px] md:min-h-[420px]">
                       <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif" }}>No articles matching "{selectedFilter}" yet</p>

@@ -97,6 +97,7 @@ const Header = memo(() => {
               <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
               <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
+              <Link to="/category/policy" className="text-sm font-medium hover:text-primary transition-colors">Policy</Link>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -290,6 +291,7 @@ const Header = memo(() => {
                 { to: "/category/learn", label: "Learn" },
                 { to: "/category/create", label: "Create" },
                 { to: "/category/voices", label: "Voices" },
+                { to: "/category/policy", label: "Policy" },
               ].map(({ to, label }) => (
                 <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="font-medium py-1.5 hover:text-primary transition-colors">
                   {label}
