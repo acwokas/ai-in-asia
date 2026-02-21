@@ -150,6 +150,10 @@ All colors MUST be HSL.
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
@@ -309,6 +313,35 @@ All colors MUST be HSL.
     .article-content {
       font-size: 1.1rem;
     }
+  }
+
+  /* Pull quote styling */
+  .article-pull-quote {
+    font-family: 'Nunito', sans-serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    line-height: 1.7;
+    color: hsl(var(--foreground));
+    border-left: 4px solid hsl(var(--primary));
+    padding-left: 1.5rem;
+    margin: 2.5rem 0;
+    background: rgba(48, 62, 83, 0.1);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .article-pull-quote p {
+    margin: 0;
+  }
+
+  .article-pull-quote footer,
+  .article-pull-quote cite {
+    display: block;
+    font-family: 'Nunito', sans-serif;
+    font-style: normal;
+    font-size: 0.9rem;
+    color: #BFC0C0;
+    margin-top: 0.75rem;
   }
   .prose hr,
   article hr {

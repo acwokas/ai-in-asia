@@ -14,13 +14,13 @@ interface TableOfContentsProps {
   minHeadings?: number;
   minReadingTime?: number;
   readingTime?: number;
+  categoryColor?: string;
 }
 
 function useHeadings(contentSelector: string) {
   const [headings, setHeadings] = useState<TocItem[]>([]);
 
   useEffect(() => {
-    // Small delay to let article content render
     const timer = setTimeout(() => {
       const container = document.querySelector(contentSelector);
       if (!container) return;
@@ -59,7 +59,6 @@ function useActiveHeading(headings: TocItem[]) {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        // Find the first heading that is intersecting from the top
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
@@ -82,6 +81,46 @@ function useActiveHeading(headings: TocItem[]) {
   return activeId;
 }
 
+/** Shared TOC link list for desktop rail */
+function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem[]; activeId: string; categoryColor?: string }) {
+  const handleClick = useCallback(
+    (id: string) => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    []
+  );
+
+  // Only show H2s in the rail
+  const h2Headings = headings.filter(h => h.level === 2);
+
+  return (
+    <nav aria-label="Table of contents">
+      <ul className="flex flex-col" style={{ gap: "0.6rem" }}>
+        {h2Headings.map(({ id, text }) => (
+          <li key={id}>
+            <button
+              onClick={() => handleClick(id)}
+              className="text-left w-full cursor-pointer transition-colors duration-200"
+              style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: "0.9rem",
+                lineHeight: 1.4,
+                paddingLeft: "0.75rem",
+                borderLeft: activeId === id ? `2px solid ${categoryColor || 'hsl(var(--primary))'}` : "2px solid transparent",
+                color: activeId === id ? "hsl(var(--foreground))" : "#BFC0C0",
+              }}
+            >
+              {text}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/** Legacy TocLinks for mobile collapsible (shows H2+H3) */
 function TocLinks({ headings, activeId, onClick }: { headings: TocItem[]; activeId: string; onClick?: () => void }) {
   const handleClick = useCallback(
     (id: string) => {
@@ -119,8 +158,8 @@ function TocLinks({ headings, activeId, onClick }: { headings: TocItem[]; active
   );
 }
 
-/** Desktop: sticky sidebar */
-export function TableOfContentsSidebar({ contentSelector = ".article-content", minHeadings = 3, minReadingTime = 7, readingTime = 0 }: TableOfContentsProps) {
+/** Desktop: sticky sidebar TOC */
+export function TableOfContentsSidebar({ contentSelector = ".article-content", minHeadings = 3, minReadingTime = 7, readingTime = 0, categoryColor }: TableOfContentsProps) {
   const headings = useHeadings(contentSelector);
   const activeId = useActiveHeading(headings);
 
@@ -128,14 +167,17 @@ export function TableOfContentsSidebar({ contentSelector = ".article-content", m
 
   return (
     <div>
-      <div className="border border-border rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-foreground">
-          <List className="h-4 w-4" />
-          <span>Contents</span>
-        </div>
-        <div className="max-h-[45vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.3)_rgba(255,255,255,0.15)]">
-          <TocLinks headings={headings} activeId={activeId} />
-        </div>
+      <h3 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: "0.95rem", color: "hsl(var(--foreground))", marginBottom: "1rem" }}>
+        In this article
+      </h3>
+      <div
+        className="max-h-[45vh] overflow-y-auto"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgba(255,255,255,0.3) rgba(255,255,255,0.15)",
+        }}
+      >
+        <RailTocLinks headings={headings} activeId={activeId} categoryColor={categoryColor} />
       </div>
     </div>
   );
@@ -152,15 +194,27 @@ export function TableOfContentsMobile({ contentSelector = ".article-content", mi
   return (
     <div className="min-[1200px]:hidden mb-6">
       <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full border border-border rounded-lg px-4 py-3 text-sm font-semibold hover:bg-muted/50 transition-colors">
+        <CollapsibleTrigger
+          className="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold transition-colors"
+          style={{
+            background: "rgba(48,62,83,0.2)",
+            borderRadius: open ? "8px 8px 0 0" : "8px",
+          }}
+        >
           <div className="flex items-center gap-2">
             <List className="h-4 w-4" />
-            <span>Contents</span>
-            <span className="text-muted-foreground font-normal">({headings.length})</span>
+            <span>In this article</span>
+            <span className="text-muted-foreground font-normal">({headings.filter(h => h.level === 2).length})</span>
           </div>
           <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="border border-t-0 border-border rounded-b-lg px-4 py-3">
+        <CollapsibleContent
+          style={{
+            background: "rgba(48,62,83,0.2)",
+            borderRadius: "0 0 8px 8px",
+            padding: "0 1rem 1rem 1rem",
+          }}
+        >
           <TocLinks headings={headings} activeId={activeId} onClick={() => setOpen(false)} />
         </CollapsibleContent>
       </Collapsible>

@@ -145,8 +145,8 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         }
         if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
           const quoteContent = block.substring(2);
-          return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8">
-            <p class="italic text-lg text-foreground/90 leading-relaxed">${quoteContent}</p>
+          return `<blockquote class="article-pull-quote">
+            <p>${quoteContent}</p>
           </blockquote>`;
         }
         if (block.includes('\n- ') || block.startsWith('- ')) {
@@ -204,8 +204,8 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       }
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteContent = block.substring(2);
-        return `<blockquote class="border-l-4 border-primary bg-primary/5 pl-6 pr-4 py-4 my-8">
-          <p class="italic text-lg text-foreground/90 leading-relaxed">${quoteContent}</p>
+        return `<blockquote class="article-pull-quote">
+          <p>${quoteContent}</p>
         </blockquote>`;
       }
       if (block.includes('\n- ') || block.startsWith('- ')) {
@@ -311,8 +311,8 @@ const generateHeadingId = (text: string): string => {
           
         case 'quote':
           return (
-            <blockquote key={index} className="border-l-4 border-primary pl-6 py-2 my-8 italic text-xl">
-              {block.content}
+            <blockquote key={index} className="article-pull-quote">
+              <p>{block.content}</p>
             </blockquote>
           );
           
