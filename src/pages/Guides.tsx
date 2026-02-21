@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search } from "lucide-react";
+import { Clock, ArrowRight, Search, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const pillarColors: Record<string, string> = {
@@ -33,6 +33,14 @@ const TOPIC_OPTIONS = [
   "Productivity",
 ] as const;
 
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "popular", label: "Most popular" },
+  { value: "difficulty", label: "Difficulty" },
+] as const;
+
+const DIFF_ORDER: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
+
 type FilterPillProps = {
   label: string;
   active: boolean;
@@ -52,9 +60,82 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
   </button>
 );
 
+const AdSlot = () => (
+  <div className="col-span-full flex flex-col items-center gap-1 py-4">
+    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Advertisement</span>
+    <div
+      id="guides-ad-1"
+      className="flex items-center justify-center rounded-lg border-2 border-dashed border-border"
+      style={{ width: 300, height: 250, background: "#1a1a1a" }}
+    >
+      <span className="text-sm text-muted-foreground/40">Ad</span>
+    </div>
+  </div>
+);
+
+const GuideCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url && (
+      <div className="aspect-video overflow-hidden">
+        <img
+          src={g.featured_image_url}
+          alt={g.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+    )}
+    <div className="p-5 space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {g.pillar && (
+          <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>
+            {g.pillar}
+          </Badge>
+        )}
+        {g.difficulty && (
+          <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>
+            {g.difficulty}
+          </Badge>
+        )}
+        {g.platform_tags?.length > 0 &&
+          g.platform_tags.map((tag: string) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0"
+            >
+              {tag}
+            </Badge>
+          ))}
+      </div>
+      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
+        {g.title}
+      </h2>
+      {g.one_line_description && (
+        <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>
+      )}
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+        <span className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {g.read_time_minutes || "5"} min read
+        </span>
+        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">
+          Read guide <ArrowRight className="h-3 w-3" />
+        </span>
+      </div>
+    </div>
+  </Link>
+);
+
 const Guides = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 250);
+  const [sortBy, setSortBy] = useState<string>("newest");
 
   // Filters
   const [difficulty, setDifficulty] = useState("All");
@@ -84,9 +165,9 @@ const Guides = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category")
+        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category, updated_at, view_count")
         .eq("status", "published")
-        .order("published_at", { ascending: false });
+        .order("updated_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -94,8 +175,7 @@ const Guides = () => {
 
   const filteredGuides = useMemo(() => {
     if (!guides) return [];
-    return guides.filter((g) => {
-      // Search
+    let result = guides.filter((g) => {
       if (debouncedSearch.trim()) {
         const q = debouncedSearch.toLowerCase();
         const matches =
@@ -106,28 +186,34 @@ const Guides = () => {
           g.platform_tags?.some((t: string) => t.toLowerCase().includes(q));
         if (!matches) return false;
       }
-
-      // Difficulty
       if (difficulty !== "All" && g.difficulty?.toLowerCase() !== difficulty.toLowerCase()) return false;
-
-      // Platform
       if (!platforms.has("All")) {
-        const guidePlatforms = (g.platform_tags || []).map((t: string) => t.toLowerCase());
-        const match = Array.from(platforms).some((p) => guidePlatforms.includes(p.toLowerCase()));
-        if (!match) return false;
+        const gp = (g.platform_tags || []).map((t: string) => t.toLowerCase());
+        if (!Array.from(platforms).some((p) => gp.includes(p.toLowerCase()))) return false;
       }
-
-      // Topic
-      if (topic !== "All") {
-        if (!g.topic_category || g.topic_category !== topic) return false;
-      }
-
+      if (topic !== "All" && g.topic_category !== topic) return false;
       return true;
     });
-  }, [guides, debouncedSearch, difficulty, platforms, topic]);
+
+    // Sort
+    if (sortBy === "newest") {
+      result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    } else if (sortBy === "popular") {
+      result.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    } else if (sortBy === "difficulty") {
+      result.sort((a, b) => (DIFF_ORDER[a.difficulty ?? ""] ?? 99) - (DIFF_ORDER[b.difficulty ?? ""] ?? 99));
+    }
+
+    return result;
+  }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy]);
 
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
+
+  // Split guides into before-ad (first 3) and after-ad for desktop,
+  // or first 2 and after for mobile (handled via CSS)
+  const AD_POSITION_DESKTOP = 3;
+  const AD_POSITION_MOBILE = 2;
 
   return (
     <>
@@ -225,21 +311,18 @@ const Guides = () => {
         {/* Filter Bar */}
         <section className="border-b border-border bg-card/50 py-4">
           <div className="container mx-auto px-4 space-y-3 md:space-y-2">
-            {/* Row 1: Difficulty */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
               {DIFFICULTY_OPTIONS.map((d) => (
                 <FilterPill key={d} label={d} active={difficulty === d} onClick={() => setDifficulty(d)} />
               ))}
             </div>
-            {/* Row 2: Platform */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
               {PLATFORM_OPTIONS.map((p) => (
                 <FilterPill key={p} label={p} active={platforms.has(p)} onClick={() => togglePlatform(p)} />
               ))}
             </div>
-            {/* Row 3: Topic */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Topic</span>
               {TOPIC_OPTIONS.map((t) => (
@@ -253,7 +336,7 @@ const Guides = () => {
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
             {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
                     <Skeleton className="aspect-video w-full" />
@@ -267,59 +350,54 @@ const Guides = () => {
               </div>
             ) : filteredGuides.length > 0 ? (
               <>
-                {hasActiveFilters && (
-                  <p className="text-sm text-muted-foreground mb-6">
-                    {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} found
-                    {debouncedSearch.trim() ? ` matching "${debouncedSearch}"` : ""}
-                  </p>
-                )}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredGuides.map((g: any) => (
-                    <Link
-                      key={g.id}
-                      to={`/guides/${g.slug}`}
-                      className="group rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg"
+                {/* Sort bar */}
+                <div className="flex items-center justify-between mb-6">
+                  {hasActiveFilters ? (
+                    <p className="text-sm text-muted-foreground">
+                      {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} found
+                      {debouncedSearch.trim() ? ` matching "${debouncedSearch}"` : ""}
+                    </p>
+                  ) : (
+                    <div />
+                  )}
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
                     >
-                      {g.featured_image_url && (
-                        <div className="aspect-video overflow-hidden">
-                          <img
-                            src={g.featured_image_url}
-                            alt={g.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
+                      {SORT_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>Sort by: {o.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredGuides.map((g: any, idx: number) => {
+                    const elements: React.ReactNode[] = [];
+
+                    // Desktop ad after position 3, mobile ad after position 2
+                    // We insert the ad before this card if it's at the right position
+                    if (idx === AD_POSITION_DESKTOP) {
+                      elements.push(
+                        <div key="ad-desktop" className="hidden lg:contents">
+                          <AdSlot />
                         </div>
-                      )}
-                      <div className="p-5 space-y-3">
-                        <div className="flex flex-wrap gap-1.5">
-                          {g.pillar && (
-                            <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>
-                              {g.pillar}
-                            </Badge>
-                          )}
-                          {g.difficulty && (
-                            <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>
-                              {g.difficulty}
-                            </Badge>
-                          )}
+                      );
+                    }
+                    if (idx === AD_POSITION_MOBILE) {
+                      elements.push(
+                        <div key="ad-mobile" className="lg:hidden contents">
+                          <AdSlot />
                         </div>
-                        <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                          {g.title}
-                        </h2>
-                        {g.one_line_description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>
-                        )}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {g.read_time_minutes || "5"} min read
-                          </span>
-                          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">
-                            Read guide <ArrowRight className="h-3 w-3" />
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                      );
+                    }
+
+                    elements.push(<GuideCard key={g.id} g={g} />);
+                    return elements;
+                  })}
                 </div>
               </>
             ) : (

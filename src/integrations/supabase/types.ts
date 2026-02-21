@@ -230,6 +230,7 @@ export type Database = {
           troubleshooting_and_common_mistakes: string | null
           updated_at: string
           variations_and_alternatives: string | null
+          view_count: number | null
           why_this_matters: string | null
           worked_example: Json | null
         }
@@ -327,6 +328,7 @@ export type Database = {
           troubleshooting_and_common_mistakes?: string | null
           updated_at?: string
           variations_and_alternatives?: string | null
+          view_count?: number | null
           why_this_matters?: string | null
           worked_example?: Json | null
         }
@@ -424,6 +426,7 @@ export type Database = {
           troubleshooting_and_common_mistakes?: string | null
           updated_at?: string
           variations_and_alternatives?: string | null
+          view_count?: number | null
           why_this_matters?: string | null
           worked_example?: Json | null
         }
