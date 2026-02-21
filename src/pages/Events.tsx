@@ -295,12 +295,12 @@ const Events = () => {
                 <Calendar className="w-3.5 h-3.5" />
                 <span className="text-xs font-semibold tracking-wide uppercase">AI Events Calendar</span>
               </div>
-              <a
-                href="#"
+              <Link
+                to="/events/submit"
                 className="hidden sm:inline-flex items-center gap-2 text-sm text-muted-foreground border border-border rounded-full px-4 py-1.5 hover:text-foreground hover:border-foreground/40 transition-colors"
               >
                 Submit an Event <ArrowRight className="w-3.5 h-3.5" />
-              </a>
+              </Link>
             </div>
 
             <h1
@@ -406,6 +406,16 @@ const Events = () => {
                       </CardContent>
                     </Card>
                   )}
+                </div>
+
+                {/* Submit CTA */}
+                <div className="text-center mt-12 mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Know of an event we're missing?{" "}
+                    <Link to="/events/submit" className="text-primary hover:underline">
+                      Submit it here →
+                    </Link>
+                  </p>
                 </div>
               </section>
             </>
