@@ -23,6 +23,7 @@ import NotificationPrompt from "@/components/NotificationPrompt";
 import TrendingStrip from "@/components/TrendingStrip";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
+const StockTicker = lazy(() => import("@/components/StockTicker"));
 
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
@@ -281,6 +282,9 @@ const Index = () => {
       <OrganizationStructuredData />
       
       <Header />
+      <Suspense fallback={null}>
+        <StockTicker />
+      </Suspense>
       <NotificationPrompt />
       
       <main className="flex-1">
