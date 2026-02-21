@@ -379,14 +379,14 @@ const Index = () => {
               ) : null}
             </div>
 
-            {/* SECONDARY STORIES — 4 compact items */}
-            <div className="lg:col-span-4 flex flex-col gap-[10px] lg:h-[480px]">
+            {/* SECONDARY STORIES — 4 visual mini-cards with image on top */}
+            <div className="lg:col-span-4 grid grid-cols-2 gap-3 lg:h-[480px]">
               {isLoading ? (
                 <>
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex gap-3">
-                      <Skeleton className="w-[72px] h-[54px] rounded-md flex-shrink-0" />
-                      <div className="flex-1 space-y-1.5">
+                    <div key={i} className="rounded-lg overflow-hidden border border-border/50">
+                      <Skeleton className="h-[110px] w-full" />
+                      <div className="p-2.5 space-y-1.5">
                         <Skeleton className="h-3 w-16" />
                         <Skeleton className="h-4 w-full" />
                         <Skeleton className="h-3 w-24" />
@@ -401,34 +401,36 @@ const Index = () => {
 
                 return secondaryArticles.map((article: any) => {
                   const categorySlug = article.categories?.slug || 'news';
+                  const catColor = getCategoryColor(categorySlug);
                   return (
                     <Link
                       key={article.id}
                       to={`/${categorySlug}/${article.slug}`}
-                      className="group flex gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-all duration-200 flex-1"
-                      style={{ borderLeft: `3px solid ${getCategoryColor(categorySlug)}` }}
+                      className="group rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-200 flex flex-col"
+                      style={{ borderTop: `3px solid ${catColor}` }}
                     >
-                      <div className="relative w-[72px] h-[54px] overflow-hidden rounded-md flex-shrink-0">
+                      <div className="relative w-full h-[110px] overflow-hidden">
                         <img
-                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 144, 108)}
+                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 220)}
                           alt={article.title}
                           loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          width={144} height={108}
+                          width={400} height={220}
                         />
+                        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
                       </div>
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <span className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: getCategoryColor(categorySlug) }}>
+                      <div className="p-2.5 flex flex-col flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: catColor }}>
                           {article.categories?.name || "Uncategorized"}
                         </span>
                         <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-[12px] text-muted-foreground mt-0.5">
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-auto pt-1">
                           {article.published_at && (
                             <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                           )}
-                          <span>•</span>
+                          <span>·</span>
                           <span>{article.reading_time_minutes || 5} min</span>
                         </div>
                       </div>

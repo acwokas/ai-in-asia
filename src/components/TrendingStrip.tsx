@@ -28,7 +28,7 @@ const TrendingStrip = memo(() => {
   return (
     <div className="overflow-hidden border-b" style={{ background: 'linear-gradient(90deg, hsl(215 40% 9%) 0%, hsl(215 35% 12%) 100%)', borderColor: 'rgba(255,255,255,0.06)' }}>
       <div className="container mx-auto px-4 py-[8px] flex items-center gap-2 text-[14px] min-w-0">
-        <span className="font-bold shrink-0" style={{ color: '#E5A54B' }}>Trending:</span>
+        <span className="font-bold shrink-0 text-primary">Trending:</span>
         <div className="flex items-center gap-0 overflow-x-auto no-scrollbar min-w-0">
           {trending.map((a: any, i: number) => (
             <span key={a.id} className="flex items-center shrink-0">

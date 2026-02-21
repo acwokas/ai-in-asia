@@ -66,10 +66,21 @@ const ThreeBeforeNineLanding = memo(() => {
   return (
     <section className="container mx-auto px-4 py-3 md:py-4">
       <div
-        className="rounded-xl overflow-hidden dark:bg-gradient-to-br dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] bg-[hsl(220,20%,97%)]"
-        style={{ border: `1px solid hsla(37, 78%, 60%, 0.2)`, borderLeft: `4px solid ${AMBER_ACCENT}` }}
+        className="rounded-xl overflow-hidden relative"
+        style={{
+          background: 'linear-gradient(135deg, hsl(215 40% 8%) 0%, hsl(220 35% 11%) 50%, hsl(215 38% 9%) 100%)',
+          border: `2px solid transparent`,
+          borderImage: `linear-gradient(90deg, ${AMBER_ACCENT}, hsla(37, 78%, 60%, 0.15)) 1`,
+          borderRadius: '12px',
+        }}
       >
-        <div className="px-5 py-5 sm:px-6 sm:py-5">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, ${AMBER_ACCENT} 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+        }} />
+
+        <div className="px-5 py-5 sm:px-6 sm:py-5 relative">
 
           {/* Header row */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -108,28 +119,40 @@ const ThreeBeforeNineLanding = memo(() => {
           {/* Divider */}
           <div className="h-px bg-border/50 mb-3" />
 
-          {/* The three signals — compact */}
+          {/* The three signals — with larger thumbnails and numbered circles */}
           {bullets.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-2">
               {bullets.slice(0, 3).map((bullet, i) => (
                 <Link
                   key={i}
                   to={`/${categorySlug}/${latest.slug}`}
-                  className="flex gap-3 items-start group hover:bg-foreground/5 -mx-2 px-2 py-1.5 rounded-md transition-colors"
+                  className="flex gap-3 items-center group hover:bg-foreground/5 -mx-2 px-2 py-2 rounded-md transition-colors"
                 >
-                  <span className="font-bold text-[22px] leading-none mt-0.5 shrink-0 w-6 text-center" style={{ color: AMBER_ACCENT }}>
+                  {/* Numbered circle */}
+                  <span
+                    className="flex items-center justify-center font-bold text-[20px] leading-none shrink-0 rounded-full"
+                    style={{
+                      color: AMBER_ACCENT,
+                      backgroundColor: 'hsla(37, 78%, 60%, 0.1)',
+                      width: '40px',
+                      height: '40px',
+                    }}
+                  >
                     {i + 1}
                   </span>
                   <span className="text-foreground text-[15px] leading-[1.5] flex-1 group-hover:opacity-80 transition-opacity">
                     {bullet}
                   </span>
                   {(thumbnails[i] || fallbackImage) && (
-                    <img
-                      src={thumbnails[i] || fallbackImage}
-                      alt=""
-                      className="hidden sm:block w-[64px] h-[64px] rounded-md object-cover shrink-0"
-                      loading="lazy"
-                    />
+                    <div className="hidden sm:block shrink-0 relative">
+                      <img
+                        src={thumbnails[i] || fallbackImage}
+                        alt=""
+                        className="w-[120px] h-[80px] rounded-lg object-cover"
+                        loading="lazy"
+                        style={{ boxShadow: `0 4px 16px hsla(37, 78%, 60%, 0.15)` }}
+                      />
+                    </div>
                   )}
                 </Link>
               ))}
