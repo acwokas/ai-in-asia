@@ -1,0 +1,1 @@
+ALTER TABLE public.reading_streaks ADD COLUMN IF NOT EXISTS streak_reminder_sent_at timestamp with time zone DEFAULT NULL;
