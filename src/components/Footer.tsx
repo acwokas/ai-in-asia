@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/aiinasia-logo.png";
 import { z } from "zod";
+import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 
 const emailSchema = z.string()
   .trim()
@@ -16,6 +17,7 @@ const emailSchema = z.string()
 const Footer = memo(() => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(checkSubscribed());
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -41,49 +43,14 @@ const Footer = memo(() => {
           throw error;
         }
       } else {
-        // Award newsletter badge and points if logged in
-        if (user) {
-          await supabase.rpc('award_points', { 
-            _user_id: user.id, 
-            _points: 25 
-          });
-          
-          // Award Newsletter Insider achievement
-          const { data: achievement } = await supabase
-            .from('achievements')
-            .select('id')
-            .eq('name', 'Newsletter Insider')
-            .single();
-          
-          if (achievement) {
-            // Check if already earned
-            const { data: existing } = await supabase
-              .from('user_achievements')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('achievement_id', achievement.id)
-              .maybeSingle();
-            
-            if (!existing) {
-              await supabase
-                .from('user_achievements')
-                .insert({ 
-                  user_id: user.id, 
-                  achievement_id: achievement.id 
-                });
-            }
-          }
+        markNewsletterSubscribed();
+        setIsSubscribed(true);
+        await awardNewsletterPoints(user?.id ?? null, supabase);
 
-          toast({
-            title: "Successfully subscribed!",
-            description: "You earned 25 points and the Newsletter Insider badge! 🎉",
-          });
-        } else {
-          toast({
-            title: "Successfully subscribed!",
-            description: "Check your inbox for a confirmation email.",
-          });
-        }
+        toast({
+          title: "Successfully subscribed!",
+          description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Check your inbox for a confirmation email.",
+        });
         setEmail("");
       }
     } catch (error) {
@@ -147,20 +114,24 @@ const Footer = memo(() => {
             <p className="text-sm text-muted-foreground mb-4">
               Get weekly insights delivered to your inbox.
             </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isSubmitting}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "..." : "Subscribe"}
-              </Button>
-            </form>
+            {!isSubscribed ? (
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isSubmitting}
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "..." : "Subscribe"}
+                </Button>
+              </form>
+            ) : (
+              <p className="text-sm text-muted-foreground">✓ You're subscribed!</p>
+            )}
           </div>
         </div>
 

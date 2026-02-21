@@ -3,15 +3,18 @@ import { Mail, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { isNewsletterSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
 
 const EndOfContentNewsletter = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(isNewsletterSubscribed());
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,12 +35,14 @@ const EndOfContentNewsletter = () => {
             description: "You're already on our list!",
           });
           setIsSubscribed(true);
+          markNewsletterSubscribed();
         } else {
           throw error;
         }
       } else {
-        localStorage.setItem("newsletter-subscribed", "true");
+        markNewsletterSubscribed();
         setIsSubscribed(true);
+        await awardNewsletterPoints(user?.id ?? null, supabase);
         toast({
           title: "You're in!",
           description: "Welcome to the AI in ASIA newsletter.",

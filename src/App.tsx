@@ -21,9 +21,7 @@ import AnalyticsProvider from "./components/AnalyticsProvider";
 const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load non-critical components
-const WelcomePopup = lazy(() => import("./components/WelcomePopup"));
 const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
-const StickyNewsletterBar = lazy(() => import("./components/StickyNewsletterBar"));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
 
 // Lazy load all other pages for better performance
@@ -191,12 +189,6 @@ const App = () => (
             <GoogleAnalytics />
             <Suspense fallback={null}>
               <ConsentBanner />
-            </Suspense>
-            <Suspense fallback={null}>
-              <WelcomePopup />
-            </Suspense>
-            <Suspense fallback={null}>
-              <StickyNewsletterBar />
             </Suspense>
             <Suspense fallback={null}>
               <InstallAppButton />
