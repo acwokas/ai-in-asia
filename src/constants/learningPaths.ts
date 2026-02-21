@@ -1,44 +1,57 @@
-export const LEARNING_PATHS: Record<string, { emoji: string; title: string; desc: string; articles: number; time: string; color: string }[]> = {
+export interface LearningPath {
+  slug: string;
+  emoji: string;
+  title: string;
+  desc: string;
+  longDesc: string;
+  articles: number;
+  time: string;
+  color: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  tags: string[];
+}
+
+export const LEARNING_PATHS: Record<string, LearningPath[]> = {
   news: [
-    { emoji: "📡", title: "This Week in Asian AI", desc: "Curated weekly briefing", articles: 4, time: "15 min", color: "#3b82f6" },
-    { emoji: "🏛️", title: "AI Policy Tracker", desc: "Regulation across APAC", articles: 6, time: "30 min", color: "#ef4444" },
-    { emoji: "💰", title: "Funding & Deals", desc: "Investment signals", articles: 5, time: "20 min", color: "#22c55e" },
-    { emoji: "🔬", title: "Research Radar", desc: "Breakthroughs that matter", articles: 4, time: "25 min", color: "#f59e0b" },
+    { slug: "this-week-in-asian-ai", emoji: "📡", title: "This Week in Asian AI", desc: "Curated weekly briefing", longDesc: "Stay on top of the most important AI developments across Asia-Pacific with our curated weekly briefings. Each article covers key announcements, funding rounds, and policy shifts you need to know about.", articles: 4, time: "15 min", color: "#3b82f6", difficulty: "Beginner", tags: ["ai in asia", "asia", "weekly"] },
+    { slug: "ai-policy-tracker", emoji: "🏛️", title: "AI Policy Tracker", desc: "Regulation across APAC", longDesc: "Track the rapidly evolving AI regulatory landscape across the Asia-Pacific region. From Singapore's model governance to China's algorithm regulations, understand how policy shapes the AI industry.", articles: 6, time: "30 min", color: "#ef4444", difficulty: "Intermediate", tags: ["ai regulation", "policy", "governance"] },
+    { slug: "funding-and-deals", emoji: "💰", title: "Funding & Deals", desc: "Investment signals", longDesc: "Follow the money flowing into Asian AI startups and enterprises. Understand investment trends, major deals, and what they signal about the future direction of AI in the region.", articles: 5, time: "20 min", color: "#22c55e", difficulty: "Beginner", tags: ["funding", "investment", "startup"] },
+    { slug: "research-radar", emoji: "🔬", title: "Research Radar", desc: "Breakthroughs that matter", longDesc: "Discover the most significant AI research breakthroughs emerging from Asian institutions and labs. We distill complex papers into actionable insights for professionals and enthusiasts.", articles: 4, time: "25 min", color: "#f59e0b", difficulty: "Advanced", tags: ["research", "ai research", "breakthrough"] },
   ],
   business: [
-    { emoji: "📊", title: "AI ROI Playbook", desc: "From pilot to profit", articles: 7, time: "1.5 hrs", color: "#10b981" },
-    { emoji: "🏢", title: "Enterprise AI 101", desc: "Getting started right", articles: 5, time: "1 hr", color: "#3b82f6" },
-    { emoji: "🌏", title: "AI in ASEAN Markets", desc: "Regional case studies", articles: 6, time: "1.5 hrs", color: "#f59e0b" },
-    { emoji: "⚖️", title: "Governance Essentials", desc: "Compliance & ethics", articles: 4, time: "45 min", color: "#ef4444" },
+    { slug: "ai-roi-playbook", emoji: "📊", title: "AI ROI Playbook", desc: "From pilot to profit", longDesc: "Learn how to measure and maximize the return on your AI investments. This path takes you from building a business case through pilot programs to scaling AI across your organization.", articles: 7, time: "1.5 hrs", color: "#10b981", difficulty: "Intermediate", tags: ["roi", "ai implementation", "business strategy"] },
+    { slug: "enterprise-ai-101", emoji: "🏢", title: "Enterprise AI 101", desc: "Getting started right", longDesc: "A comprehensive introduction to deploying AI in enterprise environments. Covers vendor selection, data readiness, change management, and building your first AI-powered workflow.", articles: 5, time: "1 hr", color: "#3b82f6", difficulty: "Beginner", tags: ["enterprise", "ai tools", "getting started"] },
+    { slug: "ai-in-asean-markets", emoji: "🌏", title: "AI in ASEAN Markets", desc: "Regional case studies", longDesc: "Explore how businesses across Southeast Asia are leveraging AI to solve local challenges and capture market opportunities. Real case studies from Thailand, Vietnam, Indonesia, and more.", articles: 6, time: "1.5 hrs", color: "#f59e0b", difficulty: "Intermediate", tags: ["asean", "southeast asia", "case study"] },
+    { slug: "governance-essentials", emoji: "⚖️", title: "Governance Essentials", desc: "Compliance & ethics", longDesc: "Navigate the complex intersection of AI governance, compliance requirements, and ethical AI deployment. Essential reading for any business deploying AI in regulated markets.", articles: 4, time: "45 min", color: "#ef4444", difficulty: "Advanced", tags: ["governance", "compliance", "ethics", "ai regulation"] },
   ],
   life: [
-    { emoji: "🛡️", title: "AI Safety for Everyone", desc: "Protect yourself online", articles: 5, time: "30 min", color: "#ef4444" },
-    { emoji: "🧠", title: "AI & Mental Health", desc: "Navigate responsibly", articles: 4, time: "25 min", color: "#a855f7" },
-    { emoji: "🛒", title: "Smart AI Shopping", desc: "Tools that save money", articles: 3, time: "15 min", color: "#22c55e" },
-    { emoji: "🎮", title: "AI in Entertainment", desc: "Games, music, film", articles: 5, time: "30 min", color: "#3b82f6" },
+    { slug: "ai-safety-for-everyone", emoji: "🛡️", title: "AI Safety for Everyone", desc: "Protect yourself online", longDesc: "Practical guidance on staying safe in an AI-powered world. Learn to spot deepfakes, protect your data, understand AI-generated content, and navigate online spaces more securely.", articles: 5, time: "30 min", color: "#ef4444", difficulty: "Beginner", tags: ["ai safety", "security", "deepfake", "privacy"] },
+    { slug: "ai-and-mental-health", emoji: "🧠", title: "AI & Mental Health", desc: "Navigate responsibly", longDesc: "Explore the evolving relationship between AI and mental wellbeing. From AI therapy apps to the psychological impact of AI-generated content, understand the benefits and risks.", articles: 4, time: "25 min", color: "#a855f7", difficulty: "Intermediate", tags: ["mental health", "wellbeing", "ai relationships"] },
+    { slug: "smart-ai-shopping", emoji: "🛒", title: "Smart AI Shopping", desc: "Tools that save money", longDesc: "Discover AI-powered tools and techniques that help you shop smarter, find better deals, and make more informed purchasing decisions across Asian e-commerce platforms.", articles: 3, time: "15 min", color: "#22c55e", difficulty: "Beginner", tags: ["shopping", "e-commerce", "ai tools", "consumer"] },
+    { slug: "ai-in-entertainment", emoji: "🎮", title: "AI in Entertainment", desc: "Games, music, film", longDesc: "See how AI is transforming entertainment across Asia. From AI-generated music and art to next-generation gaming experiences and film production techniques.", articles: 5, time: "30 min", color: "#3b82f6", difficulty: "Beginner", tags: ["entertainment", "gaming", "music", "film", "creative"] },
   ],
   learn: [
-    { emoji: "🌱", title: "AI for Complete Beginners", desc: "Start from zero", articles: 6, time: "45 min", color: "#10b981" },
-    { emoji: "⚡", title: "Prompt Engineering Mastery", desc: "Basic to advanced", articles: 8, time: "1.5 hrs", color: "#f59e0b" },
-    { emoji: "🔧", title: "AI Tools Power User", desc: "Master ChatGPT, Claude, Gemini", articles: 5, time: "1 hr", color: "#8b5cf6" },
-    { emoji: "🏢", title: "AI in Business (Asia)", desc: "Real SEA cases", articles: 7, time: "2 hrs", color: "#ef4444" },
+    { slug: "ai-for-complete-beginners", emoji: "🌱", title: "AI for Complete Beginners", desc: "Start from zero", longDesc: "Your first steps into the world of artificial intelligence. No technical background needed. Learn what AI actually is, how it works in simple terms, and how to start using AI tools today.", articles: 6, time: "45 min", color: "#10b981", difficulty: "Beginner", tags: ["beginner", "getting started", "ai basics", "introduction"] },
+    { slug: "prompt-engineering-mastery", emoji: "⚡", title: "Prompt Engineering Mastery", desc: "Basic to advanced", longDesc: "Master the art and science of prompt engineering. Progress from basic techniques to advanced strategies like chain-of-thought prompting, few-shot learning, and system prompt design.", articles: 8, time: "1.5 hrs", color: "#f59e0b", difficulty: "Advanced", tags: ["prompt engineering", "prompts", "chatgpt", "ai prompts"] },
+    { slug: "ai-tools-power-user", emoji: "🔧", title: "AI Tools Power User", desc: "Master ChatGPT, Claude, Gemini", longDesc: "Go beyond the basics with the most popular AI platforms. Learn advanced features, hidden capabilities, and power-user workflows for ChatGPT, Claude, Gemini, and more.", articles: 5, time: "1 hr", color: "#8b5cf6", difficulty: "Intermediate", tags: ["chatgpt", "claude", "gemini", "ai tools", "productivity"] },
+    { slug: "ai-in-business-asia", emoji: "🏢", title: "AI in Business (Asia)", desc: "Real SEA cases", longDesc: "Real-world case studies of AI implementation across Southeast Asian businesses. Learn from successes and failures in retail, finance, healthcare, and manufacturing.", articles: 7, time: "2 hrs", color: "#ef4444", difficulty: "Intermediate", tags: ["business", "asia", "case study", "ai implementation"] },
   ],
   create: [
-    { emoji: "✏️", title: "AI Writing Mastery", desc: "Content that converts", articles: 6, time: "1 hr", color: "#f97316" },
-    { emoji: "🖼️", title: "AI Image Generation", desc: "Midjourney to Firefly", articles: 5, time: "45 min", color: "#ec4899" },
-    { emoji: "🎬", title: "AI Video & Audio", desc: "Runway, Sora, ElevenLabs", articles: 4, time: "30 min", color: "#8b5cf6" },
-    { emoji: "💼", title: "AI for Freelancers", desc: "Workflow automation", articles: 5, time: "1 hr", color: "#22c55e" },
+    { slug: "ai-writing-mastery", emoji: "✏️", title: "AI Writing Mastery", desc: "Content that converts", longDesc: "Learn to harness AI as your writing partner. From blog posts and marketing copy to long-form content, discover workflows that produce high-quality writing faster.", articles: 6, time: "1 hr", color: "#f97316", difficulty: "Intermediate", tags: ["writing", "content", "copywriting", "ai writing"] },
+    { slug: "ai-image-generation", emoji: "🖼️", title: "AI Image Generation", desc: "Midjourney to Firefly", longDesc: "Master AI image generation across all major platforms. Compare tools, learn prompting techniques specific to each platform, and develop a visual style.", articles: 5, time: "45 min", color: "#ec4899", difficulty: "Beginner", tags: ["image generation", "midjourney", "dall-e", "ai art", "design"] },
+    { slug: "ai-video-and-audio", emoji: "🎬", title: "AI Video & Audio", desc: "Runway, Sora, ElevenLabs", longDesc: "Explore the cutting edge of AI-generated video and audio content. From text-to-video with Runway and Sora to voice cloning with ElevenLabs, learn the tools reshaping media.", articles: 4, time: "30 min", color: "#8b5cf6", difficulty: "Intermediate", tags: ["video", "audio", "runway", "elevenlabs", "media"] },
+    { slug: "ai-for-freelancers", emoji: "💼", title: "AI for Freelancers", desc: "Workflow automation", longDesc: "Transform your freelance business with AI-powered workflows. Automate repetitive tasks, improve client deliverables, and scale your output without burning out.", articles: 5, time: "1 hr", color: "#22c55e", difficulty: "Beginner", tags: ["freelance", "automation", "workflow", "productivity"] },
   ],
   voices: [
-    { emoji: "🗺️", title: "AI Across Asia", desc: "Country deep dives", articles: 8, time: "2 hrs", color: "#06b6d4" },
-    { emoji: "⚖️", title: "Ethics & Governance", desc: "The hard questions", articles: 5, time: "1 hr", color: "#ef4444" },
-    { emoji: "🔮", title: "Future Predictions", desc: "Where we're heading", articles: 4, time: "30 min", color: "#f59e0b" },
-    { emoji: "💬", title: "Practitioner Stories", desc: "From the field", articles: 6, time: "1.5 hrs", color: "#22c55e" },
+    { slug: "ai-across-asia", emoji: "🗺️", title: "AI Across Asia", desc: "Country deep dives", longDesc: "Deep-dive explorations into how different Asian countries are approaching AI adoption, regulation, and innovation. Understand the unique strengths and challenges of each market.", articles: 8, time: "2 hrs", color: "#06b6d4", difficulty: "Intermediate", tags: ["asia", "country analysis", "ai in asia", "deep dive"] },
+    { slug: "ethics-and-governance", emoji: "⚖️", title: "Ethics & Governance", desc: "The hard questions", longDesc: "Thoughtful analysis of the ethical dilemmas and governance challenges posed by AI. Featuring diverse voices from across Asia on bias, fairness, accountability, and transparency.", articles: 5, time: "1 hr", color: "#ef4444", difficulty: "Advanced", tags: ["ethics", "governance", "bias", "fairness", "responsible ai"] },
+    { slug: "future-predictions", emoji: "🔮", title: "Future Predictions", desc: "Where we're heading", longDesc: "Expert predictions and analysis on the future trajectory of AI in Asia and globally. Explore scenarios, emerging trends, and the forces that will shape the next decade of AI.", articles: 4, time: "30 min", color: "#f59e0b", difficulty: "Intermediate", tags: ["future", "predictions", "trends", "agi"] },
+    { slug: "practitioner-stories", emoji: "💬", title: "Practitioner Stories", desc: "From the field", longDesc: "First-person accounts and interviews from AI practitioners working across Asia. Hear about real challenges, creative solutions, and lessons learned from the front lines.", articles: 6, time: "1.5 hrs", color: "#22c55e", difficulty: "Beginner", tags: ["interview", "practitioner", "experience", "career"] },
   ],
   policy: [
-    { emoji: "📜", title: "ASEAN AI Governance", desc: "Regional frameworks compared", articles: 5, time: "1 hr", color: "#eab308" },
-    { emoji: "🏛️", title: "China's AI Regulatory Model", desc: "Pre-deployment to enforcement", articles: 4, time: "45 min", color: "#ef4444" },
-    { emoji: "🌐", title: "Global AI Policy Landscape", desc: "EU, US, and Asia compared", articles: 6, time: "1.5 hrs", color: "#3b82f6" },
-    { emoji: "🛡️", title: "AI Safety Standards", desc: "From principles to practice", articles: 4, time: "30 min", color: "#22c55e" },
+    { slug: "asean-ai-governance", emoji: "📜", title: "ASEAN AI Governance", desc: "Regional frameworks compared", longDesc: "A comprehensive comparison of AI governance frameworks across ASEAN member states. Understand how Singapore, Thailand, Malaysia, Indonesia, and others are approaching AI regulation.", articles: 5, time: "1 hr", color: "#eab308", difficulty: "Intermediate", tags: ["asean", "governance", "ai regulation", "framework"] },
+    { slug: "chinas-ai-regulatory-model", emoji: "🏛️", title: "China's AI Regulatory Model", desc: "Pre-deployment to enforcement", longDesc: "Trace China's pioneering approach to AI regulation from early algorithm governance to comprehensive generative AI rules. Understand the model that many Asian regulators are studying.", articles: 4, time: "45 min", color: "#ef4444", difficulty: "Advanced", tags: ["china", "regulation", "algorithm", "generative ai"] },
+    { slug: "global-ai-policy-landscape", emoji: "🌐", title: "Global AI Policy Landscape", desc: "EU, US, and Asia compared", longDesc: "Compare AI policy approaches across major jurisdictions. How does Asia's regulatory philosophy differ from the EU AI Act or US sectoral approach? What can each learn from the others?", articles: 6, time: "1.5 hrs", color: "#3b82f6", difficulty: "Intermediate", tags: ["global", "eu", "us", "comparison", "policy"] },
+    { slug: "ai-safety-standards", emoji: "🛡️", title: "AI Safety Standards", desc: "From principles to practice", longDesc: "Follow the journey from high-level AI safety principles to practical implementation standards. Covers ISO frameworks, national standards bodies, and industry-led safety initiatives.", articles: 4, time: "30 min", color: "#22c55e", difficulty: "Advanced", tags: ["safety", "standards", "iso", "ai safety"] },
   ],
 };
