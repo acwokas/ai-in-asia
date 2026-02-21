@@ -322,7 +322,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
       )}
 
       {/* Hero Section */}
-      <header className="relative bg-gradient-to-b from-[hsl(215,40%,8%)] to-[hsl(215,35%,11%)] dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] light:from-[hsl(220,20%,97%)] light:to-[hsl(220,15%,93%)]">
+      <header className="relative bg-muted/50 border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-[60px] text-center">
           <div className="flex items-center justify-center gap-2 text-primary text-base font-medium mb-6">
             <Clock className="h-4 w-4" />
