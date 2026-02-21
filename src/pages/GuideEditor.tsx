@@ -248,8 +248,19 @@ const GuideEditor = () => {
           if (p === 'toolbox' && ct === 'tool_pick') return 'Tool Pick';
           return formData.guide_category || 'Guide';
         })(),
-        level: formData.difficulty ? formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1) : formData.level || "Intermediate",
-        primary_platform: formData.platform_tags[0] || formData.primary_platform || "Generic",
+        level: (() => {
+          const d = formData.difficulty;
+          if (d === 'beginner') return 'Beginner';
+          if (d === 'intermediate') return 'Intermediate';
+          if (d === 'advanced') return 'Advanced';
+          return formData.level || 'Intermediate';
+        })(),
+        primary_platform: (() => {
+          const tag = formData.platform_tags?.[0];
+          if (!tag) return formData.primary_platform || 'Generic';
+          const map: Record<string, string> = { 'ChatGPT': 'ChatGPT', 'Claude': 'Claude', 'Gemini': 'Gemini', 'Midjourney': 'Midjourney', 'Multi-platform': 'Generic' };
+          return map[tag] || 'Generic';
+        })(),
         status: saveStatus,
         snapshot_bullets: formData.snapshot_bullets.filter(Boolean),
         why_this_matters: formData.why_this_matters || null,
