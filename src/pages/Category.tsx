@@ -127,7 +127,7 @@ const Category = () => {
       if (slug === 'voices') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, authors (name, slug), categories:primary_category_id!inner (name, slug))`)
+          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id!inner (name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published")
           .limit(20);
@@ -136,7 +136,7 @@ const Category = () => {
       }
       const { data, error } = await supabase
         .from("articles")
-        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, authors (name, slug), categories:primary_category_id (name, slug)`)
+        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug)`)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
@@ -154,11 +154,11 @@ const Category = () => {
       if (!category?.id || !articles) return [];
       const excludeIds = [articles[0]?.id, ...(articles.slice(1, 5).map(a => a.id))].filter(Boolean);
       if (slug === 'voices') {
-        const { data, error } = await supabase.from("article_categories").select(`articles (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, authors (name, slug), categories:primary_category_id (name, slug))`).eq("category_id", category.id).eq("articles.status", "published");
+        const { data, error } = await supabase.from("article_categories").select(`articles (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug))`).eq("category_id", category.id).eq("articles.status", "published");
         if (error) throw error;
         return data?.map(item => item.articles).filter(article => article && article.authors?.name !== 'Intelligence Desk' && !excludeIds.includes(article.id)).sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4) || [];
       }
-      const { data, error } = await supabase.from("articles").select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, authors (name, slug), categories:primary_category_id (name, slug)`).eq("primary_category_id", category.id).eq("status", "published").not("id", "in", `(${excludeIds.join(",")})`).order("view_count", { ascending: false }).limit(4);
+      const { data, error } = await supabase.from("articles").select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, authors (name, slug), categories:primary_category_id (name, slug)`).eq("primary_category_id", category.id).eq("status", "published").not("id", "in", `(${excludeIds.join(",")})`).order("view_count", { ascending: false }).limit(4);
       if (error) throw error;
       return data;
     },
@@ -215,9 +215,47 @@ const Category = () => {
     return articles.filter((a: any) => new Date(a.published_at) > weekAgo).length;
   }, [articles]);
 
-  const featuredArticle = articles?.[0];
+  // Client-side filter helper
+  const matchesFilter = (article: any) => {
+    if (selectedFilter === "All") return true;
+    const filterLower = selectedFilter.toLowerCase();
+    const tags = (article.ai_tags || []).map((t: string) => t.toLowerCase());
+    const topicTags = (article.topic_tags || []).map((t: string) => t.toLowerCase());
+    const title = (article.title || '').toLowerCase();
+    return tags.some((t: string) => t.includes(filterLower)) ||
+           topicTags.some((t: string) => t.includes(filterLower)) ||
+           title.includes(filterLower);
+  };
+
+  const featuredArticle = useMemo(() => {
+    if (!articles) return undefined;
+    if (selectedFilter === "All") return articles[0];
+    return articles.find(matchesFilter);
+  }, [articles, selectedFilter]);
+
+  // Latest sidebar - always unfiltered (4 most recent)
   const latestArticles = articles?.slice(1, 5) || [];
-  const featuredGridArticles = mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
+
+  // Featured grid - filtered
+  const featuredGridArticles = useMemo(() => {
+    const raw = mostReadArticles?.slice(0, 4) || articles?.slice(5, 9) || [];
+    if (selectedFilter === "All") return raw;
+    return raw.filter(matchesFilter);
+  }, [mostReadArticles, articles, selectedFilter]);
+
+  // Filtered deep cuts
+  const filteredDeepCuts = useMemo(() => {
+    if (!deepCutsArticles) return [];
+    if (selectedFilter === "All") return deepCutsArticles;
+    return deepCutsArticles.filter(matchesFilter);
+  }, [deepCutsArticles, selectedFilter]);
+
+  // Scroll to top on filter change
+  useEffect(() => {
+    if (selectedFilter !== "All") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [selectedFilter]);
 
   // Other categories for cross-nav
   const otherCategories = Object.entries(CATEGORY_CONFIG).filter(([k]) => k !== slug).map(([k, v]) => ({ slug: k, ...v }));
@@ -331,7 +369,7 @@ const Category = () => {
               <section style={{ marginBottom: 48 }}>
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
                   {/* Hero card */}
-                  {featuredArticle && (
+                  {featuredArticle ? (
                     <Link
                       to={`/${featuredArticle.categories?.slug || slug}/${featuredArticle.slug}`}
                       style={{
@@ -370,7 +408,11 @@ const Category = () => {
                         </div>
                       </div>
                     </Link>
-                  )}
+                  ) : selectedFilter !== "All" ? (
+                    <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }} className="min-h-[280px] md:min-h-[420px]">
+                      <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif" }}>No articles matching "{selectedFilter}" yet</p>
+                    </div>
+                  ) : null}
 
                   {/* Latest sidebar */}
                   <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible scrollbar-hide">
@@ -440,9 +482,9 @@ const Category = () => {
               )}
 
               {/* 6. FEATURED ARTICLES */}
-              {featuredGridArticles.length > 0 && (
-                <section ref={revealFeatured.ref} style={{ marginBottom: 48, ...revealFeatured.style }}>
-                  <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
+              <section ref={revealFeatured.ref} style={{ marginBottom: 48, ...revealFeatured.style }}>
+                <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
+                {featuredGridArticles.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {featuredGridArticles.map((article: any) => (
                       <FeaturedCard
@@ -455,20 +497,22 @@ const Category = () => {
                       />
                     ))}
                   </div>
-                </section>
-              )}
+                ) : selectedFilter !== "All" ? (
+                  <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+                ) : null}
+              </section>
 
               {/* 7. DEEP CUTS */}
-              {deepCutsArticles && deepCutsArticles.length > 0 && (
-                <section ref={revealDeep.ref} style={{ marginBottom: 48, ...revealDeep.style }}>
-                  <SectionHeader
-                    title="Deep Cuts from the Archives"
-                    emoji="💎"
-                    color="#ef4444"
-                    subtitle="Editor-picked articles that are just as relevant today as when they were published."
-                  />
+              <section ref={revealDeep.ref} style={{ marginBottom: 48, ...revealDeep.style }}>
+                <SectionHeader
+                  title="Deep Cuts from the Archives"
+                  emoji="💎"
+                  color="#ef4444"
+                  subtitle="Editor-picked articles that are just as relevant today as when they were published."
+                />
+                {filteredDeepCuts.length > 0 ? (
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 gap-3.5">
-                    {deepCutsArticles.map((dc: any) => (
+                    {filteredDeepCuts.map((dc: any) => (
                       <FeaturedCard
                         key={dc.id}
                         article={dc}
@@ -481,8 +525,10 @@ const Category = () => {
                       />
                     ))}
                   </div>
-                </section>
-              )}
+                ) : selectedFilter !== "All" ? (
+                  <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+                ) : null}
+              </section>
 
               {/* 8. CROSS-CATEGORY NAVIGATION */}
               <section ref={revealCross.ref} style={{ marginBottom: 48, ...revealCross.style }}>
