@@ -550,35 +550,24 @@ const Index = () => {
               );
             };
 
-            // Build items with explicit grid placement per the 7-article repeating pattern
-            const gridItems: { article: any; isLarge: boolean; colClass: string }[] = [];
-            allGridArticles.forEach((article: any, i: number) => {
-              const pos = i % 7;
-              if (pos === 0) {
-                // Featured: columns 1-2
-                gridItems.push({ article, isLarge: true, colClass: 'md:col-span-2' });
-              } else if (pos === 1) {
-                // Standard: column 3
-                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
-              } else if (pos >= 2 && pos <= 4) {
-                // Row of 3 equal standards
-                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
-              } else if (pos === 5) {
-                // Standard: column 1
-                gridItems.push({ article, isLarge: false, colClass: 'md:col-span-1' });
-              } else {
-                // Featured: columns 2-3
-                gridItems.push({ article, isLarge: true, colClass: 'md:col-span-2' });
-              }
-            });
+            const isFeatured = (index: number) => {
+              const pos = index % 10;
+              return pos === 0 || pos === 6;
+            };
 
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {gridItems.map(({ article, isLarge, colClass }) => (
-                  <div key={article.id} className={colClass}>
-                    {renderCard(article, isLarge)}
-                  </div>
-                ))}
+                {allGridArticles.map((article: any, i: number) => {
+                  const large = isFeatured(i);
+                  return (
+                    <div
+                      key={article.id}
+                      className={large ? 'md:col-span-2' : ''}
+                    >
+                      {renderCard(article, large)}
+                    </div>
+                  );
+                })}
               </div>
             );
           })()}
