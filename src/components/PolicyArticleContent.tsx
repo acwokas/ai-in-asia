@@ -140,34 +140,40 @@ const PolicyArticleContent = ({ article }: PolicyArticleContentProps) => {
                   <CardTitle className="text-xl md:text-3xl font-bold text-primary">{table.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse min-w-[600px]">
-                      <thead>
-                        <tr className="bg-gradient-to-r from-muted to-muted/50">
-                          <th className="text-left p-2 md:p-4 font-bold text-sm md:text-lg border-b-2 border-primary/30">Aspect</th>
-                          {columnHeaders.map((header: string, colIdx: number) => (
-                            <th key={colIdx} className="text-left p-2 md:p-4 font-bold text-sm md:text-lg border-b-2 border-primary/30">
-                              {header || `Column ${colIdx + 1}`}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map((row: any, rowIdx: number) => {
-                          if (!row || typeof row !== 'object') return null;
-                          const values = Array.isArray(row.values) ? row.values : [];
-                          
-                          return (
-                            <tr key={rowIdx} className="border-b hover:bg-muted/30 transition-colors">
-                              <td className="p-2 md:p-4 font-semibold text-sm md:text-base text-foreground">{row.aspect || ''}</td>
-                              {values.map((value: string, colIdx: number) => (
-                                <td key={colIdx} className="p-2 md:p-4 text-sm md:text-base text-foreground/90">{value || '-'}</td>
-                              ))}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <p className="text-xs text-muted-foreground mb-2 px-4 pt-3 md:hidden">
+                    ← Scroll to see full table →
+                  </p>
+                  <div className="relative">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse min-w-[600px]">
+                        <thead>
+                          <tr className="bg-gradient-to-r from-muted to-muted/50">
+                            <th className="text-left p-2 md:p-4 font-bold text-sm md:text-lg border-b-2 border-primary/30">Aspect</th>
+                            {columnHeaders.map((header: string, colIdx: number) => (
+                              <th key={colIdx} className="text-left p-2 md:p-4 font-bold text-sm md:text-lg border-b-2 border-primary/30">
+                                {header || `Column ${colIdx + 1}`}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((row: any, rowIdx: number) => {
+                            if (!row || typeof row !== 'object') return null;
+                            const values = Array.isArray(row.values) ? row.values : [];
+                            
+                            return (
+                              <tr key={rowIdx} className="border-b hover:bg-muted/30 transition-colors">
+                                <td className="p-2 md:p-4 font-semibold text-sm md:text-base text-foreground">{row.aspect || ''}</td>
+                                {values.map((value: string, colIdx: number) => (
+                                  <td key={colIdx} className="p-2 md:p-4 text-sm md:text-base text-foreground/90">{value || '-'}</td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none md:hidden" />
                   </div>
                 </CardContent>
               </Card>
