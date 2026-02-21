@@ -101,6 +101,7 @@ const KnowledgeEngine = lazy(() => import("./pages/KnowledgeEngine"));
 const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 const LegacyArticleRedirect = lazy(() => import("./pages/LegacyArticleRedirect"));
 const MyPrompts = lazy(() => import("./pages/MyPrompts"));
+const AllPrompts = lazy(() => import("./pages/AllPrompts"));
 const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 const Guides = lazy(() => import("./pages/Guides"));
@@ -236,7 +237,7 @@ const App = () => (
               <Route path="/editorial-standards" element={<EditorialStandards />} />
               <Route path="/contribute" element={<Contribute />} />
               <Route path="/media-and-partners" element={<MediaAndPartners />} />
-              <Route path="/prompts" element={<MyPrompts />} />
+              <Route path="/prompts" element={<AllPrompts />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
               <Route path="/ai-policy-atlas/:region" element={<PolicyRegion />} />

@@ -19,7 +19,7 @@ import { Image } from "lucide-react";
 import {
   Home, Save, Eye, Send, ChevronDown, ChevronUp, Plus, X, GripVertical,
   BookOpen, Terminal, Wrench, Lightbulb, ListOrdered, Sparkles, AlertTriangle,
-  HelpCircle, ArrowRight, Clipboard, Loader2, Clock, Copy
+  HelpCircle, ArrowRight, Clipboard, Loader2, Clock, Copy, Library, ArrowUp, ArrowDown, Trash2
 } from "lucide-react";
 
 // Types
@@ -915,6 +915,9 @@ const GuideEditor = () => {
             <Textarea className="min-h-[100px]" placeholder="What should the reader do next?" value={formData.next_steps} onChange={e => updateField("next_steps", e.target.value)} />
           </SectionCard>
 
+          {/* Section 13: Prompt Library Entries */}
+          {id && <PromptLibrarySection guideId={id} platformTags={formData.platform_tags} category={formData.content_type} />}
+
           <div className="h-20" /> {/* Bottom padding */}
         </div>
 
@@ -928,6 +931,216 @@ const GuideEditor = () => {
     </div>
   );
 };
+
+// ---- Prompt Library Section ----
+
+const promptLibraryPlatforms = ["ChatGPT", "Claude", "Gemini", "Midjourney", "Multi-platform"];
+const promptLibraryCategories = ["Content & Writing", "SEO & Marketing", "Research & Analysis", "Strategy & Planning", "Productivity"];
+
+interface LibraryPrompt {
+  id?: string;
+  prompt_title: string;
+  prompt_text: string;
+  what_to_expect: string;
+  platforms: string[];
+  category: string;
+  sort_order: number;
+}
+
+function PromptLibrarySection({ guideId, platformTags, category }: { guideId: string; platformTags: string[]; category: string }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [items, setItems] = useState<LibraryPrompt[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  const { data: existingPrompts, isLoading } = useQuery({
+    queryKey: ["guide-library-prompts", guideId],
+    enabled: !!guideId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guide_prompts")
+        .select("*")
+        .eq("guide_id", guideId)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  useEffect(() => {
+    if (existingPrompts && existingPrompts.length > 0) {
+      setItems(existingPrompts.map(p => ({
+        id: p.id,
+        prompt_title: p.prompt_title,
+        prompt_text: p.prompt_text,
+        what_to_expect: p.what_to_expect || "",
+        platforms: p.platforms || [],
+        category: p.category || "",
+        sort_order: p.sort_order || 0,
+      })));
+    }
+  }, [existingPrompts]);
+
+  const addPrompt = () => {
+    setItems(prev => [...prev, {
+      prompt_title: "",
+      prompt_text: "",
+      what_to_expect: "",
+      platforms: platformTags.length ? [...platformTags] : [],
+      category: category || "",
+      sort_order: prev.length,
+    }]);
+  };
+
+  const updateItem = (index: number, field: keyof LibraryPrompt, value: any) => {
+    setItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  };
+
+  const removeItem = (index: number) => {
+    const item = items[index];
+    setItems(prev => prev.filter((_, i) => i !== index));
+    if (item.id) {
+      supabase.from("ai_guide_prompts").delete().eq("id", item.id).then(({ error }) => {
+        if (error) toast({ title: "Error", description: "Failed to delete prompt", variant: "destructive" });
+        else {
+          toast({ title: "Prompt deleted" });
+          queryClient.invalidateQueries({ queryKey: ["guide-library-prompts", guideId] });
+        }
+      });
+    }
+  };
+
+  const moveItem = (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= items.length) return;
+    const newItems = [...items];
+    [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
+    setItems(newItems.map((item, i) => ({ ...item, sort_order: i })));
+  };
+
+  const savePrompts = async () => {
+    setSaving(true);
+    try {
+      const validItems = items.filter(i => i.prompt_title.trim() && i.prompt_text.trim());
+      
+      // Delete removed items
+      const existingIds = existingPrompts?.map(p => p.id) || [];
+      const currentIds = validItems.filter(i => i.id).map(i => i.id!);
+      const toDelete = existingIds.filter(id => !currentIds.includes(id));
+      
+      if (toDelete.length) {
+        await supabase.from("ai_guide_prompts").delete().in("id", toDelete);
+      }
+
+      // Upsert remaining
+      for (let i = 0; i < validItems.length; i++) {
+        const item = validItems[i];
+        const payload = {
+          guide_id: guideId,
+          prompt_title: item.prompt_title,
+          prompt_text: item.prompt_text,
+          what_to_expect: item.what_to_expect || null,
+          platforms: item.platforms,
+          category: item.category || null,
+          sort_order: i,
+        };
+
+        if (item.id) {
+          await supabase.from("ai_guide_prompts").update(payload).eq("id", item.id);
+        } else {
+          const { data } = await supabase.from("ai_guide_prompts").insert(payload).select("id").single();
+          if (data) validItems[i].id = data.id;
+        }
+      }
+
+      setItems(validItems.map((item, i) => ({ ...item, sort_order: i })));
+      queryClient.invalidateQueries({ queryKey: ["guide-library-prompts", guideId] });
+      toast({ title: "Prompts saved", description: `${validItems.length} prompts saved to library` });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePlatform = (index: number, platform: string) => {
+    const current = items[index].platforms;
+    const updated = current.includes(platform) ? current.filter(p => p !== platform) : [...current, platform];
+    updateItem(index, "platforms", updated);
+  };
+
+  return (
+    <Card className="border-l-4 border-l-indigo-500">
+      <Collapsible open={!collapsed} onOpenChange={() => setCollapsed(!collapsed)}>
+        <CollapsibleTrigger className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-muted-foreground w-6">13</span>
+              <Library className="h-5 w-5" />
+              <CardTitle className="text-lg">Prompt Library Entries</CardTitle>
+              {items.length > 0 && <Badge variant="secondary" className="text-xs">{items.length}</Badge>}
+            </div>
+            {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="pt-0 space-y-4">
+            <p className="text-xs text-muted-foreground">
+              These prompts appear on the <span className="font-medium">/prompts</span> library page. They're separate from the "Prompts to Try" section above.
+            </p>
+
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading...</div>
+            ) : (
+              <>
+                {items.map((item, i) => (
+                  <div key={i} className="border border-border rounded-lg p-4 space-y-3 relative">
+                    <div className="flex items-center gap-2 absolute top-2 right-2">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveItem(i, -1)} disabled={i === 0}><ArrowUp className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1}><ArrowDown className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+
+                    <Input placeholder="Prompt title" className="font-semibold pr-28" value={item.prompt_title} onChange={e => updateItem(i, "prompt_title", e.target.value)} />
+                    
+                    <Textarea className="font-mono text-sm bg-muted min-h-[100px]" placeholder="Full prompt text..." value={item.prompt_text} onChange={e => updateItem(i, "prompt_text", e.target.value)} />
+                    
+                    <Input placeholder="What to expect..." className="text-sm" value={item.what_to_expect} onChange={e => updateItem(i, "what_to_expect", e.target.value)} />
+
+                    <div className="flex flex-wrap gap-1">
+                      {promptLibraryPlatforms.map(p => (
+                        <Button key={p} variant={item.platforms.includes(p) ? "default" : "outline"} size="sm" className="h-6 text-[10px] px-2" onClick={() => togglePlatform(i, p)}>{p}</Button>
+                      ))}
+                    </div>
+
+                    <Select value={item.category || "none"} onValueChange={v => updateItem(i, "category", v === "none" ? "" : v)}>
+                      <SelectTrigger className="h-8 text-xs w-56"><SelectValue placeholder="Category" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No category</SelectItem>
+                        {promptLibraryCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={addPrompt} className="gap-1"><Plus className="h-3 w-3" />Add Prompt</Button>
+                  {items.length > 0 && (
+                    <Button size="sm" onClick={savePrompts} disabled={saving} className="gap-1">
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                      Save Prompts to Library
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
+}
 
 // ---- Helper Components ----
 

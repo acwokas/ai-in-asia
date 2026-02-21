@@ -135,6 +135,53 @@ export type Database = {
           },
         ]
       }
+      ai_guide_prompts: {
+        Row: {
+          category: string | null
+          copy_count: number | null
+          created_at: string
+          guide_id: string
+          id: string
+          platforms: string[] | null
+          prompt_text: string
+          prompt_title: string
+          sort_order: number | null
+          what_to_expect: string | null
+        }
+        Insert: {
+          category?: string | null
+          copy_count?: number | null
+          created_at?: string
+          guide_id: string
+          id?: string
+          platforms?: string[] | null
+          prompt_text: string
+          prompt_title: string
+          sort_order?: number | null
+          what_to_expect?: string | null
+        }
+        Update: {
+          category?: string | null
+          copy_count?: number | null
+          created_at?: string
+          guide_id?: string
+          id?: string
+          platforms?: string[] | null
+          prompt_text?: string
+          prompt_title?: string
+          sort_order?: number | null
+          what_to_expect?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_guide_prompts_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "ai_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_guides: {
         Row: {
           advanced_tips_and_optimisation: string | null
