@@ -51,7 +51,7 @@ const About = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="About AI in ASIA — The AI Publication Built for Asia-Pacific"
+        title="About AI in ASIA - The AI Publication Built for Asia-Pacific"
         description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission, coverage areas, and the team behind the publication."
         canonical="https://aiinasia.com/about"
       />
@@ -74,7 +74,7 @@ const About = () => {
           <div className="max-w-3xl">
             <h1 className="headline text-4xl md:text-5xl mb-6">The AI Publication Built for Asia-Pacific</h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              While global tech media treats Asia as an afterthought, we cover it as the main story. From Singapore's AI governance to Japan's robotics breakthroughs to India's startup explosion — this is where the future is being built.
+              While global tech media treats Asia as an afterthought, we cover it as the main story. From Singapore's AI governance to Japan's robotics breakthroughs to India's startup explosion - this is where the future is being built.
             </p>
           </div>
         </div>
@@ -87,13 +87,13 @@ const About = () => {
             <h2 className="headline text-3xl md:text-4xl mb-8">Why We Exist</h2>
             <div className="space-y-5 text-lg text-muted-foreground leading-relaxed">
               <p>
-                Asia-Pacific is home to more than half the world's population and some of its most ambitious AI programmes. Singapore is writing the rulebook on responsible governance. China and Japan are in an applied-AI arms race across robotics, healthcare, and manufacturing. India is producing more AI engineers than any country outside the United States. Yet the publications most professionals rely on — TechCrunch, The Verge, MIT Technology Review — cover the region in fragments, filtered through a Western lens.
+                Asia-Pacific is home to more than half the world's population and some of its most ambitious AI programmes. Singapore is writing the rulebook on responsible governance. China and Japan are in an applied-AI arms race across robotics, healthcare, and manufacturing. India is producing more AI engineers than any country outside the United States. Yet the publications most professionals rely on - TechCrunch, The Verge, MIT Technology Review - cover the region in fragments, filtered through a Western lens.
               </p>
               <p>
-                AI in ASIA was founded in 2022 to close that gap. We are an independent, English-language publication focused exclusively on artificial intelligence across the Asia-Pacific region. Our coverage spans policy, business, research, and practical application — written for the professionals, policymakers, and builders who need regional intelligence they cannot find elsewhere.
+                AI in ASIA was founded in 2022 to close that gap. We are an independent, English-language publication focused exclusively on artificial intelligence across the Asia-Pacific region. Our coverage spans policy, business, research, and practical application - written for the professionals, policymakers, and builders who need regional intelligence they cannot find elsewhere.
               </p>
               <p>
-                We do not aggregate wire copy or rewrite press releases. We track regulatory frameworks country by country through our <Link to="/ai-policy-atlas" className="text-primary hover:underline font-medium">AI Policy Atlas</Link>. We interview founders, regulators, and researchers on the ground. And we publish daily briefings — <Link to="/3-before-9" className="text-primary hover:underline font-medium">3 Before 9</Link> — that give readers a concise picture of what matters before the working day begins.
+                We do not aggregate wire copy or rewrite press releases. We track regulatory frameworks country by country through our <Link to="/ai-policy-atlas" className="text-primary hover:underline font-medium">AI Policy Atlas</Link>. We interview founders, regulators, and researchers on the ground. And we publish daily briefings - <Link to="/3-before-9" className="text-primary hover:underline font-medium">3 Before 9</Link> - that give readers a concise picture of what matters before the working day begins.
               </p>
             </div>
           </div>

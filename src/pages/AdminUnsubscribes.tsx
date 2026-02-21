@@ -199,11 +199,11 @@
                            {REASON_LABELS[unsub.reason] || unsub.reason}
                          </Badge>
                        ) : (
-                         <span className="text-muted-foreground text-sm">—</span>
+                         <span className="text-muted-foreground text-sm">-</span>
                        )}
                      </TableCell>
                      <TableCell className="max-w-xs truncate">
-                       {unsub.feedback || <span className="text-muted-foreground">—</span>}
+                       {unsub.feedback || <span className="text-muted-foreground">-</span>}
                      </TableCell>
                      <TableCell>
                        <Badge variant="outline">{unsub.source || "unknown"}</Badge>

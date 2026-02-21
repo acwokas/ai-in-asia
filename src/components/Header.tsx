@@ -323,7 +323,7 @@ const Header = memo(() => {
             <div className="flex items-center gap-2 mb-2 mt-2">
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Your Account</span>
               {user && userStats && (
-                <span className="text-xs text-muted-foreground">— ⚡ {userStats.points} pts</span>
+                <span className="text-xs text-muted-foreground">⚡ {userStats.points} pts</span>
               )}
             </div>
             <div className="flex flex-col space-y-1 mb-4">

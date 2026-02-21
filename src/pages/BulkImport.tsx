@@ -301,7 +301,7 @@ export default function BulkImport() {
         .replace(/&rdquo;/g, '"')
         .replace(/&lsquo;/g, "'")
         .replace(/&rsquo;/g, "'")
-        .replace(/&mdash;/g, '—')
+        .replace(/&mdash;/g, '-')
         .replace(/&ndash;/g, '–');
       
       return result;

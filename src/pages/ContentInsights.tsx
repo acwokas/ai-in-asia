@@ -1268,7 +1268,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                       </ResponsiveContainer>
                       <div className="mt-4 p-3 bg-muted/50 rounded-lg">
                         <p className="text-sm text-muted-foreground">
-                          <strong>{sessionDepthDistribution.find(d => d.name !== '1 page')?.value || 0}</strong> sessions viewed 2+ pages — opportunity for cross-pollination
+                          <strong>{sessionDepthDistribution.find(d => d.name !== '1 page')?.value || 0}</strong> sessions viewed 2+ pages - opportunity for cross-pollination
                         </p>
                       </div>
                     </>
@@ -1499,8 +1499,8 @@ Please be specific and provide copy-paste-ready content where possible.`;
                         {contentAgePerformance.length > 0 && (
                           <p className="text-muted-foreground">
                             {contentAgePerformance[0].avgViews > contentAgePerformance[contentAgePerformance.length - 1].avgViews
-                              ? "📈 Newer content is performing better — keep publishing fresh articles"
-                              : "📚 Older content has strong evergreen value — consider updating with fresh info"}
+                              ? "📈 Newer content is performing better - keep publishing fresh articles"
+                              : "📚 Older content has strong evergreen value - consider updating with fresh info"}
                           </p>
                         )}
                       </div>
@@ -1619,7 +1619,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                                 </Link>
                               </td>
                               <td className="text-right py-3 px-2 text-muted-foreground text-xs">
-                                {article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, yyyy') : '—'}
+                                {article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, yyyy') : '-'}
                               </td>
                               <td className="text-right py-3 px-2 font-medium text-primary">{article.totalReads.toLocaleString()}</td>
                               <td className="text-right py-3 px-2 font-medium">{article.views}</td>
@@ -2020,7 +2020,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                 Never Viewed Articles
               </DialogTitle>
               <DialogDescription>
-                Published articles with zero recorded views — consider promoting or reviewing
+                Published articles with zero recorded views - consider promoting or reviewing
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-[60vh] pr-4">
@@ -2061,10 +2061,10 @@ Please be specific and provide copy-paste-ready content where possible.`;
                 {selectedEngagementSegment?.name} Articles
               </DialogTitle>
               <DialogDescription>
-                {selectedEngagementSegment?.name === 'Scanners' && 'Low scroll depth (<50%), short time (<1min) — users leave quickly'}
-                {selectedEngagementSegment?.name === 'Skimmers' && 'High scroll depth (50%+), short time (<1min) — users scroll fast without reading'}
-                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) — engaged readers ✓'}
-                {selectedEngagementSegment?.name === 'Lingerers' && 'Low scroll depth (<50%), longer time (1min+) — stuck at top or distracted'}
+                {selectedEngagementSegment?.name === 'Scanners' && 'Low scroll depth (<50%), short time (<1min) - users leave quickly'}
+                {selectedEngagementSegment?.name === 'Skimmers' && 'High scroll depth (50%+), short time (<1min) - users scroll fast without reading'}
+                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) - engaged readers ✓'}
+                {selectedEngagementSegment?.name === 'Lingerers' && 'Low scroll depth (<50%), longer time (1min+) - stuck at top or distracted'}
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-[60vh] pr-4">

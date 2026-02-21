@@ -348,7 +348,7 @@ export function TimeDeviceAnalytics({ pageviewsData, sessionsData, isLoading }: 
                   <>💻 <strong>{deviceStats[1]?.device}</strong> users scroll deeper ({deviceStats[1]?.avgScroll}% vs {deviceStats[0].avgScroll}%)</>
                 )}
                 {parseFloat(deviceStats[0].avgPages) > parseFloat(deviceStats[1]?.avgPages || '0') && (
-                  <span className="text-muted-foreground"> — but {deviceStats[0].device} views more pages per session</span>
+                  <span className="text-muted-foreground"> - but {deviceStats[0].device} views more pages per session</span>
                 )}
               </p>
             </div>
