@@ -300,7 +300,7 @@ const Category = () => {
                     {category?.name}
                   </h1>
                 )}
-                <p style={{ fontSize: 15, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", maxWidth: 600 }}>{cfg.desc}</p>
+                <p style={{ fontSize: 15, color: "#9ca3af", fontFamily: "Nunito, sans-serif", maxWidth: 600 }}>{cfg.desc}</p>
               </div>
               {newThisWeek > 0 && (
                 <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, color: cfg.accent }}>
@@ -355,7 +355,7 @@ const Category = () => {
                         <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 27, color: "#fff", lineHeight: 1.25, margin: "0 0 10px 0" }}>
                           {decodeHtml(featuredArticle.title)}
                         </h2>
-                        <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
+                        <p style={{ fontSize: 14, color: "#d1d5db", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
                           {featuredArticle.excerpt?.slice(0, 160)}...
                         </p>
                         <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: TOKENS.MUTED }}>
@@ -396,10 +396,10 @@ const Category = () => {
                           {i + 1}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                          <h4 style={{ fontSize: 13, fontWeight: 600, color: "#e5e7eb", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                             {decodeHtml(article.title)}
                           </h4>
-                          <span style={{ fontSize: 11, color: TOKENS.MUTED, marginTop: 4, display: "block" }}>
+                          <span style={{ fontSize: 12, color: "#9ca3af", marginTop: 4, display: "block" }}>
                             {article.reading_time_minutes || 5} min
                           </span>
                         </div>
@@ -502,7 +502,7 @@ const Category = () => {
                   <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 28, color: "#fff", margin: "0 0 8px 0" }}>
                     Never Miss an AI Breakthrough
                   </h2>
-                  <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", margin: "0 0 24px 0" }}>
+                  <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 24px 0" }}>
                     Get the best of {cfg.label} delivered to your inbox every week.
                   </p>
                   <div className="flex flex-col min-[480px]:flex-row justify-center gap-2 max-w-[440px] mx-auto">
@@ -569,8 +569,8 @@ function LearningPathCard({ path }: { path: { emoji: string; title: string; desc
     >
       <span style={{ fontSize: 24, display: "block", marginBottom: 10 }}>{path.emoji}</span>
       <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", margin: "0 0 4px 0" }}>{path.title}</h4>
-      <p style={{ fontSize: 12, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", margin: "0 0 12px 0" }}>{path.desc}</p>
-      <span style={{ fontSize: 11, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
+      <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 12px 0" }}>{path.desc}</p>
+      <span style={{ fontSize: 13, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
         {path.articles} articles - {path.time}
       </span>
       <div style={{ height: 3, borderRadius: 2, background: TOKENS.BORDER, marginTop: 10 }} />
@@ -599,7 +599,7 @@ function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji
     >
       <span style={{ fontSize: 22, display: "block", marginBottom: 8 }}>{cat.emoji}</span>
       <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: cat.accent, margin: "0 0 4px 0" }}>{cat.label}</h4>
-      <p style={{ fontSize: 12, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+      <p style={{ fontSize: 12, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
         {cat.desc}
       </p>
     </div>
