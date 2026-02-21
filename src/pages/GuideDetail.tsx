@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import GuideRenderer from "@/components/guide/GuideRenderer";
 import GuideDetailSidebar from "@/components/guide/GuideDetailSidebar";
 import GuideMobileToc from "@/components/guide/GuideMobileToc";
+import { ContentAdminControls } from "@/components/ContentAdminControls";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -19,13 +21,27 @@ const GuideDetail = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const previewCode = searchParams.get("preview");
+  const { isAdmin } = useAdminRole();
+  const [showAdminView, setShowAdminView] = useState(true);
+
+  const queryKey = ["guide-detail", slug];
 
   const { data: guide, isLoading, error } = useQuery({
-    queryKey: ["guide-detail", slug],
+    queryKey,
     enabled: !!slug,
     queryFn: async () => {
       const { data, error } = await supabase.from("ai_guides").select("*").eq("slug", slug).maybeSingle();
       if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch author name if author_id exists
+  const { data: authorData } = useQuery({
+    queryKey: ["guide-author", (guide as any)?.author_id],
+    enabled: !!((guide as any)?.author_id),
+    queryFn: async () => {
+      const { data } = await supabase.from("authors").select("name").eq("id", (guide as any).author_id).maybeSingle();
       return data;
     },
   });
@@ -142,6 +158,25 @@ const GuideDetail = () => {
     publisher: { "@type": "Organization", name: "AI in Asia", logo: { "@type": "ImageObject", url: "https://aiinasia.com/logo.png" } },
   };
 
+  // Build the admin control item shape
+  const adminItem = {
+    id: g.id,
+    status: g.status || "draft",
+    slug: g.slug,
+    title: g.title,
+    view_count: g.view_count,
+    published_at: g.published_at,
+    meta_title: g.meta_title || g.seo_title,
+    meta_description: g.meta_description,
+    is_editors_pick: g.is_editors_pick,
+    difficulty: g.difficulty || g.level?.toLowerCase(),
+    platform_tags: formData.platform_tags,
+    read_time_minutes: g.read_time_minutes,
+    topic_category: g.topic_category,
+    author_id: g.author_id,
+    pillar: g.pillar,
+  };
+
   return (
     <>
       <SEOHead
@@ -169,6 +204,18 @@ const GuideDetail = () => {
 
       <main className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+          {/* Admin Controls */}
+          {isAdmin && (
+            <ContentAdminControls
+              item={adminItem}
+              type="guide"
+              showAdminView={showAdminView}
+              onToggleAdminView={() => setShowAdminView(!showAdminView)}
+              queryKey={queryKey}
+              authorName={authorData?.name}
+            />
+          )}
+
           <Link to="/guides" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to Guides
           </Link>
