@@ -67,34 +67,6 @@ const Article = () => {
   const previewCode = urlParams.get('preview');
   const isPreview = !!previewCode;
 
-  // Fetch comment count
-  const { data: commentCount = 0 } = useQuery({
-    queryKey: ["article-comment-count", cleanSlug],
-    staleTime: 30 * 1000,
-    queryFn: async () => {
-      const { data: articleData } = await supabase
-        .from("articles")
-        .select("id")
-        .eq("slug", cleanSlug)
-        .maybeSingle();
-      
-      if (!articleData?.id) return 0;
-      
-      const { count: realCount } = await supabase
-        .from("comments_public")
-        .select("*", { count: "exact", head: true })
-        .eq("article_id", articleData.id);
-      
-      const { count: aiCount } = await supabase
-        .from("ai_generated_comments")
-        .select("*", { count: "exact", head: true })
-        .eq("article_id", articleData.id)
-        .eq("published", true);
-      
-      return (realCount || 0) + (aiCount || 0);
-    },
-  });
-
   // Fetch article
   const { data: article, isLoading } = useQuery({
     queryKey: ["article", cleanSlug, previewCode],
@@ -150,6 +122,26 @@ const Article = () => {
     },
   });
 
+  // Fetch comment count (after article loads)
+  const { data: commentCount = 0 } = useQuery({
+    queryKey: ["article-comment-count", article?.id],
+    staleTime: 30 * 1000,
+    enabled: !!article?.id,
+    queryFn: async () => {
+      const { count: realCount } = await supabase
+        .from("comments_public")
+        .select("*", { count: "exact", head: true })
+        .eq("article_id", article!.id);
+      
+      const { count: aiCount } = await supabase
+        .from("ai_generated_comments")
+        .select("*", { count: "exact", head: true })
+        .eq("article_id", article!.id)
+        .eq("published", true);
+      
+      return (realCount || 0) + (aiCount || 0);
+    },
+  });
 
   // Effects
   useEffect(() => {
