@@ -434,10 +434,7 @@ const Category = () => {
                 </section>
               )}
 
-              {/* PROMPT AND GO BANNER */}
-              <section ref={revealBanner.ref} style={{ marginBottom: 48, ...revealBanner.style }}>
-                <PromptAndGoBanner />
-              </section>
+
 
               {/* 5. INTERACTIVE TOOL */}
               {ToolComponent && (
