@@ -37,8 +37,8 @@ const PolicyAtlas = () => {
       return data || [];
     },
     retry: 3,
-    staleTime: 0, // Don't cache to ensure fresh data
-    refetchOnMount: 'always',
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: true,
   });
 
   // Fetch recent updates to determine which regions should pulse
@@ -77,8 +77,8 @@ const PolicyAtlas = () => {
       return Array.from(recentRegions);
     },
     retry: 3,
-    staleTime: 0, // Don't cache
-    refetchOnMount: 'always',
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: true,
   });
 
   const { data: latestUpdates } = useQuery({
@@ -104,7 +104,8 @@ const PolicyAtlas = () => {
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 300000, // 5 minutes
   });
 
   return (
