@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -49,6 +49,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+
+const StockTicker = lazy(() => import("@/components/StockTicker"));
 
 // Category visual identity config
 const categoryIdentity: Record<string, { bg: string; description: string }> = {
@@ -805,6 +807,13 @@ const Category = () => {
       )}
 
       <Header />
+      
+      {/* Stock Ticker — Business category only */}
+      {slug === "business" && (
+        <Suspense fallback={null}>
+          <StockTicker />
+        </Suspense>
+      )}
       
       <main className="flex-1">
         {/* Category Hero Banner */}

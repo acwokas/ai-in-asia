@@ -20,10 +20,10 @@ import RecommendedGuides from "@/components/RecommendedGuides";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
-import TrendingStrip from "@/components/TrendingStrip";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
-const StockTicker = lazy(() => import("@/components/StockTicker"));
+const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
+const TrendingVisualStrip = lazy(() => import("@/components/TrendingVisualStrip"));
 
 const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"));
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
@@ -283,7 +283,7 @@ const Index = () => {
       
       <Header />
       <Suspense fallback={null}>
-        <StockTicker />
+        <ThreeBeforeNineTicker />
       </Suspense>
       <NotificationPrompt />
       
@@ -445,12 +445,9 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Trending ticker */}
-        <TrendingStrip />
-
-        {/* 3 Before 9 Daily Briefing — compact banner */}
+        {/* Trending visual cards */}
         <Suspense fallback={null}>
-          <ThreeBeforeNineLanding />
+          <TrendingVisualStrip />
         </Suspense>
 
         {/* More Stories grid */}
