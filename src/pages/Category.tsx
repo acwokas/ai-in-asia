@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -14,15 +14,17 @@ import { SectionHeader } from "@/components/category/SectionHeader";
 import { InteractiveCard } from "@/components/category/InteractiveCard";
 import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/categoryTokens";
 import { LEARNING_PATHS } from "@/constants/learningPaths";
-import { PulseTracker } from "@/components/category/tools/PulseTracker";
-import { ROICalculator } from "@/components/category/tools/ROICalculator";
-import { ToolFinderQuiz } from "@/components/category/tools/ToolFinderQuiz";
-import { PromptBuilder } from "@/components/category/tools/PromptBuilder";
-import { PromptStudio } from "@/components/category/tools/PromptStudio";
-import { OpinionPoll } from "@/components/category/tools/OpinionPoll";
-import { PolicyTracker } from "@/components/category/tools/PolicyTracker";
+import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
-import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
+
+// Lazy-load interactive tools — they are below the fold
+const PulseTracker = lazy(() => import("@/components/category/tools/PulseTracker").then(m => ({ default: m.PulseTracker })));
+const ROICalculator = lazy(() => import("@/components/category/tools/ROICalculator").then(m => ({ default: m.ROICalculator })));
+const ToolFinderQuiz = lazy(() => import("@/components/category/tools/ToolFinderQuiz").then(m => ({ default: m.ToolFinderQuiz })));
+const PromptBuilder = lazy(() => import("@/components/category/tools/PromptBuilder").then(m => ({ default: m.PromptBuilder })));
+const PromptStudio = lazy(() => import("@/components/category/tools/PromptStudio").then(m => ({ default: m.PromptStudio })));
+const OpinionPoll = lazy(() => import("@/components/category/tools/OpinionPoll").then(m => ({ default: m.OpinionPoll })));
+const PolicyTracker = lazy(() => import("@/components/category/tools/PolicyTracker").then(m => ({ default: m.PolicyTracker })));
 
 const StockTicker = lazy(() => import("@/components/StockTicker"));
 const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
@@ -659,11 +661,13 @@ const Category = () => {
 
 
 
-              {/* 5. INTERACTIVE TOOL */}
+              {/* 5. INTERACTIVE TOOL (lazy loaded) */}
               {ToolComponent && (
                 <section ref={revealTool.ref} style={{ marginBottom: 48, ...revealTool.style }}>
                   <SectionHeader title={`${cfg.label} Tools`} emoji="🛠️" color={cfg.accent} subtitle="Interactive tools for this category" />
-                  <ToolComponent />
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+                    <ToolComponent />
+                  </Suspense>
                 </section>
               )}
 
@@ -817,7 +821,7 @@ const Category = () => {
 
 // ─── Sub-components ───
 
-function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor }: { article: any; cfg: any; slug: string | undefined; imageHeight: number; navigate: any; tag?: string; tagColor?: string }) {
+const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor }: { article: any; cfg: any; slug: string | undefined; imageHeight: number; navigate: any; tag?: string; tagColor?: string }) {
   const [hovered, setHovered] = useState(false);
   const displayTag = tag || cfg.label;
   const displayTagColor = tagColor || cfg.accent;
@@ -841,8 +845,11 @@ function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor
       <div style={{ width: "100%", height: imageHeight, overflow: "hidden" }}>
         {article.featured_image_url ? (
           <img
-            src={article.featured_image_url}
+            src={getOptimizedThumbnail(article.featured_image_url, 400, imageHeight)}
             alt={article.featured_image_alt || article.title}
+            width={400}
+            height={imageHeight}
+            loading="lazy"
             style={{
               width: "100%",
               height: "100%",
@@ -870,7 +877,7 @@ function FeaturedCard({ article, cfg, slug, imageHeight, navigate, tag, tagColor
       </div>
     </div>
   );
-}
+});
 
 function LearningPathCard({ path, categorySlug }: { path: { slug: string; emoji: string; title: string; desc: string; articles: number; time: string; color: string }; categorySlug: string }) {
   const [hovered, setHovered] = useState(false);

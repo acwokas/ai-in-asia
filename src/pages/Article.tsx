@@ -437,7 +437,10 @@ const Article = () => {
                 <img
                   src={article.featured_image_url}
                   alt={article.featured_image_alt || article.title}
+                  width={1080}
+                  height={607}
                   loading="eager"
+                  fetchPriority="high"
                 />
                 <div className="article-hero-gradient" />
                 <div className="article-hero-content max-w-[1080px]">
