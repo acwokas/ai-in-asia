@@ -11,3 +11,5 @@ export { ArticleAdminControls, ArticleAdminDebug } from './ArticleAdminControls'
 export { ArticleRelatedSection, getExternalLinkForCategory } from './ArticleRelatedSection';
 export { ArticleBreadcrumbs } from './ArticleBreadcrumbs';
 export type { ArticleSponsorData } from './ArticleSponsorBanner';
+export { ArticleRailRelatedReading } from './ArticleRailRelatedReading';
+export { ContextualReadingCard } from './ContextualReadingCard';

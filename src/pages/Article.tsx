@@ -35,6 +35,7 @@ import { getCategoryColor } from "@/lib/categoryColors";
 import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
+import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
 
 // Extracted components and hooks
 import {
@@ -648,10 +649,21 @@ const Article = () => {
               {/* Right sidebar rail — desktop only */}
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
-                  <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} />
+                  <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
                   <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
-                    <GoogleAd slot="sidebar" />
+                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", color: "#BFC0C0", marginBottom: "0.25rem", textAlign: "center" }}>Advertisement</p>
+                    <div style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(48,62,83,0.15)", borderRadius: "4px" }}>
+                      <GoogleAd slot="sidebar" houseAdType="mpu" />
+                    </div>
                   </div>
+                  {article.categories?.id && (
+                    <ArticleRailRelatedReading
+                      categoryId={article.categories.id}
+                      categoryName={article.categories.name}
+                      categorySlug={article.categories.slug}
+                      currentArticleId={article.id}
+                    />
+                  )}
                 </div>
               </aside>
             </div>
