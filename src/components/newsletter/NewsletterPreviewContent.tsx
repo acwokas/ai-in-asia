@@ -334,11 +334,11 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
              ))}
            </div>
            <div className="text-center mt-4">
-             <Button asChild variant="ghost">
-               <Link to="/tools">
-                 Browse All AI Tools →
-               </Link>
-             </Button>
+              <Button asChild variant="ghost">
+                <a href="https://adrianwatkins.com/tools" target="_blank" rel="noopener noreferrer">
+                  Browse All AI Tools →
+                </a>
+              </Button>
            </div>
          </div>
        )}

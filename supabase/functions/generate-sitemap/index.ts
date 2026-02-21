@@ -29,6 +29,7 @@ serve(async (req) => {
       { loc: `${baseUrl}/newsletter`, lastmod: today, changefreq: 'weekly', priority: 0.7 },
       { loc: `${baseUrl}/newsletter/archive`, lastmod: today, changefreq: 'weekly', priority: 0.6 },
       { loc: `${baseUrl}/newsletter-weekly`, lastmod: today, changefreq: 'weekly', priority: 0.6 },
+      { loc: `${baseUrl}/prompts`, lastmod: today, changefreq: 'weekly', priority: 0.7 },
       { loc: `${baseUrl}/ai-policy-atlas`, lastmod: today, changefreq: 'weekly', priority: 0.7 },
       { loc: `${baseUrl}/contribute`, lastmod: today, changefreq: 'monthly', priority: 0.6 },
       { loc: `${baseUrl}/media-and-partners`, lastmod: today, changefreq: 'monthly', priority: 0.6 },

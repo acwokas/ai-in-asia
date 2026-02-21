@@ -7,8 +7,14 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createIDBPersister } from "@/lib/queryPersister";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+
+// External redirect helper for 301-style redirects in SPA
+const ExternalRedirect = ({ url }: { url: string }) => {
+  useEffect(() => { window.location.replace(url); }, [url]);
+  return null;
+};
 
 // Eager load critical components
 import GoogleAnalytics from "./components/GoogleAnalytics";
@@ -225,7 +231,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/tools" element={<Tools />} />
+              <Route path="/tools" element={<ExternalRedirect url="https://adrianwatkins.com/tools" />} />
               <Route path="/ask-scout" element={<AskScout />} />
               <Route path="/newsletter" element={<Newsletter />} />
               <Route path="/newsletter/archive" element={<NewsletterArchive />} />
