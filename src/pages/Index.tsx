@@ -498,9 +498,10 @@ const Index = () => {
             const rows: { articles: any[]; pattern: 'large-left' | 'equal' | 'large-right' }[] = [];
             let idx = 0;
             let rowIndex = 0;
-            while (idx < allGridArticles.length && rows.length < 4) {
-              const pattern = rowIndex % 3 === 0 ? 'large-left' : rowIndex % 3 === 1 ? 'equal' : 'large-right';
-              const count = pattern === 'equal' ? 3 : 3;
+            while (idx < allGridArticles.length && rows.length < 6) {
+              const cyclePos = rowIndex % 4;
+              const pattern: 'large-left' | 'equal' | 'large-right' = cyclePos === 0 ? 'large-left' : cyclePos === 1 ? 'equal' : cyclePos === 2 ? 'large-right' : 'equal';
+              const count = pattern === 'equal' ? 3 : 2;
               const slice = allGridArticles.slice(idx, idx + count);
               if (slice.length > 0) rows.push({ articles: slice, pattern });
               idx += count;
@@ -515,10 +516,10 @@ const Index = () => {
                   to={`/${categorySlug}/${article.slug}`}
                   className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                 >
-                  <div className={`relative overflow-hidden ${isLarge ? 'aspect-[16/10]' : 'aspect-[16/9]'}`}>
+                  <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] md:h-[320px]' : 'h-[160px]'}`}>
                     <img
                       src={isLarge
-                        ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 640, 400)
+                        ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 800, 400)
                         : getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 225)
                       }
                       alt={article.title}
@@ -541,8 +542,8 @@ const Index = () => {
                     <span className="text-[13px] font-bold uppercase tracking-wider text-primary mb-2 block">
                       {article.categories?.name || "Uncategorized"}
                     </span>
-                    <h3 className={`font-semibold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
-                      isLarge ? 'text-[22px] md:text-2xl' : 'text-base md:text-[18px]'
+                    <h3 className={`font-bold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
+                      isLarge ? 'text-[22px] md:text-[24px]' : 'text-[16px] md:text-[17px]'
                     }`}>
                       {article.title}
                     </h3>
@@ -568,12 +569,9 @@ const Index = () => {
                 {rows.map((row, ri) => {
                   if (row.pattern === 'large-left') {
                     return (
-                      <div key={ri} className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        {row.articles[0] && <div className="md:col-span-3">{renderCard(row.articles[0], true)}</div>}
-                        <div className="md:col-span-2 grid grid-cols-1 gap-6">
-                          {row.articles[1] && renderCard(row.articles[1], false)}
-                          {row.articles[2] && renderCard(row.articles[2], false)}
-                        </div>
+                      <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {row.articles[0] && <div className="md:col-span-2">{renderCard(row.articles[0], true)}</div>}
+                        {row.articles[1] && <div className="md:col-span-1">{renderCard(row.articles[1], false)}</div>}
                       </div>
                     );
                   }
@@ -588,12 +586,9 @@ const Index = () => {
                   }
                   // large-right
                   return (
-                    <div key={ri} className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                      <div className="md:col-span-2 grid grid-cols-1 gap-6 order-2 md:order-1">
-                        {row.articles[1] && renderCard(row.articles[1], false)}
-                        {row.articles[2] && renderCard(row.articles[2], false)}
-                      </div>
-                      {row.articles[0] && <div className="md:col-span-3 order-1 md:order-2">{renderCard(row.articles[0], true)}</div>}
+                    <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {row.articles[1] && <div className="md:col-span-1 order-2 md:order-1">{renderCard(row.articles[1], false)}</div>}
+                      {row.articles[0] && <div className="md:col-span-2 order-1 md:order-2">{renderCard(row.articles[0], true)}</div>}
                     </div>
                   );
                 })}
