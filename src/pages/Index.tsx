@@ -445,10 +445,15 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Breathing room between hero and trending */}
+        <div className="mt-3" />
+
         {/* Trending visual cards */}
-        <Suspense fallback={null}>
-          <TrendingVisualStrip />
-        </Suspense>
+        <div style={{ background: "rgba(48,62,83,0.08)", padding: "1.5rem 0" }}>
+          <Suspense fallback={null}>
+            <TrendingVisualStrip />
+          </Suspense>
+        </div>
 
         {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
