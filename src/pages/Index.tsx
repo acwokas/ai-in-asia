@@ -306,7 +306,7 @@ const Index = () => {
         <Separator className="my-0" />
 
         {/* 2. Hero: Primary Story + Secondary Stories (CNET-style asymmetric) */}
-        <section className="container mx-auto px-4 py-8 md:py-12">
+        <section className="container mx-auto px-4 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* PRIMARY STORY — left 8 cols (≈65%) */}
             <div className="lg:col-span-8">
@@ -462,13 +462,14 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
+
         {/* Article Grid — alternating size-contrast rows */}
-        <section className="container mx-auto px-4 py-16 md:py-20">
-          <div className="flex items-center justify-between mb-8">
+        <section className="container mx-auto px-4 py-16 md:py-24">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
             <div className="flex items-center gap-2">
-              <div className="bg-editorial text-editorial-foreground px-3 py-1.5 text-xs font-bold uppercase">
-                More Stories
-              </div>
+              <h2 className="text-2xl md:text-[28px] font-bold">More Stories</h2>
             </div>
           </div>
 
@@ -602,28 +603,32 @@ const Index = () => {
           })()}
         </section>
 
-        <Separator />
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
 
         {/* 3. For You Section (logged-in only, with UnreadBookmarksNudge folded in) */}
         {user && (
-          <Suspense fallback={null}>
-            <ForYouSection excludeIds={heroLatestIds} />
-          </Suspense>
+          <div className="py-16 md:py-24">
+            <Suspense fallback={null}>
+              <ForYouSection excludeIds={heroLatestIds} />
+            </Suspense>
+          </div>
         )}
 
-        {user && <Separator />}
+        {user && <div className="border-t border-border/30" />}
 
         {/* 4. Most Discussed This Week */}
-        <div className="py-12 md:py-16">
+        <div className="py-16 md:py-24 bg-muted/10">
           <Suspense fallback={null}>
             <MostDiscussedSection />
           </Suspense>
         </div>
 
-        <Separator />
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
 
         {/* 5. Recommended Articles ("You May Like") */}
-        <div className="py-12 md:py-16">
+        <div className="py-16 md:py-24">
           <Suspense fallback={
             <div className="container mx-auto px-4">
               <div className="space-y-4">
@@ -644,27 +649,29 @@ const Index = () => {
           </Suspense>
         </div>
 
-        <Separator />
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
 
         {/* 6. Editor's Pick */}
         {editorsPick && (
           <>
-            <section className="container mx-auto px-4 py-12 md:py-16">
+            <section className="container mx-auto px-4 py-16 md:py-24 bg-muted/10">
               <EditorsPick article={editorsPick} />
             </section>
-            <Separator />
+            <div className="border-t border-border/30" />
           </>
         )}
 
         {/* 7. Recommended Guides */}
-        <div className="py-12 md:py-16">
+        <div className="py-16 md:py-24">
           <RecommendedGuides />
         </div>
 
-        <Separator />
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
 
         {/* 8. Upcoming Events */}
-        <div className="py-12 md:py-16">
+        <div className="py-16 md:py-24 bg-muted/10">
           <Suspense fallback={
             <div className="container mx-auto px-4">
               <div className="space-y-4">
@@ -681,15 +688,16 @@ const Index = () => {
           </Suspense>
         </div>
 
-        <Separator />
+        {/* Section divider */}
+        <div className="border-t border-border/30" />
 
         {/* 9. Featured Voices */}
         {(featuredAuthors && featuredAuthors.length > 0) && (
           <>
-            <section className="bg-muted/30 py-12 md:py-16">
+            <section className="py-16 md:py-24">
               <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                  <h2 className="headline text-4xl font-bold mb-3">Featured Voices</h2>
+                  <h2 className="headline text-2xl md:text-[28px] font-bold mb-3">Featured Voices</h2>
                   <p className="text-muted-foreground text-lg">Meet the experts shaping AI discourse in Asia</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -725,12 +733,12 @@ const Index = () => {
                 </div>
               </div>
             </section>
-            <Separator />
+            <div className="border-t border-border/30" />
           </>
         )}
 
         {/* 10. Newsletter CTA */}
-        <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-12 md:py-16">
+        <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-20 md:py-28">
           <div className="container mx-auto px-4 text-center">
             <h2 className="font-display text-4xl font-bold mb-4">Never Miss an AI Breakthrough</h2>
             <p className="text-lg mb-8 opacity-90">Join 10,000+ professionals getting the AI in ASIA Brief every week.</p>
