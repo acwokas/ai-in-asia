@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/categoryTokens";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { CategoryIcon } from "@/components/category/CategoryIcon";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -462,10 +463,9 @@ const CategoryAll = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 36,
                       }}
                     >
-                      {cfg.emoji}
+                      <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="xl" />
                     </div>
                   )}
                   <div style={{ padding: "14px 16px 18px" }}>

@@ -16,6 +16,7 @@ import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/category
 import { LEARNING_PATHS } from "@/constants/learningPaths";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import { CategoryIcon } from "@/components/category/CategoryIcon";
 
 // Lazy-load interactive tools — they are below the fold
 const PulseTracker = lazy(() => import("@/components/category/tools/PulseTracker").then(m => ({ default: m.PulseTracker })));
@@ -419,8 +420,8 @@ const Category = () => {
         }}
       >
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 16px", display: "flex", alignItems: "center", gap: 12, overflowX: "auto" }} className="scrollbar-hide">
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, padding: "4px 12px", background: `${cfg.accent}15`, borderRadius: 10 }}>
-            <span style={{ fontSize: 16 }}>{cfg.emoji}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="sm" />
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 13, color: cfg.accent }} className="hidden sm:inline">{cfg.label}</span>
           </div>
           <div style={{ width: 1, height: 20, background: TOKENS.BORDER, flexShrink: 0 }} />
@@ -626,8 +627,8 @@ const Category = () => {
                             style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
                           />
                         ) : (
-                          <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-                            {cfg.emoji}
+                          <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="lg" />
                           </div>
                         )}
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -859,8 +860,8 @@ const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, imageHeigh
             }}
           />
         ) : (
-          <div style={{ width: "100%", height: "100%", background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
-            {cfg.emoji}
+          <div style={{ width: "100%", height: "100%", background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="xl" />
           </div>
         )}
       </div>
@@ -941,7 +942,7 @@ function LearningPathCard({ path, categorySlug }: { path: { slug: string; emoji:
   );
 }
 
-function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji: string; label: string; desc: string } }) {
+function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji: string; icon: string; label: string; desc: string } }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
   return (
@@ -960,7 +961,9 @@ function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji
       flexShrink: 0,
     }}
     >
-      <span style={{ fontSize: 22, display: "block", marginBottom: 8 }}>{cat.emoji}</span>
+      <div style={{ marginBottom: 8 }}>
+        <CategoryIcon icon={cat.icon} accent={cat.accent} size="md" />
+      </div>
       <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: cat.accent, margin: "0 0 4px 0" }}>{cat.label}</h4>
       <p style={{ fontSize: 12, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
         {cat.desc}
