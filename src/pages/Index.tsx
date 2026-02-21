@@ -20,7 +20,7 @@ import RecommendedGuides from "@/components/RecommendedGuides";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
-
+import TrendingStrip from "@/components/TrendingStrip";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
 
@@ -290,7 +290,7 @@ const Index = () => {
         {/* First-time visitor hero banner */}
         <FirstVisitHero />
 
-        {/* Trending strip removed — trending articles surfaced in More Stories and Most Discussed */}
+        
 
         {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
         <section className="container mx-auto px-4 pt-3 pb-3">
@@ -441,7 +441,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* 3 Before 9 Daily Briefing — compact */}
+        {/* Trending ticker */}
+        <TrendingStrip />
+
+        {/* 3 Before 9 Daily Briefing — compact banner */}
         <Suspense fallback={null}>
           <ThreeBeforeNineLanding />
         </Suspense>
