@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_guides ADD COLUMN IF NOT EXISTS view_count integer DEFAULT 0;
