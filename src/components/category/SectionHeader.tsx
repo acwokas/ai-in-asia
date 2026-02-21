@@ -37,7 +37,7 @@ export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: Se
         {rightAction}
       </div>
       {subtitle && (
-        <p style={{ fontSize: 13, color: "#6b7280", marginTop: 6, marginBottom: 20 }}>
+        <p style={{ fontSize: 14, color: "#9ca3af", marginTop: 6, marginBottom: 20 }}>
           {subtitle}
         </p>
       )}

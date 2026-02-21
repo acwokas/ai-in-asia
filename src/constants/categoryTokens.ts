@@ -59,6 +59,6 @@ export const TOKENS = {
   CARD_BG: "#0d0e12",
   SURFACE: "#111318",
   BORDER: "#1a1d25",
-  MUTED: "#6b7280",
+  MUTED: "#9ca3af",
   BRAND: "#5F72FF",
 } as const;

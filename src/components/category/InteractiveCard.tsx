@@ -31,7 +31,7 @@ export const InteractiveCard = ({ title, tag, tagColor, meta, onClick }: Interac
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           {tag && tagColor ? <GlowBadge color={tagColor} small>{tag}</GlowBadge> : <span />}
           {meta && (
-            <span style={{ fontSize: 11, color: "#6b7280" }}>{meta}</span>
+            <span style={{ fontSize: 12, color: "#9ca3af" }}>{meta}</span>
           )}
         </div>
       )}
