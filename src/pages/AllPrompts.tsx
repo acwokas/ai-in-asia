@@ -8,9 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Copy, Check, ChevronRight, ExternalLink } from "lucide-react";
+import { Search, Copy, Check, ChevronRight, ExternalLink, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+
+// Deterministic hash from a date string to pick prompt of the day
+const dateSeed = (dateStr: string): number => {
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash * 31 + dateStr.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+};
 
 const platformColors: Record<string, string> = {
   ChatGPT: "bg-emerald-500/20 text-emerald-400",
@@ -72,9 +81,18 @@ const AllPrompts = () => {
     },
   });
 
+  // Prompt of the Day: deterministic daily pick
+  const promptOfTheDay = useMemo(() => {
+    if (!prompts || prompts.length === 0) return null;
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const seed = dateSeed(today);
+    return prompts[seed % prompts.length];
+  }, [prompts]);
+
   const filteredPrompts = useMemo(() => {
     if (!prompts) return [];
-    let filtered = [...prompts];
+    // Exclude prompt of the day from the main list
+    let filtered = prompts.filter(p => p.id !== promptOfTheDay?.id);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -108,7 +126,7 @@ const AllPrompts = () => {
     }
 
     return filtered;
-  }, [prompts, searchQuery, platformFilter, categoryFilter, sortBy]);
+  }, [prompts, promptOfTheDay, searchQuery, platformFilter, categoryFilter, sortBy]);
 
   const copyPrompt = async (text: string, id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -166,6 +184,84 @@ const AllPrompts = () => {
             </div>
           </div>
         </div>
+
+        {/* Prompt of the Day */}
+        {promptOfTheDay && !isLoading && (() => {
+          const potdGuide = promptOfTheDay.ai_guides as any;
+          const potdCopied = copiedId === promptOfTheDay.id;
+          return (
+            <div className="border-b border-border">
+              <div className="max-w-[720px] mx-auto px-4 py-6">
+                <div className="border-l-2 border-primary rounded-r-lg bg-muted/30 p-4 md:p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                      Prompt of the Day
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-base">{promptOfTheDay.prompt_title}</h3>
+
+                  <p className="text-xs text-muted-foreground">
+                    From:{" "}
+                    <Link to={`/guides/${potdGuide?.slug}`} className="text-primary hover:underline">
+                      {potdGuide?.title}
+                    </Link>
+                  </p>
+
+                  {promptOfTheDay.platforms && promptOfTheDay.platforms.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {promptOfTheDay.platforms.map((p: string) => (
+                        <Badge
+                          key={p}
+                          className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
+                        >
+                          {p}
+                        </Badge>
+                      ))}
+                      {promptOfTheDay.category && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {promptOfTheDay.category}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="relative group/potd">
+                    <pre className="bg-background/60 border border-border rounded-md p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-[300px] overflow-y-auto">
+                      {promptOfTheDay.prompt_text}
+                    </pre>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 h-8 gap-1.5 text-xs opacity-0 group-hover/potd:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
+                      onClick={(e) => copyPrompt(promptOfTheDay.prompt_text, promptOfTheDay.id, e)}
+                    >
+                      {potdCopied ? (
+                        <><Check className="h-3.5 w-3.5" /> Copied ✓</>
+                      ) : (
+                        <><Copy className="h-3.5 w-3.5" /> Copy</>
+                      )}
+                    </Button>
+                  </div>
+
+                  {promptOfTheDay.what_to_expect && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      <span className="font-medium text-foreground">What to expect:</span>{" "}
+                      {promptOfTheDay.what_to_expect}
+                    </p>
+                  )}
+
+                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+                    <Link to={`/guides/${potdGuide?.slug}`}>
+                      Try this prompt <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Sticky Filters */}
         <div className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-20">
