@@ -181,7 +181,7 @@ export type Database = {
           is_editors_pick: boolean | null
           keyphrase_synonyms: string | null
           learning_objectives: string | null
-          level: string
+          level: string | null
           meta_description: string | null
           meta_title: string | null
           next_steps: string | null
@@ -190,7 +190,7 @@ export type Database = {
           pillar: string | null
           platform_tags: string[] | null
           preview_code: string | null
-          primary_platform: string
+          primary_platform: string | null
           prompt_1_headline: string | null
           prompt_1_label: string | null
           prompt_1_text: string | null
@@ -277,7 +277,7 @@ export type Database = {
           is_editors_pick?: boolean | null
           keyphrase_synonyms?: string | null
           learning_objectives?: string | null
-          level: string
+          level?: string | null
           meta_description?: string | null
           meta_title?: string | null
           next_steps?: string | null
@@ -286,7 +286,7 @@ export type Database = {
           pillar?: string | null
           platform_tags?: string[] | null
           preview_code?: string | null
-          primary_platform: string
+          primary_platform?: string | null
           prompt_1_headline?: string | null
           prompt_1_label?: string | null
           prompt_1_text?: string | null
@@ -373,7 +373,7 @@ export type Database = {
           is_editors_pick?: boolean | null
           keyphrase_synonyms?: string | null
           learning_objectives?: string | null
-          level?: string
+          level?: string | null
           meta_description?: string | null
           meta_title?: string | null
           next_steps?: string | null
@@ -382,7 +382,7 @@ export type Database = {
           pillar?: string | null
           platform_tags?: string[] | null
           preview_code?: string | null
-          primary_platform?: string
+          primary_platform?: string | null
           prompt_1_headline?: string | null
           prompt_1_label?: string | null
           prompt_1_text?: string | null
