@@ -317,6 +317,20 @@ const GuideEditor = () => {
     } finally { setAiLoading(null); }
   };
 
+  // Strip markdown formatting from plain-text fields
+  const stripMd = (text: string): string => {
+    if (!text) return "";
+    return text
+      .replace(/^\*\*What to expect:\*\*\s*/i, "")
+      .replace(/^\*\*what to expect:\s*/i, "")
+      .replace(/^What to expect:\s*/i, "")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/`(.+?)`/g, "$1")
+      .replace(/^[*`\s]+|[*`\s]+$/g, "")
+      .trim();
+  };
+
   // Quick Import Parser
   const parseImportText = () => {
     if (!importText.trim()) return;
@@ -342,17 +356,17 @@ const GuideEditor = () => {
     const difficultyMatch = metaText.match(/difficulty:\s*(beginner|intermediate|advanced)/i);
     if (difficultyMatch) newData.difficulty = difficultyMatch[1].toLowerCase();
     const platformsMatch = metaText.match(/platforms?:\s*(.+)/i);
-    if (platformsMatch) newData.platform_tags = platformsMatch[1].split(",").map(p => p.trim()).filter(Boolean);
+    if (platformsMatch) newData.platform_tags = platformsMatch[1].split(",").map(p => stripMd(p)).filter(Boolean);
     const descMatch = metaText.match(/description:\s*(.+)/i);
-    if (descMatch) newData.one_line_description = descMatch[1].trim();
+    if (descMatch) newData.one_line_description = stripMd(descMatch[1]);
 
     // AI Snapshot
     const snapshotSection = sections["ai snapshot"] || sections["snapshot"] || "";
     if (snapshotSection) {
-      newData.snapshot_bullets = snapshotSection.split("\n").filter(l => l.match(/^[-*]\s/)).map(l => l.replace(/^[-*]\s+/, "").trim());
+      newData.snapshot_bullets = snapshotSection.split("\n").filter(l => l.match(/^[-*]\s/)).map(l => stripMd(l.replace(/^[-*]\s+/, "")));
     }
 
-    // Why This Matters
+    // Why This Matters (keep markdown)
     const whySection = sections["why this matters"] || sections["context and background"] || "";
     if (whySection) newData.why_this_matters = whySection;
 
@@ -367,14 +381,14 @@ const GuideEditor = () => {
         const titleMatch = trimmed.match(/^\d+\.\s+\*\*(.+?)\*\*/);
         steps.push({
           step_number: i + 1,
-          title: titleMatch ? titleMatch[1].trim() : "",
+          title: titleMatch ? stripMd(titleMatch[1]) : "",
           content: titleMatch ? trimmed.replace(/^\d+\.\s+\*\*.+?\*\*\s*/, "").trim() : trimmed.replace(/^\d+\.\s*/, "").trim(),
         });
       });
       if (steps.length) newData.steps = steps;
     }
 
-    // Worked Example
+    // Worked Example (keep markdown in output and editing_notes)
     const exampleSection = sections["what this actually looks like"] || sections["worked example"] || "";
     if (exampleSection) {
       const promptMatch = exampleSection.match(/```[\s\S]*?```/);
@@ -397,27 +411,27 @@ const GuideEditor = () => {
         const trimmed = block.trim();
         if (!trimmed) return;
         const lines = trimmed.split("\n");
-        const title = lines[0]?.trim() || "";
+        const title = stripMd(lines[0] || "");
         const codeMatch = trimmed.match(/```[\s\S]*?```/);
-        const expectMatch = trimmed.match(/what to expect:\s*(.+)/i);
-        prompts.push({ title, prompt_text: codeMatch ? codeMatch[0].replace(/```/g, "").trim() : "", what_to_expect: expectMatch ? expectMatch[1].trim() : "" });
+        const expectMatch = trimmed.match(/(?:\*\*)?what to expect:?\*?\*?\s*(.+)/i);
+        prompts.push({ title, prompt_text: codeMatch ? codeMatch[0].replace(/```/g, "").trim() : "", what_to_expect: expectMatch ? stripMd(expectMatch[1]) : "" });
       });
       if (prompts.length) newData.guide_prompts = prompts;
     }
 
-    // Common Mistakes
+    // Common Mistakes (strip title, keep description markdown)
     const mistakesSection = sections["common mistakes"] || "";
     if (mistakesSection) {
       const mistakes: MistakeItem[] = [];
       const blocks = mistakesSection.split(/\n\*\*/).filter(Boolean);
       blocks.forEach(block => {
         const match = block.match(/^(.+?)\*\*\.?\s*([\s\S]*)/);
-        if (match) mistakes.push({ title: match[1].trim().replace(/^\*\*/, ""), description: match[2].trim() });
+        if (match) mistakes.push({ title: stripMd(match[1]), description: match[2].trim() });
       });
       if (mistakes.length) newData.common_mistakes = mistakes;
     }
 
-    // Tools
+    // Tools (strip name and limitation, keep description markdown)
     const toolsSection = sections["tools that work for this"] || sections["tools"] || "";
     if (toolsSection) {
       const tools: ToolItem[] = [];
@@ -425,30 +439,33 @@ const GuideEditor = () => {
       blocks.forEach(block => {
         const match = block.match(/^(.+?)\*\*\.?\s*([\s\S]*)/);
         if (match) {
-          const name = match[1].trim().replace(/^\*\*/, "");
+          const name = stripMd(match[1]);
           const rest = match[2].trim();
           const limMatch = rest.match(/limitation:\s*(.+)/i);
-          tools.push({ name, description: limMatch ? rest.replace(limMatch[0], "").trim() : rest, limitation: limMatch ? limMatch[1].trim() : "" });
+          tools.push({ name, description: limMatch ? rest.replace(limMatch[0], "").trim() : rest, limitation: limMatch ? stripMd(limMatch[1]) : "" });
         }
       });
       if (tools.length) newData.recommended_tools = tools;
     }
 
-    // FAQ
+    // FAQ (strip question, keep answer markdown)
     const faqSection = sections["frequently asked questions"] || sections["faq"] || "";
     if (faqSection) {
       const faqs: FaqItem[] = [];
       const blocks = faqSection.split(/\n\*\*/).filter(Boolean);
       blocks.forEach(block => {
         const match = block.match(/^(.+?)\*\*\s*([\s\S]*)/);
-        if (match) faqs.push({ question: match[1].trim().replace(/^\*\*/, "").replace(/\?$/, "?"), answer: match[2].trim() });
+        if (match) faqs.push({ question: stripMd(match[1]).replace(/\?$/, "?"), answer: match[2].trim() });
       });
       if (faqs.length) newData.faq_items = faqs;
     }
 
-    // Next Steps
+    // Next Steps (keep markdown)
     const nextSection = sections["next steps"] || "";
     if (nextSection) newData.next_steps = nextSection;
+
+    // Strip title if it has markdown
+    if (newData.title) newData.title = stripMd(newData.title);
 
     // Calculate read time
     newData.read_time_minutes = calculateReadTime(newData);

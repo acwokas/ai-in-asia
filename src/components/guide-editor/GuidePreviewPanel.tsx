@@ -1,10 +1,29 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface GuidePreviewPanelProps {
   formData: any;
 }
+
+/** Render simple markdown (bold, italic, inline code, links, line breaks) to HTML */
+const renderMarkdown = (text: string): string => {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g, "<br />");
+};
+
+const MarkdownText = ({ text, className = "" }: { text: string; className?: string }) => {
+  const html = useMemo(() => renderMarkdown(text), [text]);
+  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+};
 
 const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -57,7 +76,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
         {hasContent(formData.why_this_matters) && (
           <section>
             <h2 className="text-2xl font-bold mb-4 pb-2 border-b border-border">Why This Matters</h2>
-            <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed whitespace-pre-wrap">{formData.why_this_matters}</div>
+            <MarkdownText text={formData.why_this_matters} className="prose prose-sm dark:prose-invert max-w-none leading-relaxed" />
           </section>
         )}
 
@@ -74,7 +93,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
                   </div>
                   <div className="pb-4">
                     {step.title && <h3 className="font-semibold mb-1">{step.title}</h3>}
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{step.content}</p>
+                    <MarkdownText text={step.content} className="text-sm text-muted-foreground" />
                   </div>
                 </div>
               ))}
@@ -89,19 +108,19 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
             {formData.worked_example.prompt && (
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">The Prompt</p>
-                <pre className="bg-[hsl(220,15%,13%)] text-[hsl(0,0%,90%)] p-4 rounded-lg text-sm font-mono whitespace-pre-wrap overflow-x-auto">{formData.worked_example.prompt}</pre>
+                <pre className="bg-card border border-border p-4 rounded-lg text-sm font-mono whitespace-pre-wrap overflow-x-auto">{formData.worked_example.prompt}</pre>
               </div>
             )}
             {formData.worked_example.output && (
               <div className="border-l-4 border-primary pl-4">
                 <p className="text-xs italic text-muted-foreground mb-2">Example output - your results will vary based on your inputs</p>
-                <div className="text-sm whitespace-pre-wrap">{formData.worked_example.output}</div>
+                <MarkdownText text={formData.worked_example.output} className="text-sm" />
               </div>
             )}
             {formData.worked_example.editing_notes && (
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">How to Edit This</p>
-                <p className="text-sm whitespace-pre-wrap">{formData.worked_example.editing_notes}</p>
+                <MarkdownText text={formData.worked_example.editing_notes} className="text-sm" />
               </div>
             )}
           </section>
@@ -115,7 +134,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
               {formData.guide_prompts.filter((p: any) => p.prompt_text?.trim()).map((prompt: any, i: number) => (
                 <div key={i} className="space-y-2">
                   {prompt.title && <h3 className="font-semibold">{prompt.title}</h3>}
-                  <pre className="bg-[hsl(220,15%,13%)] text-[hsl(0,0%,90%)] p-4 rounded-lg text-sm font-mono whitespace-pre-wrap">{prompt.prompt_text}</pre>
+                  <pre className="bg-card border border-border p-4 rounded-lg text-sm font-mono whitespace-pre-wrap">{prompt.prompt_text}</pre>
                   {prompt.what_to_expect && <p className="text-xs italic text-muted-foreground">What to expect: {prompt.what_to_expect}</p>}
                 </div>
               ))}
@@ -131,7 +150,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
               {formData.common_mistakes.filter((m: any) => m.title?.trim()).map((mistake: any, i: number) => (
                 <div key={i} className="border-l-3 border-amber-500 bg-amber-500/5 p-4 rounded-r-lg" style={{ borderLeftWidth: "3px" }}>
                   <h3 className="font-semibold mb-1">{mistake.title}</h3>
-                  <p className="text-sm text-muted-foreground">{mistake.description}</p>
+                  <MarkdownText text={mistake.description} className="text-sm text-muted-foreground" />
                 </div>
               ))}
             </div>
@@ -146,7 +165,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
               {formData.recommended_tools.filter((t: any) => t.name?.trim()).map((tool: any, i: number) => (
                 <div key={i}>
                   <span className="font-semibold">{tool.name}</span>
-                  {tool.description && <span className="text-sm text-muted-foreground ml-2">{tool.description}</span>}
+                  {tool.description && <MarkdownText text={tool.description} className="text-sm text-muted-foreground inline ml-2" />}
                   {tool.limitation && <p className="text-xs italic text-muted-foreground mt-0.5">Heads up: {tool.limitation}</p>}
                 </div>
               ))}
@@ -165,7 +184,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
                     <span className="font-medium">{faq.question}</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${expandedFaq === i ? "rotate-180" : ""}`} />
                   </button>
-                  {expandedFaq === i && <p className="text-sm text-muted-foreground mt-2">{faq.answer}</p>}
+                  {expandedFaq === i && <MarkdownText text={faq.answer} className="text-sm text-muted-foreground mt-2" />}
                 </div>
               ))}
             </div>
@@ -176,7 +195,7 @@ const GuidePreviewPanel = ({ formData }: GuidePreviewPanelProps) => {
         {hasContent(formData.next_steps) && (
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-6">
             <h2 className="text-xl font-bold mb-3">Next Steps</h2>
-            <p className="text-sm whitespace-pre-wrap">{formData.next_steps}</p>
+            <MarkdownText text={formData.next_steps} className="text-sm" />
           </div>
         )}
       </article>
