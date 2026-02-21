@@ -237,12 +237,22 @@ const PolicyAtlas = () => {
         </div>
 
         {/* About Section */}
-        <div className="mt-16 max-w-3xl mx-auto text-center">
-          <p className="text-muted-foreground">
-            The AI Policy Atlas tracks artificial intelligence governance frameworks, regulations, 
-            and policy developments across regions. Stay informed about how different countries 
-            approach AI safety, ethics, and innovation.
-          </p>
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold mb-4 text-center">About the AI Policy Atlas</h2>
+          <div className="text-muted-foreground space-y-4 text-center">
+            <p>
+              The AI Policy Atlas is an editorially curated reference tracking artificial intelligence governance frameworks, regulations, and policy developments across regions. With a particular focus on Asia-Pacific, it covers binding legislation, legislative drafts, voluntary frameworks, and emerging governance approaches.
+            </p>
+            <p>
+              Each country entry follows a consistent structure covering what is changing, who is affected, core principles, business implications, and comparative context. Entries are reviewed and updated as policy landscapes evolve.
+            </p>
+            <p className="text-sm">
+              This resource is maintained by the editorial team at{' '}
+              <Link to="/" className="text-primary hover:underline">AI in ASIA</Link>.
+              It does not constitute legal advice. For methodology questions or to suggest coverage, please{' '}
+              <Link to="/contact" className="text-primary hover:underline">get in touch</Link>.
+            </p>
+          </div>
         </div>
       </main>
 
