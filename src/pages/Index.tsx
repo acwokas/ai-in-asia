@@ -466,7 +466,7 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* Article Grid — alternating size-contrast rows */}
-        <section className="container mx-auto px-4 py-20 md:py-[80px]">
+        <section className="container mx-auto px-4 py-14 md:py-16">
           <div className="flex items-center justify-between mb-7">
             <div className="flex items-center gap-2">
               <h2 className="text-[28px] md:text-[30px] font-bold">More Stories</h2>
@@ -483,12 +483,13 @@ const Index = () => {
             // Combine all grid-eligible articles: trending + latest (excluding hero & secondary)
             const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 3).map((a: any) => a.id) || [];
             const allGridArticles = [
-              ...(trendingArticles?.filter((a: any) => a.slug) || []),
+              ...(trendingArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
               ...(latestArticles?.filter((a: any) =>
                 a.slug &&
                 a.id !== featuredArticle?.id &&
                 !secondaryIds.includes(a.id) &&
-                !(trendingArticles || []).some((t: any) => t.id === a.id)
+                !(trendingArticles || []).some((t: any) => t.id === a.id) &&
+                !a.title?.includes('3 Before 9')
               ) || []),
             ];
 
@@ -556,7 +557,7 @@ const Index = () => {
             };
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 {allGridArticles.map((article: any, i: number) => {
                   const large = isFeatured(i);
                   return (
@@ -573,7 +574,6 @@ const Index = () => {
           })()}
         </section>
 
-
         {/* Section divider */}
         <div className="border-t border-border/30" />
 
@@ -589,7 +589,7 @@ const Index = () => {
         {user && <div className="border-t border-border/30" />}
 
         {/* 4. Most Discussed This Week */}
-        <div className="py-14 md:py-20 bg-muted/10">
+        <div className="py-10 md:py-14 bg-muted/10">
           <Suspense fallback={null}>
             <MostDiscussedSection />
           </Suspense>
