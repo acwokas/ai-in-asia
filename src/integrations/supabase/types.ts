@@ -3001,6 +3001,7 @@ export type Database = {
           id: string
           last_read_date: string | null
           longest_streak: number | null
+          streak_reminder_sent_at: string | null
           streak_start_date: string | null
           total_articles_read: number | null
           updated_at: string | null
@@ -3012,6 +3013,7 @@ export type Database = {
           id?: string
           last_read_date?: string | null
           longest_streak?: number | null
+          streak_reminder_sent_at?: string | null
           streak_start_date?: string | null
           total_articles_read?: number | null
           updated_at?: string | null
@@ -3023,6 +3025,7 @@ export type Database = {
           id?: string
           last_read_date?: string | null
           longest_streak?: number | null
+          streak_reminder_sent_at?: string | null
           streak_start_date?: string | null
           total_articles_read?: number | null
           updated_at?: string | null

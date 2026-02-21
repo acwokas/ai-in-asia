@@ -185,3 +185,6 @@ verify_jwt = true
 
 [functions.monitor-scheduled-publishing]
 verify_jwt = false
+
+[functions.send-streak-reminders]
+verify_jwt = false
