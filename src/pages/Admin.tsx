@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
-import { Loader2, FileText, BarChart, Home } from "lucide-react";
+import { Loader2, FileText, BarChart, Home, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/lib/imageCompression";
 import { TrendingSuggestions } from "@/components/TrendingSuggestions";
@@ -479,6 +479,10 @@ const Admin = () => {
               <Button onClick={() => navigate("/editor")} size="lg" className="w-full md:w-auto">
                 <FileText className="h-4 w-4 mr-2" />
                 Create New Article
+              </Button>
+              <Button onClick={() => navigate("/guide-editor")} size="lg" variant="outline" className="w-full md:w-auto">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Create New Guide
               </Button>
               <Button 
                 onClick={() => navigate("/admin/dashboard")}
