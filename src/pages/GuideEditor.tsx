@@ -14,10 +14,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { generateSlug } from "@/lib/markdownConversion";
 import GuidePreviewPanel from "@/components/guide-editor/GuidePreviewPanel";
+import GuideEditorFeaturedImage from "@/components/guide-editor/GuideEditorFeaturedImage";
+import { Image } from "lucide-react";
 import {
   Home, Save, Eye, Send, ChevronDown, ChevronUp, Plus, X, GripVertical,
   BookOpen, Terminal, Wrench, Lightbulb, ListOrdered, Sparkles, AlertTriangle,
-  HelpCircle, ArrowRight, Image, Clipboard, Loader2, Clock, Copy
+  HelpCircle, ArrowRight, Clipboard, Loader2, Clock, Copy
 } from "lucide-react";
 
 // Types
@@ -614,15 +616,15 @@ const GuideEditor = () => {
 
           {/* Section 3: Featured Image */}
           <SectionCard title="Featured Image" icon={<Image className="h-5 w-5" />} sectionKey="image" collapsed={collapsedSections.image} onToggle={toggleSection} number={3}>
-            <div className="space-y-4">
-              {formData.featured_image_url && (
-                <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
-                  <img src={formData.featured_image_url} alt={formData.featured_image_alt} className="w-full h-full object-cover" />
-                </div>
-              )}
-              <Input placeholder="Image URL" value={formData.featured_image_url} onChange={e => updateField("featured_image_url", e.target.value)} />
-              <Input placeholder="Alt text for accessibility" value={formData.featured_image_alt} onChange={e => updateField("featured_image_alt", e.target.value)} />
-            </div>
+            <GuideEditorFeaturedImage
+              imageUrl={formData.featured_image_url}
+              imageAlt={formData.featured_image_alt}
+              title={formData.title}
+              pillar={formData.pillar}
+              topicTags={formData.topic_tags}
+              oneLineDescription={formData.one_line_description}
+              onUpdateField={updateField}
+            />
           </SectionCard>
 
           {/* Section 4: AI Snapshot */}
