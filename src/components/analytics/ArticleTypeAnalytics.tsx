@@ -229,7 +229,7 @@ export function ArticleTypeAnalytics({
                   <>📝 <strong>Full articles outperform</strong> listicles by <strong>{Math.round((listicleComparison.standard.avgViews / Math.max(listicleComparison.listicles.avgViews, 1) - 1) * 100)}%</strong> in average views</>
                 )}
                 {listicleComparison.engagementWinner !== listicleComparison.viewsWinner && (
-                  <span className="text-muted-foreground"> — but {listicleComparison.engagementWinner === 'listicles' ? 'listicles' : 'full articles'} have better engagement</span>
+                  <span className="text-muted-foreground"> - but {listicleComparison.engagementWinner === 'listicles' ? 'listicles' : 'full articles'} have better engagement</span>
                 )}
               </p>
             </div>

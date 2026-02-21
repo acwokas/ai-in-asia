@@ -34,7 +34,7 @@ const FirstVisitHero = () => {
 
         {/* Full subtext on desktop, short on mobile */}
         <p className="hidden md:block text-muted-foreground mb-6">
-          Daily briefings, regional analysis, and practical guides covering AI across 15+ countries — from Singapore to Tokyo, Mumbai to Sydney.
+          Daily briefings, regional analysis, and practical guides covering AI across 15+ countries - from Singapore to Tokyo, Mumbai to Sydney.
         </p>
         <p className="md:hidden text-sm text-muted-foreground mb-5">
           Daily AI briefings and analysis across 15+ Asia-Pacific countries.

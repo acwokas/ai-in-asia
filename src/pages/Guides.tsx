@@ -62,7 +62,7 @@ const Guides = () => {
               </h2>
 
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                The guides section is getting a complete overhaul. New, genuinely useful guides written by real practitioners — not AI-generated filler. First batch drops soon.
+                The guides section is getting a complete overhaul. New, genuinely useful guides written by real practitioners - not AI-generated filler. First batch drops soon.
               </p>
 
               <p className="text-muted-foreground mb-8">
