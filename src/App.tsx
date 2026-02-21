@@ -27,6 +27,7 @@ const InstallAppButton = lazy(() => import("./components/InstallAppButton").then
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
 const Category = lazy(() => import("./pages/Category"));
+const CategoryAll = lazy(() => import("./pages/CategoryAll"));
 const Tag = lazy(() => import("./pages/Tag"));
 const AuthorProfile = lazy(() => import("./pages/AuthorProfile"));
 const SitemapRedirect = lazy(() => import("./pages/SitemapRedirect"));
@@ -198,6 +199,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/:category/:slug" element={<Article />} />
+              <Route path="/category/:slug/all" element={<CategoryAll />} />
               <Route path="/category/:slug" element={<Category />} />
               <Route path="/tag/:slug" element={<Tag />} />
               <Route path="/author/:slug" element={<AuthorProfile />} />

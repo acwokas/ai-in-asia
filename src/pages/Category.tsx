@@ -523,7 +523,30 @@ const Category = () => {
 
               {/* 6. FEATURED ARTICLES */}
               <section ref={revealFeatured.ref} style={{ marginBottom: 48, ...revealFeatured.style }}>
-                <SectionHeader title="Featured" emoji="⭐" color={cfg.accent} />
+                <SectionHeader
+                  title="Featured"
+                  emoji="⭐"
+                  color={cfg.accent}
+                  rightAction={
+                    <Link
+                      to={`/category/${slug}/all`}
+                      style={{
+                        fontSize: 12,
+                        fontFamily: "Poppins, sans-serif",
+                        fontWeight: 600,
+                        color: cfg.accent,
+                        textDecoration: "none",
+                        whiteSpace: "nowrap",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        flexShrink: 0,
+                      }}
+                    >
+                      View all {articles?.length || ""} articles &rarr;
+                    </Link>
+                  }
+                />
                 {featuredGridArticles.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {featuredGridArticles.map((article: any) => (
