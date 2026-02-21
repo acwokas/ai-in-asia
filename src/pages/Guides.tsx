@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
-import { 
-  Search, BookOpen, Zap, ArrowRight, 
-  Cpu, GraduationCap, Terminal, Compass
+import {
+  Search, BookOpen, Zap, ArrowRight,
+  Cpu, GraduationCap, Terminal, Compass, Clock, ExternalLink,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -15,38 +15,43 @@ import Footer from "@/components/Footer";
 import PromptsGrid from "@/components/PromptsGrid";
 import ToolsGrid from "@/components/ToolsGrid";
 
-// --- Pillar definitions ---
+// ─── Pillar definitions ────────────────────────────────────────
 const PILLARS = [
-  { 
-    value: "learn", 
-    label: "Learn", 
+  {
+    value: "learn",
+    label: "Learn",
     description: "Guides, tutorials, and role-based walkthroughs",
-    icon: GraduationCap, 
+    icon: GraduationCap,
     color: "from-blue-500 to-cyan-500",
-    // guide_category values that belong here
+    borderGlow: "shadow-blue-500/20",
+    badgeBg: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     guideCategories: ["Guide", "Tutorial", "Platform Guide", "Role Guide", "Use Case"],
   },
-  { 
-    value: "prompts", 
-    label: "Prompts", 
+  {
+    value: "prompts",
+    label: "Prompts",
     description: "Ready-to-use prompts and collections",
-    icon: Terminal, 
+    icon: Terminal,
     color: "from-purple-500 to-pink-500",
+    borderGlow: "shadow-purple-500/20",
+    badgeBg: "bg-purple-500/15 text-purple-400 border-purple-500/30",
     guideCategories: ["Prompt List", "Prompt Pack"],
     isPrompts: true,
   },
-  { 
-    value: "toolbox", 
-    label: "Toolbox", 
+  {
+    value: "toolbox",
+    label: "Toolbox",
     description: "Adrian's curated picks and recommendations",
-    icon: Compass, 
+    icon: Compass,
     color: "from-teal-500 to-emerald-500",
+    borderGlow: "shadow-teal-500/20",
+    badgeBg: "bg-teal-500/15 text-teal-400 border-teal-500/30",
     guideCategories: ["Tools"],
     isTools: true,
   },
 ] as const;
 
-// --- Content-type sub-filter pills ---
+// ─── Content-type sub-filter pills ────────────────────────────
 const CONTENT_TYPES = [
   { value: "all", label: "All" },
   { value: "quick-guide", label: "Quick Guides" },
@@ -71,26 +76,36 @@ const LEVELS = [
   { value: "Advanced", color: "text-red-600 dark:text-red-400", bg: "bg-red-500/10" },
 ];
 
-// Word-count threshold (~1500 words ≈ 7500 chars)
-const DEEP_DIVE_CHAR_THRESHOLD = 7500;
+// ─── Role-based nav pills ─────────────────────────────────────
+const ROLE_PILLS = [
+  { label: "Marketer", keywords: ["marketer", "marketing", "seo", "social media"] },
+  { label: "Developer", keywords: ["developer", "engineer", "coding", "product manager"] },
+  { label: "Founder", keywords: ["founder", "entrepreneur", "startup", "ceo"] },
+  { label: "Student", keywords: ["student", "learner", "educator", "parent"] },
+  { label: "Content Creator", keywords: ["creator", "content", "writer", "artist", "hobbyist"] },
+  { label: "Manager", keywords: ["manager", "team lead", "operations", "knowledge worker"] },
+  { label: "Analyst", keywords: ["analyst", "researcher", "data", "intelligence"] },
+];
 
-/** Compute the subtype for a guide row */
+const DEEP_DIVE_CHAR_THRESHOLD = 7500;
+const SUBTYPE_LABELS: Record<string, string> = {
+  "quick-guide": "Quick Guide",
+  "deep-dive": "Deep Dive",
+  "role-guide": "Role Guide",
+  "prompt-collection": "Prompt Collection",
+  "prompt-pack": "Prompt Pack",
+  "tool-pick": "Tool Pick",
+};
+
 function getSubtype(guide: { guide_category: string; bodyLength: number }): string {
   switch (guide.guide_category) {
-    case "Role Guide":
-      return "role-guide";
-    case "Prompt List":
-      return "prompt-collection";
-    case "Prompt Pack":
-      return "prompt-pack";
-    case "Tools":
-      return "tool-pick";
-    case "Tutorial":
-      return "deep-dive";
-    case "Platform Guide":
-      return "quick-guide";
-    default: // "Guide", "Use Case", etc.
-      return guide.bodyLength > DEEP_DIVE_CHAR_THRESHOLD ? "deep-dive" : "quick-guide";
+    case "Role Guide": return "role-guide";
+    case "Prompt List": return "prompt-collection";
+    case "Prompt Pack": return "prompt-pack";
+    case "Tools": return "tool-pick";
+    case "Tutorial": return "deep-dive";
+    case "Platform Guide": return "quick-guide";
+    default: return guide.bodyLength > DEEP_DIVE_CHAR_THRESHOLD ? "deep-dive" : "quick-guide";
   }
 }
 
@@ -98,6 +113,18 @@ function getPillar(guideCategory: string) {
   return PILLARS.find(p => (p.guideCategories as readonly string[]).includes(guideCategory)) || PILLARS[0];
 }
 
+/** Rough reading-time estimate (200 wpm) */
+function estimateReadTime(charLen: number): number {
+  return Math.max(1, Math.round(charLen / 5 / 200));
+}
+
+/** Check if a guide matches a role pill */
+function matchesRole(guide: { audience_role?: string | null; tags?: string | null }, role: typeof ROLE_PILLS[number]): boolean {
+  const haystack = ((guide.audience_role || "") + " " + (guide.tags || "")).toLowerCase();
+  return role.keywords.some(k => haystack.includes(k));
+}
+
+// ═══════════════════════════════════════════════════════════════
 const Guides = () => {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,8 +132,9 @@ const Guides = () => {
   const [selectedContentType, setSelectedContentType] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  // Read pillar from URL on mount
   useEffect(() => {
     const cat = searchParams.get("category");
     if (cat === "prompts") setSelectedPillar("prompts");
@@ -116,14 +144,14 @@ const Guides = () => {
   const isPromptsView = selectedPillar === "prompts";
   const isToolsView = selectedPillar === "toolbox";
 
-  // Fetch guides with body length for word-count split
+  // ─── Data fetching ──────────────────────────────────────────
   const { data: guides, isLoading } = useQuery({
     queryKey: ["ai-guides-list"],
     staleTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, guide_category, primary_platform, level, excerpt, tags, created_at, body_intro, body_section_1_text, body_section_2_text, body_section_3_text")
+        .select("id, title, slug, guide_category, primary_platform, level, excerpt, tags, created_at, audience_role, body_intro, body_section_1_text, body_section_2_text, body_section_3_text")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []).map(g => ({
@@ -157,100 +185,89 @@ const Guides = () => {
     },
   });
 
-  // --- Pillar counts ---
+  // ─── Computed values ────────────────────────────────────────
   const pillarCounts = useMemo(() => {
     const counts: Record<string, number> = { learn: 0, prompts: promptsCount || 0, toolbox: toolsCount || 0 };
-    guides?.forEach(g => {
-      const p = getPillar(g.guide_category);
-      if (p.value === "learn") counts.learn++;
-    });
+    guides?.forEach(g => { if (getPillar(g.guide_category).value === "learn") counts.learn++; });
     return counts;
   }, [guides, toolsCount, promptsCount]);
 
-  // Total count for the hero
-  const totalCount = useMemo(() => {
-    return (guides?.length || 0) + (promptsCount || 0) + (toolsCount || 0);
-  }, [guides, promptsCount, toolsCount]);
+  const totalCount = useMemo(() => (guides?.length || 0) + (promptsCount || 0) + (toolsCount || 0), [guides, promptsCount, toolsCount]);
 
-  // --- Subtype counts (for hiding empty pills) ---
   const subtypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     guides?.forEach(g => {
       const st = getSubtype({ guide_category: g.guide_category, bodyLength: g.bodyLength });
       counts[st] = (counts[st] || 0) + 1;
     });
-    // Prompts & tools from separate sources
     if (promptsCount) counts["prompt-collection"] = (counts["prompt-collection"] || 0) + promptsCount;
     if (toolsCount) counts["tool-pick"] = (counts["tool-pick"] || 0) + toolsCount;
     return counts;
   }, [guides, promptsCount, toolsCount]);
 
-  // Visible content type pills (hide empty)
-  const visibleContentTypes = useMemo(() => {
-    return CONTENT_TYPES.filter(ct => ct.value === "all" || (subtypeCounts[ct.value] || 0) > 0);
-  }, [subtypeCounts]);
+  const visibleContentTypes = useMemo(() => CONTENT_TYPES.filter(ct => ct.value === "all" || (subtypeCounts[ct.value] || 0) > 0), [subtypeCounts]);
+  const visiblePlatforms = useMemo(() => { if (!guides) return []; const s = new Set(guides.map(g => g.primary_platform)); return PLATFORMS.filter(p => s.has(p.value)); }, [guides]);
+  const visibleLevels = useMemo(() => { if (!guides) return []; const s = new Set(guides.map(g => g.level)); return LEVELS.filter(l => s.has(l.value)); }, [guides]);
 
-  // Visible platform pills (hide empty)
-  const visiblePlatforms = useMemo(() => {
+  // Role pills - only show those with matching content
+  const visibleRolePills = useMemo(() => {
     if (!guides) return [];
-    const platformSet = new Set(guides.map(g => g.primary_platform));
-    return PLATFORMS.filter(p => platformSet.has(p.value));
+    return ROLE_PILLS.filter(role => guides.some(g => matchesRole(g, role)));
   }, [guides]);
 
-  // Visible level pills (hide empty)
-  const visibleLevels = useMemo(() => {
+  // EDITOR'S PICKS: Replace these IDs with manually curated selections
+  const editorsPicks = useMemo(() => {
     if (!guides) return [];
-    const levelSet = new Set(guides.map(g => g.level));
-    return LEVELS.filter(l => levelSet.has(l.value));
+    const picks: typeof guides = [];
+    for (const pillar of PILLARS) {
+      const match = guides.find(g => (pillar.guideCategories as readonly string[]).includes(g.guide_category));
+      if (match) picks.push(match);
+    }
+    return picks;
   }, [guides]);
 
-  // --- Filtered guides ---
+  // ─── Filtered guides ───────────────────────────────────────
   const filteredGuides = useMemo(() => {
     return guides?.filter(guide => {
       const subtype = getSubtype({ guide_category: guide.guide_category, bodyLength: guide.bodyLength });
       const pillar = getPillar(guide.guide_category);
 
-      // Search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!guide.title.toLowerCase().includes(q) && !guide.excerpt?.toLowerCase().includes(q)) return false;
       }
-
-      // Pillar filter
       if (selectedPillar && selectedPillar !== pillar.value) return false;
-
-      // Content type filter
       if (selectedContentType && selectedContentType !== "all" && subtype !== selectedContentType) return false;
-
-      // Platform filter
       if (selectedPlatform && guide.primary_platform !== selectedPlatform) return false;
-
-      // Level filter
       if (selectedLevel && guide.level !== selectedLevel) return false;
-
+      if (selectedRole) {
+        const role = ROLE_PILLS.find(r => r.label === selectedRole);
+        if (role && !matchesRole(guide, role)) return false;
+      }
       return true;
     });
-  }, [guides, searchQuery, selectedPillar, selectedContentType, selectedPlatform, selectedLevel]);
+  }, [guides, searchQuery, selectedPillar, selectedContentType, selectedPlatform, selectedLevel, selectedRole]);
 
   const clearFilters = () => {
     setSelectedPillar(null);
     setSelectedContentType(null);
     setSelectedPlatform(null);
     setSelectedLevel(null);
+    setSelectedRole(null);
     setSearchQuery("");
   };
 
-  const hasActiveFilters = selectedPillar || selectedContentType || selectedPlatform || selectedLevel || searchQuery;
+  const hasActiveFilters = selectedPillar || selectedContentType || selectedPlatform || selectedLevel || selectedRole || searchQuery;
+
+  const handleRoleClick = useCallback((roleLabel: string) => {
+    setSelectedRole(selectedRole === roleLabel ? null : roleLabel);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [selectedRole]);
 
   const getLevelStyle = (level: string) => LEVELS.find(l => l.value === level) || LEVELS[0];
   const getPlatformAccent = (platform: string) => PLATFORMS.find(p => p.value === platform)?.accent || "bg-muted";
 
-  // Check if we should show the prompts or tools grid (dedicated views)
-  const showPromptsGrid = isPromptsView || selectedContentType === "prompt-collection" || selectedContentType === "prompt-pack";
-  const showToolsGrid = isToolsView || selectedContentType === "tool-pick";
-  // Show guide cards when not in a dedicated grid-only view
-  const showGuideCards = !isPromptsView && !isToolsView;
-
+  // ═══════════════════════════════════════════════════════════════
   return (
     <>
       <SEOHead
@@ -261,7 +278,8 @@ const Guides = () => {
       <Header />
 
       <main className="min-h-screen bg-background">
-        {/* Hero */}
+
+        {/* ──────────── SECTION 1: HERO ──────────── */}
         <section className="relative overflow-hidden border-b border-border">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10" />
           <div className="absolute top-10 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" />
@@ -272,19 +290,22 @@ const Guides = () => {
                 <Zap className="h-4 w-4" />
                 <span>{totalCount} resources and counting</span>
               </div>
+
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
                 Master AI with
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                   {isPromptsView ? "Ready-to-Use Prompts" : isToolsView ? "AI Tools" : "Practical Guides"}
                 </span>
               </h1>
+
               <p className="text-xl text-muted-foreground md:text-2xl leading-relaxed max-w-2xl">
-                {isPromptsView
-                  ? "Browse our complete collection of AI prompts for ChatGPT, Claude, Gemini, and more."
-                  : isToolsView
-                  ? "Discover powerful AI tools and platforms that are transforming how we work, create, and innovate."
-                  : "From beginner tutorials to advanced frameworks. Real techniques, actual examples, no fluff."}
+                Real techniques, tested prompts, and honest tool recommendations. No theory, no filler.
               </p>
+
+              <p className="mt-3 text-sm text-muted-foreground/70 tracking-wide uppercase">
+                Built for practitioners across Asia
+              </p>
+
               <div className="mt-10 relative max-w-xl">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -298,7 +319,68 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* 3 Pillar Cards */}
+        {/* ──────────── SECTION 2: EDITOR'S PICKS ──────────── */}
+        {editorsPicks.length > 0 && (
+          <section className="py-12 border-b border-border">
+            <div className="container mx-auto px-4">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-foreground mb-1">Start Here</h2>
+                <p className="text-muted-foreground">Hand-picked by Adrian. Best entry points for new readers.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {editorsPicks.map((guide) => {
+                  const pillar = getPillar(guide.guide_category);
+                  const levelStyle = getLevelStyle(guide.level);
+                  const readTime = estimateReadTime(guide.bodyLength);
+
+                  return (
+                    <Link
+                      key={guide.id}
+                      to={`/guides/${guide.slug}`}
+                      className="group"
+                    >
+                      <div className={`relative h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:${pillar.borderGlow} overflow-hidden`}>
+                        {/* Pillar accent bar */}
+                        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${pillar.color}`} />
+
+                        <div className="flex flex-wrap items-center gap-2 mb-4 mt-1">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${pillar.badgeBg}`}>
+                            {pillar.label}
+                          </span>
+                          <Badge variant="outline" className={`text-xs ${levelStyle.color}`}>
+                            {guide.level}
+                          </Badge>
+                        </div>
+
+                        <h3 className="font-bold text-foreground text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          {guide.title}
+                        </h3>
+
+                        {guide.excerpt && (
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                            {guide.excerpt}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between mt-auto">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" /> {readTime} min read
+                          </span>
+                          <span className="flex items-center gap-1 text-sm font-medium text-primary group-hover:gap-2 transition-all">
+                            Read guide <ArrowRight className="h-4 w-4" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ──────────── SECTION 3: BROWSE BY PILLAR ──────────── */}
         <section className="py-12 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
@@ -320,10 +402,11 @@ const Guides = () => {
                     onClick={() => {
                       setSelectedPillar(isSelected ? null : pillar.value);
                       setSelectedContentType(null);
+                      setSelectedRole(null);
                     }}
                     className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       isSelected
-                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                        ? `border-primary bg-primary/5 shadow-lg ${pillar.borderGlow}`
                         : "border-border bg-card hover:border-primary/50 hover:shadow-md"
                     }`}
                   >
@@ -333,10 +416,8 @@ const Guides = () => {
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">{pillar.label}</h3>
                     <p className="text-sm text-muted-foreground mb-2">{pillar.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {count} {count === 1 ? "item" : "items"}
-                    </p>
-                    {isSelected && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary" />}
+                    <p className="text-xs text-muted-foreground">{count} {count === 1 ? "item" : "items"}</p>
+                    {isSelected && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary animate-pulse" />}
                   </button>
                 );
               })}
@@ -344,191 +425,254 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* Filter Pills */}
-        <section className="py-6 border-b border-border bg-background sticky top-0 z-40">
-          <div className="container mx-auto px-4 space-y-3">
-            {/* Row 1: Content Type */}
-            {visibleContentTypes.length > 1 && (
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-medium text-muted-foreground mr-2">Type:</span>
-                <div className="flex flex-wrap gap-2">
-                  {visibleContentTypes.map(ct => (
-                    <button
-                      key={ct.value}
-                      onClick={() => setSelectedContentType(ct.value === "all" ? null : (selectedContentType === ct.value ? null : ct.value))}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        (ct.value === "all" && !selectedContentType) || selectedContentType === ct.value
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      {ct.label}
-                    </button>
-                  ))}
+        {/* ──────────── SECTION 4: FILTERS + CONTENT GRID ──────────── */}
+        <div ref={gridRef}>
+          {/* Sticky filter bar */}
+          <section className="py-4 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-40">
+            <div className="container mx-auto px-4 space-y-3">
+              {visibleContentTypes.length > 1 && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-medium text-muted-foreground shrink-0">Type:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {visibleContentTypes.map(ct => (
+                      <button
+                        key={ct.value}
+                        onClick={() => setSelectedContentType(ct.value === "all" ? null : (selectedContentType === ct.value ? null : ct.value))}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          (ct.value === "all" && !selectedContentType) || selectedContentType === ct.value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        {ct.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Row 2: Platform */}
-            {visiblePlatforms.length > 0 && (
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-medium text-muted-foreground mr-2">Platform:</span>
-                <div className="flex flex-wrap gap-2">
-                  {visiblePlatforms.map(platform => (
-                    <button
-                      key={platform.value}
-                      onClick={() => setSelectedPlatform(selectedPlatform === platform.value ? null : platform.value)}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        selectedPlatform === platform.value
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${platform.accent}`} />
-                      {platform.label}
-                    </button>
-                  ))}
+              {visiblePlatforms.length > 0 && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-medium text-muted-foreground shrink-0">Platform:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {visiblePlatforms.map(platform => (
+                      <button
+                        key={platform.value}
+                        onClick={() => setSelectedPlatform(selectedPlatform === platform.value ? null : platform.value)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          selectedPlatform === platform.value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${platform.accent}`} />
+                        {platform.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Row 3: Level */}
-            {visibleLevels.length > 0 && (
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-medium text-muted-foreground mr-2">Level:</span>
-                <div className="flex flex-wrap gap-2">
-                  {visibleLevels.map(level => (
-                    <button
-                      key={level.value}
-                      onClick={() => setSelectedLevel(selectedLevel === level.value ? null : level.value)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        selectedLevel === level.value
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : `${level.bg} ${level.color} hover:opacity-80`
-                      }`}
-                    >
-                      {level.value}
-                    </button>
-                  ))}
+              {visibleLevels.length > 0 && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-medium text-muted-foreground shrink-0">Level:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {visibleLevels.map(level => (
+                      <button
+                        key={level.value}
+                        onClick={() => setSelectedLevel(selectedLevel === level.value ? null : level.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          selectedLevel === level.value
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : `${level.bg} ${level.color} hover:opacity-80`
+                        }`}
+                      >
+                        {level.value}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              )}
+            </div>
+          </section>
+
+          {/* Conditional content */}
+          {(isPromptsView || selectedContentType === "prompt-collection" || selectedContentType === "prompt-pack") ? (
+            <section className="py-8">
+              <div className="container mx-auto px-4">
+                <PromptsGrid searchQuery={searchQuery} />
               </div>
-            )}
+            </section>
+          ) : (isToolsView || selectedContentType === "tool-pick") ? (
+            <section className="py-8">
+              <div className="container mx-auto px-4">
+                <ToolsGrid searchQuery={searchQuery} />
+              </div>
+            </section>
+          ) : (
+            <>
+              {/* Results count */}
+              <section className="pt-8 pb-4">
+                <div className="container mx-auto px-4">
+                  <p className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">{filteredGuides?.length ?? 0}</span>
+                    {" "}guide{filteredGuides?.length !== 1 ? "s" : ""}
+                    {hasActiveFilters && " matching your filters"}
+                  </p>
+                </div>
+              </section>
+
+              {/* Guides Grid */}
+              <section className="pb-16">
+                <div className="container mx-auto px-4">
+                  {isLoading ? (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="animate-pulse rounded-2xl bg-muted h-64" />
+                      ))}
+                    </div>
+                  ) : filteredGuides?.length === 0 ? (
+                    <div className="py-24 text-center">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+                        <BookOpen className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                      <h3 className="mb-3 text-xl font-semibold">No guides found</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                        Try adjusting your search or filters to find what you are looking for.
+                      </p>
+                      <Button onClick={clearFilters} variant="outline">Clear all filters</Button>
+                    </div>
+                  ) : (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {filteredGuides?.map((guide) => {
+                        const pillar = getPillar(guide.guide_category);
+                        const subtype = getSubtype({ guide_category: guide.guide_category, bodyLength: guide.bodyLength });
+                        const levelStyle = getLevelStyle(guide.level);
+                        const platformAccent = getPlatformAccent(guide.primary_platform);
+                        const readTime = estimateReadTime(guide.bodyLength);
+
+                        return (
+                          <Link key={guide.id} to={`/guides/${guide.slug}`} className="group">
+                            <div className={`relative h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:-translate-y-1 hover:${pillar.borderGlow} overflow-hidden`}>
+                              <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-[0.03] transition-opacity`} />
+                              <div className={`absolute top-0 left-0 right-0 h-1 ${platformAccent} opacity-60`} />
+
+                              <div className="relative">
+                                {/* Badges row */}
+                                <div className="flex flex-wrap items-center gap-2 mb-3">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${pillar.badgeBg}`}>
+                                    {pillar.label}
+                                  </span>
+                                  <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                                    {SUBTYPE_LABELS[subtype] || subtype}
+                                  </span>
+                                  {guide.primary_platform !== "Generic" && (
+                                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                      <Cpu className="h-3 w-3" /> {guide.primary_platform}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <h3 className="font-bold text-foreground text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                  {guide.title}
+                                </h3>
+
+                                {guide.excerpt && (
+                                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                    {guide.excerpt}
+                                  </p>
+                                )}
+
+                                {/* Tags */}
+                                {guide.tags && (
+                                  <div className="flex flex-wrap gap-1.5 mb-4">
+                                    {guide.tags.split(",").slice(0, 3).map((tag, i) => (
+                                      <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/50 text-[11px] text-muted-foreground">
+                                        {tag.trim()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Footer */}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className={`text-[11px] ${levelStyle.color}`}>
+                                      {guide.level}
+                                    </Badge>
+                                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Clock className="h-3 w-3" /> {readTime} min
+                                    </span>
+                                  </div>
+                                  <span className="flex items-center gap-1 text-sm font-medium text-primary group-hover:gap-2 transition-all">
+                                    Read guide <ArrowRight className="h-3.5 w-3.5" />
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </section>
+            </>
+          )}
+        </div>
+
+        {/* ──────────── SECTION 5: ROLE-BASED NAVIGATION ──────────── */}
+        {visibleRolePills.length > 0 && (
+          <section className="py-12 border-t border-border bg-muted/20">
+            <div className="container mx-auto px-4">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-foreground mb-1">Find Guides for Your Role</h2>
+                <p className="text-muted-foreground">Quick filters by job function</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {visibleRolePills.map(role => (
+                  <button
+                    key={role.label}
+                    onClick={() => handleRoleClick(role.label)}
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium border transition-all duration-200 ${
+                      selectedRole === role.label
+                        ? "bg-primary text-primary-foreground border-primary shadow-md"
+                        : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    {role.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ──────────── SECTION 6: PROMPTANDGO CTA ──────────── */}
+        <section className="py-16 border-t border-border">
+          <div className="container mx-auto px-4">
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-transparent border border-teal-500/20 p-8 md:p-12">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl" />
+              <div className="relative max-w-2xl">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  Want to go further with prompts?
+                </h2>
+                <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                  Every prompt in our collection works great as-is. But if you want to customize them for your platform, audience, or specific use case, PromptAndGo.ai can help.
+                </p>
+                <a
+                  href="https://promptandgo.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-medium transition-colors"
+                >
+                  Try PromptAndGo <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Conditional content */}
-        {(isPromptsView || (selectedContentType === "prompt-collection" || selectedContentType === "prompt-pack")) ? (
-          <section className="py-8">
-            <div className="container mx-auto px-4">
-              <PromptsGrid searchQuery={searchQuery} />
-            </div>
-          </section>
-        ) : (isToolsView || selectedContentType === "tool-pick") ? (
-          <section className="py-8">
-            <div className="container mx-auto px-4">
-              <ToolsGrid searchQuery={searchQuery} />
-            </div>
-          </section>
-        ) : (
-          <>
-            {/* Results Header */}
-            <section className="pt-8 pb-4">
-              <div className="container mx-auto px-4">
-                <p className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">{filteredGuides?.length ?? 0}</span>
-                  {" "}guide{filteredGuides?.length !== 1 ? "s" : ""}
-                  {hasActiveFilters && " matching your filters"}
-                </p>
-              </div>
-            </section>
-
-            {/* Guides Grid */}
-            <section className="pb-16">
-              <div className="container mx-auto px-4">
-                {isLoading ? (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="animate-pulse rounded-2xl bg-muted h-64" />
-                    ))}
-                  </div>
-                ) : filteredGuides?.length === 0 ? (
-                  <div className="py-24 text-center">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
-                      <BookOpen className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                    <h3 className="mb-3 text-xl font-semibold">No guides found</h3>
-                    <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                      Try adjusting your search or filters to find what you are looking for.
-                    </p>
-                    <Button onClick={clearFilters} variant="outline">Clear all filters</Button>
-                  </div>
-                ) : (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredGuides?.map((guide, index) => {
-                      const levelStyle = getLevelStyle(guide.level);
-                      const platformAccent = getPlatformAccent(guide.primary_platform);
-                      const pillar = getPillar(guide.guide_category);
-                      const subtype = getSubtype({ guide_category: guide.guide_category, bodyLength: guide.bodyLength });
-                      const isFeature = index === 0 && !hasActiveFilters;
-
-                      return (
-                        <Link
-                          key={guide.id}
-                          to={`/guides/${guide.slug}`}
-                          className={`group relative ${isFeature ? "md:col-span-2 lg:col-span-2" : ""}`}
-                        >
-                          <div className={`relative h-full rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden ${
-                            isFeature ? "md:flex md:items-center md:gap-8" : ""
-                          }`}>
-                            <div className={`absolute inset-0 bg-gradient-to-br ${pillar.color} opacity-0 group-hover:opacity-[0.03] transition-opacity`} />
-                            <div className={`absolute top-0 left-0 right-0 h-1 ${platformAccent} opacity-60`} />
-                            <div className={`relative ${isFeature ? "md:flex-1" : ""}`}>
-                              <div className="flex flex-wrap items-center gap-2 mb-4">
-                                <Badge variant="secondary" className="text-xs font-medium">
-                                  {pillar.label}
-                                </Badge>
-                                <Badge variant="outline" className={`text-xs ${levelStyle.color}`}>
-                                  {guide.level}
-                                </Badge>
-                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Cpu className="h-3 w-3" />
-                                  {guide.primary_platform}
-                                </span>
-                              </div>
-                              <h3 className={`font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2 ${
-                                isFeature ? "text-2xl md:text-3xl" : "text-lg"
-                              }`}>
-                                {guide.title}
-                              </h3>
-                              {guide.excerpt && (
-                                <p className={`text-muted-foreground mb-4 ${isFeature ? "text-base line-clamp-3" : "text-sm line-clamp-2"}`}>
-                                  {guide.excerpt}
-                                </p>
-                              )}
-                              {guide.tags && (
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                  {guide.tags.split(",").slice(0, isFeature ? 5 : 3).map((tag, i) => (
-                                    <span key={i} className="inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground">
-                                      {tag.trim()}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
-                                <span>Read guide</span>
-                                <ArrowRight className="h-4 w-4" />
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </section>
-          </>
-        )}
       </main>
       <Footer />
     </>
