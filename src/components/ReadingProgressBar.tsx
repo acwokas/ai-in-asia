@@ -46,7 +46,7 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps)
     <>
       <div className="fixed top-0 left-0 w-full h-[3px] sm:h-[3px] max-sm:h-1 z-[60]">
         <div
-          className={`h-full bg-primary transition-[width] duration-150 ease-out ${isComplete ? "animate-pulse" : ""}`}
+          className="h-full bg-primary transition-[width] duration-150 ease-out"
           style={{
             width: `${progress}%`,
             boxShadow: isComplete
