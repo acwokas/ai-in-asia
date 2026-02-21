@@ -21,6 +21,7 @@ import { PromptBuilder } from "@/components/category/tools/PromptBuilder";
 import { PromptStudio } from "@/components/category/tools/PromptStudio";
 import { OpinionPoll } from "@/components/category/tools/OpinionPoll";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import { PromptAndGoBanner } from "@/components/PromptAndGoBanner";
 
 const StockTicker = lazy(() => import("@/components/StockTicker"));
 const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
@@ -420,6 +421,11 @@ const Category = () => {
                   </div>
                 </section>
               )}
+
+              {/* PROMPT AND GO BANNER */}
+              <section style={{ marginBottom: 48 }}>
+                <PromptAndGoBanner />
+              </section>
 
               {/* 5. INTERACTIVE TOOL */}
               {ToolComponent && (
