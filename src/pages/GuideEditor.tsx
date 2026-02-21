@@ -282,7 +282,12 @@ const GuideEditor = () => {
         const { error } = await supabase.from("ai_guides").update(saveData).eq("id", id);
         if (error) throw error;
       } else {
-        const { data: newGuide, error } = await supabase.from("ai_guides").insert(saveData).select().single();
+        // Upsert on slug to avoid duplicate key errors
+        const { data: newGuide, error } = await supabase
+          .from("ai_guides")
+          .upsert(saveData, { onConflict: "slug", ignoreDuplicates: false })
+          .select()
+          .single();
         if (error) throw error;
         navigate(`/guide-editor/${newGuide.id}`, { replace: true });
       }
