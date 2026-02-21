@@ -51,18 +51,15 @@ interface ThreeBeforeNineTemplateProps {
 function parseSignals(content: any): Signal[] {
   const signals: Signal[] = [];
   
-  // Handle string content (from CMS)
   let textContent = '';
   if (typeof content === 'string') {
     textContent = content;
   } else if (content?.content) {
-    // Handle Tiptap/ProseMirror JSON format
     textContent = extractTextFromContent(content);
   }
 
-  // Convert HTML div tags to newlines for easier parsing
   textContent = textContent
-    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/?div>/gi, '\n')
     .replace(/<div[^>]*>/gi, '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<p[^>]*>/gi, '')
@@ -71,28 +68,22 @@ function parseSignals(content: any): Signal[] {
     .replace(/\r/g, '\n')
     .replace(/\n{3,}/g, '\n\n');
 
-  // Split by signal patterns: ##1. or ## 1. or just 1. at start
   const sections = textContent.split(/(?=##?\s*\d+[\.\:])/g).filter(s => s.trim());
 
   for (const section of sections) {
-    // Extract signal number
     const numMatch = section.match(/^(?:##?\s*)?(\d+)[\.\:]\s*/);
     if (!numMatch) continue;
     
     const number = parseInt(numMatch[1]);
     const rest = section.slice(numMatch[0].length);
     
-    // First line after number is the title
     const lines = rest.split('\n').map(l => l.trim()).filter(l => l);
     if (lines.length === 0) continue;
     
-    // Title might run into the explainer - check for common patterns
     let title = lines[0];
     let startIdx = 1;
     
-    // If title is very long and contains sentence patterns, it might include explainer
     if (title.length > 100) {
-      // Try to find where title ends (first lowercase letter after initial phrase)
       const titleEnd = title.match(/^[^.]+[.!?]?\s*(?=[A-Z])/);
       if (titleEnd) {
         const explainerPart = title.slice(titleEnd[0].length);
@@ -103,7 +94,6 @@ function parseSignals(content: any): Signal[] {
       }
     }
     
-    // Find "Why it matters" section
     let whyMattersIdx = -1;
     for (let i = startIdx; i < lines.length; i++) {
       if (lines[i].toLowerCase().includes('why it matters') || 
@@ -118,12 +108,11 @@ function parseSignals(content: any): Signal[] {
     let whyItMatters = '';
     let readMoreUrl = '';
     
-    // Extract "Read more" link from any line
     const allText = lines.join('\n');
     const linkPatterns = [
-      /Read more:\s*\[([^\]]+)\]\(([^)]+)\)/i,  // Markdown: [text](url)
-      /Read more:\s*\[?(https?:\/\/[^\s\]\)]+)\]?/i,  // Plain URL or [url]
-      /\[Read more\]\(([^)]+)\)/i,  // [Read more](url)
+      /Read more:\s*\[([^\]]+)\]\(([^)]+)\)/i,
+      /Read more:\s*\[?(https?:\/\/[^\s\]]+)\]?/i,
+      /\[Read more\]\(([^)]+)\)/i,
     ];
     
     for (const pattern of linkPatterns) {
@@ -137,7 +126,6 @@ function parseSignals(content: any): Signal[] {
     if (whyMattersIdx > 0) {
       explainer = lines.slice(startIdx, whyMattersIdx).join(' ').trim();
       
-      // Extract "Why it matters" content - might be inline or on next lines
       let whyLine = lines[whyMattersIdx];
       const colonMatch = whyLine.match(/why\s+it\s+matters[^:]*:\s*/i);
       if (colonMatch) {
@@ -149,17 +137,15 @@ function parseSignals(content: any): Signal[] {
       const remainingLines = [whyLine, ...lines.slice(whyMattersIdx + 1)].filter(l => l.trim());
       whyItMatters = remainingLines.join(' ').trim();
       
-      // Remove any "Read more:" links from whyItMatters
       whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
-      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]\)]+\]?/gi, '').trim();
+      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]]+\]?/gi, '').trim();
       whyItMatters = whyItMatters.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
     } else {
       explainer = lines.slice(startIdx).join(' ').trim();
     }
     
-    // Clean links from explainer too
     explainer = explainer.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
-    explainer = explainer.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]\)]+\]?/gi, '').trim();
+    explainer = explainer.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]]+\]?/gi, '').trim();
     explainer = explainer.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
 
     signals.push({
@@ -172,7 +158,6 @@ function parseSignals(content: any): Signal[] {
     });
   }
 
-  // Check for bonus signal
   const bonusMatch = textContent.match(/(?:##?\s*)?Bonus\s*(?:signal)?[:\.\s]*(.+?)(?=##|That's today|$)/is);
   if (bonusMatch) {
     signals.push({
@@ -184,17 +169,12 @@ function parseSignals(content: any): Signal[] {
     });
   }
 
-  // Sort by number
   signals.sort((a, b) => a.number - b.number);
-
   return signals;
 }
 
-// Removed parseSimpleFormat - consolidated into main parseSignals function
-
 function extractTextFromContent(content: any): string {
   if (!content?.content) return '';
-  
   let text = '';
   for (const node of content.content) {
     if (node.type === 'paragraph' || node.type === 'heading') {
@@ -241,7 +221,6 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
   const handlePublish = async () => {
     if (!article || !isAdmin) return;
-
     setIsPublishing(true);
     try {
       const { error } = await supabase
@@ -251,29 +230,19 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
           published_at: new Date().toISOString()
         })
         .eq('id', article.id);
-
       if (error) throw error;
-
-      toast({
-        title: "Article published",
-        description: "The article is now live",
-      });
-
+      toast({ title: "Article published", description: "The article is now live" });
       queryClient.invalidateQueries({ queryKey: ["article", article.slug] });
     } catch (error) {
       console.error("Error publishing article:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish article",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to publish article", variant: "destructive" });
     } finally {
       setIsPublishing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background">
       <SEOHead
         title={article.meta_title || article.title}
         description={article.meta_description || article.excerpt || ''}
@@ -284,17 +253,17 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
       {/* Admin Controls */}
       {!isLoadingAdmin && isAdmin && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30">
+        <div className="bg-primary/10 border-b border-primary/30">
           <div className="max-w-3xl mx-auto px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Edit className="h-4 w-4 text-amber-400 flex-shrink-0" />
-              <span className="text-sm font-medium text-white">Admin Controls</span>
+              <Edit className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-medium text-foreground">Admin Controls</span>
               {article.status !== 'published' && (
-                <Badge variant="outline" className="ml-2 border-amber-500/50 text-amber-400">
+                <Badge variant="outline" className="ml-2 border-primary/50 text-primary">
                   {article.status}
                 </Badge>
               )}
-              <span className="text-xs text-slate-400 ml-2">
+              <span className="text-xs text-muted-foreground ml-2">
                 {article.view_count || 0} views
               </span>
             </div>
@@ -303,18 +272,12 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAdminView(!showAdminView)}
-                className="cursor-pointer border-slate-600 text-slate-200 hover:bg-slate-700"
+                className="cursor-pointer"
               >
                 {showAdminView ? (
-                  <>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Normal View
-                  </>
+                  <><Eye className="h-4 w-4 mr-2" />Normal View</>
                 ) : (
-                  <>
-                    <EyeOff className="h-4 w-4 mr-2" />
-                    Admin View
-                  </>
+                  <><EyeOff className="h-4 w-4 mr-2" />Admin View</>
                 )}
               </Button>
               {article.status !== 'published' && (
@@ -322,30 +285,18 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                   size="sm"
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="cursor-pointer bg-amber-500 text-slate-900 hover:bg-amber-400"
+                  className="cursor-pointer"
                 >
                   {isPublishing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Publishing...
-                    </>
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Publishing...</>
                   ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Publish Now
-                    </>
+                    <><Send className="h-4 w-4 mr-2" />Publish Now</>
                   )}
                 </Button>
               )}
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="cursor-pointer border-slate-600 text-slate-200 hover:bg-slate-700"
-              >
+              <Button asChild size="sm" variant="outline" className="cursor-pointer">
                 <Link to={`/editor?id=${article.id}`}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Article
+                  <Edit className="h-4 w-4 mr-2" />Edit Article
                 </Link>
               </Button>
             </div>
@@ -355,100 +306,91 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
       {/* Admin Debug Info */}
       {!isLoadingAdmin && isAdmin && showAdminView && (
-        <div className="bg-slate-800/80 border-b border-slate-700">
+        <div className="bg-muted/80 border-b border-border">
           <div className="max-w-3xl mx-auto px-6 py-4 space-y-2">
-            <h3 className="text-sm font-semibold text-white mb-2">Article Metadata</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Article Metadata</h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><span className="text-slate-400">ID:</span> <span className="text-slate-200">{article.id}</span></div>
-              <div><span className="text-slate-400">Status:</span> <span className="text-slate-200">{article.status || 'published'}</span></div>
-              <div><span className="text-slate-400">Slug:</span> <span className="text-slate-200">{article.slug}</span></div>
-              <div><span className="text-slate-400">Views:</span> <span className="text-slate-200">{article.view_count || 0}</span></div>
-              <div><span className="text-slate-400">Published:</span> <span className="text-slate-200">{article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Not published'}</span></div>
-              <div><span className="text-slate-400">Updated:</span> <span className="text-slate-200">{article.updated_at ? new Date(article.updated_at).toLocaleDateString() : '-'}</span></div>
+              <div><span className="text-muted-foreground">ID:</span> <span className="text-foreground">{article.id}</span></div>
+              <div><span className="text-muted-foreground">Status:</span> <span className="text-foreground">{article.status || 'published'}</span></div>
+              <div><span className="text-muted-foreground">Slug:</span> <span className="text-foreground">{article.slug}</span></div>
+              <div><span className="text-muted-foreground">Views:</span> <span className="text-foreground">{article.view_count || 0}</span></div>
+              <div><span className="text-muted-foreground">Published:</span> <span className="text-foreground">{article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Not published'}</span></div>
+              <div><span className="text-muted-foreground">Updated:</span> <span className="text-foreground">{article.updated_at ? new Date(article.updated_at).toLocaleDateString() : '-'}</span></div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Compact Header */}
-      <header className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900 z-10" />
-        <img 
-          src="/images/3-before-9-hero.png" 
-          alt="3 Before 9 - AI signals from Asia"
-          className="w-full h-48 md:h-64 object-cover object-center"
-        />
-        <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-8">
-          <div className="max-w-3xl mx-auto w-full">
-            <div className="flex items-center gap-2 text-amber-400 text-sm font-medium mb-2">
-              <Clock className="h-4 w-4" />
-              <span>{formattedDate}</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-              <span className="text-amber-400">3</span> Before <span className="text-amber-400">9</span>
-            </h1>
-            <p className="text-slate-300 text-sm md:text-base">
-              {article.excerpt || "Three AI signals worth knowing before your first coffee."}
-            </p>
+      {/* Hero Section */}
+      <header className="relative bg-gradient-to-b from-[hsl(215,40%,8%)] to-[hsl(215,35%,11%)] dark:from-[hsl(215,40%,8%)] dark:to-[hsl(215,35%,11%)] light:from-[hsl(220,20%,97%)] light:to-[hsl(220,15%,93%)]">
+        <div className="max-w-3xl mx-auto px-6 py-[60px] text-center">
+          <div className="flex items-center justify-center gap-2 text-primary text-base font-medium mb-6">
+            <Clock className="h-4 w-4" />
+            <span>{formattedDate}</span>
           </div>
+          
+          {/* Typographic lockup */}
+          <h1 className="mb-4">
+            <span className="text-primary font-bold text-[64px] leading-none">3</span>
+            <span className="text-foreground font-normal text-[32px] mx-3">Before</span>
+            <span className="text-primary font-bold text-[64px] leading-none">9</span>
+          </h1>
+          
+          <p className="text-muted-foreground text-[20px] mb-2">
+            Your essential AI intelligence briefing
+          </p>
         </div>
       </header>
 
-      {/* TLDR Block - Collapsible on Mobile */}
+      {/* TLDR Metadata */}
       {tldr && (tldr.whoShouldPayAttention || tldr.whatChangesNext) && (
-        <div className="bg-slate-800/50 border-y border-slate-700">
-          <details className="max-w-3xl mx-auto md:open" open>
-            <summary className="md:hidden px-6 py-3 text-amber-400 text-sm font-medium cursor-pointer flex items-center gap-2">
-              <ChevronRight className="h-4 w-4 transition-transform details-open:rotate-90" />
-              Quick Context
-            </summary>
-            <div className="px-6 py-4 md:py-5 grid md:grid-cols-2 gap-4">
-              {tldr.whoShouldPayAttention && (
-                <div>
-                  <h3 className="text-amber-400 text-xs font-semibold uppercase tracking-wide mb-1">
-                    Who should pay attention
-                  </h3>
-                  <p className="text-slate-300 text-sm">{tldr.whoShouldPayAttention}</p>
-                </div>
-              )}
-              {tldr.whatChangesNext && (
-                <div>
-                  <h3 className="text-amber-400 text-xs font-semibold uppercase tracking-wide mb-1">
-                    What changes next
-                  </h3>
-                  <p className="text-slate-300 text-sm">{tldr.whatChangesNext}</p>
-                </div>
-              )}
-            </div>
-          </details>
+        <div className="bg-muted/50 border-y border-border">
+          <div className="max-w-3xl mx-auto px-6 py-6 grid md:grid-cols-2 gap-6">
+            {tldr.whoShouldPayAttention && (
+              <div className="bg-card rounded-lg p-5 border-l-4 border-primary">
+                <h3 className="text-primary text-xs font-semibold uppercase tracking-wide mb-2">
+                  Who should pay attention
+                </h3>
+                <p className="text-foreground text-sm leading-relaxed">{tldr.whoShouldPayAttention}</p>
+              </div>
+            )}
+            {tldr.whatChangesNext && (
+              <div className="bg-card rounded-lg p-5 border-l-4 border-primary">
+                <h3 className="text-primary text-xs font-semibold uppercase tracking-wide mb-2">
+                  What changes next
+                </h3>
+                <p className="text-foreground text-sm leading-relaxed">{tldr.whatChangesNext}</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Signals */}
       <main className="max-w-3xl mx-auto px-6 py-8 md:py-12">
-        <div className="space-y-10 md:space-y-12">
-          {signals.filter(s => !s.isBonus).map((signal, idx) => (
-            <article key={signal.number} className="relative bg-slate-800/40 rounded-xl p-6 md:p-8 border border-slate-700/50">
+        <div className="space-y-8">
+          {signals.filter(s => !s.isBonus).map((signal) => (
+            <article key={signal.number} className="relative bg-card rounded-xl p-8 border border-border shadow-sm">
               {/* Signal Number Badge */}
-              <div className="absolute -top-5 left-6">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-900 font-bold text-lg shadow-lg shadow-amber-500/20">
+              <div className="absolute -top-5 left-8">
+                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-[48px] leading-none w-[48px] h-[48px]">
                   {signal.number}
                 </div>
               </div>
               
-              <div className="pt-2">
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-4 leading-tight">
+              <div className="pt-4">
+                <h2 className="text-[24px] font-bold text-foreground mb-4 leading-[1.3]">
                   {signal.title}
                 </h2>
-                <p className="text-slate-200 text-base md:text-lg leading-relaxed mb-5">
+                <p className="text-foreground/90 text-base leading-[1.7] mb-6 max-w-[680px]">
                   {signal.explainer}
                 </p>
                 {signal.whyItMatters && (
-                  <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 pr-4 py-3 rounded-r-lg mb-4">
-                    <p className="text-sm font-semibold text-amber-400 mb-1">
+                  <div className="bg-primary/10 border-l-4 border-primary pl-5 pr-5 py-4 rounded-r-lg mb-5">
+                    <p className="text-sm font-bold text-primary mb-1">
                       Why it matters for Asia
                     </p>
-                    <p className="text-amber-100 text-sm md:text-base leading-relaxed">
+                    <p className="text-foreground/80 text-[15px] leading-[1.7]">
                       {signal.whyItMatters}
                     </p>
                   </div>
@@ -458,7 +400,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                     href={signal.readMoreUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors group"
+                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors group"
                   >
                     <span>Read more</span>
                     <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -470,14 +412,14 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
 
           {/* Bonus Signal */}
           {signals.find(s => s.isBonus) && (
-            <div className="relative mt-10 bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-xl p-6 md:p-8 border border-amber-500/30">
+            <div className="relative mt-10 bg-primary/10 rounded-xl p-8 border border-primary/30">
               <div className="absolute -top-3 left-6">
-                <span className="px-3 py-1 rounded-full bg-amber-500 text-slate-900 text-xs font-bold uppercase tracking-wide shadow-lg">
+                <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wide shadow-lg">
                   Bonus Signal
                 </span>
               </div>
               <div className="pt-2">
-                <p className="text-slate-100 text-base md:text-lg leading-relaxed">
+                <p className="text-foreground text-base leading-[1.7]">
                   {signals.find(s => s.isBonus)?.explainer}
                 </p>
               </div>
@@ -486,17 +428,17 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         </div>
 
         {/* Outro */}
-        <div className="mt-12 pt-8 border-t border-slate-700">
-          <p className="text-slate-400 text-center mb-2">
-            That's today's <span className="text-amber-400 font-medium">3-Before-9</span>.
+        <div className="mt-12 pt-8 border-t border-border">
+          <p className="text-muted-foreground text-center mb-2">
+            That's today's <span className="text-primary font-medium">3-Before-9</span>.
           </p>
-          <p className="text-slate-500 text-sm text-center mb-8">
+          <p className="text-muted-foreground/70 text-sm text-center mb-8">
             Explore more at{' '}
-            <Link to="/" className="text-amber-400 hover:text-amber-300 transition-colors">
+            <Link to="/" className="text-primary hover:text-primary/80 transition-colors">
               AIinASIA.com
             </Link>
             {' '}or{' '}
-            <Link to="/contact" className="text-amber-400 hover:text-amber-300 transition-colors">
+            <Link to="/contact" className="text-primary hover:text-primary/80 transition-colors">
               share signals with us
             </Link>.
           </p>
@@ -506,10 +448,9 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         </div>
       </main>
 
-
       {/* Recent Editions */}
-      <div className="bg-slate-900 border-t border-slate-800">
-        <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="bg-muted/30 border-t border-border">
+        <div className="max-w-3xl mx-auto px-6 py-10">
           <ThreeBeforeNineRecent currentSlug={article.slug} />
         </div>
       </div>
