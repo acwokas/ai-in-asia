@@ -7,8 +7,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2, Search, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, MapPin, ExternalLink, Globe, Loader2, Search, ArrowRight } from "lucide-react";
+import EventCard from "@/components/events/EventCard";
 import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
@@ -351,55 +352,10 @@ const Events = () => {
               {/* Featured Events */}
               {featuredEvents && featuredEvents.length > 0 && (
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                    <Users className="w-6 h-6 text-primary" />
-                    Featured Events
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <h2 className="text-2xl font-bold mb-6">Featured Events</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {featuredEvents.map((event) => (
-                      <Card key={event.id} className="hover:shadow-lg transition-shadow">
-                        <CardHeader>
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge className="bg-primary text-primary-foreground">{event.event_type}</Badge>
-                            <Badge variant="outline">{event.region}</Badge>
-                          </div>
-                          <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-                          <CardDescription>
-                            <div className="flex items-center gap-2 text-sm mb-2">
-                              <Calendar className="w-4 h-4" />
-                              {formatEventDate(event.start_date, event.end_date)}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="w-4 h-4" />
-                              {event.city}, {event.country}
-                            </div>
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground mb-4">{event.description}</p>
-                          {event.organizer && (
-                            <p className="text-xs text-muted-foreground mb-4">Organized by {event.organizer}</p>
-                          )}
-                          <div className="flex gap-2">
-                            {event.website_url && (
-                              <Button variant="default" size="sm" asChild>
-                                <a href={event.website_url} target="_blank" rel="noopener noreferrer">
-                                  <Globe className="w-4 h-4 mr-2" />
-                                  Visit Website
-                                </a>
-                              </Button>
-                            )}
-                            {event.registration_url && (
-                              <Button variant="outline" size="sm" asChild>
-                                <a href={event.registration_url} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Register
-                                </a>
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <EventCard key={event.id} event={event} />
                     ))}
                   </div>
                 </section>
@@ -412,42 +368,7 @@ const Events = () => {
                   {upcomingEvents && upcomingEvents.length > 0 ? (
                     <>
                       {upcomingEvents.map((event) => (
-                        <Card key={event.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge variant="outline">{event.event_type}</Badge>
-                                  <Badge variant="secondary">{event.region}</Badge>
-                                </div>
-                                <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    {formatEventDate(event.start_date, event.end_date)}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4" />
-                                    {event.city}, {event.country}
-                                  </span>
-                                </div>
-                                {event.description && (
-                                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
-                                )}
-                              </div>
-                              <div className="flex gap-2">
-                                {event.website_url && (
-                                  <Button variant="outline" size="sm" asChild>
-                                    <a href={event.website_url} target="_blank" rel="noopener noreferrer">
-                                      <ExternalLink className="w-4 h-4 mr-2" />
-                                      Learn More
-                                    </a>
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <EventCard key={event.id} event={event} />
                       ))}
 
                       {events && events.total > page * EVENTS_PER_PAGE && (
