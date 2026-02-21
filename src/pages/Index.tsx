@@ -32,6 +32,7 @@ const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles"
 const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
 const YouMayAlsoLike = lazy(() => import("@/components/YouMayAlsoLike"));
+const ForYouSection = lazy(() => import("@/components/ForYouSection"));
 import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
@@ -789,6 +790,13 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Recommended For You - Interest-based */}
+        {user && (
+          <Suspense fallback={null}>
+            <ForYouSection excludeIds={heroLatestIds} />
+          </Suspense>
+        )}
 
         {/* Ad Banner */}
         <section className="container mx-auto px-4 py-8">
