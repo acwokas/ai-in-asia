@@ -1,8 +1,9 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -34,6 +37,19 @@ const Header = memo(() => {
   const { savedArticles } = useSavedArticles();
   const savedCount = savedArticles.length;
 
+  const { data: userPoints } = useQuery({
+    queryKey: ["header-user-stats", user?.id],
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_stats")
+        .select("points")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data?.points ?? 0;
+    },
+  });
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
@@ -136,39 +152,51 @@ const Header = memo(() => {
                 <ReadingQueue />
                 
                 {user ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="User menu">
-                            <User className="h-5 w-5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to="/profile" className="cursor-pointer">
-                              Profile
-                            </Link>
-                          </DropdownMenuItem>
-                          {isAdmin && (
+                  <div className="flex items-center gap-1">
+                    {typeof userPoints === 'number' && (
+                      <Badge
+                        variant="secondary"
+                        className="hidden md:flex items-center gap-1 text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+                        onClick={() => navigate('/profile')}
+                      >
+                        <Zap className="h-3 w-3 text-primary" />
+                        {userPoints}
+                      </Badge>
+                    )}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="User menu">
+                              <User className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link to="/admin" className="cursor-pointer text-destructive">
-                                <Shield className="mr-2 h-4 w-4" />
-                                Admin
+                              <Link to="/profile" className="cursor-pointer">
+                                Profile
                               </Link>
                             </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Sign Out
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TooltipTrigger>
-                    <TooltipContent>Account</TooltipContent>
-                  </Tooltip>
+                            {isAdmin && (
+                              <DropdownMenuItem asChild>
+                                <Link to="/admin" className="cursor-pointer text-destructive">
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Admin
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                              <LogOut className="mr-2 h-4 w-4" />
+                              Sign Out
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TooltipTrigger>
+                      <TooltipContent>Account</TooltipContent>
+                    </Tooltip>
+                  </div>
                 ) : (
                   <Button variant="default" size="sm" asChild>
                     <Link to="/auth">Sign In</Link>
