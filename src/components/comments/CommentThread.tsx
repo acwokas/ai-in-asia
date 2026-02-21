@@ -16,8 +16,17 @@ export interface Comment {
   published?: boolean;
   comment_date?: string;
   parent_id?: string | null;
+  user_id?: string | null;
+  user_level?: string | null;
   replies?: Comment[];
 }
+
+const levelBadgeConfig: Record<string, { className: string; prefix?: string }> = {
+  'Explorer': { className: 'bg-secondary text-secondary-foreground' },
+  'Enthusiast': { className: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/20' },
+  'Expert': { className: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/20' },
+  'Thought Leader': { className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20', prefix: '✨ ' },
+};
 
 // Helper to wrap emojis in teal-colored spans with XSS protection
 export const formatCommentWithEmojis = (content: string): string => {
@@ -118,6 +127,14 @@ export const CommentThread = ({
                   AI
                 </Badge>
               )}
+              {comment.user_id && comment.user_level && !comment.is_ai && (() => {
+                const config = levelBadgeConfig[comment.user_level!] || levelBadgeConfig['Explorer'];
+                return (
+                  <Badge variant="outline" className={`h-5 px-2 text-[10px] border ${config.className}`}>
+                    {config.prefix || ''}{comment.user_level}
+                  </Badge>
+                );
+              })()}
               {isAdmin && comment.is_ai && !comment.published && (
                 <Badge variant="outline" className="h-5 px-2 text-[10px]">
                   Unpublished

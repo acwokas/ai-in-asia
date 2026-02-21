@@ -85,11 +85,30 @@ export const useComments = (articleId: string) => {
         : transformedAiComments.filter((c) => c.published);
 
       const allDisplayComments = [...(approvedData || []), ...displayAiComments];
-      allDisplayComments.sort(
+
+      // Fetch user levels for comments with user_id
+      const userIds = Array.from(new Set(allDisplayComments.filter(c => c.user_id).map(c => c.user_id)));
+      const userLevelsMap = new Map<string, string>();
+      if (userIds.length > 0) {
+        const { data: statsData } = await supabase
+          .from("user_stats")
+          .select("user_id, level")
+          .in("user_id", userIds);
+        (statsData || []).forEach((s: any) => {
+          userLevelsMap.set(s.user_id, s.level || 'Explorer');
+        });
+      }
+
+      const commentsWithLevels = allDisplayComments.map(c => ({
+        ...c,
+        user_level: c.user_id ? (userLevelsMap.get(c.user_id) || 'Explorer') : null,
+      }));
+
+      commentsWithLevels.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
-      const threadedComments = organizeThreadedComments(allDisplayComments);
+      const threadedComments = organizeThreadedComments(commentsWithLevels);
       setComments(threadedComments);
 
       if (isAdmin) {
