@@ -65,6 +65,7 @@ const Article = () => {
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [enableRelatedArticles, setEnableRelatedArticles] = useState(false);
+  const [pointsToastShown, setPointsToastShown] = useState(false);
   
   const cleanSlug = slug?.replace(/\/+$/g, '');
   const urlParams = new URLSearchParams(window.location.search);
@@ -289,6 +290,13 @@ const Article = () => {
         article_id: article.id,
         completed: true
       });
+
+      if (!isPreview && !pointsToastShown) {
+        setPointsToastShown(true);
+        setTimeout(() => {
+          toast({ title: "✨ +10 points", description: "Keep reading to level up!", duration: 3000 });
+        }, 1500);
+      }
     }
   };
 
