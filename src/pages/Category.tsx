@@ -51,7 +51,7 @@ function getEditorialTag(article: any): string {
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
-function useRevealOnScroll() {
+function useRevealOnScroll(delay = 0) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -64,7 +64,7 @@ function useRevealOnScroll() {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  return { ref, style: { opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: "opacity 0.8s ease, transform 0.8s ease" } as React.CSSProperties };
+  return { ref, style: { opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.8s ease ${delay}ms, transform 0.8s ease ${delay}ms` } as React.CSSProperties };
 }
 
 const Category = () => {
@@ -90,12 +90,13 @@ const Category = () => {
   // Reset filter when slug changes
   useEffect(() => { setSelectedFilter("All"); }, [slug]);
 
-  const revealPaths = useRevealOnScroll();
-  const revealTool = useRevealOnScroll();
-  const revealFeatured = useRevealOnScroll();
-  const revealDeep = useRevealOnScroll();
-  const revealCross = useRevealOnScroll();
-  const revealNewsletter = useRevealOnScroll();
+  const revealPaths = useRevealOnScroll(0);
+  const revealBanner = useRevealOnScroll(100);
+  const revealTool = useRevealOnScroll(200);
+  const revealFeatured = useRevealOnScroll(300);
+  const revealDeep = useRevealOnScroll(400);
+  const revealCross = useRevealOnScroll(500);
+  const revealNewsletter = useRevealOnScroll(600);
 
   const cfg = CATEGORY_CONFIG[slug as CategorySlug] || CATEGORY_CONFIG.news;
   const paths = LEARNING_PATHS[slug || "news"] || [];
@@ -423,7 +424,7 @@ const Category = () => {
 
               {/* 4. LEARNING PATHS */}
               {paths.length > 0 && (
-                <section style={{ marginBottom: 48 }}>
+                <section ref={revealPaths.ref} style={{ marginBottom: 48, ...revealPaths.style }}>
                   <SectionHeader title="Learning Paths" emoji="🗺️" color={cfg.accent} subtitle="Curated sequences to guide your reading" />
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
                     {paths.map((p, i) => (
@@ -434,13 +435,13 @@ const Category = () => {
               )}
 
               {/* PROMPT AND GO BANNER */}
-              <section style={{ marginBottom: 48 }}>
+              <section ref={revealBanner.ref} style={{ marginBottom: 48, ...revealBanner.style }}>
                 <PromptAndGoBanner />
               </section>
 
               {/* 5. INTERACTIVE TOOL */}
               {ToolComponent && (
-                <section style={{ marginBottom: 48 }}>
+                <section ref={revealTool.ref} style={{ marginBottom: 48, ...revealTool.style }}>
                   <SectionHeader title={`${cfg.label} Tools`} emoji="🛠️" color={cfg.accent} subtitle="Interactive tools for this category" />
                   <ToolComponent />
                 </section>
