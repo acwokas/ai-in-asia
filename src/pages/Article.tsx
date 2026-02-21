@@ -114,7 +114,7 @@ const Article = () => {
   const { data: commentCount = 0 } = useQuery({
     queryKey: ["article-comment-count", article?.id],
     staleTime: 30 * 1000,
-    enabled: !!article?.id,
+    enabled: !!article?.id && article?.article_type !== 'policy_article',
     queryFn: async () => {
       const { count: realCount } = await supabase
         .from("comments_public")
@@ -590,9 +590,11 @@ const Article = () => {
                 <ArticleAuthorBio authors={article.authors} />
 
                 {/* Share Thoughts CTA */}
-                <div style={{ marginTop: '2.5rem' }}>
-                  <ShareThoughtsCTA commentCount={commentCount} />
-                </div>
+                {article.article_type !== 'policy_article' && (
+                  <div style={{ marginTop: '2.5rem' }}>
+                    <ShareThoughtsCTA commentCount={commentCount} />
+                  </div>
+                )}
 
                 {/* Related articles */}
                 <div style={{ marginTop: '2rem' }}>
@@ -645,10 +647,12 @@ const Article = () => {
             />
           </div>
 
-          {/* Comments */}
-          <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
-            <Comments articleId={article.id} />
-          </section>
+          {/* Comments — hidden on policy articles */}
+          {article.article_type !== 'policy_article' && (
+            <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
+              <Comments articleId={article.id} />
+            </section>
+          )}
         </main>
 
         <NextArticleProgress currentArticleId={article.id} categoryId={article.primary_category_id || undefined} />
