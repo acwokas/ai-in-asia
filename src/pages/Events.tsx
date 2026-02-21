@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2 } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Globe, Users, Loader2, Search, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
 import { EventStructuredData } from "@/components/StructuredData";
 import {
@@ -46,6 +46,8 @@ const Events = () => {
   const queryClient = useQueryClient();
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['events', selectedRegion, page],
@@ -73,7 +75,28 @@ const Events = () => {
     },
   });
 
-  // Subscribe to realtime updates - use query invalidation instead of reload
+  // Dynamic stats for hero
+  const { data: eventStats } = useQuery({
+    queryKey: ['event-stats'],
+    staleTime: 30 * 60 * 1000,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'upcoming')
+        .gte('start_date', new Date().toISOString());
+      
+      const { data: countries } = await supabase
+        .from('events')
+        .select('country')
+        .eq('status', 'upcoming')
+        .gte('start_date', new Date().toISOString());
+      
+      const uniqueCountries = new Set(countries?.map(c => c.country)).size;
+      return { totalEvents: count || 0, totalCountries: uniqueCountries };
+    },
+  });
+
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')
@@ -105,19 +128,51 @@ const Events = () => {
   const { featuredEvents, upcomingEvents } = useMemo(() => {
     if (!events?.events) return { featuredEvents: [], upcomingEvents: [] };
 
+    // Apply search + quick filters first
+    let filtered = events.events;
+    
+    const q = searchQuery.toLowerCase().trim();
+    if (q) {
+      filtered = filtered.filter(e =>
+        e.title.toLowerCase().includes(q) ||
+        e.city.toLowerCase().includes(q) ||
+        e.country.toLowerCase().includes(q) ||
+        e.location.toLowerCase().includes(q) ||
+        (e.description && e.description.toLowerCase().includes(q))
+      );
+    }
+
+    if (quickFilter) {
+      const now = new Date();
+      if (quickFilter === 'this-week') {
+        const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+        filtered = filtered.filter(e => new Date(e.start_date) <= weekEnd);
+      } else if (quickFilter === 'this-month') {
+        const monthEnd = endOfMonth(now);
+        filtered = filtered.filter(e => new Date(e.start_date) <= monthEnd);
+      } else if (quickFilter === 'apac') {
+        filtered = filtered.filter(e => e.region === 'APAC');
+      } else if (quickFilter === 'free') {
+        filtered = filtered.filter(e => 
+          e.event_type.toLowerCase().includes('free') ||
+          e.title.toLowerCase().includes('free') ||
+          (e.description && e.description.toLowerCase().includes('free'))
+        );
+      }
+    }
+
     // Featured events should be APAC-specific with complete data
-    let featured = events.events.filter(event => 
+    let featured = filtered.filter(event => 
       event.is_featured && 
       event.region === 'APAC' && 
       event.description && 
       event.website_url
     );
     
-    let upcoming = events.events.filter(event => !event.is_featured || event.region !== 'APAC');
+    let upcoming = filtered.filter(event => !event.is_featured || event.region !== 'APAC');
     
-    // If we have fewer than 2 APAC featured events, find more with complete data
     if (featured.length < 2) {
-      const apacEvents = events.events.filter(event => 
+      const apacEvents = filtered.filter(event => 
         event.region === 'APAC' && 
         !event.is_featured && 
         event.description && 
@@ -130,7 +185,7 @@ const Events = () => {
     }
 
     return { featuredEvents: featured, upcomingEvents: upcoming };
-  }, [events?.events]);
+  }, [events?.events, searchQuery, quickFilter]);
 
   const formatEventDate = (startDate: string, endDate: string | null) => {
     const start = new Date(startDate);
@@ -173,44 +228,102 @@ const Events = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         
-        <main className="flex-1 container mx-auto px-4 py-12">
-          <Breadcrumb className="mb-6">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Events</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          
-          {/* Hero Section */}
-          <section className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm font-semibold">AI Events Calendar</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Upcoming AI Conferences & Events
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Connect with the global AI community at premier conferences, workshops, and summits across Asia and beyond.
-            </p>
-          </section>
+        {/* Hero Section with gradient background */}
+        <section className="relative overflow-hidden" style={{
+          background: `
+            radial-gradient(ellipse 60% 50% at 15% 20%, hsl(var(--primary) / 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 85% 70%, rgba(95, 114, 255, 0.08) 0%, transparent 60%),
+            linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)))
+          `
+        }}>
+          <div className="container mx-auto px-4 pt-12 pb-20 md:pt-20 md:pb-24">
+            {/* Breadcrumb */}
+            <Breadcrumb className="mb-8">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/">Home</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Events</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
 
-          {/* Region Filter */}
-          <Tabs defaultValue="all" className="mb-8" onValueChange={setSelectedRegion}>
-            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto">
-              <TabsTrigger value="all">All Regions</TabsTrigger>
-              <TabsTrigger value="APAC">APAC</TabsTrigger>
-              <TabsTrigger value="Americas">Americas</TabsTrigger>
-              <TabsTrigger value="EMEA">EMEA</TabsTrigger>
-            </TabsList>
-          </Tabs>
+            {/* Top row: pill + submit link */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full">
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold tracking-wide uppercase">AI Events Calendar</span>
+              </div>
+              <a
+                href="#"
+                className="hidden sm:inline-flex items-center gap-2 text-sm text-muted-foreground border border-border rounded-full px-4 py-1.5 hover:text-foreground hover:border-foreground/40 transition-colors"
+              >
+                Submit an Event <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.15] tracking-tight mb-5 max-w-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              The Largest AI Events Directory{' '}
+              <br className="hidden md:block" />
+              Focused on Asia-Pacific
+            </h1>
+
+            {/* Dynamic stats line */}
+            <p className="text-base md:text-lg text-muted-foreground mb-8">
+              Tracking{' '}
+              <span className="text-primary font-semibold">{eventStats?.totalEvents ?? '—'}</span>
+              {' '}events across{' '}
+              <span className="text-primary font-semibold">{eventStats?.totalCountries ?? '—'}</span>
+              {' '}countries — updated daily from 12+ sources
+            </p>
+
+            {/* Search bar */}
+            <div className="max-w-[600px] mb-6">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search events by name, topic, or location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-12 bg-card border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg text-sm md:text-base"
+                />
+              </div>
+            </div>
+
+            {/* Quick-filter pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'this-week', label: 'This Week' },
+                { id: 'this-month', label: 'This Month' },
+                { id: 'apac', label: 'APAC' },
+                { id: 'free', label: 'Free Events' },
+              ].map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setQuickFilter(prev => prev === filter.id ? null : filter.id)}
+                  className={`flex-shrink-0 text-xs font-medium rounded-full px-4 py-1.5 border transition-colors ${
+                    quickFilter === filter.id
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/40'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom gradient fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        </section>
+
+        <main className="flex-1 container mx-auto px-4 py-8">
 
           {isLoading ? (
             <div className="text-center py-12">
@@ -358,7 +471,7 @@ const Events = () => {
                     <Card>
                       <CardContent className="p-12 text-center">
                         <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">No events found for the selected region.</p>
+                        <p className="text-muted-foreground">No events found matching your search.</p>
                       </CardContent>
                     </Card>
                   )}
