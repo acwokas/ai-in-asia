@@ -336,19 +336,6 @@ const AllPrompts = () => {
             <p className="text-xl text-muted-foreground mb-2">
               Browse our complete collection of AI prompts
             </p>
-            <a
-              href="https://www.promptandgo.ai"
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="inline-flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <img
-                src={promptAndGoLogo}
-                alt="Prompt and Go AI"
-                className="h-9 object-contain"
-              />
-              <span className="italic">Your AI prompt companion</span>
-            </a>
           </div>
 
           {/* Filters */}
@@ -651,10 +638,8 @@ const AllPrompts = () => {
             </div>
           )}
 
-          {/* Prompt and Go Banner at Bottom */}
-          <div className="mt-12">
-            <PromptAndGoBanner />
-          </div>
+
+
         </div>
       </main>
 
