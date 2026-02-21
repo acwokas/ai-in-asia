@@ -37,38 +37,65 @@ const GuideEditorFeaturedImage = ({
   const [dragOver, setDragOver] = useState(false);
   const [urlInput, setUrlInput] = useState("");
 
-  const generateMidjourneyPrompts = async () => {
+  const buildSystemPrompt = (slotIndex?: number) => {
+    const slotInstruction = slotIndex === 0
+      ? "Generate ONLY Prompt 1 (Hero/Lead). Return just the prompt text, no numbering."
+      : slotIndex === 1
+        ? "Generate ONLY Prompt 2 (Alternative/Social). Return just the prompt text, no numbering."
+        : "Generate exactly 2 prompts numbered 1. and 2. with a blank line between them.";
+
+    return `You are an expert Midjourney prompt engineer for AIinASIA.com. Your job is to create prompts that produce visually DISTINCT images for each guide topic.
+
+${slotInstruction}
+
+THE MOST IMPORTANT RULE:
+Every prompt MUST start with a CONCRETE PHYSICAL OBJECT or SCENE that serves as a visual metaphor for the guide topic. NOT abstract digital concepts.
+
+TOPIC-TO-METAPHOR MAPPING (use these as inspiration, not literally):
+- Writing/articles → pen, typewriter, manuscript, ink, fountain pen nib
+- SEO/search → blueprint, architecture, map, compass, topographic map
+- Competitor analysis → chess pieces, war room table, binoculars, telescope
+- Content repurposing → origami unfolding, prism splitting light, kaleidoscope
+- Brand voice → tuning fork, sound waves, fingerprint, vocal cords
+- Meetings/summarising → documents compressing into a crystal, hourglass
+- Pitch decks → spotlight on a stage, podium, projection
+- Email marketing → sealed letters, postal sorting room, wax seals
+- Data analysis → microscope, laboratory, specimen jars, scales
+- Social media → megaphone, stage lights, broadcast tower
+- Productivity → clockwork mechanism, Swiss watch internals, gears
+- Strategy/planning → architectural model, chessboard, navigation chart
+- Learning/education → open book with light, magnifying glass, orrery
+- Customer research → detective desk, interview chair, listening device
+- Code/development → circuit board close-up, soldering iron, blueprint
+
+PROMPT 1 (Hero/Lead image):
+"[CONCRETE OBJECT/SCENE as metaphor for topic], [specific visual details: lighting, texture, angle], [colour: dark background with 1-2 accent colours from: blue #5F72FF, teal #0D9488, amber #E5A54B, coral #E06050, violet #9B72FF — vary across guides], editorial illustration style, rich colour palette, no text, no words, no letters, no UI elements, clean composition --ar 16:9 --s 250 --v 6.1"
+
+PROMPT 2 (Alternative/Social image):
+Same topic but DIFFERENT metaphor, angle, and colour pair. If Prompt 1 is macro/close-up, Prompt 2 should be wider scene. If Prompt 1 uses blue/amber, Prompt 2 uses teal/coral. Two genuinely different options.
+
+BANNED SUBJECTS (NEVER use):
+neural networks, glowing nodes, circuit boards (unless the guide is literally about hardware), abstract data streams, particle effects, wireframe globes, digital brains, holographic displays, floating screens, binary code, matrix-style visuals
+
+BANNED WORDS (NEVER include):
+AI, artificial intelligence, digital, cyber, futuristic, holographic, data stream, neural, network
+
+RULES:
+- ALWAYS start with a concrete physical object or scene
+- ALWAYS include "no text, no words, no letters, no UI elements"
+- ALWAYS end with --ar 16:9 --s 250 --v 6.1
+- ALWAYS specify "dark background"
+- Each image must communicate the topic at thumbnail size without reading the title
+- Return ONLY the prompt text. No explanations, no preamble.`;
+  };
+
+  const generateMidjourneyPrompts = async (slotIndex?: number) => {
     if (!title.trim()) {
       toast({ title: "Add a title first", description: "The title is needed to generate relevant prompts.", variant: "destructive" });
       return;
     }
     setGeneratingPrompts(true);
     try {
-      const systemPrompt = `You are an expert Midjourney prompt engineer creating hero images for AIinASIA.com, a dark-themed AI publication.
-
-Generate exactly 2 Midjourney prompts. Each must be specific to the guide topic provided.
-
-PROMPT 1 - ABSTRACT/CONCEPTUAL:
-Create an abstract, artistic interpretation of the guide's core concept. Think metaphorical, not literal. Use shapes, light, energy, and spatial composition to evoke the feeling of the topic. No people, no screens, no devices.
-- Dark background (deep navy #0a0a1a or charcoal)
-- Teal (#0D9488) and electric blue as primary accent colors
-- Abstract geometric or organic forms
-- Atmospheric lighting, depth, cinematic feel
-- Clean composition with negative space on the left side for title overlay
-- No text, no words, no letters, no UI elements
-
-PROMPT 2 - TOPIC-SPECIFIC:
-Create a more representational (but still stylised and editorial) image directly connected to what the guide teaches. If the guide is about writing, show something evocative of writing. If about meetings, evoke collaboration. Still artistic, not stock-photo literal.
-- Same dark background and teal/blue color palette
-- Can include stylised objects, tools, or scenes related to the topic
-- Still no literal screenshots, no stock photo people, no text in image
-- Moody, professional, slightly futuristic
-- Clean composition with breathing room
-
-Both prompts must end with: --ar 16:9 --style raw --v 6.1
-
-Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No explanations, no preamble.`;
-
       const stepTitles = steps.map(s => s.title).filter(Boolean).join(", ");
       const userPrompt = `Guide title: ${title}\nTopic: ${topicTags.join(", ")}\nPillar: ${pillar}\nDescription: ${oneLineDescription}\nKey sections covered: ${stepTitles}`;
 
@@ -80,34 +107,41 @@ Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ action: "custom", content: userPrompt, context: { systemPrompt } }),
+          body: JSON.stringify({ action: "custom", content: userPrompt, context: { systemPrompt: buildSystemPrompt(slotIndex) } }),
         }
       );
 
       if (!response.ok) throw new Error("Failed to generate prompts");
       const data = await response.json();
-      const result = data.result || "";
+      const result = (data.result || "").trim();
 
-      // Parse numbered prompts
-      const lines = result.split("\n").filter((l: string) => l.trim());
-      const prompts: string[] = [];
-      let current = "";
-      for (const line of lines) {
-        const match = line.match(/^\d+\.\s*(.*)/);
-        if (match) {
-          if (current) prompts.push(current.trim());
-          current = match[1];
-        } else {
-          current += " " + line.trim();
+      if (slotIndex !== undefined) {
+        // Single-slot regeneration
+        const cleaned = result.replace(/^\d+\.\s*/, "").trim();
+        setMidjourneyPrompts(prev => {
+          const updated = [...prev];
+          while (updated.length <= slotIndex) updated.push("");
+          updated[slotIndex] = cleaned;
+          return updated;
+        });
+      } else {
+        // Parse two numbered prompts
+        const lines = result.split("\n").filter((l: string) => l.trim());
+        const prompts: string[] = [];
+        let current = "";
+        for (const line of lines) {
+          const match = line.match(/^\d+\.\s*(.*)/);
+          if (match) {
+            if (current) prompts.push(current.trim());
+            current = match[1];
+          } else {
+            current += " " + line.trim();
+          }
         }
+        if (current) prompts.push(current.trim());
+        if (prompts.length === 0) prompts.push(result);
+        setMidjourneyPrompts(prompts.slice(0, 2));
       }
-      if (current) prompts.push(current.trim());
-
-      if (prompts.length === 0) {
-        prompts.push(result.trim());
-      }
-
-      setMidjourneyPrompts(prompts.slice(0, 2));
     } catch (err) {
       console.error(err);
       toast({ title: "Failed to generate prompts", variant: "destructive" });
@@ -198,7 +232,7 @@ Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No
     }
   };
 
-  const promptLabels = ["Abstract / Conceptual", "Topic-Specific"];
+  const promptLabels = ["Hero / Lead Image", "Alternative / Social Image"];
 
   return (
     <div className="space-y-6">
@@ -230,18 +264,18 @@ Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No
           <h4 className="text-sm font-semibold">Midjourney Prompts</h4>
           <div className="flex gap-2">
             {midjourneyPrompts.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={generateMidjourneyPrompts} disabled={generatingPrompts}>
-                <RefreshCw className="h-3 w-3 mr-1" />Regenerate
+              <Button variant="ghost" size="sm" onClick={() => generateMidjourneyPrompts()} disabled={generatingPrompts}>
+                <RefreshCw className="h-3 w-3 mr-1" />Regenerate Both
               </Button>
             )}
             <Button
               size="sm"
-              onClick={generateMidjourneyPrompts}
+              onClick={() => generateMidjourneyPrompts()}
               disabled={generatingPrompts || !title.trim()}
               className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
             >
               {generatingPrompts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {midjourneyPrompts.length > 0 ? "Regenerate" : "Generate Midjourney Prompts"}
+              {midjourneyPrompts.length > 0 ? "Regenerate Both" : "Generate Midjourney Prompts"}
             </Button>
           </div>
         </div>
@@ -252,9 +286,14 @@ Return ONLY the 2 prompts, numbered 1. and 2. with a blank line between them. No
               <div key={i} className="bg-card border border-border rounded-lg p-4 relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{promptLabels[i] || `Prompt ${i + 1}`}</span>
-                  <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => copyPrompt(prompt, i)}>
-                    {copiedIndex === i ? <><Check className="h-3 w-3 mr-1" />Copied</> : <><Copy className="h-3 w-3 mr-1" />Copy</>}
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => generateMidjourneyPrompts(i)} disabled={generatingPrompts}>
+                      <RefreshCw className="h-3 w-3 mr-1" />Regen
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => copyPrompt(prompt, i)}>
+                      {copiedIndex === i ? <><Check className="h-3 w-3 mr-1" />Copied</> : <><Copy className="h-3 w-3 mr-1" />Copy</>}
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm font-mono leading-relaxed text-foreground/90">{prompt}</p>
               </div>
