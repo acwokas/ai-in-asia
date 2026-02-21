@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Flame, ArrowRight } from "lucide-react";
+import { Flame } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 
@@ -33,13 +33,7 @@ const TrendingVisualStrip = memo(() => {
           <Flame className="h-4 w-4" />
           Trending
         </span>
-        <Link
-          to="/search?q=trending"
-          className="text-[13px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-        >
-          View all
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        {/* No "View all" — trending is curated, not a browsable category */}
       </div>
 
       {/* Cards row — horizontal scroll on mobile */}
