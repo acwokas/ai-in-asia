@@ -487,16 +487,16 @@ const Category = () => {
                         <img
                           src={featuredArticle.featured_image_url}
                           alt={featuredArticle.featured_image_alt || featuredArticle.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, opacity: 0.3 }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, opacity: 0.85, filter: "brightness(1.1)" }}
                         />
                       )}
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(4,4,5,0.95) 30%, transparent 70%)" }} />
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%", background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, transparent 100%)" }} />
                       <div style={{ position: "absolute", top: 20, left: 20, display: "flex", gap: 8 }}>
                         <GlowBadge color={cfg.accent}>{cfg.label}</GlowBadge>
                         <GlowBadge color="#f59e0b">Featured</GlowBadge>
                       </div>
                       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px" }}>
-                        <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 27, color: "#fff", lineHeight: 1.25, margin: "0 0 10px 0" }}>
+                        <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 27, color: "#fff", lineHeight: 1.25, margin: "0 0 10px 0", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
                           {decodeHtml(featuredArticle.title)}
                         </h2>
                         <p style={{ fontSize: 14, color: "#d1d5db", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
