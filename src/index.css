@@ -621,3 +621,21 @@ blockquote.tiktok-embed {
   color: hsl(var(--primary));
   font-style: normal;
 }
+
+/* Trending ticker animation */
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
