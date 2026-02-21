@@ -7,7 +7,7 @@ export { ArticleMetaHead } from './ArticleMetaHead';
 export { ArticleSponsorBanner } from './ArticleSponsorBanner';
 export { ArticleLoadingSkeleton } from './ArticleLoadingSkeleton';
 export { ArticleNotFound } from './ArticleNotFound';
-export { ArticleAdminControls, ArticleAdminDebug } from './ArticleAdminControls';
+export { ArticleAdminControls } from './ArticleAdminControls';
 export { ArticleRelatedSection, getExternalLinkForCategory } from './ArticleRelatedSection';
 export { ArticleBreadcrumbs } from './ArticleBreadcrumbs';
 export type { ArticleSponsorData } from './ArticleSponsorBanner';

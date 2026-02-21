@@ -45,7 +45,6 @@ import {
   ArticleLoadingSkeleton,
   ArticleNotFound,
   ArticleAdminControls,
-  ArticleAdminDebug,
   ArticleBreadcrumbs,
   ArticleAuthorBio,
 } from "@/components/article";
@@ -61,7 +60,7 @@ const Article = () => {
   
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  
   
   
   
@@ -287,23 +286,8 @@ const Article = () => {
     }
   };
 
-  const handlePublish = async () => {
-    if (!article || !isAdmin) return;
-    setIsPublishing(true);
-    try {
-      const { error } = await supabase
-        .from('articles')
-        .update({ status: 'published', published_at: new Date().toISOString() })
-        .eq('id', article.id);
-      if (error) throw error;
-      toast({ title: "Article published", description: "The article is now live" });
-      queryClient.invalidateQueries({ queryKey: ["article", cleanSlug] });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to publish article", variant: "destructive" });
-    } finally {
-      setIsPublishing(false);
-    }
-  };
+
+
 
   // Share handlers
   const categorySlug = article?.categories?.slug || category || "news";
@@ -409,14 +393,11 @@ const Article = () => {
           {(!isLoadingAdmin && isAdmin) && (
             <div className="container mx-auto px-4 max-w-[1080px] pt-4">
               <ArticleAdminControls
-                articleId={article.id}
-                articleStatus={article.status}
+                article={article}
                 showAdminView={showAdminView}
-                isPublishing={isPublishing}
                 onToggleAdminView={() => setShowAdminView(!showAdminView)}
-                onPublish={handlePublish}
+                queryKey={["article", cleanSlug, previewCode]}
               />
-              {showAdminView && <ArticleAdminDebug article={article} />}
             </div>
           )}
 
