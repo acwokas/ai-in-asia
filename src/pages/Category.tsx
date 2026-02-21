@@ -185,7 +185,7 @@ const Category = () => {
         return (data?.map(item => item.articles) || [])
           .filter(Boolean)
           .sort((a: any, b: any) => (b.view_count || 0) - (a.view_count || 0))
-          .slice(0, 6);
+          .slice(0, 3);
       }
 
       const { data, error } = await supabase
@@ -195,7 +195,7 @@ const Category = () => {
         .eq("status", "published")
         .lt("published_at", cutoff)
         .order("view_count", { ascending: false })
-        .limit(6);
+        .limit(3);
       if (error) throw error;
       return data;
     },
