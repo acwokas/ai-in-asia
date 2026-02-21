@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award, X } from "lucide-react";
+import { Search, Menu, Moon, Sun, User, LogOut, Shield, Bookmark, Zap, Award, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -100,7 +100,7 @@ const Header = memo(() => {
               <img src={logo} alt="AI in ASIA" className="h-20 md:h-24 w-auto" width={171} height={96} />
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="hidden md:flex items-center space-x-5">
               <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
               <Link to="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</Link>
               <Link to="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</Link>
@@ -108,16 +108,25 @@ const Header = memo(() => {
               <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
               <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
               <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
-              <div className="h-4 w-px bg-primary mx-2" />
-              <Link to="/guides" className="text-sm font-medium hover:text-primary transition-colors">Guides</Link>
-              <Link to="/prompts" className="text-sm font-medium hover:text-primary transition-colors">Prompts</Link>
-              <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
-              <Link to="/events" className="text-sm font-medium hover:text-primary transition-colors">Events</Link>
-              <div className="h-4 w-px bg-primary mx-2" />
-              <Link to="/ai-policy-atlas" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">Policy Atlas</Link>
-              <div className="h-4 w-px bg-primary mx-2" />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-sm font-medium hover:text-primary gap-1 px-2">
+                    More <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-popover z-50">
+                  <DropdownMenuItem asChild><Link to="/guides">Guides</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/prompts">Prompts</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/tools">Tools</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/events">Events</Link></DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild><Link to="/ai-policy-atlas">Policy Atlas</Link></DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5">
-                Saved
+                <Bookmark className="h-4 w-4" />
                 {savedCount > 0 && (
                   <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
                     {savedCount}
