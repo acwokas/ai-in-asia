@@ -108,6 +108,28 @@ const PolicyAtlas = () => {
     staleTime: 300000, // 5 minutes
   });
 
+  const { data: regionArticleCounts } = useQuery({
+    queryKey: ['policy-region-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('article_categories')
+        .select(`
+          category_id,
+          articles!inner(id, article_type, status)
+        `)
+        .eq('articles.article_type', 'policy_article')
+        .eq('articles.status', 'published');
+
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data?.forEach(item => {
+        counts[item.category_id] = (counts[item.category_id] || 0) + 1;
+      });
+      return counts;
+    },
+    staleTime: 300000,
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
@@ -195,7 +217,14 @@ const PolicyAtlas = () => {
                         <Globe className="h-5 w-5" />
                         {region.name}
                       </CardTitle>
-                      <CardDescription>{region.description}</CardDescription>
+                      <CardDescription>
+                        {region.description}
+                        {regionArticleCounts?.[region.id] && (
+                          <span className="block mt-1 text-xs text-primary font-medium">
+                            {regionArticleCounts[region.id]} {regionArticleCounts[region.id] === 1 ? 'entry' : 'entries'}
+                          </span>
+                        )}
+                      </CardDescription>
                     </CardHeader>
                   </Card>
                 </Link>
