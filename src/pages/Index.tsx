@@ -20,6 +20,7 @@ import RecommendedGuides from "@/components/RecommendedGuides";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
+import HomepageQuickLinks from "@/components/HomepageQuickLinks";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
 
@@ -110,13 +111,13 @@ const Index = () => {
         .not("title", "ilike", "%3 Before 9%")
         .order("sticky", { ascending: false })
         .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(15);
+        .limit(18);
 
       if (error) throw error;
       if (!articles || articles.length === 0) return { featured: null, latest: [], trending: [] };
 
       const featured = articles[0];
-      const latest = articles.slice(1, 13);
+      const latest = articles.slice(1, 16);
 
       const { data: trendingData, error: trendingError } = await supabase
         .from("articles")
@@ -289,9 +290,9 @@ const Index = () => {
         {/* First-time visitor hero banner */}
         <FirstVisitHero />
 
-        {/* Value Proposition Strip */}
+        {/* Value Proposition Strip — compact */}
         <div className="bg-muted/50 border-b border-border/50">
-          <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="container mx-auto px-4 py-1.5 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
             <span>Asia-Pacific's source for AI news, tools, and analysis — covering what matters across 15+ countries</span>
             <Link to="/about" className="text-primary hover:underline font-medium shrink-0">
               Learn more
@@ -300,28 +301,34 @@ const Index = () => {
         </div>
 
 
-        {/* 2. Hero: Primary Story + Secondary Stories (CNET-style asymmetric) */}
-        <section className="container mx-auto px-4 py-14 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* PRIMARY STORY — left 8 cols (≈65%) */}
-            <div className="lg:col-span-8">
+        {/* 2. Hero: Quick Links Sidebar + Primary Story + Secondary Stories */}
+        <section className="container mx-auto px-4 pt-4 pb-4 md:pt-4 md:pb-4">
+          <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_320px] lg:grid-cols-12 gap-4">
+            
+            {/* QUICK LINKS SIDEBAR — xl only */}
+            <div className="hidden xl:block">
+              <HomepageQuickLinks />
+            </div>
+
+            {/* PRIMARY STORY — main hero */}
+            <div className="lg:col-span-8 xl:col-span-1">
               {isLoading ? (
-                <Skeleton className="h-[420px] md:h-[500px] rounded-lg" />
+                <Skeleton className="h-[380px] md:h-[460px] rounded-lg" />
               ) : featuredArticle && featuredArticle.slug ? (
                 <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
-                  <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-lg">
+                  <div className="relative h-[380px] md:h-[460px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={featuredArticle.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(featuredArticle.featured_image_url, [640, 960, 1280]) : undefined}
-                      sizes="(max-width: 768px) 100vw, 65vw"
+                      sizes="(max-width: 768px) 100vw, 55vw"
                       alt={featuredArticle.title}
                       loading="eager" decoding="async" fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      width={1280} height={500}
+                      width={1280} height={460}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <Badge className="bg-primary text-primary-foreground text-xs">{featuredArticle.categories?.name || "Uncategorized"}</Badge>
                         {featuredArticle.is_trending && (
                           <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
@@ -330,11 +337,11 @@ const Index = () => {
                           <Badge className="bg-emerald-600 text-white text-xs">{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[1.2] mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[24px] sm:text-[28px] md:text-[36px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
                         {featuredArticle.title}
                       </h2>
-                      <p className="text-white/80 text-[15px] leading-[1.6] line-clamp-2 mb-3 max-w-2xl">{featuredArticle.excerpt}</p>
-                      <div className="flex items-center gap-3 text-white/50 text-[13px]">
+                      <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{featuredArticle.excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/50 text-[12px]">
                         {featuredArticle.published_at && (
                           <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         )}
@@ -352,29 +359,29 @@ const Index = () => {
                 </Link>
               ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
                 <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
-                  <div className="relative h-[420px] md:h-[520px] overflow-hidden rounded-lg">
+                  <div className="relative h-[380px] md:h-[460px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(trendingArticles[0].featured_image_url || "/placeholder.svg", 1280)}
                       srcSet={trendingArticles[0].featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(trendingArticles[0].featured_image_url, [640, 960, 1280]) : undefined}
-                      sizes="(max-width: 768px) 100vw, 65vw"
+                      sizes="(max-width: 768px) 100vw, 55vw"
                       alt={trendingArticles[0].title}
                       loading="eager" fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      width={1280} height={500}
+                      width={1280} height={460}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <Badge className="bg-primary text-primary-foreground text-xs">{trendingArticles[0].categories?.name || "Uncategorized"}</Badge>
                         {trendingArticles[0].is_trending && (
                           <Badge className="bg-orange-500 text-white flex items-center gap-1 text-xs"><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[28px] sm:text-[32px] md:text-[40px] leading-[1.2] mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                      <h2 className="text-white font-bold text-[24px] sm:text-[28px] md:text-[36px] leading-[1.2] mb-2 line-clamp-3 group-hover:text-primary transition-colors">
                         {trendingArticles[0].title}
                       </h2>
-                      <p className="text-white/80 text-[15px] leading-[1.6] line-clamp-2 mb-3 max-w-2xl">{trendingArticles[0].excerpt}</p>
-                      <div className="flex items-center gap-3 text-white/50 text-[13px]">
+                      <p className="text-white/80 text-[14px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block">{trendingArticles[0].excerpt}</p>
+                      <div className="flex items-center gap-3 text-white/50 text-[12px]">
                         {trendingArticles[0].published_at && <span>{new Date(trendingArticles[0].published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                         <span>•</span>
                         <span>{trendingArticles[0].reading_time_minutes || 5} min read</span>
@@ -385,27 +392,25 @@ const Index = () => {
               ) : null}
             </div>
 
-            {/* SECONDARY STORIES — right 4 cols (≈35%), stacked to match hero height */}
-            <div className="lg:col-span-4 flex flex-col gap-3 lg:h-[520px]">
+            {/* SECONDARY STORIES — right column, 4 stories stacked compact */}
+            <div className="lg:col-span-4 xl:col-span-1 flex flex-col gap-2 lg:h-[460px]">
               {isLoading ? (
                 <>
-                  {[...Array(3)].map((_, i) => (
+                  {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex gap-3">
-                      <Skeleton className="w-[140px] h-[100px] rounded-lg flex-shrink-0" />
-                      <div className="flex-1 space-y-2">
+                      <Skeleton className="w-[80px] h-[60px] rounded-md flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
                         <Skeleton className="h-3 w-16" />
                         <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-3/4" />
                         <Skeleton className="h-3 w-24" />
                       </div>
                     </div>
                   ))}
                 </>
               ) : (() => {
-                // Gather secondary articles: next articles after the featured one
                 const secondaryArticles = latestArticles?.filter((article: any) =>
                   article.slug && article.id !== featuredArticle?.id
-                ).slice(0, 3) || [];
+                ).slice(0, 4) || [];
 
                 return secondaryArticles.map((article: any, index: number) => {
                   const categorySlug = article.categories?.slug || 'news';
@@ -413,35 +418,30 @@ const Index = () => {
                     <Link
                       key={article.id}
                       to={`/${categorySlug}/${article.slug}`}
-                      className="group flex gap-4 p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200 flex-1"
+                      className="group flex gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all duration-200 flex-1"
                     >
-                      <div className="relative w-[140px] h-[100px] md:h-[120px] overflow-hidden rounded-lg flex-shrink-0">
+                      <div className="relative w-[80px] h-[60px] overflow-hidden rounded-md flex-shrink-0">
                         <img
-                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 280, 200)}
+                          src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 160, 120)}
                           alt={article.title}
                           loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          width={280} height={200}
+                          width={160} height={120}
                         />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                          <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
                             {article.categories?.name || "Uncategorized"}
                           </span>
                           {article.is_trending && (
                             <TrendingUp className="h-3 w-3 text-orange-500" />
                           )}
-                          {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
-                            <span className="text-xs text-emerald-500 font-medium">
-                              {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
-                            </span>
-                          )}
                         </div>
-                        <h3 className="font-semibold text-lg md:text-xl leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-[15px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-[13px] text-muted-foreground/70 mt-1.5">
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
                           {article.published_at && (
                             <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                           )}
@@ -457,7 +457,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* 3 Before 9 Daily Briefing — between hero and More Stories */}
+        {/* 3 Before 9 Daily Briefing — compact, between hero and More Stories */}
         <Suspense fallback={null}>
           <ThreeBeforeNineLanding />
         </Suspense>
@@ -466,8 +466,8 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* Article Grid — alternating size-contrast rows */}
-        <section className="container mx-auto px-4 py-14 md:py-16">
-          <div className="flex items-center justify-between mb-7">
+        <section className="container mx-auto px-4 py-8 md:py-10">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <h2 className="text-[28px] md:text-[30px] font-bold">More Stories</h2>
             </div>
@@ -481,7 +481,7 @@ const Index = () => {
             </div>
           ) : (() => {
             // Combine all grid-eligible articles: trending + latest (excluding hero & secondary)
-            const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 3).map((a: any) => a.id) || [];
+            const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 4).map((a: any) => a.id) || [];
             const allGridArticles = [
               ...(trendingArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
               ...(latestArticles?.filter((a: any) =>
@@ -535,9 +535,9 @@ const Index = () => {
                       {article.title}
                     </h3>
                     {isLarge && article.excerpt && (
-                      <p className="text-[hsl(210,15%,72%)] text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
+                      <p className="text-muted-foreground text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
                     )}
-                    <div className="flex items-center gap-2 text-[13px] text-[hsl(210,12%,60%)] mt-3">
+                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground mt-3">
                       {article.authors?.name && <span>{article.authors.name}</span>}
                       {article.authors?.name && article.published_at && <span>•</span>}
                       {article.published_at && (
