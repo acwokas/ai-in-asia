@@ -1,16 +1,44 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
-import { Zap, ArrowRight, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Zap, Clock, ArrowRight } from "lucide-react";
+
+const pillarColors: Record<string, string> = {
+  learn: "bg-blue-500",
+  prompts: "bg-purple-500",
+  toolbox: "bg-teal-500",
+};
+
+const diffColors: Record<string, string> = {
+  beginner: "bg-green-500",
+  intermediate: "bg-amber-500",
+  advanced: "bg-red-500",
+};
 
 const Guides = () => {
+  const { data: guides, isLoading } = useQuery({
+    queryKey: ["guides-index"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <>
       <SEOHead
         title="AI Guides, Prompts & Tools | AI in Asia"
-        description="Practical AI guides, ready-to-use prompt collections, and curated tool recommendations. Real techniques for practitioners across Asia. No theory, no filler."
+        description="Practical AI guides, ready-to-use prompt collections, and curated tool recommendations. Real techniques for practitioners across Asia."
         canonical="https://aiinasia.com/guides"
         ogType="website"
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
@@ -28,53 +56,91 @@ const Guides = () => {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
                 <Zap className="h-4 w-4" />
-                <span>New guides launching soon</span>
+                <span>Practical guides for practitioners</span>
               </div>
-
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
                 Master AI with
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                   Practical Guides
                 </span>
               </h1>
-
               <p className="text-xl text-muted-foreground md:text-2xl leading-relaxed max-w-2xl">
                 Real techniques, tested prompts, and honest tool recommendations. No theory, no filler.
-              </p>
-
-              <p className="mt-3 text-sm text-muted-foreground/70 tracking-wide uppercase">
-                Built for practitioners across Asia
               </p>
             </div>
           </div>
         </section>
 
-        {/* Rebuilding message */}
-        <section className="py-24 md:py-32">
+        {/* Guides Grid */}
+        <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-8">
-                <BookOpen className="h-10 w-10 text-primary" />
+            {isLoading ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
+                    <Skeleton className="aspect-video w-full" />
+                    <div className="p-5 space-y-3">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                We're rebuilding this section from scratch
-              </h2>
-
-              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                The guides section is getting a complete overhaul. New, genuinely useful guides written by real practitioners - not AI-generated filler. First batch drops soon.
-              </p>
-
-              <p className="text-muted-foreground mb-8">
-                In the meantime, explore our articles across News, Business, Life, Learn, Create, Voices, and Policy.
-              </p>
-
-              <Link to="/category/news">
-                <Button size="lg" className="gap-2">
-                  Browse Articles <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+            ) : guides && guides.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {guides.map((g: any) => (
+                  <Link
+                    key={g.id}
+                    to={`/guides/${g.slug}`}
+                    className="group rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg"
+                  >
+                    {g.featured_image_url && (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={g.featured_image_url}
+                          alt={g.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <div className="p-5 space-y-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {g.pillar && (
+                          <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>
+                            {g.pillar}
+                          </Badge>
+                        )}
+                        {g.difficulty && (
+                          <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>
+                            {g.difficulty}
+                          </Badge>
+                        )}
+                      </div>
+                      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                        {g.title}
+                      </h2>
+                      {g.one_line_description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>
+                      )}
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {g.read_time_minutes || "5"} min read
+                        </span>
+                        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">
+                          Read guide <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 text-muted-foreground">
+                <p>No guides published yet. Check back soon!</p>
+              </div>
+            )}
           </div>
         </section>
       </main>
