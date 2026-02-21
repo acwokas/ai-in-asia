@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function() {
+        var stored = localStorage.getItem('theme');
+        var isDark = stored ? stored === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (isDark) document.documentElement.classList.add('dark');
+      })();
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=3" />

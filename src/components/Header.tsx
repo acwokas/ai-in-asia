@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -28,7 +28,11 @@ import { useSavedArticles } from "@/hooks/useSavedArticles";
 import logo from "@/assets/aiinasia-logo.png";
 
 const Header = memo(() => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored) return stored === 'dark';
+    return !window.matchMedia('(prefers-color-scheme: light)').matches;
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -51,9 +55,19 @@ const Header = memo(() => {
     },
   });
   const userPoints = userStats?.points;
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark');
   };
 
   const handleSearch = (e: React.FormEvent) => {
