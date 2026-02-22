@@ -61,6 +61,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Redirects = lazy(() => import("./pages/Redirects"));
 const AIComments = lazy(() => import("./pages/AIComments"));
+const CommentModeration = lazy(() => import("./pages/CommentModeration"));
 const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
 const SEOTools = lazy(() => import("./pages/SEOTools"));
@@ -247,6 +248,7 @@ const App = () => (
                 <Route path="fix-broken-links" element={<FixBrokenLinks />} />
                 <Route path="content-freshness" element={<ContentFreshness />} />
                 <Route path="ai-comments" element={<AIComments />} />
+                <Route path="comments" element={<CommentModeration />} />
                 <Route path="knowledge-engine" element={<KnowledgeEngine />} />
                 <Route path="bulk-operations" element={<BulkOperations />} />
                 <Route path="analytics" element={<ContentAnalytics />} />

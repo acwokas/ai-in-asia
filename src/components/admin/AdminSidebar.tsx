@@ -76,8 +76,8 @@ const navGroups: NavGroup[] = [
   {
     title: "Engagement",
     items: [
-      { label: "AI Comments", path: "/admin/ai-comments", icon: Bot },
-      { label: "Pending Comments", path: "/admin/process-comments", icon: MessageSquare },
+      { label: "Comments", path: "/admin/comments", icon: MessageSquare },
+      { label: "AI Comment Generator", path: "/admin/ai-comments", icon: Bot },
       { label: "Knowledge Engine", path: "/admin/knowledge-engine", icon: Brain },
     ],
   },
