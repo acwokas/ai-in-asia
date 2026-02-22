@@ -480,13 +480,22 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setFeaturedImage(data.featuredImage);
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
         }
-        if (data.excerpt) {
-          state.setExcerpt(data.excerpt);
+        if (data.excerpt) state.setExcerpt(data.excerpt);
+        if (data.headline) state.setTitle(data.headline);
+        if (data.tldr && Array.isArray(data.tldr)) {
+          state.setTldrSnapshot(data.tldr);
         }
-        const imgCount = data.imagesGenerated || 0;
+        if (data.whoShouldPayAttention) state.setWhoShouldPayAttention(data.whoShouldPayAttention);
+        if (data.whatChangesNext) state.setWhatChangesNext(data.whatChangesNext);
+        
+        const parts: string[] = [];
+        if (data.headline) parts.push('headline');
+        if (data.excerpt) parts.push('excerpt');
+        if (data.tldr) parts.push('TL;DR');
+        if (data.imagesGenerated > 0) parts.push(`${data.imagesGenerated} image${data.imagesGenerated > 1 ? 's' : ''}`);
         toast.success("Article Rewritten", {
-          description: imgCount > 0
-            ? `Content rewritten with ${imgCount} AI-generated image${imgCount > 1 ? 's' : ''}${data.excerpt ? ' and excerpt' : ''}`
+          description: parts.length > 0
+            ? `Generated: ${parts.join(', ')}`
             : "Content rewritten successfully",
         });
       }

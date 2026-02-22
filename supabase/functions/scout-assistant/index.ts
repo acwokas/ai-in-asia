@@ -172,34 +172,59 @@ Rewrite the article content to be engaging, well-structured, and optimised for S
 Use British English. Maintain factual accuracy.
 
 LINKS — CRITICAL:
-- Preserve ALL existing markdown links from the original content. Do not remove or break any links.
-- Add 1-2 relevant external links to authoritative sources (research papers, official announcements, reputable news sites like Reuters, Bloomberg, TechCrunch, MIT Technology Review, etc.) using proper markdown link syntax [text](url). Use REAL, VALID URLs only — never use placeholder or made-up URLs.
+- Do NOT add any external links or URLs. Preserve any existing links from the original content exactly as they are. Do not create new links.
 
 MID-ARTICLE IMAGE PLACEHOLDER:
-- Place the EXACT text [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph).
-- Write ONLY [MID_ARTICLE_IMAGE] — nothing else on that line. No description, no markdown image syntax, no alt text.
-- The system will automatically replace this placeholder with the actual uploaded image.
+- Where a mid-article image should appear, write EXACTLY this on its own line and nothing else: IMAGE_PLACEHOLDER_HERE
+- Do NOT write any image descriptions, alt text, or markdown image syntax in the article body.
 - Do NOT write any markdown image syntax like ![...](...) anywhere in the content.
 
-EXCERPT:
-- Also generate a 1-2 sentence excerpt (under 160 characters) summarising the article for previews.
+READABILITY:
+- Break up long text-heavy sections for better readability.
+- Use these techniques where they fit naturally: pull out a key quote as a blockquote (using > markdown syntax) if the article contains a notable statement, add a short bullet list if there are 3+ related points in a paragraph, use bold for key terms or phrases that deserve emphasis.
+- Do NOT add these artificially - only where the content genuinely benefits.
+- Aim for no more than 3-4 paragraphs before a visual break (subheading, blockquote, list, or image).
+
+ENDING:
+- Always end the article with a compelling final paragraph that includes a thought-provoking question or bold statement designed to spark discussion in the comments. This should feel natural, not forced - tie it back to the article's core argument. Do NOT label it as a conclusion or use headings like "Final Thoughts" or "Conclusion". Just make the last paragraph land with impact and invite the reader to respond.
+
+ADDITIONAL SECTIONS (include these AFTER the article content, clearly delimited):
+
+[EXCERPT]
+A punchy teaser under 140 characters that makes someone want to click. NOT a summary - it's a hook. Example: "AI keeps embarrassing itself. But that might be exactly why your brain still matters more."
+[/EXCERPT]
+
+[HEADLINE]
+A catchy, SEO-friendly headline under 60 characters. Compelling and clickworthy while accurate. Use British English.
+[/HEADLINE]
+
+[TLDR]
+- Bullet point 1 (under 100 characters)
+- Bullet point 2 (under 100 characters)
+- Bullet point 3 (under 100 characters)
+[/TLDR]
+
+[WHO]
+Audience type 1 | Audience type 2 | Audience type 3
+[/WHO]
+
+[WHAT_NEXT]
+One short sentence about what changes next or implications.
+[/WHAT_NEXT]
 
 IMAGE DESCRIPTIONS (for AI generation — NOT to be included in the article text):
 1. A hero/lead image that captures the article's theme
-2. A mid-article image for the [MID_ARTICLE_IMAGE] position
+2. A mid-article image for the IMAGE_PLACEHOLDER_HERE position
 For each, provide a short alt text (under 125 characters) for the img alt attribute.
 
 Return your response in this EXACT JSON format (no markdown fences):
 {
-  "rewrittenContent": "the full rewritten article in markdown with [MID_ARTICLE_IMAGE] placeholder",
-  "excerpt": "1-2 sentence summary under 160 characters",
+  "rewrittenContent": "the full rewritten article in markdown with IMAGE_PLACEHOLDER_HERE placeholder and all delimited sections at the end",
   "heroImageDescription": "detailed description for AI image generation",
   "heroImageAlt": "short alt text under 125 chars",
   "midImageDescription": "detailed description for AI image generation",
   "midImageAlt": "short alt text under 125 chars"
-}
-
-Always end the article with a compelling final paragraph that includes a thought-provoking question or bold statement designed to spark discussion in the comments. This should feel natural, not forced - tie it back to the article's core argument. Examples: 'But here's the uncomfortable question...' or 'The real test will be...' or 'What does this mean for you?' Do NOT label it as a conclusion or use headings like 'Final Thoughts' or 'Conclusion'. Just make the last paragraph land with impact and invite the reader to respond.`;
+}`;
 
   const rewritePrompt = `Title: ${title}
 Focus Keyphrase: ${focusKeyphrase}
@@ -238,7 +263,6 @@ ${content}`;
   const rawResult = rewriteData.choices?.[0]?.message?.content || '';
 
   let rewrittenContent: string;
-  let excerpt = '';
   let heroImageDescription: string;
   let heroImageAltText: string;
   let midImageDescription: string;
@@ -248,7 +272,6 @@ ${content}`;
     const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsed = JSON.parse(cleaned);
     rewrittenContent = parsed.rewrittenContent || rawResult;
-    excerpt = (parsed.excerpt || '').slice(0, 160);
     heroImageDescription = parsed.heroImageDescription || '';
     heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
     midImageDescription = parsed.midImageDescription || '';
@@ -339,27 +362,79 @@ ${content}`;
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // Step 3: Replace [MID_ARTICLE_IMAGE] with actual image markdown or remove it
+  // Step 3: Parse delimited sections from content
   let finalContent = rewrittenContent;
-  if (midImage) {
-    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, `\n\n![${midImageAlt}](${midImage})\n\n`);
-  } else {
-    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
+  
+  // Extract excerpt
+  let excerpt = '';
+  const excerptMatch = finalContent.match(/\[EXCERPT\]([\s\S]*?)\[\/EXCERPT\]/);
+  if (excerptMatch) {
+    excerpt = excerptMatch[1].trim().substring(0, 140);
+    finalContent = finalContent.replace(/\[EXCERPT\][\s\S]*?\[\/EXCERPT\]/, '');
   }
 
-  // Safety net: strip any remaining [MID_ARTICLE_IMAGE] placeholders
+  // Extract headline
+  let headline = '';
+  const headlineMatch = finalContent.match(/\[HEADLINE\]([\s\S]*?)\[\/HEADLINE\]/);
+  if (headlineMatch) {
+    headline = headlineMatch[1].trim().substring(0, 60);
+    finalContent = finalContent.replace(/\[HEADLINE\][\s\S]*?\[\/HEADLINE\]/, '');
+  }
+
+  // Extract TL;DR bullets
+  let tldr: string[] = [];
+  const tldrMatch = finalContent.match(/\[TLDR\]([\s\S]*?)\[\/TLDR\]/);
+  if (tldrMatch) {
+    tldr = tldrMatch[1].trim().split('\n')
+      .map((l: string) => l.replace(/^-\s*/, '').trim())
+      .filter((l: string) => l.length > 0)
+      .slice(0, 3);
+    finalContent = finalContent.replace(/\[TLDR\][\s\S]*?\[\/TLDR\]/, '');
+  }
+
+  // Extract WHO
+  let whoShouldPayAttention = '';
+  const whoMatch = finalContent.match(/\[WHO\]([\s\S]*?)\[\/WHO\]/);
+  if (whoMatch) {
+    whoShouldPayAttention = whoMatch[1].trim();
+    finalContent = finalContent.replace(/\[WHO\][\s\S]*?\[\/WHO\]/, '');
+  }
+
+  // Extract WHAT_NEXT
+  let whatChangesNext = '';
+  const whatMatch = finalContent.match(/\[WHAT_NEXT\]([\s\S]*?)\[\/WHAT_NEXT\]/);
+  if (whatMatch) {
+    whatChangesNext = whatMatch[1].trim();
+    finalContent = finalContent.replace(/\[WHAT_NEXT\][\s\S]*?\[\/WHAT_NEXT\]/, '');
+  }
+
+  // Step 4: Replace IMAGE_PLACEHOLDER_HERE with actual image markdown or remove it
+  if (midImage) {
+    finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${midImageAlt}](${midImage})\n\n`);
+  } else {
+    finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, '');
+  }
+
+  // Safety: strip markdown images with alt text over 50 chars (leaked prompts)
+  finalContent = finalContent.replace(/!\[[^\]]{50,}\]\([^)]*\)/g, '');
+
+  // Strip lines starting with ! followed by 50+ chars that aren't proper image markdown
+  finalContent = finalContent.replace(/^!\[?[^\]\n]{50,}$/gm, '');
+
+  // Clean old placeholder format
   finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
 
-  // Strip leaked image prompt lines (lines starting with ! followed by 50+ chars but no (url))
-  finalContent = finalContent.replace(/^!(?:\[[^\]]*\])?\s*[A-Z].{50,}$/gm, '');
-
-  // Clean up excessive blank lines
+  // Collapse excessive blank lines
   finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
   return new Response(
     JSON.stringify({
       result: finalContent,
       excerpt,
+      headline,
+      tldr,
+      whoShouldPayAttention,
+      whatChangesNext,
       featuredImage,
       featuredImageAlt,
       imagesGenerated,
