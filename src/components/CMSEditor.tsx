@@ -265,6 +265,23 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               {/* Word count footer */}
               <EditorWordCount content={state.content} title={state.title} />
 
+              {/* Link Validator */}
+              <LinkValidator 
+                content={state.content} 
+                onApplyFix={(originalUrl, newUrl, newText) => {
+                  const escapedOriginal = originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  const markdownPattern = new RegExp(`\\[([^\\]]+)\\]\\(${escapedOriginal}\\)`, 'g');
+                  let newContent = state.content.replace(markdownPattern, `[${newText || '$1'}](${newUrl})`);
+                  if (newContent === state.content) {
+                    newContent = state.content.replace(new RegExp(escapedOriginal, 'g'), newUrl);
+                  }
+                  state.setContent(newContent);
+                  toast.success("Link updated", {
+                    description: `Replaced ${originalUrl} with ${newUrl}`,
+                  });
+                }}
+              />
+
               {/* Image Prompts */}
               <ImagePromptsCard
                 imagePrompts={state.imagePrompts}
@@ -614,24 +631,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         onSelectHeadline={actions.handleSelectHeadline}
       />
 
-      {/* Link Validator */}
-      <div className="mt-6">
-        <LinkValidator 
-          content={state.content} 
-          onApplyFix={(originalUrl, newUrl, newText) => {
-            const escapedOriginal = originalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const markdownPattern = new RegExp(`\\[([^\\]]+)\\]\\(${escapedOriginal}\\)`, 'g');
-            let newContent = state.content.replace(markdownPattern, `[${newText || '$1'}](${newUrl})`);
-            if (newContent === state.content) {
-              newContent = state.content.replace(new RegExp(escapedOriginal, 'g'), newUrl);
-            }
-            state.setContent(newContent);
-            toast.success("Link updated", {
-              description: `Replaced ${originalUrl} with ${newUrl}`,
-            });
-          }}
-        />
-      </div>
     </div>
   );
 };
