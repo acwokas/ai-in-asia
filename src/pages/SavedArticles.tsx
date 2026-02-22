@@ -98,13 +98,13 @@ const SavedArticles = () => {
                 key={article.articleId || article.url}
                 className="p-4 bg-card/50 border-border/40 hover:border-primary/30 transition-colors"
               >
-                <div className="flex gap-4">
+                <div className="flex flex-col min-[400px]:flex-row gap-4">
                   {article.featuredImageUrl && (
                     <Link to={article.url} className="flex-shrink-0">
                       <img
                         src={article.featuredImageUrl}
                         alt=""
-                        className="w-24 h-20 sm:w-32 sm:h-24 object-cover rounded-lg"
+                        className="w-full min-[400px]:w-24 h-40 min-[400px]:h-20 sm:w-32 sm:h-24 object-cover rounded-lg"
                         loading="lazy"
                       />
                     </Link>
@@ -135,7 +135,7 @@ const SavedArticles = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => removeArticle(article.articleId || article.url)}
-                        className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                        className="flex-shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-destructive"
                         aria-label="Remove from saved"
                       >
                         <X className="h-4 w-4" />

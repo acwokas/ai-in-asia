@@ -53,7 +53,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
                 style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, opacity: 0.85, filter: "brightness(1.1)" }}
               />
             )}
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%", background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, transparent 100%)" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%", background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)" }} />
             <div style={{ position: "absolute", top: 20, left: 20, display: "flex", gap: 8 }}>
               <GlowBadge color={cfg.accent}>{cfg.label}</GlowBadge>
               <GlowBadge color="#f59e0b">Featured</GlowBadge>

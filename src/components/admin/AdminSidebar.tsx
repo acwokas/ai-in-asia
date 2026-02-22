@@ -159,7 +159,7 @@ function SidebarNavContent({
                         onClick={onNavigate}
                         title={collapsed ? item.label : undefined}
                         className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                          "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px]",
                           "hover:bg-accent hover:text-accent-foreground",
                           active
                             ? "bg-primary/10 text-primary"
@@ -189,7 +189,7 @@ function SidebarNavContent({
           onClick={onNavigate}
           title={collapsed ? "Back to Site" : undefined}
           className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+            "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground min-h-[44px]",
             collapsed && "justify-center px-2"
           )}
         >
