@@ -87,10 +87,28 @@ const Editor = () => {
 
         if (error) throw error;
 
+        // Auto-generate AI comments for newly published articles (fire and forget)
         if (!wasPublished && isNowPublished) {
-          supabase.functions.invoke("generate-article-comments", {
-            body: { articleId, batchMode: false }
-          }).catch(err => console.error('Comment generation error:', err));
+          (async () => {
+            try {
+              const { count } = await supabase
+                .from('ai_generated_comments')
+                .select('id', { count: 'exact', head: true })
+                .eq('article_id', articleId);
+              if (!count || count === 0) {
+                const { error } = await supabase.functions.invoke('generate-ai-comments', {
+                  body: { articleIds: [articleId] }
+                });
+                if (error) {
+                  console.error('Auto-comment generation failed:', error);
+                } else {
+                  toast('AI comments queued - will drip in over the next few days');
+                }
+              }
+            } catch (err) {
+              console.error('Comment check failed:', err);
+            }
+          })();
         }
 
         await queryClient.invalidateQueries({ queryKey: ["article-edit", articleId] });
@@ -147,10 +165,28 @@ const Editor = () => {
 
         if (error) throw error;
 
+        // Auto-generate AI comments for newly published articles (fire and forget)
         if (data.status === 'published') {
-          supabase.functions.invoke("generate-article-comments", {
-            body: { articleId: newArticle.id, batchMode: false }
-          }).catch(err => console.error('Comment generation error:', err));
+          (async () => {
+            try {
+              const { count } = await supabase
+                .from('ai_generated_comments')
+                .select('id', { count: 'exact', head: true })
+                .eq('article_id', newArticle.id);
+              if (!count || count === 0) {
+                const { error } = await supabase.functions.invoke('generate-ai-comments', {
+                  body: { articleIds: [newArticle.id] }
+                });
+                if (error) {
+                  console.error('Auto-comment generation failed:', error);
+                } else {
+                  toast('AI comments queued - will drip in over the next few days');
+                }
+              }
+            } catch (err) {
+              console.error('Comment check failed:', err);
+            }
+          })();
         }
 
         await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
