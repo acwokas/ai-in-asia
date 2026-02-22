@@ -167,7 +167,7 @@ export const PolicyTracker = () => {
           <div style={{ maxHeight: 420, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }} className="scrollbar-hide">
             {filtered.map((article, i) => {
               const maturity = MATURITY_CONFIG[article.governance_maturity || ""] || DEFAULT_MATURITY;
-              const flag = COUNTRY_FLAGS[article.country || ""] || "🌐";
+              const flag = COUNTRY_FLAGS[article.country || ""] || "●";
               const catSlug = (article.categories as any)?.slug;
               return (
                 <div

@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, ExternalLink, Pencil, Plus } from "lucide-react";
+import { CalendarIcon, ExternalLink, Lightbulb, Pencil, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -117,7 +117,7 @@ export const EditorSettingsTab = ({
           </Select>
           {status !== 'published' && !initialData?.preview_code && (
             <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
-              💡 Save this article first to generate a preview link
+              <Lightbulb className="h-3.5 w-3.5 inline text-yellow-500 mr-0.5" /> Save this article first to generate a preview link
             </p>
           )}
           {status !== 'published' && initialData?.preview_code && (
