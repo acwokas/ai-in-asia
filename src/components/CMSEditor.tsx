@@ -193,10 +193,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const selectedAuthor = authors?.find(a => a.id === state.authorId);
 
   // Calculate tab count for grid
-  const tabCount = 4 + (state.articleType === 'policy_article' ? 1 : 0) + (state.articleType === 'top_lists' ? 1 : 0);
+  const tabCount = 5 + (state.articleType === 'policy_article' ? 1 : 0) + (state.articleType === 'top_lists' ? 1 : 0);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       {/* Auto-save indicator + shortcuts help */}
       <div className="flex items-center justify-end gap-2 mb-2 min-h-[32px]">
         {autoSaveLabel && (
@@ -206,27 +206,78 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={cn("grid w-full", `grid-cols-${tabCount}`)}>
-          <TabsTrigger value="content">Content</TabsTrigger>
-          {state.articleType === 'policy_article' && (
-            <TabsTrigger value="policy">Policy Data</TabsTrigger>
-          )}
-          {state.articleType === 'top_lists' && (
-            <TabsTrigger value="toplists">Top Lists</TabsTrigger>
-          )}
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+        {/* Sticky tab bar with save button */}
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <TabsList className={cn("grid w-auto", `grid-cols-${tabCount}`)}>
+            <TabsTrigger value="content">Content</TabsTrigger>
+            <TabsTrigger value="tldr">TL;DR</TabsTrigger>
+            {state.articleType === 'policy_article' && (
+              <TabsTrigger value="policy">Policy Data</TabsTrigger>
+            )}
+            {state.articleType === 'top_lists' && (
+              <TabsTrigger value="toplists">Top Lists</TabsTrigger>
+            )}
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+          <Button onClick={handleSave} data-editor-save>
+            <Save className="h-4 w-4 mr-2" />
+            Save Article
+          </Button>
+        </div>
 
-        {/* Content Tab */}
-        <TabsContent value="content" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Article Content</CardTitle>
-              <CardDescription>Write and format your article</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Content Tab - Two Column Layout */}
+        <TabsContent value="content" className="mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+            {/* Left column - Editor */}
+            <div className="min-w-0 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Article Content (Live Preview)</Label>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={actions.handleScoutRewrite}
+                  disabled={state.isRewritingArticle || !state.content}
+                  className="bg-[#10b981] hover:bg-[#059669] text-white"
+                >
+                  {state.isRewritingArticle ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Rewriting...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Scout Assist: Rewrite
+                    </>
+                  )}
+                </Button>
+              </div>
+              <TipTapEditor
+                value={state.content}
+                onChange={handleContentChange}
+                onSelect={state.setSelectedText}
+                placeholder="Start writing your article..."
+                keyphraseSynonyms={state.keyphraseSynonyms}
+              />
+              {/* Word count footer */}
+              <EditorWordCount content={state.content} title={state.title} />
+
+              {/* Image Prompts */}
+              <ImagePromptsCard
+                imagePrompts={state.imagePrompts}
+                copiedPrompt={state.copiedPrompt}
+                onCopyPrompt={actions.handleCopyPrompt}
+                isGenerating={state.isGeneratingImagePrompts}
+                onGenerate={actions.handleGenerateImagePrompts}
+                disabled={!state.title || !state.content}
+              />
+            </div>
+
+            {/* Right column - Metadata sidebar */}
+            <div className="min-w-[280px] lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:sticky lg:top-24 border-l border-border/50 lg:pl-6 space-y-5">
               {/* Title */}
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -247,7 +298,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     ) : (
                       <>
                         <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Assist: Headline
+                        Scout: Headline
                       </>
                     )}
                   </Button>
@@ -258,9 +309,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   onChange={(e) => handleTitleChangeWrapped(e.target.value)}
                   placeholder="Enter article title..."
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Copy content and click Scout Headline to generate a catchy title
-                </p>
               </div>
 
               {/* Slug */}
@@ -307,9 +355,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Main category for this article (used for related articles)
-                </p>
               </div>
 
               {/* Excerpt */}
@@ -337,7 +382,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               </div>
 
               {/* Featured Image */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
                   <Label htmlFor="featured-image">Featured Image</Label>
                   <p className="text-xs text-muted-foreground mb-2">
@@ -361,6 +406,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     <Button
                       type="button"
                       variant="outline"
+                      size="icon"
                       onClick={() => actions.fileInputRef.current?.click()}
                       disabled={state.isUploadingImage}
                     >
@@ -374,6 +420,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                       <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                           state.setFeaturedImage('');
                           state.setFeaturedImageAlt('');
@@ -388,14 +435,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                       <img
                         src={state.featuredImage}
                         alt="Preview"
-                        className="w-full max-w-md h-48 object-cover rounded-lg border border-border"
+                        className="w-full h-40 object-cover rounded-lg border border-border"
                       />
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="featured-image-alt">Featured Image Alt Text</Label>
+                  <Label htmlFor="featured-image-alt">Alt Text</Label>
                   <Input
                     id="featured-image-alt"
                     value={state.featuredImageAlt}
@@ -404,54 +451,26 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </TabsContent>
 
-              {/* Rich Text Editor */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Article Content (Live Preview)</Label>
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={actions.handleScoutRewrite}
-                    disabled={state.isRewritingArticle || !state.content}
-                    className="bg-[#10b981] hover:bg-[#059669] text-white"
-                  >
-                    {state.isRewritingArticle ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Rewriting...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="h-4 w-4 mr-2" />
-                        Scout Assist: Rewrite
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <TipTapEditor
-                  value={state.content}
-                  onChange={handleContentChange}
-                  onSelect={state.setSelectedText}
-                  placeholder="Start writing your article..."
-                  keyphraseSynonyms={state.keyphraseSynonyms}
-                />
-                {/* Word count footer */}
-                <EditorWordCount content={state.content} title={state.title} />
-              </div>
-
-              {/* Image Prompts */}
-              <ImagePromptsCard
-                imagePrompts={state.imagePrompts}
-                copiedPrompt={state.copiedPrompt}
-                onCopyPrompt={actions.handleCopyPrompt}
-                isGenerating={state.isGeneratingImagePrompts}
-                onGenerate={actions.handleGenerateImagePrompts}
-                disabled={!state.title || !state.content}
-              />
-            </CardContent>
-          </Card>
+        {/* TL;DR Tab */}
+        <TabsContent value="tldr" className="space-y-6">
+          <TldrSnapshotCard
+            tldrSnapshot={state.tldrSnapshot}
+            whoShouldPayAttention={state.whoShouldPayAttention}
+            whatChangesNext={state.whatChangesNext}
+            isGenerating={state.isGeneratingTldr}
+            disabled={!state.title || !state.content}
+            onTldrChange={state.setTldrSnapshot}
+            onWhoChange={state.setWhoShouldPayAttention}
+            onWhatChange={state.setWhatChangesNext}
+            onGenerate={actions.handleGenerateTldr}
+            articleType={state.articleType}
+            signalImages={state.signalImages}
+            onSignalImagesChange={state.setSignalImages}
+          />
         </TabsContent>
 
         {/* Policy Tab */}
@@ -595,22 +614,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         onSelectHeadline={actions.handleSelectHeadline}
       />
 
-      {/* TL;DR Snapshot */}
-      <TldrSnapshotCard
-        tldrSnapshot={state.tldrSnapshot}
-        whoShouldPayAttention={state.whoShouldPayAttention}
-        whatChangesNext={state.whatChangesNext}
-        isGenerating={state.isGeneratingTldr}
-        disabled={!state.title || !state.content}
-        onTldrChange={state.setTldrSnapshot}
-        onWhoChange={state.setWhoShouldPayAttention}
-        onWhatChange={state.setWhatChangesNext}
-        onGenerate={actions.handleGenerateTldr}
-        articleType={state.articleType}
-        signalImages={state.signalImages}
-        onSignalImagesChange={state.setSignalImages}
-      />
-
       {/* Link Validator */}
       <div className="mt-6">
         <LinkValidator 
@@ -628,14 +631,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             });
           }}
         />
-      </div>
-
-      {/* Save Button */}
-      <div className="flex justify-end mt-8 pb-8">
-        <Button onClick={handleSave} size="lg" data-editor-save>
-          <Save className="h-4 w-4 mr-2" />
-          Save Article
-        </Button>
       </div>
     </div>
   );
