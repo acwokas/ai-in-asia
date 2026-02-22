@@ -30,18 +30,11 @@ const EditorsPick = lazy(() => import("@/components/EditorsPick"));
 const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents"));
 const ForYouSection = lazy(() => import("@/components/ForYouSection"));
 const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding"));
-import { z } from "zod";
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import FirstVisitHero from "@/components/FirstVisitHero";
-
-const newsletterSchema = z.object({
-  email: z.string()
-    .trim()
-    .email({ message: "Invalid email address" })
-    .max(255, { message: "Email must be less than 255 characters" }),
-});
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 // Editorial freshness labels for homepage articles - selective to be meaningful
 const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null, isCornerstone?: boolean): string | null => {
@@ -227,11 +220,16 @@ const Index = () => {
     const rawData = { email: formData.get('email') as string };
 
     try {
-      const validatedData = newsletterSchema.parse(rawData);
+      const email = (rawData.email || '').trim();
+      if (!isValidEmail(email)) {
+        toast({ title: "Invalid email address", variant: "destructive" });
+        setIsNewsletterSubmitting(false);
+        return;
+      }
       const { data: existing } = await supabase
         .from("newsletter_subscribers")
         .select("id")
-        .eq("email", validatedData.email)
+        .eq("email", email)
         .maybeSingle();
 
       if (existing) {
@@ -242,7 +240,7 @@ const Index = () => {
 
       const { error } = await supabase
         .from("newsletter_subscribers")
-        .insert({ email: validatedData.email });
+        .insert({ email });
       if (error) throw error;
 
       setIsNewsletterSubscribed(true);
@@ -255,12 +253,8 @@ const Index = () => {
       (e.target as HTMLFormElement).reset();
       setNewsletterEmail("");
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({ title: "Validation Error", description: error.errors[0].message, variant: "destructive" });
-      } else {
-        console.error('Error subscribing:', error);
-        toast({ title: "Error", description: "Failed to subscribe. Please try again.", variant: "destructive" });
-      }
+      console.error('Error subscribing:', error);
+      toast({ title: "Error", description: "Failed to subscribe. Please try again.", variant: "destructive" });
     } finally {
       setIsNewsletterSubmitting(false);
     }
