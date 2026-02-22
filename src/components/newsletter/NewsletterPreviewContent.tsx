@@ -1,7 +1,7 @@
  import { Link } from "react-router-dom";
  import { Card } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
-import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink, Map, User, Pencil, Star, BookOpen, Shuffle, Lightbulb } from "lucide-react";
+import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink, Map, User, Pencil, Star, BookOpen, Shuffle, Lightbulb, Eye } from "lucide-react";
  import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
  
  interface WorthWatchingItem {
@@ -223,7 +223,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {/* Worth Watching */}
        {edition.worth_watching && (
          <div>
-           <h2 className={headingClass}>👀 Worth Watching</h2>
+           <h2 className={headingClass}><Eye className="h-5 w-5 inline mr-1.5" /> Worth Watching</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              {edition.worth_watching.trends && (
                <Card className="p-4 border-l-4 border-l-primary">

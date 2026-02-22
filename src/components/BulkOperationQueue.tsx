@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp, Play } from "lucide-react";
+import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp, Play, Zap, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -85,11 +85,11 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
             const job = payload.new as QueueJob;
             
             if (job.status === 'completed') {
-              toast.success("✅ Bulk Operation Complete", {
+              toast.success("Bulk Operation Complete", {
                 description: `Successfully processed ${job.successful_items}/${job.total_items} articles`,
               });
             } else if (job.status === 'failed') {
-              toast.error("❌ Bulk Operation Failed", {
+              toast.error("Bulk Operation Failed", {
                 description: job.error_message || "Operation encountered an error",
               });
             }
@@ -247,7 +247,7 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast.success("✅ Retry Queued", {
+      toast.success("Retry Queued", {
         description: `${failedArticleIds.length} failed articles queued for reprocessing`,
       });
 
@@ -285,7 +285,7 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast.success("✅ Processing Resumed", {
+      toast.success("Processing Resumed", {
         description: "Bulk queue processor has been triggered manually",
       });
 
@@ -412,13 +412,13 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
               </div>
               <Progress value={activeJob.total_items > 0 ? (activeJob.processed_items / activeJob.total_items) * 100 : 0} />
               <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
-                <span>✅ {activeJob.successful_items} successful</span>
-                <span>❌ {activeJob.failed_items} failed</span>
+                <span><CheckCircle2 className="h-3 w-3 inline text-green-500 mr-0.5" /> {activeJob.successful_items} successful</span>
+                <span><XCircle className="h-3 w-3 inline text-red-500 mr-0.5" /> {activeJob.failed_items} failed</span>
                 {getProcessingRate(activeJob) && (
-                  <span>⚡ {getProcessingRate(activeJob)}</span>
+                  <span><Zap className="h-3 w-3 inline text-amber-500 mr-0.5" /> {getProcessingRate(activeJob)}</span>
                 )}
                 {calculateTimeRemaining(activeJob) && (
-                  <span className="font-medium text-foreground">⏱️ {calculateTimeRemaining(activeJob)} remaining</span>
+                  <span className="font-medium text-foreground"><Timer className="h-3 w-3 inline mr-0.5" /> {calculateTimeRemaining(activeJob)} remaining</span>
                 )}
               </div>
             </div>
@@ -502,20 +502,20 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
                                 </div>
                                 <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
                                   {getProcessingRate(job) && (
-                                    <span>⚡ {getProcessingRate(job)}</span>
+                                    <span><Zap className="h-3 w-3 inline text-amber-500 mr-0.5" /> {getProcessingRate(job)}</span>
                                   )}
                                   {calculateTimeRemaining(job) && (
-                                    <span className="font-medium">⏱️ {calculateTimeRemaining(job)} remaining</span>
+                                    <span className="font-medium"><Timer className="h-3 w-3 inline mr-0.5" /> {calculateTimeRemaining(job)} remaining</span>
                                   )}
                                 </div>
                               </>
                             )}
                             {job.status === 'completed' && (
                               <div className="text-green-600 text-sm font-medium">
-                                ✅ {job.successful_items}/{job.total_items} successful
+                                <CheckCircle2 className="h-3.5 w-3.5 inline text-green-500 mr-0.5" /> {job.successful_items}/{job.total_items} successful
                                 {job.failed_items > 0 && (
                                   <span className="text-red-600 ml-2">
-                                    ❌ {job.failed_items} failed
+                                    <XCircle className="h-3.5 w-3.5 inline mr-0.5" /> {job.failed_items} failed
                                   </span>
                                 )}
                               </div>
