@@ -33,6 +33,7 @@ import KeyboardShortcutsDialog from "@/components/editor/KeyboardShortcutsDialog
 import { useEditorAutoSave } from "@/hooks/useEditorAutoSave";
 import { useEditorLocalBackup } from "@/hooks/useEditorLocalBackup";
 import PublishChecklist from "@/components/editor/PublishChecklist";
+import InternalLinkSuggestions from "@/components/editor/InternalLinkSuggestions";
 
 interface CMSEditorProps {
   initialData?: any;
@@ -257,12 +258,12 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   {state.isRewritingArticle ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Rewriting...
+                      Rewriting &amp; generating images...
                     </>
                   ) : (
                     <>
                       <Wand2 className="h-4 w-4 mr-2" />
-                      Scout Assist: Rewrite
+                      Scout Assist: Rewrite + Images
                     </>
                   )}
                 </Button>
@@ -292,6 +293,13 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     description: `Replaced ${originalUrl} with ${newUrl}`,
                   });
                 }}
+              />
+
+              {/* Internal Link Suggestions */}
+              <InternalLinkSuggestions
+                content={state.content}
+                title={state.title}
+                focusKeyphrase={state.focusKeyphrase}
               />
 
               {/* Image Prompts */}

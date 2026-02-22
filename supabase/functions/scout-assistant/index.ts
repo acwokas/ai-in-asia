@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -16,6 +17,16 @@ serve(async (req) => {
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    // Handle validate-links action separately
+    if (action === 'validate-links') {
+      return await handleValidateLinks(content, corsHeaders);
+    }
+
+    // Handle rewrite-with-images action separately
+    if (action === 'rewrite-with-images') {
+      return await handleRewriteWithImages(content, context, LOVABLE_API_KEY, corsHeaders);
     }
 
     let systemPrompt = '';
@@ -126,7 +137,6 @@ ALT3: [alternative option 3]`;
         const parsed = JSON.parse(result);
         result = Array.isArray(parsed) ? parsed : [result];
       } catch {
-        // If not valid JSON, split by commas or return as single tag
         result = result.includes(',') 
           ? result.split(',').map((t: string) => t.trim())
           : [result.trim()];
@@ -145,3 +155,232 @@ ALT3: [alternative option 3]`;
     );
   }
 });
+
+// ── rewrite-with-images ──────────────────────────────────────────────
+async function handleRewriteWithImages(
+  content: string,
+  context: any,
+  apiKey: string,
+  cors: Record<string, string>,
+) {
+  const title = context?.title || '';
+  const focusKeyphrase = context?.focusKeyphrase || '';
+
+  // Step 1: Rewrite + get image suggestions in one AI call
+  const rewriteSystemPrompt = `You are Scout, an expert editorial assistant for AIinASIA.com.
+Rewrite the article content to be engaging, well-structured, and optimised for SEO.
+Use British English. Maintain factual accuracy.
+
+ALSO: suggest exactly 2 image descriptions for AI generation:
+1. A hero/lead image that captures the article's theme
+2. A mid-article image to break up the text (specify after which paragraph number to insert it, counting from 1)
+
+Return your response in this EXACT JSON format (no markdown fences):
+{
+  "rewrittenContent": "the full rewritten article in markdown",
+  "heroImageDescription": "detailed description for AI image generation of the hero image",
+  "midImageDescription": "detailed description for AI image generation of the mid-article image",
+  "midImageAfterParagraph": 3
+}`;
+
+  const rewritePrompt = `Title: ${title}
+Focus Keyphrase: ${focusKeyphrase}
+
+Article Content:
+${content}`;
+
+  const rewriteResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: rewriteSystemPrompt },
+        { role: 'user', content: rewritePrompt },
+      ],
+    }),
+  });
+
+  if (!rewriteResponse.ok) {
+    const status = rewriteResponse.status;
+    const body = await rewriteResponse.text();
+    console.error('Rewrite AI call failed:', status, body);
+    if (status === 429 || status === 402) {
+      return new Response(JSON.stringify({ error: status === 429 ? 'Rate limit exceeded.' : 'Credits required.' }), {
+        status, headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+    throw new Error('AI rewrite failed');
+  }
+
+  const rewriteData = await rewriteResponse.json();
+  const rawResult = rewriteData.choices?.[0]?.message?.content || '';
+
+  let rewrittenContent: string;
+  let heroImageDescription: string;
+  let midImageDescription: string;
+  let midImageAfterParagraph: number;
+
+  try {
+    // Strip potential markdown code fences
+    const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    rewrittenContent = parsed.rewrittenContent || rawResult;
+    heroImageDescription = parsed.heroImageDescription || '';
+    midImageDescription = parsed.midImageDescription || '';
+    midImageAfterParagraph = parsed.midImageAfterParagraph || 3;
+  } catch {
+    // Fallback: use raw result as content, no images
+    console.warn('Could not parse rewrite JSON, returning content without images');
+    return new Response(
+      JSON.stringify({ result: rawResult, imagesGenerated: 0 }),
+      { headers: { ...cors, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  // Step 2: Generate images in parallel (graceful fallback)
+  let featuredImage = '';
+  let featuredImageAlt = '';
+  let midImage = '';
+  let midImageAlt = '';
+  let imagesGenerated = 0;
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string; alt: string }> => {
+      const timestamp = Date.now();
+      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image',
+          messages: [
+            { role: 'user', content: `Generate a professional, editorial-quality image for a news article. The image should be photorealistic, well-lit, and suitable for a technology news website. Description: ${description}` },
+          ],
+          modalities: ['image', 'text'],
+        }),
+      });
+
+      if (!imgResponse.ok) {
+        throw new Error(`Image generation failed [${imgResponse.status}]`);
+      }
+
+      const imgData = await imgResponse.json();
+      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!base64Url) throw new Error('No image in response');
+
+      // Extract base64 data and upload to storage
+      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      
+      const filePath = `content/ai-generated-${suffix}-${timestamp}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, binaryData, { contentType: 'image/png' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      return { url: publicUrl, alt: description };
+    };
+
+    const results = await Promise.allSettled([
+      generateAndUpload(heroImageDescription, 'hero'),
+      generateAndUpload(midImageDescription, 'mid'),
+    ]);
+
+    if (results[0].status === 'fulfilled') {
+      featuredImage = results[0].value.url;
+      featuredImageAlt = results[0].value.alt;
+      imagesGenerated++;
+    } else {
+      console.error('Hero image generation failed:', results[0].reason);
+    }
+
+    if (results[1].status === 'fulfilled') {
+      midImage = results[1].value.url;
+      midImageAlt = results[1].value.alt;
+      imagesGenerated++;
+    } else {
+      console.error('Mid image generation failed:', results[1].reason);
+    }
+  } catch (imgError) {
+    console.error('Image generation error (non-fatal):', imgError);
+  }
+
+  // Step 3: Insert mid-article image into content if generated
+  let finalContent = rewrittenContent;
+  if (midImage) {
+    const paragraphs = finalContent.split('\n\n');
+    const insertIndex = Math.min(midImageAfterParagraph, paragraphs.length);
+    const imageMarkdown = `\n\n![${midImageAlt}](${midImage})\n\n`;
+    paragraphs.splice(insertIndex, 0, imageMarkdown);
+    finalContent = paragraphs.join('\n\n');
+  }
+
+  return new Response(
+    JSON.stringify({
+      result: finalContent,
+      featuredImage,
+      featuredImageAlt,
+      imagesGenerated,
+    }),
+    { headers: { ...cors, 'Content-Type': 'application/json' } },
+  );
+}
+
+// ── validate-links ───────────────────────────────────────────────────
+async function handleValidateLinks(content: string, cors: Record<string, string>) {
+  // Extract URLs from markdown links and bare URLs
+  const markdownLinks = [...(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g))].map(m => m[2]);
+  const bareUrls = [...(content.matchAll(/https?:\/\/[^\s\)]+/g))].map(m => m[0]);
+  const allUrls = [...new Set([...markdownLinks, ...bareUrls])].slice(0, 20);
+
+  const results = await Promise.allSettled(
+    allUrls.map(async (url) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const resp = await fetch(url, {
+          method: 'HEAD',
+          signal: controller.signal,
+          redirect: 'follow',
+        });
+        clearTimeout(timeout);
+        return {
+          url,
+          status: resp.status,
+          ok: resp.ok,
+          redirectUrl: resp.redirected ? resp.url : undefined,
+        };
+      } catch (e) {
+        clearTimeout(timeout);
+        return {
+          url,
+          status: 0,
+          ok: false,
+          error: e instanceof Error ? e.message : 'Request failed',
+        };
+      }
+    })
+  );
+
+  const linkResults = results.map(r => r.status === 'fulfilled' ? r.value : { url: 'unknown', status: 0, ok: false, error: 'Promise rejected' });
+
+  return new Response(
+    JSON.stringify({ results: linkResults }),
+    { headers: { ...cors, 'Content-Type': 'application/json' } },
+  );
+}

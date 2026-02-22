@@ -460,22 +460,50 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     state.setIsRewritingArticle(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke("scout-rewrite-article", {
+      const { data, error } = await supabase.functions.invoke("scout-assistant", {
         body: { 
+          action: 'rewrite-with-images',
           content: state.content, 
-          title: state.title,
-          currentArticleId: initialData?.id 
+          context: {
+            title: state.title,
+            focusKeyphrase: state.focusKeyphrase,
+            currentArticleId: initialData?.id,
+          },
         },
       });
 
       if (error) throw error;
 
-      if (data?.rewrittenContent) {
-        state.setContent(data.rewrittenContent);
-        if (data?.excerpt) {
-          state.setExcerpt(data.excerpt);
+      if (data?.result) {
+        state.setContent(data.result);
+        if (data.featuredImage) {
+          state.setFeaturedImage(data.featuredImage);
+          state.setFeaturedImageAlt(data.featuredImageAlt || '');
         }
-        toast.success("Article Rewritten with Links", { description: "Content rewritten with internal and external links automatically added" });
+        const imgCount = data.imagesGenerated || 0;
+        toast.success("Article Rewritten", {
+          description: imgCount > 0
+            ? `Content rewritten with ${imgCount} AI-generated image${imgCount > 1 ? 's' : ''}`
+            : "Content rewritten successfully",
+        });
+      }
+
+      // Auto-trigger link validation on the new content
+      try {
+        const newContent = data?.result || state.content;
+        const { data: linkData } = await supabase.functions.invoke("scout-assistant", {
+          body: { action: 'validate-links', content: newContent },
+        });
+        if (linkData?.results) {
+          const broken = linkData.results.filter((l: any) => !l.ok);
+          if (broken.length > 0) {
+            toast.warning(`Found ${broken.length} broken link${broken.length > 1 ? 's' : ''}`, {
+              description: "Check Link Validator for details",
+            });
+          }
+        }
+      } catch {
+        // Link validation is non-critical
       }
     } catch (error: any) {
       toast.error("Error", { description: error.message || "Failed to rewrite article" });
