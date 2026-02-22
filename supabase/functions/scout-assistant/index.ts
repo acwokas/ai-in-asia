@@ -171,6 +171,10 @@ async function handleRewriteWithImages(
 Rewrite the article content to be engaging, well-structured, and optimised for SEO.
 Use British English. Maintain factual accuracy.
 
+ASIA-PACIFIC ANGLE:
+- Where relevant, weave in an Asia-Pacific perspective — reference regional developments, companies, regulations, or market dynamics that connect to the article's topic.
+- CRITICAL: Only reference real, verifiable facts, companies, regulations, and events. Do NOT fabricate statistics, quotes, company names, policy names, or research papers. If you are not confident a specific Asian reference is factually accurate, do not include it. It is better to have no Asia angle than a fabricated one.
+
 LINKS — CRITICAL:
 - Do NOT add any external links or URLs. Preserve any existing links from the original content exactly as they are. Do not create new links.
 
