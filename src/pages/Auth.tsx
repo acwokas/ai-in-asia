@@ -12,19 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage } from "@/lib/imageCompression";
 import logo from "@/assets/aiinasia-logo.png";
-
-const INTEREST_OPTIONS = [
-  "Artificial Intelligence",
-  "Machine Learning",
-  "Deep Learning",
-  "Robotics",
-  "Computer Vision",
-  "Natural Language Processing",
-  "AI Ethics",
-  "AI Research",
-  "Business AI",
-  "Healthcare AI"
-];
+import { INTEREST_OPTIONS } from "@/constants/interests";
 
 const Auth = () => {
   // Sign In state

@@ -16,19 +16,7 @@ import { useAdminRole } from '@/hooks/useAdminRole';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { compressImage } from '@/lib/imageCompression';
 import { toast } from 'sonner';
-
-const INTEREST_OPTIONS = [
-  "Artificial Intelligence",
-  "Machine Learning",
-  "Deep Learning",
-  "Robotics",
-  "Computer Vision",
-  "Natural Language Processing",
-  "AI Ethics",
-  "AI Research",
-  "Business AI",
-  "Healthcare AI"
-];
+import { INTEREST_OPTIONS } from "@/constants/interests";
 
 interface UserStats {
   points: number;
