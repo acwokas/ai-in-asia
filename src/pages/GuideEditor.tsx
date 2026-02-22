@@ -582,8 +582,7 @@ const GuideEditor = () => {
     setHasChanges(true);
     setShowImport(false);
     setImportText("");
-    toast({
-      title: "Content Parsed ✓",
+    toast.success("Content Parsed ✓", {
       description: parsed.length > 0
         ? parsed.map(p => `${p} ✓`).join(" · ")
         : "Fields have been populated from your import.",
@@ -889,7 +888,7 @@ const GuideEditor = () => {
           <SectionCard title="FAQ" icon={<HelpCircle className="h-5 w-5" />} sectionKey="faq" collapsed={collapsedSections.faq} onToggle={toggleSection} number={11}
             onAiClick={async () => {
               const result = await callScoutAssist("expand", `Suggest 3 FAQ questions for this guide: ${formData.title}. Steps: ${formData.steps.map(s => s.title).join(", ")}`, { section: "faq" });
-              if (result) toast({ title: "AI Suggestion", description: result });
+              if (result) toast("AI Suggestion", { description: result });
             }}>
             <p className="text-xs text-muted-foreground mb-3">Genuine questions for FAQ schema markup (free SEO rich snippets).</p>
             <div className="space-y-3">
@@ -945,7 +944,7 @@ interface LibraryPrompt {
 }
 
 function PromptLibrarySection({ guideId, platformTags, category }: { guideId: string; platformTags: string[]; category: string }) {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [items, setItems] = useState<LibraryPrompt[]>([]);
   const [saving, setSaving] = useState(false);
@@ -999,9 +998,9 @@ function PromptLibrarySection({ guideId, platformTags, category }: { guideId: st
     setItems(prev => prev.filter((_, i) => i !== index));
     if (item.id) {
       supabase.from("ai_guide_prompts").delete().eq("id", item.id).then(({ error }) => {
-        if (error) toast({ title: "Error", description: "Failed to delete prompt", variant: "destructive" });
+        if (error) toast.error("Error", { description: "Failed to delete prompt" });
         else {
-          toast({ title: "Prompt deleted" });
+          toast.success("Prompt deleted");
           queryClient.invalidateQueries({ queryKey: ["guide-library-prompts", guideId] });
         }
       });
@@ -1053,9 +1052,9 @@ function PromptLibrarySection({ guideId, platformTags, category }: { guideId: st
 
       setItems(validItems.map((item, i) => ({ ...item, sort_order: i })));
       queryClient.invalidateQueries({ queryKey: ["guide-library-prompts", guideId] });
-      toast({ title: "Prompts saved", description: `${validItems.length} prompts saved to library` });
+      toast.success("Prompts saved", { description: `${validItems.length} prompts saved to library` });
     } catch (err: any) {
-      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+      toast.error("Save failed", { description: err.message });
     } finally {
       setSaving(false);
     }

@@ -43,10 +43,7 @@ const BulkLinksUndo = () => {
         throw new Error("Backup data not found");
       }
 
-      toast({
-        title: "Restoring Articles",
-        description: `Restoring ${operation.articles_modified} articles to previous state...`,
-      });
+      toast("Restoring Articles", { description: `Restoring ${operation.articles_modified} articles to previous state...` });
 
       // Restore each article from backup
       const backupData = operation.backup_data as any[];
@@ -81,19 +78,12 @@ const BulkLinksUndo = () => {
       queryClient.invalidateQueries({ queryKey: ["bulk-links-history"] });
       queryClient.invalidateQueries({ queryKey: ["articles-internal-links"] });
 
-      toast({
-        title: "Restore Complete",
-        description: `Successfully restored ${restored} articles. ${failed} failed.`,
-      });
+      toast.success("Restore Complete", { description: `Successfully restored ${restored} articles. ${failed} failed.` });
 
       refetch();
     } catch (error: any) {
       console.error("Error restoring articles:", error);
-      toast({
-        title: "Restore Failed",
-        description: error.message || "Failed to restore articles",
-        variant: "destructive"
-      });
+      toast.error("Restore Failed", { description: error.message || "Failed to restore articles" });
     } finally {
       setIsRestoring(null);
     }

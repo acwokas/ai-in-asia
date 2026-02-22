@@ -49,17 +49,10 @@ const FixBrokenLinks = () => {
     },
     onSuccess: (data) => {
       setScanResults(data);
-      toast({
-        title: "Scan Complete",
-        description: `Found ${data.articlesWithBrokenLinks} articles with broken links`,
-      });
+      toast("Scan Complete", { description: `Found ${data.articlesWithBrokenLinks} articles with broken links` });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Scan Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Scan Failed", { description: error.message });
     },
   });
 
@@ -74,18 +67,11 @@ const FixBrokenLinks = () => {
     },
     onSuccess: (data) => {
       setScanResults(data);
-      toast({
-        title: "Links Fixed",
-        description: `Fixed broken links in ${data.articlesWithBrokenLinks} articles`,
-      });
+      toast.success("Links Fixed", { description: `Fixed broken links in ${data.articlesWithBrokenLinks} articles` });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Fix Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Fix Failed", { description: error.message });
     },
   });
 

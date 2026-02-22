@@ -47,11 +47,7 @@ const EditorsPickManager = () => {
       .or("role.eq.admin,role.eq.editor");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You don't have permission to access this page." });
       navigate("/");
       return;
     }
@@ -132,10 +128,7 @@ const EditorsPickManager = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Editor's Pick Updated",
-        description: "The editor's pick has been set successfully.",
-      });
+      toast.success("Editor's Pick Updated", { description: "The editor's pick has been set successfully." });
 
       queryClient.invalidateQueries({ queryKey: ["editors-picks-all"] });
       queryClient.invalidateQueries({ queryKey: ["editors-pick-homepage"] });
@@ -144,11 +137,7 @@ const EditorsPickManager = () => {
       setSearchQuery("");
       setSelectedLocation(null);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to set editor's pick",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to set editor's pick" });
     }
   };
 
@@ -163,20 +152,13 @@ const EditorsPickManager = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Editor's Pick Removed",
-        description: "The editor's pick has been removed successfully.",
-      });
+      toast.success("Editor's Pick Removed", { description: "The editor's pick has been removed successfully." });
 
       queryClient.invalidateQueries({ queryKey: ["editors-picks-all"] });
       queryClient.invalidateQueries({ queryKey: ["editors-pick-homepage"] });
       queryClient.invalidateQueries({ queryKey: ["editors-pick"] });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove editor's pick",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to remove editor's pick" });
     }
   };
 
