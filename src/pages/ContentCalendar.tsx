@@ -18,14 +18,13 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import Header from "@/components/Header";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
+import { CalendarCreateDialog } from "@/components/calendar/CalendarCreateDialog";
+import { CalendarEventDetail, type CalendarEvent } from "@/components/calendar/CalendarEventDetail";
+import { CalendarStatusLegend } from "@/components/calendar/CalendarStatusLegend";
+import { CalendarSummaryBar } from "@/components/calendar/CalendarSummaryBar";
 
 const DragAndDropCalendar = withDragAndDrop<CalendarEvent>(Calendar);
 
@@ -35,65 +34,29 @@ interface EventDropArgs {
   end: Date;
 }
 
-const locales = {
-  "en-US": enUS,
-};
+const locales = { "en-US": enUS };
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  author: string;
-  authorId: string;
-  categoryName: string;
-  categoryColor: string;
-  status: string;
-  slug: string;
-}
-
-// Generate consistent color from author ID
-const getAuthorColor = (authorId: string): string => {
-  const colors = [
-    "hsl(210, 80%, 45%)", // Blue
-    "hsl(340, 75%, 45%)", // Pink
-    "hsl(280, 65%, 50%)", // Purple
-    "hsl(160, 60%, 40%)", // Teal
-    "hsl(25, 75%, 50%)",  // Orange
-    "hsl(45, 85%, 50%)",  // Yellow
-    "hsl(140, 55%, 45%)", // Green
-    "hsl(190, 70%, 45%)", // Cyan
-  ];
-  
-  let hash = 0;
-  for (let i = 0; i < authorId.length; i++) {
-    hash = authorId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-};
+const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
 // Category-specific colors
 const getCategoryColor = (categoryName: string): string => {
   const categoryColors: Record<string, string> = {
-    "News": "hsl(0, 85%, 45%)",      // Red
-    "Business": "hsl(210, 85%, 40%)", // Blue
-    "Life": "hsl(280, 65%, 50%)",     // Purple
-    "Learn": "hsl(45, 90%, 45%)",     // Yellow/Gold
-    "Create": "hsl(340, 75%, 45%)",   // Pink/Magenta
-    "AI Policy Atlas": "hsl(160, 60%, 35%)", // Teal/Green
-    "Voices": "hsl(25, 75%, 50%)",    // Orange
+    "News": "hsl(0, 85%, 45%)",
+    "Business": "hsl(210, 85%, 40%)",
+    "Life": "hsl(280, 65%, 50%)",
+    "Learn": "hsl(45, 90%, 45%)",
+    "Create": "hsl(340, 75%, 45%)",
+    "AI Policy Atlas": "hsl(160, 60%, 35%)",
+    "Voices": "hsl(25, 75%, 50%)",
   };
-  
-  return categoryColors[categoryName] || "hsl(220, 15%, 50%)"; // Default gray
+  return categoryColors[categoryName] || "hsl(220, 15%, 50%)";
 };
+
+const ARTICLE_SELECT = `
+  id, title, slug, status, scheduled_for, published_at, author_id, view_count,
+  authors ( id, name ),
+  categories:categories!articles_primary_category_id_fkey ( id, name, color )
+`;
 
 const ContentCalendar = () => {
   const navigate = useNavigate();
@@ -105,85 +68,60 @@ const ContentCalendar = () => {
   const [authorFilter, setAuthorFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  // Dialog state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createDate, setCreateDate] = useState<Date | null>(null);
+  const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Fetch articles (scheduled + published 30d + drafts with scheduled_for)
   const { data: articles, isLoading } = useQuery({
     queryKey: ["calendar-articles"],
     queryFn: async () => {
-      // Fetch scheduled articles
-      const { data: scheduledData, error: scheduledError } = await supabase
-        .from("articles")
-        .select(`
-          id,
-          title,
-          slug,
-          status,
-          scheduled_for,
-          published_at,
-          author_id,
-          authors (
-            id,
-            name
-          ),
-          primary_category_id,
-          categories:categories!articles_primary_category_id_fkey (
-            id,
-            name,
-            color
-          )
-        `)
-        .eq("status", "scheduled")
-        .not("scheduled_for", "is", null)
-        .order("scheduled_for", { ascending: true });
-
-      // Fetch recently published articles (last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data: publishedData, error: publishedError } = await supabase
-        .from("articles")
-        .select(`
-          id,
-          title,
-          slug,
-          status,
-          scheduled_for,
-          published_at,
-          author_id,
-          authors (
-            id,
-            name
-          ),
-          primary_category_id,
-          categories:categories!articles_primary_category_id_fkey (
-            id,
-            name,
-            color
-          )
-        `)
-        .eq("status", "published")
-        .not("published_at", "is", null)
-        .gte("published_at", thirtyDaysAgo.toISOString())
-        .order("published_at", { ascending: false });
 
-      if (scheduledError) {
-        console.error("Error fetching scheduled articles:", scheduledError);
-        throw scheduledError;
-      }
-      if (publishedError) {
-        console.error("Error fetching published articles:", publishedError);
-        throw publishedError;
-      }
+      const [scheduled, published, drafts] = await Promise.all([
+        supabase.from("articles").select(ARTICLE_SELECT)
+          .eq("status", "scheduled").not("scheduled_for", "is", null)
+          .order("scheduled_for", { ascending: true }),
+        supabase.from("articles").select(ARTICLE_SELECT)
+          .eq("status", "published").not("published_at", "is", null)
+          .gte("published_at", thirtyDaysAgo.toISOString())
+          .order("published_at", { ascending: false }),
+        supabase.from("articles").select(ARTICLE_SELECT)
+          .eq("status", "draft").not("scheduled_for", "is", null)
+          .order("scheduled_for", { ascending: true }),
+      ]);
 
-      return [...(scheduledData || []), ...(publishedData || [])];
+      if (scheduled.error) throw scheduled.error;
+      if (published.error) throw published.error;
+      if (drafts.error) throw drafts.error;
+
+      return [...(scheduled.data || []), ...(published.data || []), ...(drafts.data || [])];
+    },
+  });
+
+  // Fetch authors & categories for create dialog
+  const { data: authorsList = [] } = useQuery({
+    queryKey: ["calendar-authors"],
+    queryFn: async () => {
+      const { data } = await supabase.from("authors").select("id, name").order("name");
+      return data || [];
+    },
+  });
+
+  const { data: categoriesList = [] } = useQuery({
+    queryKey: ["calendar-categories"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("id, name").order("name");
+      return data || [];
     },
   });
 
   const updateArticleMutation = useMutation({
     mutationFn: async ({ id, scheduled_for }: { id: string; scheduled_for: string }) => {
-      const { error } = await supabase
-        .from("articles")
-        .update({ scheduled_for })
-        .eq("id", id);
-      
+      const { error } = await supabase.from("articles").update({ scheduled_for }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -195,157 +133,149 @@ const ContentCalendar = () => {
     },
   });
 
-  // Get unique categories and authors for filters
+  // Filters
   const uniqueCategories = useMemo(() => {
-    const cats = new Set(articles?.map(a => a.categories?.name).filter(Boolean));
+    const cats = new Set(articles?.map((a) => a.categories?.name).filter(Boolean));
     return Array.from(cats).sort();
   }, [articles]);
 
   const uniqueAuthors = useMemo(() => {
-    const authors = new Set(articles?.map(a => a.authors?.name).filter(Boolean));
-    return Array.from(authors).sort();
+    const auths = new Set(articles?.map((a) => a.authors?.name).filter(Boolean));
+    return Array.from(auths).sort();
   }, [articles]);
 
-  // Filter articles based on search and filters
   const filteredArticles = useMemo(() => {
     if (!articles) return [];
-    
-    return articles.filter(article => {
-      const matchesSearch = searchQuery === "" || 
-        article.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesCategory = categoryFilter === "all" || 
-        article.categories?.name === categoryFilter;
-      
-      const matchesAuthor = authorFilter === "all" || 
-        article.authors?.name === authorFilter;
-      
-      const matchesStatus = statusFilter === "all" || 
-        article.status === statusFilter;
-      
+    return articles.filter((article) => {
+      const matchesSearch = searchQuery === "" || article.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === "all" || article.categories?.name === categoryFilter;
+      const matchesAuthor = authorFilter === "all" || article.authors?.name === authorFilter;
+      const matchesStatus = statusFilter === "all" || article.status === statusFilter;
       return matchesSearch && matchesCategory && matchesAuthor && matchesStatus;
     });
   }, [articles, searchQuery, categoryFilter, authorFilter, statusFilter]);
 
   const events: CalendarEvent[] = (filteredArticles || []).map((article) => {
-    const eventDate = article.status === "scheduled" 
-      ? new Date(article.scheduled_for!) 
-      : new Date(article.published_at!);
-    
+    const eventDate =
+      article.status === "published"
+        ? new Date(article.published_at!)
+        : new Date(article.scheduled_for!);
+
     return {
       id: article.id,
       title: article.title,
       start: eventDate,
-      end: new Date(eventDate.getTime() + 30 * 60 * 1000), // 30 minute duration for cleaner display
+      end: new Date(eventDate.getTime() + 30 * 60 * 1000),
       author: article.authors?.name || "Unknown Author",
       authorId: article.author_id || "unknown",
       categoryName: article.categories?.name || "Uncategorized",
       categoryColor: article.categories?.color || "#999999",
       status: article.status,
       slug: article.slug,
+      viewCount: article.view_count || 0,
     };
   });
 
+  // Handlers
   const handleSelectEvent = (event: CalendarEvent) => {
-    navigate(`/editor?id=${event.id}`);
+    setDetailEvent(event);
+    setDetailOpen(true);
+  };
+
+  const handleSelectSlot = ({ start }: { start: Date }) => {
+    setCreateDate(start);
+    setCreateOpen(true);
   };
 
   const handleEventDrop = ({ event, start }: EventDropArgs) => {
-    updateArticleMutation.mutate({
-      id: event.id,
-      scheduled_for: start.toISOString(),
-    });
+    updateArticleMutation.mutate({ id: event.id, scheduled_for: start.toISOString() });
   };
 
   const handleEventResize = ({ event, start }: EventDropArgs) => {
-    updateArticleMutation.mutate({
-      id: event.id,
-      scheduled_for: start.toISOString(),
-    });
+    updateArticleMutation.mutate({ id: event.id, scheduled_for: start.toISOString() });
   };
 
-  const navigateCalendar = (direction: 'prev' | 'next' | 'today') => {
-    if (direction === 'today') {
-      setDate(new Date());
-      return;
-    }
-
-    const multiplier = direction === 'next' ? 1 : -1;
-    let newDate = date;
-
+  const navigateCalendar = (direction: "prev" | "next" | "today") => {
+    if (direction === "today") { setDate(new Date()); return; }
+    const m = direction === "next" ? 1 : -1;
     switch (view) {
-      case 'day':
-        newDate = addDays(date, multiplier);
-        break;
-      case 'week':
-        newDate = addWeeks(date, multiplier);
-        break;
-      case 'month':
-        newDate = addMonths(date, multiplier);
-        break;
-      case 'agenda':
-        newDate = addWeeks(date, multiplier);
-        break;
+      case "day": setDate(addDays(date, m)); break;
+      case "week": setDate(addWeeks(date, m)); break;
+      case "month": setDate(addMonths(date, m)); break;
+      case "agenda": setDate(addWeeks(date, m)); break;
     }
-
-    setDate(newDate);
   };
 
+  // Status-based event styling
   const eventStyleGetter = (event: CalendarEvent) => {
-    const categoryColor = getCategoryColor(event.categoryName);
-    const authorColor = getAuthorColor(event.authorId);
+    const baseColor = getCategoryColor(event.categoryName);
     const isPublished = event.status === "published";
-    
-    return {
-      style: {
-        backgroundColor: categoryColor,
-        color: "white",
-        borderRadius: "6px",
-        border: `2px solid ${authorColor}`,
-        borderLeft: `6px solid ${authorColor}`,
-        display: "flex",
-        flexDirection: "column" as const,
-        fontSize: "0.8rem",
-        fontWeight: "500",
-        opacity: isPublished ? 0.7 : 1,
-        padding: "6px 10px",
-        overflow: "visible",
-        whiteSpace: "normal" as const,
-        lineHeight: "1.3",
-      },
+    const isDraft = event.status === "draft";
+    const isScheduled = event.status === "scheduled";
+
+    const style: React.CSSProperties = {
+      borderRadius: "6px",
+      color: "white",
+      fontSize: "0.8rem",
+      fontWeight: "500",
+      padding: "6px 10px",
+      overflow: "visible",
+      whiteSpace: "normal",
+      lineHeight: "1.3",
+      display: "flex",
+      flexDirection: "column",
     };
+
+    if (isPublished) {
+      style.backgroundColor = baseColor;
+      style.border = "none";
+      style.opacity = 0.85;
+    } else if (isDraft) {
+      style.backgroundColor = baseColor.replace(")", ", 0.2)").replace("hsl(", "hsla(");
+      style.border = `2px dashed ${baseColor}`;
+      style.color = baseColor;
+    } else if (isScheduled) {
+      style.backgroundColor = baseColor;
+      style.backgroundImage =
+        "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.25) 3px, rgba(255,255,255,0.25) 6px)";
+      style.border = "none";
+    }
+
+    return { style };
+  };
+
+  // Today marker
+  const dayPropGetter = (d: Date) => {
+    if (d.toDateString() === new Date().toDateString()) {
+      return { style: { backgroundColor: "hsl(var(--accent) / 0.18)" } };
+    }
+    return {};
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-16">
+        {/* Breadcrumbs */}
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/"><Home className="h-4 w-4" /></Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink asChild><Link to="/"><Home className="h-4 w-4" /></Link></BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/admin">Admin</Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink asChild><Link to="/admin">Admin</Link></BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Content Calendar</BreadcrumbPage>
-            </BreadcrumbItem>
+            <BreadcrumbItem><BreadcrumbPage>Content Calendar</BreadcrumbPage></BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
+        {/* Title */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2 text-foreground">Content Calendar</h1>
-            <p className="text-muted-foreground">
-              View and manage your scheduled articles
-            </p>
+            <p className="text-muted-foreground">View and manage your scheduled articles</p>
           </div>
           <Button onClick={() => navigate("/editor")} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -361,197 +291,96 @@ const ContentCalendar = () => {
           </Card>
           <Card className="p-4 bg-card border-border">
             <div className="text-sm text-muted-foreground">Scheduled</div>
-            <div className="text-2xl font-bold">
-              {filteredArticles?.filter(a => a.status === "scheduled").length || 0}
-            </div>
+            <div className="text-2xl font-bold">{filteredArticles?.filter((a) => a.status === "scheduled").length || 0}</div>
           </Card>
           <Card className="p-4 bg-card border-border">
             <div className="text-sm text-muted-foreground">Published (30d)</div>
-            <div className="text-2xl font-bold">
-              {filteredArticles?.filter(a => a.status === "published").length || 0}
-            </div>
+            <div className="text-2xl font-bold">{filteredArticles?.filter((a) => a.status === "published").length || 0}</div>
           </Card>
           <Card className="p-4 bg-card border-border">
-            <div className="text-sm text-muted-foreground">Active Filters</div>
-            <div className="text-2xl font-bold">
-              {[categoryFilter !== "all", authorFilter !== "all", statusFilter !== "all", searchQuery !== ""].filter(Boolean).length}
-            </div>
+            <div className="text-sm text-muted-foreground">Drafts</div>
+            <div className="text-2xl font-bold">{filteredArticles?.filter((a) => a.status === "draft").length || 0}</div>
           </Card>
         </div>
 
-        {/* Filters and Search */}
+        {/* Filters */}
         <Card className="p-4 mb-6 bg-card border-border">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+              <Input placeholder="Search articles..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
             </div>
-            
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="All Categories" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {uniqueCategories.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
+                {uniqueCategories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
               </SelectContent>
             </Select>
-
             <Select value={authorFilter} onValueChange={setAuthorFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Authors" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="All Authors" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Authors</SelectItem>
-                {uniqueAuthors.map(author => (
-                  <SelectItem key={author} value={author}>{author}</SelectItem>
-                ))}
+                {uniqueAuthors.map((author) => <SelectItem key={author} value={author}>{author}</SelectItem>)}
               </SelectContent>
             </Select>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="All Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
           {(searchQuery || categoryFilter !== "all" || authorFilter !== "all" || statusFilter !== "all") && (
             <div className="mt-3 flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Active filters:</span>
-              {searchQuery && (
-                <Badge variant="secondary" className="gap-1">
-                  Search: {searchQuery}
-                </Badge>
-              )}
-              {categoryFilter !== "all" && (
-                <Badge variant="secondary">Category: {categoryFilter}</Badge>
-              )}
-              {authorFilter !== "all" && (
-                <Badge variant="secondary">Author: {authorFilter}</Badge>
-              )}
-              {statusFilter !== "all" && (
-                <Badge variant="secondary">Status: {statusFilter}</Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("");
-                  setCategoryFilter("all");
-                  setAuthorFilter("all");
-                  setStatusFilter("all");
-                }}
-              >
+              {searchQuery && <Badge variant="secondary">Search: {searchQuery}</Badge>}
+              {categoryFilter !== "all" && <Badge variant="secondary">Category: {categoryFilter}</Badge>}
+              {authorFilter !== "all" && <Badge variant="secondary">Author: {authorFilter}</Badge>}
+              {statusFilter !== "all" && <Badge variant="secondary">Status: {statusFilter}</Badge>}
+              <Button variant="ghost" size="sm" onClick={() => { setSearchQuery(""); setCategoryFilter("all"); setAuthorFilter("all"); setStatusFilter("all"); }}>
                 Clear all
               </Button>
             </div>
           )}
         </Card>
 
-        {/* Category Legend */}
-        <Card className="p-4 mb-6 bg-card border-border">
-          <div className="text-sm font-medium mb-3">Category Colors:</div>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { name: "News", color: "hsl(0, 85%, 45%)" },
-              { name: "Business", color: "hsl(210, 85%, 40%)" },
-              { name: "Life", color: "hsl(280, 65%, 50%)" },
-              { name: "Learn", color: "hsl(45, 90%, 45%)" },
-              { name: "Create", color: "hsl(340, 75%, 45%)" },
-              { name: "AI Policy Atlas", color: "hsl(160, 60%, 35%)" },
-              { name: "Voices", color: "hsl(25, 75%, 50%)" },
-            ].map(cat => (
-              <div key={cat.name} className="flex items-center gap-2">
-                <div 
-                  className="w-4 h-4 rounded" 
-                  style={{ backgroundColor: cat.color }}
-                />
-                <span className="text-sm">{cat.name}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        {/* Status Legend */}
+        <CalendarStatusLegend />
 
+        {/* Calendar */}
         <Card className="p-6 bg-card border-border">
           <div className="flex flex-wrap gap-4 mb-6">
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => navigateCalendar('prev')}
-                className="gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
+              <Button variant="outline" onClick={() => navigateCalendar("prev")} className="gap-2">
+                <ChevronLeft className="h-4 w-4" /> Back
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigateCalendar('today')}
-              >
-                Today
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigateCalendar('next')}
-                className="gap-2"
-              >
-                Forward
-                <ChevronRight className="h-4 w-4" />
+              <Button variant="outline" onClick={() => navigateCalendar("today")}>Today</Button>
+              <Button variant="outline" onClick={() => navigateCalendar("next")} className="gap-2">
+                Forward <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-
             <div className="flex gap-2">
-              <Button
-                variant={view === "month" ? "default" : "outline"}
-                onClick={() => setView("month")}
-                className="gap-2"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                Month
+              <Button variant={view === "month" ? "default" : "outline"} onClick={() => setView("month")} className="gap-2">
+                <CalendarIcon className="h-4 w-4" /> Month
               </Button>
-              <Button
-                variant={view === "week" ? "default" : "outline"}
-                onClick={() => setView("week")}
-                className="gap-2"
-              >
-                <CalendarRange className="h-4 w-4" />
-                Week
+              <Button variant={view === "week" ? "default" : "outline"} onClick={() => setView("week")} className="gap-2">
+                <CalendarRange className="h-4 w-4" /> Week
               </Button>
-              <Button
-                variant={view === "day" ? "default" : "outline"}
-                onClick={() => setView("day")}
-                className="gap-2"
-              >
-                <CalendarDays className="h-4 w-4" />
-                Day
+              <Button variant={view === "day" ? "default" : "outline"} onClick={() => setView("day")} className="gap-2">
+                <CalendarDays className="h-4 w-4" /> Day
               </Button>
-              <Button
-                variant={view === "agenda" ? "default" : "outline"}
-                onClick={() => setView("agenda")}
-                className="gap-2"
-              >
-                <CalendarDays className="h-4 w-4" />
-                Schedule
+              <Button variant={view === "agenda" ? "default" : "outline"} onClick={() => setView("agenda")} className="gap-2">
+                <CalendarDays className="h-4 w-4" /> Schedule
               </Button>
             </div>
           </div>
 
           {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-[600px] w-full" />
-            </div>
+            <Skeleton className="h-[600px] w-full" />
           ) : (
             <div className="calendar-wrapper">
               <DragAndDropCalendar
@@ -564,29 +393,22 @@ const ContentCalendar = () => {
                 onView={setView}
                 date={date}
                 onNavigate={setDate}
+                selectable
                 onSelectEvent={handleSelectEvent}
+                onSelectSlot={handleSelectSlot}
                 onEventDrop={handleEventDrop}
                 onEventResize={handleEventResize}
                 eventPropGetter={eventStyleGetter}
+                dayPropGetter={dayPropGetter}
                 resizable={false}
                 min={new Date(2024, 0, 1, 0, 0, 0)}
                 max={new Date(2024, 0, 1, 23, 59, 59)}
                 step={60}
                 timeslots={1}
-                formats={{
-                  eventTimeRangeFormat: () => '', // Hide end time in events
-                }}
+                formats={{ eventTimeRangeFormat: () => "" }}
                 components={{
                   event: ({ event }: { event: CalendarEvent }) => (
-                    <div style={{ 
-                      height: "100%", 
-                      display: "flex", 
-                      alignItems: "center",
-                      gap: "6px",
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis"
-                    }}>
+                    <div style={{ height: "100%", display: "flex", alignItems: "center", gap: "6px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                       <span style={{ fontWeight: "600", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {event.title}
                       </span>
@@ -604,7 +426,24 @@ const ContentCalendar = () => {
             </div>
           )}
         </Card>
+
+        {/* Summary Bar */}
+        <CalendarSummaryBar events={events} date={date} />
       </div>
+
+      {/* Dialogs */}
+      <CalendarCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        date={createDate}
+        authors={authorsList}
+        categories={categoriesList}
+      />
+      <CalendarEventDetail
+        event={detailEvent}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 };
