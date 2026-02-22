@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Bookmark, Zap, Award, X, ChevronDown } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import { useSavedArticles } from "@/hooks/useSavedArticles";
+import { Bookmark } from "lucide-react";
 import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
 
@@ -36,8 +36,6 @@ const Header = memo(() => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
-  const { savedArticles } = useSavedArticles();
-  const savedCount = savedArticles.length;
 
   const { data: userStats } = useQuery({
     queryKey: ["header-user-stats", user?.id],
@@ -115,14 +113,6 @@ const Header = memo(() => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5" aria-label={`Saved articles${savedCount > 0 ? `, ${savedCount} saved` : ''}`}>
-                <Bookmark className="h-4 w-4" />
-                {savedCount > 0 && (
-                  <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
-                    {savedCount}
-                  </span>
-                )}
-              </Link>
             </nav>
           </div>
 
@@ -354,11 +344,6 @@ const Header = memo(() => {
               <Link to="/saved" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 hover:text-primary transition-colors flex items-center gap-2">
                 <Bookmark className="h-4 w-4" />
                 Saved Articles
-                {savedCount > 0 && (
-                  <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
-                    {savedCount}
-                  </span>
-                )}
               </Link>
               {user ? (
                 <>
@@ -386,11 +371,6 @@ const Header = memo(() => {
 
             <div className="border-t border-border my-2" />
 
-            {/* Bottom actions */}
-            <div className="flex items-center gap-2 mt-2">
-              <NotificationPreferences />
-              <ReadingQueue />
-            </div>
           </div>
         </nav>
       </div>
