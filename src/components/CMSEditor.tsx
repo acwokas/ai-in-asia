@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,7 @@ import EditorWordCount from "@/components/editor/EditorWordCount";
 import KeyboardShortcutsDialog from "@/components/editor/KeyboardShortcutsDialog";
 import { useEditorAutoSave } from "@/hooks/useEditorAutoSave";
 import { useEditorLocalBackup } from "@/hooks/useEditorLocalBackup";
+import PublishChecklist from "@/components/editor/PublishChecklist";
 
 interface CMSEditorProps {
   initialData?: any;
@@ -40,6 +41,7 @@ interface CMSEditorProps {
 
 const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const [activeTab, setActiveTab] = useState("content");
+  const [showPublishChecklist, setShowPublishChecklist] = useState(false);
   const state = useCMSEditorState({ initialData });
 
   // Fetch authors
@@ -126,10 +128,20 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     },
   });
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
+    if (state.status === 'published') {
+      setShowPublishChecklist(true);
+      return;
+    }
     const data = actions.buildSaveData();
     onSave?.(data);
-  };
+  }, [state.status, actions, onSave]);
+
+  const handleConfirmPublish = useCallback(() => {
+    setShowPublishChecklist(false);
+    const data = actions.buildSaveData();
+    onSave?.(data);
+  }, [actions, onSave]);
 
   // Handle article type changes with auto-fill for 3-Before-9
   const handleArticleTypeChange = (value: string) => {
@@ -578,6 +590,10 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             onFocusKeyphraseChange={state.setFocusKeyphrase}
             onKeyphraseSynonymsChange={state.setKeyphraseSynonyms}
             onGenerateSEO={actions.handleGenerateSEO}
+            title={state.title}
+            slug={state.slug}
+            excerpt={state.excerpt}
+            featuredImage={state.featuredImage}
           />
         </TabsContent>
 
@@ -629,6 +645,23 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
         onOpenChange={state.setShowHeadlineDialog}
         headlineOptions={state.headlineOptions}
         onSelectHeadline={actions.handleSelectHeadline}
+      />
+
+      <PublishChecklist
+        open={showPublishChecklist}
+        onOpenChange={setShowPublishChecklist}
+        onConfirm={handleConfirmPublish}
+        title={state.title}
+        slug={state.slug}
+        excerpt={state.excerpt}
+        metaTitle={state.metaTitle}
+        metaDescription={state.metaDescription}
+        focusKeyphrase={state.focusKeyphrase}
+        featuredImage={state.featuredImage}
+        featuredImageAlt={state.featuredImageAlt}
+        content={state.content}
+        primaryCategoryId={state.primaryCategoryId}
+        authorId={state.authorId}
       />
 
     </div>

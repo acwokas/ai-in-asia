@@ -9,12 +9,12 @@ interface ArticleStructuredDataProps {
   authorName: string;
   categoryName?: string;
   categorySlug?: string;
+  wordCount?: number;
+  keywords?: string;
+  thumbnailUrl?: string;
+  canonicalUrl?: string;
 }
 
-interface BreadcrumbItem {
-  name: string;
-  url: string;
-}
 
 export const ArticleStructuredData = ({
   title,
@@ -25,6 +25,10 @@ export const ArticleStructuredData = ({
   authorName,
   categoryName,
   categorySlug,
+  wordCount,
+  keywords,
+  thumbnailUrl,
+  canonicalUrl,
 }: ArticleStructuredDataProps) => {
   const structuredData = {
     "@context": "https://schema.org",
@@ -46,8 +50,16 @@ export const ArticleStructuredData = ({
         url: "https://aiinasia.com/logo.png",
       },
     },
-    ...(categoryName && {
-      articleSection: categoryName,
+    isAccessibleForFree: true,
+    ...(categoryName && { articleSection: categoryName }),
+    ...(wordCount && { wordCount }),
+    ...(keywords && { keywords }),
+    ...(thumbnailUrl && { thumbnailUrl }),
+    ...(canonicalUrl && {
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": canonicalUrl,
+      },
     }),
   };
 
@@ -81,6 +93,11 @@ export const WebSiteStructuredData = () => {
     </Helmet>
   );
 };
+
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
 
 export const BreadcrumbStructuredData = ({ items }: { items: BreadcrumbItem[] }) => {
   const structuredData = {
