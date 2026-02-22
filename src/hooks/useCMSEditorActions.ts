@@ -475,17 +475,10 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data?.excerpt) {
           state.setExcerpt(data.excerpt);
         }
-        toast({
-          title: "Article Rewritten with Links",
-          description: "Content rewritten with internal and external links automatically added",
-        });
+        toast.success("Article Rewritten with Links", { description: "Content rewritten with internal and external links automatically added" });
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to rewrite article",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to rewrite article" });
     } finally {
       state.setIsRewritingArticle(false);
     }
@@ -493,11 +486,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
   const handleGenerateImagePrompts = async () => {
     if (!state.title || !state.content) {
-      toast({
-        title: "Missing content",
-        description: "Please add a title and content to generate image prompts",
-        variant: "destructive",
-      });
+      toast.error("Missing content", { description: "Please add a title and content to generate image prompts" });
       return;
     }
 
@@ -517,10 +506,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           explanation: p.explanation ?? "",
         }));
         state.setImagePrompts(normalized);
-        toast({
-          title: "Prompts Generated!",
-          description: `Scout has created ${normalized.length} custom image prompts`,
-        });
+        toast.success("Prompts Generated!", { description: `Scout has created ${normalized.length} custom image prompts` });
         return;
       }
 
@@ -553,24 +539,13 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
         const parsedPrompts = parsePrompts(data.ideogram);
         state.setImagePrompts(parsedPrompts);
-        toast({
-          title: "Prompts Generated!",
-          description: `Scout has created ${parsedPrompts.length} custom image prompts`,
-        });
+        toast.success("Prompts Generated!", { description: `Scout has created ${parsedPrompts.length} custom image prompts` });
         return;
       }
 
-      toast({
-        title: "Error",
-        description: "No prompts returned from the generator",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "No prompts returned from the generator" });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate image prompts",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to generate image prompts" });
     } finally {
       state.setIsGeneratingImagePrompts(false);
     }
@@ -580,10 +555,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     await navigator.clipboard.writeText(prompt);
     state.setCopiedPrompt(index);
     setTimeout(() => state.setCopiedPrompt(null), 2000);
-    toast({
-      title: "Copied!",
-      description: "Prompt copied to clipboard",
-    });
+    toast("Copied!", { description: "Prompt copied to clipboard" });
   };
 
   const buildSaveData = () => {
