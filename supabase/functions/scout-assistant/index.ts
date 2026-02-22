@@ -171,7 +171,14 @@ async function handleRewriteWithImages(
 Rewrite the article content to be engaging, well-structured, and optimised for SEO.
 Use British English. Maintain factual accuracy.
 
-IMPORTANT: In your rewritten content, place the exact placeholder [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph). Do NOT write any markdown image syntax yourself — the system will replace the placeholder with the actual image.
+LINKS — CRITICAL:
+- Preserve ALL existing markdown links from the original content. Do not remove or break any links.
+- Add 1-2 relevant external links to authoritative sources (research papers, official announcements, reputable news sites like Reuters, Bloomberg, TechCrunch, MIT Technology Review, etc.) using proper markdown link syntax [text](url). Use REAL, VALID URLs only — never use placeholder or made-up URLs.
+
+IMAGES:
+- Place the exact text [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph).
+- Do NOT write any markdown image syntax (e.g. ![...](...)) yourself — the system will replace the placeholder with the actual image.
+- Do NOT include image descriptions or prompts as raw text in the content.
 
 ALSO: suggest exactly 2 image descriptions for AI generation:
 1. A hero/lead image that captures the article's theme
@@ -180,7 +187,7 @@ For each description, also provide a short alt text (under 125 characters) suita
 
 Return your response in this EXACT JSON format (no markdown fences):
 {
-  "rewrittenContent": "the full rewritten article in markdown, with [MID_ARTICLE_IMAGE] placeholder",
+  "rewrittenContent": "the full rewritten article in markdown, with [MID_ARTICLE_IMAGE] placeholder and preserved/added links",
   "heroImageDescription": "detailed description for AI image generation of the hero image",
   "heroImageAlt": "short alt text under 125 chars",
   "midImageDescription": "detailed description for AI image generation of the mid-article image",
@@ -334,6 +341,11 @@ ${content}`;
     // Remove placeholder entirely if image generation failed
     finalContent = finalContent.replace(/\n*\[MID_ARTICLE_IMAGE\]\n*/g, '\n\n');
   }
+
+  // Cleanup: strip any raw image prompt lines that leaked (![description] without a (url))
+  finalContent = finalContent.replace(/^!\[?[^\]]*\]?(?!\()\s*$/gm, '');
+  // Remove any double-blank-line artifacts
+  finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
   return new Response(
     JSON.stringify({
