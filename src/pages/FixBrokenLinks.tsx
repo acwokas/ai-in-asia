@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Link as LinkIcon, AlertTriangle, CheckCircle2, Home } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import Header from "@/components/Header";
 
 const FixBrokenLinks = () => {
   const [scanResults, setScanResults] = useState<any>(null);
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
 
   // Check admin status

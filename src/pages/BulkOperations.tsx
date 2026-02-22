@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Search, CheckSquare, Tag, Globe, Archive, Calendar, TrendingUp, Sparkles, Home } from "lucide-react";
 import {
   Breadcrumb,
@@ -23,7 +23,7 @@ import {
 
 const BulkOperations = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,11 +51,7 @@ const BulkOperations = () => {
       .eq("role", "admin");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You need admin privileges to access this page." });
       navigate("/admin");
       return;
     }
@@ -136,20 +132,12 @@ const BulkOperations = () => {
 
   const handleBulkOperation = async () => {
     if (selectedArticles.length === 0) {
-      toast({
-        title: "No articles selected",
-        description: "Please select at least one article",
-        variant: "destructive",
-      });
+      toast.error("No articles selected", { description: "Please select at least one article" });
       return;
     }
 
     if (!bulkAction) {
-      toast({
-        title: "No action selected",
-        description: "Please select a bulk action",
-        variant: "destructive",
-      });
+      toast.error("No action selected", { description: "Please select a bulk action" });
       return;
     }
 
@@ -239,11 +227,7 @@ const BulkOperations = () => {
 
         case "category":
           if (!targetValue) {
-            toast({
-              title: "No category selected",
-              description: "Please select a category",
-              variant: "destructive",
-            });
+            toast.error("No category selected", { description: "Please select a category" });
             setIsProcessing(false);
             return;
           }
@@ -255,11 +239,7 @@ const BulkOperations = () => {
 
         case "add-tag":
           if (!targetValue) {
-            toast({
-              title: "No tag selected",
-              description: "Please select a tag",
-              variant: "destructive",
-            });
+            toast.error("No tag selected", { description: "Please select a tag" });
             setIsProcessing(false);
             return;
           }
@@ -284,11 +264,7 @@ const BulkOperations = () => {
 
         case "schedule":
           if (!targetValue) {
-            toast({
-              title: "No date selected",
-              description: "Please select a date",
-              variant: "destructive",
-            });
+            toast.error("No date selected", { description: "Please select a date" });
             setIsProcessing(false);
             return;
           }
@@ -305,10 +281,7 @@ const BulkOperations = () => {
           throw new Error("Unknown action");
       }
 
-      toast({
-        title: "Success",
-        description: `Bulk operation completed for ${selectedArticles.length} articles`,
-      });
+      toast("Success", { description: `Bulk operation completed for ${selectedArticles.length} articles` });
 
       setSelectedArticles([]);
       setBulkAction("");
@@ -316,11 +289,7 @@ const BulkOperations = () => {
       queryClient.invalidateQueries({ queryKey: ["bulk-articles"] });
     } catch (error) {
       console.error("Bulk operation error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to complete bulk operation",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to complete bulk operation" });
     } finally {
       setIsProcessing(false);
     }
@@ -598,17 +567,10 @@ const BulkOperations = () => {
                       setIsProcessing(true);
                       try {
                         await supabase.rpc("update_trending_articles");
-                        toast({
-                          title: "Success",
-                          description: "Trending articles updated",
-                        });
+                        toast("Success", { description: "Trending articles updated" });
                         queryClient.invalidateQueries({ queryKey: ["bulk-articles"] });
                       } catch (error) {
-                        toast({
-                          title: "Error",
-                          description: "Failed to update trending articles",
-                          variant: "destructive",
-                        });
+                        toast.error("Error", { description: "Failed to update trending articles" });
                       } finally {
                         setIsProcessing(false);
                       }

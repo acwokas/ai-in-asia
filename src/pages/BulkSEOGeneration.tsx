@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
@@ -9,7 +9,7 @@ import Header from "@/components/Header";
 const BulkSEOGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<any>(null);
-  const { toast } = useToast();
+  
 
   const handleBulkGenerate = async () => {
     setIsGenerating(true);
@@ -22,16 +22,9 @@ const BulkSEOGeneration = () => {
 
       setResults(data);
       
-      toast({
-        title: "Bulk SEO Generation Complete!",
-        description: `Successfully processed ${data.processed} articles. ${data.failed} failed.`,
-      });
+      toast("Bulk SEO Generation Complete!", { description: `Successfully processed ${data.processed} articles. ${data.failed} failed.` });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate SEO metadata",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to generate SEO metadata" });
     } finally {
       setIsGenerating(false);
     }

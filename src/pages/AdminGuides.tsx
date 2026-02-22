@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Home, Plus, Search, Pencil, Copy, Trash2, Loader2, BookOpen } from "lucide-react";
 
 const AdminGuides = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -36,8 +36,8 @@ const AdminGuides = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this guide?")) return;
     const { error } = await supabase.from("ai_guides").delete().eq("id", id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Guide deleted" });
+    if (error) { toast.error("Error", { description: error.message }); return; }
+    toast("Guide deleted");
     queryClient.invalidateQueries({ queryKey: ["admin-guides"] });
   };
 
@@ -46,8 +46,8 @@ const AdminGuides = () => {
     if (!original) return;
     const { id, created_at, updated_at, published_at, preview_code, ...rest } = original as any;
     const { error } = await supabase.from("ai_guides").insert({ ...rest, title: `${rest.title} (Copy)`, slug: `${rest.slug}-copy-${Date.now()}`, status: "draft" });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Guide duplicated" });
+    if (error) { toast.error("Error", { description: error.message }); return; }
+    toast("Guide duplicated");
     queryClient.invalidateQueries({ queryKey: ["admin-guides"] });
   };
 
@@ -61,7 +61,7 @@ const AdminGuides = () => {
     }
     setSelected([]);
     queryClient.invalidateQueries({ queryKey: ["admin-guides"] });
-    toast({ title: `${action.charAt(0).toUpperCase() + action.slice(1)} completed`, description: `${selected.length} guides updated.` });
+    toast(`${action.charAt(0).toUpperCase() + action.slice(1)} completed`, { description: `${selected.length} guides updated.` });
   };
 
   const statusBadge = (status: string) => {

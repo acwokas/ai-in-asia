@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Search, AlertCircle, CheckCircle, Link as LinkIcon, FileText, Home } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -23,7 +23,7 @@ import {
 
 const SEOTools = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<"all" | "need-attention" | "optimized">("all");
@@ -69,11 +69,7 @@ const SEOTools = () => {
       .eq("role", "admin");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You need admin privileges to access this page." });
       navigate("/admin");
       return;
     }
@@ -167,16 +163,9 @@ const SEOTools = () => {
     if (queueStatus && (queueStatus.status === "completed" || queueStatus.status === "failed")) {
       setIsFixingBulk(false);
       if (queueStatus.status === "completed") {
-        toast({
-          title: "SEO Fix Complete!",
-          description: `Successfully fixed ${queueStatus.successful_items} articles. ${queueStatus.failed_items} failed.`,
-        });
+        toast("SEO Fix Complete!", { description: `Successfully fixed ${queueStatus.successful_items} articles. ${queueStatus.failed_items} failed.` });
       } else {
-        toast({
-          title: "SEO Fix Failed",
-          description: queueStatus.error_message || "An error occurred",
-          variant: "destructive",
-        });
+        toast.error("SEO Fix Failed", { description: queueStatus.error_message || "An error occurred" });
       }
       setQueueJobId(null);
       // Refresh articles
@@ -231,10 +220,7 @@ const SEOTools = () => {
       const articlesNeedingFix = articles?.filter(a => getSEOScore(a) < 80) || [];
       
       if (articlesNeedingFix.length === 0) {
-        toast({
-          title: "No Articles Need Fixing",
-          description: "All articles already have good SEO!",
-        });
+        toast("No Articles Need Fixing", { description: "All articles already have good SEO!" });
         setIsFixingBulk(false);
         return;
       }
@@ -259,16 +245,9 @@ const SEOTools = () => {
 
       setQueueJobId(queueEntry.id);
       
-      toast({
-        title: "SEO Fix Queued",
-        description: `Processing ${articleIds.length} articles in background. This page will update with progress.`,
-      });
+      toast("SEO Fix Queued", { description: `Processing ${articleIds.length} articles in background. This page will update with progress.` });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
       setIsFixingBulk(false);
     }
   };
@@ -280,10 +259,7 @@ const SEOTools = () => {
       
       if (error) throw error;
       
-      toast({
-        title: "Reading Times Calculated!",
-        description: data.message,
-      });
+      toast("Reading Times Calculated!", { description: data.message });
       
       // Refetch articles to show updated reading times
       setTimeout(() => {
@@ -291,11 +267,7 @@ const SEOTools = () => {
       }, 1000);
     } catch (error: any) {
       console.error('Error calculating reading times:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to calculate reading times",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to calculate reading times" });
     } finally {
       setIsCalculatingReadingTimes(false);
     }

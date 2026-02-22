@@ -13,13 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, ExternalLink, AlertTriangle, TrendingUp, CheckCircle2, Zap, Info, ListChecks } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { BulkOperationQueue } from "@/components/BulkOperationQueue";
 
 const InternalLinksManager = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [isGeneratingLinks, setIsGeneratingLinks] = useState<string | null>(null);
   const [selectedArticles, setSelectedArticles] = useState<Set<string>>(new Set());

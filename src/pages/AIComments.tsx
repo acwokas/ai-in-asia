@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, MessageSquare, Trash2, RefreshCw, Users, Edit, Settings, Home, ChevronRight, ListChecks, BarChart3, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -36,7 +36,7 @@ const AIComments = () => {
   const [isManageAuthorsOpen, setIsManageAuthorsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("generate");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
 
   // Check admin status
@@ -157,19 +157,12 @@ const AIComments = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Authors Seeded",
-        description: `${data.count} authors created (${data.powerUsers} power users)`,
-      });
+      toast("Authors Seeded", { description: `${data.count} authors created (${data.powerUsers} power users)` });
       queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
       queryClient.invalidateQueries({ queryKey: ['all-ai-authors'] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -189,19 +182,12 @@ const AIComments = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Authors Reseeded",
-        description: `${data.count} authors created (${data.powerUsers} power users)`,
-      });
+      toast("Authors Reseeded", { description: `${data.count} authors created (${data.powerUsers} power users)` });
       queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
       queryClient.invalidateQueries({ queryKey: ['all-ai-authors'] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -220,19 +206,12 @@ const AIComments = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Comments Generated",
-        description: `${data.commentsGenerated} comments for ${data.articlesProcessed} articles`,
-      });
+      toast("Comments Generated", { description: `${data.commentsGenerated} comments for ${data.articlesProcessed} articles` });
       setIsGenerating(false);
       refetch();
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
       setIsGenerating(false);
     },
   });
@@ -247,19 +226,12 @@ const AIComments = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "All AI Comments Deleted",
-        description: "All AI-generated comments have been removed. You can now regenerate them.",
-      });
+      toast("All AI Comments Deleted", { description: "All AI-generated comments have been removed. You can now regenerate them." });
       refetch();
       queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -273,7 +245,7 @@ const AIComments = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Comment deleted" });
+      toast("Comment deleted");
       refetch();
     },
   });
@@ -288,7 +260,7 @@ const AIComments = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Comment updated" });
+      toast("Comment updated");
       setEditingComment(null);
       refetch();
     },
@@ -309,17 +281,13 @@ const AIComments = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Author updated successfully" });
+      toast("Author updated successfully");
       setEditingAuthor(null);
       refetchAuthors();
       queryClient.invalidateQueries({ queryKey: ['ai-author-stats'] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error updating author",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error updating author", { description: error.message });
     },
   });
 
@@ -335,17 +303,10 @@ const AIComments = () => {
         const errorMessage = (data as any)?.error || error.message || 'Failed to regenerate';
         throw new Error(errorMessage);
       }
-      toast({
-        title: "Comments Regenerated",
-        description: `${data.commentsGenerated} new comments generated`,
-      });
+      toast("Comments Regenerated", { description: `${data.commentsGenerated} new comments generated` });
       refetch();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to regenerate',
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error instanceof Error ? error.message : 'Failed to regenerate' });
     } finally {
       setIsGenerating(false);
     }
@@ -378,18 +339,11 @@ const AIComments = () => {
       return data;
     },
     onSuccess: () => {
-      toast({
-        title: "Comment Regenerated",
-        description: "New comment generated successfully",
-      });
+      toast("Comment Regenerated", { description: "New comment generated successfully" });
       refetch();
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -404,17 +358,10 @@ const AIComments = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Legacy Comments Deleted",
-        description: "All legacy comments have been removed",
-      });
+      toast("Legacy Comments Deleted", { description: "All legacy comments have been removed" });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -424,16 +371,9 @@ const AIComments = () => {
     setIsAnalyzing(true);
     try {
       await refetchQuality();
-      toast({
-        title: "Quality Analysis Complete",
-        description: `Analyzed ${qualityData?.totalArticles || 0} articles`,
-      });
+      toast("Quality Analysis Complete", { description: `Analyzed ${qualityData?.totalArticles || 0} articles` });
     } catch (error) {
-      toast({
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
+      toast.error("Analysis Failed", { description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsAnalyzing(false);
     }
@@ -470,19 +410,12 @@ const AIComments = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Auto-Regeneration Queued",
-        description: `Regenerating comments for ${data.total_items} low-quality articles`,
-      });
+      toast("Auto-Regeneration Queued", { description: `Regenerating comments for ${data.total_items} low-quality articles` });
       queryClient.invalidateQueries({ queryKey: ['bulk-operation-queue'] });
       setActiveTab('queue');
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -494,10 +427,7 @@ const AIComments = () => {
       .map((r: any) => r.articleId);
 
     if (lowQualityArticles.length === 0) {
-      toast({
-        title: "No Articles Need Regeneration",
-        description: "All articles have acceptable quality scores!",
-      });
+      toast("No Articles Need Regeneration", { description: "All articles have acceptable quality scores!" });
       return;
     }
 
@@ -514,10 +444,7 @@ const AIComments = () => {
       .map((r: any) => r.articleId);
 
     if (goodQualityArticles.length === 0) {
-      toast({
-        title: "No 'Good' Articles",
-        description: "No articles with 'Good' quality scores (60-79) found.",
-      });
+      toast("No 'Good' Articles", { description: "No articles with 'Good' quality scores (60-79) found." });
       return;
     }
 
@@ -562,11 +489,7 @@ const AIComments = () => {
       }
 
       if (allArticles.length === 0) {
-        toast({
-          title: "No Articles",
-          description: "No published articles found to process",
-          variant: "destructive",
-        });
+        toast.error("No Articles", { description: "No published articles found to process" });
         return;
       }
 
@@ -611,12 +534,9 @@ const AIComments = () => {
       }
 
       if (articleIdsToProcess.length === 0) {
-        toast({
-          title: "All Set",
-          description: regenerateAll 
+        toast("All Set", { description: regenerateAll 
             ? "No articles to process" 
-            : "All published articles already have AI comments",
-        });
+            : "All published articles already have AI comments" });
         return;
       }
 
@@ -634,19 +554,12 @@ const AIComments = () => {
 
       if (queueError) throw queueError;
 
-      toast({
-        title: "Operation Queued",
-        description: `${articleIdsToProcess.length} articles queued for AI comment generation. Processing will start automatically.`,
-      });
+      toast("Operation Queued", { description: `${articleIdsToProcess.length} articles queued for AI comment generation. Processing will start automatically.` });
 
       queryClient.invalidateQueries({ queryKey: ['bulk-operation-queue'] });
       setActiveTab("queue");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     }
   };
 

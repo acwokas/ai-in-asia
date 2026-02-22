@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, ExternalLink, Home } from "lucide-react";
 import {
@@ -30,7 +30,7 @@ const Redirects = () => {
   const [fromPath, setFromPath] = useState("");
   const [toPath, setToPath] = useState("");
   const [statusCode, setStatusCode] = useState(301);
-  const { toast } = useToast();
+  
   const navigate = useNavigate();
 
   useEffect(() => {
