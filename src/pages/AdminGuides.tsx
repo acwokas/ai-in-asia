@@ -89,7 +89,7 @@ const AdminGuides = () => {
           <h1 className="text-3xl font-bold mb-1">Manage Guides</h1>
           <p className="text-muted-foreground">{guides?.length || 0} guides total</p>
         </div>
-        <Button onClick={() => navigate("/guide-editor")} className="gap-2">
+        <Button onClick={() => navigate("/admin/guide-editor")} className="gap-2">
           <Plus className="h-4 w-4" /> Create New Guide
         </Button>
       </div>
@@ -142,7 +142,7 @@ const AdminGuides = () => {
         <div className="text-center py-16">
           <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground mb-4">No guides found</p>
-          <Button onClick={() => navigate("/guide-editor")}>Create your first guide</Button>
+          <Button onClick={() => navigate("/admin/guide-editor")}>Create your first guide</Button>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
@@ -169,7 +169,7 @@ const AdminGuides = () => {
                   <td className="p-3 hidden lg:table-cell text-muted-foreground">{guide.updated_at ? new Date(guide.updated_at).toLocaleDateString("en-GB") : "-"}</td>
                   <td className="p-3">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/guide-editor/${guide.id}`)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/admin/guide-editor/${guide.id}`)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicate(guide.id)}><Copy className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(guide.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>

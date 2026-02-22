@@ -147,7 +147,7 @@ export const AdminQuickActions = ({
               <Wrench className="h-4 w-4 mr-2" />
               Knowledge Engine
             </Button>
-            <Button onClick={() => navigate("/guide-editor")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
+            <Button onClick={() => navigate("/admin/guide-editor")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
               Create New Guide
             </Button>
             <Button onClick={() => navigate("/admin/guides")} variant="outline" className="justify-start bg-primary/10 border-primary text-primary hover:bg-primary/20">
