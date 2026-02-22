@@ -100,8 +100,7 @@ const navGroups: NavGroup[] = [
   {
     title: "SEO & Links",
     items: [
-      { label: "SEO Tools", path: "/admin/seo-tools", icon: Search },
-      { label: "Bulk SEO", path: "/admin/bulk-seo", icon: Layers },
+      { label: "SEO Dashboard", path: "/admin/seo", icon: Search },
       { label: "Internal Links", path: "/admin/internal-links", icon: LinkIcon },
       { label: "Link Health", path: "/admin/link-health", icon: HeartPulse },
       { label: "Broken Links", path: "/admin/fix-broken-links", icon: Unlink },
