@@ -500,18 +500,18 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
     throw new Error('No AI comment authors found. Please seed the author pool first.');
   }
 
-  const authorsByRegion = {
-    singapore: authors.filter((a: any) => a.region === 'singapore'),
-    india: authors.filter((a: any) => a.region === 'india'),
-    philippines: authors.filter((a: any) => a.region === 'philippines'),
-    china_hk: authors.filter((a: any) => a.region === 'china_hk'),
-    west: authors.filter((a: any) => a.region === 'west'),
-  };
+  // Group authors by region dynamically
+  const authorsByRegion: Record<string, any[]> = {};
+  for (const author of authors) {
+    if (!authorsByRegion[author.region]) {
+      authorsByRegion[author.region] = [];
+    }
+    authorsByRegion[author.region].push(author);
+  }
+  const allRegions = Object.keys(authorsByRegion);
 
   const powerUsers = authors.filter((a: any) => a.is_power_user);
-  const allAuthors = [...authorsByRegion.singapore, ...authorsByRegion.india, 
-                     ...authorsByRegion.philippines, ...authorsByRegion.china_hk, 
-                     ...authorsByRegion.west];
+  const allAuthors = authors;
 
   // Get existing results or initialize
   const results: any[] = job.results || [];
@@ -531,7 +531,7 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
         // Fetch the article
         const { data: article, error: articleError } = await supabase
           .from("articles")
-          .select("id, title, excerpt, published_at, updated_at")
+          .select("id, title, excerpt, content, published_at, updated_at, categories!primary_category_id(name)")
           .eq("id", articleId)
           .single();
 
@@ -551,6 +551,18 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
           ? Math.floor(Math.random() * 2) + 5  // 5-6
           : Math.floor(Math.random() * 3) + 2; // 2-4
 
+        // Truncate content for AI prompt
+        const cleanContent = (article.content || '')
+          .toString()
+          .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+          .replace(/#{1,6}\s/g, '')
+          .replace(/[*_]{1,3}/g, '')
+          .replace(/\n{3,}/g, '\n\n')
+          .substring(0, 2000);
+
+        const categoryName = (article as any).categories?.name || 'Technology';
+
         const commentsToGenerate = [];
 
         for (let j = 0; j < numComments; j++) {
@@ -562,15 +574,22 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
             selectedAuthor = powerUsers[Math.floor(Math.random() * powerUsers.length)];
           } else {
             // Select author based on regional distribution
-            const rand = Math.random();
-            let region: 'singapore' | 'india' | 'philippines' | 'china_hk' | 'west';
-            if (rand < 0.4) region = 'singapore';
-            else if (rand < 0.6) region = 'india';
-            else if (rand < 0.7) region = 'philippines';
-            else if (rand < 0.8) region = 'china_hk';
-            else region = 'west';
+            // Pick region, weighted towards APAC
+            const apacRegions = ['singapore', 'india', 'indonesia', 'japan', 'korea', 'china', 'hong_kong', 'philippines', 'thailand', 'vietnam', 'malaysia'];
+            const otherRegions = allRegions.filter(r => !apacRegions.includes(r));
 
-            const regionAuthors = authorsByRegion[region];
+            let region: string;
+            if (Math.random() < 0.75) {
+              const availableApac = apacRegions.filter(r => authorsByRegion[r]?.length > 0);
+              region = availableApac[Math.floor(Math.random() * availableApac.length)] || allRegions[0];
+            } else {
+              const availableOther = otherRegions.filter(r => authorsByRegion[r]?.length > 0);
+              region = availableOther.length > 0
+                ? availableOther[Math.floor(Math.random() * availableOther.length)]
+                : allRegions[Math.floor(Math.random() * allRegions.length)];
+            }
+
+            const regionAuthors = authorsByRegion[region] || [];
             if (regionAuthors.length === 0) {
               selectedAuthor = allAuthors[Math.floor(Math.random() * allAuthors.length)];
             } else {
@@ -614,26 +633,43 @@ async function processAIComments(supabase: any, job: any, lovableApiKey: string)
             temporalInstruction = temporalVariations[Math.floor(Math.random() * temporalVariations.length)];
           }
 
-          const prompt = `You are ${selectedAuthor.name}, a reader from ${selectedAuthor.region.replace('_', ' ')}. Write a natural, authentic comment on this article.
+          const systemPrompt = `You generate ONE realistic blog comment for AIinASIA.com. Output ONLY the comment text - no quotes, no labels, no metadata.
 
-Article: "${article.title}"
-Summary: "${article.excerpt || 'No summary available'}"
+BANNED (instant fail):
+- "fascinating" "intriguing" "compelling" "thought-provoking"
+- "great read" "interesting read" "nice article" "thanks for sharing" "well written"
+- "game changer" "rapidly evolving" "cutting-edge" "revolutionize" "paradigm shift"
+- "delve into" "it's important to note" "in today's world" "navigate the landscape"
+- "wah" "lah" "leh" "lor" "innit" "blimey" "kerfuffle" "cheers mate"
+- "right?" "isn't it?" "don't you think?" at end of comment
+- "makes me wonder" "food for thought" "at the end of the day" "here's the kicker"
+- Em dashes or en dashes - use commas or hyphens
+- *asterisks* for emphasis
 
-Requirements:
-- Length: ${targetLength}
-- Focus: ${selectedAngle}
-${temporalInstruction ? `- ${temporalInstruction}` : ''}
-- Be specific and relevant to the article topic
-- Use ${selectedAuthor.region === 'west' ? 'British or American' : 'a mix of British and American'} English spelling
-- Sound natural and conversational
-- Include regional phrasing if appropriate (subtle, not stereotypical)
-- NO em rules, NO hyphens for emphasis, NO formulaic phrases
-- NO promotional content
-- NO contradicting the article's facts
-- Mix of constructive, neutral, or mildly critical tone
-- Make this comment distinctly different from others on the same article
+RULES:
+1. React to ONE specific thing from the article content, not the whole article.
+2. Rough edges welcome. Incomplete sentences. Missing punctuation. lowercase starts OK.
+3. Your subjective take, not article merit.
+4. Reference a SPECIFIC claim, fact, company, or argument from the content.
+5. STAY IN CHARACTER based on the persona info provided. A skeptic stays skeptical. A practitioner shares experience. An academic references research.`;
 
-Write ONLY the comment text, no metadata.`;
+          const prompt = `ARTICLE: "${article.title}"
+CATEGORY: ${categoryName}
+SUMMARY: "${article.excerpt || 'No summary available'}"
+
+ARTICLE CONTENT (excerpt):
+${cleanContent}
+
+YOUR PERSONA: ${selectedAuthor.name} (@${(selectedAuthor as any).handle || 'anonymous'}) from ${selectedAuthor.region.replace('_', ' ')}
+${(selectedAuthor as any).bio ? `BIO: ${(selectedAuthor as any).bio}` : ''}
+${(selectedAuthor as any).persona_type ? `TYPE: ${(selectedAuthor as any).persona_type}` : ''}
+${(selectedAuthor as any).commenting_style ? `STYLE: ${(selectedAuthor as any).commenting_style}` : ''}
+
+FOCUS: ${selectedAngle}
+LENGTH: ${targetLength}
+${temporalInstruction ? `NOTE: ${temporalInstruction}` : ''}
+
+Write ONE comment that references something SPECIFIC from the article content.`;
 
           const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
@@ -643,7 +679,10 @@ Write ONLY the comment text, no metadata.`;
             },
             body: JSON.stringify({
               model: 'google/gemini-2.5-flash',
-              messages: [{ role: 'user', content: prompt }],
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: prompt }
+              ],
               temperature: 0.9,
             }),
           });
@@ -655,6 +694,16 @@ Write ONLY the comment text, no metadata.`;
 
           const aiData = await aiResponse.json();
           let commentText = aiData.choices[0].message.content.trim();
+
+          // Clean up AI artifacts
+          commentText = commentText.replace(/^['"]/g, '').replace(/['"]$/g, '');
+          commentText = commentText.replace(/^(Comment|Response|Reply):\s*/i, '');
+          commentText = commentText.replace(/\s*—\s*/g, ', ').replace(/\s*–\s*/g, '-');
+          commentText = commentText.replace(/\*([^*]+)\*/g, '$1');
+          commentText = commentText.replace(/\bfascinating\b/gi, '').replace(/\bintriguing\b/gi, '');
+          commentText = commentText.replace(/\bcompelling\b/gi, '').replace(/\bthought-?provoking\b/gi, '');
+          commentText = commentText.replace(/\bthanks for sharing\b/gi, '').replace(/\bgreat read\b/gi, '');
+          commentText = commentText.replace(/\s{2,}/g, ' ').trim();
 
           // Generate timestamp
           const published = new Date(article.published_at);
