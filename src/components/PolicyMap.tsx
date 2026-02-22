@@ -19,41 +19,50 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
   const [mapToken, setMapToken] = useState<string>('');
+  const [mapError, setMapError] = useState<string>('');
 
   useEffect(() => {
+    let cancelled = false;
+    const timeoutId = setTimeout(() => {
+      if (!cancelled && !mapToken) {
+        setMapError('Map took too long to load. Region cards are available below.');
+      }
+    }, 10000);
+
     const fetchToken = async () => {
       try {
-        console.log('Fetching Mapbox token via supabase.functions.invoke...');
         const { data, error } = await supabase.functions.invoke('get-mapbox-token');
 
+        if (cancelled) return;
+
         if (error) {
-          console.error('Failed to fetch Mapbox token:', error);
+          setMapError('Unable to load map. Browse regions using the cards below.');
           return;
         }
 
         const token = (data as { token?: string } | null)?.token;
-        console.log('Mapbox token received:', token ? 'Yes' : 'No');
         if (token) {
           setMapToken(token);
+        } else {
+          setMapError('Map configuration unavailable. Browse regions using the cards below.');
         }
-      } catch (error) {
-        console.error('Error fetching Mapbox token:', error);
+      } catch {
+        if (!cancelled) {
+          setMapError('Unable to load map. Browse regions using the cards below.');
+        }
       }
     };
 
     fetchToken();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapToken) {
-      console.log('Map initialization waiting:', { 
-        hasContainer: !!mapContainer.current, 
-        hasToken: !!mapToken 
-      });
-      return;
-    }
-
-    console.log('Initializing map with token...');
+    if (!mapContainer.current || !mapToken) return;
 
     // Clean up existing map if any
     if (map.current) {
@@ -66,13 +75,11 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
       
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/mapbox/dark-v11',
         center: [100, 20],
         zoom: 2,
         projection: 'mercator' as any
       });
-
-      console.log('Map created, adding controls...');
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
@@ -93,7 +100,6 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
       };
 
       map.current.on('load', () => {
-        console.log('Map loaded, adding markers...');
         if (!map.current) return;
         
         regions.forEach((region) => {
@@ -135,20 +141,20 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
             height: 30px;
             border-radius: 50%;
             background-color: hsl(var(--primary));
-            border: 3px solid white;
+            border: 3px solid rgba(255,255,255,0.3);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
             transition: all 0.2s;
           `;
           
           el.addEventListener('mouseenter', () => {
-            el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)';
-            el.style.borderWidth = '4px';
+            el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.6)';
+            el.style.borderColor = 'rgba(255,255,255,0.6)';
           });
           
           el.addEventListener('mouseleave', () => {
-            el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-            el.style.borderWidth = '3px';
+            el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+            el.style.borderColor = 'rgba(255,255,255,0.3)';
           });
 
           markerContainer.appendChild(el);
@@ -156,12 +162,13 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
           const popup = new mapboxgl.Popup({ 
             offset: 25,
             closeButton: false,
-            closeOnClick: false
+            closeOnClick: false,
+            className: 'policy-map-popup'
           }).setHTML(`
-            <div style="padding: 8px;">
-              <h3 style="margin: 0 0 4px 0; font-weight: 600;">${region.name}</h3>
-              <p style="margin: 0; font-size: 12px; color: #666;">${region.description}</p>
-              ${isRecent ? '<span style="display: inline-block; margin-top: 4px; padding: 2px 6px; background: hsl(var(--primary)); color: white; font-size: 10px; border-radius: 4px; font-weight: 500;">Recently Updated</span>' : ''}
+            <div style="padding: 8px; background: #1a1b23; border-radius: 8px; border: 1px solid #2a2d42;">
+              <h3 style="margin: 0 0 4px 0; font-weight: 600; color: #fff; font-size: 14px;">${region.name}</h3>
+              <p style="margin: 0; font-size: 12px; color: #b0b4c8;">${region.description}</p>
+              ${isRecent ? '<span style="display: inline-block; margin-top: 6px; padding: 2px 8px; background: hsl(var(--primary)); color: white; font-size: 10px; border-radius: 4px; font-weight: 500;">Recently Updated</span>' : ''}
             </div>
           `);
 
@@ -183,15 +190,13 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
             navigate(`/ai-policy-atlas/${region.slug}`);
           });
         });
-
-        console.log('Markers added successfully');
       });
 
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
+      map.current.on('error', () => {
+        setMapError('Map failed to load. Browse regions using the cards below.');
       });
-    } catch (error) {
-      console.error('Error initializing map:', error);
+    } catch {
+      setMapError('Map failed to initialise. Browse regions using the cards below.');
     }
 
     return () => {
@@ -200,7 +205,15 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
         map.current = null;
       }
     };
-  }, [mapToken, regions, navigate]);
+  }, [mapToken, regions, navigate, recentlyUpdatedRegions]);
+
+  if (mapError) {
+    return (
+      <div className="w-full h-[200px] bg-muted/30 border border-border rounded-lg flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">{mapError}</p>
+      </div>
+    );
+  }
 
   if (!mapToken) {
     return (
@@ -211,7 +224,7 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
   }
 
   return (
-    <div className="relative w-full h-[300px] md:h-[500px] rounded-lg overflow-hidden shadow-lg">
+    <div className="relative w-full h-[300px] md:h-[500px] rounded-lg overflow-hidden shadow-lg border border-border">
       <style>{`
         @keyframes pulse-ring {
           0% {
@@ -227,11 +240,19 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
             opacity: 1;
           }
         }
+        .policy-map-popup .mapboxgl-popup-content {
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        .policy-map-popup .mapboxgl-popup-tip {
+          border-top-color: #1a1b23 !important;
+        }
       `}</style>
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
       <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 bg-background/95 backdrop-blur px-2 py-1 md:px-4 md:py-2 rounded-md shadow-md max-w-[90%]">
         <p className="text-xs md:text-sm text-muted-foreground">
-          <span className="hidden md:inline">Hover over markers to view details • Pulsing markers indicate recent updates</span>
+          <span className="hidden md:inline">Hover over markers to view details · Pulsing markers indicate recent updates</span>
           <span className="md:hidden">Tap markers for details</span>
         </p>
       </div>
