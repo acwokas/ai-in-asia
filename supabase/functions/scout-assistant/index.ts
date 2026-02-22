@@ -34,7 +34,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'improve':
-        systemPrompt = 'You are Scout, an expert editorial assistant for AIinASIA.com. Improve the given text while maintaining the author\'s voice. Focus on clarity, engagement, and British English. Return only the improved text.';
+        systemPrompt = 'You are Scout, an expert editorial assistant for AIinASIA.com. Improve the given text while maintaining the author\'s voice. Focus on clarity, engagement, and British English. Always end the article with a compelling final paragraph that includes a thought-provoking question or bold statement designed to spark discussion in the comments. This should feel natural, not forced - tie it back to the article\'s core argument. Do NOT label it as a conclusion or use headings like "Final Thoughts" or "Conclusion". Just make the last paragraph land with impact and invite the reader to respond. Return only the improved text.';
         userPrompt = `Improve this text:\n\n${content}`;
         break;
       
@@ -197,7 +197,9 @@ Return your response in this EXACT JSON format (no markdown fences):
   "heroImageAlt": "short alt text under 125 chars",
   "midImageDescription": "detailed description for AI image generation",
   "midImageAlt": "short alt text under 125 chars"
-}`;
+}
+
+Always end the article with a compelling final paragraph that includes a thought-provoking question or bold statement designed to spark discussion in the comments. This should feel natural, not forced - tie it back to the article's core argument. Examples: 'But here's the uncomfortable question...' or 'The real test will be...' or 'What does this mean for you?' Do NOT label it as a conclusion or use headings like 'Final Thoughts' or 'Conclusion'. Just make the last paragraph land with impact and invite the reader to respond.`;
 
   const rewritePrompt = `Title: ${title}
 Focus Keyphrase: ${focusKeyphrase}
