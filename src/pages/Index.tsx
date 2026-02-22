@@ -127,7 +127,7 @@ const Index = () => {
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5);
 
-      if (trendingError) console.error("Error fetching trending:", trendingError);
+
 
       return { featured, latest, trending: trendingData || [] };
     },
