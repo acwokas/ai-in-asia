@@ -53,6 +53,42 @@ const AIComments = () => {
     },
   });
 
+  // Coverage stats
+  const { data: coverageStats } = useQuery({
+    queryKey: ['comment-coverage-stats'],
+    queryFn: async () => {
+      const { count: totalArticles } = await supabase
+        .from('articles')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published');
+
+      const { count: totalComments } = await supabase
+        .from('ai_generated_comments')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: publishedComments } = await supabase
+        .from('ai_generated_comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('published', true);
+
+      const { data: articlesWithComments } = await supabase
+        .from('ai_generated_comments')
+        .select('article_id');
+
+      const uniqueArticlesWithComments = new Set(articlesWithComments?.map(c => c.article_id) || []).size;
+
+      return {
+        totalArticles: totalArticles || 0,
+        articlesWithComments: uniqueArticlesWithComments,
+        coveragePercent: totalArticles ? Math.round((uniqueArticlesWithComments / totalArticles) * 100) : 0,
+        totalComments: totalComments || 0,
+        publishedComments: publishedComments || 0,
+        scheduledComments: (totalComments || 0) - (publishedComments || 0),
+      };
+    },
+    enabled: !!isAdmin,
+  });
+
   // Fetch categories
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -611,6 +647,41 @@ const AIComments = () => {
           </p>
         </div>
 
+        {coverageStats && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="text-3xl font-bold">{coverageStats.totalArticles.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">Published Articles</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="text-3xl font-bold">{coverageStats.articlesWithComments.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">With Comments ({coverageStats.coveragePercent}%)</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="text-3xl font-bold">{coverageStats.totalComments.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">Total AI Comments</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="text-3xl font-bold text-green-600">{coverageStats.publishedComments.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">Published</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="text-3xl font-bold text-amber-600">{coverageStats.scheduledComments.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1">Scheduled</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="generate">
@@ -942,6 +1013,12 @@ const AIComments = () => {
               </Button>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Processing speed: ~5 articles per batch, ~30 seconds per batch.
+            {coverageStats && coverageStats.totalArticles - coverageStats.articlesWithComments > 0 && (
+              <span> Estimated time for remaining {(coverageStats.totalArticles - coverageStats.articlesWithComments).toLocaleString()} articles: ~{Math.ceil((coverageStats.totalArticles - coverageStats.articlesWithComments) / 5 * 0.5)} minutes.</span>
+            )}
+          </p>
         </CardContent>
       </Card>
 
