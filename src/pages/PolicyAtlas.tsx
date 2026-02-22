@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -41,7 +41,6 @@ const PolicyAtlas = () => {
   const { data: regions, isLoading: regionsLoading, error: regionsError } = useQuery({
     queryKey: ['policy-regions'],
     queryFn: async () => {
-      console.log('Fetching policy regions...');
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -52,15 +51,11 @@ const PolicyAtlas = () => {
         ])
         .order('display_order');
       
-      if (error) {
-        console.error('Error fetching regions:', error);
-        throw error;
-      }
-      console.log('Regions fetched:', data?.length, data);
+      if (error) throw error;
       return data || [];
     },
     retry: 3,
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
     refetchOnMount: true,
   });
 
@@ -68,39 +63,39 @@ const PolicyAtlas = () => {
   const { data: recentUpdates } = useQuery({
     queryKey: ['recent-policy-updates'],
     queryFn: async () => {
-      console.log('Fetching recent policy updates...');
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data, error } = await supabase
+
+      // Get recently updated policy articles and their category associations
+      const { data: recentArticles, error: artError } = await supabase
         .from('articles')
-        .select(`
-          primary_category_id,
-          categories:primary_category_id(slug)
-        `)
+        .select('id')
         .eq('article_type', 'policy_article')
         .eq('status', 'published')
         .gte('updated_at', thirtyDaysAgo.toISOString());
-      
-      if (error) {
-        console.error('Error fetching recent updates:', error);
-        return [];
-      }
-      
-      // Extract unique region slugs
+
+      if (artError || !recentArticles || recentArticles.length === 0) return [];
+
+      const articleIds = recentArticles.map(a => a.id);
+
+      // Get the categories these articles belong to
+      const { data: articleCats, error: acError } = await supabase
+        .from('article_categories')
+        .select('category_id, categories:category_id(slug)')
+        .in('article_id', articleIds);
+
+      if (acError || !articleCats) return [];
+
       const recentRegions = new Set<string>();
-      data?.forEach(article => {
-        if (article.categories && typeof article.categories === 'object' && 'slug' in article.categories) {
-          const slug = (article.categories as { slug: string }).slug;
-          if (slug) recentRegions.add(slug);
-        }
+      articleCats.forEach(ac => {
+        const cat = ac.categories as any;
+        if (cat?.slug) recentRegions.add(cat.slug);
       });
-      
-      console.log('Recent regions:', Array.from(recentRegions));
+
       return Array.from(recentRegions);
     },
     retry: 3,
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
     refetchOnMount: true,
   });
 
@@ -128,24 +123,34 @@ const PolicyAtlas = () => {
       if (error) throw error;
       return data;
     },
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
   });
 
   const { data: regionArticleCounts } = useQuery({
     queryKey: ['policy-region-counts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('article_categories')
-        .select(`
-          category_id,
-          articles!inner(id, article_type, status)
-        `)
-        .eq('articles.article_type', 'policy_article')
-        .eq('articles.status', 'published');
+      // Get all published policy article IDs
+      const { data: policyArticles, error: paError } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('article_type', 'policy_article')
+        .eq('status', 'published');
 
-      if (error) throw error;
+      if (paError || !policyArticles) return {};
+
+      const policyIds = policyArticles.map(a => a.id);
+      if (policyIds.length === 0) return {};
+
+      // Get category associations only for policy articles
+      const { data: articleCats, error: acError } = await supabase
+        .from('article_categories')
+        .select('category_id, article_id')
+        .in('article_id', policyIds);
+
+      if (acError || !articleCats) return {};
+
       const counts: Record<string, number> = {};
-      data?.forEach(item => {
+      articleCats.forEach(item => {
         counts[item.category_id] = (counts[item.category_id] || 0) + 1;
       });
       return counts;
