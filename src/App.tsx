@@ -66,6 +66,7 @@ const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
 const SEOTools = lazy(() => import("./pages/SEOTools"));
 const SEODashboard = lazy(() => import("./pages/SEODashboard"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
 const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
 const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -274,6 +275,7 @@ const App = () => (
                 <Route path="guide-editor/:id" element={<GuideEditor />} />
                 
                 <Route path="event-submissions" element={<AdminEventSubmissionsPage />} />
+                <Route path="settings" element={<AdminSettings />} />
               </Route>
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
