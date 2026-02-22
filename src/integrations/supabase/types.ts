@@ -2071,6 +2071,42 @@ export type Database = {
         }
         Relationships: []
       }
+      external_links: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          domain: string
+          id: string
+          published_at: string | null
+          region: string | null
+          source_name: string
+          title: string
+          url: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          domain: string
+          id?: string
+          published_at?: string | null
+          region?: string | null
+          source_name: string
+          title: string
+          url: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          domain?: string
+          id?: string
+          published_at?: string | null
+          region?: string | null
+          source_name?: string
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
       guide_comments: {
         Row: {
           approved: boolean | null
@@ -3614,6 +3650,48 @@ export type Database = {
           topic_name?: string
           topic_slug?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      trusted_sources: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          domain: string
+          harvest_frequency_hours: number | null
+          id: string
+          is_active: boolean | null
+          last_harvested_at: string | null
+          name: string
+          region: string | null
+          rss_url: string
+          tier: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          domain: string
+          harvest_frequency_hours?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_harvested_at?: string | null
+          name: string
+          region?: string | null
+          rss_url: string
+          tier?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          domain?: string
+          harvest_frequency_hours?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_harvested_at?: string | null
+          name?: string
+          region?: string | null
+          rss_url?: string
+          tier?: number | null
         }
         Relationships: []
       }
