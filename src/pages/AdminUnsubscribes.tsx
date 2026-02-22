@@ -1,9 +1,8 @@
- import { useState } from "react";
- import { Link } from "react-router-dom";
- import { useQuery } from "@tanstack/react-query";
- import { supabase } from "@/integrations/supabase/client";
- import Header from "@/components/Header";
- import { Button } from "@/components/ui/button";
+  import { useState } from "react";
+  import { Link } from "react-router-dom";
+  import { useQuery } from "@tanstack/react-query";
+  import { supabase } from "@/integrations/supabase/client";
+  import { Button } from "@/components/ui/button";
  import { Card } from "@/components/ui/card";
  import { Input } from "@/components/ui/input";
  import { Badge } from "@/components/ui/badge";
@@ -97,31 +96,8 @@
      return acc;
    }, {} as Record<string, number>) || {};
  
-   return (
-     <div className="min-h-screen flex flex-col">
-       <Header />
-       <main className="flex-1 container mx-auto px-4 py-8">
-         <Breadcrumb className="mb-6">
-           <BreadcrumbList>
-             <BreadcrumbItem>
-               <BreadcrumbLink asChild>
-                 <Link to="/" className="flex items-center gap-1">
-                   <Home className="h-4 w-4" />
-                 </Link>
-               </BreadcrumbLink>
-             </BreadcrumbItem>
-             <BreadcrumbSeparator />
-             <BreadcrumbItem>
-               <BreadcrumbLink asChild>
-                 <Link to="/admin">Admin</Link>
-               </BreadcrumbLink>
-             </BreadcrumbItem>
-             <BreadcrumbSeparator />
-             <BreadcrumbItem>
-               <BreadcrumbPage>Unsubscribes</BreadcrumbPage>
-             </BreadcrumbItem>
-           </BreadcrumbList>
-         </Breadcrumb>
+    return (
+      <div className="container mx-auto px-4 py-8">
  
          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
            <div>
@@ -224,8 +200,7 @@
                </p>
              </div>
            )}
-         </Card>
-       </main>
-     </div>
+          </Card>
+      </div>
    );
  }

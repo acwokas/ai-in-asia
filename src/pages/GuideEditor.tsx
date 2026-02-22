@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -96,6 +96,8 @@ const platformColors: Record<string, string> = {
 const GuideEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isInsideAdmin = location.pathname.startsWith('/admin');
   
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
@@ -594,9 +596,9 @@ const GuideEditor = () => {
   // ---- RENDER ----
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      <div className={isInsideAdmin ? "flex items-center justify-center py-20" : "min-h-screen flex flex-col"}>
+        {!isInsideAdmin && <Header />}
+        <div className={isInsideAdmin ? "" : "flex-1 flex items-center justify-center"}><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       </div>
     );
   }

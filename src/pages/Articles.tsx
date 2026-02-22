@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -41,6 +40,8 @@ import { format } from "date-fns";
 
 const Articles = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isInsideAdmin = location.pathname.startsWith('/admin');
   
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -289,24 +290,7 @@ const Articles = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-muted-foreground mb-6">
-          <Link to="/" className="hover:text-primary inline-flex items-center gap-1">
-            <Home className="h-3 w-3" />
-            Home
-          </Link>
-          <span className="mx-2">›</span>
-          <Link to="/admin" className="hover:text-primary">
-            Admin
-          </Link>
-          <span className="mx-2">›</span>
-          <span>All Articles</span>
-        </nav>
-
+    <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -316,29 +300,6 @@ const Articles = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              variant="destructive" 
-              onClick={async () => {
-                if (!confirm("⚠️ WARNING: This will delete ALL articles and related data. This cannot be undone. Are you absolutely sure?")) {
-                  return;
-                }
-                
-                try {
-                  const { data, error } = await supabase.functions.invoke('delete-all-articles');
-                  
-                  if (error) throw error;
-                  
-                  toast("All Articles Deleted", { description: data.message || "Successfully deleted all articles." });
-                  
-                  refetch();
-                } catch (error: any) {
-                  toast.error("Delete Failed", { description: error.message });
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete All Articles
-            </Button>
             <Button variant="outline" onClick={() => navigate("/admin/publish-all")}>
               <Globe className="h-4 w-4 mr-2" />
               Publish All Drafts
@@ -446,7 +407,7 @@ const Articles = () => {
         </div>
 
         {/* Articles Table */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center p-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -463,7 +424,7 @@ const Articles = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    className="cursor-pointer hover:bg-muted/50 select-none min-w-[280px]"
                     onClick={() => handleSort("title")}
                   >
                     <div className="flex items-center">
@@ -487,15 +448,6 @@ const Articles = () => {
                     <div className="flex items-center">
                       Category
                       {getSortIcon("primary_category_id")}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none"
-                    onClick={() => handleSort("article_type")}
-                  >
-                    <div className="flex items-center">
-                      Type
-                      {getSortIcon("article_type")}
                     </div>
                   </TableHead>
                   <TableHead 
@@ -528,42 +480,12 @@ const Articles = () => {
                   <TableHead className="text-center">View</TableHead>
                   <TableHead 
                     className="cursor-pointer hover:bg-muted/50 select-none"
-                    onClick={() => handleSort("sticky")}
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      <Pin className="h-3 w-3" />
-                      Sticky
-                      {getSortIcon("sticky")}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none"
                     onClick={() => handleSort("featured_on_homepage")}
                   >
                     <div className="flex items-center justify-center gap-1">
                       <Globe className="h-3 w-3" />
                       Homepage
                       {getSortIcon("featured_on_homepage")}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none"
-                    onClick={() => handleSort("homepage_trending")}
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      Homepage
-                      {getSortIcon("homepage_trending")}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 select-none"
-                    onClick={() => handleSort("is_trending")}
-                  >
-                    <div className="flex items-center justify-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      Category
-                      {getSortIcon("is_trending")}
                     </div>
                   </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -615,9 +537,6 @@ const Articles = () => {
                           ))}
                         </SelectContent>
                       </Select>
-                    </TableCell>
-                    <TableCell className="capitalize">
-                      {article.article_type}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -757,26 +676,8 @@ const Articles = () => {
                     </TableCell>
                     <TableCell className="text-center">
                       <Switch
-                        checked={article.sticky || false}
-                        onCheckedChange={(checked) => handleUpdate(article.id, "sticky", checked)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
                         checked={article.featured_on_homepage || false}
                         onCheckedChange={(checked) => handleUpdate(article.id, "featured_on_homepage", checked)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={article.homepage_trending || false}
-                        onCheckedChange={(checked) => handleUpdate(article.id, "homepage_trending", checked)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={article.is_trending || false}
-                        onCheckedChange={(checked) => handleUpdate(article.id, "is_trending", checked)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
@@ -933,7 +834,7 @@ const Articles = () => {
             )}
           </div>
         )}
-      </main>
+      
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteArticle} onOpenChange={() => setDeleteArticle(null)}>
