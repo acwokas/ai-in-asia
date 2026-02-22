@@ -54,7 +54,7 @@ const ProfileAchievements = ({ achievements }: ProfileAchievementsProps) => {
       <p className="text-sm text-muted-foreground mb-4">
         💡 Click on any locked badge to see how to earn it!
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {achievements.map((achievement) => {
           const isEarned = !!achievement.earned_at;
           return (

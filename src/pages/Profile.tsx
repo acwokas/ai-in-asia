@@ -291,7 +291,7 @@ const Profile = () => {
 
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-1 overflow-x-auto">
+            <TabsList className="w-full h-auto flex-nowrap justify-start gap-1 overflow-x-auto scrollbar-hide">
               <TabsTrigger value="reading" className="flex-shrink-0">Reading</TabsTrigger>
               <TabsTrigger value="achievements" className="flex-shrink-0">Achievements</TabsTrigger>
               <TabsTrigger value="stats" className="flex-shrink-0">Reading Stats</TabsTrigger>

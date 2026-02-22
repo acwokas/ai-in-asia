@@ -52,6 +52,8 @@ const getCategoryColor = (categoryName: string): string => {
   return categoryColors[categoryName] || "hsl(220, 15%, 50%)";
 };
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 const ARTICLE_SELECT = `
   id, title, slug, status, scheduled_for, published_at, author_id, view_count,
   authors ( id, name ),
@@ -61,7 +63,8 @@ const ARTICLE_SELECT = `
 const ContentCalendar = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [view, setView] = useState<View>("week");
+  const isMobile = useIsMobile();
+  const [view, setView] = useState<View>(isMobile ? "agenda" : "week");
   const [date, setDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -363,17 +366,19 @@ const ContentCalendar = () => {
                 Forward <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex gap-2">
-              <Button variant={view === "month" ? "default" : "outline"} onClick={() => setView("month")} className="gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant={view === "month" ? "default" : "outline"} onClick={() => setView("month")} className="gap-2" size={isMobile ? "sm" : "default"}>
                 <CalendarIcon className="h-4 w-4" /> Month
               </Button>
-              <Button variant={view === "week" ? "default" : "outline"} onClick={() => setView("week")} className="gap-2">
-                <CalendarRange className="h-4 w-4" /> Week
-              </Button>
-              <Button variant={view === "day" ? "default" : "outline"} onClick={() => setView("day")} className="gap-2">
+              {!isMobile && (
+                <Button variant={view === "week" ? "default" : "outline"} onClick={() => setView("week")} className="gap-2">
+                  <CalendarRange className="h-4 w-4" /> Week
+                </Button>
+              )}
+              <Button variant={view === "day" ? "default" : "outline"} onClick={() => setView("day")} className="gap-2" size={isMobile ? "sm" : "default"}>
                 <CalendarDays className="h-4 w-4" /> Day
               </Button>
-              <Button variant={view === "agenda" ? "default" : "outline"} onClick={() => setView("agenda")} className="gap-2">
+              <Button variant={view === "agenda" ? "default" : "outline"} onClick={() => setView("agenda")} className="gap-2" size={isMobile ? "sm" : "default"}>
                 <CalendarDays className="h-4 w-4" /> Schedule
               </Button>
             </div>
@@ -388,7 +393,7 @@ const ContentCalendar = () => {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 800 }}
+                style={{ height: isMobile ? 500 : 800 }}
                 view={view}
                 onView={setView}
                 date={date}

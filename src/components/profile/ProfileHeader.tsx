@@ -59,8 +59,8 @@ const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <div className="relative">
             <Avatar className="h-16 w-16">
               <AvatarImage src={profile?.avatar_url || ''} alt={profile?.username || 'User'} />
@@ -70,7 +70,7 @@ const ProfileHeader = ({
             </Avatar>
             <label
               htmlFor="avatar-upload-profile"
-              className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/90 transition-colors"
+              className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary/90 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
               title="Change avatar"
             >
               {uploading ? (
@@ -88,27 +88,29 @@ const ProfileHeader = ({
               />
             </label>
           </div>
-          <div>
-            <h1 className="text-4xl font-bold mb-2">{profile?.first_name || profile?.username || 'User'}</h1>
-            <Badge className={`${levelInfo.color} text-white`}>
-              {levelInfo.name}
-            </Badge>
-            {isAdmin && (
-              <Button asChild variant="outline" size="sm" className="ml-2">
-                <Link to="/admin">
-                  <Settings className="h-4 w-4 mr-1" />
-                  Admin
-                </Link>
-              </Button>
-            )}
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2">{profile?.first_name || profile?.username || 'User'}</h1>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <Badge className={`${levelInfo.color} text-white`}>
+                {levelInfo.name}
+              </Badge>
+              {isAdmin && (
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/admin">
+                    <Settings className="h-4 w-4 mr-1" />
+                    Admin
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-        <Button onClick={onSignOut} variant="outline">
+        <Button onClick={onSignOut} variant="outline" className="w-full sm:w-auto min-h-[44px]">
           Sign Out
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-6">
         <Card className="p-6">
           <div className="flex items-center gap-3">
             <Zap className="h-8 w-8 text-primary" />

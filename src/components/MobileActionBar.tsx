@@ -25,24 +25,24 @@ const MobileActionBar = ({ isBookmarked, onBookmark, onShare }: MobileActionBarP
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 md:hidden animate-in slide-in-from-bottom duration-200">
-      <div className="h-12 bg-background/90 backdrop-blur border-t border-border flex items-center justify-around px-2">
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
+    <div className="fixed bottom-0 inset-x-0 z-40 md:hidden animate-in slide-in-from-bottom duration-200 pb-safe">
+      <div className="h-14 bg-background/90 backdrop-blur border-t border-border flex items-center justify-around px-2">
+        <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onBookmark}>
-          <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+        <Button variant="ghost" size="icon" className="h-11 w-11" onClick={onBookmark}>
+          <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-current' : ''}`} />
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onShare}>
-          <Share2 className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-11 w-11" onClick={onShare}>
+          <Share2 className="h-5 w-5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-11 w-11"
           onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <MessageCircle className="h-4 w-4" />
+          <MessageCircle className="h-5 w-5" />
         </Button>
         <div className="flex items-center">
           <FontSizeControl />

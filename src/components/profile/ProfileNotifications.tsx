@@ -109,7 +109,7 @@ const ProfileNotifications = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         {toggleItems.map(({ key, label, description }) => (
-          <div key={key} className="flex items-center justify-between gap-4">
+          <div key={key} className="flex items-center justify-between gap-4 min-h-[44px]">
             <div>
               <Label htmlFor={key} className="font-medium">{label}</Label>
               <p className="text-sm text-muted-foreground">{description}</p>

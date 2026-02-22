@@ -572,11 +572,11 @@ const Auth = () => {
 
                     <div>
                       <Label className="mb-2 block">Interests (Select topics for your feed)</Label>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
+                      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">
                         {INTEREST_OPTIONS.map((interest) => (
-                          <div key={interest} className="flex items-center space-x-2">
-                            <Checkbox id={interest} checked={interests.includes(interest)} onCheckedChange={() => toggleInterest(interest)} />
-                            <label htmlFor={interest} className="text-xs leading-none cursor-pointer">{interest}</label>
+                           <div key={interest} className="flex items-center space-x-2 min-h-[44px]">
+                             <Checkbox id={interest} checked={interests.includes(interest)} onCheckedChange={() => toggleInterest(interest)} />
+                             <label htmlFor={interest} className="text-xs leading-none cursor-pointer select-none">{interest}</label>
                           </div>
                         ))}
                       </div>
