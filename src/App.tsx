@@ -46,7 +46,7 @@ const Search = lazy(() => import("./pages/Search"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const Admin = lazy(() => import("./pages/Admin"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+
 const Articles = lazy(() => import("./pages/Articles"));
 const Editor = lazy(() => import("./pages/Editor"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -238,7 +238,7 @@ const App = () => (
               <Route path="/redirects" element={<Redirects />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Admin />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="dashboard" element={<Admin />} />
                 <Route path="articles" element={<Articles />} />
                 <Route path="calendar" element={<ContentCalendar />} />
                 <Route path="internal-links" element={<InternalLinksManager />} />
