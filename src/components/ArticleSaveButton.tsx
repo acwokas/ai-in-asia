@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useSavedArticles, SavedArticle } from '@/hooks/useSavedArticles';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ArticleSaveButtonProps {
   article: Omit<SavedArticle, 'savedAt'>;
@@ -19,13 +19,11 @@ export const ArticleSaveButton = ({
   className = '',
 }: ArticleSaveButtonProps) => {
   const { isSaved, toggleSave } = useSavedArticles();
-  const { toast } = useToast();
   const saved = isSaved(article.url);
 
   const handleClick = () => {
     const wasSaved = toggleSave(article);
-    toast({
-      title: wasSaved ? 'Article saved' : 'Article removed',
+    toast(wasSaved ? 'Article saved' : 'Article removed', {
       description: wasSaved 
         ? 'Find it anytime in your Saved Articles' 
         : 'Removed from your saved list',

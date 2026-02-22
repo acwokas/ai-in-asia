@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { BookmarkCheck, Clock, Flame, Zap, X, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
@@ -17,7 +17,6 @@ import {
 
 const ReadingQueue = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -79,7 +78,7 @@ const ReadingQueue = () => {
       queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
     onSuccess: () => {
-      toast({ description: "Article marked as read!" });
+      toast("Article marked as read!");
     },
   });
 
@@ -113,7 +112,7 @@ const ReadingQueue = () => {
       queryClient.setQueryData(["reading-queue", user?.id], context?.previousQueue);
     },
     onSuccess: () => {
-      toast({ description: "Removed from queue" });
+      toast("Removed from queue");
     },
   });
 

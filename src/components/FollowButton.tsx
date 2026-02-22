@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
 import { Bell, BellOff } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface FollowButtonProps {
   followType: "author" | "category";
@@ -14,7 +14,6 @@ interface FollowButtonProps {
 
 const FollowButton = ({ followType, followId, followName }: FollowButtonProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: isFollowing, isLoading } = useQuery({
@@ -81,18 +80,14 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["follow", user?.id, followType, followId] });
-      toast({
-        description: isFollowing 
+      toast(isFollowing 
           ? `Unfollowed ${followName}` 
-          : `Following ${followName}! You'll get notified of new posts.`,
-      });
+          : `Following ${followName}! You'll get notified of new posts.`);
     },
     onError: (error) => {
       console.error("FollowButton: mutation error", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to update follow status",
-        variant: "destructive",
       });
     },
   });
@@ -100,18 +95,8 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
   const handleClick = () => {
     console.log('[FollowButton] Clicked', { followType, followId, hasUser: !!user });
     if (!user) {
-      toast({
-        title: "Login Required",
+      toast("Login Required", {
         description: "Please log in to follow authors and categories",
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => (window.location.href = "/auth")}
-          >
-            Log In
-          </Button>
-        ),
       });
       return;
     }
