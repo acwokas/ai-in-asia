@@ -47,32 +47,41 @@ export type Database = {
       ai_comment_authors: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           comment_count: number | null
+          commenting_style: string | null
           created_at: string | null
           handle: string
           id: string
           is_power_user: boolean | null
           name: string
+          persona_type: string | null
           region: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           comment_count?: number | null
+          commenting_style?: string | null
           created_at?: string | null
           handle: string
           id?: string
           is_power_user?: boolean | null
           name: string
+          persona_type?: string | null
           region: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           comment_count?: number | null
+          commenting_style?: string | null
           created_at?: string | null
           handle?: string
           id?: string
           is_power_user?: boolean | null
           name?: string
+          persona_type?: string | null
           region?: string
         }
         Relationships: []
