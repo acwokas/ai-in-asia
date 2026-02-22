@@ -34,7 +34,8 @@
     <link rel="preconnect" href="https://api.mapbox.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     
-    <!-- Preload hints handled by ProgressiveImage component -->
+    <!-- Preload site logo (LCP element on many pages) -->
+    <link rel="preload" href="/src/assets/aiinasia-logo.png" as="image" type="image/png" />
     
     <!-- Cache static assets -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
@@ -44,8 +45,6 @@
     <link rel="alternate" type="application/rss+xml" title="AI in ASIA Feed" href="https://aiinasia.com/feed" />
     
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
     
     <!-- Ahrefs Analytics -->
@@ -54,7 +53,6 @@
 
   <body>
     <div id="root"></div>
-    <script src="https://js.puter.com/v2/"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

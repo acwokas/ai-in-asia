@@ -5,6 +5,7 @@ import { CategoryIcon } from "@/components/category/CategoryIcon";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
 import { TOKENS } from "@/constants/categoryTokens";
 import { decodeHtml } from "@/lib/textUtils";
+import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
 
 interface CategoryHeroSectionProps {
   featuredArticle: any;
@@ -48,8 +49,9 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
             <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at top right, ${cfg.accent}12, transparent 60%)` }} />
             {featuredArticle.featured_image_url && (
               <img
-                src={featuredArticle.featured_image_url}
+                src={getOptimizedHeroImage(featuredArticle.featured_image_url, 1280)}
                 alt={featuredArticle.featured_image_alt || featuredArticle.title}
+                loading="eager"
                 style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, opacity: 0.85, filter: "brightness(1.1)" }}
               />
             )}
@@ -110,8 +112,9 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
             >
               {article.featured_image_url ? (
                 <img
-                  src={article.featured_image_url}
+                  src={getOptimizedThumbnail(article.featured_image_url, 60, 60)}
                   alt={article.featured_image_alt || article.title}
+                  loading="lazy"
                   style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
                 />
               ) : (
