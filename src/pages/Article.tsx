@@ -8,6 +8,7 @@ import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
 import GoogleAd from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
+import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
 import { TopListsContent } from "@/components/TopListsContent";
@@ -378,6 +379,7 @@ const Article = () => {
         dateModified={article.updated_at || ''}
         authorName={article.authors?.name || 'AI in ASIA'}
         categoryName={article.categories?.name || ''}
+        categorySlug={article.categories?.slug || ''}
       />
 
       <BreadcrumbStructuredData
@@ -387,6 +389,19 @@ const Article = () => {
           { name: article.title, url: article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}` }
         ]}
       />
+
+      {isHowToArticle(article.ai_tags) && (() => {
+        const contentStr = typeof article.content === 'string' ? article.content : JSON.stringify(article.content);
+        const steps = parseHowToSteps(contentStr);
+        return steps.length > 0 ? (
+          <HowToStructuredData
+            title={article.title}
+            description={article.excerpt || ''}
+            imageUrl={article.featured_image_url || undefined}
+            steps={steps}
+          />
+        ) : null;
+      })()}
 
       <div className="min-h-screen flex flex-col">
         <Header />

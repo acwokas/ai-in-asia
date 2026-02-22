@@ -8,10 +8,13 @@ Allow: /assets/
 Allow: /*.js
 Allow: /*.css
 
-# Disallow admin areas only
+# Disallow admin and private areas
 Disallow: /admin
 Disallow: /editor
 Disallow: /auth
+Disallow: /saved
+Disallow: /profile
+Disallow: /search
 
 # Explicitly welcome major search engines
 User-agent: Googlebot

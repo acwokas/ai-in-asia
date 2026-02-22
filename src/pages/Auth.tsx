@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -283,6 +284,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
+      <SEOHead title="Sign In" description="Sign in or create an account on AI in ASIA." noIndex={true} />
       <div className="w-full max-w-md">
         <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
           <ArrowLeft className="h-4 w-4" />
