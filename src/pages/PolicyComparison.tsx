@@ -1,210 +1,263 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, X } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-const PolicyComparison = () => {
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+interface PolicyMapProps {
+  regions: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+  }>;
+  recentlyUpdatedRegions: string[];
+}
 
-  const { data: regions } = useQuery({
-    queryKey: ['policy-regions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .in('slug', [
-          'north-asia', 'asean', 'oceania', 'greater-china', 'anglosphere',
-          'europe', 'mena', 'africa', 'latin-america', 'south-asia'
-        ])
-        .order('display_order');
-      
-      if (error) throw error;
-      return data;
+const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const navigate = useNavigate();
+  const [mapToken, setMapToken] = useState<string>('');
+  const [mapError, setMapError] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+    const timeoutId = setTimeout(() => {
+      if (!cancelled && !mapToken) {
+        setMapError('Map took too long to load. Region cards are available below.');
+      }
+    }, 10000);
+
+    const fetchToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+
+        if (cancelled) return;
+
+        if (error) {
+          setMapError('Unable to load map. Browse regions using the cards below.');
+          return;
+        }
+
+        const token = (data as { token?: string } | null)?.token;
+        if (token) {
+          setMapToken(token);
+        } else {
+          setMapError('Map configuration unavailable. Browse regions using the cards below.');
+        }
+      } catch {
+        if (!cancelled) {
+          setMapError('Unable to load map. Browse regions using the cards below.');
+        }
+      }
+    };
+
+    fetchToken();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapContainer.current || !mapToken) return;
+
+    // Clean up existing map if any
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
     }
-  });
 
-  const { data: comparisonData } = useQuery({
-    queryKey: ['policy-comparison', selectedRegions],
-    queryFn: async () => {
-      if (selectedRegions.length === 0) return [];
+    try {
+      mapboxgl.accessToken = mapToken;
       
-      const { data, error } = await supabase
-        .from('articles')
-        .select(`
-          *,
-          categories!primary_category_id (
-            name,
-            slug
-          )
-        `)
-        .eq('article_type', 'policy_article')
-        .eq('status', 'published')
-        .in('categories.slug', selectedRegions);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: selectedRegions.length > 0
-  });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [100, 20],
+        zoom: 2,
+        projection: 'mercator' as any
+      });
 
-  const addRegion = (regionSlug: string) => {
-    if (!selectedRegions.includes(regionSlug) && selectedRegions.length < 4) {
-      setSelectedRegions([...selectedRegions, regionSlug]);
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      const regionCoordinates: Record<string, [number, number]> = {
+        'north-asia': [135, 37],
+        'asean': [105, 10],
+        'oceania': [145, -25],
+        'greater-china': [110, 35],
+        'anglosphere': [-95, 40],
+        'europe': [10, 50],
+        'mena': [45, 25],
+        'africa': [20, 0],
+        'latin-america': [-60, -10],
+        'south-asia': [78, 20],
+        'pan-pacific': [180, 0],
+        'pan-asia': [100, 30],
+        'global-comparison': [0, 20]
+      };
+
+      map.current.on('load', () => {
+        if (!map.current) return;
+        
+        regions.forEach((region) => {
+          const coords = regionCoordinates[region.slug];
+          if (!coords || !map.current) return;
+
+          const isRecent = recentlyUpdatedRegions.includes(region.slug);
+
+          // Create marker container with pulse effect
+          const markerContainer = document.createElement('div');
+          markerContainer.style.cssText = `
+            width: 30px;
+            height: 30px;
+          `;
+          
+          // Add pulse ring if recently updated
+          if (isRecent) {
+            const pulseRing = document.createElement('div');
+            pulseRing.className = 'pulse-ring';
+            pulseRing.style.cssText = `
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              border: 2px solid hsl(var(--primary));
+              animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+              pointer-events: none;
+            `;
+            markerContainer.appendChild(pulseRing);
+          }
+
+          const el = document.createElement('div');
+          el.className = 'policy-map-marker';
+          el.style.cssText = `
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: hsl(var(--primary));
+            border: 3px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+          `;
+          
+          el.addEventListener('mouseenter', () => {
+            el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.6)';
+            el.style.borderColor = 'rgba(255,255,255,0.6)';
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+            el.style.borderColor = 'rgba(255,255,255,0.3)';
+          });
+
+          markerContainer.appendChild(el);
+
+          const popup = new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            closeOnClick: false,
+            className: 'policy-map-popup'
+          }).setHTML(`
+            <div style="padding: 8px; background: #1a1b23; border-radius: 8px; border: 1px solid #2a2d42;">
+              <h3 style="margin: 0 0 4px 0; font-weight: 600; color: #fff; font-size: 14px;">${region.name}</h3>
+              <p style="margin: 0; font-size: 12px; color: #b0b4c8;">${region.description}</p>
+              ${isRecent ? '<span style="display: inline-block; margin-top: 6px; padding: 2px 8px; background: hsl(var(--primary)); color: white; font-size: 10px; border-radius: 4px; font-weight: 500;">Recently Updated</span>' : ''}
+            </div>
+          `);
+
+          const marker = new mapboxgl.Marker(markerContainer)
+            .setLngLat(coords)
+            .setPopup(popup)
+            .addTo(map.current!);
+
+          // Show popup on hover
+          el.addEventListener('mouseenter', () => {
+            popup.addTo(map.current!);
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            popup.remove();
+          });
+
+          el.addEventListener('click', () => {
+            navigate(`/ai-policy-atlas/${region.slug}`);
+          });
+        });
+      });
+
+      map.current.on('error', () => {
+        setMapError('Map failed to load. Browse regions using the cards below.');
+      });
+    } catch {
+      setMapError('Map failed to initialise. Browse regions using the cards below.');
     }
-  };
 
-  const removeRegion = (regionSlug: string) => {
-    setSelectedRegions(selectedRegions.filter(r => r !== regionSlug));
-  };
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [mapToken, regions, navigate, recentlyUpdatedRegions]);
 
-  const getRegionData = (regionSlug: string) => {
-    return comparisonData?.find(article => article.categories?.slug === regionSlug);
-  };
+  if (mapError) {
+    return (
+      <div className="w-full h-[200px] bg-muted/30 border border-border rounded-lg flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">{mapError}</p>
+      </div>
+    );
+  }
+
+  if (!mapToken) {
+    return (
+      <div className="w-full h-[300px] md:h-[500px] bg-muted rounded-lg flex items-center justify-center">
+        <p className="text-muted-foreground">Loading map...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="mb-6">
-          <Button variant="ghost" asChild>
-            <Link to="/ai-policy-atlas" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to AI Policy Atlas
-            </Link>
-          </Button>
-        </div>
-
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Compare Policy Frameworks
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Select up to 4 regions to compare their AI governance approaches
-          </p>
-        </div>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Select Regions to Compare</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4 items-center">
-              {selectedRegions.map(slug => {
-                const region = regions?.find(r => r.slug === slug);
-                return (
-                  <Badge key={slug} variant="secondary" className="text-sm py-2 px-4">
-                    {region?.name}
-                    <button
-                      onClick={() => removeRegion(slug)}
-                      className="ml-2 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                );
-              })}
-              
-              {selectedRegions.length < 4 && (
-                <Select onValueChange={addRegion}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Add region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions
-                      ?.filter(r => !selectedRegions.includes(r.slug))
-                      .map(region => (
-                        <SelectItem key={region.id} value={region.slug}>
-                          {region.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {selectedRegions.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {selectedRegions.map(slug => {
-              const region = regions?.find(r => r.slug === slug);
-              const data = getRegionData(slug);
-              
-              return (
-                <Card key={slug}>
-                  <CardHeader>
-                    <CardTitle>{region?.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {data ? (
-                      <>
-                        <div>
-                          <h4 className="font-semibold text-sm mb-2">Governance Maturity</h4>
-                          <Badge variant="outline">
-                            {data.governance_maturity?.replace(/_/g, ' ') || 'N/A'}
-                          </Badge>
-                        </div>
-                        
-                        {Array.isArray(data.comparison_tables) && data.comparison_tables.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold text-sm mb-2">Key Approach</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {typeof data.comparison_tables[0] === 'object' &&
-                               data.comparison_tables[0] !== null &&
-                               'rows' in data.comparison_tables[0] &&
-                               Array.isArray((data.comparison_tables[0] as any).rows)
-                                ? ((data.comparison_tables[0] as any).rows.find((r: any) => r.aspect === 'Approach Type')?.country1 || 'N/A')
-                                : 'N/A'}
-                            </p>
-                          </div>
-                        )}
-                        
-                        <Button asChild variant="outline" className="w-full">
-                          <Link to={`/ai-policy-atlas/${slug}/${data.slug}`}>
-                            View Details
-                          </Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No data available</p>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {selectedRegions.length === 0 && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Plus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">Start Comparing</h3>
-              <p className="text-muted-foreground">
-                Select regions above to begin comparing their AI policy frameworks
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </main>
-
-      <Footer />
+    <div className="relative w-full h-[300px] md:h-[500px] rounded-lg overflow-hidden shadow-lg border border-border">
+      <style>{`
+        @keyframes pulse-ring {
+          0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0.5;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+        }
+        .policy-map-popup .mapboxgl-popup-content {
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        .policy-map-popup .mapboxgl-popup-tip {
+          border-top-color: #1a1b23 !important;
+        }
+      `}</style>
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 bg-background/95 backdrop-blur px-2 py-1 md:px-4 md:py-2 rounded-md shadow-md max-w-[90%]">
+        <p className="text-xs md:text-sm text-muted-foreground">
+          <span className="hidden md:inline">Hover over markers to view details · Pulsing markers indicate recent updates</span>
+          <span className="md:hidden">Tap markers for details</span>
+        </p>
+      </div>
     </div>
   );
 };
 
-export default PolicyComparison;
+export default PolicyMap;
