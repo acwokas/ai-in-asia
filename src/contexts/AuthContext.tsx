@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
   loading: boolean;
@@ -66,6 +67,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error;
   };
 
+  // Apple Sign In — uses Lovable Cloud managed Apple auth
+  const signInWithApple = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin + '/profile',
+    });
+    if (error) throw error;
+  };
+
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?mode=reset`,
@@ -79,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, signIn, signUp, signOut, signInWithGoogle, resetPassword, updatePassword, loading }}>
+    <AuthContext.Provider value={{ user, session, signIn, signUp, signOut, signInWithGoogle, signInWithApple, resetPassword, updatePassword, loading }}>
       {children}
     </AuthContext.Provider>
   );
