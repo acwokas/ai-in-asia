@@ -182,64 +182,65 @@ const AllPrompts = () => {
     const guide = prompt.ai_guides as any;
     const isExpanded = expandedId === prompt.id;
     const isCopied = copiedId === prompt.id;
+    const resolvedAccent = accentClass || categoryAccentColors[prompt.category || ""] || "bg-primary";
 
     return (
       <div key={prompt.id} className="flex flex-col">
         <div
-          className="bg-card border border-border rounded-xl p-5 cursor-pointer group hover:bg-muted/30 hover:border-border/80 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 relative flex flex-col h-full"
+          className="bg-card border border-border rounded-xl p-5 cursor-pointer group hover:bg-accent/50 hover:border-border hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 relative flex flex-col h-full"
           onClick={() => toggleExpand(prompt.id)}
         >
           {/* Left accent on hover */}
-          <div className={`absolute left-0 top-3 bottom-3 w-0.5 rounded-full ${accentClass || "bg-primary"} opacity-0 group-hover:opacity-100 transition-opacity`} />
+          <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-full ${resolvedAccent} opacity-0 group-hover:opacity-100 transition-opacity`} />
 
-          <h3 className="font-semibold text-[15px] leading-snug mb-1.5 group-hover:text-primary transition-colors">
+          <h3 className="text-base font-semibold leading-snug mb-2 group-hover:text-primary transition-colors">
             {prompt.prompt_title}
           </h3>
 
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             <Link
               to={`/guides/${guide?.slug}`}
               className="hover:text-primary hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
-              {guide?.title}
+              {(guide?.title || "").replace(/^How to Use AI (to|for) /i, "")}
             </Link>
           </p>
 
           {/* Footer */}
-          <div className="flex items-center justify-between mt-auto pt-2">
-            <div className="flex gap-1 flex-wrap">
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex gap-1.5 flex-wrap">
               {prompt.platforms?.map((p: string) => (
                 <Badge
                   key={p}
-                  className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
+                  className={`text-xs px-2 py-0.5 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
                 >
                   {p}
                 </Badge>
               ))}
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-8 w-8 p-0 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary"
                 onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
               >
                 {isCopied ? (
                   <Check className="h-3.5 w-3.5 text-emerald-400" />
                 ) : (
-                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Copy className="h-3.5 w-3.5" />
                 )}
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-8 w-8 p-0 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary"
                 asChild
                 onClick={(e) => e.stopPropagation()}
               >
                 <Link to={`/guides/${guide?.slug}`}>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
@@ -314,7 +315,7 @@ const AllPrompts = () => {
                 placeholder="Search prompts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-11 rounded-full placeholder:text-muted-foreground"
+                className="pl-11 h-12 rounded-full placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -326,9 +327,9 @@ const AllPrompts = () => {
           const potdCopied = copiedId === promptOfTheDay.id;
           return (
             <div className="max-w-[1200px] mx-auto px-4 pt-8">
-              <div className="bg-card border border-border rounded-xl overflow-hidden mb-10">
+              <div className="bg-card border border-border rounded-xl relative overflow-hidden mb-10">
                 {/* Gradient top bar */}
-                <div className="h-1 bg-gradient-to-r from-primary via-emerald-500 to-primary" />
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-emerald-500 to-primary" />
 
                 <div className="p-6 md:p-8 space-y-4">
                   <div className="flex items-center gap-2">
@@ -417,7 +418,7 @@ const AllPrompts = () => {
           <div className="max-w-[1200px] mx-auto px-4 py-3 space-y-2">
             {/* Row 1: Platform + divider + Sort + count */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground flex-shrink-0">Platform:</span>
+              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Platform:</span>
               {platforms.map((p) => (
                 <Button
                   key={p}
@@ -432,7 +433,7 @@ const AllPrompts = () => {
 
               <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
 
-              <span className="text-xs text-muted-foreground flex-shrink-0">Sort:</span>
+              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Sort:</span>
               {sortOptions.map((s) => (
                 <Button
                   key={s.value}
@@ -452,7 +453,7 @@ const AllPrompts = () => {
 
             {/* Row 2: Category pills */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground flex-shrink-0">Category:</span>
+              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Category:</span>
               {categories.map((c) => (
                 <Button
                   key={c}
@@ -501,20 +502,20 @@ const AllPrompts = () => {
             </div>
           ) : groupedPrompts ? (
             /* Category-grouped card grid */
-            <div className="space-y-10">
+            <div>
               {groupedPrompts.map((group, groupIndex) => (
-                <div key={group.category}>
+                <div key={group.category} className={groupIndex === 0 ? "mt-8" : "mt-10"}>
                   {/* Category header */}
-                  <div className="flex items-center gap-3 border-b border-border pb-3 mb-5">
-                    <span className="text-xl">{categoryIcons[group.category] || "📌"}</span>
+                  <div className="flex items-center gap-3 border-b border-border pb-3 mb-6">
+                    <span className="text-2xl">{categoryIcons[group.category] || "📌"}</span>
                     <h2 className="font-semibold text-lg">{group.category}</h2>
-                    <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+                    <span className="text-sm text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                       {group.prompts.length}
                     </span>
                   </div>
 
                   {/* Card grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                     {group.prompts.map((prompt) =>
                       renderPromptCard(prompt, categoryAccentColors[group.category])
                     )}
