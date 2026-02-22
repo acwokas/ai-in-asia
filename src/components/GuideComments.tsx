@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, User, ChevronDown, Check, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -40,7 +40,6 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
   const [content, setContent] = useState("");
   const [isNotRobot, setIsNotRobot] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     checkAdminStatus();
@@ -105,17 +104,14 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
 
       if (error) throw error;
 
-      toast({
-        title: "Comment approved",
+      toast("Comment approved", {
         description: "The comment is now visible to everyone.",
       });
 
       fetchComments();
     } catch (error) {
-      toast({
-        title: "Failed to approve comment",
+      toast.error("Failed to approve comment", {
         description: "Please try again later.",
-        variant: "destructive",
       });
     }
   };
@@ -129,17 +125,14 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
 
       if (error) throw error;
 
-      toast({
-        title: "Comment rejected",
+      toast("Comment rejected", {
         description: "The comment has been deleted.",
       });
 
       fetchComments();
     } catch (error) {
-      toast({
-        title: "Failed to reject comment",
+      toast.error("Failed to reject comment", {
         description: "Please try again later.",
-        variant: "destructive",
       });
     }
   };
@@ -163,8 +156,7 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
 
       if (error) throw error;
 
-      toast({
-        title: "Comment submitted",
+      toast("Comment submitted", {
         description: "Your comment is awaiting moderation and will appear shortly.",
       });
 
@@ -173,10 +165,8 @@ const GuideComments = ({ guideId }: GuideCommentsProps) => {
       setContent("");
       setIsNotRobot(false);
     } catch (error) {
-      toast({
-        title: "Failed to submit comment",
+      toast.error("Failed to submit comment", {
         description: "Please try again later.",
-        variant: "destructive",
       });
     } finally {
       setSubmitting(false);

@@ -3,7 +3,7 @@ import { Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
@@ -16,7 +16,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const { toast } = useToast();
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +31,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
 
       if (error) {
         if (error.code === "23505") {
-          toast({
-            title: "Already subscribed",
+          toast("Already subscribed", {
             description: "This email is already on our newsletter list.",
           });
         } else {
@@ -40,23 +39,18 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
         }
       } else {
         setIsSubscribed(true);
-        toast({
-          title: "Successfully subscribed!",
+        toast("Successfully subscribed!", {
           description: "Welcome to the AI in ASIA newsletter!",
         });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Invalid email",
+        toast.error("Invalid email", {
           description: error.errors[0].message,
-          variant: "destructive",
         });
       } else {
-        toast({
-          title: "Something went wrong",
+        toast.error("Something went wrong", {
           description: "Please try again later.",
-          variant: "destructive",
         });
       }
     } finally {

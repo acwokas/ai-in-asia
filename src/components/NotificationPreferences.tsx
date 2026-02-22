@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Bell } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +16,6 @@ import {
 
 const NotificationPreferences = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -59,7 +58,7 @@ const NotificationPreferences = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notification-preferences", user?.id] });
-      toast({ description: "Preferences updated" });
+      toast("Preferences updated");
     },
   });
 

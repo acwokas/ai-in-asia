@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import logo from "@/assets/aiinasia-logo.png";
 import { z } from "zod";
 import { ExternalLink } from "lucide-react";
@@ -41,7 +41,6 @@ const Footer = memo(() => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(checkSubscribed());
   const { user } = useAuth();
-  const { toast } = useToast();
   const currentYear = new Date().getFullYear();
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -57,8 +56,7 @@ const Footer = memo(() => {
 
       if (error) {
         if (error.code === "23505") {
-          toast({
-            title: "Already subscribed",
+          toast("Already subscribed", {
             description: "This email is already on our list.",
           });
         } else {
@@ -69,24 +67,19 @@ const Footer = memo(() => {
         setIsSubscribed(true);
         await awardNewsletterPoints(user?.id ?? null, supabase);
 
-        toast({
-          title: "Successfully subscribed!",
+        toast("Successfully subscribed!", {
           description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Check your inbox for a confirmation email.",
         });
         setEmail("");
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
+        toast.error("Validation Error", {
           description: error.errors[0].message,
-          variant: "destructive",
         });
       } else {
-        toast({
-          title: "Subscription failed",
+        toast.error("Subscription failed", {
           description: "Please try again later.",
-          variant: "destructive",
         });
       }
     } finally {

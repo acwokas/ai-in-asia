@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { TopListItem } from "@/components/TopListsEditor";
 import { StarRating } from "@/components/StarRating";
 
@@ -21,7 +21,6 @@ interface RelatedPromptsProps {
 }
 
 export const RelatedPrompts = ({ currentPromptId, allPrompts }: RelatedPromptsProps) => {
-  const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const currentPrompt = allPrompts.find(p => p.id === currentPromptId);
@@ -60,16 +59,13 @@ export const RelatedPrompts = ({ currentPromptId, allPrompts }: RelatedPromptsPr
     try {
       await navigator.clipboard.writeText(prompt);
       setCopiedId(itemId);
-      toast({
-        title: "Copied!",
+      toast("Copied!", {
         description: "Prompt copied to clipboard",
       });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to copy prompt",
-        variant: "destructive",
       });
     }
   };

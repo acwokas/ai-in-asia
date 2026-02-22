@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { trackEvent } from "./GoogleAnalytics";
 
 interface PromptQuickActionsProps {
@@ -17,7 +17,7 @@ interface PromptQuickActionsProps {
 }
 
 export const PromptQuickActions = ({ prompt, title }: PromptQuickActionsProps) => {
-  const { toast } = useToast();
+  
 
   const tryInChatGPT = () => {
     trackEvent("prompt_try_in_tool", { tool: "ChatGPT", prompt_title: title });
@@ -48,8 +48,7 @@ export const PromptQuickActions = ({ prompt, title }: PromptQuickActionsProps) =
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast({
-      title: "Downloaded!",
+    toast("Downloaded!", {
       description: "Prompt saved as text file",
     });
   };
@@ -70,8 +69,7 @@ export const PromptQuickActions = ({ prompt, title }: PromptQuickActionsProps) =
   const copyLink = () => {
     trackEvent("prompt_share", { platform: "copy_link", prompt_title: title });
     navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link copied!",
+    toast("Link copied!", {
       description: "Share this prompt with others",
     });
   };

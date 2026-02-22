@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Loader2, Sparkles, Bot, Mic, Download, BookOpen } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,7 +39,6 @@ const ScoutChatbot = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -66,10 +65,8 @@ const ScoutChatbot = () => {
       
       recognitionRef.current.onerror = () => {
         setIsListening(false);
-        toast({
-          title: "Voice input failed",
+        toast.error("Voice input failed", {
           description: "Please try again or type your message.",
-          variant: "destructive",
         });
       };
       
@@ -198,8 +195,7 @@ const ScoutChatbot = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast({
-      title: "Transcript exported",
+    toast("Transcript exported", {
       description: "Your chat history has been downloaded.",
     });
   };
@@ -315,10 +311,8 @@ const ScoutChatbot = () => {
     } catch (error) {
       console.error("Scout chat error:", error);
       console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
-        variant: "destructive",
       });
       // Remove the empty assistant message if it exists
       setMessages((prev) => {

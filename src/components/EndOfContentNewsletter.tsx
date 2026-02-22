@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { z } from "zod";
 import { isNewsletterSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 
@@ -15,7 +15,6 @@ const EndOfContentNewsletter = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(isNewsletterSubscribed());
   const { user } = useAuth();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +29,7 @@ const EndOfContentNewsletter = () => {
 
       if (error) {
         if (error.code === "23505") {
-          toast({
-            title: "Already subscribed",
+          toast("Already subscribed", {
             description: "You're already on our list!",
           });
           setIsSubscribed(true);
@@ -43,23 +41,18 @@ const EndOfContentNewsletter = () => {
         markNewsletterSubscribed();
         setIsSubscribed(true);
         await awardNewsletterPoints(user?.id ?? null, supabase);
-        toast({
-          title: "You're in!",
+        toast("You're in!", {
           description: "Welcome to the AI in ASIA newsletter.",
         });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Invalid email",
+        toast.error("Invalid email", {
           description: error.errors[0].message,
-          variant: "destructive",
         });
       } else {
-        toast({
-          title: "Something went wrong",
+        toast.error("Something went wrong", {
           description: "Please try again later.",
-          variant: "destructive",
         });
       }
     } finally {

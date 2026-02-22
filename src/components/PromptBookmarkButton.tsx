@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "./GoogleAnalytics";
@@ -34,7 +34,6 @@ interface PromptBookmarkButtonProps {
 
 export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmarkButtonProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showNewCollection, setShowNewCollection] = useState(false);
@@ -110,8 +109,7 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
       setShowNewCollection(false);
       setNewCollectionName('');
       setNewCollectionDesc('');
-      toast({
-        title: "Collection created!",
+      toast("Collection created!", {
         description: collections?.length === 0 ? "You earned 10 points for creating your first collection!" : undefined,
       });
     },
@@ -161,21 +159,14 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['prompt-bookmark', user?.id, promptItemId] });
       queryClient.invalidateQueries({ queryKey: ['user-bookmarks', user?.id] });
-      toast({
-        title: data ? "Saved!" : "Removed",
+      toast(data ? "Saved!" : "Removed", {
         description: data ? "You earned 3 points!" : "Bookmark removed",
       });
     },
     onError: (error: Error) => {
       if (error.message === "Must be logged in") {
-        toast({
-          title: "Sign in required",
+        toast("Sign in required", {
           description: "Please sign in to save prompts.",
-          action: (
-            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
-              Sign In
-            </Button>
-          ),
         });
       }
     },

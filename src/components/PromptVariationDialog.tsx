@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -30,7 +30,6 @@ export const PromptVariationDialog = ({
   originalPrompt 
 }: PromptVariationDialogProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -61,27 +60,18 @@ export const PromptVariationDialog = ({
       setOpen(false);
       setVariation('');
       setExplanation('');
-      toast({
-        title: "Variation submitted!",
+      toast("Variation submitted!", {
         description: "Your variation will be reviewed. You'll earn 25 points if approved!",
       });
     },
     onError: (error: Error) => {
       if (error.message === "Must be logged in") {
-        toast({
-          title: "Sign in required",
+        toast("Sign in required", {
           description: "Please sign in to submit variations.",
-          action: (
-            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
-              Sign In
-            </Button>
-          ),
         });
       } else {
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to submit variation",
-          variant: "destructive",
         });
       }
     },
