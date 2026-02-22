@@ -651,7 +651,7 @@ Deno.serve(async (req) => {
 
     let query = supabase
       .from('articles')
-      .select('id, title, excerpt, published_at, updated_at')
+      .select('id, title, excerpt, content, published_at, updated_at, categories!primary_category_id(name)')
       .eq('status', 'published');
 
     if (categoryId) {
@@ -983,6 +983,8 @@ PSYCHOLOGY (follow strictly):
 1. SINGLE-REACTION: React to ONE thing only. Not the whole article. Not balanced analysis.
 2. IMPERFECTION: Rough edges. Incomplete sentences. Missing punctuation. lowercase starts OK.
 3. OPINION-FIRST: Your subjective take, not article merit. "idk about this" not "great points"
+4. SPECIFICITY: Reference a SPECIFIC claim, fact, company, statistic, or argument from the article content. Never write a generic response to just the headline.
+5. STAY IN CHARACTER: Your bio and commenting style define WHO you are. A skeptic stays skeptical. A practitioner shares practical experience. An academic references research. NEVER break character.
 
 FORMAT:
 - 75% end with statements, 25% with genuine questions (NOT rhetorical)
@@ -992,12 +994,34 @@ FORMAT:
 
 BEFORE OUTPUT: Check your comment. Does it contain ANY banned word/phrase? Does it start with "This is [adjective]"? Does it end with "right?" or "don't you think?"? If YES to any, rewrite.`;
 
+        // Truncate content for AI prompt - strip markdown noise, keep substance
+        const cleanContent = ((article as any).content || '')
+          .toString()
+          .replace(/!\[[^\]]*\]\([^)]*\)/g, '') // remove images
+          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // simplify links to text
+          .replace(/#{1,6}\s/g, '') // remove heading markers
+          .replace(/[*_]{1,3}/g, '') // remove bold/italic
+          .replace(/\n{3,}/g, '\n\n') // collapse whitespace
+          .substring(0, 2000);
+
+        const categoryName = (article as any).categories?.name || 'Technology';
+
         // USER MESSAGE: Only the data to process
         const userPrompt = `ARTICLE: "${article.title}"
+CATEGORY: ${categoryName}
 SUMMARY: "${article.excerpt || ''}"
 
-YOUR PERSONA: ${selectedAuthor.name} from ${selectedAuthor.region.replace('_', ' ')}
-TYPE: ${persona.type} - ${persona.tone}
+ARTICLE CONTENT (first section):
+${cleanContent}
+
+YOUR PERSONA: ${selectedAuthor.name} (@${selectedAuthor.handle}) from ${selectedAuthor.region.replace('_', ' ')}
+${selectedAuthor.bio ? `BIO: ${selectedAuthor.bio}` : ''}
+${selectedAuthor.persona_type ? `TYPE: ${selectedAuthor.persona_type}` : ''}
+${selectedAuthor.commenting_style ? `YOUR COMMENTING STYLE: ${selectedAuthor.commenting_style}` : ''}
+
+IMPORTANT: Reference a SPECIFIC claim, fact, company, statistic, or argument from the content above. Do NOT write a generic response to the headline. STAY IN CHARACTER - your bio and commenting style define who you are.
+
+ANGLE: ${persona.type} - ${persona.tone}
 ${regionalInstruction}
 ${specialBehavior ? `BEHAVIOR: ${specialBehavior}` : ''}
 ${temporalInstruction}
