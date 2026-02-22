@@ -35,7 +35,7 @@ export async function awardPoints(userId: string, points: number, reason?: strin
         .in("id", newIds);
 
       for (const ach of achievementData || []) {
-        toast("🏆 Achievement Unlocked!", {
+        toast("Achievement Unlocked!", {
           description: ach.name,
           duration: 5000,
         });
@@ -43,7 +43,7 @@ export async function awardPoints(userId: string, points: number, reason?: strin
     }
 
     if (reason) {
-      toast(`⭐ +${points} points — ${reason}`, { duration: 3000 });
+      toast(`+${points} points - ${reason}`, { duration: 3000 });
     }
   } catch (err) {
     console.error("Failed to award points:", err);

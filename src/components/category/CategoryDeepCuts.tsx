@@ -24,7 +24,7 @@ export function CategoryDeepCuts({ articles, cfg, slug, revealProps, selectedFil
     <section ref={revealProps.ref} style={{ marginBottom: 48, ...revealProps.style }}>
       <SectionHeader
         title="Deep Cuts from the Archives"
-        emoji="💎"
+        emoji="sparkles"
         color="#ef4444"
         subtitle="Editor-picked articles that are just as relevant today as when they were published."
       />

@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { findPathsForArticle } from "@/lib/learningPathMatcher";
 import { TOKENS } from "@/constants/categoryTokens";
+import { iconMap } from "@/lib/iconMap";
+import { BookOpen } from "lucide-react";
 
 interface LearningPathCalloutProps {
   article: {
@@ -33,7 +35,7 @@ export function LearningPathCallout({ article }: LearningPathCalloutProps) {
         flexWrap: "wrap",
       }}
     >
-      <span style={{ fontSize: 24 }}>{path.emoji}</span>
+      {(() => { const Icon = iconMap[path.emoji]; return Icon ? <Icon style={{ width: 24, height: 24, color: path.color }} /> : null; })()}
       <div style={{ flex: 1, minWidth: 200 }}>
         <p
           style={{
@@ -44,7 +46,7 @@ export function LearningPathCallout({ article }: LearningPathCalloutProps) {
             lineHeight: 1.5,
           }}
         >
-          📚 This article is part of the{" "}
+          <BookOpen style={{ width: 14, height: 14, display: "inline", verticalAlign: "middle", marginRight: 4 }} />This article is part of the{" "}
           <Link
             to={`/category/${categorySlug}/learn/${path.slug}`}
             style={{

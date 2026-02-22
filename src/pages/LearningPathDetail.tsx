@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
+import { iconMap } from "@/lib/iconMap";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/categoryTokens";
@@ -204,7 +205,7 @@ const LearningPathDetail = () => {
               {/* Emoji + Title */}
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
                 <div style={{ width: 56, height: 56, borderRadius: 14, background: `${path.color}1a`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontSize: 28 }}>{path.emoji}</span>
+                  {(() => { const Icon = iconMap[path.emoji]; return Icon ? <Icon style={{ width: 28, height: 28, color: path.color }} /> : null; })()}
                 </div>
                 <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1.15 }} className="text-2xl sm:text-3xl md:text-[36px]">
                   {path.title}
@@ -362,8 +363,8 @@ const LearningPathDetail = () => {
                             </Link>
                           ) : (
                             <Link to={`/${article.categories?.slug || categorySlug}/${article.slug}`} className="flex-shrink-0">
-                              <div className="w-full sm:w-[180px] h-[100px] sm:h-full" style={{ background: `${path.color}1a`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
-                                {path.emoji}
+                              <div className="w-full sm:w-[180px] h-[100px] sm:h-full" style={{ background: `${path.color}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                {(() => { const Icon = iconMap[path.emoji]; return Icon ? <Icon style={{ width: 32, height: 32, color: path.color }} /> : null; })()}
                               </div>
                             </Link>
                           )}
@@ -493,7 +494,7 @@ const LearningPathDetail = () => {
                         }}
                         className="hover:border-white/20"
                       >
-                        <span style={{ fontSize: 20 }}>{rp.emoji}</span>
+                        {(() => { const Icon = iconMap[rp.emoji]; return Icon ? <Icon style={{ width: 20, height: 20, color: rp.color }} /> : null; })()}
                         <div>
                           <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 12, color: "#e5e7eb" }}>{rp.title}</div>
                           <div style={{ fontSize: 11, color: TOKENS.MUTED }}>{rp.articles} articles - {rp.time}</div>
@@ -544,7 +545,7 @@ const LearningPathDetail = () => {
           {/* Cross-category paths */}
           {crossPaths.length > 0 && (
             <div ref={revealCross.ref} style={revealCross.style}>
-              <SectionHeader title="Explore Other Learning Paths" emoji="🌐" color={TOKENS.BRAND} />
+              <SectionHeader title="Explore Other Learning Paths" emoji="globe" color={TOKENS.BRAND} />
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {crossPaths.map(({ categorySlug: cs, cfg: catCfg, path: cp }) => (
                   <Link
@@ -562,7 +563,7 @@ const LearningPathDetail = () => {
                     className="hover:border-white/20"
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                      <span style={{ fontSize: 24 }}>{cp.emoji}</span>
+                      {(() => { const Icon = iconMap[cp.emoji]; return Icon ? <Icon style={{ width: 24, height: 24, color: cp.color }} /> : null; })()}
                       <GlowBadge color={catCfg.accent} small>{catCfg.label}</GlowBadge>
                     </div>
                     <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", marginBottom: 4 }}>{cp.title}</h4>

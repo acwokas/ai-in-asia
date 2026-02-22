@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, BookOpen, Flame, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { iconMap } from "@/lib/iconMap";
 
 const STALE = 5 * 60 * 1000;
 const sevenDaysAgo = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -144,7 +145,7 @@ export function AdminEngagementTab() {
       return data.map(d => ({
         ...d,
         achievement_name: achMap[d.achievement_id]?.name || "Unknown",
-        badge_icon: achMap[d.achievement_id]?.badge_icon || "🏆",
+        badge_icon: achMap[d.achievement_id]?.badge_icon || "trophy",
       }));
     },
   });
@@ -262,7 +263,7 @@ export function AdminEngagementTab() {
             <div className="space-y-2">
               {recentAchievements.map((a: any) => (
                 <div key={a.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                  <span className="text-lg">{a.badge_icon}</span>
+                  <span className="text-lg">{(() => { const Icon = iconMap[a.badge_icon]; return Icon ? <Icon className="h-5 w-5" /> : <span>{a.badge_icon}</span>; })()}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{a.achievement_name}</p>
                     <p className="text-xs text-muted-foreground truncate">User: {a.user_id?.slice(0, 8)}...</p>

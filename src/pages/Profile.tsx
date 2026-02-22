@@ -156,7 +156,7 @@ const Profile = () => {
         const { data: profileMaster } = await supabase.from('achievements').select('id').eq('name', 'Profile Master').single();
         if (profileMaster?.id) await supabase.from('user_achievements').insert({ user_id: user.id, achievement_id: profileMaster.id });
       }
-      toast("Profile Complete! 🎉", { description: `You earned ${points} points!` });
+      toast("Profile Complete!", { description: `You earned ${points} points!` });
       fetchUserData();
     } catch (error) {
       console.error('Profile completion error:', error);

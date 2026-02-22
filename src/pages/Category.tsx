@@ -405,7 +405,7 @@ const Category = () => {
               {/* 5. INTERACTIVE TOOL */}
               {ToolComponent && (
                 <section ref={revealTool.ref} style={{ marginBottom: 48, ...revealTool.style }}>
-                  <SectionHeader title={`${cfg.label} Tools`} emoji="🛠️" color={cfg.accent} subtitle="Interactive tools for this category" />
+                  <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Interactive tools for this category" />
                   <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
                     <ToolComponent />
                   </Suspense>
