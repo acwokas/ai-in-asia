@@ -30,6 +30,7 @@ const Index = lazy(() => import("./pages/Index"));
 // Lazy load non-critical components
 const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
+const ScoutChatbot = lazy(() => import("./components/ScoutChatbot"));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
@@ -189,6 +190,12 @@ const App = () => (
             <GoogleAnalytics />
             <Suspense fallback={null}>
               <ConsentBanner />
+            </Suspense>
+            <Suspense fallback={null}>
+              <InstallAppButton />
+            </Suspense>
+            <Suspense fallback={null}>
+              <ScoutChatbot />
             </Suspense>
             <Suspense fallback={null}>
               <InstallAppButton />
