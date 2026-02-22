@@ -14,6 +14,8 @@ import ExploreMoreButton from "@/components/ExploreMoreButton";
 import { useRevealOnScroll } from "@/lib/scrollAnimation";
 import { filterArticlesForPath } from "@/lib/learningPathMatcher";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { awardPoints } from "@/lib/gamification";
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
@@ -26,6 +28,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 const LearningPathDetail = () => {
   const { slug: categorySlug, pathSlug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const cfg = CATEGORY_CONFIG[categorySlug as CategorySlug] || CATEGORY_CONFIG.news;
   const paths = LEARNING_PATHS[categorySlug || "news"] || [];
@@ -101,12 +104,19 @@ const LearningPathDetail = () => {
       if (!next.has(id)) return next; // Only celebrate on marking as read
       const totalArticles = pathArticles?.slice(0, path?.articles || 8).length || 0;
       if (next.size === totalArticles && totalArticles > 0) {
-        setTimeout(() => {
-          toast("🎉 Path Complete!", {
-            description: `You've finished the ${path?.title} learning path!`,
-            duration: 5000,
-          });
-        }, 300);
+        const completedKey = `lp-completed-${categorySlug}-${pathSlug}`;
+        if (!localStorage.getItem(completedKey)) {
+          localStorage.setItem(completedKey, "1");
+          if (user) {
+            awardPoints(user.id, 20, `completing ${path?.title}`);
+          }
+          setTimeout(() => {
+            toast("🎉 Path Complete!", {
+              description: `You've finished the ${path?.title} learning path!`,
+              duration: 5000,
+            });
+          }, 300);
+        }
       }
       
       return next;

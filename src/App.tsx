@@ -18,6 +18,7 @@ const ExternalRedirect = ({ url }: { url: string }) => {
 
 // Eager load critical components
 import GoogleAnalytics from "./components/GoogleAnalytics";
+import { useEngagementLoop } from "./hooks/useEngagementLoop";
 
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -174,6 +175,11 @@ const queryClient = new QueryClient({
 
 const persister = createIDBPersister();
 
+const EngagementWrapper = () => {
+  useEngagementLoop();
+  return null;
+};
+
 const App = () => (
   <PersistQueryClientProvider
     client={queryClient}
@@ -189,6 +195,7 @@ const App = () => (
             <AnalyticsProvider>
             <ScrollToTop />
             <GoogleAnalytics />
+            <EngagementWrapper />
             <Suspense fallback={null}>
               <ConsentBanner />
             </Suspense>

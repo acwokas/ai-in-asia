@@ -187,13 +187,36 @@ const Header = memo(() => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                            {userStats && (
-                              <div className="px-2 pb-2 pt-1 space-y-0.5">
-                                <p className="text-xs font-medium text-foreground">{userStats.level}</p>
-                                <p className="text-xs text-muted-foreground">🔥 {userStats.streak_days} day streak</p>
-                                <p className="text-xs text-muted-foreground">⚡ {userStats.points} points</p>
-                              </div>
-                            )}
+                            {userStats && (() => {
+                              const pts = userStats.points;
+                              const levels = [
+                                { name: "Explorer", min: 0, max: 49, color: "bg-blue-500" },
+                                { name: "Enthusiast", min: 50, max: 199, color: "bg-purple-500" },
+                                { name: "Expert", min: 200, max: 499, color: "bg-orange-500" },
+                                { name: "Thought Leader", min: 500, max: Infinity, color: "bg-red-500" },
+                              ];
+                              const current = levels.find(l => pts >= l.min && pts <= l.max) || levels[0];
+                              const next = levels[levels.indexOf(current) + 1];
+                              const progress = next ? Math.min(100, ((pts - current.min) / (next.min - current.min)) * 100) : 100;
+
+                              return (
+                                <div className="px-2 pb-2 pt-1 space-y-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`inline-block w-2 h-2 rounded-full ${current.color}`} />
+                                    <span className="text-xs font-semibold text-foreground">{current.name}</span>
+                                  </div>
+                                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                                    <div className={`h-full rounded-full ${current.color} transition-all duration-500`} style={{ width: `${progress}%` }} />
+                                  </div>
+                                  {next ? (
+                                    <p className="text-[10px] text-muted-foreground">{next.min - pts} pts to {next.name}</p>
+                                  ) : (
+                                    <p className="text-[10px] text-muted-foreground">Max level reached!</p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground">🔥 {userStats.streak_days} day streak · ⚡ {pts} pts</p>
+                                </div>
+                              );
+                            })()}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <Link to="/profile" className="cursor-pointer">

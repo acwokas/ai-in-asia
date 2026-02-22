@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { awardPoints } from "@/lib/gamification";
 import { Comment, organizeThreadedComments } from "@/components/comments/CommentThread";
 
 export const useComments = (articleId: string) => {
@@ -321,7 +322,7 @@ export const useComments = (articleId: string) => {
       toast.success("Comment submitted", { description: "Your comment is awaiting moderation and will appear shortly." });
       
       if (userId) {
-        toast("✨ +15 points for commenting!", { duration: 3000 });
+        await awardPoints(userId, 15, "commenting");
       }
 
       return true;

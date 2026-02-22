@@ -5,6 +5,7 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { awardPoints } from "@/lib/gamification";
 
 interface UseArticleShareHandlersProps {
   articleTitle: string;
@@ -72,10 +73,7 @@ export const useArticleShareHandlers = ({
                 .update({ shares_made: (stats.shares_made || 0) + 1 })
                 .eq("user_id", user.id);
 
-              await supabase.rpc("award_points", {
-                _user_id: user.id,
-                _points: 5,
-              });
+              await awardPoints(user.id, 5);
             }
           }
           return;

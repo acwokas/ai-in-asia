@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "./GoogleAnalytics";
+import { awardPoints } from "@/lib/gamification";
 
 interface PromptBookmarkButtonProps {
   promptItemId: string;
@@ -95,10 +96,7 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
         .eq('user_id', user.id);
 
       if (existingCollections?.length === 1) {
-        await supabase.rpc('award_points', {
-          _user_id: user.id,
-          _points: 10
-        });
+        await awardPoints(user.id, 10, "first collection");
       }
 
       return data;
@@ -148,10 +146,7 @@ export const PromptBookmarkButton = ({ promptItemId, articleId }: PromptBookmark
         if (error) throw error;
 
         // Award points
-        await supabase.rpc('award_points', {
-          _user_id: user.id,
-          _points: 3
-        });
+        await awardPoints(user.id, 3);
 
         return data;
       }

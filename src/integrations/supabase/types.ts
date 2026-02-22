@@ -1526,6 +1526,30 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           approved: boolean | null
@@ -3714,6 +3738,7 @@ export type Database = {
           comments_made: number | null
           created_at: string | null
           id: string
+          last_active_date: string | null
           last_read_date: string | null
           level: string | null
           points: number | null
@@ -3727,6 +3752,7 @@ export type Database = {
           comments_made?: number | null
           created_at?: string | null
           id?: string
+          last_active_date?: string | null
           last_read_date?: string | null
           level?: string | null
           points?: number | null
@@ -3740,6 +3766,7 @@ export type Database = {
           comments_made?: number | null
           created_at?: string | null
           id?: string
+          last_active_date?: string | null
           last_read_date?: string | null
           level?: string | null
           points?: number | null
