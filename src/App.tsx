@@ -42,7 +42,7 @@ const SitemapRedirect = lazy(() => import("./pages/SitemapRedirect"));
 const RssRedirect = lazy(() => import("./pages/RssRedirect"));
 const FeedRedirect = lazy(() => import("./pages/RssRedirect")); // Same as RSS
 const Search = lazy(() => import("./pages/Search"));
-const ConnectionTest = lazy(() => import("./pages/ConnectionTest"));
+
 const Auth = lazy(() => import("./pages/Auth"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -89,7 +89,7 @@ const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
-const Tools = lazy(() => import("./pages/Tools"));
+
 const AskScout = lazy(() => import("./pages/AskScout"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
@@ -223,7 +223,7 @@ const App = () => (
               <Route path="/rss" element={<RssRedirect />} />
               <Route path="/feed" element={<FeedRedirect />} />
               <Route path="/search" element={<Search />} />
-              <Route path="/connection-test" element={<ConnectionTest />} />
+              
               <Route path="/auth" element={<Auth />} />
               <Route path="/editor" element={<Editor />} />
               <Route path="/editor/:id" element={<Editor />} />
