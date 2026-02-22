@@ -171,7 +171,7 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
             <div style="padding: 8px; background: #1a1b23; border-radius: 8px; border: 1px solid #2a2d42;">
               <h3 style="margin: 0 0 4px 0; font-weight: 600; color: #fff; font-size: 14px;">${region.name}</h3>
               <p style="margin: 0; font-size: 12px; color: #b0b4c8;">${region.description}</p>
-              ${isRecent ? '<span style="display: inline-block; margin-top: 6px; padding: 2px 8px; background: hsl(var(--primary)); color: white; font-size: 10px; border-radius: 4px; font-weight: 500;">Recently Updated</span>' : ''}
+              ${isRecent ? '<span style="display: inline-block; margin-top: 6px; padding: 2px 8px; background: hsl(var(--primary)); color: #0a0b10; font-size: 10px; border-radius: 4px; font-weight: 700;">Recently Updated</span>' : ''}
             </div>
           `);
 
