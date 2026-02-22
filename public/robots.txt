@@ -79,7 +79,7 @@ User-agent: Omgilibot
 Allow: /
 
 # Sitemap for fast indexing
-Sitemap: https://aiinasia.com/sitemap.xml
+Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap
 
 # Polite crawl rate
 Crawl-delay: 1
