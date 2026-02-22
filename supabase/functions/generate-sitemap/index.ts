@@ -25,6 +25,7 @@ serve(async (req) => {
       { loc: `${baseUrl}/about`, lastmod: today, changefreq: 'monthly', priority: 0.8 },
       { loc: `${baseUrl}/contact`, lastmod: today, changefreq: 'monthly', priority: 0.6 },
       { loc: `${baseUrl}/events`, lastmod: today, changefreq: 'weekly', priority: 0.7 },
+      { loc: `${baseUrl}/events/submit`, lastmod: today, changefreq: 'monthly', priority: 0.5 },
       { loc: `${baseUrl}/guides`, lastmod: today, changefreq: 'weekly', priority: 0.8 },
       { loc: `${baseUrl}/newsletter`, lastmod: today, changefreq: 'weekly', priority: 0.7 },
       { loc: `${baseUrl}/newsletter/archive`, lastmod: today, changefreq: 'weekly', priority: 0.6 },
@@ -108,27 +109,18 @@ serve(async (req) => {
     }
 
     // Tags
-    const { data: tags } = await supabase
-      .from("tags")
-      .select("slug")
-      .order("slug");
-
+    let allTags: { slug: string }[] = [];
     let tagFrom = 0;
-    // Tags already fetched above but limited to 1000, fetch all
-    let allTags = tags || [];
-    if (allTags.length === 1000) {
-      // Fetch remaining
-      while (true) {
-        tagFrom += 1000;
-        const { data: moreTags } = await supabase
-          .from("tags")
-          .select("slug")
-          .order("slug")
-          .range(tagFrom, tagFrom + 999);
-        if (!moreTags || moreTags.length === 0) break;
-        allTags = allTags.concat(moreTags);
-        if (moreTags.length < 1000) break;
-      }
+    while (true) {
+      const { data: tagBatch } = await supabase
+        .from("tags")
+        .select("slug")
+        .order("slug")
+        .range(tagFrom, tagFrom + 999);
+      if (!tagBatch || tagBatch.length === 0) break;
+      allTags = allTags.concat(tagBatch);
+      if (tagBatch.length < 1000) break;
+      tagFrom += 1000;
     }
 
     for (const t of allTags) {
@@ -140,6 +132,47 @@ serve(async (req) => {
       });
     }
 
+    // Learning paths (hardcoded in frontend constants)
+    const learningPathsByCategory: Record<string, string[]> = {
+      news: ['this-week-in-asian-ai', 'ai-policy-tracker', 'funding-and-deals', 'research-radar'],
+      business: ['ai-roi-playbook', 'enterprise-ai-101', 'ai-in-asean-markets', 'governance-essentials'],
+      life: ['ai-safety-for-everyone', 'ai-and-mental-health', 'smart-ai-shopping', 'ai-in-entertainment'],
+      learn: ['ai-for-complete-beginners', 'prompt-engineering-mastery', 'ai-tools-power-user'],
+      create: ['ai-writing-mastery', 'ai-image-generation', 'ai-video-and-audio'],
+      voices: ['ai-in-business-asia'],
+    };
+
+    for (const [catSlug, paths] of Object.entries(learningPathsByCategory)) {
+      for (const pathSlug of paths) {
+        urls.push({
+          loc: `${baseUrl}/category/${catSlug}/learn/${pathSlug}`,
+          lastmod: today,
+          changefreq: 'weekly',
+          priority: 0.6,
+        });
+      }
+    }
+
+    // Newsletter editions
+    try {
+      const { data: newsletters } = await supabase
+        .from('newsletter_editions')
+        .select('id, updated_at')
+        .eq('status', 'sent')
+        .order('updated_at', { ascending: false });
+
+      for (const nl of (newsletters || [])) {
+        urls.push({
+          loc: `${baseUrl}/newsletter/${nl.id}`,
+          lastmod: new Date(nl.updated_at).toISOString().split('T')[0],
+          changefreq: 'monthly',
+          priority: 0.5,
+        });
+      }
+    } catch (_e) {
+      // Skip if newsletter_editions table doesn't exist
+    }
+
     // Policy regions
     const policyRegions = [
       'southeast-asia', 'east-asia', 'south-asia', 'central-asia',
@@ -148,6 +181,10 @@ serve(async (req) => {
     for (const r of policyRegions) {
       urls.push({ loc: `${baseUrl}/ai-policy-atlas/${r}`, lastmod: today, changefreq: 'weekly', priority: 0.6 });
     }
+
+    // Policy sub-pages
+    urls.push({ loc: `${baseUrl}/ai-policy-atlas/compare`, lastmod: today, changefreq: 'weekly', priority: 0.6 });
+    urls.push({ loc: `${baseUrl}/ai-policy-atlas/updates`, lastmod: today, changefreq: 'daily', priority: 0.7 });
 
     // Build single flat urlset
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
