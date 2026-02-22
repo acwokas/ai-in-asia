@@ -166,6 +166,58 @@ async function handleRewriteWithImages(
   const title = context?.title || '';
   const focusKeyphrase = context?.focusKeyphrase || '';
 
+  // Fetch potential internal links from the database
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  const stopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some'];
+  const searchTerms = title.split(/\s+/)
+    .filter((w: string) => w.length > 3)
+    .filter((w: string) => !stopWords.includes(w.toLowerCase()))
+    .slice(0, 5)
+    .join(' | ');
+
+  let availableLinks: string[] = [];
+  try {
+    const headers = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` };
+
+    const [articlesResponse, searchResponse] = await Promise.all([
+      fetch(
+        `${supabaseUrl}/rest/v1/articles?select=title,slug,categories:categories!article_categories(slug)&status=eq.published&order=published_at.desc&limit=10`,
+        { headers }
+      ),
+      searchTerms
+        ? fetch(
+            `${supabaseUrl}/rest/v1/articles?select=title,slug,categories:categories!article_categories(slug)&status=eq.published&title=wfts.${encodeURIComponent(searchTerms)}&limit=10`,
+            { headers }
+          )
+        : Promise.resolve(null),
+    ]);
+
+    const recentArticles = await articlesResponse.json();
+    const relevantArticles = searchResponse ? await searchResponse.json() : [];
+
+    const allArticles = [...(Array.isArray(relevantArticles) ? relevantArticles : []), ...(Array.isArray(recentArticles) ? recentArticles : [])];
+    const seen = new Set<string>();
+    availableLinks = allArticles
+      .filter((a: any) => {
+        if (!a.slug || seen.has(a.slug)) return false;
+        seen.add(a.slug);
+        return true;
+      })
+      .map((a: any) => {
+        const catSlug = Array.isArray(a.categories) && a.categories.length > 0 ? a.categories[0].slug : 'news';
+        return `[${a.title}](/${catSlug}/${a.slug})`;
+      })
+      .slice(0, 15);
+  } catch (linkErr) {
+    console.error('Failed to fetch internal links (non-fatal):', linkErr);
+  }
+
+  const internalLinksInstruction = availableLinks.length > 0
+    ? `\nINTERNAL LINKS:\n- Naturally incorporate 2-4 internal links from the following list where they are contextually relevant. Use the exact markdown format provided — do NOT modify the URLs. Only link where the reference genuinely fits the surrounding text.\n- Do NOT add any external links — only use links from this provided list.\n- Available internal links:\n${availableLinks.join('\n')}\n`
+    : '';
+
   // Step 1: Rewrite + get image suggestions in one AI call
   const rewriteSystemPrompt = `You are Scout, an expert editorial assistant for AIinASIA.com.
 Rewrite the article content to be engaging, well-structured, and optimised for SEO.
@@ -176,7 +228,8 @@ ASIA-PACIFIC ANGLE:
 - CRITICAL: Only reference real, verifiable facts, companies, regulations, and events. Do NOT fabricate statistics, quotes, company names, policy names, or research papers. If you are not confident a specific Asian reference is factually accurate, do not include it. It is better to have no Asia angle than a fabricated one.
 
 LINKS — CRITICAL:
-- Do NOT add any external links or URLs. Preserve any existing links from the original content exactly as they are. Do not create new links.
+- Do NOT add any external links or URLs. Preserve any existing links from the original content exactly as they are. Do not create new links to external websites.
+${internalLinksInstruction}
 
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Where a mid-article image should appear, write EXACTLY this on its own line and nothing else: IMAGE_PLACEHOLDER_HERE
