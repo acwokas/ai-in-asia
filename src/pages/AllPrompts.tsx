@@ -62,6 +62,14 @@ const categoryAccentColors: Record<string, string> = {
   "Productivity": "bg-cyan-400",
 };
 
+const categoryOrder = ["Content & Writing", "SEO & Marketing", "Research & Analysis", "Strategy & Planning", "Productivity"];
+
+/** Strip the repetitive "How to Use AI to/for " prefix from guide titles */
+const cleanGuideTitle = (title: string | undefined): string => {
+  if (!title) return "";
+  return title.replace(/^How to Use AI (to |for )/i, "");
+};
+
 const AllPrompts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -143,16 +151,16 @@ const AllPrompts = () => {
     return filtered;
   }, [prompts, promptOfTheDay, searchQuery, platformFilter, categoryFilter, sortBy]);
 
+  // Group prompts by category when showing "All" categories and not sorting by guide
   const groupedPrompts = useMemo(() => {
     if (categoryFilter !== "All" || sortBy === "by-guide") return null;
     const groups: Record<string, typeof filteredPrompts> = {};
-    const order = ["Content & Writing", "SEO & Marketing", "Research & Analysis", "Strategy & Planning", "Productivity"];
     for (const prompt of filteredPrompts) {
       const cat = prompt.category || "Other";
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(prompt);
     }
-    return order.filter(cat => groups[cat]?.length).map(cat => ({ category: cat, prompts: groups[cat] }));
+    return categoryOrder.filter(cat => groups[cat]?.length).map(cat => ({ category: cat, prompts: groups[cat] }));
   }, [filteredPrompts, categoryFilter, sortBy]);
 
   const copyPrompt = async (text: string, id: string, e?: React.MouseEvent) => {
@@ -178,309 +186,266 @@ const AllPrompts = () => {
 
   const totalPrompts = prompts?.length || 0;
 
-  const renderPromptCard = (prompt: (typeof filteredPrompts)[0], accentClass?: string) => {
+  /** Render a single prompt card */
+  const renderPromptCard = (prompt: any, index?: number) => {
     const guide = prompt.ai_guides as any;
     const isExpanded = expandedId === prompt.id;
     const isCopied = copiedId === prompt.id;
-    const resolvedAccent = accentClass || categoryAccentColors[prompt.category || ""] || "bg-primary";
+    const accentColor = categoryAccentColors[prompt.category || ""] || "bg-primary";
 
     return (
-      <div key={prompt.id} className="flex flex-col">
+      <div key={prompt.id}>
         <div
-          className="bg-card border border-border rounded-xl p-5 cursor-pointer group hover:bg-accent/50 hover:border-border hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 relative flex flex-col h-full"
+          className={`bg-card border border-border rounded-xl p-5 cursor-pointer group hover:bg-accent/50 hover:border-border hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 relative ${isExpanded ? "ring-1 ring-primary/30" : ""}`}
           onClick={() => toggleExpand(prompt.id)}
         >
-          {/* Left accent on hover */}
-          <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-full ${resolvedAccent} opacity-0 group-hover:opacity-100 transition-opacity`} />
+          {/* Coloured left accent on hover */}
+          <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-full ${accentColor} opacity-0 group-hover:opacity-100 transition-opacity`} />
 
-          <h3 className="text-base font-semibold leading-snug mb-2 group-hover:text-primary transition-colors">
+          {/* Title */}
+          <h3 className="text-base font-semibold leading-snug mb-2">
             {prompt.prompt_title}
           </h3>
 
+          {/* Guide attribution */}
           <p className="text-sm text-muted-foreground mb-3">
             <Link
               to={`/guides/${guide?.slug}`}
-              className="hover:text-primary hover:underline"
+              className="hover:text-foreground transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              {(guide?.title || "").replace(/^How to Use AI (to|for) /i, "")}
+              {cleanGuideTitle(guide?.title)}
             </Link>
           </p>
 
-          {/* Footer */}
+          {/* Footer: platform tags + actions */}
           <div className="flex items-center justify-between mt-4">
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="flex gap-1 flex-wrap">
               {prompt.platforms?.map((p: string) => (
-                <Badge
-                  key={p}
-                  className={`text-xs px-2 py-0.5 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
-                >
+                <span key={p} className={`text-xs px-2 py-0.5 rounded-full ${platformColors[p] || "bg-muted text-muted-foreground"}`}>
                   {p}
-                </Badge>
+                </span>
               ))}
             </div>
-            <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary"
+
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary flex items-center justify-center transition-colors"
                 onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
               >
-                {isCopied ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary"
-                asChild
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Link to={`/guides/${guide?.slug}`}>
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Expanded content inside card */}
-          {isExpanded && (
-            <div className="mt-4 pt-4 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
-              <div className="relative group/code">
-                <pre className="bg-[#0a0b10] border border-border rounded-lg p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto text-foreground">
-                  {prompt.prompt_text}
-                </pre>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 h-8 gap-1.5 text-xs opacity-0 group-hover/code:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
-                  onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
-                >
-                  {isCopied ? (
-                    <><Check className="h-3.5 w-3.5" /> Copied ✓</>
-                  ) : (
-                    <><Copy className="h-3.5 w-3.5" /> Copy</>
-                  )}
-                </Button>
-              </div>
-
-              {prompt.what_to_expect && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="font-medium text-foreground">What to expect:</span>{" "}
-                  {prompt.what_to_expect}
-                </p>
-              )}
-
+                {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              </button>
               <Link
                 to={`/guides/${guide?.slug}`}
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                className="h-8 w-8 rounded-lg border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary flex items-center justify-center transition-colors"
+                onClick={(e) => e.stopPropagation()}
               >
-                View in guide <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3.5 w-3.5" />
               </Link>
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Expanded content below card */}
+        <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? "max-h-[600px] opacity-100 mt-2" : "max-h-0 opacity-0"}`}>
+          <div className="bg-card border border-border rounded-xl p-5">
+            {/* Code block */}
+            <div className="relative mb-4">
+              <pre className="bg-[#0a0b10] border border-border rounded-lg p-4 text-sm text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+                {prompt.prompt_text}
+              </pre>
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute top-3 right-3"
+                onClick={(e) => copyPrompt(prompt.prompt_text, prompt.id, e)}
+              >
+                {isCopied ? (<><Check className="h-3 w-3 mr-1" /> Copied</>) : (<><Copy className="h-3 w-3 mr-1" /> Copy</>)}
+              </Button>
+            </div>
+
+            {prompt.what_to_expect && (
+              <p className="text-sm text-muted-foreground mb-3">
+                <span className="font-medium text-foreground">What to expect:</span>{" "}
+                {prompt.what_to_expect}
+              </p>
+            )}
+
+            <Link to={`/guides/${guide?.slug}`} className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+              View in guide <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
     );
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead
-        title="AI Prompt Library | AI in Asia"
-        description="Every prompt from every guide. Tested, specific, ready to paste. Browse and copy AI prompts for ChatGPT, Claude, Gemini, and more."
-        canonical="https://aiinasia.com/prompts"
-      />
-      <Header />
+  /** Render the ad slot */
+  const renderAdSlot = () => (
+    <div className="my-8 flex items-center justify-center">
+      <div className="text-xs text-muted-foreground">
+        Advertisement
+      </div>
+      <div className="h-24 bg-muted/30 rounded-xl flex items-center justify-center text-muted-foreground text-sm border border-border">
+        Ad slot
+      </div>
+    </div>
+  );
 
-      <main className="flex-1">
-        {/* Hero */}
-        <div className="bg-card border-b border-border">
-          <div className="max-w-[1200px] mx-auto px-4 py-8 md:py-10 text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Prompt Library</h1>
-            <p className="text-base md:text-lg text-muted-foreground">
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Header />
+      <SEOHead title="Prompt Library – AI in Asia" description="Browse tested AI prompts for ChatGPT, Claude, Gemini and more. Every prompt from every guide, ready to copy and paste." />
+
+      <main className="max-w-5xl mx-auto px-4 py-10">
+        {/* ── Hero ── */}
+        <div className="text-center mb-10">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Prompt Library</h1>
+
+            <p className="text-base md:text-lg text-muted-foreground mb-3">
               Every prompt from every guide. Tested, specific, ready to paste.
             </p>
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{totalPrompts}</span> prompts across{" "}
-              <span className="font-medium text-foreground">{guideCount || 0}</span> guides
+
+            <p className="text-sm text-muted-foreground mb-6">
+              {totalPrompts} prompts across{" "}
+              {guideCount || 0} guides
             </p>
+
+            {/* Search */}
             <div className="relative max-w-xl mx-auto">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                type="search"
-                placeholder="Search prompts..."
+                placeholder="Search prompts, guides, or topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-12 rounded-full placeholder:text-muted-foreground"
+                className="pl-11 h-12 rounded-full text-sm placeholder:text-muted-foreground"
               />
             </div>
           </div>
         </div>
 
-        {/* Prompt of the Day */}
+        {/* ── Prompt of the Day ── */}
         {promptOfTheDay && !isLoading && (() => {
           const potdGuide = promptOfTheDay.ai_guides as any;
           const potdCopied = copiedId === promptOfTheDay.id;
           return (
-            <div className="max-w-[1200px] mx-auto px-4 pt-8">
-              <div className="bg-card border border-border rounded-xl relative overflow-hidden mb-10">
+            <div className="mb-10">
+              <div className="bg-card border border-border rounded-xl p-6 md:p-8 relative overflow-hidden">
                 {/* Gradient top bar */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-emerald-500 to-primary" />
 
-                <div className="p-6 md:p-8 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-400" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                      Prompt of the Day
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="h-5 w-5 text-emerald-400" />
+                  <span className="text-sm font-semibold text-emerald-400 tracking-wide uppercase">
+                    Prompt of the Day
+                  </span>
+                </div>
+
+                <h2 className="text-xl md:text-2xl font-bold mb-2">{promptOfTheDay.prompt_title}</h2>
+
+                <p className="text-sm text-muted-foreground mb-4">
+                  From:{" "}
+                  <Link to={`/guides/${potdGuide?.slug}`} className="text-primary hover:underline">
+                    {potdGuide?.title}
+                  </Link>
+                </p>
+
+                {/* Tags */}
+                <div className="flex gap-2 flex-wrap mb-5">
+                  {promptOfTheDay.platforms?.map((p: string) => (
+                    <span key={p} className={`text-xs px-2 py-0.5 rounded-full ${platformColors[p] || "bg-muted text-muted-foreground"}`}>
+                      {p}
                     </span>
-                  </div>
-
-                  <h3 className="text-xl md:text-2xl font-bold">{promptOfTheDay.prompt_title}</h3>
-
-                  <p className="text-xs text-muted-foreground">
-                    From:{" "}
-                    <Link to={`/guides/${potdGuide?.slug}`} className="text-primary hover:underline">
-                      {potdGuide?.title}
-                    </Link>
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {promptOfTheDay.platforms?.map((p: string) => (
-                      <Badge
-                        key={p}
-                        className={`text-[10px] px-1.5 py-0 border-0 ${platformColors[p] || "bg-muted text-muted-foreground"}`}
-                      >
-                        {p}
-                      </Badge>
-                    ))}
-                    {promptOfTheDay.category && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        {promptOfTheDay.category}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="relative group/potd">
-                    <pre className="bg-[#0a0b10] border border-border rounded-lg p-4 pr-12 text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-[300px] overflow-y-auto text-foreground">
-                      {promptOfTheDay.prompt_text}
-                    </pre>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 h-8 gap-1.5 text-xs opacity-0 group-hover/potd:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
-                      onClick={(e) => copyPrompt(promptOfTheDay.prompt_text, promptOfTheDay.id, e)}
-                    >
-                      {potdCopied ? (
-                        <><Check className="h-3.5 w-3.5" /> Copied ✓</>
-                      ) : (
-                        <><Copy className="h-3.5 w-3.5" /> Copy</>
-                      )}
-                    </Button>
-                  </div>
-
-                  {promptOfTheDay.what_to_expect && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      <span className="font-medium text-foreground">What to expect:</span>{" "}
-                      {promptOfTheDay.what_to_expect}
-                    </p>
+                  ))}
+                  {promptOfTheDay.category && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      {promptOfTheDay.category}
+                    </span>
                   )}
+                </div>
 
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      size="default"
-                      className="gap-2"
-                      onClick={(e) => copyPrompt(promptOfTheDay.prompt_text, promptOfTheDay.id, e)}
-                    >
-                      {potdCopied ? (
-                        <><Check className="h-4 w-4" /> Copied!</>
-                      ) : (
-                        <><Copy className="h-4 w-4" /> Copy Prompt</>
-                      )}
-                    </Button>
-                    <Button asChild variant="outline" size="default" className="gap-1.5">
-                      <Link to={`/guides/${potdGuide?.slug}`}>
-                        Try this prompt <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                  </div>
+                {/* Code block */}
+                <div className="relative mb-5">
+                  <pre className="bg-[#0a0b10] border border-border rounded-lg p-4 text-sm text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+                    {promptOfTheDay.prompt_text}
+                  </pre>
+                  <Button size="sm" variant="outline" className="absolute top-3 right-3" onClick={(e) => copyPrompt(promptOfTheDay.prompt_text, promptOfTheDay.id, e)}>
+                    {potdCopied ? (<><Check className="h-3 w-3 mr-1" /> Copied</>) : (<><Copy className="h-3 w-3 mr-1" /> Copy</>)}
+                  </Button>
+                </div>
+
+                {promptOfTheDay.what_to_expect && (
+                  <p className="text-sm text-muted-foreground mb-5">
+                    <span className="font-medium text-foreground">What to expect:</span>{" "}
+                    {promptOfTheDay.what_to_expect}
+                  </p>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <Button onClick={(e) => copyPrompt(promptOfTheDay.prompt_text, promptOfTheDay.id, e)}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Prompt
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to={`/guides/${potdGuide?.slug}`}>
+                      Try this prompt <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
           );
         })()}
 
-        {/* Sticky Filters — 2 rows */}
-        <div className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-20">
-          <div className="max-w-[1200px] mx-auto px-4 py-3 space-y-2">
-            {/* Row 1: Platform + divider + Sort + count */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Platform:</span>
+        {/* ── Filters (sticky) ── */}
+        <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-b border-border py-3 mb-8 -mx-4 px-4">
+          <div className="max-w-5xl mx-auto space-y-3">
+            {/* Row 1: Platform + Sort + Count */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground font-medium">Platform</span>
               {platforms.map((p) => (
-                <Button
-                  key={p}
-                  variant={platformFilter === p ? "default" : "outline"}
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => setPlatformFilter(p)}
-                >
+                <button key={p} className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${platformFilter === p ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"}`} onClick={() => setPlatformFilter(p)}>
                   {p}
-                </Button>
+                </button>
               ))}
-
-              <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
-
-              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Sort:</span>
+              {/* Divider */}
+              <div className="w-px h-6 bg-border mx-2" />
+              <span className="text-sm text-muted-foreground font-medium">Sort</span>
               {sortOptions.map((s) => (
-                <Button
-                  key={s.value}
-                  variant={sortBy === s.value ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => setSortBy(s.value)}
-                >
+                <button key={s.value} className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${sortBy === s.value ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"}`} onClick={() => setSortBy(s.value)}>
                   {s.label}
-                </Button>
+                </button>
               ))}
-
-              <p className="text-xs text-muted-foreground ml-auto hidden sm:block">
-                Showing {filteredPrompts.length} of {totalPrompts}
-              </p>
+              <span className="ml-auto text-sm text-muted-foreground">
+                Showing {filteredPrompts.length} of{" "}
+                {totalPrompts}
+              </span>
             </div>
 
-            {/* Row 2: Category pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground font-medium flex-shrink-0">Category:</span>
+            {/* Row 2: Category */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground font-medium">Category</span>
               {categories.map((c) => (
-                <Button
-                  key={c}
-                  variant={categoryFilter === c ? "default" : "outline"}
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => setCategoryFilter(c)}
-                >
+                <button key={c} className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${categoryFilter === c ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"}`} onClick={() => setCategoryFilter(c)}>
                   {c}
-                </Button>
+                </button>
               ))}
-              <p className="text-xs text-muted-foreground ml-auto sm:hidden">
-                Showing {filteredPrompts.length} of {totalPrompts}
-              </p>
             </div>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="max-w-[1200px] mx-auto px-4 py-8">
+        {/* ── Content ── */}
+        <div className="space-y-6">
           {isLoading ? (
+            /* Loading skeleton: card grid */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-3">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                  <div className="flex gap-2 pt-2">
+                <div key={i} className="bg-card border border-border rounded-xl p-5">
+                  <Skeleton className="h-5 w-3/4 mb-3" />
+                  <Skeleton className="h-4 w-1/2 mb-4" />
+                  <div className="flex gap-2">
                     <Skeleton className="h-5 w-16 rounded-full" />
                     <Skeleton className="h-5 w-16 rounded-full" />
                   </div>
@@ -488,27 +453,30 @@ const AllPrompts = () => {
               ))}
             </div>
           ) : filteredPrompts.length === 0 ? (
-            <div className="text-center py-16 space-y-3">
-              <p className="text-muted-foreground text-lg">
+            /* Empty state */
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
                 {totalPrompts === 0
                   ? "Prompts are being added. Check back soon, or browse our guides for tested prompts in context."
                   : "No prompts match these filters. Try broadening your selection."}
               </p>
               {totalPrompts === 0 && (
-                <Button asChild variant="outline">
-                  <Link to="/guides">Browse Guides</Link>
-                </Button>
+                <Link to="/guides" className="text-primary text-sm hover:underline mt-3 inline-block">
+                  Browse Guides
+                </Link>
               )}
             </div>
           ) : groupedPrompts ? (
-            /* Category-grouped card grid */
-            <div>
+            /* ── Grouped by category (default view) ── */
+            <>
               {groupedPrompts.map((group, groupIndex) => (
                 <div key={group.category} className={groupIndex === 0 ? "mt-8" : "mt-10"}>
                   {/* Category header */}
                   <div className="flex items-center gap-3 border-b border-border pb-3 mb-6">
-                    <span className="text-2xl">{categoryIcons[group.category] || "📌"}</span>
-                    <h2 className="font-semibold text-lg">{group.category}</h2>
+                    <span className="text-2xl">
+                      {categoryIcons[group.category] || "📁"}
+                    </span>
+                    <h2 className="text-lg font-semibold">{group.category}</h2>
                     <span className="text-sm text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                       {group.prompts.length}
                     </span>
@@ -516,57 +484,41 @@ const AllPrompts = () => {
 
                   {/* Card grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-                    {group.prompts.map((prompt) =>
-                      renderPromptCard(prompt, categoryAccentColors[group.category])
-                    )}
+                    {group.prompts.map((prompt, i) => renderPromptCard(prompt, i))}
                   </div>
 
                   {/* Ad slot after 2nd category */}
-                  {groupIndex === 1 && groupedPrompts.length > 2 && (
-                    <div className="mt-8 mb-2">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block mb-2">
-                        Advertisement
-                      </span>
-                      <div className="w-full max-w-full h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground/40">Ad slot</span>
-                      </div>
-                    </div>
-                  )}
+                  {groupIndex === 1 && groupedPrompts.length > 2 && renderAdSlot()}
                 </div>
               ))}
-            </div>
+            </>
           ) : (
-            /* Flat grid (filtered category or by-guide sort) */
-            <div>
+            /* ── Flat grid (when specific category selected or sort by guide) ── */
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredPrompts.map((prompt) => renderPromptCard(prompt))}
-              </div>
-
-              {/* Ad slot after 6th card in flat mode */}
-              {filteredPrompts.length > 6 && (
-                <div className="mt-8">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 block mb-2">
-                    Advertisement
-                  </span>
-                  <div className="w-full max-w-full h-[250px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground/40">Ad slot</span>
+                {filteredPrompts.map((prompt, index) => (
+                  <div key={prompt.id}>
+                    {renderPromptCard(prompt, index)}
+                    {/* Ad slot after 6th prompt */}
+                    {index === 5 && filteredPrompts.length > 6 && renderAdSlot()}
                   </div>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            </>
           )}
 
-          {/* PromptAndGo CTA */}
-          <div className="mt-12 border border-primary/20 rounded-xl bg-card p-6 md:p-8 text-center space-y-4">
-            <p className="font-semibold text-lg text-foreground">
+          {/* ── PromptAndGo CTA ── */}
+          <div className="text-center bg-card border border-border rounded-xl p-8 mt-12">
+            <div className="text-2xl mb-3">🚀</div>
+            <p className="text-base font-medium text-foreground mb-2">
               Want to customise these prompts for your specific use case?
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-5">
               PromptAndGo.ai can optimise any prompt for your platform and audience.
             </p>
-            <Button asChild size="lg" className="gap-2">
+            <Button size="lg" asChild>
               <a href="https://promptandgo.ai" target="_blank" rel="noopener noreferrer">
-                Try PromptAndGo.ai <ExternalLink className="h-4 w-4" />
+                Try PromptAndGo.ai <ExternalLink className="h-4 w-4 ml-2" />
               </a>
             </Button>
           </div>
