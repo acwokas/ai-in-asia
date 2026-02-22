@@ -1,6 +1,5 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
 import { Badge } from "@/components/ui/badge";
@@ -21,19 +20,36 @@ import {
 import { useState, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Bookmark } from "lucide-react";
 import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
 
+const NAV_ITEMS = [
+  { to: "/category/news", label: "News" },
+  { to: "/category/business", label: "Business" },
+  { to: "/category/life", label: "Life" },
+  { to: "/category/learn", label: "Learn" },
+  { to: "/category/create", label: "Create" },
+  { to: "/category/voices", label: "Voices" },
+  { to: "/category/policy", label: "Policy" },
+];
+
+const TOOLS_ITEMS = [
+  { to: "/guides", label: "AI Guides", description: "Practical guides to using AI effectively", icon: BookOpen },
+  { to: "/prompts", label: "Prompt Library", description: "Ready-to-use prompts for every task", icon: Sparkles },
+  { to: "/policy-atlas", label: "Policy Atlas", description: "Track AI regulation across Asia-Pacific", icon: Globe },
+  { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
+];
+
 const Header = memo(() => {
-  const [isDark] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
 
@@ -70,7 +86,6 @@ const Header = memo(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -78,44 +93,66 @@ const Header = memo(() => {
     }
   };
 
+  const isActiveRoute = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-24 items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center -ml-0 md:-ml-8">
-              <img src={logo} alt="AI in ASIA" className="h-20 md:h-24 w-auto" width={171} height={96} />
+            <Link to="/" className="flex items-center">
+              <img src={logo} alt="AI in ASIA" className="h-20 md:h-16 w-auto" width={171} height={96} />
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-5" aria-label="Main navigation">
-              <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
-              <Link to="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</Link>
-              <Link to="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</Link>
-              <Link to="/category/life" className="text-sm font-medium hover:text-primary transition-colors">Life</Link>
-              <Link to="/category/learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</Link>
-              <Link to="/category/create" className="text-sm font-medium hover:text-primary transition-colors">Create</Link>
-              <Link to="/category/voices" className="text-sm font-medium hover:text-primary transition-colors">Voices</Link>
-              <Link to="/category/policy" className="text-sm font-medium hover:text-primary transition-colors">Policy</Link>
+            <nav className="hidden md:flex items-center space-x-1" aria-label="Main navigation">
+              {NAV_ITEMS.map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary ${
+                    isActiveRoute(to) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-sm font-medium hover:!bg-white/10 hover:!text-white gap-1 px-2">
-                    More <ChevronDown className="h-3 w-3" />
-                  </Button>
+                  <button
+                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
+                      TOOLS_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                    }`}
+                  >
+                    Tools <ChevronDown className="h-3 w-3" />
+                  </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-popover z-50">
-                  <DropdownMenuItem asChild><Link to="/guides">Guides</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/prompts">Prompts</Link></DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild><Link to="/events">Events</Link></DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild><Link to="/ai-policy-atlas">Policy Atlas</Link></DropdownMenuItem>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
+                >
+                  {TOOLS_ITEMS.map(({ to, label, description, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
+                      <Link
+                        to={to}
+                        className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors"
+                      >
+                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-
             </nav>
           </div>
 
+          {/* Right side — unchanged */}
           <TooltipProvider delayDuration={300}>
             <div className="flex items-center gap-1">
               {/* Mobile search button */}
@@ -299,16 +336,13 @@ const Header = memo(() => {
             {/* Categories */}
             <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
             <div className="flex flex-col space-y-1 mb-4">
-              {[
-                { to: "/category/news", label: "News" },
-                { to: "/category/business", label: "Business" },
-                { to: "/category/life", label: "Life" },
-                { to: "/category/learn", label: "Learn" },
-                { to: "/category/create", label: "Create" },
-                { to: "/category/voices", label: "Voices" },
-                { to: "/category/policy", label: "Policy" },
-              ].map(({ to, label }) => (
-                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="font-medium py-1.5 hover:text-primary transition-colors">
+              {NAV_ITEMS.map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`font-medium py-1.5 transition-colors ${isActiveRoute(to) ? 'text-primary' : 'hover:text-primary'}`}
+                >
                   {label}
                 </Link>
               ))}
@@ -316,17 +350,23 @@ const Header = memo(() => {
 
             <div className="border-t border-border my-2" />
 
-            {/* Discover */}
-            <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 mt-2">Discover</span>
+            {/* Tools */}
+            <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 mt-2">Tools</span>
             <div className="flex flex-col space-y-1 mb-4">
-              {[
-                { to: "/guides", label: "Guides" },
-                { to: "/prompts", label: "Prompts" },
-                { to: "/events", label: "Events" },
-                { to: "/ai-policy-atlas", label: "Policy Atlas" },
-              ].map(({ to, label }) => (
-                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 hover:text-primary transition-colors">
-                  {label}
+              {TOOLS_ITEMS.map(({ to, label, description, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-start gap-3 py-2 hover:bg-muted/50 rounded-lg px-2 transition-colors -mx-2"
+                >
+                  <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground">{label}</span>
+                    <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+                  </div>
                 </Link>
               ))}
             </div>
