@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Comments from "@/components/Comments";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
 import GoogleAd from "@/components/GoogleAds";
@@ -32,12 +31,16 @@ import { User, Share2, Bookmark, MessageCircle, Clock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
 import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
 import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
+import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
+
+// Lazy-load Comments (below the fold)
+const Comments = lazy(() => import("@/components/Comments"));
 
 // Extracted components and hooks
 import {
@@ -415,7 +418,9 @@ const Article = () => {
             <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
               <div className="article-hero rounded-lg">
                 <img
-                  src={article.featured_image_url}
+                  src={getOptimizedHeroImage(article.featured_image_url, 1080)}
+                  srcSet={generateResponsiveSrcSet(article.featured_image_url)}
+                  sizes="(max-width: 768px) 100vw, 1080px"
                   alt={article.featured_image_alt || article.title}
                   width={1080}
                   height={607}
@@ -444,7 +449,7 @@ const Article = () => {
                   <div className="flex items-center gap-3 flex-wrap">
                     {article.authors?.avatar_url && (
                       <Link to={`/author/${article.authors?.slug}`}>
-                        <img src={article.authors.avatar_url} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover border border-white/30" />
+                        <img src={getOptimizedAvatar(article.authors.avatar_url, 40)} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover border border-white/30" />
                       </Link>
                     )}
                     <span className="text-white/90 text-sm font-semibold">{article.authors?.name || 'Anonymous'}</span>
@@ -492,7 +497,7 @@ const Article = () => {
               <div className="flex items-center gap-3 pb-6 border-b border-border text-sm text-muted-foreground flex-wrap">
                 {article.authors?.avatar_url && (
                   <Link to={`/author/${article.authors?.slug}`}>
-                    <img src={article.authors.avatar_url} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover" />
+                    <img src={getOptimizedAvatar(article.authors.avatar_url, 40)} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover" />
                   </Link>
                 )}
                 <span className="font-semibold text-foreground">{article.authors?.name || 'Anonymous'}</span>
@@ -576,7 +581,7 @@ const Article = () => {
                 <div className="flex items-center gap-3" style={{ marginTop: '3.5rem', paddingTop: '1.5rem', borderTop: '1px solid hsl(var(--border))' }}>
                   {article.authors?.avatar_url && (
                     <Link to={`/author/${article.authors.slug}`}>
-                      <img src={article.authors.avatar_url} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
+                      <img src={getOptimizedAvatar(article.authors.avatar_url, 80)} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
                     </Link>
                   )}
                   <div className="text-sm">
@@ -649,7 +654,9 @@ const Article = () => {
           {/* Comments — hidden on policy articles */}
           {article.article_type !== 'policy_article' && (
             <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
-              <Comments articleId={article.id} />
+              <Suspense fallback={<div className="py-8 text-center text-muted-foreground">Loading comments...</div>}>
+                <Comments articleId={article.id} />
+              </Suspense>
             </section>
           )}
         </main>
