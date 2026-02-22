@@ -79,7 +79,7 @@ const TipTapToolbar = ({
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 rounded-t-lg border border-border bg-muted/50 px-2 py-1">
+    <div className="sticky top-[104px] z-30 flex flex-wrap items-center gap-0.5 rounded-t-lg border border-border bg-muted/50 px-2 py-1">
       {/* Undo/Redo */}
       <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
         <Undo className="h-4 w-4" />
