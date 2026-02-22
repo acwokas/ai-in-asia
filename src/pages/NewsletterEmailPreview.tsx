@@ -2,6 +2,7 @@
  import { useParams } from "react-router-dom";
  import { supabase } from "@/integrations/supabase/client";
  import { Loader2 } from "lucide-react";
+ import SEOHead from "@/components/SEOHead";
  
  export default function NewsletterEmailPreview() {
    const { id } = useParams<{ id: string }>();
@@ -53,9 +54,12 @@
  
    // Render the email HTML directly
    return (
-     <div 
-       className="min-h-screen bg-white"
-       dangerouslySetInnerHTML={{ __html: html }} 
-     />
+     <>
+       <SEOHead title="Newsletter Email Preview" description="Preview newsletter email content." noIndex={true} />
+       <div 
+         className="min-h-screen bg-white"
+         dangerouslySetInnerHTML={{ __html: html }} 
+       />
+     </>
    );
  }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -113,6 +114,7 @@ const Redirects = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Manage Redirects" description="Manage URL redirects for AI in ASIA." noIndex={true} />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl">

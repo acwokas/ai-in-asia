@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import CMSEditor from "@/components/CMSEditor";
+import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Home } from "lucide-react";
 import { calculateReadingTime } from "@/lib/readingTime";
@@ -306,6 +307,7 @@ const Editor = () => {
 
   return (
     <div className={isInsideAdmin ? "" : "min-h-screen flex flex-col"}>
+      <SEOHead title={articleId ? "Edit Article" : "Create Article"} description="AI in ASIA article editor." noIndex={true} />
       {!isInsideAdmin && <Header />}
       
       <main className={isInsideAdmin ? "container mx-auto px-4 py-8" : "flex-1 container mx-auto px-4 py-8"}>

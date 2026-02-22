@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
 import { Navigate } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const MyPrompts = () => {
   const { user } = useAuth();
@@ -57,6 +58,7 @@ const MyPrompts = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <SEOHead title="My Prompts" description="Your saved and rated AI prompts." noIndex={true} />
       <h1 className="text-3xl font-bold mb-6">My Prompts</h1>
       
       <Tabs defaultValue="bookmarks">
