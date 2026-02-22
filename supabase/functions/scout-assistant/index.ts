@@ -171,16 +171,20 @@ async function handleRewriteWithImages(
 Rewrite the article content to be engaging, well-structured, and optimised for SEO.
 Use British English. Maintain factual accuracy.
 
+IMPORTANT: In your rewritten content, place the exact placeholder [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph). Do NOT write any markdown image syntax yourself — the system will replace the placeholder with the actual image.
+
 ALSO: suggest exactly 2 image descriptions for AI generation:
 1. A hero/lead image that captures the article's theme
-2. A mid-article image to break up the text (specify after which paragraph number to insert it, counting from 1)
+2. A mid-article image — describe what should appear at the [MID_ARTICLE_IMAGE] placeholder
+For each description, also provide a short alt text (under 125 characters) suitable for an img alt attribute.
 
 Return your response in this EXACT JSON format (no markdown fences):
 {
-  "rewrittenContent": "the full rewritten article in markdown",
+  "rewrittenContent": "the full rewritten article in markdown, with [MID_ARTICLE_IMAGE] placeholder",
   "heroImageDescription": "detailed description for AI image generation of the hero image",
+  "heroImageAlt": "short alt text under 125 chars",
   "midImageDescription": "detailed description for AI image generation of the mid-article image",
-  "midImageAfterParagraph": 3
+  "midImageAlt": "short alt text under 125 chars"
 }`;
 
   const rewritePrompt = `Title: ${title}
@@ -221,8 +225,9 @@ ${content}`;
 
   let rewrittenContent: string;
   let heroImageDescription: string;
+  let heroImageAltText: string;
   let midImageDescription: string;
-  let midImageAfterParagraph: number;
+  let midImageAltText: string;
 
   try {
     // Strip potential markdown code fences
@@ -230,8 +235,9 @@ ${content}`;
     const parsed = JSON.parse(cleaned);
     rewrittenContent = parsed.rewrittenContent || rawResult;
     heroImageDescription = parsed.heroImageDescription || '';
+    heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
     midImageDescription = parsed.midImageDescription || '';
-    midImageAfterParagraph = parsed.midImageAfterParagraph || 3;
+    midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
   } catch {
     // Fallback: use raw result as content, no images
     console.warn('Could not parse rewrite JSON, returning content without images');
@@ -253,7 +259,7 @@ ${content}`;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string; alt: string }> => {
+    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
       const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
@@ -293,7 +299,7 @@ ${content}`;
         .from('article-images')
         .getPublicUrl(filePath);
 
-      return { url: publicUrl, alt: description };
+      return { url: publicUrl };
     };
 
     const results = await Promise.allSettled([
@@ -303,7 +309,7 @@ ${content}`;
 
     if (results[0].status === 'fulfilled') {
       featuredImage = results[0].value.url;
-      featuredImageAlt = results[0].value.alt;
+      featuredImageAlt = heroImageAltText || heroImageDescription.slice(0, 125);
       imagesGenerated++;
     } else {
       console.error('Hero image generation failed:', results[0].reason);
@@ -311,7 +317,7 @@ ${content}`;
 
     if (results[1].status === 'fulfilled') {
       midImage = results[1].value.url;
-      midImageAlt = results[1].value.alt;
+      midImageAlt = midImageAltText || midImageDescription.slice(0, 125);
       imagesGenerated++;
     } else {
       console.error('Mid image generation failed:', results[1].reason);
@@ -320,14 +326,13 @@ ${content}`;
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // Step 3: Insert mid-article image into content if generated
+  // Step 3: Replace [MID_ARTICLE_IMAGE] placeholder with actual image or remove it
   let finalContent = rewrittenContent;
   if (midImage) {
-    const paragraphs = finalContent.split('\n\n');
-    const insertIndex = Math.min(midImageAfterParagraph, paragraphs.length);
-    const imageMarkdown = `\n\n![${midImageAlt}](${midImage})\n\n`;
-    paragraphs.splice(insertIndex, 0, imageMarkdown);
-    finalContent = paragraphs.join('\n\n');
+    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, `![${midImageAlt}](${midImage})`);
+  } else {
+    // Remove placeholder entirely if image generation failed
+    finalContent = finalContent.replace(/\n*\[MID_ARTICLE_IMAGE\]\n*/g, '\n\n');
   }
 
   return new Response(
