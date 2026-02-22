@@ -23,8 +23,9 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
 
   useEffect(() => {
     let cancelled = false;
+    let tokenFetched = false;
     const timeoutId = setTimeout(() => {
-      if (!cancelled && !mapToken) {
+      if (!cancelled && !tokenFetched) {
         setMapError('Map took too long to load. Region cards are available below.');
       }
     }, 10000);
@@ -42,6 +43,8 @@ const PolicyMap = ({ regions, recentlyUpdatedRegions }: PolicyMapProps) => {
 
         const token = (data as { token?: string } | null)?.token;
         if (token) {
+          tokenFetched = true;
+          clearTimeout(timeoutId);
           setMapToken(token);
         } else {
           setMapError('Map configuration unavailable. Browse regions using the cards below.');
