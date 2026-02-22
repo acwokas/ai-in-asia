@@ -224,6 +224,10 @@ const Auth = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
         <div className="w-full max-w-md">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
+            <ArrowLeft className="h-4 w-4" />
+            Back to site
+          </Link>
           <div className="text-center mb-8">
             <img src={logo} alt="AI in ASIA" className="h-16 mx-auto mb-4" />
             <h1 className="text-xl font-semibold">Set New Password</h1>
@@ -275,6 +279,10 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
       <div className="w-full max-w-md">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
+          <ArrowLeft className="h-4 w-4" />
+          Back to site
+        </Link>
         <div className="text-center mb-8">
           <img src={logo} alt="AI in ASIA" className="h-16 mx-auto mb-4" />
           <p className="text-muted-foreground">Unlock points, bookmarks & personalized AI news</p>
