@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   AlertTriangle, Target, Zap, Clock, CheckCircle2, 
   XCircle, Search, Copy, ExternalLink, RefreshCw,
@@ -181,7 +181,7 @@ export const ErrorTracking = ({ eventsData, isLoading, dateRange }: ErrorTrackin
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["error-tracking"] });
-      toast({ title: "Errors synced", description: "Error tracking data has been updated." });
+      toast.success("Errors synced", { description: "Error tracking data has been updated." });
     },
   });
 
@@ -205,7 +205,7 @@ export const ErrorTracking = ({ eventsData, isLoading, dateRange }: ErrorTrackin
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["error-tracking"] });
-      toast({ title: "Status updated", description: "Error status has been updated." });
+      toast.success("Status updated", { description: "Error status has been updated." });
     },
   });
 
@@ -221,7 +221,7 @@ export const ErrorTracking = ({ eventsData, isLoading, dateRange }: ErrorTrackin
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["error-tracking"] });
-      toast({ title: "Error removed", description: "Error has been removed from tracking." });
+      toast.success("Error removed", { description: "Error has been removed from tracking." });
     },
   });
 
@@ -273,7 +273,7 @@ Stack Trace:
 ${error.sample_stack || 'No stack trace available'}`;
     
     navigator.clipboard.writeText(details);
-    toast({ title: "Copied", description: "Error details copied to clipboard." });
+    toast.success("Copied", { description: "Error details copied to clipboard." });
   };
 
   const openErrors = filteredErrors.filter(e => e.status === 'open').length;

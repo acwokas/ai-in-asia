@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   Edit, Eye, EyeOff, Copy, Trash2, ExternalLink, Loader2, ChevronDown, Search,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format, formatDistanceToNow, differenceInDays } from "date-fns";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export const ContentAdminControls = ({
   categorySlug,
   authorName,
 }: ContentAdminControlsProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [busy, setBusy] = useState<string | null>(null);
@@ -108,10 +108,10 @@ export const ContentAdminControls = ({
       }
       const { error } = await supabase.from(table).update(updates).eq("id", item.id);
       if (error) throw error;
-      toast({ title: status === "published" ? `${label} published` : `${label} unpublished` });
+      toast(status === "published" ? `${label} published` : `${label} unpublished`);
       refresh();
     } catch {
-      toast({ title: "Error", description: `Failed to ${status === "published" ? "publish" : "unpublish"}`, variant: "destructive" });
+      toast.error("Error", { description: `Failed to ${status === "published" ? "publish" : "unpublish"}` });
     } finally {
       setBusy(null);
     }
@@ -138,7 +138,7 @@ export const ContentAdminControls = ({
           .select("id")
           .single();
         if (insErr) throw insErr;
-        toast({ title: `${label} duplicated`, description: "Opening the copy in the editor…" });
+        toast(`${label} duplicated`, { description: "Opening the copy in the editor…" });
         navigate(`/editor?id=${newItem.id}`);
       } else {
         const { preview_code, ...guideRest } = rest;
@@ -149,11 +149,11 @@ export const ContentAdminControls = ({
           .select("id")
           .single();
         if (insErr) throw insErr;
-        toast({ title: `${label} duplicated`, description: "Opening the copy in the editor…" });
+        toast(`${label} duplicated`, { description: "Opening the copy in the editor…" });
         navigate(`/admin/guide-editor?id=${newItem.id}`);
       }
     } catch {
-      toast({ title: "Error", description: `Failed to duplicate ${label.toLowerCase()}`, variant: "destructive" });
+      toast.error("Error", { description: `Failed to duplicate ${label.toLowerCase()}` });
     } finally {
       setBusy(null);
     }
@@ -164,10 +164,10 @@ export const ContentAdminControls = ({
     try {
       const { error } = await supabase.from(table).delete().eq("id", item.id);
       if (error) throw error;
-      toast({ title: `${label} deleted` });
+      toast(`${label} deleted`);
       navigate(type === "article" ? "/" : "/guides");
     } catch {
-      toast({ title: "Error", description: `Failed to delete ${label.toLowerCase()}`, variant: "destructive" });
+      toast.error("Error", { description: `Failed to delete ${label.toLowerCase()}` });
     } finally {
       setBusy(null);
     }
@@ -179,9 +179,9 @@ export const ContentAdminControls = ({
     const { error } = await supabase.from(table).update({ [field]: val }).eq("id", item.id);
     if (error) {
       setFeatured(!val);
-      toast({ title: "Error", description: "Failed to update featured status", variant: "destructive" });
+      toast.error("Error", { description: "Failed to update featured status" });
     } else {
-      toast({ title: val ? "Marked as featured" : "Removed from featured" });
+      toast(val ? "Marked as featured" : "Removed from featured");
       refresh();
     }
   };

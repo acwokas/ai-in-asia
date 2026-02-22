@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExternalLink, Star, Search, Wrench } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
 import PerplexityCometPromo from "@/components/PerplexityCometPromo";
 import ElevenLabsPromo from "@/components/ElevenLabsPromo";
@@ -17,7 +17,7 @@ interface ToolsGridProps {
 }
 
 const ToolsGrid = ({ searchQuery: externalSearchQuery = "" }: ToolsGridProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -92,16 +92,13 @@ const ToolsGrid = ({ searchQuery: externalSearchQuery = "" }: ToolsGridProps) =>
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-tools'] });
       queryClient.invalidateQueries({ queryKey: ['tool-ratings'] });
-      toast({
-        title: "Rating submitted",
+      toast.success("Rating submitted", {
         description: "Thank you for rating this tool! (+5 points)"
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message,
-        variant: "destructive"
       });
     }
   });

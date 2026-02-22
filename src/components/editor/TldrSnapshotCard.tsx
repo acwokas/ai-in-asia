@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Wand2, Upload, X, Image as ImageIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 
 interface TldrSnapshotCardProps {
@@ -39,7 +39,7 @@ export const TldrSnapshotCard = ({
   onSignalImagesChange,
 }: TldrSnapshotCardProps) => {
   const is3B9 = articleType === "three_before_nine";
-  const { toast } = useToast();
+  
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
@@ -63,10 +63,10 @@ export const TldrSnapshotCard = ({
       const newImages = [...signalImages];
       newImages[index] = urlData.publicUrl;
       onSignalImagesChange?.(newImages);
-      toast({ title: "Image uploaded", description: `Signal ${index + 1} image set` });
+      toast.success("Image uploaded", { description: `Signal ${index + 1} image set` });
     } catch (err: any) {
       console.error("Upload error:", err);
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
     } finally {
       setUploadingIndex(null);
     }

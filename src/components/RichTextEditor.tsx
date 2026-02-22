@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { convertMarkdownToHtml, convertHtmlToMarkdown, generateSlug } from "@/lib/markdownConversion";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import {
@@ -60,7 +60,7 @@ const RichTextEditor = ({
   const [isEditingLink, setIsEditingLink] = useState(false);
   const [selectedLinkElement, setSelectedLinkElement] = useState<HTMLAnchorElement | null>(null);
   const [lastExternalValue, setLastExternalValue] = useState(value);
-  const { toast } = useToast();
+  
 
   // Initial content load
   useEffect(() => {
@@ -202,8 +202,7 @@ const RichTextEditor = ({
     if (!file) return;
 
     try {
-      toast({
-        title: "Optimizing image...",
+      toast("Optimizing image...", {
         description: "Compressing for best performance",
       });
 
@@ -244,16 +243,13 @@ const RichTextEditor = ({
       });
       setShowImageDialog(true);
 
-      toast({
-        title: "Image ready",
+      toast.success("Image ready", {
         description: `Optimized (${originalSizeMB}MB → ${compressedSizeMB}MB). Edit filename and click Insert.`,
       });
     } catch (error) {
       console.error('Error processing image:', error);
-      toast({
-        title: "Processing failed",
+      toast.error("Processing failed", {
         description: error instanceof Error ? error.message : "Failed to process image",
-        variant: "destructive",
       });
     } finally {
       e.target.value = '';
@@ -303,8 +299,7 @@ const RichTextEditor = ({
           URL.revokeObjectURL(imageData.url);
         }
         
-        toast({
-          title: "Image uploaded",
+        toast.success("Image uploaded", {
           description: `Saved as ${fileName}`,
         });
       }
@@ -346,10 +341,8 @@ const RichTextEditor = ({
       savedSelectionRef.current = null;
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast({
-        title: "Upload failed",
+      toast.error("Upload failed", {
         description: error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive",
       });
     } finally {
       setIsUploadingImage(false);

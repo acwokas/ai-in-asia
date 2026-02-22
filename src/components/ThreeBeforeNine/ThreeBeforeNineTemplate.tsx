@@ -7,7 +7,7 @@ import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -219,7 +219,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
   const canonicalUrl = `https://aiinasia.com/news/${article.slug}`;
   
   const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [showAdminView, setShowAdminView] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -236,11 +236,11 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         })
         .eq('id', article.id);
       if (error) throw error;
-      toast({ title: "Article published", description: "The article is now live" });
+      toast.success("Article published", { description: "The article is now live" });
       queryClient.invalidateQueries({ queryKey: ["article", article.slug] });
     } catch (error) {
       console.error("Error publishing article:", error);
-      toast({ title: "Error", description: "Failed to publish article", variant: "destructive" });
+      toast.error("Error", { description: "Failed to publish article" });
     } finally {
       setIsPublishing(false);
     }

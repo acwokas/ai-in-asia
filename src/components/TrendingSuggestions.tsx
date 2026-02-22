@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { TrendingUp, Loader2, RefreshCw, Check, Eye, MessageSquare, ThumbsUp, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
@@ -37,7 +37,7 @@ interface SuggestionsResponse {
 }
 
 export function TrendingSuggestions() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [timeRange, setTimeRange] = useState("48");
 
@@ -69,18 +69,15 @@ export function TrendingSuggestions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: "Article marked as homepage trending",
       });
       refetch();
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -95,18 +92,15 @@ export function TrendingSuggestions() {
       if (error) throw error;
     },
     onSuccess: (_, articleIds) => {
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: `Marked ${articleIds.length} articles as homepage trending`,
       });
       refetch();
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });

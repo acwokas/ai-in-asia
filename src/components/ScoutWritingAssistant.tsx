@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Wand2, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface ScoutWritingAssistantProps {
   selectedText: string;
@@ -23,16 +23,14 @@ interface ScoutWritingAssistantProps {
 
 const ScoutWritingAssistant = ({ selectedText, onReplace, fullFieldContent, context, canUndo, onUndo }: ScoutWritingAssistantProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  
 
   const callAI = async (action: string) => {
     const textToProcess = selectedText.trim() || fullFieldContent?.trim() || "";
     
     if (!textToProcess) {
-      toast({
-        title: "No text available",
+      toast.error("No text available", {
         description: "Please add some text to use Scout.",
-        variant: "destructive",
       });
       return;
     }
@@ -65,17 +63,14 @@ const ScoutWritingAssistant = ({ selectedText, onReplace, fullFieldContent, cont
       
       if (data.result) {
         onReplace(data.result);
-        toast({
-          title: "Scout suggestion applied",
+        toast.success("Scout suggestion applied", {
           description: "The text has been updated with Scout's assistance.",
         });
       }
     } catch (error) {
       console.error("AI assistant error:", error);
-      toast({
-        title: "Scout Error",
+      toast.error("Scout Error", {
         description: error instanceof Error ? error.message : "Failed to process request",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, ExternalLink, Link2, Loader2, RefreshCw, Sparkles, ArrowRight, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SuggestedFix {
@@ -50,7 +50,7 @@ export function LinkValidator({ content, onValidationComplete, onApplyFix }: Lin
   const [isValidating, setIsValidating] = useState(false);
   const [results, setResults] = useState<ValidationResponse | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const { toast } = useToast();
+  
 
   const handleValidate = async (suggestFixes = false) => {
     setIsValidating(true);
@@ -70,34 +70,27 @@ export function LinkValidator({ content, onValidationComplete, onApplyFix }: Lin
 
       if (hasErrors) {
         if (suggestFixes && data.fixableLinks?.length > 0) {
-          toast({
-            title: "Fixes Found",
+          toast.success("Fixes Found", {
             description: `Found ${data.fixableLinks.length} alternative source(s) for broken links`,
           });
         } else {
-          toast({
-            title: "Broken Links Found",
+          toast.error("Broken Links Found", {
             description: `${data.brokenLinks.length} external link(s) are not accessible`,
-            variant: "destructive"
           });
         }
       } else if (data.summary.externalLinks === 0) {
-        toast({
-          title: "No External Links",
+        toast("No External Links", {
           description: "No external links found in this article"
         });
       } else {
-        toast({
-          title: "All Links Valid",
+        toast.success("All Links Valid", {
           description: `${data.summary.validLinks} external link(s) verified successfully`
         });
       }
     } catch (error) {
       console.error("Link validation error:", error);
-      toast({
-        title: "Validation Failed",
+      toast.error("Validation Failed", {
         description: error instanceof Error ? error.message : "Failed to validate links",
-        variant: "destructive"
       });
     } finally {
       setIsValidating(false);
@@ -111,8 +104,7 @@ export function LinkValidator({ content, onValidationComplete, onApplyFix }: Lin
     await navigator.clipboard.writeText(markdownLink);
     setCopiedUrl(link.url);
     
-    toast({
-      title: "Copied!",
+    toast.success("Copied!", {
       description: "New link copied to clipboard"
     });
     
@@ -123,8 +115,7 @@ export function LinkValidator({ content, onValidationComplete, onApplyFix }: Lin
     if (!link.suggestedFix || !onApplyFix) return;
     onApplyFix(link.url, link.suggestedFix.alternativeUrl, link.suggestedFix.rewrittenText);
     
-    toast({
-      title: "Fix Applied",
+    toast.success("Fix Applied", {
       description: `Replaced with ${link.suggestedFix.alternativeSource} link`
     });
   };

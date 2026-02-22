@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface AdminActionState {
   scrapingEvents: boolean;
@@ -14,7 +14,7 @@ export interface AdminActionState {
 }
 
 export const useAdminActions = () => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   
   const [scrapingEvents, setScrapingEvents] = useState(false);
@@ -31,10 +31,8 @@ export const useAdminActions = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          title: "Authentication Required",
+        toast.error("Authentication Required", {
           description: "You must be logged in",
-          variant: "destructive",
         });
         return;
       }
@@ -49,16 +47,13 @@ export const useAdminActions = () => {
         throw response.error;
       }
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: `Comment generation scheduled for ${response.data.articlesScheduled} articles`,
       });
     } catch (error: any) {
       console.error('Error:', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to schedule comments",
-        variant: "destructive",
       });
     } finally {
       setAutoScheduling(false);
@@ -71,10 +66,8 @@ export const useAdminActions = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          title: "Authentication Required",
+        toast.error("Authentication Required", {
           description: "You must be logged in",
-          variant: "destructive",
         });
         return;
       }
@@ -89,16 +82,13 @@ export const useAdminActions = () => {
         throw response.error;
       }
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: `Cleaned ${response.data.cleaned} of ${response.data.processed} articles`,
       });
     } catch (error: any) {
       console.error('Error:', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to clean markup",
-        variant: "destructive",
       });
     } finally {
       setCleaningMarkup(false);
@@ -113,10 +103,8 @@ export const useAdminActions = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          title: "Authentication Required",
+        toast.error("Authentication Required", {
           description: "You must be logged in",
-          variant: "destructive",
         });
         return;
       }
@@ -148,8 +136,7 @@ export const useAdminActions = () => {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      toast({
-        title: "Complete!",
+      toast.success("Complete!", {
         description: `Successfully calculated reading times for ${totalProcessed} articles`,
       });
       
@@ -157,10 +144,8 @@ export const useAdminActions = () => {
       setReadingTimeProgress({ current: 0, total: 0 });
     } catch (error: any) {
       console.error('Error:', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to calculate reading times",
-        variant: "destructive",
       });
       setReadingTimeProgress({ current: 0, total: 0 });
     } finally {
@@ -177,8 +162,7 @@ export const useAdminActions = () => {
       if (error) throw error;
 
       const results = data?.results;
-      toast({
-        title: "Events scraped successfully!",
+      toast.success("Events scraped successfully!", {
         description: `Inserted: ${results?.inserted || 0}, Updated: ${results?.updated || 0}, Skipped: ${results?.skipped || 0} (${results?.unique_events || 0} unique from ${results?.total_extracted || 0} extracted)`,
       });
 
@@ -186,10 +170,8 @@ export const useAdminActions = () => {
       queryClient.invalidateQueries({ queryKey: ["upcoming-events-widget"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error: any) {
-      toast({
-        title: "Error scraping events",
+      toast.error("Error scraping events", {
         description: error.message || "Failed to scrape events",
-        variant: "destructive",
       });
     } finally {
       setScrapingEvents(false);
@@ -200,8 +182,7 @@ export const useAdminActions = () => {
     try {
       setFixingDates(true);
       
-      toast({
-        title: "Processing dates...",
+      toast("Processing dates...", {
         description: "This will take 2-3 minutes. Please wait.",
       });
       
@@ -221,24 +202,19 @@ export const useAdminActions = () => {
       if (error) throw error;
 
       const results = data?.results;
-      toast({
-        title: "Article dates fixed!",
+      toast.success("Article dates fixed!", {
         description: `${results?.updated || 0} articles updated, ${results?.skipped || 0} skipped`,
       });
 
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     } catch (error: any) {
       if (error.message === 'timeout' || error.message?.includes('fetch')) {
-        toast({
-          title: "Processing may still be running",
+        toast("Processing may still be running", {
           description: "The operation is taking longer than expected. Check the logs or refresh the page in a minute.",
-          variant: "default",
         });
       } else {
-        toast({
-          title: "Error fixing dates",
+        toast.error("Error fixing dates", {
           description: error.message || "Failed to fix article dates",
-          variant: "destructive",
         });
       }
     } finally {
@@ -250,8 +226,7 @@ export const useAdminActions = () => {
     try {
       setRefreshingContent(true);
       
-      toast({
-        title: "Refreshing content...",
+      toast("Refreshing content...", {
         description: "Updating editors picks and trending articles",
       });
 
@@ -274,8 +249,7 @@ export const useAdminActions = () => {
         messages.push("Homepage trending refreshed");
       }
 
-      toast({
-        title: "Content refreshed successfully!",
+      toast.success("Content refreshed successfully!", {
         description: messages.length > 0 ? messages.join(", ") : "All content is up to date",
       });
 
@@ -283,10 +257,8 @@ export const useAdminActions = () => {
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       queryClient.invalidateQueries({ queryKey: ["trending-articles"] });
     } catch (error: any) {
-      toast({
-        title: "Error refreshing content",
+      toast.error("Error refreshing content", {
         description: error.message || "Failed to refresh featured content",
-        variant: "destructive",
       });
     } finally {
       setRefreshingContent(false);
@@ -302,18 +274,15 @@ export const useAdminActions = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Comment approved",
+      toast.success("Comment approved", {
         description: "The comment is now visible on the article",
       });
 
       queryClient.invalidateQueries({ queryKey: ['pending-comments'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to approve comment",
-        variant: "destructive",
       });
     }
   };
@@ -327,18 +296,15 @@ export const useAdminActions = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Comment deleted",
+      toast.success("Comment deleted", {
         description: "The comment has been removed",
       });
 
       queryClient.invalidateQueries({ queryKey: ['pending-comments'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to delete comment",
-        variant: "destructive",
       });
     }
   };

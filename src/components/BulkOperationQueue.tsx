@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronUp, Play } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -32,7 +32,7 @@ interface BulkOperationQueueProps {
 }
 
 export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [activeJob, setActiveJob] = useState<QueueJob | null>(null);
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
@@ -85,15 +85,12 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
             const job = payload.new as QueueJob;
             
             if (job.status === 'completed') {
-              toast({
-                title: "✅ Bulk Operation Complete",
+              toast.success("✅ Bulk Operation Complete", {
                 description: `Successfully processed ${job.successful_items}/${job.total_items} articles`,
               });
             } else if (job.status === 'failed') {
-              toast({
-                title: "❌ Bulk Operation Failed",
+              toast.error("❌ Bulk Operation Failed", {
                 description: job.error_message || "Operation encountered an error",
-                variant: "destructive",
               });
             }
           }
@@ -177,18 +174,15 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast({
-        title: isProcessing ? "Job Stopped" : "Job Cancelled",
+      toast(isProcessing ? "Job Stopped" : "Job Cancelled", {
         description: isProcessing 
           ? "The bulk operation has been stopped. Current batch may still complete." 
           : "The bulk operation has been cancelled",
       });
       refetch();
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to cancel job",
-        variant: "destructive",
       });
     }
   };
@@ -203,16 +197,13 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast({
-        title: "Job Deleted",
+      toast("Job Deleted", {
         description: "The job record has been removed",
       });
       refetch();
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to delete job",
-        variant: "destructive",
       });
     }
   };
@@ -229,20 +220,16 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
         .filter(Boolean);
 
       if (failedArticleIds.length === 0) {
-        toast({
-          title: "No Failed Articles",
+        toast.error("No Failed Articles", {
           description: "There are no failed articles to retry",
-          variant: "destructive",
         });
         return;
       }
 
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
-        toast({
-          title: "Authentication Required",
+        toast.error("Authentication Required", {
           description: "Please log in to retry operations",
-          variant: "destructive",
         });
         return;
       }
@@ -260,8 +247,7 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast({
-        title: "✅ Retry Queued",
+      toast.success("✅ Retry Queued", {
         description: `${failedArticleIds.length} failed articles queued for reprocessing`,
       });
 
@@ -269,10 +255,8 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
       queryClient.invalidateQueries({ queryKey: ["bulk-operation-queue"] });
     } catch (error: any) {
       console.error("Error retrying failed articles:", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to queue retry",
-        variant: "destructive",
       });
     } finally {
       setIsRetrying(null);
@@ -301,8 +285,7 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
 
       if (error) throw error;
 
-      toast({
-        title: "✅ Processing Resumed",
+      toast.success("✅ Processing Resumed", {
         description: "Bulk queue processor has been triggered manually",
       });
 
@@ -312,10 +295,8 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
       }, 2000);
     } catch (error: any) {
       console.error("Error resuming processing:", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to resume processing",
-        variant: "destructive",
       });
     } finally {
       setIsResuming(false);

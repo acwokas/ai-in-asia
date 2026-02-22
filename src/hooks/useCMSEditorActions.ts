@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { compressImage } from "@/lib/imageCompression";
 import { generateSlug } from "@/lib/markdownConversion";
@@ -13,7 +13,7 @@ interface UseCMSEditorActionsProps {
 }
 
 export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEditorActionsProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,8 +74,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     
     state.setUndoStack(prev => prev.slice(0, -1));
     
-    toast({
-      title: "Undone",
+    toast("Undone", {
       description: "Scout changes have been reverted",
     });
   };
@@ -85,10 +84,8 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
+      toast.error("Invalid file type", {
         description: "Please upload an image file",
-        variant: "destructive",
       });
       return;
     }
@@ -96,8 +93,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     state.setIsUploadingImage(true);
 
     try {
-      toast({
-        title: "Optimizing image...",
+      toast("Optimizing image...", {
         description: "Compressing image for best performance",
       });
 
@@ -143,16 +139,13 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
       state.setFeaturedImage(publicUrl);
       
-      toast({
-        title: "Image uploaded",
+      toast.success("Image uploaded", {
         description: `Optimized and uploaded (${originalSizeMB}MB → ${compressedSizeMB}MB)`,
       });
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast({
-        title: "Upload failed",
+      toast.error("Upload failed", {
         description: error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive",
       });
     } finally {
       state.setIsUploadingImage(false);
@@ -252,8 +245,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         
         if (error) throw error;
         
-        toast({
-          title: "Author updated",
+        toast.success("Author updated", {
           description: "Author information has been updated successfully"
         });
       } else {
@@ -266,8 +258,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (error) throw error;
         
         state.setAuthorId(data.id);
-        toast({
-          title: "Author created",
+        toast.success("Author created", {
           description: "New author has been created successfully"
         });
       }
@@ -278,20 +269,16 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       state.setAvatarPreview("");
     } catch (error) {
       console.error('Error saving author:', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to save author",
-        variant: "destructive"
       });
     }
   };
 
   const handleGenerateTldr = async () => {
     if (!state.title || !state.content) {
-      toast({
-        title: "Missing Content",
+      toast.error("Missing Content", {
         description: "Please add a title and content first",
-        variant: "destructive"
       });
       return;
     }
@@ -326,16 +313,13 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.content) {
           state.setContent(data.content);
         }
-        toast({
-          title: "Success!",
+        toast.success("Success!", {
           description: "AI Snapshot generated with editorial context",
         });
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message,
-        variant: "destructive"
       });
     } finally {
       state.setIsGeneratingTldr(false);
@@ -349,19 +333,15 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       try {
         clipboardText = await navigator.clipboard.readText();
       } catch (err) {
-        toast({
-          title: "Clipboard Access",
+        toast("Clipboard Access", {
           description: "Please paste your content into the browser prompt",
-          variant: "default"
         });
         clipboardText = prompt("Paste your content here:") || "";
       }
 
       if (!clipboardText || clipboardText.trim().length === 0) {
-        toast({
-          title: "No Content",
+        toast.error("No Content", {
           description: "Please copy some text to generate a headline from",
-          variant: "destructive"
         });
         return;
       }
@@ -403,10 +383,8 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         state.setShowHeadlineDialog(true);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to generate headline",
-        variant: "destructive"
       });
     } finally {
       state.setIsGeneratingHeadline(false);
@@ -420,18 +398,15 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
     }
     state.setShowHeadlineDialog(false);
     state.setHeadlineOptions(null);
-    toast({
-      title: "Headline Selected",
+    toast.success("Headline Selected", {
       description: "Title and slug have been updated",
     });
   };
 
   const handleGenerateSEO = async () => {
     if (!initialData?.id) {
-      toast({
-        title: "Save Required",
+      toast.error("Save Required", {
         description: "Please save the article first before generating SEO",
-        variant: "destructive",
       });
       return;
     }
@@ -461,16 +436,13 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setFeaturedImageAlt(data.data.focus_keyphrase);
         }
         
-        toast({
-          title: "SEO Generated!",
+        toast.success("SEO Generated!", {
           description: "All SEO fields have been populated with AI-optimized content",
         });
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to generate SEO metadata",
-        variant: "destructive"
       });
     } finally {
       state.setIsGeneratingSEO(false);
@@ -479,10 +451,8 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
   const handleScoutRewrite = async () => {
     if (!state.content || state.content.trim().length === 0) {
-      toast({
-        title: "No Content",
+      toast.error("No Content", {
         description: "Please add content to the article before rewriting",
-        variant: "destructive",
       });
       return;
     }
