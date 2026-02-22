@@ -14,6 +14,7 @@ interface Props {
 export function ArticleRailRelatedReading({ categoryId, categoryName, categorySlug, currentArticleId, excludeIds = [] }: Props) {
   const { data: articles } = useQuery({
     queryKey: ["rail-related", categoryId, currentArticleId],
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data } = await supabase
         .from("articles")

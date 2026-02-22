@@ -118,7 +118,7 @@ const Article = () => {
   // Fetch comment count (after article loads)
   const { data: commentCount = 0 } = useQuery({
     queryKey: ["article-comment-count", article?.id],
-    staleTime: 30 * 1000,
+    staleTime: 2 * 60 * 1000,
     enabled: !!article?.id && article?.article_type !== 'policy_article',
     queryFn: async () => {
       const { count: realCount } = await supabase
