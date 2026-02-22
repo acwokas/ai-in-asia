@@ -245,34 +245,50 @@ const Editor = () => {
         </div>
 
         {isLoading ? (
-          <div className="space-y-6">
-            {/* Tab bar + Save button */}
-            <div className="flex items-center justify-between">
+          <>
+            {/* Title skeleton */}
+            <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-5 w-48 bg-muted animate-pulse rounded mb-8" />
+
+            {/* Tab bar + save button skeleton */}
+            <div className="flex items-center justify-between mb-6">
               <div className="flex gap-1">
-                {[64, 48, 56, 40, 56].map((w, i) => (
-                  <div key={i} style={{ width: w }} className="h-9 bg-muted animate-pulse rounded" />
-                ))}
+                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+                <div className="h-9 w-16 bg-muted animate-pulse rounded" />
+                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+                <div className="h-9 w-14 bg-muted animate-pulse rounded" />
+                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
               </div>
-              <div className="h-9 w-28 bg-muted animate-pulse rounded" />
+              <div className="h-10 w-32 bg-muted animate-pulse rounded" />
             </div>
-            {/* Two-column grid */}
+
+            {/* Two-column layout skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-              {/* Left: toolbar + editor */}
+              {/* Left: editor area */}
               <div className="space-y-2">
                 <div className="h-10 w-full bg-muted animate-pulse rounded" />
                 <div className="h-[500px] w-full bg-muted animate-pulse rounded" />
+                <div className="h-6 w-72 bg-muted animate-pulse rounded" />
               </div>
-              {/* Right: sidebar fields */}
+
+              {/* Right: metadata sidebar */}
               <div className="space-y-4">
-                <div className="h-10 bg-muted animate-pulse rounded" />
-                <div className="h-10 bg-muted animate-pulse rounded" />
-                <div className="h-12 bg-muted animate-pulse rounded" />
-                <div className="h-10 bg-muted animate-pulse rounded" />
-                <div className="h-20 bg-muted animate-pulse rounded" />
-                <div className="h-32 bg-muted animate-pulse rounded" />
+                <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-28 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-20 bg-muted animate-pulse rounded" />
+                <div className="h-20 w-full bg-muted animate-pulse rounded" />
+                <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-48 w-full bg-muted animate-pulse rounded" />
               </div>
             </div>
-          </div>
+          </>
         ) : (
           <CMSEditor
             initialData={article}
