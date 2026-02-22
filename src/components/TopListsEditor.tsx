@@ -607,10 +607,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       const newItems = [...items];
       newItems.splice(index + 1, 0, newItem);
       onChange(newItems);
-      toast({
-        title: "Item duplicated",
-        description: "Item has been duplicated successfully",
-      });
+      toast("Item duplicated", { description: "Item has been duplicated successfully" });
     }
   };
 
@@ -645,17 +642,10 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       const currentImages = item?.image_urls || [];
       updateItem(itemId, 'image_urls', [...currentImages, { url: publicUrl, size: 'large' }]);
 
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
+      toast.success("Success", { description: "Image uploaded successfully" });
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to upload image" });
     } finally {
       setUploadingImageFor(null);
     }
@@ -702,16 +692,9 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       onChange([...items, ...itemsWithIds]);
       setShowBulkImport(false);
       setImportText('');
-      toast({
-        title: "Import successful",
-        description: `${itemsWithIds.length} item(s) imported`,
-      });
+      toast.success("Import successful", { description: `${itemsWithIds.length} item(s) imported` });
     } catch (error) {
-      toast({
-        title: "Import failed",
-        description: "Invalid format. Please check your JSON or CSV data.",
-        variant: "destructive",
-      });
+      toast.error("Import failed", { description: "Invalid format. Please check your JSON or CSV data." });
     }
   };
 
@@ -737,10 +720,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
       link.download = 'top-lists-export.csv';
       link.click();
     }
-    toast({
-      title: "Export successful",
-      description: `Items exported as ${format.toUpperCase()}`,
-    });
+    toast.success("Export successful", { description: `Items exported as ${format.toUpperCase()}` });
   };
 
   return (
