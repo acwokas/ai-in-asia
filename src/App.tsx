@@ -60,27 +60,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Redirects = lazy(() => import("./pages/Redirects"));
-const BulkImport = lazy(() => import("./pages/BulkImport"));
-const ImageMigration = lazy(() => import("./pages/ImageMigration"));
-const ExtractImageUrls = lazy(() => import("./pages/ExtractImageUrls"));
-const UpdateArticleImages = lazy(() => import("./pages/UpdateArticleImages"));
-const MigrateTopListImages = lazy(() => import("./pages/MigrateTopListImages"));
-const MigrationDashboard = lazy(() => import("./pages/MigrationDashboard"));
-const BulkRedirects = lazy(() => import("./pages/BulkRedirects"));
-const CsvUrlReplacer = lazy(() => import("./pages/CsvUrlReplacer"));
-const MigrateCategoryUrls = lazy(() => import("./pages/MigrateCategoryUrls"));
-const ContentProcessor = lazy(() => import("./pages/ContentProcessor"));
-const CategoryMapper = lazy(() => import("./pages/CategoryMapper"));
-const CleanArticles = lazy(() => import("./pages/CleanArticles"));
-const FixMigratedContent = lazy(() => import("./pages/FixMigratedContent"));
-const RemoveTweetLinks = lazy(() => import("./pages/RemoveTweetLinks"));
-const PublishAllArticles = lazy(() => import("./pages/PublishAllArticles"));
 const AIComments = lazy(() => import("./pages/AIComments"));
-const GenerateTldrBulk = lazy(() => import("./pages/GenerateTldrBulk"));
-const BulkTldrContext = lazy(() => import("./pages/BulkTldrContext"));
-const AssignCategories = lazy(() => import("./pages/AssignCategories"));
-const FixBrokenImage = lazy(() => import("./pages/FixBrokenImage"));
-const FixExternalLinks = lazy(() => import("./pages/FixExternalLinks"));
 const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
 const SEOTools = lazy(() => import("./pages/SEOTools"));
@@ -96,7 +76,7 @@ const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
  const NewsletterView = lazy(() => import("./pages/NewsletterView"));
  const NewsletterEmailPreview = lazy(() => import("./pages/NewsletterEmailPreview"));
-const UploadAuthorAvatars = lazy(() => import("./pages/UploadAuthorAvatars"));
+
 const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments"));
 const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
 const CategorySponsorsManager = lazy(() => import("./pages/CategorySponsorsManager"));
@@ -110,11 +90,11 @@ const NotFoundAnalytics = lazy(() => import("./pages/NotFoundAnalytics"));
 const LegacyArticleRedirect = lazy(() => import("./pages/LegacyArticleRedirect"));
 const MyPrompts = lazy(() => import("./pages/MyPrompts"));
 const AllPrompts = lazy(() => import("./pages/AllPrompts"));
-const OptimizeArticleImages = lazy(() => import("./pages/OptimizeArticleImages"));
+
 const ContentCalendar = lazy(() => import("./pages/ContentCalendar"));
 const Guides = lazy(() => import("./pages/Guides"));
 const GuideDetail = lazy(() => import("./pages/GuideDetail"));
-const GuidesImport = lazy(() => import("./pages/GuidesImport"));
+
 const GuideEditor = lazy(() => import("./pages/GuideEditor"));
 const AdminGuides = lazy(() => import("./pages/AdminGuides"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
@@ -125,7 +105,7 @@ const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
 const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
-const ImportNewsletterSubscribers = lazy(() => import("./pages/ImportNewsletterSubscribers"));
+
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
@@ -261,52 +241,28 @@ const App = () => (
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="articles" element={<Articles />} />
                 <Route path="calendar" element={<ContentCalendar />} />
-                <Route path="bulk-import" element={<BulkImport />} />
-                <Route path="extract-image-urls" element={<ExtractImageUrls />} />
-                <Route path="image-migration" element={<ImageMigration />} />
-                <Route path="update-article-images" element={<UpdateArticleImages />} />
-                <Route path="migrate-toplist-images" element={<MigrateTopListImages />} />
-                <Route path="optimize-images" element={<OptimizeArticleImages />} />
-                <Route path="migration-dashboard" element={<MigrationDashboard />} />
-                <Route path="bulk-redirects" element={<BulkRedirects />} />
-                <Route path="csv-url-replacer" element={<CsvUrlReplacer />} />
-                <Route path="migrate-category-urls" element={<MigrateCategoryUrls />} />
-                <Route path="content-processor" element={<ContentProcessor />} />
-                <Route path="category-mapper" element={<CategoryMapper />} />
-                <Route path="clean-articles" element={<CleanArticles />} />
-                <Route path="fix-migrated-content" element={<FixMigratedContent />} />
                 <Route path="internal-links" element={<InternalLinksManager />} />
                 <Route path="link-health" element={<LinkHealthMonitor />} />
                 <Route path="bulk-links-undo" element={<BulkLinksUndo />} />
                 <Route path="fix-broken-links" element={<FixBrokenLinks />} />
                 <Route path="content-freshness" element={<ContentFreshness />} />
-                <Route path="remove-tweet-links" element={<RemoveTweetLinks />} />
-                <Route path="publish-all" element={<PublishAllArticles />} />
                 <Route path="ai-comments" element={<AIComments />} />
                 <Route path="knowledge-engine" element={<KnowledgeEngine />} />
-                <Route path="generate-tldr" element={<GenerateTldrBulk />} />
-                <Route path="bulk-tldr-context" element={<BulkTldrContext />} />
-                <Route path="assign-categories" element={<AssignCategories />} />
-                <Route path="fix-broken-image" element={<FixBrokenImage />} />
-                <Route path="fix-external-links" element={<FixExternalLinks />} />
                 <Route path="bulk-operations" element={<BulkOperations />} />
                 <Route path="analytics" element={<ContentAnalytics />} />
                 <Route path="seo-tools" element={<SEOTools />} />
                 <Route path="author-management" element={<AuthorManagement />} />
                 <Route path="editors-picks" element={<EditorsPickManager />} />
-                <Route path="upload-avatars" element={<UploadAuthorAvatars />} />
                 <Route path="process-comments" element={<ProcessPendingComments />} />
                 <Route path="bulk-seo" element={<BulkSEOGeneration />} />
                 <Route path="category-sponsors" element={<CategorySponsorsManager />} />
                 <Route path="404-analytics" element={<NotFoundAnalytics />} />
-                <Route path="guides-import" element={<GuidesImport />} />
                 <Route path="guides" element={<AdminGuides />} />
                 <Route path="newsletter-analytics" element={<NewsletterAnalytics />} />
                 <Route path="newsletter-performance" element={<NewsletterPerformance />} />
                 <Route path="newsletter-manager" element={<NewsletterManager />} />
                 <Route path="site-analytics" element={<SiteAnalytics />} />
                 <Route path="content-insights" element={<ContentInsights />} />
-                <Route path="import-subscribers" element={<ImportNewsletterSubscribers />} />
                 <Route path="guide-editor" element={<GuideEditor />} />
                 <Route path="guide-editor/:id" element={<GuideEditor />} />
                 <Route path="unsubscribes" element={<AdminUnsubscribes />} />
