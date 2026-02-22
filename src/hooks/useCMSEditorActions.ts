@@ -480,10 +480,13 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setFeaturedImage(data.featuredImage);
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
         }
+        if (data.excerpt) {
+          state.setExcerpt(data.excerpt);
+        }
         const imgCount = data.imagesGenerated || 0;
         toast.success("Article Rewritten", {
           description: imgCount > 0
-            ? `Content rewritten with ${imgCount} AI-generated image${imgCount > 1 ? 's' : ''}`
+            ? `Content rewritten with ${imgCount} AI-generated image${imgCount > 1 ? 's' : ''}${data.excerpt ? ' and excerpt' : ''}`
             : "Content rewritten successfully",
         });
       }

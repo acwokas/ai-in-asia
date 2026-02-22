@@ -175,22 +175,27 @@ LINKS — CRITICAL:
 - Preserve ALL existing markdown links from the original content. Do not remove or break any links.
 - Add 1-2 relevant external links to authoritative sources (research papers, official announcements, reputable news sites like Reuters, Bloomberg, TechCrunch, MIT Technology Review, etc.) using proper markdown link syntax [text](url). Use REAL, VALID URLs only — never use placeholder or made-up URLs.
 
-IMAGES:
-- Place the exact text [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph).
-- Do NOT write any markdown image syntax (e.g. ![...](...)) yourself — the system will replace the placeholder with the actual image.
-- Do NOT include image descriptions or prompts as raw text in the content.
+MID-ARTICLE IMAGE PLACEHOLDER:
+- Place the EXACT text [MID_ARTICLE_IMAGE] on its own line where a mid-article image should appear (ideally after the 3rd or 4th paragraph).
+- Write ONLY [MID_ARTICLE_IMAGE] — nothing else on that line. No description, no markdown image syntax, no alt text.
+- The system will automatically replace this placeholder with the actual uploaded image.
+- Do NOT write any markdown image syntax like ![...](...) anywhere in the content.
 
-ALSO: suggest exactly 2 image descriptions for AI generation:
+EXCERPT:
+- Also generate a 1-2 sentence excerpt (under 160 characters) summarising the article for previews.
+
+IMAGE DESCRIPTIONS (for AI generation — NOT to be included in the article text):
 1. A hero/lead image that captures the article's theme
-2. A mid-article image — describe what should appear at the [MID_ARTICLE_IMAGE] placeholder
-For each description, also provide a short alt text (under 125 characters) suitable for an img alt attribute.
+2. A mid-article image for the [MID_ARTICLE_IMAGE] position
+For each, provide a short alt text (under 125 characters) for the img alt attribute.
 
 Return your response in this EXACT JSON format (no markdown fences):
 {
-  "rewrittenContent": "the full rewritten article in markdown, with [MID_ARTICLE_IMAGE] placeholder and preserved/added links",
-  "heroImageDescription": "detailed description for AI image generation of the hero image",
+  "rewrittenContent": "the full rewritten article in markdown with [MID_ARTICLE_IMAGE] placeholder",
+  "excerpt": "1-2 sentence summary under 160 characters",
+  "heroImageDescription": "detailed description for AI image generation",
   "heroImageAlt": "short alt text under 125 chars",
-  "midImageDescription": "detailed description for AI image generation of the mid-article image",
+  "midImageDescription": "detailed description for AI image generation",
   "midImageAlt": "short alt text under 125 chars"
 }`;
 
@@ -231,22 +236,22 @@ ${content}`;
   const rawResult = rewriteData.choices?.[0]?.message?.content || '';
 
   let rewrittenContent: string;
+  let excerpt = '';
   let heroImageDescription: string;
   let heroImageAltText: string;
   let midImageDescription: string;
   let midImageAltText: string;
 
   try {
-    // Strip potential markdown code fences
     const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsed = JSON.parse(cleaned);
     rewrittenContent = parsed.rewrittenContent || rawResult;
+    excerpt = (parsed.excerpt || '').slice(0, 160);
     heroImageDescription = parsed.heroImageDescription || '';
     heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
     midImageDescription = parsed.midImageDescription || '';
     midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
   } catch {
-    // Fallback: use raw result as content, no images
     console.warn('Could not parse rewrite JSON, returning content without images');
     return new Response(
       JSON.stringify({ result: rawResult, imagesGenerated: 0 }),
@@ -291,7 +296,6 @@ ${content}`;
       const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (!base64Url) throw new Error('No image in response');
 
-      // Extract base64 data and upload to storage
       const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
       const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
       
@@ -333,23 +337,27 @@ ${content}`;
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // Step 3: Replace [MID_ARTICLE_IMAGE] placeholder with actual image or remove it
+  // Step 3: Replace [MID_ARTICLE_IMAGE] with actual image markdown or remove it
   let finalContent = rewrittenContent;
   if (midImage) {
-    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, `![${midImageAlt}](${midImage})`);
+    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, `\n\n![${midImageAlt}](${midImage})\n\n`);
   } else {
-    // Remove placeholder entirely if image generation failed
-    finalContent = finalContent.replace(/\n*\[MID_ARTICLE_IMAGE\]\n*/g, '\n\n');
+    finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
   }
 
-  // Cleanup: strip any raw image prompt lines that leaked (![description] without a (url))
-  finalContent = finalContent.replace(/^!\[?[^\]]*\]?(?!\()\s*$/gm, '');
-  // Remove any double-blank-line artifacts
+  // Safety net: strip any remaining [MID_ARTICLE_IMAGE] placeholders
+  finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
+
+  // Strip leaked image prompt lines (lines starting with ! followed by 50+ chars but no (url))
+  finalContent = finalContent.replace(/^!(?:\[[^\]]*\])?\s*[A-Z].{50,}$/gm, '');
+
+  // Clean up excessive blank lines
   finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
   return new Response(
     JSON.stringify({
       result: finalContent,
+      excerpt,
       featuredImage,
       featuredImageAlt,
       imagesGenerated,
