@@ -4,6 +4,7 @@ import { Download, X, CheckCircle, Smartphone, Trophy } from 'lucide-react';
 import { toast } from "sonner";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { awardPoints } from '@/lib/gamification';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -29,10 +30,7 @@ export const InstallAppButton = () => {
     if (alreadyAwarded) return;
     
     try {
-      await supabase.rpc('award_points', {
-        _user_id: user.id,
-        _points: APP_INSTALL_POINTS
-      });
+      await awardPoints(user.id, APP_INSTALL_POINTS, "installing the app");
       
       localStorage.setItem(`pwa-install-points-${user.id}`, 'true');
       

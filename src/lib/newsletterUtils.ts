@@ -9,7 +9,8 @@ export const NEWSLETTER_POINTS = 25;
 export async function awardNewsletterPoints(userId: string | null, supabase: any) {
   if (!userId) return;
   try {
-    await supabase.rpc('award_points', { _user_id: userId, _points: NEWSLETTER_POINTS });
+    const { awardPoints } = await import('@/lib/gamification');
+    await awardPoints(userId, NEWSLETTER_POINTS, "newsletter signup");
 
     const { data: achievement } = await supabase
       .from('achievements')

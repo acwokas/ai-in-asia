@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { awardPoints } from "@/lib/gamification";
 
 const REACTIONS = [
   { type: "insightful", emoji: "💡", label: "Insightful" },
@@ -127,14 +128,7 @@ export default function ArticleReactions({ articleId }: ArticleReactionsProps) {
 
       // Award points for logged-in users
       if (user && !userReaction) {
-        try {
-          await supabase.rpc("award_points", {
-            _user_id: user.id,
-            _points: 2,
-          });
-        } catch {
-          // Points are optional, don't fail
-        }
+        await awardPoints(user.id, 2);
       }
     },
     onMutate: (reactionType) => {

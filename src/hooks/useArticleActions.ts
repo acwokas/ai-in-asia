@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { awardPoints } from "@/lib/gamification";
 
 interface UseArticleActionsProps {
   articleId: string | undefined;
@@ -64,6 +65,7 @@ export const useArticleActions = ({
       
       setIsBookmarked(true);
       toast("Bookmarked!");
+      await awardPoints(userId, 1);
     }
   };
 
@@ -133,6 +135,7 @@ export const useArticleActions = ({
           article_id: articleId,
           completed: true
         });
+      await awardPoints(userId, 2);
     }
   };
 
@@ -202,10 +205,7 @@ export const createShareHandlers = (
                 .update({ shares_made: (stats.shares_made || 0) + 1 })
                 .eq("user_id", userId);
 
-              await supabase.rpc("award_points", {
-                _user_id: userId,
-                _points: 5,
-              });
+              await awardPoints(userId, 5);
             }
           }
           return;

@@ -10,6 +10,7 @@ import { useAdminRole } from '@/hooks/useAdminRole';
 import { compressImage } from '@/lib/imageCompression';
 import SEOHead from '@/components/SEOHead';
 import { toast } from 'sonner';
+import { awardPoints } from '@/lib/gamification';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 
 import ProfileAchievements from '@/components/profile/ProfileAchievements';
@@ -138,7 +139,7 @@ const Profile = () => {
       if (data.country) points += 3;
       points += (data.interests?.length || 0) * 2;
 
-      await supabase.rpc('award_points', { _user_id: user.id, _points: points });
+      await awardPoints(user.id, points, "profile completion");
 
       const { data: digitalPioneer } = await supabase.from('achievements').select('id').eq('name', 'Digital Pioneer').single();
       if (digitalPioneer?.id) await supabase.from('user_achievements').insert({ user_id: user.id, achievement_id: digitalPioneer.id });
@@ -147,8 +148,6 @@ const Profile = () => {
         const { data: profileMaster } = await supabase.from('achievements').select('id').eq('name', 'Profile Master').single();
         if (profileMaster?.id) await supabase.from('user_achievements').insert({ user_id: user.id, achievement_id: profileMaster.id });
       }
-
-      await supabase.rpc('check_and_award_achievements', { _user_id: user.id });
       toast("Profile Complete! 🎉", { description: `You earned ${points} points!` });
       fetchUserData();
     } catch (error) {

@@ -1,8 +1,14 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { User, Reply, CornerDownRight, Loader2 } from "lucide-react";
 import DOMPurify from "dompurify";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { awardPoints } from "@/lib/gamification";
+import { cn } from "@/lib/utils";
 
 export interface Comment {
   id: string;
@@ -69,6 +75,104 @@ export const organizeThreadedComments = (comments: Comment[]): Comment[] => {
   sortReplies(rootComments);
 
   return rootComments;
+};
+
+interface CommentReactionsBarProps {
+  commentId: string;
+}
+
+const COMMENT_REACTIONS = [
+  { type: "thumbsup", emoji: "👍" },
+  { type: "heart", emoji: "❤️" },
+  { type: "lightbulb", emoji: "💡" },
+];
+
+const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: counts = {} } = useQuery({
+    queryKey: ["comment-reactions-counts", commentId],
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("comment_reactions")
+        .select("reaction")
+        .eq("comment_id", commentId);
+      const map: Record<string, number> = {};
+      for (const r of data || []) {
+        map[r.reaction] = (map[r.reaction] || 0) + 1;
+      }
+      return map;
+    },
+  });
+
+  const { data: userReactions = [] } = useQuery({
+    queryKey: ["comment-reactions-user", commentId, user?.id],
+    staleTime: 30_000,
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("comment_reactions")
+        .select("reaction")
+        .eq("comment_id", commentId)
+        .eq("user_id", user.id);
+      return (data || []).map((r) => r.reaction);
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (reaction: string) => {
+      if (!user) return;
+      const hasReaction = userReactions.includes(reaction);
+      if (hasReaction) {
+        await supabase
+          .from("comment_reactions")
+          .delete()
+          .eq("comment_id", commentId)
+          .eq("user_id", user.id)
+          .eq("reaction", reaction);
+      } else {
+        await supabase.from("comment_reactions").insert({
+          comment_id: commentId,
+          user_id: user.id,
+          reaction,
+        });
+        await awardPoints(user.id, 1);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comment-reactions-counts", commentId] });
+      queryClient.invalidateQueries({ queryKey: ["comment-reactions-user", commentId] });
+    },
+  });
+
+  if (!user) return null;
+
+  return (
+    <div className="flex items-center gap-1 mt-1.5">
+      {COMMENT_REACTIONS.map(({ type, emoji }) => {
+        const count = counts[type] || 0;
+        const isActive = userReactions.includes(type);
+        return (
+          <button
+            key={type}
+            onClick={() => mutation.mutate(type)}
+            disabled={mutation.isPending}
+            className={cn(
+              "flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs transition-all cursor-pointer",
+              "hover:bg-primary/10",
+              isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            )}
+          >
+            <span className="text-sm">{emoji}</span>
+            {count > 0 && <span className="text-[10px] font-medium">{count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
 };
 
 interface CommentThreadProps {
@@ -151,17 +255,21 @@ export const CommentThread = ({
           </div>
           <p className={`text-muted-foreground ${depth > 0 ? 'text-sm' : ''}`} dangerouslySetInnerHTML={{ __html: formatCommentWithEmojis(comment.content) }} />
           
-          {isAdmin && depth < maxDepth && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-2 h-7 px-2 text-xs text-muted-foreground hover:text-primary"
-              onClick={() => setReplyingTo(isReplying ? null : comment)}
-            >
-              <Reply className="h-3 w-3 mr-1" />
-              Reply
-            </Button>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            <CommentReactionsBar commentId={comment.id} />
+            
+            {isAdmin && depth < maxDepth && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
+                onClick={() => setReplyingTo(isReplying ? null : comment)}
+              >
+                <Reply className="h-3 w-3 mr-1" />
+                Reply
+              </Button>
+            )}
+          </div>
 
           {isReplying && (
             <div className="mt-3 p-3 bg-muted/30 rounded-lg">

@@ -40,14 +40,14 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
 
   return (
     <div className="flex items-center gap-1">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#25D366] cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
+        <WhatsAppIcon className="h-4 w-4" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#0A66C2] cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
         <Linkedin className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#25D366] cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
-        <WhatsAppIcon className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-teal-500 cursor-pointer relative" onClick={handleCopy} title="Copy link">
         {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Link2 className="h-4 w-4" />}
@@ -94,14 +94,14 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
 
   return (
     <div className="hidden xl:flex fixed left-[max(1rem,calc(50%-600px))] top-1/3 z-30 flex-col gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
+        <WhatsAppIcon className="h-[18px] w-[18px]" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
         <Linkedin className="h-[18px] w-[18px]" />
       </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
-        <WhatsAppIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-teal-500 hover:bg-teal-500/10 cursor-pointer" onClick={handleCopy} title="Copy link">
@@ -154,14 +154,14 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
   return (
     <div className="fixed bottom-12 inset-x-0 z-30 md:hidden animate-in slide-in-from-bottom duration-200">
       <div className="h-10 bg-background/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-center gap-6 px-4">
+        <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
+          <WhatsAppIcon className="h-4 w-4" />
+        </button>
         <button className="text-muted-foreground hover:text-[#0A66C2] transition-colors cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="LinkedIn">
           <Linkedin className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="X">
           <XIcon className="h-4 w-4" />
-        </button>
-        <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
-          <WhatsAppIcon className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-teal-500 transition-colors relative cursor-pointer" onClick={handleCopy} title="Copy link">
           {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Link2 className="h-4 w-4" />}
