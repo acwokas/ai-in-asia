@@ -246,12 +246,31 @@ const Editor = () => {
 
         {isLoading ? (
           <div className="space-y-6">
-            <div className="h-10 w-full bg-muted animate-pulse rounded" />
-            <div className="h-10 w-full bg-muted animate-pulse rounded" />
-            <div className="h-64 w-full bg-muted animate-pulse rounded" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-10 bg-muted animate-pulse rounded" />
-              <div className="h-10 bg-muted animate-pulse rounded" />
+            {/* Tab bar + Save button */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1">
+                {[64, 48, 56, 40, 56].map((w, i) => (
+                  <div key={i} style={{ width: w }} className="h-9 bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+              <div className="h-9 w-28 bg-muted animate-pulse rounded" />
+            </div>
+            {/* Two-column grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+              {/* Left: toolbar + editor */}
+              <div className="space-y-2">
+                <div className="h-10 w-full bg-muted animate-pulse rounded" />
+                <div className="h-[500px] w-full bg-muted animate-pulse rounded" />
+              </div>
+              {/* Right: sidebar fields */}
+              <div className="space-y-4">
+                <div className="h-10 bg-muted animate-pulse rounded" />
+                <div className="h-10 bg-muted animate-pulse rounded" />
+                <div className="h-12 bg-muted animate-pulse rounded" />
+                <div className="h-10 bg-muted animate-pulse rounded" />
+                <div className="h-20 bg-muted animate-pulse rounded" />
+                <div className="h-32 bg-muted animate-pulse rounded" />
+              </div>
             </div>
           </div>
         ) : (
