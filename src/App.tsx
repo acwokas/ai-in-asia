@@ -74,6 +74,7 @@ const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 const AskScout = lazy(() => import("./pages/AskScout"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
+const NewsletterAdmin = lazy(() => import("./pages/NewsletterAdmin"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
  const NewsletterView = lazy(() => import("./pages/NewsletterView"));
  const NewsletterEmailPreview = lazy(() => import("./pages/NewsletterEmailPreview"));
@@ -260,14 +261,16 @@ const App = () => (
                 <Route path="category-sponsors" element={<CategorySponsorsManager />} />
                 <Route path="404-analytics" element={<NotFoundAnalytics />} />
                 <Route path="guides" element={<AdminGuides />} />
-                <Route path="newsletter-analytics" element={<NewsletterAnalytics />} />
-                <Route path="newsletter-performance" element={<NewsletterPerformance />} />
-                <Route path="newsletter-manager" element={<NewsletterManager />} />
+                <Route path="newsletter" element={<NewsletterAdmin />} />
+                <Route path="newsletter-analytics" element={<Navigate to="/admin/newsletter?tab=subscribers" replace />} />
+                <Route path="newsletter-performance" element={<Navigate to="/admin/newsletter?tab=analytics" replace />} />
+                <Route path="newsletter-manager" element={<Navigate to="/admin/newsletter" replace />} />
+                <Route path="unsubscribes" element={<Navigate to="/admin/newsletter?tab=subscribers" replace />} />
                 <Route path="site-analytics" element={<SiteAnalytics />} />
                 <Route path="content-insights" element={<ContentInsights />} />
                 <Route path="guide-editor" element={<GuideEditor />} />
                 <Route path="guide-editor/:id" element={<GuideEditor />} />
-                <Route path="unsubscribes" element={<AdminUnsubscribes />} />
+                
                 <Route path="event-submissions" element={<AdminEventSubmissionsPage />} />
               </Route>
               {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
