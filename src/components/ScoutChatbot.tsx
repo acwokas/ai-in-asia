@@ -363,7 +363,7 @@ const ScoutChatbot = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-20 right-6 z-50">
+      <div className="hidden md:block fixed bottom-20 right-6 z-50">
         <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" />
         <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
         <Button
@@ -383,11 +383,11 @@ const ScoutChatbot = () => {
   return (
     <>
       <div 
-        className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40"
+        className="hidden md:block fixed inset-0 bg-background/60 backdrop-blur-sm z-40"
         onClick={() => setIsOpen(false)}
       />
       
-      <div className="fixed bottom-20 right-4 left-4 md:left-auto md:right-6 md:w-96 h-[600px] max-h-[80vh] z-50 animate-scale-in">
+      <div className="hidden md:flex fixed bottom-20 right-4 left-4 md:left-auto md:right-6 md:w-96 h-[600px] max-h-[80vh] z-50 animate-scale-in">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-2xl blur-2xl" />
         
         <div className="relative bg-card/98 backdrop-blur-xl border-2 border-primary/50 rounded-2xl shadow-[0_8px_80px_rgba(0,188,212,0.6),0_0_0_1px_rgba(0,188,212,0.2)] flex flex-col overflow-hidden h-full">
