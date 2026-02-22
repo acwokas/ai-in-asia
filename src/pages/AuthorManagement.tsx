@@ -74,11 +74,7 @@ const AuthorManagement = () => {
       .eq("role", "admin");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You need admin privileges to access this page." });
       navigate("/admin");
       return;
     }
@@ -106,20 +102,13 @@ const AuthorManagement = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Author created successfully",
-      });
+      toast.success("Success", { description: "Author created successfully" });
       queryClient.invalidateQueries({ queryKey: ["authors-management"] });
       setIsDialogOpen(false);
       resetForm();
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create author",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to create author" });
     },
   });
 
@@ -132,20 +121,13 @@ const AuthorManagement = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Author updated successfully",
-      });
+      toast.success("Success", { description: "Author updated successfully" });
       queryClient.invalidateQueries({ queryKey: ["authors-management"] });
       setIsDialogOpen(false);
       resetForm();
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update author",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to update author" });
     },
   });
 
@@ -158,18 +140,11 @@ const AuthorManagement = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Author deleted successfully",
-      });
+      toast.success("Success", { description: "Author deleted successfully" });
       queryClient.invalidateQueries({ queryKey: ["authors-management"] });
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Cannot delete author with existing articles",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Cannot delete author with existing articles" });
     },
   });
 

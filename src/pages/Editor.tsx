@@ -127,22 +127,14 @@ const Editor = () => {
           ? `/${categorySlug}/${savedArticle.slug}`
           : `/${categorySlug}/${savedArticle.slug}?preview=${savedArticle.preview_code}`;
 
-        toast({
-          title: "Success!",
+        toast.success("Success!", {
           description: isNowPublished && !wasPublished 
             ? "Article published! AI comments are being generated." 
             : "Article updated successfully.",
-          action: savedArticle ? (
-            <button
-              onClick={() => window.open(articleUrl, '_blank')}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
-            >
-              {savedArticle.status === 'published' ? 'View Live' : 'Preview'}
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
-              </svg>
-            </button>
-          ) : undefined,
+          action: savedArticle ? {
+            label: savedArticle.status === 'published' ? 'View Live' : 'Preview',
+            onClick: () => window.open(articleUrl, '_blank'),
+          } : undefined,
         });
       } else {
         const { data: newArticle, error } = await supabase
@@ -171,8 +163,7 @@ const Editor = () => {
         await queryClient.invalidateQueries({ queryKey: ["popular-articles"] });
         await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
 
-        toast({
-          title: "Success!",
+        toast.success("Success!", {
           description: data.status === 'published' 
             ? "Article published! AI comments are being generated. Redirecting..." 
             : "Article created successfully. Redirecting to editor...",
@@ -184,11 +175,7 @@ const Editor = () => {
         }, 1000);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     }
   };
 

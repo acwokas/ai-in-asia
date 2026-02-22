@@ -81,21 +81,14 @@ const InternalLinksManager = () => {
       if (error) throw error;
 
       if (data?.suggestions) {
-        toast({
-          title: "Link Suggestions Generated",
-          description: `Found ${data.suggestions.internalLinks?.length || 0} internal and ${data.suggestions.externalLinks?.length || 0} external link suggestions`,
-        });
+        toast.success("Link Suggestions Generated", { description: `Found ${data.suggestions.internalLinks?.length || 0} internal and ${data.suggestions.externalLinks?.length || 0} external link suggestions` });
         
         console.log("Link suggestions:", data.suggestions);
         navigate(`/editor?id=${articleId}`);
       }
     } catch (error: any) {
       console.error("Error generating link suggestions:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate link suggestions",
-        variant: "destructive"
-      });
+      toast.error("Error", { description: error.message || "Failed to generate link suggestions" });
     } finally {
       setIsGeneratingLinks(null);
     }
@@ -119,19 +112,12 @@ const InternalLinksManager = () => {
     ).map(a => a.id) || [];
     
     setSelectedArticles(new Set(articlesNeedingLinks));
-    toast({
-      title: "Articles Selected",
-      description: `Selected ${articlesNeedingLinks.length} articles that need links`,
-    });
+    toast("Articles Selected", { description: `Selected ${articlesNeedingLinks.length} articles that need links` });
   };
 
   const handleQueueBulkOperation = async () => {
     if (selectedArticles.size === 0) {
-      toast({
-        title: "No Articles Selected",
-        description: "Please select at least one article to process",
-        variant: "destructive"
-      });
+      toast.error("No Articles Selected", { description: "Please select at least one article to process" });
       return;
     }
 
@@ -140,11 +126,7 @@ const InternalLinksManager = () => {
       
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to queue bulk operations",
-          variant: "destructive",
-        });
+        toast.error("Authentication Required", { description: "Please log in to queue bulk operations" });
         return;
       }
 
@@ -162,10 +144,7 @@ const InternalLinksManager = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "✅ Operation Queued",
-        description: `${articleIds.length} articles queued for processing. You'll be notified when complete.`,
-      });
+      toast.success("✅ Operation Queued", { description: `${articleIds.length} articles queued for processing. You'll be notified when complete.` });
 
       setSelectedArticles(new Set());
       setActiveTab("queue");
@@ -173,11 +152,7 @@ const InternalLinksManager = () => {
 
     } catch (error: any) {
       console.error("Error queueing operation:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to queue operation",
-        variant: "destructive"
-      });
+      toast.error("Error", { description: error.message || "Failed to queue operation" });
     }
   };
 

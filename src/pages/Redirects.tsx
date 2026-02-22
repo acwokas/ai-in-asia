@@ -56,11 +56,7 @@ const Redirects = () => {
       setRedirects(data || []);
     } catch (error) {
       console.error("Error fetching redirects:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load redirects",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to load redirects" });
     } finally {
       setLoading(false);
     }
@@ -70,11 +66,7 @@ const Redirects = () => {
     e.preventDefault();
     
     if (!fromPath || !toPath) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Please fill in all required fields" });
       return;
     }
 
@@ -89,10 +81,7 @@ const Redirects = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Redirect added successfully",
-      });
+      toast.success("Success", { description: "Redirect added successfully" });
 
       setFromPath("");
       setToPath("");
@@ -100,11 +89,7 @@ const Redirects = () => {
       fetchRedirects();
     } catch (error) {
       console.error("Error adding redirect:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add redirect",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error instanceof Error ? error.message : "Failed to add redirect" });
     }
   };
 
@@ -117,19 +102,12 @@ const Redirects = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Redirect deleted successfully",
-      });
+      toast.success("Success", { description: "Redirect deleted successfully" });
 
       fetchRedirects();
     } catch (error) {
       console.error("Error deleting redirect:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete redirect",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to delete redirect" });
     }
   };
 
