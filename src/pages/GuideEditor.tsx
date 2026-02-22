@@ -289,7 +289,7 @@ const GuideEditor = () => {
           .select()
           .single();
         if (error) throw error;
-        navigate(`/guide-editor/${newGuide.id}`, { replace: true });
+        navigate(`/admin/guide-editor/${newGuide.id}`, { replace: true });
       }
 
       setHasChanges(false);

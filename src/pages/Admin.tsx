@@ -481,7 +481,7 @@ const Admin = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Create New Article
               </Button>
-              <Button onClick={() => navigate("/guide-editor")} size="lg" variant="outline" className="w-full md:w-auto">
+              <Button onClick={() => navigate("/admin/guide-editor")} size="lg" variant="outline" className="w-full md:w-auto">
                 <BookOpen className="h-4 w-4 mr-2" />
                 Create New Guide
               </Button>

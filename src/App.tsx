@@ -307,6 +307,8 @@ const App = () => (
                 <Route path="site-analytics" element={<SiteAnalytics />} />
                 <Route path="content-insights" element={<ContentInsights />} />
                 <Route path="import-subscribers" element={<ImportNewsletterSubscribers />} />
+                <Route path="guide-editor" element={<GuideEditor />} />
+                <Route path="guide-editor/:id" element={<GuideEditor />} />
                 <Route path="unsubscribes" element={<AdminUnsubscribes />} />
                 <Route path="event-submissions" element={<AdminEventSubmissionsPage />} />
               </Route>
@@ -315,8 +317,6 @@ const App = () => (
               <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
-              <Route path="/guide-editor" element={<GuideEditor />} />
-              <Route path="/guide-editor/:id" element={<GuideEditor />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}
               <Route path="/:slug" element={<LegacyArticleRedirect />} />
               <Route path="*" element={<NotFound />} />
