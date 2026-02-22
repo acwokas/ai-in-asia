@@ -1,11 +1,11 @@
 import { useNavigate, useSearchParams, Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import CMSEditor from "@/components/CMSEditor";
 import { toast } from "sonner";
-import { Loader2, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { calculateReadingTime } from "@/lib/readingTime";
 
 const Editor = () => {
@@ -43,7 +43,7 @@ const Editor = () => {
     }
   };
 
-  // Article edit query - always refetch on mount in preview/editor to avoid stale or truncated content
+  // Article edit query
   const { data: article, isLoading } = useQuery({
     queryKey: ["article-edit", articleId],
     enabled: !!articleId && !!user,
@@ -66,13 +66,11 @@ const Editor = () => {
     },
   });
 
-  const handleSave = async (data: any) => {
+  const handleSave = useCallback(async (data: any) => {
     try {
-      // Calculate reading time automatically
       const readingTime = calculateReadingTime(data.content || [], data.title || '');
       
       if (articleId) {
-        // Check if status is changing to published
         const wasPublished = article?.status === 'published';
         const isNowPublished = data.status === 'published';
 
@@ -87,28 +85,24 @@ const Editor = () => {
 
         if (error) throw error;
 
-        // Generate comments if newly published
         if (!wasPublished && isNowPublished) {
           supabase.functions.invoke("generate-article-comments", {
             body: { articleId, batchMode: false }
           }).catch(err => console.error('Comment generation error:', err));
         }
 
-        // Refetch article data and invalidate all article-related queries
         await queryClient.invalidateQueries({ queryKey: ["article-edit", articleId] });
         await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
         await queryClient.invalidateQueries({ queryKey: ["you-may-also-like"] });
         await queryClient.invalidateQueries({ queryKey: ["popular-articles"] });
         await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
 
-        // Get the article slug and preview code for the preview link
         const { data: savedArticle } = await supabase
           .from("articles")
           .select("slug, status, preview_code, primary_category_id")
           .eq("id", articleId)
           .single();
 
-        // Fetch category separately to avoid relation issues
         let categorySlug = 'news';
         if (savedArticle?.primary_category_id) {
           const { data: category } = await supabase
@@ -116,16 +110,17 @@ const Editor = () => {
             .select("slug")
             .eq("id", savedArticle.primary_category_id)
             .single();
-          
-          if (category) {
-            categorySlug = category.slug;
-          }
+          if (category) categorySlug = category.slug;
         }
         
-        // Build the article URL with preview code if not published
         const articleUrl = savedArticle?.status === 'published' 
           ? `/${categorySlug}/${savedArticle.slug}`
           : `/${categorySlug}/${savedArticle.slug}?preview=${savedArticle.preview_code}`;
+
+        // Clear localStorage backup on successful save
+        if (articleId) {
+          localStorage.removeItem(`editor-backup-${articleId}`);
+        }
 
         toast.success("Success!", {
           description: isNowPublished && !wasPublished 
@@ -150,14 +145,12 @@ const Editor = () => {
 
         if (error) throw error;
 
-        // Generate comments if published
         if (data.status === 'published') {
           supabase.functions.invoke("generate-article-comments", {
             body: { articleId: newArticle.id, batchMode: false }
           }).catch(err => console.error('Comment generation error:', err));
         }
 
-        // Invalidate article-related queries
         await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
         await queryClient.invalidateQueries({ queryKey: ["you-may-also-like"] });
         await queryClient.invalidateQueries({ queryKey: ["popular-articles"] });
@@ -169,15 +162,57 @@ const Editor = () => {
             : "Article created successfully. Redirecting to editor...",
         });
         
-        // Navigate to edit the newly created article so preview code is available
         setTimeout(() => {
           navigate(`/editor?id=${newArticle.id}`);
         }, 1000);
       }
     } catch (error: any) {
-      toast.error("Error", { description: error.message });
+      // Show error with retry button
+      toast.error("Save failed", {
+        description: error.message,
+        action: {
+          label: "Retry",
+          onClick: () => handleSave(data),
+        },
+        duration: 10_000,
+      });
     }
-  };
+  }, [articleId, article, user, queryClient, navigate]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      // Ctrl+S → Save — click the Save Article button
+      if (e.key === "s" && !e.shiftKey) {
+        e.preventDefault();
+        const saveBtn = document.querySelector('[data-editor-save]') as HTMLButtonElement | null;
+        saveBtn?.click();
+      }
+      // Ctrl+Shift+P → Toggle Content/Preview
+      if (e.key === "P" || (e.key === "p" && e.shiftKey)) {
+        e.preventDefault();
+        // Click the preview or content tab trigger
+        const previewTab = document.querySelector('[data-state][value="preview"]') as HTMLElement | null;
+        const contentTab = document.querySelector('[data-state][value="content"]') as HTMLElement | null;
+        if (previewTab?.getAttribute("data-state") === "active") {
+          contentTab?.click();
+        } else {
+          previewTab?.click();
+        }
+      }
+      // Ctrl+K → Focus slug field
+      if (e.key === "k" && !e.shiftKey) {
+        e.preventDefault();
+        const slugInput = document.getElementById("slug") as HTMLInputElement | null;
+        slugInput?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleSave]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -218,7 +253,10 @@ const Editor = () => {
             </div>
           </div>
         ) : (
-          <CMSEditor initialData={article} onSave={handleSave} />
+          <CMSEditor
+            initialData={article}
+            onSave={handleSave}
+          />
         )}
       </main>
     </div>
