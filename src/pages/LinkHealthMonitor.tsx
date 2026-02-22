@@ -11,12 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, ExternalLink, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const LinkHealthMonitor = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [isCheckingLinks, setIsCheckingLinks] = useState(false);
   const [linkHealthData, setLinkHealthData] = useState<any>(null);
@@ -65,10 +65,7 @@ const LinkHealthMonitor = () => {
     if (!articles) return;
 
     setIsCheckingLinks(true);
-    toast({
-      title: "Checking Link Health",
-      description: "Validating all internal and external links...",
-    });
+    toast("Checking Link Health", { description: "Validating all internal and external links..." });
 
     const results: any = {
       brokenInternal: [],
@@ -115,10 +112,7 @@ const LinkHealthMonitor = () => {
     setLinkHealthData(results);
     setIsCheckingLinks(false);
 
-    toast({
-      title: "Link Health Check Complete",
-      description: `${results.working}/${results.total} links working. ${results.brokenInternal.length} broken internal links found.`,
-    });
+    toast("Link Health Check Complete", { description: `${results.working}/${results.total} links working. ${results.brokenInternal.length} broken internal links found.` });
   };
 
   const handleFixBrokenLink = async (brokenLink: any) => {

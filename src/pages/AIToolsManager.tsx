@@ -3,13 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AddToolDialog } from "@/components/AddToolDialog";
 
 const AIToolsManager = () => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [isScrapingDialogOpen, setIsScrapingDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -46,17 +46,10 @@ const AIToolsManager = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ai-tools-admin'] });
       setIsScrapingDialogOpen(false);
-      toast({
-        title: "Scraping completed",
-        description: `Inserted: ${data.stats.inserted}, Updated: ${data.stats.updated}, Skipped: ${data.stats.skipped}`
-      });
+      toast("Scraping completed", { description: `Inserted: ${data.stats.inserted}, Updated: ${data.stats.updated}, Skipped: ${data.stats.skipped}` });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Scraping failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error("Scraping failed", { description: error.message });
     }
   });
 
@@ -72,17 +65,10 @@ const AIToolsManager = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-tools-admin'] });
-      toast({
-        title: "Tool deleted",
-        description: "The tool has been removed successfully"
-      });
+      toast("Tool deleted", { description: "The tool has been removed successfully" });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error("Error", { description: error.message });
     }
   });
 
@@ -117,16 +103,9 @@ const AIToolsManager = () => {
                 if (error) throw error;
                 
                 queryClient.invalidateQueries({ queryKey: ['ai-tools-admin'] });
-                toast({
-                  title: "Sample tools seeded",
-                  description: "Sample AI tools have been added to the database"
-                });
+                toast("Sample tools seeded", { description: "Sample AI tools have been added to the database" });
               } catch (error: any) {
-                toast({
-                  title: "Error",
-                  description: error.message,
-                  variant: "destructive"
-                });
+                toast.error("Error", { description: error.message });
               }
             }}
           >

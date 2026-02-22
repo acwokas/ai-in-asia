@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { generateSlug } from "@/lib/markdownConversion";
 import GuidePreviewPanel from "@/components/guide-editor/GuidePreviewPanel";
@@ -96,7 +96,7 @@ const platformColors: Record<string, string> = {
 const GuideEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
   const [formData, setFormData] = useState<GuideFormData>(defaultFormData);
@@ -123,7 +123,7 @@ const GuideEditor = () => {
       const { data } = await supabase.from("user_roles").select("role")
         .eq("user_id", session.user.id).or("role.eq.admin,role.eq.editor,role.eq.contributor");
       if (!data || data.length === 0) {
-        toast({ title: "Access Denied", description: "You don't have permission to edit guides.", variant: "destructive" });
+        toast.error("Access Denied", { description: "You don't have permission to edit guides." });
         navigate("/");
       }
     };
@@ -138,7 +138,7 @@ const GuideEditor = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("ai_guides").select("*").eq("id", id).maybeSingle();
       if (error) throw error;
-      if (!data) { toast({ title: "Guide Not Found", variant: "destructive" }); navigate("/admin/guides"); return null; }
+      if (!data) { toast.error("Guide Not Found"); navigate("/admin/guides"); return null; }
       return data;
     },
   });
@@ -297,13 +297,10 @@ const GuideEditor = () => {
       queryClient.invalidateQueries({ queryKey: ["guide-edit", id] });
 
       if (!isAutoSave) {
-        toast({
-          title: saveStatus === "published" ? "Guide Published!" : "Guide Saved",
-          description: saveStatus === "published" ? "Your guide is now live." : "Draft saved successfully.",
-        });
+        toast(saveStatus === "published" ? "Guide Published!" : "Guide Saved", { description: saveStatus === "published" ? "Your guide is now live." : "Draft saved successfully." });
       }
     } catch (error: any) {
-      toast({ title: "Save Failed", description: error.message, variant: "destructive" });
+      toast.error("Save Failed", { description: error.message });
     } finally { setSaving(false); }
   };
 
@@ -317,7 +314,7 @@ const GuideEditor = () => {
       if (error) throw error;
       return data?.result;
     } catch (err: any) {
-      toast({ title: "AI Assist Failed", description: err.message, variant: "destructive" });
+      toast.error("AI Assist Failed", { description: err.message });
       return null;
     } finally { setAiLoading(null); }
   };

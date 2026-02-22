@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, TrendingUp, Eye, MessageSquare, ThumbsUp, Calendar, Users, FileText, Star, Home } from "lucide-react";
 import {
   Breadcrumb,
@@ -19,7 +19,7 @@ import {
 
 const ContentAnalytics = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -41,11 +41,7 @@ const ContentAnalytics = () => {
       .or("role.eq.admin,role.eq.editor");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You need admin or editor privileges.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You need admin or editor privileges." });
       navigate("/admin");
       return;
     }

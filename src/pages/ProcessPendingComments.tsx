@@ -5,13 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Home, MessageSquare, ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const ProcessPendingComments = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [processedCount, setProcessedCount] = useState(0);
@@ -50,10 +50,7 @@ const ProcessPendingComments = () => {
 
   const processPendingComments = async () => {
     if (!pendingCount || pendingCount === 0) {
-      toast({
-        title: "No pending comments",
-        description: "All pending comments have been processed",
-      });
+      toast("No pending comments", { description: "All pending comments have been processed" });
       return;
     }
 
@@ -88,11 +85,7 @@ const ProcessPendingComments = () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error("Error in batch processing:", error);
-        toast({
-          title: "Error processing comments",
-          description: error instanceof Error ? error.message : "Unknown error",
-          variant: "destructive",
-        });
+        toast.error("Error processing comments", { description: error instanceof Error ? error.message : "Unknown error" });
         break;
       }
     }
@@ -100,10 +93,7 @@ const ProcessPendingComments = () => {
     setIsProcessing(false);
     refetch();
     
-    toast({
-      title: "Processing complete!",
-      description: `Successfully processed ${totalProcessed} comments`,
-    });
+    toast("Processing complete!", { description: `Successfully processed ${totalProcessed} comments` });
   };
 
   if (checkingAdmin || loadingCount) {

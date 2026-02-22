@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CMSEditor from "@/components/CMSEditor";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Home } from "lucide-react";
 import { calculateReadingTime } from "@/lib/readingTime";
 
@@ -13,7 +13,7 @@ const Editor = () => {
   const params = useParams();
   const articleId = params.id || searchParams.get("id");
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [user, setUser] = useState<any>(null);
   const queryClient = useQueryClient();
 
@@ -38,11 +38,7 @@ const Editor = () => {
       .or("role.eq.admin,role.eq.editor,role.eq.contributor");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to create or edit articles.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You don't have permission to create or edit articles." });
       navigate("/");
     }
   };
@@ -62,11 +58,7 @@ const Editor = () => {
 
       if (error) throw error;
       if (!data) {
-        toast({
-          title: "Article Not Found",
-          description: "This article doesn't exist or you don't have permission to view it.",
-          variant: "destructive",
-        });
+        toast.error("Article Not Found", { description: "This article doesn't exist or you don't have permission to view it." });
         navigate("/admin");
         return null;
       }

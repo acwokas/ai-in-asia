@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, RotateCcw, Clock, CheckCircle2, Info, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 
 const BulkLinksUndo = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  
   const [isRestoring, setIsRestoring] = useState<string | null>(null);
 
   // Fetch bulk link operation history

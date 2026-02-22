@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Home, Star, Search, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -21,7 +21,7 @@ import {
 
 const EditorsPickManager = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);

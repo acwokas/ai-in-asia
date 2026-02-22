@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Loader2, FileText, BarChart, Home, BookOpen, CalendarCheck, Megaphone } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 import { TrendingSuggestions } from "@/components/TrendingSuggestions";
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -29,7 +29,7 @@ import AdminEventAds from "@/components/admin/AdminEventAds";
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -91,11 +91,7 @@ const Admin = () => {
       .or("role.eq.admin,role.eq.editor");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access the admin panel.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You don't have permission to access the admin panel." });
       navigate("/");
       return;
     }
@@ -268,10 +264,7 @@ const Admin = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Author updated",
-          description: "The author has been updated successfully",
-        });
+        toast("Author updated", { description: "The author has been updated successfully" });
       } else {
         const { error } = await supabase
           .from("authors")
@@ -279,21 +272,14 @@ const Admin = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Author created",
-          description: "The author has been created successfully",
-        });
+        toast("Author created", { description: "The author has been created successfully" });
       }
 
       refetchAuthors();
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       resetAuthorForm();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save author",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to save author" });
     }
   };
 
@@ -306,19 +292,12 @@ const Admin = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Author deleted",
-        description: "The author has been removed",
-      });
+      toast("Author deleted", { description: "The author has been removed" });
 
       refetchAuthors();
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete author",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to delete author" });
     }
   };
 
@@ -355,17 +334,10 @@ const Admin = () => {
 
       setAuthorForm({ ...authorForm, avatar_url: publicUrl });
 
-      toast({
-        title: "Image uploaded",
-        description: "Avatar image has been uploaded successfully",
-      });
+      toast("Image uploaded", { description: "Avatar image has been uploaded successfully" });
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Upload failed", { description: "Failed to upload image. Please try again." });
     } finally {
       setUploadingImage(false);
     }
@@ -387,19 +359,12 @@ const Admin = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Settings saved",
-        description: "Google Ads settings have been updated",
-      });
+      toast("Settings saved", { description: "Google Ads settings have been updated" });
 
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       setGoogleAdsDialogOpen(false);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save settings",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to save settings" });
     }
   };
 
@@ -415,19 +380,12 @@ const Admin = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Settings saved",
-        description: "Newsletter popup settings have been updated",
-      });
+      toast("Settings saved", { description: "Newsletter popup settings have been updated" });
 
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       setNewsletterDialogOpen(false);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save settings",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to save settings" });
     }
   };
 
@@ -497,7 +455,7 @@ const Admin = () => {
               <Button 
                 onClick={() => {
                   refetchStats();
-                  toast({ title: "Stats Refreshed" });
+                  toast("Stats Refreshed");
                 }}
                 variant="outline"
                 disabled={statsLoading}

@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Home, Search, Filter, Edit, Trash2, Eye, Plus, Pin, Globe, ExternalLink, CalendarIcon, Clock, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -41,7 +41,7 @@ import { format } from "date-fns";
 
 const Articles = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -74,11 +74,7 @@ const Articles = () => {
       .or("role.eq.admin,role.eq.editor");
 
     if (!data || data.length === 0) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
+      toast.error("Access Denied", { description: "You don't have permission to access this page." });
       navigate("/");
       return;
     }
@@ -206,18 +202,11 @@ const Articles = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Article updated",
-        description: "The article has been successfully updated.",
-      });
+      toast("Article updated", { description: "The article has been successfully updated." });
 
       refetch();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update article",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to update article" });
     }
   };
 
@@ -232,19 +221,12 @@ const Articles = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Article deleted",
-        description: "The article has been successfully deleted.",
-      });
+      toast("Article deleted", { description: "The article has been successfully deleted." });
 
       setDeleteArticle(null);
       refetch();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete article",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to delete article" });
     }
   };
 
@@ -346,18 +328,11 @@ const Articles = () => {
                   
                   if (error) throw error;
                   
-                  toast({
-                    title: "All Articles Deleted",
-                    description: data.message || "Successfully deleted all articles.",
-                  });
+                  toast("All Articles Deleted", { description: data.message || "Successfully deleted all articles." });
                   
                   refetch();
                 } catch (error: any) {
-                  toast({
-                    title: "Delete Failed",
-                    description: error.message,
-                    variant: "destructive",
-                  });
+                  toast.error("Delete Failed", { description: error.message });
                 }
               }}
             >

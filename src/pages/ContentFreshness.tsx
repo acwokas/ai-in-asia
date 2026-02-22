@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertTriangle, Clock, ExternalLink, RefreshCw, TrendingUp, Mail, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 type FreshnessLevel = "fresh" | "needs-review" | "stale" | "critical";
 
@@ -33,7 +33,7 @@ interface ArticleWithFreshness {
 
 const ContentFreshness = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState<"all" | FreshnessLevel>("all");
   const [isSendingAlert, setIsSendingAlert] = useState(false);
@@ -153,10 +153,7 @@ const ContentFreshness = () => {
   const handleSendAlertNow = async () => {
     setIsSendingAlert(true);
     try {
-      toast({
-        title: "Sending Alert",
-        description: "Checking content freshness and sending alerts to admins...",
-      });
+      toast("Sending Alert", { description: "Checking content freshness and sending alerts to admins..." });
 
       const { data, error } = await supabase.functions.invoke('check-content-freshness', {
         body: { time: new Date().toISOString() }
@@ -164,17 +161,10 @@ const ContentFreshness = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Alert Sent",
-        description: `Successfully sent freshness alerts to admins. ${data?.stats?.total || 0} articles flagged.`,
-      });
+      toast("Alert Sent", { description: `Successfully sent freshness alerts to admins. ${data?.stats?.total || 0} articles flagged.` });
     } catch (error: any) {
       console.error('Error sending alert:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send freshness alert",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message || "Failed to send freshness alert" });
     } finally {
       setIsSendingAlert(false);
     }
