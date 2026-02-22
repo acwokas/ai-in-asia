@@ -14,7 +14,7 @@ import { ContentAdminControls } from "@/components/ContentAdminControls";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import { Helmet } from "react-helmet-async";
+
 
 const GuideDetail = () => {
   const { slug } = useParams();
@@ -187,12 +187,8 @@ const GuideDetail = () => {
         ogImage={g.featured_image_url || "https://aiinasia.com/icons/aiinasia-512.png?v=3"}
         ogImageAlt={g.featured_image_alt || g.title}
         noIndex={isPreview}
+        schemaJson={[articleSchema, ...(faqSchema ? [faqSchema] : []), ...(howToSchema ? [howToSchema] : [])]}
       />
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
-        {faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
-        {howToSchema && <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>}
-      </Helmet>
 
       <Header />
 

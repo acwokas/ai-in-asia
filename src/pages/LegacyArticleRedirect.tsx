@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/Header";
+import SEOHead from "@/components/SEOHead";
 
 /**
  * Handles legacy WordPress URL patterns that don't include category prefix.
@@ -38,6 +39,7 @@ const LegacyArticleRedirect = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
+        <SEOHead title="Redirecting..." description="Redirecting to the correct article URL." noIndex={true} />
         <Header />
         <div className="container mx-auto px-4 py-8">
           <Skeleton className="h-8 w-2/3 mb-4" />

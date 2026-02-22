@@ -4,6 +4,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import Header from "@/components/Header";
+import SEOHead from "@/components/SEOHead";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Loader2 } from "lucide-react";
 
@@ -34,6 +35,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Admin" description="AI in ASIA admin dashboard." noIndex={true} />
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
