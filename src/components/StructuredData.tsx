@@ -8,6 +8,7 @@ interface ArticleStructuredDataProps {
   dateModified?: string;
   authorName: string;
   categoryName?: string;
+  categorySlug?: string;
 }
 
 interface BreadcrumbItem {
@@ -23,10 +24,11 @@ export const ArticleStructuredData = ({
   dateModified,
   authorName,
   categoryName,
+  categorySlug,
 }: ArticleStructuredDataProps) => {
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": categorySlug === "news" ? "NewsArticle" : "Article",
     headline: title,
     description: description,
     image: imageUrl || "https://aiinasia.com/default-og-image.jpg",
@@ -47,6 +49,28 @@ export const ArticleStructuredData = ({
     ...(categoryName && {
       articleSection: categoryName,
     }),
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
+    </Helmet>
+  );
+};
+
+export const WebSiteStructuredData = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "AI in Asia",
+    url: "https://aiinasia.com",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://aiinasia.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (

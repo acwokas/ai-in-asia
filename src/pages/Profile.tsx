@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Bookmark } from 'lucide-react';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { compressImage } from '@/lib/imageCompression';
+import SEOHead from '@/components/SEOHead';
 import { toast } from 'sonner';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 
@@ -265,6 +266,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Your Profile" description="Manage your AI in ASIA profile." noIndex={true} />
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <ProfileHeader

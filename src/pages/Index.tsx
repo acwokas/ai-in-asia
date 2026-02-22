@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { OrganizationStructuredData } from "@/components/StructuredData";
+import { OrganizationStructuredData, WebSiteStructuredData } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -288,6 +288,7 @@ const Index = () => {
       </SEOHead>
       
       <OrganizationStructuredData />
+      <WebSiteStructuredData />
       
       <Header />
       <Suspense fallback={null}>

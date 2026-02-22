@@ -28,6 +28,29 @@ interface SEOHeadProps {
   children?: React.ReactNode;
 }
 
+const normalizeCanonical = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    // Force https and canonical domain
+    parsed.protocol = "https:";
+    parsed.hostname = "aiinasia.com";
+    // Remove www
+    if (parsed.hostname.startsWith("www.")) {
+      parsed.hostname = parsed.hostname.replace("www.", "");
+    }
+    // Remove query params
+    parsed.search = "";
+    // Remove trailing slash (but keep root "/")
+    let path = parsed.pathname;
+    if (path.length > 1 && path.endsWith("/")) {
+      path = path.replace(/\/+$/, "");
+    }
+    return `${parsed.protocol}//${parsed.hostname}${path}`;
+  } catch {
+    return url;
+  }
+};
+
 export const SEOHead = ({
   title,
   description,
@@ -46,6 +69,7 @@ export const SEOHead = ({
   const resolvedImage = ogImage || DEFAULT_OG_IMAGE;
   const resolvedImageAlt = ogImageAlt || title;
   const twitterCard = ogImage ? "summary_large_image" : "summary";
+  const normalizedCanonical = canonical ? normalizeCanonical(canonical) : undefined;
 
   return (
     <Helmet>
@@ -58,17 +82,17 @@ export const SEOHead = ({
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       )}
 
-      {canonical && <link rel="canonical" href={canonical} />}
+      {normalizedCanonical && <link rel="canonical" href={normalizedCanonical} />}
 
       {/* Open Graph */}
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
-      {canonical && <meta property="og:url" content={canonical} />}
+      {normalizedCanonical && <meta property="og:url" content={normalizedCanonical} />}
       <meta property="og:image" content={resolvedImage} />
-      {ogImageWidth && <meta property="og:image:width" content={ogImageWidth} />}
-      {ogImageHeight && <meta property="og:image:height" content={ogImageHeight} />}
+      <meta property="og:image:width" content={ogImageWidth || "1200"} />
+      <meta property="og:image:height" content={ogImageHeight || "630"} />
       <meta property="og:image:alt" content={resolvedImageAlt} />
       <meta property="og:locale" content="en_US" />
 
