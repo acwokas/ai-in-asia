@@ -85,11 +85,8 @@ const Index = () => {
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["homepage-articles"],
-    staleTime: 10 * 1000,
-    refetchInterval: 60 * 1000,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
-    refetchOnMount: "always",
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data: articles, error } = await supabase
         .from("articles")
@@ -165,7 +162,7 @@ const Index = () => {
   const { data: editorsPicks } = useQuery({
     queryKey: ["editors-picks-combined", homepageData?.featured?.id],
     enabled: enableSecondaryQueries,
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("editors_picks")
