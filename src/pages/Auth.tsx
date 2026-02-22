@@ -202,19 +202,8 @@ const Auth = () => {
   // Loading skeleton while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-8">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center">
-            <Skeleton className="h-16 w-16 mx-auto rounded-full" />
-            <Skeleton className="h-4 w-48 mx-auto mt-4" />
-          </div>
-          <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
