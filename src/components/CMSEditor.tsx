@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,11 @@ import {
 } from "@/components/editor";
 import { useCMSEditorState } from "@/hooks/useCMSEditorState";
 import { useCMSEditorActions } from "@/hooks/useCMSEditorActions";
+import EditorPreviewTab from "@/components/editor/EditorPreviewTab";
+import EditorWordCount from "@/components/editor/EditorWordCount";
+import KeyboardShortcutsDialog from "@/components/editor/KeyboardShortcutsDialog";
+import { useEditorAutoSave } from "@/hooks/useEditorAutoSave";
+import { useEditorLocalBackup } from "@/hooks/useEditorLocalBackup";
 
 interface CMSEditorProps {
   initialData?: any;
@@ -33,7 +39,7 @@ interface CMSEditorProps {
 }
 
 const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
-  
+  const [activeTab, setActiveTab] = useState("content");
   const state = useCMSEditorState({ initialData });
 
   // Fetch authors
@@ -102,6 +108,24 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
   const actions = useCMSEditorActions({ state, initialData, authors });
 
+  // Auto-save for drafts
+  const { autoSaveLabel, markDirty } = useEditorAutoSave({
+    status: state.status,
+    buildSaveData: actions.buildSaveData,
+    onSave,
+    articleId: initialData?.id,
+  });
+
+  // localStorage backup & restore
+  useEditorLocalBackup({
+    articleId: initialData?.id,
+    buildSaveData: actions.buildSaveData,
+    initialData,
+    onRestore: (data) => {
+      if (onSave) onSave(data);
+    },
+  });
+
   const handleSave = () => {
     const data = actions.buildSaveData();
     onSave?.(data);
@@ -151,12 +175,38 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       return a.name.localeCompare(b.name);
     });
 
+  // Track dirty state
+  const handleContentChange = (val: string) => {
+    state.setContent(val);
+    markDirty();
+  };
+  const handleTitleChangeWrapped = (val: string) => {
+    actions.handleTitleChange(val);
+    markDirty();
+  };
+  const handleExcerptChange = (val: string) => {
+    state.setExcerpt(val);
+    markDirty();
+  };
+
+  // Find author name for preview
+  const selectedAuthor = authors?.find(a => a.id === state.authorId);
+
+  // Calculate tab count for grid
+  const tabCount = 4 + (state.articleType === 'policy_article' ? 1 : 0) + (state.articleType === 'top_lists' ? 1 : 0);
+
   return (
     <div className="max-w-6xl mx-auto">
-      <Tabs defaultValue="content" className="space-y-6">
-        <TabsList className={cn("grid w-full", 
-          state.articleType === 'policy_article' || state.articleType === 'top_lists' ? "grid-cols-4" : "grid-cols-3"
-        )}>
+      {/* Auto-save indicator + shortcuts help */}
+      <div className="flex items-center justify-end gap-2 mb-2 min-h-[32px]">
+        {autoSaveLabel && (
+          <span className="text-xs text-muted-foreground">{autoSaveLabel}</span>
+        )}
+        <KeyboardShortcutsDialog />
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className={cn("grid w-full", `grid-cols-${tabCount}`)}>
           <TabsTrigger value="content">Content</TabsTrigger>
           {state.articleType === 'policy_article' && (
             <TabsTrigger value="policy">Policy Data</TabsTrigger>
@@ -164,6 +214,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
           {state.articleType === 'top_lists' && (
             <TabsTrigger value="toplists">Top Lists</TabsTrigger>
           )}
+          <TabsTrigger value="preview">Preview</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -204,7 +255,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <Input
                   id="title"
                   value={state.title}
-                  onChange={(e) => actions.handleTitleChange(e.target.value)}
+                  onChange={(e) => handleTitleChangeWrapped(e.target.value)}
                   placeholder="Enter article title..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -278,7 +329,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   ref={state.excerptRef}
                   id="excerpt"
                   value={state.excerpt}
-                  onChange={(e) => state.setExcerpt(e.target.value)}
+                  onChange={(e) => handleExcerptChange(e.target.value)}
                   onSelect={(e) => actions.handleTextSelection(e.currentTarget)}
                   placeholder="Brief summary of the article..."
                   rows={3}
@@ -381,11 +432,13 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 </div>
                 <RichTextEditor
                   value={state.content}
-                  onChange={state.setContent}
+                  onChange={handleContentChange}
                   onSelect={state.setSelectedText}
                   placeholder="Start writing your article..."
                   keyphraseSynonyms={state.keyphraseSynonyms}
                 />
+                {/* Word count footer */}
+                <EditorWordCount content={state.content} title={state.title} />
               </div>
 
               {/* Image Prompts */}
@@ -466,6 +519,11 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               onShowPromptToolsChange={state.setTopListShowPromptTools}
             />
           )}
+        </TabsContent>
+
+        {/* Preview Tab */}
+        <TabsContent value="preview" className="space-y-6">
+          <EditorPreviewTab state={state} authorName={selectedAuthor?.name} />
         </TabsContent>
 
         {/* SEO Tab */}
@@ -574,7 +632,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
       {/* Save Button */}
       <div className="flex justify-end mt-8 pb-8">
-        <Button onClick={handleSave} size="lg">
+        <Button onClick={handleSave} size="lg" data-editor-save>
           <Save className="h-4 w-4 mr-2" />
           Save Article
         </Button>
