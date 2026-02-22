@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { z } from "zod";
@@ -40,7 +40,7 @@ const contactSchema = z.object({
 });
 
 const Contact = () => {
-  const { toast } = useToast();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
 
@@ -86,8 +86,7 @@ const Contact = () => {
         }
       }
 
-      toast({
-        title: "Message sent",
+      toast("Message sent", {
         description: subscribeNewsletter 
           ? "We'll get back to you within 48 hours. You've also been subscribed to our newsletter!"
           : "We'll get back to you within 48 hours.",
@@ -97,18 +96,10 @@ const Contact = () => {
       setSubscribeNewsletter(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
+        toast.error("Validation Error", { description: error.errors[0].message });
       } else {
         console.error('Error sending message:', error);
-        toast({
-          title: "Error",
-          description: "Failed to send message. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Error", { description: "Failed to send message. Please try again." });
       }
     } finally {
       setIsSubmitting(false);

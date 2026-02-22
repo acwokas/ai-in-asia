@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface UseArticleActionsProps {
@@ -16,7 +16,7 @@ export const useArticleActions = ({
   cleanSlug,
   isAdmin 
 }: UseArticleActionsProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -42,10 +42,7 @@ export const useArticleActions = ({
 
   const handleBookmark = async () => {
     if (!userId) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to bookmark articles",
-      });
+      toast("Sign in required", { description: "Please sign in to bookmark articles" });
       return;
     }
 
@@ -59,14 +56,14 @@ export const useArticleActions = ({
         .eq('article_id', articleId);
       
       setIsBookmarked(false);
-      toast({ title: "Bookmark removed" });
+      toast("Bookmark removed");
     } else {
       await supabase
         .from('bookmarks')
         .insert({ user_id: userId, article_id: articleId });
       
       setIsBookmarked(true);
-      toast({ title: "Bookmarked!" });
+      toast("Bookmarked!");
     }
   };
 
@@ -85,19 +82,12 @@ export const useArticleActions = ({
 
       if (error) throw error;
 
-      toast({
-        title: "Article published",
-        description: "The article is now live",
-      });
+      toast("Article published", { description: "The article is now live" });
 
       queryClient.invalidateQueries({ queryKey: ["article", cleanSlug] });
     } catch (error) {
       console.error("Error publishing article:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish article",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to publish article" });
     } finally {
       setIsPublishing(false);
     }
@@ -164,7 +154,6 @@ export const createShareHandlers = (
   articleExcerpt: string | null,
   canonicalUrl: string | null,
   userId: string | undefined,
-  toast: ReturnType<typeof useToast>['toast']
 ) => {
   const getPublicArticleUrl = () => {
     const rawCanonical = (canonicalUrl || "").trim();
@@ -227,17 +216,10 @@ export const createShareHandlers = (
       }
 
       await navigator.clipboard.writeText(articleUrl);
-      toast({
-        title: "Link copied!",
-        description: "Article link copied to clipboard",
-      });
+      toast("Link copied!", { description: "Article link copied to clipboard" });
     } catch (err) {
       console.error("Error sharing:", err);
-      toast({
-        title: "Unable to share",
-        description: "Please try copying the link manually",
-        variant: "destructive",
-      });
+      toast.error("Unable to share", { description: "Please try copying the link manually" });
     }
   };
 
@@ -272,15 +254,9 @@ export const createShareHandlers = (
   const handleInstagramShare = async () => {
     try {
       await navigator.clipboard.writeText(getPublicArticleUrl());
-      toast({
-        title: "Link copied!",
-        description: "Share this link in your Instagram story or post",
-      });
+      toast("Link copied!", { description: "Share this link in your Instagram story or post" });
     } catch {
-      toast({
-        title: "Share on Instagram",
-        description: "Copy the article link and share it on Instagram",
-      });
+      toast("Share on Instagram", { description: "Copy the article link and share it on Instagram" });
     }
   };
 

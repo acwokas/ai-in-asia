@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { User, Share2, Bookmark, MessageCircle, Clock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { useState, useEffect } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -52,7 +52,7 @@ import { createShareHandlers } from "@/hooks/useArticleActions";
 
 const Article = () => {
   const { category, slug } = useParams();
-  const { toast } = useToast();
+  
   const { user } = useAuth();
   const { isAdmin, isLoading: isLoadingAdmin } = useAdminRole();
   const queryClient = useQueryClient();
@@ -178,9 +178,9 @@ const Article = () => {
         
         try {
           await navigator.clipboard.writeText(promptText);
-          toast({ title: "Copied!", description: "Prompt copied to clipboard" });
+          toast("Copied!", { description: "Prompt copied to clipboard" });
         } catch (err) {
-          toast({ title: "Copy failed", description: "Please try selecting and copying manually", variant: "destructive" });
+          toast.error("Copy failed", { description: "Please try selecting and copying manually" });
         }
       }
     };
@@ -245,13 +245,13 @@ const Article = () => {
         if (milestones.includes(articleCount) && (now - lastToastTime > 60000)) {
           sessionStorage.setItem('last-points-toast', String(now));
           setTimeout(() => {
-            const messages = {
+            const messages: Record<number, { title: string; description: string }> = {
               1: { title: "✨ +10 points", description: "Keep reading to level up!" },
               5: { title: "🔥 5 articles today!", description: "You're on a roll - 50 points earned" },
               10: { title: "🏆 10 articles!", description: "You're a power reader - 100 points earned" },
             };
-            const msg = messages[articleCount as keyof typeof messages];
-            if (msg) toast({ ...msg, duration: 3000 });
+            const msg = messages[articleCount];
+            if (msg) toast(msg.title, { description: msg.description, duration: 3000 });
           }, 2000);
         }
       }
@@ -270,7 +270,7 @@ const Article = () => {
 
   const handleBookmark = async () => {
     if (!user) {
-      toast({ title: "Sign in required", description: "Please sign in to bookmark articles" });
+      toast("Sign in required", { description: "Please sign in to bookmark articles" });
       return;
     }
     if (!article?.id) return;
@@ -278,11 +278,11 @@ const Article = () => {
     if (isBookmarked) {
       await supabase.from('bookmarks').delete().eq('user_id', user.id).eq('article_id', article.id);
       setIsBookmarked(false);
-      toast({ title: "Bookmark removed" });
+      toast("Bookmark removed");
     } else {
       await supabase.from('bookmarks').insert({ user_id: user.id, article_id: article.id });
       setIsBookmarked(true);
-      toast({ title: "Bookmarked!" });
+      toast("Bookmarked!");
     }
   };
 
@@ -301,7 +301,6 @@ const Article = () => {
     article?.excerpt || null,
     article?.canonical_url || null,
     user?.id,
-    toast
   );
 
   // Loading state

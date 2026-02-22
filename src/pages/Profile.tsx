@@ -15,7 +15,7 @@ import { Loader2, TrendingUp, BookMarked, Award, Zap, User as UserIcon, Upload, 
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { compressImage } from '@/lib/imageCompression';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const INTEREST_OPTIONS = [
   "Artificial Intelligence",
@@ -62,7 +62,7 @@ interface Profile {
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const { isAdmin } = useAdminRole();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -167,11 +167,7 @@ const Profile = () => {
 
       if (profileError) {
         console.error('Profile completion error:', profileError);
-        toast({
-          title: "Warning",
-          description: "Failed to complete profile setup. You can update it manually.",
-          variant: "destructive",
-        });
+        toast.error("Warning", { description: "Failed to complete profile setup. You can update it manually." });
         return;
       }
 
@@ -235,10 +231,7 @@ const Profile = () => {
         _user_id: user.id
       });
 
-      toast({
-        title: "Profile Complete! 🎉",
-        description: `You earned ${points} points!`,
-      });
+      toast("Profile Complete! 🎉", { description: `You earned ${points} points!` });
 
       // Refresh data
       fetchUserData();
@@ -343,57 +336,39 @@ const Profile = () => {
       case 'AI Pioneer':
       case 'News Hound':
       case 'Tool Explorer':
-        toast({
-          title: "Start Reading! 📚",
-          description: "Browse our latest AI articles on the homepage to earn this achievement",
-        });
+        toast("Start Reading! 📚", { description: "Browse our latest AI articles on the homepage to earn this achievement" });
         break;
       
       // Streak achievements
       case 'Week Warrior':
       case 'Month Master':
       case 'Early Adopter':
-        toast({
-          title: "Build Your Streak! 🔥",
-          description: "Read articles daily to maintain your reading streak and unlock this badge",
-        });
+        toast("Build Your Streak! 🔥", { description: "Read articles daily to maintain your reading streak and unlock this badge" });
         break;
       
       // Comment achievements
       case 'Conversationalist':
       case 'Comment Champion':
       case 'Conversation Master':
-        toast({
-          title: "Join the Discussion! 💬",
-          description: "Comment on articles to earn this achievement and engage with the community",
-        });
+        toast("Join the Discussion! 💬", { description: "Comment on articles to earn this achievement and engage with the community" });
         break;
       
       // Bookmark achievements
       case 'First Bookmark':
       case 'Bookmark Collector':
-        toast({
-          title: "Start Bookmarking! 🔖",
-          description: "Save articles you love to your bookmarks to earn this achievement",
-        });
+        toast("Start Bookmarking! 🔖", { description: "Save articles you love to your bookmarks to earn this achievement" });
         break;
       
       // Sharing achievements
       case 'Social Sharer':
       case 'Social Butterfly':
-        toast({
-          title: "Share the Knowledge! 📢",
-          description: "Share articles on social media to earn this achievement",
-        });
+        toast("Share the Knowledge! 📢", { description: "Share articles on social media to earn this achievement" });
         break;
       
       // Profile completion achievements
       case 'Digital Pioneer':
       case 'Profile Master':
-        toast({
-          title: "Complete Your Profile! ✨",
-          description: "Fill in all profile information in Account Settings to earn this badge",
-        });
+        toast("Complete Your Profile! ✨", { description: "Fill in all profile information in Account Settings to earn this badge" });
         break;
       
       // Level achievements
@@ -401,33 +376,21 @@ const Profile = () => {
       case 'Enthusiast':
       case 'Expert':
       case 'Thought Leader':
-        toast({
-          title: "Keep Earning Points! ⚡",
-          description: "Read articles and engage with content to level up and unlock this badge",
-        });
+        toast("Keep Earning Points! ⚡", { description: "Read articles and engage with content to level up and unlock this badge" });
         break;
       
       // Newsletter achievement
       case 'Newsletter Insider':
-        toast({
-          title: "Subscribe to Newsletter! 📧",
-          description: "Enable newsletter subscription in Account Settings to earn this badge",
-        });
+        toast("Subscribe to Newsletter! 📧", { description: "Enable newsletter subscription in Account Settings to earn this badge" });
         break;
       
       // Regional achievements
       case 'Asia Expert':
-        toast({
-          title: "Explore All Regions! 🌏",
-          description: "Read articles from different Asian countries to earn this achievement",
-        });
+        toast("Explore All Regions! 🌏", { description: "Read articles from different Asian countries to earn this achievement" });
         break;
       
       default:
-        toast({
-          title: "Keep Exploring! 🚀",
-          description: "Continue using the platform to unlock this achievement",
-        });
+        toast("Keep Exploring! 🚀", { description: "Continue using the platform to unlock this achievement" });
     }
   };
 
@@ -479,17 +442,10 @@ const Profile = () => {
       // Update local state
       setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
 
-      toast({
-        title: "Success",
-        description: "Avatar updated successfully",
-      });
+      toast("Success", { description: "Avatar updated successfully" });
     } catch (error) {
       console.error('Avatar upload error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload avatar",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to upload avatar" });
     } finally {
       setUploading(false);
     }
@@ -537,17 +493,10 @@ const Profile = () => {
         newsletter_subscribed: editNewsletter
       } : null);
 
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      });
+      toast("Success", { description: "Profile updated successfully" });
     } catch (error) {
       console.error('Save error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to update profile" });
     } finally {
       setSaving(false);
     }

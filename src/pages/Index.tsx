@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp, Users, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,7 +72,7 @@ const Index = () => {
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
   const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(checkSubscribed());
   const [enableSecondaryQueries, setEnableSecondaryQueries] = useState(false);
-  const { toast } = useToast();
+  
   const { user } = useAuth();
   
   useAutoRefresh();
@@ -222,7 +222,7 @@ const Index = () => {
     try {
       const email = (rawData.email || '').trim();
       if (!isValidEmail(email)) {
-        toast({ title: "Invalid email address", variant: "destructive" });
+        toast.error("Invalid email address");
         setIsNewsletterSubmitting(false);
         return;
       }
@@ -233,7 +233,7 @@ const Index = () => {
         .maybeSingle();
 
       if (existing) {
-        toast({ title: "Already subscribed", description: "This email is already subscribed to our newsletter." });
+        toast("Already subscribed", { description: "This email is already subscribed to our newsletter." });
         setIsNewsletterSubmitting(false);
         return;
       }
@@ -246,15 +246,13 @@ const Index = () => {
       setIsNewsletterSubscribed(true);
       markNewsletterSubscribed();
       await awardNewsletterPoints(user?.id ?? null, supabase);
-      toast({
-        title: "Successfully subscribed!",
+      toast("Successfully subscribed!", {
         description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Welcome aboard! Check your inbox for our latest insights.",
       });
       (e.target as HTMLFormElement).reset();
       setNewsletterEmail("");
     } catch (error) {
-      console.error('Error subscribing:', error);
-      toast({ title: "Error", description: "Failed to subscribe. Please try again.", variant: "destructive" });
+      toast.error("Error", { description: "Failed to subscribe. Please try again." });
     } finally {
       setIsNewsletterSubmitting(false);
     }

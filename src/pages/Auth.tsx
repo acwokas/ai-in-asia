@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Upload, ChevronRight, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,7 +52,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   // Calculate potential points
   const calculateSignupPoints = () => {
@@ -97,11 +97,7 @@ const Auth = () => {
       setAvatarFile(compressed);
       setAvatarPreview(URL.createObjectURL(compressed));
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process image",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to process image" });
     }
   };
 
@@ -122,11 +118,7 @@ const Auth = () => {
 
       if (error) {
         console.error('Sign up error:', error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error("Error", { description: error.message });
         setLoading(false);
         return;
       }
@@ -158,20 +150,13 @@ const Auth = () => {
 
         const potentialPoints = calculateSignupPoints();
         
-        toast({
-          title: "Welcome! 🎉",
-          description: `Account created! You'll earn ${potentialPoints} points once you complete your profile.`,
-        });
+        toast("Welcome! 🎉", { description: `Account created! You'll earn ${potentialPoints} points once you complete your profile.` });
 
         // The AuthContext will redirect to /profile once auth is established
       }
     } catch (error) {
       console.error('Sign up process error:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Something went wrong during sign up",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error instanceof Error ? error.message : "Something went wrong during sign up" });
     }
 
     setLoading(false);
@@ -184,11 +169,7 @@ const Auth = () => {
     const { error } = await signIn(signInEmail, signInPassword);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     } else {
       // Handle remember me
       if (rememberMe) {
@@ -197,10 +178,7 @@ const Auth = () => {
         localStorage.removeItem('rememberedEmail');
       }
 
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in.",
-      });
+      toast("Welcome back!", { description: "Successfully signed in." });
     }
 
     setLoading(false);
