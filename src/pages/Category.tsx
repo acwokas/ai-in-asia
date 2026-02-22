@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeader } from "@/components/category/SectionHeader";
 import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/categoryTokens";
 import { LEARNING_PATHS } from "@/constants/learningPaths";
+import { iconMap } from "@/lib/iconMap";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import { useRevealOnScroll } from "@/lib/scrollAnimation";
 
@@ -350,7 +351,7 @@ const Category = () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 28, flexShrink: 0 }}>🌐</span>
+                {(() => { const GlobeIcon = iconMap["globe"]; return GlobeIcon ? <GlobeIcon style={{ width: 28, height: 28, color: "#eab308", flexShrink: 0 }} /> : null; })()}
                 <div>
                   <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff" }}>AI Policy Atlas</div>
                   <div style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", lineHeight: 1.4 }}>

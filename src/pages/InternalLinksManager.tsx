@@ -144,7 +144,7 @@ const InternalLinksManager = () => {
 
       if (error) throw error;
 
-      toast.success("✅ Operation Queued", { description: `${articleIds.length} articles queued for processing. You'll be notified when complete.` });
+      toast.success("Operation Queued", { description: `${articleIds.length} articles queued for processing. You'll be notified when complete.` });
 
       setSelectedArticles(new Set());
       setActiveTab("queue");

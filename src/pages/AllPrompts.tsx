@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { iconMap } from "@/lib/iconMap";
 import { Search, Copy, Check, ChevronRight, ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -47,11 +48,11 @@ const sortOptions = [
 ];
 
 const categoryIcons: Record<string, string> = {
-  "Content & Writing": "✍️",
-  "SEO & Marketing": "📈",
-  "Research & Analysis": "🔬",
-  "Strategy & Planning": "🎯",
-  "Productivity": "⚡",
+  "Content & Writing": "pencil",
+  "SEO & Marketing": "trending-up",
+  "Research & Analysis": "search",
+  "Strategy & Planning": "target",
+  "Productivity": "zap",
 };
 
 const categoryAccentColors: Record<string, string> = {
@@ -518,7 +519,7 @@ const AllPrompts = () => {
                   {/* Category header */}
                   <div className="flex items-center gap-3 border-b border-border pb-3 mb-6">
                     <span className="text-xl" role="img" aria-label={group.category}>
-                      {categoryIcons[group.category] || "📁"}
+                      {(() => { const Icon = iconMap[categoryIcons[group.category] || "file-text"]; return Icon ? <Icon className="h-5 w-5" /> : null; })()}
                     </span>
                     <h2 className="text-lg font-semibold">{group.category}</h2>
                     <span className="text-sm text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">

@@ -268,7 +268,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
                   ))}
                   {item.ai_models?.map(model => (
                     <Badge key={model} variant="default" className="capitalize">
-                      {model === 'all' ? '✨ All Models' : model}
+                      {model === 'all' ? 'All Models' : model}
                     </Badge>
                   ))}
                   {item.tags?.map(tag => (
