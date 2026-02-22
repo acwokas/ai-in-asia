@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Comment, organizeThreadedComments } from "@/components/comments/CommentThread";
 
@@ -11,7 +11,7 @@ export const useComments = (articleId: string) => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const { isAdmin, isLoading: isAdminLoading } = useAdminRole();
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     if (!isAdminLoading) {
@@ -125,10 +125,8 @@ export const useComments = (articleId: string) => {
     } catch (error) {
       console.error("Error fetching comments:", error);
       if (isAdmin) {
-        toast({
-          title: "Failed to load comments",
+        toast.error("Failed to load comments", {
           description: error instanceof Error ? error.message : "Unknown error",
-          variant: "destructive",
         });
       }
     } finally {
@@ -143,14 +141,13 @@ export const useComments = (articleId: string) => {
         body: { articleIds: [articleId] },
       });
       if (error) throw error;
-      toast({
-        title: "Comments generated",
+      toast.success("Comments generated", {
         description: `Generated ${data.commentsGenerated} comments. They are unpublished by default.`,
       });
       await new Promise(resolve => setTimeout(resolve, 500));
       await fetchComments();
     } catch (error) {
-      toast({ title: "Failed to generate comments", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to generate comments", { description: "Please try again later." });
     } finally {
       setGenerating(false);
     }
@@ -164,10 +161,10 @@ export const useComments = (articleId: string) => {
         body: { articleIds: [articleId] },
       });
       if (error) throw error;
-      toast({ title: "Comments regenerated", description: `Generated ${data.commentsGenerated} new comments.` });
+      toast.success("Comments regenerated", { description: `Generated ${data.commentsGenerated} new comments.` });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to regenerate comments", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to regenerate comments", { description: "Please try again later." });
     } finally {
       setGenerating(false);
     }
@@ -177,10 +174,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("ai_generated_comments").delete().eq("article_id", articleId);
       if (error) throw error;
-      toast({ title: "All AI comments deleted", description: "AI comments have been removed from this article." });
+      toast.success("All AI comments deleted", { description: "AI comments have been removed from this article." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to delete comments", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to delete comments", { description: "Please try again later." });
     }
   };
 
@@ -188,13 +185,12 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("ai_generated_comments").update({ published: publish }).eq("id", commentId);
       if (error) throw error;
-      toast({
-        title: publish ? "Comment published" : "Comment unpublished",
+      toast.success(publish ? "Comment published" : "Comment unpublished", {
         description: publish ? "The comment is now visible to everyone." : "The comment is now hidden.",
       });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to update comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to update comment", { description: "Please try again later." });
     }
   };
 
@@ -210,15 +206,14 @@ export const useComments = (articleId: string) => {
       if (error) throw error;
 
       const futureCount = aiComments.filter(c => !c.published && new Date(c.created_at) > new Date()).length;
-      toast({
-        title: "Comments published",
+      toast.success("Comments published", {
         description: futureCount > 0 
           ? `Published current comments. ${futureCount} future-dated comment(s) will auto-publish when their date arrives.`
           : "All AI comments are now visible to everyone.",
       });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to publish comments", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to publish comments", { description: "Please try again later." });
     }
   };
 
@@ -226,10 +221,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("ai_generated_comments").update({ published: false }).eq("article_id", articleId);
       if (error) throw error;
-      toast({ title: "All comments unpublished", description: "All AI comments are now hidden." });
+      toast.success("All comments unpublished", { description: "All AI comments are now hidden." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to unpublish comments", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to unpublish comments", { description: "Please try again later." });
     }
   };
 
@@ -237,10 +232,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("ai_generated_comments").delete().eq("id", commentId);
       if (error) throw error;
-      toast({ title: "Comment deleted", description: "The comment has been removed." });
+      toast.success("Comment deleted", { description: "The comment has been removed." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to delete comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to delete comment", { description: "Please try again later." });
     }
   };
 
@@ -248,10 +243,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("ai_generated_comments").update({ content: newContent }).eq("id", commentId);
       if (error) throw error;
-      toast({ title: "Comment updated", description: "The comment has been saved." });
+      toast.success("Comment updated", { description: "The comment has been saved." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to update comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to update comment", { description: "Please try again later." });
     }
   };
 
@@ -269,15 +264,14 @@ export const useComments = (articleId: string) => {
 
       const { error } = await supabase.from("ai_generated_comments").update(updateData).eq("id", commentId);
       if (error) throw error;
-      toast({
-        title: shouldPublish ? "Date updated & published" : "Date updated",
+      toast.success(shouldPublish ? "Date updated & published" : "Date updated", {
         description: shouldPublish
           ? "The comment date is today or earlier, so it has been published."
           : "The comment date has been updated. It will auto-publish when the date arrives.",
       });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to update date", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to update date", { description: "Please try again later." });
     }
   };
 
@@ -285,10 +279,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("comments").update({ approved: true }).eq("id", commentId);
       if (error) throw error;
-      toast({ title: "Comment approved", description: "The comment is now visible to everyone." });
+      toast.success("Comment approved", { description: "The comment is now visible to everyone." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to approve comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to approve comment", { description: "Please try again later." });
     }
   };
 
@@ -296,10 +290,10 @@ export const useComments = (articleId: string) => {
     try {
       const { error } = await supabase.from("comments").delete().eq("id", commentId);
       if (error) throw error;
-      toast({ title: "Comment rejected", description: "The comment has been deleted." });
+      toast.success("Comment rejected", { description: "The comment has been deleted." });
       fetchComments();
     } catch (error) {
-      toast({ title: "Failed to reject comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to reject comment", { description: "Please try again later." });
     }
   };
 
@@ -324,15 +318,15 @@ export const useComments = (articleId: string) => {
         console.error("Failed to send notification email:", emailError);
       }
 
-      toast({ title: "Comment submitted", description: "Your comment is awaiting moderation and will appear shortly." });
+      toast.success("Comment submitted", { description: "Your comment is awaiting moderation and will appear shortly." });
       
       if (userId) {
-        toast({ title: "✨ +15 points for commenting!", duration: 3000 });
+        toast("✨ +15 points for commenting!", { duration: 3000 });
       }
 
       return true;
     } catch (error) {
-      toast({ title: "Failed to submit comment", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to submit comment", { description: "Please try again later." });
       return false;
     }
   };
@@ -364,15 +358,14 @@ export const useComments = (articleId: string) => {
         if (error) throw error;
       }
 
-      toast({
-        title: "Reply added",
+      toast.success("Reply added", {
         description: parentComment.is_ai ? "Reply has been published." : "Reply is awaiting moderation.",
       });
       fetchComments();
       return true;
     } catch (error) {
       console.error("Error submitting reply:", error);
-      toast({ title: "Failed to submit reply", description: "Please try again later.", variant: "destructive" });
+      toast.error("Failed to submit reply", { description: "Please try again later." });
       return false;
     }
   };

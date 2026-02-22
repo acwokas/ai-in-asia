@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Link as LinkIcon, ExternalLink, CalendarPlus, Share2, Bookmark, BookmarkCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface EventCardEvent {
   id: string;
@@ -151,13 +151,13 @@ const EventCard = ({ event }: EventCardProps) => {
   const handleShare = async () => {
     const url = event.website_url || `https://aiinasia.com/events`;
     await navigator.clipboard.writeText(url);
-    toast({ title: "Link copied!", description: "Event link has been copied to your clipboard." });
+    toast.success("Link copied!", { description: "Event link has been copied to your clipboard." });
   };
 
   const handleSave = () => {
     const nowSaved = toggleSaved(event.id);
     setIsSaved(nowSaved);
-    toast({ title: nowSaved ? "Event saved" : "Event removed" });
+    toast(nowSaved ? "Event saved" : "Event removed");
   };
 
   return (

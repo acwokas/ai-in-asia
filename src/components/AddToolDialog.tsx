@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,7 +14,7 @@ interface AddToolDialogProps {
 }
 
 export const AddToolDialog = ({ open, onOpenChange }: AddToolDialogProps) => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
@@ -41,8 +41,7 @@ export const AddToolDialog = ({ open, onOpenChange }: AddToolDialogProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-tools-admin'] });
-      toast({
-        title: "Tool added",
+      toast.success("Tool added", {
         description: "The tool has been added successfully"
       });
       setFormData({
@@ -55,10 +54,8 @@ export const AddToolDialog = ({ open, onOpenChange }: AddToolDialogProps) => {
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message,
-        variant: "destructive"
       });
     }
   });

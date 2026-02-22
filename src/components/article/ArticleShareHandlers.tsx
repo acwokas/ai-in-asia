@@ -3,7 +3,7 @@
  * Extracted from Article.tsx for reuse and maintainability
  */
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UseArticleShareHandlersProps {
@@ -21,7 +21,7 @@ export const useArticleShareHandlers = ({
   canonicalUrl,
   user
 }: UseArticleShareHandlersProps) => {
-  const { toast } = useToast();
+  
 
   const getPublicArticleUrl = () => {
     const rawCanonical = (canonicalUrl || "").trim();
@@ -90,16 +90,13 @@ export const useArticleShareHandlers = ({
 
       // Fallback to clipboard
       await navigator.clipboard.writeText(articleUrl);
-      toast({
-        title: "Link copied!",
+      toast.success("Link copied!", {
         description: "Article link copied to clipboard",
       });
     } catch (err) {
       console.error("Error sharing:", err);
-      toast({
-        title: "Unable to share",
+      toast.error("Unable to share", {
         description: "Please try copying the link manually",
-        variant: "destructive",
       });
     }
   };
@@ -135,13 +132,11 @@ export const useArticleShareHandlers = ({
   const handleInstagramShare = async () => {
     try {
       await navigator.clipboard.writeText(getPublicArticleUrl());
-      toast({
-        title: "Link copied!",
+      toast.success("Link copied!", {
         description: "Share this link in your Instagram story or post",
       });
     } catch {
-      toast({
-        title: "Share on Instagram",
+      toast("Share on Instagram", {
         description: "Copy the article link and share it on Instagram",
       });
     }

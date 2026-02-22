@@ -1,7 +1,7 @@
 import { format, differenceInCalendarDays, isWithinInterval } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, ExternalLink, CalendarPlus, Users } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+
 
 export interface FeaturedEvent {
   id: string;

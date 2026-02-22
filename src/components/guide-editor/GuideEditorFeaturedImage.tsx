@@ -4,7 +4,7 @@ import { compressImage } from "@/lib/imageCompression";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Sparkles, Copy, Check, RefreshCw, Upload, Loader2, Image } from "lucide-react";
 
 interface StepItem { step_number: number; title: string; content: string }
@@ -27,7 +27,7 @@ const slugifyTitle = (title: string): string => {
 const GuideEditorFeaturedImage = ({
   imageUrl, imageAlt, title, pillar, topicTags, oneLineDescription, steps, onUpdateField,
 }: GuideEditorFeaturedImageProps) => {
-  const { toast } = useToast();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [midjourneyPrompts, setMidjourneyPrompts] = useState<string[]>([]);
   const [generatingPrompts, setGeneratingPrompts] = useState(false);
@@ -91,7 +91,7 @@ RULES:
 
   const generateMidjourneyPrompts = async (slotIndex?: number) => {
     if (!title.trim()) {
-      toast({ title: "Add a title first", description: "The title is needed to generate relevant prompts.", variant: "destructive" });
+      toast.error("Add a title first", { description: "The title is needed to generate relevant prompts." });
       return;
     }
     setGeneratingPrompts(true);
@@ -144,7 +144,7 @@ RULES:
       }
     } catch (err) {
       console.error(err);
-      toast({ title: "Failed to generate prompts", variant: "destructive" });
+      toast.error("Failed to generate prompts");
     } finally {
       setGeneratingPrompts(false);
     }
@@ -153,17 +153,17 @@ RULES:
   const copyPrompt = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
-    toast({ title: "Prompt copied!" });
+    toast.success("Prompt copied!");
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   const uploadFile = useCallback(async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" });
+      toast.error("File too large", { description: "Maximum file size is 5MB." });
       return;
     }
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast({ title: "Invalid file type", description: "Only JPG, PNG, and WebP are accepted.", variant: "destructive" });
+      toast.error("Invalid file type", { description: "Only JPG, PNG, and WebP are accepted." });
       return;
     }
 
@@ -194,10 +194,10 @@ RULES:
         onUpdateField("featured_image_alt", `${title} - AI in Asia guide`);
       }
 
-      toast({ title: "Image uploaded successfully" });
+      toast.success("Image uploaded successfully");
     } catch (err: any) {
       console.error(err);
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
     } finally {
       setTimeout(() => { setUploading(false); setUploadProgress(0); }, 500);
     }
@@ -226,9 +226,9 @@ RULES:
         onUpdateField("featured_image_alt", `${title} - AI in Asia guide`);
       }
       setUrlInput("");
-      toast({ title: "Image URL set" });
+      toast.success("Image URL set");
     } catch {
-      toast({ title: "Invalid URL", variant: "destructive" });
+      toast.error("Invalid URL");
     }
   };
 

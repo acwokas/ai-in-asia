@@ -2,7 +2,7 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import FollowButton from "@/components/FollowButton";
 
@@ -23,7 +23,7 @@ const ReturnTriggerBlock = ({
   isBookmarked = false,
   onBookmark,
 }: ReturnTriggerBlockProps) => {
-  const { toast } = useToast();
+  
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>('default');
 
   useEffect(() => {
@@ -43,10 +43,8 @@ const ReturnTriggerBlock = ({
     if (!('Notification' in window)) return;
 
     if (Notification.permission === 'denied') {
-      toast({
-        title: "Notifications blocked",
+      toast.error("Notifications blocked", {
         description: "Please enable notifications in your browser settings",
-        variant: "destructive",
       });
       return;
     }
@@ -60,16 +58,13 @@ const ReturnTriggerBlock = ({
           body: "You'll now receive updates when articles change",
           icon: '/favicon.png',
         });
-        toast({
-          title: "Notifications enabled",
+        toast.success("Notifications enabled", {
           description: "You'll be notified when articles are updated",
         });
       }
     } catch {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Could not request notification permission",
-        variant: "destructive",
       });
     }
   };

@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Plus, Trash2, Upload, Copy, FileJson, FileSpreadsheet, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 import {
   DndContext,
@@ -554,7 +554,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
 };
 
 export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, outro = '', onOutroChange, showPromptTools = true, onShowPromptToolsChange }: TopListsEditorProps) => {
-  const { toast } = useToast();
+  
   const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);

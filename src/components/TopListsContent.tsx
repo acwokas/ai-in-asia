@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Check, Share2, Search, ChevronDown, ChevronUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { TopListItem } from "./TopListsEditor";
@@ -19,7 +19,7 @@ interface TopListsContentProps {
 }
 
 export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopListsContentProps) => {
-  const { toast } = useToast();
+  
   const { user } = useAuth();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,16 +128,13 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
       await navigator.clipboard.writeText(prompt);
       setCopiedId(itemId);
       await trackCopy(itemId);
-      toast({
-        title: "Copied!",
+      toast.success("Copied!", {
         description: "Prompt copied to clipboard",
       });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to copy prompt",
-        variant: "destructive",
       });
     }
   };
@@ -149,15 +146,12 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
 
     try {
       await navigator.clipboard.writeText(allPrompts);
-      toast({
-        title: "All prompts copied!",
+      toast.success("All prompts copied!", {
         description: `${items.length} prompts copied to clipboard`,
       });
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to copy all prompts",
-        variant: "destructive",
       });
     }
   };
@@ -174,8 +168,7 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
         });
       } else {
         await navigator.clipboard.writeText(url);
-        toast({
-          title: "Link copied!",
+        toast.success("Link copied!", {
           description: "Shareable link copied to clipboard",
         });
       }

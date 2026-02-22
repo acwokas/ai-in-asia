@@ -13,7 +13,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { PolicyArticleEditor } from "@/components/PolicyArticleEditor";
 import { TopListsEditor } from "@/components/TopListsEditor";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { LinkValidator } from "@/components/LinkValidator";
 import { 
@@ -33,7 +33,7 @@ interface CMSEditorProps {
 }
 
 const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
-  const { toast } = useToast();
+  
   const state = useCMSEditorState({ initialData });
 
   // Fetch authors
@@ -565,8 +565,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               newContent = state.content.replace(new RegExp(escapedOriginal, 'g'), newUrl);
             }
             state.setContent(newContent);
-            toast({
-              title: "Link updated",
+            toast.success("Link updated", {
               description: `Replaced ${originalUrl} with ${newUrl}`,
             });
           }}

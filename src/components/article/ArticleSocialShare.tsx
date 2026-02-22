@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { Linkedin, Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { shareHandlers, getShareUrl, getArticleUrl } from "@/lib/socialShare";
-import { useToast } from "@/hooks/use-toast";
+
 
 // X (Twitter) icon – simple SVG since lucide doesn't have the X logo
 const XIcon = ({ className }: { className?: string }) => (

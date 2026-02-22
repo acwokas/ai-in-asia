@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, X, CheckCircle, Smartphone, Trophy } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,16 +36,16 @@ export const InstallAppButton = () => {
       
       localStorage.setItem(`pwa-install-points-${user.id}`, 'true');
       
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            <span>+{APP_INSTALL_POINTS} Points!</span>
-          </div>
-        ) as unknown as string,
-        description: "Thanks for installing the app! You've earned bonus points.",
-        duration: 5000,
-      });
+      toast.success(
+        <div className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-yellow-500" />
+          <span>+{APP_INSTALL_POINTS} Points!</span>
+        </div>,
+        {
+          description: "Thanks for installing the app! You've earned bonus points.",
+          duration: 5000,
+        }
+      );
     } catch (error) {
       console.error('Failed to award install points:', error);
     }
@@ -58,21 +58,21 @@ export const InstallAppButton = () => {
       ? "Find 'AIinASIA' on your home screen or in your app drawer. Long-press the icon to add it to your home screen if needed."
       : "Find 'AIinASIA' in your apps. You can pin it to your taskbar or start menu for quick access.";
 
-    toast({
-      title: (
-        <div className="flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 text-green-500" />
-          <span>App Installed!</span>
-        </div>
-      ) as unknown as string,
-      description: (
-        <div className="flex items-start gap-2 mt-2">
-          <Smartphone className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-          <span>{description}</span>
-        </div>
-      ) as unknown as string,
-      duration: 10000,
-    });
+    toast(
+      <div className="flex items-center gap-2">
+        <CheckCircle className="h-5 w-5 text-green-500" />
+        <span>App Installed!</span>
+      </div>,
+      {
+        description: (
+          <div className="flex items-start gap-2 mt-2">
+            <Smartphone className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+            <span>{description}</span>
+          </div>
+        ),
+        duration: 10000,
+      }
+    );
   };
 
   useEffect(() => {
