@@ -35,6 +35,7 @@ import {
   Megaphone,
   CalendarCheck,
   ExternalLink,
+  Settings as SettingsIcon,
   ArrowLeft,
   PanelLeftClose,
   PanelLeft,
@@ -110,6 +111,7 @@ const navGroups: NavGroup[] = [
   {
     title: "Settings",
     items: [
+      { label: "Settings", path: "/admin/settings", icon: SettingsIcon },
       { label: "Authors", path: "/admin/author-management", icon: Users },
       { label: "Sponsors", path: "/admin/category-sponsors", icon: Megaphone },
       { label: "Event Submissions", path: "/admin/event-submissions", icon: CalendarCheck },
