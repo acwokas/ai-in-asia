@@ -466,7 +466,7 @@ const ScoutChatbot = () => {
 
           {/* Messages */}
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4" aria-live="polite" aria-relevant="additions">
               {messages.map((msg, i) => (
                 <div
                   key={i}

@@ -11,7 +11,8 @@ interface CategorySubNavProps {
 
 export function CategorySubNav({ filters, selectedFilter, onFilterChange, cfg, scrolled }: CategorySubNavProps) {
   return (
-    <div
+    <nav
+      aria-label={`${cfg.label} category filters`}
       style={{
         position: "sticky",
         top: 0,
@@ -27,12 +28,14 @@ export function CategorySubNav({ filters, selectedFilter, onFilterChange, cfg, s
           <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="sm" />
           <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 13, color: cfg.accent }} className="hidden sm:inline">{cfg.label}</span>
         </div>
-        <div style={{ width: 1, height: 20, background: TOKENS.BORDER, flexShrink: 0 }} />
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+        <div style={{ width: 1, height: 20, background: TOKENS.BORDER, flexShrink: 0 }} aria-hidden="true" />
+        <div style={{ display: "flex", gap: 6, flexShrink: 0 }} role="group" aria-label="Filter articles">
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => onFilterChange(f)}
+              aria-pressed={selectedFilter === f}
+              className="focus-ring"
               style={{
                 padding: "5px 14px",
                 borderRadius: 20,
@@ -45,6 +48,7 @@ export function CategorySubNav({ filters, selectedFilter, onFilterChange, cfg, s
                 cursor: "pointer",
                 transition: "all 0.2s ease",
                 whiteSpace: "nowrap",
+                minHeight: 36,
               }}
             >
               {f}
@@ -52,6 +56,6 @@ export function CategorySubNav({ filters, selectedFilter, onFilterChange, cfg, s
           ))}
         </div>
       </div>
-    </div>
+    </nav>
   );
 }

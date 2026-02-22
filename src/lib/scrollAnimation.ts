@@ -1,10 +1,17 @@
 import { useRef, useState, useEffect } from "react";
 import type React from "react";
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export function useRevealOnScroll() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
+    if (prefersReducedMotion()) {
+      setVisible(true);
+      return;
+    }
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -24,12 +31,13 @@ export function useRevealOnScroll() {
     return () => obs.disconnect();
   }, []);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const reduced = prefersReducedMotion();
   const dist = isMobile ? '12px' : '20px';
   const dur = isMobile ? '0.3s' : '0.5s';
   return {
     ref,
     visible,
-    style: {
+    style: reduced ? {} : {
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : `translateY(${dist})`,
       transition: `opacity ${dur} ease-out, transform ${dur} ease-out`,
@@ -39,6 +47,7 @@ export function useRevealOnScroll() {
 }
 
 export function staggerStyle(visible: boolean, index: number): React.CSSProperties {
+  if (prefersReducedMotion()) return {};
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const dist = isMobile ? '12px' : '20px';
   const dur = isMobile ? '0.3s' : '0.5s';

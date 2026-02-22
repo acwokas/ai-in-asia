@@ -89,7 +89,7 @@ const Header = memo(() => {
               <img src={logo} alt="AI in ASIA" className="h-20 md:h-24 w-auto" width={171} height={96} />
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-5">
+            <nav className="hidden md:flex items-center space-x-5" aria-label="Main navigation">
               <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
               <Link to="/category/news" className="text-sm font-medium hover:text-primary transition-colors">News</Link>
               <Link to="/category/business" className="text-sm font-medium hover:text-primary transition-colors">Business</Link>
@@ -115,7 +115,7 @@ const Header = memo(() => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5">
+              <Link to="/saved" className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5" aria-label={`Saved articles${savedCount > 0 ? `, ${savedCount} saved` : ''}`}>
                 <Bookmark className="h-4 w-4" />
                 {savedCount > 0 && (
                   <span className="min-w-[18px] h-[18px] rounded-full px-1.5 text-xs leading-[18px] text-center bg-primary/20 border border-primary/30 text-primary">
@@ -238,7 +238,8 @@ const Header = memo(() => {
                     size="icon"
                     className="md:hidden h-10 w-10 relative"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Toggle menu"
+                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={isMenuOpen}
                   >
                     <Menu className="h-5 w-5" />
                     {user && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />}
@@ -259,8 +260,9 @@ const Header = memo(() => {
         )}
 
         {/* Mobile slide-in menu */}
-        <nav
-          className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-50 md:hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+          <nav
+            aria-label="Mobile navigation"
+            className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-50 md:hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex flex-col p-5">
             {/* Close button */}

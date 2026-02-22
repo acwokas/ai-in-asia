@@ -322,7 +322,7 @@ const Category = () => {
         scrolled={scrolled}
       />
 
-      <main style={{ flex: 1 }}>
+      <main id="main-content" style={{ flex: 1 }}>
         {/* 2. CATEGORY HEADER */}
         <CategoryHeader
           category={category}

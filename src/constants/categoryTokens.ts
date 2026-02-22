@@ -22,8 +22,8 @@ export const CATEGORY_CONFIG = {
     filters: ["All", "AI in Asia", "AI Tools", "Future of Work", "Data Governance", "AI Implementation"],
   },
   life: {
-    accent: "#a855f7",
-    glow: "rgba(168, 85, 247, 0.15)",
+    accent: "#c084fc",
+    glow: "rgba(192, 132, 252, 0.15)",
     emoji: "🌏",
     icon: "Compass",
     label: "Life",
