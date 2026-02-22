@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -11,6 +11,9 @@ import { GlowBadge } from "@/components/ui/GlowBadge";
 import { SectionHeader } from "@/components/category/SectionHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import { useRevealOnScroll } from "@/lib/scrollAnimation";
+import { filterArticlesForPath } from "@/lib/learningPathMatcher";
+import { toast } from "sonner";
 
 const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
 
@@ -19,40 +22,6 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   Intermediate: "#f59e0b",
   Advanced: "#ef4444",
 };
-
-function useRevealOnScroll() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-          setTimeout(() => { if (el) el.style.willChange = 'auto'; }, 600);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const dist = isMobile ? '12px' : '20px';
-  const dur = isMobile ? '0.3s' : '0.5s';
-  return {
-    ref,
-    visible,
-    style: {
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : `translateY(${dist})`,
-      transition: `opacity ${dur} ease-out, transform ${dur} ease-out`,
-      willChange: 'transform, opacity',
-    } as React.CSSProperties,
-  };
-}
 
 const LearningPathDetail = () => {
   const { slug: categorySlug, pathSlug } = useParams();
@@ -106,19 +75,8 @@ const LearningPathDetail = () => {
         articles = data || [];
       }
 
-      // Filter by path tags
-      const pathTagsLower = path.tags.map((t) => t.toLowerCase());
-      return articles
-        .filter((a: any) => {
-          const allTags = [
-            ...(a.ai_tags || []),
-            ...(a.topic_tags || []),
-            ...(a.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
-          ].map((t: string) => t.toLowerCase());
-          const title = (a.title || '').toLowerCase();
-          return pathTagsLower.some((pt) => allTags.some((t) => t.includes(pt)) || title.includes(pt));
-        })
-        .slice(0, path.articles + 4); // Get a few extra to fill the page
+      // Filter by path tags using improved fuzzy matcher
+      return filterArticlesForPath(articles, path);
     },
   });
 
@@ -138,9 +96,33 @@ const LearningPathDetail = () => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       try { localStorage.setItem(`lp-read-${categorySlug}-${pathSlug}`, JSON.stringify([...next])); } catch { /* ignore */ }
+      
+      // Check for completion celebration
+      if (!next.has(id)) return next; // Only celebrate on marking as read
+      const totalArticles = pathArticles?.slice(0, path?.articles || 8).length || 0;
+      if (next.size === totalArticles && totalArticles > 0) {
+        setTimeout(() => {
+          toast("🎉 Path Complete!", {
+            description: `You've finished the ${path?.title} learning path!`,
+            duration: 5000,
+          });
+        }, 300);
+      }
+      
       return next;
     });
   };
+
+  // Find first unread article for "Continue" button
+  const firstUnreadIndex = useMemo(() => {
+    return displayArticles.findIndex((a: any) => !readArticles.has(a.id));
+  }, [displayArticles, readArticles]);
+
+  const handleContinue = useCallback(() => {
+    if (firstUnreadIndex >= 0) {
+      document.getElementById(`step-${firstUnreadIndex}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [firstUnreadIndex]);
 
   // Related paths from same category (excluding current)
   const relatedPaths = paths.filter((p) => p.slug !== pathSlug).slice(0, 3);
@@ -234,6 +216,34 @@ const LearningPathDetail = () => {
                   ⏱️ {path.time}
                 </span>
               </div>
+
+              {/* Continue button - shows when some articles are read but not all */}
+              {readArticles.size > 0 && firstUnreadIndex >= 0 && (
+                <button
+                  onClick={handleContinue}
+                  style={{
+                    marginTop: 14,
+                    padding: "8px 20px",
+                    borderRadius: 10,
+                    background: path.color,
+                    color: "#000",
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "opacity 0.2s ease",
+                  }}
+                >
+                  Continue where you left off →
+                </button>
+              )}
+              {progressPercent === 100 && (
+                <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>🏆</span>
+                  <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, color: path.color }}>Path completed!</span>
+                </div>
+              )}
             </div>
 
             {/* Progress ring (desktop) */}
@@ -277,8 +287,14 @@ const LearningPathDetail = () => {
             ) : displayArticles.length === 0 ? (
               <div style={{ padding: "40px 24px", borderRadius: 16, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
                 <p style={{ fontSize: 36, marginBottom: 12 }}>📚</p>
-                <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, marginBottom: 6 }}>Articles coming soon</p>
-                <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif" }}>We're curating the best articles for this learning path. Check back shortly.</p>
+                <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, marginBottom: 6 }}>We're building this learning path</p>
+                <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", marginBottom: 16 }}>Check back soon, or explore {cfg.label} articles in the meantime.</p>
+                <Link
+                  to={`/category/${categorySlug}`}
+                  style={{ display: "inline-block", padding: "10px 24px", borderRadius: 10, background: cfg.accent, color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
+                >
+                  Explore {cfg.label} &rarr;
+                </Link>
               </div>
             ) : (
               <div style={{ position: "relative" }}>

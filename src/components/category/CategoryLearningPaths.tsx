@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { SectionHeader } from "@/components/category/SectionHeader";
 import { TOKENS } from "@/constants/categoryTokens";
@@ -45,6 +45,21 @@ export function CategoryLearningPaths({ paths, categorySlug, revealProps, accent
 
 function LearningPathCard({ path, categorySlug }: { path: LearningPath; categorySlug: string }) {
   const [hovered, setHovered] = useState(false);
+  const [readCount, setReadCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`lp-read-${categorySlug}-${path.slug}`);
+      if (stored) {
+        const ids: string[] = JSON.parse(stored);
+        setReadCount(ids.length);
+      }
+    } catch { /* ignore */ }
+  }, [categorySlug, path.slug]);
+
+  const progressPercent = path.articles > 0 ? Math.min(100, Math.round((readCount / path.articles) * 100)) : 0;
+  const isComplete = progressPercent >= 100;
+
   return (
     <Link
       to={`/category/${categorySlug}/learn/${path.slug}`}
@@ -69,8 +84,27 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
     >
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 10%, ${path.color}${hovered ? "24" : "14"}, transparent 60%)`, transition: "background 0.25s ease", pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ width: 52, height: 52, borderRadius: 12, background: `${path.color}1f`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-          <span style={{ fontSize: 36, lineHeight: 1 }}>{path.emoji}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 12, background: `${path.color}1f`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 36, lineHeight: 1 }}>{path.emoji}</span>
+          </div>
+          {isComplete && (
+            <span style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "3px 10px",
+              borderRadius: 8,
+              background: `${path.color}1a`,
+              border: `1px solid ${path.color}40`,
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 700,
+              fontSize: 10,
+              color: path.color,
+            }}>
+              ✓ Completed
+            </span>
+          )}
         </div>
         <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 15, color: "#f3f4f6", margin: "0 0 0 0", lineHeight: 1.3 }}>{path.title}</h4>
         <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "6px 0 12px 0", lineHeight: 1.5 }}>{path.desc}</p>
@@ -79,7 +113,7 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
             {path.articles} articles - {path.time}
           </span>
           <span style={{ fontSize: 11, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif", opacity: hovered ? 1 : 0.5, transition: "opacity 0.25s ease", display: "flex", alignItems: "center", gap: 4 }}>
-            Start path
+            {readCount > 0 && !isComplete ? "Continue" : "Start path"}
             <svg
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={path.color}
               strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -89,7 +123,24 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
             </svg>
           </span>
         </div>
-        <div style={{ height: 4, borderRadius: 4, background: "#1a1d25", marginTop: 12 }} />
+
+        {/* Progress bar */}
+        <div style={{ height: 4, borderRadius: 4, background: "#1a1d25", marginTop: 12, overflow: "hidden" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${progressPercent}%`,
+              background: path.color,
+              borderRadius: 4,
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
+        {readCount > 0 && (
+          <span style={{ fontSize: 10, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600, marginTop: 4 }}>
+            {readCount} of {path.articles} completed
+          </span>
+        )}
       </div>
     </Link>
   );
