@@ -3,6 +3,7 @@
  import { useQuery } from "@tanstack/react-query";
  import { supabase } from "@/integrations/supabase/client";
  import { Loader2 } from "lucide-react";
+ import SEOHead from "@/components/SEOHead";
  
  /**
   * Redirect page for /newsletter-weekly
@@ -35,9 +36,10 @@
      }
    }, [latestEdition, navigate]);
  
-   if (isLoading) {
-     return (
-       <div className="min-h-screen bg-background flex items-center justify-center">
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <SEOHead title="Latest Weekly Newsletter" description="Redirecting to the latest AI in ASIA Weekly Brief." noIndex={true} />
          <div className="text-center">
            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
            <p className="text-muted-foreground">Loading latest newsletter...</p>
@@ -46,26 +48,27 @@
      );
    }
  
-   if (error || !latestEdition) {
-     return (
-       <div className="min-h-screen bg-background flex items-center justify-center">
-         <div className="text-center max-w-md px-6">
-           <h1 className="text-2xl font-bold mb-4">
-             AI in ASIA Weekly Brief
-           </h1>
-           <p className="text-muted-foreground mb-6">
-             No newsletters published yet. Subscribe to be notified when we send our first edition.
-           </p>
-           <a 
-             href="/newsletter"
-             className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors"
-           >
-             Subscribe Now
-           </a>
-         </div>
-       </div>
-     );
-   }
- 
-   return null;
- }
+    if (error || !latestEdition) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <SEOHead title="Latest Weekly Newsletter" description="Redirecting to the latest AI in ASIA Weekly Brief." noIndex={true} />
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold mb-4">
+              AI in ASIA Weekly Brief
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              No newsletters published yet. Subscribe to be notified when we send our first edition.
+            </p>
+            <a 
+              href="/newsletter"
+              className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors"
+            >
+              Subscribe Now
+            </a>
+          </div>
+        </div>
+      );
+    }
+  
+    return null;
+  }
