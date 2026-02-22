@@ -65,6 +65,7 @@ const CommentModeration = lazy(() => import("./pages/CommentModeration"));
 const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
 const SEOTools = lazy(() => import("./pages/SEOTools"));
+const SEODashboard = lazy(() => import("./pages/SEODashboard"));
 const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
 const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -253,11 +254,12 @@ const App = () => (
                 <Route path="knowledge-engine" element={<KnowledgeEngine />} />
                 <Route path="bulk-operations" element={<BulkOperations />} />
                 <Route path="analytics" element={<ContentAnalytics />} />
-                <Route path="seo-tools" element={<SEOTools />} />
+                <Route path="seo" element={<SEODashboard />} />
+                <Route path="seo-tools" element={<Navigate to="/admin/seo" replace />} />
+                <Route path="bulk-seo" element={<Navigate to="/admin/seo?tab=bulk" replace />} />
                 <Route path="author-management" element={<AuthorManagement />} />
                 <Route path="editors-picks" element={<EditorsPickManager />} />
                 <Route path="process-comments" element={<ProcessPendingComments />} />
-                <Route path="bulk-seo" element={<BulkSEOGeneration />} />
                 <Route path="category-sponsors" element={<CategorySponsorsManager />} />
                 <Route path="404-analytics" element={<NotFoundAnalytics />} />
                 <Route path="guides" element={<AdminGuides />} />
