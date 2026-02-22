@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, Sparkles, Bot } from "lucide-react";
+import { Send, Loader2, Sparkles, Bot, AlertTriangle, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -14,6 +15,15 @@ interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+const SUGGESTED_PROMPTS = [
+  { emoji: "🌏", text: "What's the latest in Asian AI?" },
+  { emoji: "📜", text: "Explain AI regulation in Singapore" },
+  { emoji: "🤖", text: "What should I read about generative AI?" },
+  { emoji: "🔍", text: "Compare AI adoption across ASEAN" },
+  { emoji: "🛠️", text: "What are the top AI tools for business?" },
+  { emoji: "📰", text: "Summarize this week's AI news" },
+];
 
 const AskScout = () => {
   const { user } = useAuth();
@@ -27,7 +37,7 @@ const AskScout = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+  const hasUserMessages = messages.some(m => m.role === "user");
 
   useEffect(() => {
     fetchQueryLimit();
@@ -46,7 +56,7 @@ const AskScout = () => {
       if (stats) {
         const points = stats.points || 0;
         if (points >= 1000) {
-          setQueriesRemaining(null); // Unlimited
+          setQueriesRemaining(null);
           return;
         } else if (points >= 500) {
           queryLimit = 50;
@@ -71,7 +81,6 @@ const AskScout = () => {
     }
     
     const { data: queryData } = await query.maybeSingle();
-
     const currentCount = queryData?.query_count || 0;
     setQueriesRemaining(queryLimit - currentCount);
   };
@@ -81,11 +90,18 @@ const AskScout = () => {
   };
 
   useEffect(() => {
-    // Only scroll to bottom if there's more than the initial message
     if (messages.length > 1) {
       scrollToBottom();
     }
   }, [messages]);
+
+  const sendPrompt = (text: string) => {
+    setInput(text);
+    setTimeout(() => {
+      const form = document.getElementById("ask-scout-form") as HTMLFormElement;
+      form?.requestSubmit();
+    }, 0);
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -116,9 +132,7 @@ const AskScout = () => {
         throw new Error(errorData.error || `Failed to get response (${response.status})`);
       }
 
-      if (!response.body) {
-        throw new Error("No response body");
-      }
+      if (!response.body) throw new Error("No response body");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -143,7 +157,6 @@ const AskScout = () => {
             if (!line.startsWith('data: ')) continue;
             
             const data = line.slice(6);
-            
             if (data === '[DONE]') break;
 
             try {
@@ -161,12 +174,11 @@ const AskScout = () => {
                 );
               }
             } catch (e) {
-              console.error("Error parsing JSON line:", line, "Error:", e);
+              // skip
             }
           }
         }
       } catch (streamError) {
-        console.error("Stream reading error:", streamError);
         throw streamError;
       }
 
@@ -217,14 +229,39 @@ const AskScout = () => {
             </p>
           </div>
 
+          {/* Suggested Prompts - only show before user sends first message */}
+          {!hasUserMessages && (
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+              {SUGGESTED_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt.text}
+                  onClick={() => sendPrompt(prompt.text)}
+                  className="text-left p-4 rounded-xl border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition-all group min-h-[60px]"
+                >
+                  <span className="text-lg mr-2">{prompt.emoji}</span>
+                  <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                    {prompt.text}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sign-in prompt for anonymous users */}
+          {!user && (
+            <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+              <LogIn className="h-5 w-5 text-primary flex-shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                <Link to="/auth" className="text-primary font-semibold hover:underline">Sign in</Link> to unlock more daily queries and save your conversations.
+              </p>
+            </div>
+          )}
+
           {/* Chat Container */}
           <div className="relative">
-            {/* Outer glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-2xl" />
             
-            {/* Main container */}
             <div className="relative bg-card/98 backdrop-blur-xl border-2 border-primary/50 rounded-2xl shadow-[0_8px_80px_rgba(0,188,212,0.6),0_0_0_1px_rgba(0,188,212,0.2)] overflow-hidden flex flex-col h-[600px]">
-              {/* Animated background grid */}
               <div className="absolute inset-0 opacity-[0.03]" style={{
                 backgroundImage: 'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
                 backgroundSize: '20px 20px'
@@ -273,9 +310,9 @@ const AskScout = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-2 shadow-sm">
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        <div className="flex gap-1">
+                      <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground mr-1">Scout is thinking</span>
                           <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
                           <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                           <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
@@ -291,11 +328,18 @@ const AskScout = () => {
               <div className="relative border-t border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 p-6 flex-shrink-0">
                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                 
-                {queriesRemaining !== null && queriesRemaining <= 5 && (
+                {queriesRemaining !== null && queriesRemaining <= 5 && queriesRemaining > 0 && (
                   <div className="text-sm text-muted-foreground mb-4 flex items-center gap-2 bg-muted/30 rounded-lg px-4 py-2 border border-border/30">
-                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-accent" />
                     {queriesRemaining} {queriesRemaining === 1 ? 'query' : 'queries'} remaining today
                     {!user && ' · Sign in for more'}
+                  </div>
+                )}
+                {queriesRemaining !== null && queriesRemaining <= 0 && (
+                  <div className="text-sm mb-4 flex items-center gap-2 bg-destructive/10 text-destructive rounded-lg px-4 py-2 border border-destructive/20">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Daily limit reached.{' '}
+                    {!user && <Link to="/auth" className="underline font-semibold">Sign in for more.</Link>}
                   </div>
                 )}
                 {queriesRemaining === null && user && (
@@ -306,6 +350,7 @@ const AskScout = () => {
                 )}
                 
                 <form
+                  id="ask-scout-form"
                   onSubmit={(e) => {
                     e.preventDefault();
                     sendMessage();
@@ -318,14 +363,14 @@ const AskScout = () => {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Ask Scout anything about AI in Asia..."
-                      disabled={isLoading}
+                      disabled={isLoading || (queriesRemaining !== null && queriesRemaining <= 0)}
                       className="relative border-primary/30 focus-visible:ring-primary/50 bg-background/50 backdrop-blur h-12 text-base"
                     />
                   </div>
                   <Button 
                     type="submit" 
                     size="icon" 
-                    disabled={isLoading || !input.trim()}
+                    disabled={isLoading || !input.trim() || (queriesRemaining !== null && queriesRemaining <= 0)}
                     className="relative bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-[0_0_20px_rgba(0,188,212,0.3)] hover:shadow-[0_0_30px_rgba(0,188,212,0.5)] transition-all disabled:opacity-50 disabled:shadow-none rounded-lg h-12 w-12"
                   >
                     <Send className="h-5 w-5" />
@@ -334,6 +379,11 @@ const AskScout = () => {
               </div>
             </div>
           </div>
+
+          {/* AI Disclaimer */}
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            Scout is powered by AI and may make mistakes. Always verify important information.
+          </p>
         </div>
       </main>
       
