@@ -5,6 +5,7 @@ import { Monitor, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { convertMarkdownToHtml } from "@/lib/markdownConversion";
 import type { CMSEditorState } from "@/hooks/useCMSEditorState";
+import TldrSnapshot from "@/components/TldrSnapshot";
 
 interface EditorPreviewTabProps {
   state: CMSEditorState;
@@ -75,17 +76,12 @@ const EditorPreviewTab = ({ state, authorName }: EditorPreviewTabProps) => {
           )}
 
           {/* TLDR */}
-          {state.tldrSnapshot.length > 0 && (
-            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-sm uppercase tracking-wider mb-2 text-muted-foreground">
-                TL;DR
-              </h3>
-              <ul className="list-disc pl-5 space-y-1 text-sm">
-                {state.tldrSnapshot.map((bullet, i) => (
-                  <li key={i}>{bullet}</li>
-                ))}
-              </ul>
-            </div>
+          {(state.tldrSnapshot.some(b => b) || state.whoShouldPayAttention || state.whatChangesNext) && (
+            <TldrSnapshot
+              bullets={state.tldrSnapshot.filter(b => b)}
+              whoShouldPayAttention={state.whoShouldPayAttention}
+              whatChangesNext={state.whatChangesNext}
+            />
           )}
 
           {/* Body */}
