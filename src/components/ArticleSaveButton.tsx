@@ -4,7 +4,7 @@ import { useSavedArticles, SavedArticle } from '@/hooks/useSavedArticles';
 import { toast } from 'sonner';
 
 interface ArticleSaveButtonProps {
-  article: Omit<SavedArticle, 'savedAt'>;
+  article: Omit<SavedArticle, 'savedAt'> & { articleId?: string };
   variant?: 'default' | 'ghost' | 'outline';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   showLabel?: boolean;
@@ -19,13 +19,14 @@ export const ArticleSaveButton = ({
   className = '',
 }: ArticleSaveButtonProps) => {
   const { isSaved, toggleSave } = useSavedArticles();
-  const saved = isSaved(article.url);
+  const identifier = article.articleId || article.url;
+  const saved = isSaved(identifier);
 
-  const handleClick = () => {
-    const wasSaved = toggleSave(article);
+  const handleClick = async () => {
+    const wasSaved = await toggleSave(article);
     toast(wasSaved ? 'Article saved' : 'Article removed', {
-      description: wasSaved 
-        ? 'Find it anytime in your Saved Articles' 
+      description: wasSaved
+        ? 'Find it anytime in your Saved Articles'
         : 'Removed from your saved list',
     });
   };

@@ -1,16 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bookmark } from 'lucide-react';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { compressImage } from '@/lib/imageCompression';
 import { toast } from 'sonner';
 import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileBookmarks from '@/components/profile/ProfileBookmarks';
+
 import ProfileAchievements from '@/components/profile/ProfileAchievements';
 import ProfileStats from '@/components/profile/ProfileStats';
 import ProfileSettings from '@/components/profile/ProfileSettings';
@@ -64,12 +64,12 @@ const Profile = () => {
 
   const [stats, setStats] = useState<UserStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
+  
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("bookmarks");
+  const [activeTab, setActiveTab] = useState("reading");
   const tabsRef = useRef<HTMLDivElement>(null);
 
   // Edit state
@@ -180,10 +180,8 @@ const Profile = () => {
       const earnedMap = new Map(earnedData?.map(ea => [ea.achievement_id, ea.earned_at]) || []);
       setAchievements(allAchievements?.map(a => ({ ...a, earned_at: earnedMap.get(a.id) })) || []);
 
-      const { data: bookmarksData } = await supabase.from('bookmarks')
-        .select('*, articles(title, slug, excerpt, featured_image_url, categories:primary_category_id(slug))')
-        .eq('user_id', user.id).order('created_at', { ascending: false });
-      setBookmarks(bookmarksData || []);
+
+
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -284,10 +282,16 @@ const Profile = () => {
           }}
         />
 
+        <div className="mb-4">
+          <Link to="/saved" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            <Bookmark className="h-4 w-4" />
+            View your Saved Articles →
+          </Link>
+        </div>
+
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-1 overflow-x-auto">
-              <TabsTrigger value="bookmarks" className="flex-shrink-0">Bookmarks</TabsTrigger>
               <TabsTrigger value="reading" className="flex-shrink-0">Reading</TabsTrigger>
               <TabsTrigger value="achievements" className="flex-shrink-0">Achievements</TabsTrigger>
               <TabsTrigger value="stats" className="flex-shrink-0">Reading Stats</TabsTrigger>
@@ -296,7 +300,6 @@ const Profile = () => {
               <TabsTrigger value="security" className="flex-shrink-0">Security</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="bookmarks"><ProfileBookmarks bookmarks={bookmarks} /></TabsContent>
             <TabsContent value="reading"><ProfileReadingHistory /></TabsContent>
             <TabsContent value="achievements"><ProfileAchievements achievements={achievements} /></TabsContent>
             <TabsContent value="stats"><ProfileStats stats={stats} levelInfo={levelInfo} /></TabsContent>
