@@ -31,7 +31,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TopListsPreview } from "./TopListsPreview";
-import RichTextEditor from "./RichTextEditor";
+import TipTapEditor from "./tiptap/TipTapEditor";
 
 export interface ImageWithSize {
   url: string;
@@ -538,7 +538,7 @@ const SortableItem = ({ item, index, onUpdate, onRemove, onDuplicate, onImageUpl
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
-              <RichTextEditor
+              <TipTapEditor
                 value={item.contentBox || ''}
                 onChange={(value) => onUpdate(item.id, 'contentBox', value)}
                 placeholder="Add formatted content that will appear after this item..."
@@ -731,7 +731,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
           <CardTitle>Introduction (Optional)</CardTitle>
         </CardHeader>
         <CardContent>
-          <RichTextEditor
+          <TipTapEditor
             value={intro}
             onChange={onIntroChange || (() => {})}
             placeholder="Add an introduction to your list..."
@@ -818,7 +818,7 @@ export const TopListsEditor = ({ items, onChange, intro = '', onIntroChange, out
           <CardTitle>Conclusion (Optional)</CardTitle>
         </CardHeader>
         <CardContent>
-          <RichTextEditor
+          <TipTapEditor
             value={outro}
             onChange={onOutroChange || (() => {})}
             placeholder="Add a conclusion to your list..."
