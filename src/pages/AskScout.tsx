@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, Sparkles, Bot, AlertTriangle, LogIn } from "lucide-react";
+import { Send, Loader2, Sparkles, Bot, AlertTriangle, LogIn, Globe, ScrollText, Search, Wrench, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,12 +17,12 @@ interface Message {
 }
 
 const SUGGESTED_PROMPTS = [
-  { emoji: "🌏", text: "What's the latest in Asian AI?" },
-  { emoji: "📜", text: "Explain AI regulation in Singapore" },
-  { emoji: "🤖", text: "What should I read about generative AI?" },
-  { emoji: "🔍", text: "Compare AI adoption across ASEAN" },
-  { emoji: "🛠️", text: "What are the top AI tools for business?" },
-  { emoji: "📰", text: "Summarize this week's AI news" },
+  { icon: Globe, text: "What's the latest in Asian AI?" },
+  { icon: ScrollText, text: "Explain AI regulation in Singapore" },
+  { icon: Bot, text: "What should I read about generative AI?" },
+  { icon: Search, text: "Compare AI adoption across ASEAN" },
+  { icon: Wrench, text: "What are the top AI tools for business?" },
+  { icon: Newspaper, text: "Summarize this week's AI news" },
 ];
 
 const AskScout = () => {
@@ -238,7 +238,7 @@ const AskScout = () => {
                   onClick={() => sendPrompt(prompt.text)}
                   className="text-left p-4 rounded-xl border border-border hover:border-primary/50 bg-card hover:bg-primary/5 transition-all group min-h-[60px]"
                 >
-                  <span className="text-lg mr-2">{prompt.emoji}</span>
+                  <prompt.icon className="h-5 w-5 mr-2 text-muted-foreground flex-shrink-0" />
                   <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                     {prompt.text}
                   </span>

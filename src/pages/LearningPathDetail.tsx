@@ -112,7 +112,7 @@ const LearningPathDetail = () => {
             awardPoints(user.id, 20, `completing ${path?.title}`);
           }
           setTimeout(() => {
-            toast("🎉 Path Complete!", {
+            toast("Path Complete!", {
               description: `You've finished the ${path?.title} learning path!`,
               duration: 5000,
             });
@@ -165,7 +165,7 @@ const LearningPathDetail = () => {
         <Header />
         <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 16px" }}>
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 48, marginBottom: 16 }}>🗺️</p>
+            {(() => { const MapIcon = iconMap["map"]; return MapIcon ? <MapIcon style={{ width: 48, height: 48, marginBottom: 16, color: cfg.accent }} /> : null; })()}
             <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 24, color: "#fff", marginBottom: 8 }}>Path not found</h1>
             <p style={{ fontSize: 14, color: TOKENS.MUTED, marginBottom: 24 }}>This learning path doesn't exist.</p>
             <Link to={`/category/${categorySlug}`} style={{ padding: "10px 24px", borderRadius: 10, background: cfg.accent, color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
@@ -251,7 +251,7 @@ const LearningPathDetail = () => {
               )}
               {progressPercent === 100 && (
                 <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 16 }}>🏆</span>
+                  {(() => { const TrophyIcon = iconMap["trophy"]; return TrophyIcon ? <TrophyIcon style={{ width: 16, height: 16, color: path.color }} /> : null; })()}
                   <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, color: path.color }}>Path completed!</span>
                 </div>
               )}
@@ -297,7 +297,7 @@ const LearningPathDetail = () => {
               </div>
             ) : displayArticles.length === 0 ? (
               <div style={{ padding: "40px 24px", borderRadius: 16, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
-                <p style={{ fontSize: 36, marginBottom: 12 }}>📚</p>
+                {(() => { const BookIcon = iconMap["book-open"]; return BookIcon ? <BookIcon style={{ width: 36, height: 36, marginBottom: 12, color: cfg.accent }} /> : null; })()}
                 <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, marginBottom: 6 }}>We're building this learning path</p>
                 <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", marginBottom: 16 }}>Check back soon, or explore {cfg.label} articles in the meantime.</p>
                 <Link

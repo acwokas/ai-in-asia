@@ -7,7 +7,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, Share2, Bookmark, Loader2, Edit, Eye, EyeOff, Send, MessageCircle } from "lucide-react";
+import { Clock, User, Share2, Bookmark, Loader2, Edit, Eye, EyeOff, Send, MessageCircle, Lock } from "lucide-react";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
 
@@ -78,7 +78,7 @@ const ArticleHeader = ({
       {isPreview && (
         <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
           <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-            🔒 Preview Mode - This article is not publicly visible
+            <Lock className="h-4 w-4 inline mr-1" /> Preview Mode - This article is not publicly visible
           </p>
         </div>
       )}

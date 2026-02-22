@@ -28,7 +28,7 @@ import ArticleReactions from "@/components/ArticleReactions";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Share2, Bookmark, MessageCircle, Clock } from "lucide-react";
+import { User, Share2, Bookmark, MessageCircle, Clock, Lock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -251,9 +251,9 @@ const Article = () => {
           sessionStorage.setItem('last-points-toast', String(now));
           setTimeout(() => {
             const messages: Record<number, { title: string; description: string }> = {
-              1: { title: "✨ +10 points", description: "Keep reading to level up!" },
-              5: { title: "🔥 5 articles today!", description: "You're on a roll - 50 points earned" },
-              10: { title: "🏆 10 articles!", description: "You're a power reader - 100 points earned" },
+              1: { title: "+10 points", description: "Keep reading to level up!" },
+              5: { title: "5 articles today!", description: "You're on a roll - 50 points earned" },
+              10: { title: "10 articles!", description: "You're a power reader - 100 points earned" },
             };
             const msg = messages[articleCount];
             if (msg) toast(msg.title, { description: msg.description, duration: 3000 });
@@ -427,7 +427,7 @@ const Article = () => {
             <div className="container mx-auto px-4 max-w-[1080px] pt-4">
               <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                 <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                  🔒 Preview Mode - This article is not publicly visible
+                  <Lock className="h-4 w-4 inline mr-1" /> Preview Mode - This article is not publicly visible
                 </p>
               </div>
             </div>

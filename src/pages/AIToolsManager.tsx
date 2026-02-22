@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Trash2, Star } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AddToolDialog } from "@/components/AddToolDialog";
 
@@ -187,7 +187,7 @@ const AIToolsManager = () => {
                   )}
                   
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>⭐ {Number(tool.rating_avg).toFixed(1)} ({tool.rating_count} ratings)</span>
+                    <span><Star className="h-3.5 w-3.5 inline text-amber-500 fill-amber-500 mr-0.5" /> {Number(tool.rating_avg).toFixed(1)} ({tool.rating_count} ratings)</span>
                     <a href={tool.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                       {tool.url}
                     </a>

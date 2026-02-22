@@ -491,7 +491,7 @@ const RichTextEditor = ({
     const promptTitle = promptData.title || 'Prompt';
     const promptHtml = `<div class="prompt-box" data-prompt-title="${promptTitle}" data-prompt-content="${promptData.content.replace(/"/g, '&quot;')}">
       <div class="prompt-box-header">
-        <span class="prompt-box-icon">✨</span>
+        <span class="prompt-box-icon"></span>
         <span class="prompt-box-title">${promptTitle}</span>
         <button class="prompt-box-copy" onclick="navigator.clipboard.writeText(this.closest('.prompt-box').dataset.promptContent); this.innerHTML = '✓ Copied!'; setTimeout(() => this.innerHTML = 'Copy', 2000);" type="button">Copy</button>
       </div>

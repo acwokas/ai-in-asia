@@ -1,6 +1,7 @@
 import ArticleCard from "@/components/ArticleCard";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
+import { iconMap } from "@/lib/iconMap";
 
 interface RelatedArticle {
   id: string;
@@ -59,7 +60,7 @@ export const ArticleRelatedSection = ({
             className="article-card group hover:shadow-lg transition-shadow"
           >
             <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-6xl">{externalLink.icon}</span>
+              {(() => { const Icon = iconMap[externalLink.icon]; return Icon ? <Icon className="h-12 w-12 text-primary-foreground" /> : null; })()}
             </div>
             
             <div className="p-6">
@@ -93,19 +94,19 @@ export const getExternalLinkForCategory = (categoryName: string | undefined): Ex
     return {
       text: 'Try ChatGPT',
       url: 'https://chat.openai.com',
-      icon: '🤖'
+      icon: 'bot'
     };
   } else if (name.includes('robotics')) {
     return {
       text: 'Try Gemini AI',
       url: 'https://gemini.google.com',
-      icon: '✨'
+      icon: 'sparkles'
     };
   } else {
     return {
       text: 'Explore Google Gemini',
       url: 'https://gemini.google.com',
-      icon: '🚀'
+      icon: 'rocket'
     };
   }
 };

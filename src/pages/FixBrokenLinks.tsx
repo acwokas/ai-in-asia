@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Link as LinkIcon, AlertTriangle, CheckCircle2, Home } from "lucide-react";
+import { Loader2, Link as LinkIcon, AlertTriangle, CheckCircle2, Home, X, Check } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -217,10 +217,10 @@ const FixBrokenLinks = () => {
                               {result.examples.map((example: any, exIdx: number) => (
                                 <div key={exIdx} className="pl-4 border-l-2 border-muted space-y-1">
                                   <div className="text-destructive">
-                                    ❌ <code className="text-xs">{example.broken}</code>
+                                    <X className="h-3.5 w-3.5 inline text-red-500 mr-1" /><code className="text-xs">{example.broken}</code>
                                   </div>
                                   <div className="text-green-600">
-                                    ✅ <code className="text-xs">{example.fixed}</code>
+                                    <Check className="h-3.5 w-3.5 inline text-green-500 mr-1" /><code className="text-xs">{example.fixed}</code>
                                   </div>
                                 </div>
                               ))}

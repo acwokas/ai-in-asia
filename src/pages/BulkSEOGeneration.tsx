@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, AlertTriangle } from "lucide-react";
 import Header from "@/components/Header";
 
 const BulkSEOGeneration = () => {
@@ -96,9 +96,9 @@ const BulkSEOGeneration = () => {
               </div>
             )}
 
-            <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950 p-3 rounded">
-              ⚠️ Note: This process may take several minutes for large numbers of articles. 
-              The system processes articles with a delay to avoid rate limits.
+            <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950 p-3 rounded flex items-start gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" /> <span>Note: This process may take several minutes for large numbers of articles. 
+              The system processes articles with a delay to avoid rate limits.</span>
             </div>
           </CardContent>
         </Card>

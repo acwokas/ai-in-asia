@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ChevronDown } from "lucide-react";
+import { Clock, ChevronDown, AlertTriangle } from "lucide-react";
 import CopyableCodeBlock from "@/components/guide/CopyableCodeBlock";
 
 /** Render simple markdown (bold, italic, inline code, links, line breaks) to HTML */
@@ -216,7 +216,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
                   <span className="text-foreground/80 ml-2">{stripMd(tool.description)}</span>
                 )}
                 {tool.limitation && (
-                  <p className="text-sm italic text-muted-foreground mt-0.5">⚠ {stripMd(tool.limitation)}</p>
+                  <p className="text-sm italic text-muted-foreground mt-0.5"><AlertTriangle className="h-3.5 w-3.5 inline text-amber-500 mr-1" />{stripMd(tool.limitation)}</p>
                 )}
               </div>
             ))}
