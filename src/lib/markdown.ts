@@ -10,77 +10,66 @@ export const convertSimpleMarkdownToHtml = (markdown: string): string => {
   // Process line by line to build proper HTML structure
   const lines = cleaned.split(/\r?\n/);
   const processedLines: string[] = [];
-  let inList = false;
+  let listType: 'ul' | 'ol' | null = null;
+  
+  const closeList = () => {
+    if (listType) {
+      processedLines.push(`</${listType}>`);
+      listType = null;
+    }
+  };
   
   lines.forEach((line) => {
     const trimmed = line.trim();
 
     // Headers
     if (/^###\s+/.test(trimmed)) {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push(`<h3>${trimmed.replace(/^###\s+/, "")}</h3>`);
     } else if (/^##\s+/.test(trimmed)) {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push(`<h2>${trimmed.replace(/^##\s+/, "")}</h2>`);
     } else if (/^#\s+/.test(trimmed)) {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push(`<h1>${trimmed.replace(/^#\s+/, "")}</h1>`);
     } 
     // Blockquotes
     else if (/^>\s+/.test(trimmed)) {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push(`<blockquote>${trimmed.replace(/^>\s+/, "")}</blockquote>`);
     } 
     // List items (unordered)
     else if (/^[-•]\s+/.test(trimmed)) {
-      if (!inList) {
+      if (listType && listType !== 'ul') closeList();
+      if (!listType) {
         processedLines.push('<ul>');
-        inList = true;
+        listType = 'ul';
       }
       processedLines.push(`<li>${trimmed.replace(/^[-•]\s+/, "")}</li>`);
     } 
     // List items (ordered)
     else if (/^\d+\.\s+/.test(trimmed)) {
-      if (!inList) {
-        processedLines.push('<ol>');
-        inList = true;
+      if (listType && listType !== 'ol') closeList();
+      if (!listType) {
+        processedLines.push('<ol style="list-style-type:decimal">');
+        listType = 'ol';
       }
       processedLines.push(`<li>${trimmed.replace(/^\d+\.\s+/, "")}</li>`);
     } 
     // Empty lines
     else if (trimmed === "") {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push("");
     } 
     // Regular text
     else {
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
+      closeList();
       processedLines.push(trimmed);
     }
   });
 
   // Close any open list
-  if (inList) {
-    processedLines.push('</ul>');
-  }
+  closeList();
 
   let html = processedLines.join("\n");
 
