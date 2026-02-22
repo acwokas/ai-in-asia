@@ -10,7 +10,7 @@ import { Save, Upload, Loader2, Wand2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
-import RichTextEditor from "@/components/RichTextEditor";
+import TipTapEditor from "@/components/tiptap/TipTapEditor";
 import { PolicyArticleEditor } from "@/components/PolicyArticleEditor";
 import { TopListsEditor } from "@/components/TopListsEditor";
 import { supabase } from "@/integrations/supabase/client";
@@ -430,7 +430,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                     )}
                   </Button>
                 </div>
-                <RichTextEditor
+                <TipTapEditor
                   value={state.content}
                   onChange={handleContentChange}
                   onSelect={state.setSelectedText}
