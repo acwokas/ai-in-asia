@@ -215,8 +215,46 @@ async function handleRewriteWithImages(
   }
 
   const internalLinksInstruction = availableLinks.length > 0
-    ? `\nINTERNAL LINKS:\n- Naturally incorporate 2-4 internal links from the following list where they are contextually relevant. Use the exact markdown format provided — do NOT modify the URLs. Only link where the reference genuinely fits the surrounding text.\n- Do NOT add any external links — only use links from this provided list.\n- Available internal links:\n${availableLinks.join('\n')}\n`
+    ? `\nINTERNAL LINKS:\n- Naturally incorporate 2-4 internal links from the following list where they are contextually relevant. Use the exact markdown format provided — do NOT modify the URLs. Only link where the reference genuinely fits the surrounding text.\n- Available internal links:\n${availableLinks.join('\n')}\n`
     : '';
+
+  // Fetch relevant external links from harvested sources
+  const extStopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some', 'also', 'most', 'very', 'just', 'even', 'much'];
+  const externalSearchTerms = title.split(/\s+/)
+    .filter((w: string) => w.length > 3)
+    .filter((w: string) => !extStopWords.includes(w.toLowerCase()))
+    .slice(0, 4)
+    .join(' & ');
+
+  let externalLinksSection = '';
+  try {
+    if (externalSearchTerms) {
+      const supabaseClient = (await import('https://esm.sh/@supabase/supabase-js@2.39.3')).createClient(supabaseUrl, supabaseKey);
+      const { data: extLinks } = await supabaseClient
+        .from('external_links')
+        .select('title, url, source_name, domain')
+        .textSearch('title', externalSearchTerms, { type: 'websearch' })
+        .order('published_at', { ascending: false })
+        .limit(15);
+
+      if (extLinks && extLinks.length > 0) {
+        const seenDomains = new Set<string>();
+        const dedupedLinks = extLinks.filter((link: any) => {
+          if (seenDomains.has(link.domain)) return false;
+          seenDomains.add(link.domain);
+          return true;
+        }).slice(0, 8);
+
+        const formattedLinks = dedupedLinks
+          .map((l: any) => `[${l.title}](${l.url}) (${l.source_name})`)
+          .join('\n');
+
+        externalLinksSection = `\n\nEXTERNAL LINKS:\n- You may also incorporate 1-3 external links from these trusted sources where they add genuine value and context. Use the exact URLs provided — do NOT modify them. Only link where the reference is directly relevant to the surrounding text. Prefer Asia-Pacific sources when the topic allows.\n- For external links, naturally weave them into sentences as supporting references, e.g. 'as MIT Technology Review recently reported, ...' or 'according to Nikkei Asia, ...'. Do NOT dump links at the end of the article. Maximum 3 external links total.\n- Available external links:\n${formattedLinks}`;
+      }
+    }
+  } catch (extErr) {
+    console.error('Failed to fetch external links (non-fatal):', extErr);
+  }
 
   // Step 1: Rewrite + get image suggestions in one AI call
   const rewriteSystemPrompt = `You are Scout, an expert editorial assistant for AIinASIA.com.
@@ -227,9 +265,10 @@ ASIA-PACIFIC ANGLE:
 - Where relevant, weave in an Asia-Pacific perspective — reference regional developments, companies, regulations, or market dynamics that connect to the article's topic.
 - CRITICAL: Only reference real, verifiable facts, companies, regulations, and events. Do NOT fabricate statistics, quotes, company names, policy names, or research papers. If you are not confident a specific Asian reference is factually accurate, do not include it. It is better to have no Asia angle than a fabricated one.
 
-LINKS — CRITICAL:
-- Do NOT add any external links or URLs. Preserve any existing links from the original content exactly as they are. Do not create new links to external websites.
-${internalLinksInstruction}
+LINKS:
+- Preserve any existing links from the original content exactly as they are.
+- Do NOT create new links to websites not listed below.
+${internalLinksInstruction}${externalLinksSection}
 
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Where a mid-article image should appear, write EXACTLY this on its own line and nothing else: IMAGE_PLACEHOLDER_HERE
