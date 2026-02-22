@@ -38,6 +38,7 @@ import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelat
 import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
 import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
+import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 
 // Lazy-load Comments (below the fold)
 const Comments = lazy(() => import("@/components/Comments"));
@@ -649,6 +650,11 @@ const Article = () => {
               tags={article.ai_tags}
               topicTags={article.topic_tags}
             />
+          </div>
+
+          {/* Learning Path callout */}
+          <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
+            <LearningPathCallout article={article} />
           </div>
 
           {/* Comments — hidden on policy articles */}
