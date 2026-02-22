@@ -7,7 +7,6 @@ export interface AdminActionState {
   scrapingEvents: boolean;
   fixingDates: boolean;
   autoScheduling: boolean;
-  cleaningMarkup: boolean;
   refreshingContent: boolean;
   calculatingReadingTimes: boolean;
   readingTimeProgress: { current: number; total: number };
@@ -20,7 +19,6 @@ export const useAdminActions = () => {
   const [scrapingEvents, setScrapingEvents] = useState(false);
   const [fixingDates, setFixingDates] = useState(false);
   const [autoScheduling, setAutoScheduling] = useState(false);
-  const [cleaningMarkup, setCleaningMarkup] = useState(false);
   const [refreshingContent, setRefreshingContent] = useState(false);
   const [calculatingReadingTimes, setCalculatingReadingTimes] = useState(false);
   const [readingTimeProgress, setReadingTimeProgress] = useState({ current: 0, total: 0 });
@@ -60,40 +58,6 @@ export const useAdminActions = () => {
     }
   };
 
-  const handleCleanWordPressMarkup = async () => {
-    try {
-      setCleaningMarkup(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("Authentication Required", {
-          description: "You must be logged in",
-        });
-        return;
-      }
-
-      const response = await supabase.functions.invoke('clean-wordpress-markup', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (response.error) {
-        throw response.error;
-      }
-
-      toast.success("Success", {
-        description: `Cleaned ${response.data.cleaned} of ${response.data.processed} articles`,
-      });
-    } catch (error: any) {
-      console.error('Error:', error);
-      toast.error("Error", {
-        description: error.message || "Failed to clean markup",
-      });
-    } finally {
-      setCleaningMarkup(false);
-    }
-  };
 
   const handleCalculateReadingTimes = async () => {
     try {
@@ -314,13 +278,11 @@ export const useAdminActions = () => {
     scrapingEvents,
     fixingDates,
     autoScheduling,
-    cleaningMarkup,
     refreshingContent,
     calculatingReadingTimes,
     readingTimeProgress,
     // Actions
     handleAutoScheduleComments,
-    handleCleanWordPressMarkup,
     handleCalculateReadingTimes,
     handleScrapeEvents,
     handleFixArticleDates,

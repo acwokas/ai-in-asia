@@ -392,10 +392,8 @@ const Admin = () => {
       <AdminQuickActions
         scrapingEvents={adminActions.scrapingEvents}
         refreshingContent={adminActions.refreshingContent}
-        cleaningMarkup={adminActions.cleaningMarkup}
         onScrapeEvents={adminActions.handleScrapeEvents}
         onRefreshContent={adminActions.handleRefreshFeaturedContent}
-        onCleanMarkup={adminActions.handleCleanWordPressMarkup}
       />
 
       {/* ── Two-column layout ───────────────────────────────── */}

@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams, Link, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link, useParams, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
@@ -14,6 +14,8 @@ const Editor = () => {
   const articleId = params.id || searchParams.get("id");
   const navigate = useNavigate();
   
+  const location = useLocation();
+  const isInsideAdmin = location.pathname.startsWith('/admin');
   const [user, setUser] = useState<any>(null);
   const queryClient = useQueryClient();
 
@@ -215,10 +217,10 @@ const Editor = () => {
   }, [handleSave]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <div className={isInsideAdmin ? "" : "min-h-screen flex flex-col"}>
+      {!isInsideAdmin && <Header />}
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className={isInsideAdmin ? "container mx-auto px-4 py-8" : "flex-1 container mx-auto px-4 py-8"}>
         {/* Breadcrumbs */}
         <nav className="text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-primary inline-flex items-center gap-1">

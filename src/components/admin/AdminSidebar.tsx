@@ -26,7 +26,7 @@ import {
   Lightbulb,
   AlertTriangle,
   Search,
-  Layers,
+  
   Link as LinkIcon,
   HeartPulse,
   Unlink,
@@ -115,7 +115,6 @@ const navGroups: NavGroup[] = [
       { label: "Authors", path: "/admin/author-management", icon: Users },
       { label: "Sponsors", path: "/admin/category-sponsors", icon: Megaphone },
       { label: "Event Submissions", path: "/admin/event-submissions", icon: CalendarCheck },
-      { label: "Bulk Operations", path: "/admin/bulk-operations", icon: Layers },
       { label: "Redirects", path: "/redirects", icon: ExternalLink, external: true },
     ],
   },
