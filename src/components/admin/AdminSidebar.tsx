@@ -84,10 +84,7 @@ const navGroups: NavGroup[] = [
   {
     title: "Newsletter",
     items: [
-      { label: "Manager", path: "/admin/newsletter-manager", icon: Mail },
-      { label: "Analytics", path: "/admin/newsletter-analytics", icon: BarChart3 },
-      { label: "Performance", path: "/admin/newsletter-performance", icon: TrendingUp },
-      { label: "Unsubscribes", path: "/admin/unsubscribes", icon: UserMinus },
+      { label: "Newsletter", path: "/admin/newsletter", icon: Mail },
     ],
   },
   {
