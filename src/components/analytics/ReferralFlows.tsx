@@ -132,12 +132,12 @@ export function ReferralFlows({ sessionsData, isLoading }: ReferralFlowsProps) {
   }, [sessionsData]);
 
   const formatDomain = (domain: string) => {
-    if (domain === 'Direct') return '🏠 Direct Traffic';
-    if (domain.includes('google')) return '🔍 Google';
-    if (domain.includes('linkedin')) return '💼 LinkedIn';
-    if (domain.includes('twitter') || domain.includes('x.com')) return '🐦 X/Twitter';
-    if (domain.includes('facebook')) return '📘 Facebook';
-    if (domain.includes('newsletter') || domain.includes('mail')) return '📧 Email';
+    if (domain === 'Direct') return 'Direct Traffic';
+    if (domain.includes('google')) return 'Google';
+    if (domain.includes('linkedin')) return 'LinkedIn';
+    if (domain.includes('twitter') || domain.includes('x.com')) return 'X/Twitter';
+    if (domain.includes('facebook')) return 'Facebook';
+    if (domain.includes('newsletter') || domain.includes('mail')) return 'Email';
     return domain;
   };
 

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mail, TrendingUp, Target, Zap, ArrowRight, Users } from "lucide-react";
+import { Mail, TrendingUp, Target, Zap, ArrowRight, Users, Lightbulb } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
@@ -382,7 +382,7 @@ export function NewsletterConversionAnalytics({
                   )}
                   {metrics.conversionRate < 5 && (
                     <p className="text-yellow-600">
-                      💡 Conversion rate is below 5%. Consider A/B testing signup form placement or copy.
+                      <Lightbulb className="h-4 w-4 inline text-amber-500 mr-0.5" /> Conversion rate is below 5%. Consider A/B testing signup form placement or copy.
                     </p>
                   )}
                 </>

@@ -16,7 +16,7 @@ import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
  import { EditableNewsletterSection } from "@/components/newsletter/EditableNewsletterSection";
- import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail, FlaskConical, Trophy } from "lucide-react";
+ import { Calendar, Send, Eye, Loader2, Home, Sparkles, Pencil, Check, X, FileText, ExternalLink, Mail, FlaskConical, Trophy, TrendingUp, Building2, Scale } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -889,7 +889,7 @@ interface WorthWatching {
 
                  {/* Roadmap Section */}
                  <div className="p-4 border rounded-lg border-amber-500/30 bg-amber-500/5">
-                   <Label className="text-base font-semibold text-amber-700 mb-3 block">📅 Roadmap</Label>
+                   <Label className="text-base font-semibold text-amber-700 mb-3 block"><Calendar className="h-4 w-4 inline mr-1" /> Roadmap</Label>
                    <p className="text-xs text-muted-foreground mb-4">
                      Featured upcoming event with "Worth it if / Skip if" guidance.
                    </p>
@@ -943,7 +943,7 @@ interface WorthWatching {
                       {/* Emerging Trends */}
                       <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
                         <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                          📈 {editData.worthWatching.trends?.title || 'Emerging Trends'}
+                          <TrendingUp className="h-4 w-4 inline mr-1" /> {editData.worthWatching.trends?.title || 'Emerging Trends'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {editData.worthWatching.trends?.content || 'No trends generated yet.'}
@@ -953,7 +953,7 @@ interface WorthWatching {
                       {/* Upcoming Events */}
                       <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-lg">
                         <h4 className="font-semibold text-amber-700 mb-2 flex items-center gap-2">
-                          📅 {editData.worthWatching.events?.title || 'Upcoming Events'}
+                          <Calendar className="h-4 w-4 inline mr-1" /> {editData.worthWatching.events?.title || 'Upcoming Events'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {editData.worthWatching.events?.content || 'No events generated yet.'}
@@ -963,7 +963,7 @@ interface WorthWatching {
                       {/* Company Spotlight */}
                       <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg">
                         <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
-                          🏢 {editData.worthWatching.spotlight?.title || 'Company Spotlight'}
+                          <Building2 className="h-4 w-4 inline mr-1" /> {editData.worthWatching.spotlight?.title || 'Company Spotlight'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {editData.worthWatching.spotlight?.content || 'No spotlight generated yet.'}
@@ -973,7 +973,7 @@ interface WorthWatching {
                       {/* Policy Watch */}
                       <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-lg">
                         <h4 className="font-semibold text-purple-700 mb-2 flex items-center gap-2">
-                          ⚖️ {editData.worthWatching.policy?.title || 'Policy Watch'}
+                          <Scale className="h-4 w-4 inline mr-1" /> {editData.worthWatching.policy?.title || 'Policy Watch'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {editData.worthWatching.policy?.content || 'No policy updates generated yet.'}

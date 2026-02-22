@@ -14,7 +14,7 @@ import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
 import { EditableNewsletterSection } from "@/components/newsletter/EditableNewsletterSection";
-import { Calendar, Send, Eye, Loader2, Sparkles, FileText, ExternalLink, Mail, FlaskConical, Trophy } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Sparkles, FileText, ExternalLink, Mail, FlaskConical, Trophy, TrendingUp, Building2, Scale } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -537,7 +537,7 @@ export default function ComposeTab() {
 
               {/* Roadmap Section */}
               <div className="p-4 border rounded-lg border-amber-500/30 bg-amber-500/5">
-                <Label className="text-base font-semibold text-amber-700 mb-3 block">📅 Roadmap</Label>
+                <Label className="text-base font-semibold text-amber-700 mb-3 block"><Calendar className="h-4 w-4 inline mr-1" /> Roadmap</Label>
                 <p className="text-xs text-muted-foreground mb-4">Featured upcoming event with guidance.</p>
                 <div className="space-y-3">
                   <div>
@@ -563,15 +563,15 @@ export default function ComposeTab() {
                 {editData.worthWatching ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
-                      { key: 'trends', icon: '📈', color: 'blue', label: 'Emerging Trends' },
-                      { key: 'events', icon: '📅', color: 'amber', label: 'Upcoming Events' },
-                      { key: 'spotlight', icon: '🏢', color: 'green', label: 'Company Spotlight' },
-                      { key: 'policy', icon: '⚖️', color: 'purple', label: 'Policy Watch' },
+                      { key: 'trends', icon: 'trending-up', color: 'blue', label: 'Emerging Trends' },
+                      { key: 'events', icon: 'calendar', color: 'amber', label: 'Upcoming Events' },
+                      { key: 'spotlight', icon: 'building-2', color: 'green', label: 'Company Spotlight' },
+                      { key: 'policy', icon: 'scale', color: 'purple', label: 'Policy Watch' },
                     ].map(({ key, icon, color, label }) => {
                       const section = (editData.worthWatching as any)?.[key];
                       return (
                         <div key={key} className={`p-4 bg-${color}-500/5 border border-${color}-500/20 rounded-lg`}>
-                          <h4 className={`font-semibold text-${color}-700 mb-2`}>{icon} {section?.title || label}</h4>
+                          <h4 className={`font-semibold text-${color}-700 mb-2`}>{(() => { const iconLookup: Record<string, any> = { 'trending-up': TrendingUp, 'calendar': Calendar, 'building-2': Building2, 'scale': Scale }; const I = iconLookup[icon]; return I ? <I className="h-4 w-4 inline mr-1" /> : null; })()} {section?.title || label}</h4>
                           <p className="text-sm text-muted-foreground">{section?.content || `No ${label.toLowerCase()} generated yet.`}</p>
                         </div>
                       );

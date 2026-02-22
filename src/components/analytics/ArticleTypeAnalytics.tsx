@@ -224,9 +224,9 @@ export function ArticleTypeAnalytics({
             <div className="mt-4 p-3 bg-muted/50 rounded-lg">
               <p className="text-sm">
                 {listicleComparison.viewsWinner === 'listicles' ? (
-                  <>📊 <strong>Listicles outperform</strong> standard articles by <strong>{Math.round((listicleComparison.listicles.avgViews / Math.max(listicleComparison.standard.avgViews, 1) - 1) * 100)}%</strong> in average views</>
+                  <><BarChart3 className="h-4 w-4 inline mr-0.5" /> <strong>Listicles outperform</strong> standard articles by <strong>{Math.round((listicleComparison.listicles.avgViews / Math.max(listicleComparison.standard.avgViews, 1) - 1) * 100)}%</strong> in average views</>
                 ) : (
-                  <>📝 <strong>Full articles outperform</strong> listicles by <strong>{Math.round((listicleComparison.standard.avgViews / Math.max(listicleComparison.listicles.avgViews, 1) - 1) * 100)}%</strong> in average views</>
+                  <><FileText className="h-4 w-4 inline mr-0.5" /> <strong>Full articles outperform</strong> listicles by <strong>{Math.round((listicleComparison.standard.avgViews / Math.max(listicleComparison.listicles.avgViews, 1) - 1) * 100)}%</strong> in average views</>
                 )}
                 {listicleComparison.engagementWinner !== listicleComparison.viewsWinner && (
                   <span className="text-muted-foreground"> - but {listicleComparison.engagementWinner === 'listicles' ? 'listicles' : 'full articles'} have better engagement</span>

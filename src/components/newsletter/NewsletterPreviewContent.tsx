@@ -1,7 +1,7 @@
  import { Link } from "react-router-dom";
  import { Card } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
-import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink, Map, User } from "lucide-react";
+import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles, ExternalLink, Map, User, Pencil, Star, BookOpen, Shuffle, Lightbulb } from "lucide-react";
  import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
  
  interface WorthWatchingItem {
@@ -121,7 +121,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {/* Editor's Note */}
        {edition.editor_note && (
          <Card className={`${cardPadding} border-l-4 border-primary`}>
-           <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold mb-3`}>📝 Editor's Note</h2>
+           <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold mb-3`}><Pencil className="h-5 w-5 inline mr-1.5" /> Editor's Note</h2>
            <p className="text-muted-foreground">{edition.editor_note}</p>
          </Card>
        )}
@@ -146,7 +146,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
            )}
            <div className={cardPadding}>
              <h2 className={`${isCompact ? 'text-xl' : 'text-2xl'} font-bold mb-3`}>
-               🌟 {edition.heroArticle.title}
+               <Star className="h-5 w-5 inline mr-1 fill-amber-400 text-amber-400" /> {edition.heroArticle.title}
              </h2>
              <p className="text-muted-foreground mb-4">
                {edition.heroArticle.excerpt}
@@ -163,7 +163,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {/* Top Stories */}
        {edition.newsletter_top_stories && Array.isArray(edition.newsletter_top_stories) && edition.newsletter_top_stories.length > 0 && (
          <div>
-           <h2 className={headingClass}>📚 This Week's Signals</h2>
+           <h2 className={headingClass}><BookOpen className="h-5 w-5 inline mr-1.5" /> This Week's Signals</h2>
           {/* Continuity Line - directly under Signals heading */}
           {edition.continuity_line && (
             <p className="text-sm text-muted-foreground italic mb-4">{edition.continuity_line}</p>
@@ -207,7 +207,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {edition.mysteryLink && (
          <Card className={`${cardPadding} bg-gradient-to-br from-primary/5 to-primary/10 border-dashed`}>
            <div className="text-center">
-             <h3 className={`${isCompact ? 'text-lg' : 'text-xl'} font-bold mb-2`}>🎲 Mystery Link</h3>
+             <h3 className={`${isCompact ? 'text-lg' : 'text-xl'} font-bold mb-2`}><Shuffle className="h-5 w-5 inline mr-1.5" /> Mystery Link</h3>
              <p className="text-muted-foreground mb-4">
                This could link to absolutely anything...
              </p>
@@ -280,7 +280,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
       <Card className={`${cardPadding} bg-gradient-to-br from-sky-900 to-sky-800 text-white`}>
         <div className="flex items-center gap-2 mb-3">
           <Map className="h-5 w-5" />
-          <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>🗺️ Roadmap</h2>
+          <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}><Map className="h-5 w-5 inline mr-1.5" /> Roadmap</h2>
         </div>
         <p className="mb-4 opacity-90">{edition.roadmap_body}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -303,7 +303,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
        {/* Tools & Prompts */}
        {edition.toolsPrompts && edition.toolsPrompts.length > 0 && (
          <div>
-           <h2 className={headingClass}>🛠️ Tools & Prompts</h2>
+           <h2 className={headingClass}><Wrench className="h-5 w-5 inline mr-1.5" /> Tools & Prompts</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              {edition.toolsPrompts.map((item) => (
                <Card key={item.id} className="p-4">
@@ -348,7 +348,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
         <Card className={`${cardPadding} border-l-4 border-accent`}>
           <div className="flex items-center gap-2 mb-3">
             <User className="h-5 w-5 text-accent-foreground" />
-            <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}>💡 Adrian's Take</h2>
+            <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold`}><Lightbulb className="h-5 w-5 inline mr-1.5" /> Adrian's Take</h2>
           </div>
           <p className="text-muted-foreground">{edition.adrians_take}</p>
         </Card>
