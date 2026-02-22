@@ -18,7 +18,7 @@ interface CategoryCrossNavProps {
 export function CategoryCrossNav({ categories, revealProps }: CategoryCrossNavProps) {
   return (
     <section ref={revealProps.ref} style={{ marginBottom: 48, ...revealProps.style }}>
-      <SectionHeader title="Explore Other Categories" emoji="🌐" color={TOKENS.BRAND} />
+      <SectionHeader title="Explore Other Categories" emoji="globe" color={TOKENS.BRAND} />
       <div className="flex md:grid md:grid-cols-6 gap-3.5 overflow-x-auto scrollbar-hide">
         {categories.map((cat, i) => (
           <div key={cat.slug} style={staggerStyle(revealProps.visible, i)}>

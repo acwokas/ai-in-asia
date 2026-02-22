@@ -247,7 +247,7 @@ const Index = () => {
       markNewsletterSubscribed();
       await awardNewsletterPoints(user?.id ?? null, supabase);
       toast("Successfully subscribed!", {
-        description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Welcome aboard! Check your inbox for our latest insights.",
+        description: user ? "You earned 25 points and the Newsletter Insider badge!" : "Welcome aboard! Check your inbox for our latest insights.",
       });
       (e.target as HTMLFormElement).reset();
       setNewsletterEmail("");

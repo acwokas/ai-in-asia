@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Upload, ChevronRight, Zap, ArrowLeft } from "lucide-react";
+import { Loader2, Eye, EyeOff, Upload, ChevronRight, Zap, ArrowLeft, Trophy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage } from "@/lib/imageCompression";
@@ -190,7 +190,7 @@ const Auth = () => {
           userId: data.user.id, email: data.user.email
         }));
         const potentialPoints = calculateSignupPoints();
-        toast("Welcome! 🎉", { description: `Account created! You'll earn ${potentialPoints} points once you complete your profile.` });
+        toast("Welcome!", { description: `Account created! You'll earn ${potentialPoints} points once you complete your profile.` });
       }
     } catch (error) {
       console.error('Sign up process error:', error);
@@ -524,7 +524,7 @@ const Auth = () => {
                       </span>
                     </div>
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
-                      <p className="text-xs font-medium mb-2">🏆 Earn More Rewards:</p>
+                      <p className="text-xs font-medium mb-2"><Trophy className="h-3.5 w-3.5 inline mr-0.5" /> Earn More Rewards:</p>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mb-3">
                         <div className="flex justify-between"><span>Avatar:</span><span className="font-medium">+5 pts</span></div>
                         <div className="flex justify-between"><span>Company:</span><span className="font-medium">+5 pts</span></div>
@@ -535,7 +535,7 @@ const Auth = () => {
                       </div>
                       <div className="pt-2 border-t border-primary/20">
                         <p className="text-xs font-medium text-primary">
-                          {calculateSignupPoints() >= 45 ? "🎯 Unlock 'Profile Master' badge! 👑" : `Need ${45 - calculateSignupPoints()} more pts for 'Profile Master' badge 👑`}
+                          {calculateSignupPoints() >= 45 ? "Unlock 'Profile Master' badge!" : `Need ${45 - calculateSignupPoints()} more pts for 'Profile Master' badge`}
                         </p>
                       </div>
                     </div>

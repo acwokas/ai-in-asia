@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
@@ -240,7 +240,7 @@ const Header = memo(() => {
                                   ) : (
                                     <p className="text-[10px] text-muted-foreground">Max level reached!</p>
                                   )}
-                                  <p className="text-xs text-muted-foreground">🔥 {userStats.streak_days} day streak · ⚡ {pts} pts</p>
+                                  <p className="text-xs text-muted-foreground"><Flame className="h-3 w-3 inline text-orange-500" /> {userStats.streak_days} day streak · <Zap className="h-3 w-3 inline text-amber-500" /> {pts} pts</p>
                                 </div>
                               );
                             })()}
@@ -377,7 +377,7 @@ const Header = memo(() => {
             <div className="flex items-center gap-2 mb-2 mt-2">
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Your Account</span>
               {user && userStats && (
-                <span className="text-xs text-muted-foreground">⚡ {userStats.points} pts</span>
+                <span className="text-xs text-muted-foreground"><Zap className="h-3 w-3 inline text-amber-500" /> {userStats.points} pts</span>
               )}
             </div>
             <div className="flex flex-col space-y-1 mb-4">

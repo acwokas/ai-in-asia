@@ -28,7 +28,7 @@ export function CategoryFeaturedGrid({ articles, cfg, slug, revealProps, selecte
     <section ref={revealProps.ref} style={{ marginBottom: 48, ...revealProps.style }}>
       <SectionHeader
         title="Featured"
-        emoji="⭐"
+        emoji="star"
         color={cfg.accent}
         rightAction={
           <Link

@@ -4,7 +4,7 @@ export const CATEGORY_CONFIG = {
   news: {
     accent: "#3b82f6",
     glow: "rgba(59, 130, 246, 0.15)",
-    emoji: "📡",
+    emoji: "newspaper",
     icon: "Radar",
     label: "News",
     desc: "Breaking developments and signals from the AI landscape across Asia-Pacific",
@@ -14,7 +14,7 @@ export const CATEGORY_CONFIG = {
   business: {
     accent: "#10b981",
     glow: "rgba(16, 185, 129, 0.15)",
-    emoji: "💼",
+    emoji: "briefcase",
     icon: "BarChart3",
     label: "Business",
     desc: "How AI is reshaping industries across Asia-Pacific",
@@ -24,7 +24,7 @@ export const CATEGORY_CONFIG = {
   life: {
     accent: "#c084fc",
     glow: "rgba(192, 132, 252, 0.15)",
-    emoji: "🌏",
+    emoji: "globe",
     icon: "Compass",
     label: "Life",
     desc: "AI's impact on everyday life, health, culture, and society",
@@ -34,7 +34,7 @@ export const CATEGORY_CONFIG = {
   learn: {
     accent: "#10b981",
     glow: "rgba(16, 185, 129, 0.15)",
-    emoji: "🎓",
+    emoji: "graduation-cap",
     icon: "BookOpen",
     label: "Learn",
     desc: "Tutorials, explainers, and guides to sharpen your AI skills",
@@ -44,7 +44,7 @@ export const CATEGORY_CONFIG = {
   create: {
     accent: "#f97316",
     glow: "rgba(249, 115, 22, 0.15)",
-    emoji: "🎨",
+    emoji: "palette",
     icon: "Wand2",
     label: "Create",
     desc: "Tools, prompts, and workflows for AI-powered creation",
@@ -54,7 +54,7 @@ export const CATEGORY_CONFIG = {
   voices: {
     accent: "#06b6d4",
     glow: "rgba(6, 182, 212, 0.15)",
-    emoji: "🎙️",
+    emoji: "mic",
     icon: "Quote",
     label: "Voices",
     desc: "Opinion, analysis, and commentary from AI practitioners and thinkers",
@@ -64,7 +64,7 @@ export const CATEGORY_CONFIG = {
   policy: {
     accent: "#eab308",
     glow: "rgba(234, 179, 8, 0.15)",
-    emoji: "⚖️",
+    emoji: "scale",
     icon: "Scale",
     label: "Policy",
     desc: "AI regulation, governance frameworks, and government strategy across Asia-Pacific",

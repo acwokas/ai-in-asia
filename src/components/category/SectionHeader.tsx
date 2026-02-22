@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { iconMap } from "@/lib/iconMap";
 
 interface SectionHeaderProps {
   title: string;
@@ -9,10 +10,12 @@ interface SectionHeaderProps {
 }
 
 export const SectionHeader = ({ title, emoji, color, subtitle, rightAction }: SectionHeaderProps) => {
+  const IconComponent = emoji ? iconMap[emoji] : null;
+
   return (
     <div style={{ marginBottom: subtitle ? 4 : 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
-        {emoji && <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>}
+        {IconComponent && <IconComponent style={{ width: 20, height: 20, color, flexShrink: 0 }} />}
         <span
           style={{
             fontFamily: "Poppins, sans-serif",

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { SectionHeader } from "@/components/category/SectionHeader";
 import { TOKENS } from "@/constants/categoryTokens";
 import { staggerStyle } from "@/lib/scrollAnimation";
+import { iconMap } from "@/lib/iconMap";
 import type React from "react";
 
 interface LearningPath {
@@ -31,7 +32,7 @@ export function CategoryLearningPaths({ paths, categorySlug, revealProps, accent
 
   return (
     <section ref={revealProps.ref} style={{ marginBottom: 48, ...revealProps.style }}>
-      <SectionHeader title="Learning Paths" emoji="🗺️" color={accent} subtitle="Curated sequences to guide your reading" />
+      <SectionHeader title="Learning Paths" emoji="map" color={accent} subtitle="Curated sequences to guide your reading" />
       <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
         {paths.map((p, i) => (
           <div key={i} style={staggerStyle(revealProps.visible, i)}>
@@ -86,7 +87,7 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 12, background: `${path.color}1f`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 36, lineHeight: 1 }}>{path.emoji}</span>
+            {(() => { const Icon = iconMap[path.emoji]; return Icon ? <Icon style={{ width: 28, height: 28, color: path.color }} /> : null; })()}
           </div>
           {isComplete && (
             <span style={{

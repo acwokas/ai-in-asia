@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Clock, MessageSquare, Share2, Bookmark, Flame } from 'lucide-react';
+import { CheckCircle, Clock, MessageSquare, Share2, Bookmark, Flame, Sparkles } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -95,7 +95,7 @@ const ProfileDashboard = ({ stats, achievements, onSwitchToAchievements }: Profi
               {pts}/{next.min} points to <span className="font-medium text-foreground">{next.name}</span>
             </span>
           ) : (
-            <span className="text-sm text-primary font-medium">✨ Max level reached!</span>
+            <span className="text-sm text-primary font-medium"><Sparkles className="h-4 w-4 inline text-primary mr-0.5" /> Max level reached!</span>
           )}
         </div>
         <Progress value={progress} className="h-2" />

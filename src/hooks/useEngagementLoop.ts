@@ -44,7 +44,7 @@ export function useEngagementLoop() {
             .eq("status", "published")
             .gte("published_at", lastActive.toISOString());
 
-          toast("👋 Welcome back!", {
+          toast("Welcome back!", {
             description: `${count || 0} new articles since your last visit.`,
             duration: 5000,
           });

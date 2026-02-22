@@ -73,7 +73,7 @@ const Footer = memo(() => {
         await awardNewsletterPoints(user?.id ?? null, supabase);
 
         toast("Successfully subscribed!", {
-          description: user ? "You earned 25 points and the Newsletter Insider badge! 🎉" : "Check your inbox for a confirmation email.",
+          description: user ? "You earned 25 points and the Newsletter Insider badge!" : "Check your inbox for a confirmation email.",
         });
         setEmail("");
       }
