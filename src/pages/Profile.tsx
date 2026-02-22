@@ -15,6 +15,8 @@ import ProfileAchievements from '@/components/profile/ProfileAchievements';
 import ProfileStats from '@/components/profile/ProfileStats';
 import ProfileSettings from '@/components/profile/ProfileSettings';
 import ProfileAccount from '@/components/profile/ProfileAccount';
+import ProfileReadingHistory from '@/components/profile/ProfileReadingHistory';
+import ProfileNotifications from '@/components/profile/ProfileNotifications';
 
 interface UserStats {
   points: number;
@@ -286,13 +288,16 @@ const Profile = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-1 overflow-x-auto">
               <TabsTrigger value="bookmarks" className="flex-shrink-0">Bookmarks</TabsTrigger>
+              <TabsTrigger value="reading" className="flex-shrink-0">Reading</TabsTrigger>
               <TabsTrigger value="achievements" className="flex-shrink-0">Achievements</TabsTrigger>
               <TabsTrigger value="stats" className="flex-shrink-0">Reading Stats</TabsTrigger>
+              <TabsTrigger value="notifications" className="flex-shrink-0">Notifications</TabsTrigger>
               <TabsTrigger value="account" className="flex-shrink-0">Account Settings</TabsTrigger>
               <TabsTrigger value="security" className="flex-shrink-0">Security</TabsTrigger>
             </TabsList>
 
             <TabsContent value="bookmarks"><ProfileBookmarks bookmarks={bookmarks} /></TabsContent>
+            <TabsContent value="reading"><ProfileReadingHistory /></TabsContent>
             <TabsContent value="achievements"><ProfileAchievements achievements={achievements} /></TabsContent>
             <TabsContent value="stats"><ProfileStats stats={stats} levelInfo={levelInfo} /></TabsContent>
             <TabsContent value="account">
@@ -312,6 +317,7 @@ const Profile = () => {
                 onSave={handleSaveProfile}
               />
             </TabsContent>
+            <TabsContent value="notifications"><ProfileNotifications /></TabsContent>
             <TabsContent value="security"><ProfileAccount /></TabsContent>
           </Tabs>
         </div>
