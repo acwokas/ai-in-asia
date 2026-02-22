@@ -2,7 +2,7 @@
 const CATEGORY_COLORS: Record<string, string> = {
   news: "#E06050",
   business: "#E5A54B",
-  life: "#0D9488",
+  life: "#c084fc",
   learn: "#5F72FF",
   create: "#9B72FF",
   voices: "#E0609B",

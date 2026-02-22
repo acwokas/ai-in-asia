@@ -391,7 +391,7 @@ const Article = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         
-        <main className="flex-1">
+        <main id="main-content" className="flex-1">
           {/* Admin controls above hero */}
           {(!isLoadingAdmin && isAdmin) && (
             <div className="container mx-auto px-4 max-w-[1080px] pt-4">
@@ -455,9 +455,9 @@ const Article = () => {
                     )}
                     <span className="text-white/90 text-sm font-semibold">{article.authors?.name || 'Anonymous'}</span>
                     <span className="text-white/50 text-sm">•</span>
-                    <span className="text-white/70 text-sm">
+                    <time dateTime={article.published_at || ''} className="text-white/70 text-sm">
                       {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                    </span>
+                    </time>
                     <span className="text-white/50 text-sm">•</span>
                     <span className="text-white/70 text-sm flex items-center gap-1">
                       <Clock className="h-3 w-3" />
@@ -465,8 +465,8 @@ const Article = () => {
                     </span>
                     <div className="flex items-center gap-1 ml-auto">
                       <ArticleShareInline categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
-                      <Button variant="ghost" size="icon" onClick={handleBookmark} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10">
-                        <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                      <Button variant="ghost" size="icon" onClick={handleBookmark} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10" aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this article"}>
+                        <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -517,14 +517,14 @@ const Article = () => {
 
           {/* Breadcrumbs (below hero when hero exists) */}
           {article.featured_image_url && (
-            <div className="container mx-auto max-w-[1080px] px-4 mt-4">
+            <nav aria-label="Breadcrumb" className="container mx-auto max-w-[1080px] px-4 mt-4">
               <ArticleBreadcrumbs
                 articleType={article.article_type}
                 categoryName={article.categories?.name}
                 categorySlug={article.categories?.slug}
                 articleTitle={article.title}
               />
-            </div>
+            </nav>
           )}
 
           {/* Two-column layout */}
@@ -557,7 +557,7 @@ const Article = () => {
             {/* Desktop two-column / Tablet+Mobile single column */}
             <div className="flex gap-10">
               {/* Main reading column */}
-              <div className="min-w-0 flex-1 max-w-[720px]">
+              <article className="min-w-0 flex-1 max-w-[720px]">
                 <div className="prose prose-lg max-w-none article-content">
                   {article.article_type === 'policy_article' ? (
                     <PolicyArticleContent article={article} />
@@ -617,7 +617,7 @@ const Article = () => {
                     />
                   </div>
                 )}
-              </div>
+              </article>
 
               {/* Right sidebar rail — desktop only */}
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
