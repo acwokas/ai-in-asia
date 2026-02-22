@@ -6,12 +6,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bookmark, X, Clock, Trash2 } from 'lucide-react';
 import { useSavedArticles } from '@/hooks/useSavedArticles';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const SavedArticles = () => {
   const { savedArticles, removeArticle, clearAll } = useSavedArticles();
-  const { toast } = useToast();
+  
   
   // Sort by most recently saved
   const sortedArticles = [...savedArticles].sort((a, b) => b.savedAt - a.savedAt);
@@ -47,10 +47,7 @@ const SavedArticles = () => {
                 size="sm"
                 onClick={() => {
                   clearAll();
-                  toast({
-                    title: 'Saved Articles cleared',
-                    description: 'All saved articles have been removed.',
-                  });
+                  toast('Saved Articles cleared', { description: 'All saved articles have been removed.' });
                 }}
                 className="text-muted-foreground hover:text-destructive"
               >

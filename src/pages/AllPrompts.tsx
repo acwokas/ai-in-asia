@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Copy, Check, ChevronRight, ExternalLink, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 // Deterministic hash from a date string to pick prompt of the day
@@ -71,7 +71,7 @@ const cleanGuideTitle = (title: string | undefined): string => {
 };
 
 const AllPrompts = () => {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [platformFilter, setPlatformFilter] = useState("All");
@@ -173,10 +173,10 @@ const AllPrompts = () => {
         .update({ copy_count: (prompts?.find(p => p.id === id)?.copy_count || 0) + 1 })
         .eq("id", id)
         .then(() => queryClient.invalidateQueries({ queryKey: ["guide-prompts-library"] }));
-      toast({ title: "Copied!", description: "Prompt copied to clipboard" });
+      toast("Copied!", { description: "Prompt copied to clipboard" });
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      toast({ title: "Error", description: "Failed to copy", variant: "destructive" });
+      toast.error("Error", { description: "Failed to copy" });
     }
   };
 

@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
@@ -30,7 +30,7 @@ const newsletterSchema = z.object({
 });
 
 const Newsletter = () => {
-  const { toast } = useToast();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -57,10 +57,7 @@ const Newsletter = () => {
         .maybeSingle();
 
       if (existing) {
-        toast({
-          title: "Already subscribed",
-          description: "This email is already subscribed to our newsletter.",
-        });
+        toast("Already subscribed", { description: "This email is already subscribed to our newsletter." });
         setIsSubmitting(false);
         return;
       }
@@ -75,26 +72,15 @@ const Newsletter = () => {
       if (error) throw error;
 
       setIsSubscribed(true);
-      toast({
-        title: "Successfully subscribed!",
-        description: "Welcome aboard! Check your inbox for our latest insights.",
-      });
+      toast("Successfully subscribed!", { description: "Welcome aboard! Check your inbox for our latest insights." });
       
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
+        toast.error("Validation Error", { description: error.errors[0].message });
       } else {
         console.error('Error subscribing:', error);
-        toast({
-          title: "Error",
-          description: "Failed to subscribe. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Error", { description: "Failed to subscribe. Please try again." });
       }
     } finally {
       setIsSubmitting(false);
