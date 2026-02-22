@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -12,13 +12,9 @@ import SEOHead from '@/components/SEOHead';
 import { toast } from 'sonner';
 import { awardPoints } from '@/lib/gamification';
 import ProfileHeader from '@/components/profile/ProfileHeader';
-
+import ProfileDashboard from '@/components/profile/ProfileDashboard';
 import ProfileAchievements from '@/components/profile/ProfileAchievements';
-import ProfileStats from '@/components/profile/ProfileStats';
-import ProfileSettings from '@/components/profile/ProfileSettings';
-import ProfileAccount from '@/components/profile/ProfileAccount';
-import ProfileReadingHistory from '@/components/profile/ProfileReadingHistory';
-import ProfileNotifications from '@/components/profile/ProfileNotifications';
+import ProfileSettingsPage from '@/components/profile/ProfileSettingsPage';
 
 interface UserStats {
   points: number;
@@ -35,6 +31,8 @@ interface Achievement {
   description: string;
   badge_icon: string;
   earned_at?: string;
+  category?: string | null;
+  points_required?: number | null;
 }
 
 interface ProfileData {
@@ -47,13 +45,14 @@ interface ProfileData {
   country: string;
   interests: string[];
   newsletter_subscribed: boolean;
+  created_at?: string;
 }
 
 const getLevelInfo = (level: string) => {
   const levels = {
-    explorer: { name: 'Explorer', color: 'bg-blue-500', next: 'Enthusiast', pointsNeeded: 100 },
-    enthusiast: { name: 'Enthusiast', color: 'bg-purple-500', next: 'Expert', pointsNeeded: 500 },
-    expert: { name: 'Expert', color: 'bg-orange-500', next: 'Thought Leader', pointsNeeded: 1000 },
+    explorer: { name: 'Explorer', color: 'bg-blue-500', next: 'Enthusiast', pointsNeeded: 50 },
+    enthusiast: { name: 'Enthusiast', color: 'bg-purple-500', next: 'Expert', pointsNeeded: 200 },
+    expert: { name: 'Expert', color: 'bg-orange-500', next: 'Thought Leader', pointsNeeded: 500 },
     thought_leader: { name: 'Thought Leader', color: 'bg-red-500', next: null, pointsNeeded: null },
   };
   return levels[level as keyof typeof levels] || levels.explorer;
@@ -63,15 +62,17 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useAdminRole();
+  const [searchParams] = useSearchParams();
 
   const [stats, setStats] = useState<UserStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("reading");
+
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam === 'achievements' ? 'achievements' : tabParam === 'settings' ? 'settings' : 'dashboard');
   const tabsRef = useRef<HTMLDivElement>(null);
 
   // Edit state
@@ -92,6 +93,13 @@ const Profile = () => {
     };
     loadData();
   }, [user, navigate]);
+
+  // Sync tab param
+  useEffect(() => {
+    if (tabParam === 'achievements' || tabParam === 'settings' || tabParam === 'dashboard') {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const completePendingProfile = async () => {
     const pendingData = sessionStorage.getItem('pendingProfileData');
@@ -179,9 +187,6 @@ const Profile = () => {
       const { data: earnedData } = await supabase.from('user_achievements').select('achievement_id, earned_at').eq('user_id', user.id);
       const earnedMap = new Map(earnedData?.map(ea => [ea.achievement_id, ea.earned_at]) || []);
       setAchievements(allAchievements?.map(a => ({ ...a, earned_at: earnedMap.get(a.id) })) || []);
-
-
-
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -292,20 +297,30 @@ const Profile = () => {
 
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="w-full h-auto flex-nowrap justify-start gap-1 overflow-x-auto scrollbar-hide">
-              <TabsTrigger value="reading" className="flex-shrink-0">Reading</TabsTrigger>
-              <TabsTrigger value="achievements" className="flex-shrink-0">Achievements</TabsTrigger>
-              <TabsTrigger value="stats" className="flex-shrink-0">Reading Stats</TabsTrigger>
-              <TabsTrigger value="notifications" className="flex-shrink-0">Notifications</TabsTrigger>
-              <TabsTrigger value="account" className="flex-shrink-0">Account Settings</TabsTrigger>
-              <TabsTrigger value="security" className="flex-shrink-0">Security</TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="achievements">Achievements</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="reading"><ProfileReadingHistory /></TabsContent>
-            <TabsContent value="achievements"><ProfileAchievements achievements={achievements} /></TabsContent>
-            <TabsContent value="stats"><ProfileStats stats={stats} levelInfo={levelInfo} /></TabsContent>
-            <TabsContent value="account">
-              <ProfileSettings
+            <TabsContent value="dashboard">
+              <ProfileDashboard
+                stats={stats}
+                achievements={achievements}
+                onSwitchToAchievements={() => setActiveTab('achievements')}
+              />
+            </TabsContent>
+
+            <TabsContent value="achievements">
+              <ProfileAchievements
+                achievements={achievements}
+                totalPoints={stats?.points || 0}
+                memberSince={profile?.created_at}
+              />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <ProfileSettingsPage
                 email={user?.email || ''}
                 editFirstName={editFirstName}
                 editLastName={editLastName}
@@ -321,8 +336,6 @@ const Profile = () => {
                 onSave={handleSaveProfile}
               />
             </TabsContent>
-            <TabsContent value="notifications"><ProfileNotifications /></TabsContent>
-            <TabsContent value="security"><ProfileAccount /></TabsContent>
           </Tabs>
         </div>
       </main>
