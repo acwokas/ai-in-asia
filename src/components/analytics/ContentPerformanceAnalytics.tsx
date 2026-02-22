@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, Image, AlignLeft, TrendingUp, TrendingDown, Scale, Target, Ruler } from "lucide-react";
+import { FileText, ImageIcon, AlignLeft, TrendingUp, TrendingDown, Scale, Target, Ruler, CheckCircle2, AlertTriangle } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ScatterChart, Scatter, Cell, LineChart, Line
@@ -203,7 +203,7 @@ export function ContentPerformanceAnalytics({
       <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5" />
+            <ImageIcon className="h-5 w-5" />
             Featured Image Impact
           </CardTitle>
           <CardDescription>Do articles with images perform better?</CardDescription>
@@ -213,7 +213,7 @@ export function ContentPerformanceAnalytics({
             {/* With Image */}
             <div className={`p-4 rounded-lg ${imageImpact.winner === 'with' ? 'bg-green-500/10 border border-green-500/30' : 'bg-muted/50'}`}>
               <div className="flex items-center gap-2 mb-4">
-                <Image className="h-5 w-5 text-green-500" />
+                <ImageIcon className="h-5 w-5 text-green-500" />
                 <h4 className="font-semibold">With Featured Image</h4>
                 {imageImpact.winner === 'with' && <Badge className="ml-auto bg-green-500">Winner</Badge>}
               </div>
@@ -269,9 +269,9 @@ export function ContentPerformanceAnalytics({
             <div className="mt-4 p-3 bg-muted/50 rounded-lg">
               <p className="text-sm">
                 {imageImpact.winner === 'with' ? (
-                  <>🖼️ Articles <strong>with images</strong> get {Math.round((imageImpact.withImage.avgViews / Math.max(imageImpact.withoutImage.avgViews, 1) - 1) * 100)}% more views on average</>
+                  <><ImageIcon className="h-4 w-4 inline mr-0.5" /> Articles <strong>with images</strong> get {Math.round((imageImpact.withImage.avgViews / Math.max(imageImpact.withoutImage.avgViews, 1) - 1) * 100)}% more views on average</>
                 ) : (
-                  <>📝 Interestingly, articles <strong>without images</strong> perform slightly better in this period</>
+                  <><FileText className="h-4 w-4 inline mr-0.5" /> Interestingly, articles <strong>without images</strong> perform slightly better in this period</>
                 )}
               </p>
             </div>
@@ -406,11 +406,11 @@ export function ContentPerformanceAnalytics({
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <p className="text-sm">
               {relatedArticlesEffectiveness.rate >= 30 ? (
-                <>✅ Good discovery rate! {relatedArticlesEffectiveness.rate}% of sessions view 2+ articles</>
+                <><CheckCircle2 className="h-4 w-4 inline text-green-500 mr-0.5" /> Good discovery rate! {relatedArticlesEffectiveness.rate}% of sessions view 2+ articles</>
               ) : relatedArticlesEffectiveness.rate >= 15 ? (
-                <>⚠️ Moderate discovery rate. Consider improving related content suggestions</>
+                <><AlertTriangle className="h-4 w-4 inline text-amber-500 mr-0.5" /> Moderate discovery rate. Consider improving related content suggestions</>
               ) : (
-                <>🔴 Low discovery rate ({relatedArticlesEffectiveness.rate}%). Related articles may need optimization</>
+                <>Low discovery rate ({relatedArticlesEffectiveness.rate}%). Related articles may need optimization</>
               )}
             </p>
           </div>

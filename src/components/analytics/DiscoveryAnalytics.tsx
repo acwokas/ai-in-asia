@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, AlertTriangle, FileQuestion, Link2, BookOpen, TrendingUp, ArrowRight } from "lucide-react";
+import { Search, AlertTriangle, FileQuestion, Link2, BookOpen, TrendingUp, ArrowRight, BarChart3, CheckCircle2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
@@ -252,11 +252,11 @@ export function DiscoveryAnalytics({
             <div className="flex-1 p-3 bg-muted/30 rounded-lg">
               <p className="text-sm">
                 {entryPointAnalysis.concentration >= 50 ? (
-                  <>⚠️ High concentration. Consider promoting more content to diversify traffic.</>
+                  <><AlertTriangle className="h-4 w-4 inline text-amber-500 mr-0.5" /> High concentration. Consider promoting more content to diversify traffic.</>
                 ) : entryPointAnalysis.concentration >= 30 ? (
-                  <>📊 Moderate concentration. Good mix of evergreen and new content.</>
+                  <><BarChart3 className="h-4 w-4 inline mr-0.5" /> Moderate concentration. Good mix of evergreen and new content.</>
                 ) : (
-                  <>✅ Well-distributed traffic across your content library.</>
+                  <><CheckCircle2 className="h-4 w-4 inline text-green-500 mr-0.5" /> Well-distributed traffic across your content library.</>
                 )}
               </p>
             </div>
@@ -343,7 +343,7 @@ export function DiscoveryAnalytics({
             <div>
               <h4 className="text-sm font-medium mb-3">Top Missing Pages</h4>
               {notFoundAnalysis.paths.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No 404 errors recorded 🎉</p>
+                <p className="text-muted-foreground text-sm">No 404 errors recorded</p>
               ) : (
                 <ScrollArea className="h-[200px]">
                   <div className="space-y-2">
