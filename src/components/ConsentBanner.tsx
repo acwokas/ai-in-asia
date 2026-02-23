@@ -27,7 +27,7 @@ const ConsentBanner = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] bg-card border-t border-border shadow-lg pb-[env(safe-area-inset-bottom)] max-h-[50vh] overflow-y-auto">
+    <div data-nosnippet className="fixed inset-x-0 bottom-0 z-[60] bg-card border-t border-border shadow-lg pb-[env(safe-area-inset-bottom)] max-h-[50vh] overflow-y-auto">
       <div className="container mx-auto px-4 py-3">
         <div className="flex flex-col gap-3">
           {/* Header with close button on mobile */}

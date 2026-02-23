@@ -73,7 +73,7 @@ const StockTicker = () => {
   const displayStocks = [...stocks, ...stocks];
 
   return (
-    <div className="bg-[#E6F4F1] border-y border-[#D0E8E2] overflow-hidden group">
+    <div data-nosnippet aria-hidden="true" className="bg-[#E6F4F1] border-y border-[#D0E8E2] overflow-hidden group">
       <div className="relative">
         <div className="ticker-wrapper">
           <div className="ticker-content">
