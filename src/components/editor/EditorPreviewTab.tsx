@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Monitor, Smartphone } from "lucide-react";
@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { convertMarkdownToHtml } from "@/lib/markdownConversion";
 import type { CMSEditorState } from "@/hooks/useCMSEditorState";
 import TldrSnapshot from "@/components/TldrSnapshot";
+import ThreeBeforeNineTemplate from "@/components/ThreeBeforeNine/ThreeBeforeNineTemplate";
 
 interface EditorPreviewTabProps {
   state: CMSEditorState;
@@ -16,6 +17,33 @@ const EditorPreviewTab = ({ state, authorName }: EditorPreviewTabProps) => {
   const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
 
   const htmlContent = convertMarkdownToHtml(state.content);
+
+  // Build a mock article object for 3B9 preview
+  const mock3b9Article = useMemo(() => {
+    if (state.articleType !== "three_before_nine") return null;
+    return {
+      id: "preview",
+      title: state.title || "Untitled",
+      slug: state.slug || "preview",
+      content: state.content,
+      excerpt: state.excerpt || "Your essential AI intelligence briefing.",
+      published_at: state.publishedAt ? String(state.publishedAt) : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      featured_image_url: state.featuredImage || undefined,
+      meta_title: state.metaTitle || undefined,
+      meta_description: state.metaDescription || undefined,
+      status: state.status,
+      view_count: 0,
+      tldr_snapshot: {
+        whoShouldPayAttention: state.whoShouldPayAttention || undefined,
+        whatChangesNext: state.whatChangesNext || undefined,
+        signalImages: state.signalImages || [],
+      },
+      author: authorName
+        ? { name: authorName, slug: "preview", avatar_url: undefined }
+        : undefined,
+    };
+  }, [state, authorName]);
 
   return (
     <div className="space-y-4">
@@ -41,54 +69,63 @@ const EditorPreviewTab = ({ state, authorName }: EditorPreviewTabProps) => {
       <div className="border border-border rounded-lg bg-background overflow-auto">
         <div
           className={cn(
-            "mx-auto p-6 md:p-10 transition-all",
+            "mx-auto transition-all",
             viewport === "desktop" ? "max-w-[1200px]" : "max-w-[375px]"
           )}
         >
-          {/* Status badge */}
-          <Badge variant="outline" className="mb-4">
-            {state.status === "published" ? "Published" : state.status === "scheduled" ? "Scheduled" : "Draft"}
-          </Badge>
+          {/* 3-Before-9 uses its dedicated template */}
+          {state.articleType === "three_before_nine" && mock3b9Article ? (
+            <div className="pointer-events-none">
+              <ThreeBeforeNineTemplate article={mock3b9Article} />
+            </div>
+          ) : (
+            <div className="p-6 md:p-10">
+              {/* Status badge */}
+              <Badge variant="outline" className="mb-4">
+                {state.status === "published" ? "Published" : state.status === "scheduled" ? "Scheduled" : "Draft"}
+              </Badge>
 
-          {/* Title */}
-          <h1 className="font-[Poppins] font-bold text-3xl md:text-4xl leading-tight mb-4">
-            {state.title || "Untitled Article"}
-          </h1>
+              {/* Title */}
+              <h1 className="font-[Poppins] font-bold text-3xl md:text-4xl leading-tight mb-4">
+                {state.title || "Untitled Article"}
+              </h1>
 
-          {/* Author + date */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            {authorName && <span className="font-medium">{authorName}</span>}
-            {state.publishedAt && (
-              <>
-                <span>·</span>
-                <span>{new Date(state.publishedAt).toLocaleDateString()}</span>
-              </>
-            )}
-          </div>
+              {/* Author + date */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                {authorName && <span className="font-medium">{authorName}</span>}
+                {state.publishedAt && (
+                  <>
+                    <span>·</span>
+                    <span>{new Date(state.publishedAt).toLocaleDateString()}</span>
+                  </>
+                )}
+              </div>
 
-          {/* Featured image */}
-          {state.featuredImage && (
-            <img
-              src={state.featuredImage}
-              alt={state.featuredImageAlt || ""}
-              className="w-full rounded-lg mb-6 object-cover max-h-[500px]"
-            />
+              {/* Featured image */}
+              {state.featuredImage && (
+                <img
+                  src={state.featuredImage}
+                  alt={state.featuredImageAlt || ""}
+                  className="w-full rounded-lg mb-6 object-cover max-h-[500px]"
+                />
+              )}
+
+              {/* TLDR */}
+              {(state.tldrSnapshot.some(b => b) || state.whoShouldPayAttention || state.whatChangesNext) && (
+                <TldrSnapshot
+                  bullets={state.tldrSnapshot.filter(b => b)}
+                  whoShouldPayAttention={state.whoShouldPayAttention}
+                  whatChangesNext={state.whatChangesNext}
+                />
+              )}
+
+              {/* Body */}
+              <div
+                className="prose prose-lg dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+              />
+            </div>
           )}
-
-          {/* TLDR */}
-          {(state.tldrSnapshot.some(b => b) || state.whoShouldPayAttention || state.whatChangesNext) && (
-            <TldrSnapshot
-              bullets={state.tldrSnapshot.filter(b => b)}
-              whoShouldPayAttention={state.whoShouldPayAttention}
-              whatChangesNext={state.whatChangesNext}
-            />
-          )}
-
-          {/* Body */}
-          <div
-            className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
         </div>
       </div>
     </div>
