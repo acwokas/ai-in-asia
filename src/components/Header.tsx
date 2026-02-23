@@ -228,20 +228,25 @@ const Header = memo(() => {
                               const progress = next ? Math.min(100, ((pts - current.min) / (next.min - current.min)) * 100) : 100;
 
                               return (
-                                <div className="px-2 pb-2 pt-1 space-y-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`inline-block w-2 h-2 rounded-full ${current.color}`} />
-                                    <span className="text-xs font-semibold text-foreground">{current.name}</span>
+                                <div className="px-2 pb-2 pt-1 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`inline-block w-2 h-2 rounded-full ${current.color}`} />
+                                      <span className="text-xs font-semibold text-foreground">{current.name}</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-muted-foreground">{pts.toLocaleString()} pts</span>
                                   </div>
-                                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                                    <div className={`h-full rounded-full ${current.color} transition-all duration-500`} style={{ width: `${progress}%` }} />
-                                  </div>
-                                  {next ? (
-                                    <p className="text-[10px] text-muted-foreground">{next.min - pts} pts to {next.name}</p>
-                                  ) : (
-                                    <p className="text-[10px] text-muted-foreground">Max level reached!</p>
+                                  {next && (
+                                    <>
+                                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                                        <div className={`h-full rounded-full ${current.color} transition-all duration-500`} style={{ width: `${progress}%` }} />
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground">{next.min - pts} pts to {next.name}</p>
+                                    </>
                                   )}
-                                  <p className="text-xs text-muted-foreground"><Flame className="h-3 w-3 inline text-orange-500" /> {userStats.streak_days} day streak · <Zap className="h-3 w-3 inline text-amber-500" /> {pts} pts</p>
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-0.5"><Flame className="h-3 w-3 text-orange-500" /> {userStats.streak_days} day streak</span>
+                                  </div>
                                 </div>
                               );
                             })()}
@@ -259,7 +264,7 @@ const Header = memo(() => {
                             </DropdownMenuItem>
                             {isAdmin && (
                               <DropdownMenuItem asChild>
-                                <Link to="/admin" className="cursor-pointer text-destructive">
+                                <Link to="/admin" className="cursor-pointer text-primary font-medium">
                                   <Shield className="mr-2 h-4 w-4" />
                                   Admin
                                 </Link>
@@ -397,7 +402,7 @@ const Header = memo(() => {
                     Profile
                   </Link>
                   {isAdmin && (
-                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 text-destructive hover:text-destructive/80 transition-colors flex items-center gap-2">
+                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="text-sm py-1.5 text-primary font-medium hover:text-primary/80 transition-colors flex items-center gap-2">
                       <Shield className="h-4 w-4" />
                       Admin
                     </Link>

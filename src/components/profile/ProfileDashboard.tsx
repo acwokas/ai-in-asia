@@ -95,7 +95,7 @@ const ProfileDashboard = ({ stats, achievements, onSwitchToAchievements }: Profi
               {pts}/{next.min} points to <span className="font-medium text-foreground">{next.name}</span>
             </span>
           ) : (
-            <span className="text-sm text-primary font-medium"><Sparkles className="h-4 w-4 inline text-primary mr-0.5" /> Max level reached!</span>
+            <span className="text-sm text-muted-foreground">{pts.toLocaleString()} lifetime points</span>
           )}
         </div>
         <Progress value={progress} className="h-2" />
