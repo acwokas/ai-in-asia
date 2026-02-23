@@ -71,11 +71,24 @@ const AIComments = () => {
         .select('*', { count: 'exact', head: true })
         .eq('published', true);
 
-      const { data: articlesWithComments } = await supabase
-        .from('ai_generated_comments')
-        .select('article_id');
-
-      const uniqueArticlesWithComments = new Set(articlesWithComments?.map(c => c.article_id) || []).size;
+      let allArticleIds: string[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+      while (hasMore) {
+        const { data: pageData } = await supabase
+          .from('ai_generated_comments')
+          .select('article_id')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        if (pageData && pageData.length > 0) {
+          allArticleIds.push(...pageData.map(c => c.article_id));
+          hasMore = pageData.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+      const uniqueArticlesWithComments = new Set(allArticleIds).size;
 
       return {
         totalArticles: totalArticles || 0,
