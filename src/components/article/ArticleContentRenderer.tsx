@@ -128,20 +128,20 @@ export const renderArticleContent = (content: any): React.ReactNode => {
           return block;
         }
         
-        if (block.startsWith('### ')) {
+      if (block.startsWith('### ')) {
           const text = block.substring(4);
           const id = generateHeadingId(text);
-          return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
+          return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
         }
         if (block.startsWith('## ')) {
           const text = block.substring(3);
           const id = generateHeadingId(text);
-          return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
+          return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
         }
         if (block.startsWith('# ')) {
           const text = block.substring(2);
           const id = generateHeadingId(text);
-          return `<h1 id="${id}" class="text-4xl font-bold mt-8 mb-4">${text}</h1>`;
+          return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
         }
         if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
           const quoteContent = block.substring(2);
@@ -170,7 +170,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       });
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
       });
       
@@ -190,17 +190,17 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       if (block.startsWith('### ')) {
         const text = block.substring(4);
         const id = generateHeadingId(text);
-        return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
+        return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('## ')) {
         const text = block.substring(3);
         const id = generateHeadingId(text);
-        return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
+        return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
       }
       if (block.startsWith('# ')) {
         const text = block.substring(2);
         const id = generateHeadingId(text);
-        return `<h1 id="${id}" class="text-4xl font-bold mt-8 mb-4">${text}</h1>`;
+        return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteContent = block.substring(2);
@@ -235,7 +235,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     const finalBlocks: React.ReactNode[] = [];
     htmlBlocks.forEach((block, index) => {
       const sanitizedBlock = DOMPurify.sanitize(block, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
       });
       
@@ -298,10 +298,11 @@ const generateHeadingId = (text: string): string => {
           
         case 'heading':
           const level = block.attrs?.level || 2;
-          const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
-          const headingClasses = level === 1 ? "text-4xl font-bold mt-8 mb-4" :
-                               level === 2 ? "text-3xl font-bold mt-8 mb-4" :
-                               "text-2xl font-semibold mt-8 mb-4";
+          const shiftedLevel = Math.min(level + 1, 6);
+          const HeadingTag = `h${shiftedLevel}` as keyof JSX.IntrinsicElements;
+          const headingClasses = shiftedLevel === 2 ? "text-3xl font-bold mt-12 mb-6 text-foreground" :
+                               shiftedLevel === 3 ? "text-2xl font-semibold mt-8 mb-4" :
+                               "text-xl font-semibold mt-6 mb-3";
           const headingId = generateHeadingId(block.content || '');
           return (
             <HeadingTag key={index} id={headingId} className={headingClasses}>
@@ -350,7 +351,8 @@ const generateHeadingId = (text: string): string => {
               <img 
                 src={block.attrs?.src || block.url} 
                 alt={block.attrs?.alt || block.alt || ''} 
-                className="w-full rounded-lg" 
+                className="w-full rounded-lg"
+                loading="lazy"
               />
               {(block.attrs?.caption || block.caption) && (
                 <p className="text-sm text-muted-foreground text-center mt-2">

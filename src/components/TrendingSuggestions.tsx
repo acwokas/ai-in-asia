@@ -199,6 +199,9 @@ export function TrendingSuggestions() {
                       src={article.featured_image_url}
                       alt={article.title}
                       className="w-24 h-16 object-cover rounded flex-shrink-0"
+                      loading="lazy"
+                      width={96}
+                      height={64}
                     />
                   )}
                   

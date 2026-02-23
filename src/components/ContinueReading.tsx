@@ -57,6 +57,9 @@ const ContinueReading = ({ currentArticleId, categoryId, categorySlug }: Continu
               src={nextArticle.featured_image_url}
               alt={nextArticle.title}
               className="w-24 h-24 object-cover rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform"
+              loading="lazy"
+              width={96}
+              height={96}
             />
           )}
           <div className="flex-1 min-w-0">
