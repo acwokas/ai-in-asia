@@ -158,7 +158,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       state.setAuthorId('efae4a91-4c99-4ac3-bfef-21f81d6e7551');
       state.setFeaturedImage('/images/3-before-9-hero.png');
       state.setFeaturedImageAlt('3 Before 9 - Your daily AI intelligence briefing');
-      state.setExcerpt('Your essential AI intelligence briefing. Three signals that matter, delivered before your first cup of coffee.');
+      state.setExcerpt('3 must-know AI stories before your 9am coffee. The signals that matter, delivered daily.');
       state.setSeoTitle(`3 Before 9: AI News for ${displayDate} | AI in Asia`);
       state.setMetaDescription('Three essential AI developments you need to know before 9am. Expert analysis on what matters for business leaders in Asia.');
       state.setFocusKeyphrase('AI news Asia');
