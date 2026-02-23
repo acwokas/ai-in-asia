@@ -39,17 +39,28 @@ const ThreeBeforeNineTicker = memo(() => {
       to={articleUrl}
       className="block overflow-hidden border-y group ticker-3b9-strip"
     >
-      <div className="container mx-auto px-4 py-[7px] flex items-center gap-3 min-w-0">
-        {/* Fixed label */}
-        <span className="flex items-center gap-1 font-bold shrink-0 text-[14px]">
-          <span className="ticker-3b9-amber">3</span>
-          <span className="ticker-3b9-text">Before</span>
-          <span className="ticker-3b9-amber">9</span>
-        </span>
+      <div className="container mx-auto px-4 py-[7px] flex flex-col gap-1 md:flex-row md:items-center md:gap-3 min-w-0">
+        {/* Mobile row 1: label + CTA */}
+        <div className="flex items-center justify-between md:contents">
+          {/* Fixed label */}
+          <span className="flex items-center gap-1 font-bold shrink-0 text-[14px]">
+            <span className="ticker-3b9-amber">3</span>
+            <span className="ticker-3b9-text">Before</span>
+            <span className="ticker-3b9-amber">9</span>
+          </span>
 
-        <div className="h-4 w-px shrink-0 ticker-3b9-divider" />
+          <div className="hidden md:block h-4 w-px shrink-0 ticker-3b9-divider" />
 
-        {/* Scrolling signals — wraps on mobile, scrolls on desktop */}
+          {/* CTA (visible in mobile row 1 and desktop inline) */}
+          <span className="text-[13px] font-medium flex items-center gap-1 shrink-0 group-hover:underline ticker-3b9-amber md:order-last">
+            <span className="hidden sm:inline">Read briefing</span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+          </span>
+
+          <div className="hidden md:block h-4 w-px shrink-0 ticker-3b9-divider md:order-[4]" />
+        </div>
+
+        {/* Scrolling ticker - full width on mobile, flex-1 on desktop */}
         <div className="overflow-hidden relative flex-1 min-w-0">
           <div className="block ticker-3b9-fade-left" />
           <div className="block ticker-3b9-fade-right" />
@@ -65,16 +76,6 @@ const ThreeBeforeNineTicker = memo(() => {
             ))}
           </div>
         </div>
-
-        <div className="h-4 w-px shrink-0 ticker-3b9-divider" />
-
-        {/* Fixed CTA */}
-        <span
-          className="text-[13px] font-medium flex items-center gap-1 shrink-0 group-hover:underline ticker-3b9-amber"
-        >
-          <span className="hidden sm:inline">Read briefing</span>
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-        </span>
       </div>
 
       <style>{`
