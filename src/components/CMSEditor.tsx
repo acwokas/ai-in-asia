@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, Upload, Loader2, Wand2 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
 import TipTapEditor from "@/components/tiptap/TipTapEditor";
 import { PolicyArticleEditor } from "@/components/PolicyArticleEditor";
@@ -205,8 +205,6 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   // Find author name for preview
   const selectedAuthor = authors?.find(a => a.id === state.authorId);
 
-  // Calculate tab count for grid
-  const tabCount = 5 + (state.articleType === 'policy_article' ? 1 : 0) + (state.articleType === 'top_lists' ? 1 : 0);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -220,21 +218,23 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         {/* Sticky tab bar with save button */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <TabsList className={cn("grid w-auto", `grid-cols-${tabCount}`)}>
-            <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="tldr">TL;DR</TabsTrigger>
-            {state.articleType === 'policy_article' && (
-              <TabsTrigger value="policy">Policy Data</TabsTrigger>
-            )}
-            {state.articleType === 'top_lists' && (
-              <TabsTrigger value="toplists">Top Lists</TabsTrigger>
-            )}
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-          <Button onClick={handleSave} data-editor-save>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6">
+          <div className="w-full sm:w-auto overflow-x-auto">
+            <TabsList className="inline-flex w-auto min-w-max">
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="tldr">TL;DR</TabsTrigger>
+              {state.articleType === 'policy_article' && (
+                <TabsTrigger value="policy">Policy Data</TabsTrigger>
+              )}
+              {state.articleType === 'top_lists' && (
+                <TabsTrigger value="toplists">Top Lists</TabsTrigger>
+              )}
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+          </div>
+          <Button onClick={handleSave} data-editor-save className="w-full sm:w-auto shrink-0">
             <Save className="h-4 w-4 mr-2" />
             Save Article
           </Button>
