@@ -51,17 +51,9 @@ const ThreeBeforeNineTicker = memo(() => {
 
         {/* Scrolling signals — wraps on mobile, scrolls on desktop */}
         <div className="overflow-hidden relative flex-1 min-w-0">
-          <div className="hidden md:block ticker-3b9-fade-left" />
-          <div className="hidden md:block ticker-3b9-fade-right" />
-          {/* Mobile: static two-line view showing first bullet */}
-          <div className="md:hidden">
-            <span className="text-[13px] leading-snug ticker-3b9-bullet line-clamp-2">
-              <span className="font-bold mr-1 ticker-3b9-amber">1</span>
-              {bullets[0]}
-            </span>
-          </div>
-          {/* Desktop: scrolling ticker */}
-          <div className="hidden md:inline-flex items-center gap-0 animate-ticker-3b9 whitespace-nowrap">
+          <div className="block ticker-3b9-fade-left" />
+          <div className="block ticker-3b9-fade-right" />
+          <div className="inline-flex items-center gap-0 animate-ticker-3b9 whitespace-nowrap">
             {items.map((bullet, i) => (
               <span key={i} className="flex items-center shrink-0">
                 <span className="ticker-3b9-amber mx-3 text-sm">•</span>
