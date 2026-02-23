@@ -6,6 +6,91 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function generateAndUploadSignalImages(
+  imagePrompts: string[],
+  supabase: any,
+  lovableApiKey: string
+): Promise<string[]> {
+  const signalImages: string[] = [];
+
+  for (let i = 0; i < Math.min(imagePrompts.length, 3); i++) {
+    try {
+      console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image',
+          messages: [
+            { role: 'user', content: imagePrompts[i] }
+          ],
+          modalities: ['image', 'text'],
+        }),
+      });
+
+      if (!response.ok) {
+        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`);
+        signalImages.push("");
+        continue;
+      }
+
+      const data = await response.json();
+      const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (!imageDataUrl) {
+        console.log(`No image returned for signal ${i + 1}`);
+        signalImages.push("");
+        continue;
+      }
+
+      const base64Match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (!base64Match) {
+        console.error(`Invalid data URL format for signal ${i + 1}`);
+        signalImages.push("");
+        continue;
+      }
+
+      const mimeType = base64Match[1];
+      const base64Data = base64Match[2];
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let j = 0; j < binaryString.length; j++) {
+        bytes[j] = binaryString.charCodeAt(j);
+      }
+      const blob = new Blob([bytes], { type: mimeType });
+
+      const ext = mimeType.includes('png') ? 'png' : 'jpg';
+      const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, blob, { contentType: mimeType });
+
+      if (uploadError) {
+        console.error(`Upload failed for signal ${i + 1}:`, uploadError);
+        signalImages.push("");
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      signalImages.push(urlData.publicUrl);
+      console.log(`Signal ${i + 1} image generated and uploaded`);
+    } catch (err) {
+      console.error(`Error generating signal image ${i + 1}:`, err);
+      signalImages.push("");
+    }
+  }
+
+  return signalImages;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -22,7 +107,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check authentication and admin role
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -56,7 +140,6 @@ serve(async (req) => {
     const requestData = await req.json();
     const { articleId, content, title } = requestData;
 
-    // Convert content to text for AI processing
     let contentText = "";
     if (typeof content === "string") {
       contentText = content;
@@ -72,7 +155,6 @@ serve(async (req) => {
         .join(" ");
     }
 
-    // Generate TL;DR using AI with timeout handling
     console.log("Starting TL;DR generation...");
     
     const systemPrompt = `You are creating a TL;DR Snapshot for an article. 
@@ -89,15 +171,17 @@ CRITICAL RULES:
 ALSO GENERATE:
 1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
 2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
+3. "imagePrompts": For each bullet, provide a 1-2 sentence editorial image generation prompt. Be visually specific - describe composition, lighting, subject matter. No text/words/logos in the image. Avoid brand names and copyrighted characters.
 
 Article: "${title}"
 Content: ${contentText.substring(0, 2000)}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
     let tldrBullets: string[] = [];
     let whoShouldPayAttention = "";
     let whatChangesNext = "";
+    let signalImages: string[] = [];
 
     try {
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -135,9 +219,16 @@ Content: ${contentText.substring(0, 2000)}`;
                   whatChangesNext: {
                     type: "string",
                     description: "One short sentence about what to watch next or likely implications. Empty string if uncertain."
+                  },
+                  imagePrompts: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "For each bullet point, generate a 1-2 sentence editorial image generation prompt that would create a relevant, visually striking illustration. Be specific about composition, lighting, and subject. No text/words/logos in the image. Avoid brand names. Example: 'Aerial view of a dense semiconductor fabrication plant with blue-lit clean rooms, dramatic industrial lighting'. Array must have exactly 3 items matching the 3 bullets.",
+                    minItems: 3,
+                    maxItems: 3
                   }
                 },
-                required: ["bullets", "whoShouldPayAttention", "whatChangesNext"],
+                required: ["bullets", "whoShouldPayAttention", "whatChangesNext", "imagePrompts"],
                 additionalProperties: false
               }
             }
@@ -174,10 +265,21 @@ Content: ${contentText.substring(0, 2000)}`;
       tldrBullets = parsedArgs.bullets.slice(0, 3);
       whoShouldPayAttention = parsedArgs.whoShouldPayAttention || "";
       whatChangesNext = parsedArgs.whatChangesNext || "";
+      const imagePrompts: string[] = parsedArgs.imagePrompts || [];
       console.log("TL;DR generated successfully:", tldrBullets.length, "bullets");
       
       if (tldrBullets.length < 3) {
         throw new Error(`Only ${tldrBullets.length} bullets generated, expected 3`);
+      }
+
+      // Generate signal images using Gemini image model
+      if (imagePrompts.length > 0) {
+        try {
+          signalImages = await generateAndUploadSignalImages(imagePrompts, supabase, lovableApiKey);
+          console.log(`Generated ${signalImages.filter(Boolean).length} signal images`);
+        } catch (imgErr) {
+          console.error("Signal image generation failed (non-blocking):", imgErr);
+        }
       }
     } catch (error: unknown) {
       clearTimeout(timeoutId);
@@ -201,9 +303,8 @@ Content: ${contentText.substring(0, 2000)}`;
         return true;
       });
 
-      // Also filter out TL;DR paragraphs that might follow
       let skipNext = false;
-      cleanedContent = cleanedContent.filter((block: any, index: number) => {
+      cleanedContent = cleanedContent.filter((block: any, _index: number) => {
         if (skipNext) {
           skipNext = false;
           if (block.type === "paragraph" || block.type === "list") {
@@ -223,11 +324,11 @@ Content: ${contentText.substring(0, 2000)}`;
       });
     }
 
-    // Update article with TL;DR snapshot (as object with all fields) only if articleId exists
-    const tldrSnapshotData = {
+    const tldrSnapshotData: Record<string, any> = {
       bullets: tldrBullets,
       whoShouldPayAttention,
-      whatChangesNext
+      whatChangesNext,
+      ...(signalImages.length > 0 ? { signalImages } : {})
     };
 
     if (articleId) {
