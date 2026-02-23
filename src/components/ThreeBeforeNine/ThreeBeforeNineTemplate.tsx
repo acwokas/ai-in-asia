@@ -343,7 +343,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
           </h1>
           
           <p className="text-muted-foreground text-[20px] mb-2">
-            Your essential AI intelligence briefing
+            3 must-know AI stories before your 9am coffee
           </p>
         </div>
       </header>
