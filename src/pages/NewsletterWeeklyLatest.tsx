@@ -70,5 +70,5 @@
       );
     }
   
-    return null;
-  }
+     return <SEOHead title="Latest Weekly Newsletter" description="Redirecting to the latest AI in ASIA Weekly Brief." noIndex={true} />;
+   }
