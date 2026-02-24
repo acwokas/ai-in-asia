@@ -99,7 +99,6 @@ const Index = () => {
         `)
         .eq("status", "published")
         .eq("featured_on_homepage", true)
-        .not("title", "ilike", "%3 Before 9%")
         .order("sticky", { ascending: false })
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(18);
