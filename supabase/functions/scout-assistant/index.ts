@@ -164,12 +164,13 @@ async function handleRewriteWithImages(
   cors: Record<string, string>,
 ) {
   const title = context?.title || '';
-  const focusKeyphrase = context?.focusKeyphrase || '';
+  const contextKeyphrase = context?.focusKeyphrase || '';
 
-  // Fetch potential internal links from the database
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const headers = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` };
 
+  // ── Internal links: guarantee 5+ ──
   const stopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some'];
   const searchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -178,9 +179,18 @@ async function handleRewriteWithImages(
     .join(' | ');
 
   let availableLinks: string[] = [];
-  try {
-    const headers = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` };
+  const seenSlugs = new Set<string>();
 
+  const addArticles = (articles: any[]) => {
+    for (const a of articles) {
+      if (!a.slug || seenSlugs.has(a.slug)) continue;
+      seenSlugs.add(a.slug);
+      const catSlug = Array.isArray(a.categories) && a.categories.length > 0 ? a.categories[0].slug : 'news';
+      availableLinks.push(`[${a.title}](/${catSlug}/${a.slug})`);
+    }
+  };
+
+  try {
     const [articlesResponse, searchResponse] = await Promise.all([
       fetch(
         `${supabaseUrl}/rest/v1/articles?select=title,slug,categories:categories!article_categories(slug)&status=eq.published&order=published_at.desc&limit=10`,
@@ -197,28 +207,29 @@ async function handleRewriteWithImages(
     const recentArticles = await articlesResponse.json();
     const relevantArticles = searchResponse ? await searchResponse.json() : [];
 
-    const allArticles = [...(Array.isArray(relevantArticles) ? relevantArticles : []), ...(Array.isArray(recentArticles) ? recentArticles : [])];
-    const seen = new Set<string>();
-    availableLinks = allArticles
-      .filter((a: any) => {
-        if (!a.slug || seen.has(a.slug)) return false;
-        seen.add(a.slug);
-        return true;
-      })
-      .map((a: any) => {
-        const catSlug = Array.isArray(a.categories) && a.categories.length > 0 ? a.categories[0].slug : 'news';
-        return `[${a.title}](/${catSlug}/${a.slug})`;
-      })
-      .slice(0, 15);
+    addArticles(Array.isArray(relevantArticles) ? relevantArticles : []);
+    addArticles(Array.isArray(recentArticles) ? recentArticles : []);
+
+    // Fallback: if fewer than 5, fetch 20 most recent
+    if (availableLinks.length < 5) {
+      const fallbackResp = await fetch(
+        `${supabaseUrl}/rest/v1/articles?select=title,slug,categories:categories!article_categories(slug)&status=eq.published&order=published_at.desc&limit=20`,
+        { headers }
+      );
+      const fallbackArticles = await fallbackResp.json();
+      addArticles(Array.isArray(fallbackArticles) ? fallbackArticles : []);
+    }
+
+    availableLinks = availableLinks.slice(0, 15);
   } catch (linkErr) {
     console.error('Failed to fetch internal links (non-fatal):', linkErr);
   }
 
   const internalLinksInstruction = availableLinks.length > 0
-    ? `\nINTERNAL LINKS:\n- Naturally incorporate 2-4 internal links from the following list where they are contextually relevant. Use the exact markdown format provided — do NOT modify the URLs. Only link where the reference genuinely fits the surrounding text.\n- Available internal links:\n${availableLinks.join('\n')}\n`
+    ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- Available internal links:\n${availableLinks.join('\n')}\n`
     : '';
 
-  // Fetch relevant external links from harvested sources
+  // ── External links: pre-verify before passing to AI ──
   const extStopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some', 'also', 'most', 'very', 'just', 'even', 'much'];
   const externalSearchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -228,8 +239,32 @@ async function handleRewriteWithImages(
 
   let externalLinksSection = '';
   try {
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    const verifyLinks = async (links: any[]): Promise<any[]> => {
+      const verified: any[] = [];
+      const results = await Promise.allSettled(
+        links.map(async (link: any) => {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 3000);
+            const resp = await fetch(link.url, { method: 'HEAD', signal: controller.signal, redirect: 'follow' });
+            clearTimeout(timeout);
+            return resp.ok ? link : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      for (const r of results) {
+        if (r.status === 'fulfilled' && r.value) verified.push(r.value);
+      }
+      return verified;
+    };
+
+    let verifiedExtLinks: any[] = [];
+
     if (externalSearchTerms) {
-      const supabaseClient = (await import('https://esm.sh/@supabase/supabase-js@2.39.3')).createClient(supabaseUrl, supabaseKey);
       const { data: extLinks } = await supabaseClient
         .from('external_links')
         .select('title, url, source_name, domain')
@@ -245,18 +280,43 @@ async function handleRewriteWithImages(
           return true;
         }).slice(0, 8);
 
-        const formattedLinks = dedupedLinks
-          .map((l: any) => `[${l.title}](${l.url}) (${l.source_name})`)
-          .join('\n');
+        verifiedExtLinks = await verifyLinks(dedupedLinks);
 
-        externalLinksSection = `\n\nEXTERNAL LINKS:\n- You may also incorporate 1-3 external links from these trusted sources where they add genuine value and context. Use the exact URLs provided — do NOT modify them. Only link where the reference is directly relevant to the surrounding text. Prefer Asia-Pacific sources when the topic allows.\n- For external links, naturally weave them into sentences as supporting references, e.g. 'as MIT Technology Review recently reported, ...' or 'according to Nikkei Asia, ...'. Do NOT dump links at the end of the article. Maximum 3 external links total.\n- Available external links:\n${formattedLinks}`;
+        // Fallback: if fewer than 4 verified, fetch broader
+        if (verifiedExtLinks.length < 4) {
+          const { data: broadLinks } = await supabaseClient
+            .from('external_links')
+            .select('title, url, source_name, domain')
+            .order('published_at', { ascending: false })
+            .limit(30);
+
+          if (broadLinks && broadLinks.length > 0) {
+            const existingDomains = new Set(verifiedExtLinks.map((l: any) => l.domain));
+            const broadDeduped = broadLinks.filter((link: any) => {
+              if (existingDomains.has(link.domain)) return false;
+              existingDomains.add(link.domain);
+              return true;
+            }).slice(0, 10);
+
+            const broadVerified = await verifyLinks(broadDeduped);
+            verifiedExtLinks.push(...broadVerified);
+          }
+        }
       }
+    }
+
+    if (verifiedExtLinks.length > 0) {
+      const formattedLinks = verifiedExtLinks
+        .map((l: any) => `[${l.title}](${l.url}) (${l.source_name})`)
+        .join('\n');
+
+      externalLinksSection = `\n\nEXTERNAL LINKS:\n- You MUST incorporate at least 2 external links from the following verified list. Weave them naturally into sentences as supporting references, e.g. 'as MIT Technology Review recently reported, ...' or 'according to Nikkei Asia, ...'. Do NOT dump links at the end of the article. Use the exact URLs provided - do NOT modify them.\n- Available external links:\n${formattedLinks}`;
     }
   } catch (extErr) {
     console.error('Failed to fetch external links (non-fatal):', extErr);
   }
 
-  // Step 1: Rewrite + get image suggestions in one AI call
+  // ── Step 1: Rewrite + get image suggestions in one AI call ──
   const rewriteSystemPrompt = `You are Scout, an expert editorial assistant for AIinASIA.com.
 Rewrite the article content to be engaging, well-structured, and optimised for SEO.
 Use British English. Maintain factual accuracy.
@@ -291,7 +351,7 @@ A punchy teaser under 140 characters that makes someone want to click. NOT a sum
 [/EXCERPT]
 
 [HEADLINE]
-A catchy, SEO-friendly headline under 60 characters. Compelling and clickworthy while accurate. Use British English.
+Write a headline under 60 characters that makes people NEED to click. It should be short, punchy, and create urgency or curiosity without being clickbait. Think newspaper front page, not blog post. Use strong verbs and specific details. Use British English. Do NOT use colons or question marks. Just a bold, declarative statement.
 [/HEADLINE]
 
 [TLDR]
@@ -308,6 +368,38 @@ Audience type 1 | Audience type 2 | Audience type 3
 One short sentence about what changes next or implications.
 [/WHAT_NEXT]
 
+[CATEGORY]
+Based on the article's primary topic, select exactly ONE category from this list: News, Business, Life, Learn, Create, Voices, Policy
+- News: breaking developments, announcements, industry updates, current events
+- Business: corporate strategy, startups, funding, markets, enterprise AI adoption
+- Life: lifestyle impacts of AI/tech, health, wellbeing, future of work, society
+- Learn: tutorials, how-tos, explainers, educational content, guides, deep dives
+- Create: creative AI tools, generative AI, design, content creation, creative workflows
+- Voices: opinion, commentary, interviews, thought leadership, personal perspectives
+- Policy: regulation, governance, government policy, compliance, ethics frameworks, geopolitics
+Return ONLY the single category name, nothing else.
+[/CATEGORY]
+
+[SEO_META_TITLE]
+An SEO-optimized HTML meta title under 60 characters. Include the primary keyword. Use British English.
+[/SEO_META_TITLE]
+
+[SEO_TITLE]
+An SEO-optimized display title under 60 characters. Can differ slightly from meta title for click appeal.
+[/SEO_TITLE]
+
+[FOCUS_KEYPHRASE]
+The primary keyword phrase (2-4 words) that this article should rank for.
+[/FOCUS_KEYPHRASE]
+
+[KEYPHRASE_SYNONYMS]
+3-5 comma-separated synonym phrases for the focus keyphrase.
+[/KEYPHRASE_SYNONYMS]
+
+[META_DESCRIPTION]
+A compelling meta description under 155 characters that includes the focus keyphrase. Designed for Google search results.
+[/META_DESCRIPTION]
+
 IMAGE DESCRIPTIONS (for AI generation — NOT to be included in the article text):
 1. A hero/lead image that captures the article's theme
 2. A mid-article image for the IMAGE_PLACEHOLDER_HERE position
@@ -323,7 +415,7 @@ Return your response in this EXACT JSON format (no markdown fences):
 }`;
 
   const rewritePrompt = `Title: ${title}
-Focus Keyphrase: ${focusKeyphrase}
+Focus Keyphrase: ${contextKeyphrase}
 
 Article Content:
 ${content}`;
@@ -380,87 +472,9 @@ ${content}`;
     );
   }
 
-  // Step 2: Generate images in parallel (graceful fallback)
-  let featuredImage = '';
-  let featuredImageAlt = '';
-  let midImage = '';
-  let midImageAlt = '';
-  let imagesGenerated = 0;
-
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string }> => {
-      const timestamp = Date.now();
-      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
-          messages: [
-            { role: 'user', content: `Generate a professional, editorial-quality image for a news article. The image should be photorealistic, well-lit, and suitable for a technology news website. Description: ${description}` },
-          ],
-          modalities: ['image', 'text'],
-        }),
-      });
-
-      if (!imgResponse.ok) {
-        throw new Error(`Image generation failed [${imgResponse.status}]`);
-      }
-
-      const imgData = await imgResponse.json();
-      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!base64Url) throw new Error('No image in response');
-
-      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
-      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-      
-      const filePath = `content/ai-generated-${suffix}-${timestamp}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from('article-images')
-        .upload(filePath, binaryData, { contentType: 'image/png' });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('article-images')
-        .getPublicUrl(filePath);
-
-      return { url: publicUrl };
-    };
-
-    const results = await Promise.allSettled([
-      generateAndUpload(heroImageDescription, 'hero'),
-      generateAndUpload(midImageDescription, 'mid'),
-    ]);
-
-    if (results[0].status === 'fulfilled') {
-      featuredImage = results[0].value.url;
-      featuredImageAlt = heroImageAltText || heroImageDescription.slice(0, 125);
-      imagesGenerated++;
-    } else {
-      console.error('Hero image generation failed:', results[0].reason);
-    }
-
-    if (results[1].status === 'fulfilled') {
-      midImage = results[1].value.url;
-      midImageAlt = midImageAltText || midImageDescription.slice(0, 125);
-      imagesGenerated++;
-    } else {
-      console.error('Mid image generation failed:', results[1].reason);
-    }
-  } catch (imgError) {
-    console.error('Image generation error (non-fatal):', imgError);
-  }
-
-  // Step 3: Parse delimited sections from content
+  // ── Step 2: Parse ALL delimited sections FIRST ──
   let finalContent = rewrittenContent;
-  
+
   // Extract excerpt
   let excerpt = '';
   const excerptMatch = finalContent.match(/\[EXCERPT\]([\s\S]*?)\[\/EXCERPT\]/);
@@ -504,7 +518,150 @@ ${content}`;
     finalContent = finalContent.replace(/\[WHAT_NEXT\][\s\S]*?\[\/WHAT_NEXT\]/, '');
   }
 
-  // Step 4: Replace IMAGE_PLACEHOLDER_HERE with actual image markdown or remove it
+  // Extract CATEGORY
+  let categoryName = '';
+  const categoryMatch = finalContent.match(/\[CATEGORY\]([\s\S]*?)\[\/CATEGORY\]/);
+  if (categoryMatch) {
+    categoryName = categoryMatch[1].trim();
+    finalContent = finalContent.replace(/\[CATEGORY\][\s\S]*?\[\/CATEGORY\]/, '');
+  }
+
+  // Extract SEO fields
+  let seoTitle = '';
+  const seoTitleMatch = finalContent.match(/\[SEO_TITLE\]([\s\S]*?)\[\/SEO_TITLE\]/);
+  if (seoTitleMatch) {
+    seoTitle = seoTitleMatch[1].trim().substring(0, 60);
+    finalContent = finalContent.replace(/\[SEO_TITLE\][\s\S]*?\[\/SEO_TITLE\]/, '');
+  }
+
+  let metaTitle = '';
+  const metaTitleMatch = finalContent.match(/\[SEO_META_TITLE\]([\s\S]*?)\[\/SEO_META_TITLE\]/);
+  if (metaTitleMatch) {
+    metaTitle = metaTitleMatch[1].trim().substring(0, 60);
+    finalContent = finalContent.replace(/\[SEO_META_TITLE\][\s\S]*?\[\/SEO_META_TITLE\]/, '');
+  }
+
+  let focusKeyphrase = '';
+  const focusMatch = finalContent.match(/\[FOCUS_KEYPHRASE\]([\s\S]*?)\[\/FOCUS_KEYPHRASE\]/);
+  if (focusMatch) {
+    focusKeyphrase = focusMatch[1].trim();
+    finalContent = finalContent.replace(/\[FOCUS_KEYPHRASE\][\s\S]*?\[\/FOCUS_KEYPHRASE\]/, '');
+  }
+
+  let keyphraseSynonyms = '';
+  const synMatch = finalContent.match(/\[KEYPHRASE_SYNONYMS\]([\s\S]*?)\[\/KEYPHRASE_SYNONYMS\]/);
+  if (synMatch) {
+    keyphraseSynonyms = synMatch[1].trim();
+    finalContent = finalContent.replace(/\[KEYPHRASE_SYNONYMS\][\s\S]*?\[\/KEYPHRASE_SYNONYMS\]/, '');
+  }
+
+  let metaDescription = '';
+  const metaDescMatch = finalContent.match(/\[META_DESCRIPTION\]([\s\S]*?)\[\/META_DESCRIPTION\]/);
+  if (metaDescMatch) {
+    metaDescription = metaDescMatch[1].trim().substring(0, 155);
+    finalContent = finalContent.replace(/\[META_DESCRIPTION\][\s\S]*?\[\/META_DESCRIPTION\]/, '');
+  }
+
+  // ── Look up category ID from database ──
+  let categoryId = '';
+  if (categoryName) {
+    try {
+      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+      const { data: catData } = await supabaseClient
+        .from('categories')
+        .select('id, name')
+        .ilike('name', categoryName.trim())
+        .limit(1)
+        .single();
+      if (catData?.id) {
+        categoryId = catData.id;
+      }
+    } catch (catErr) {
+      console.error('Category lookup failed (non-fatal):', catErr);
+    }
+  }
+
+  // ── Step 3: Generate images using focusKeyphrase for filenames ──
+  const slugifiedKeyphrase = focusKeyphrase
+    ? focusKeyphrase.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50)
+    : 'ai-generated';
+
+  let featuredImage = '';
+  let featuredImageAlt = '';
+  let midImage = '';
+  let midImageAlt = '';
+  let imagesGenerated = 0;
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string }> => {
+      const timestamp = Date.now();
+      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image',
+          messages: [
+            { role: 'user', content: `Generate a professional, editorial-quality image for a news article. The image should be photorealistic, well-lit, and suitable for a technology news website. Description: ${description}` },
+          ],
+          modalities: ['image', 'text'],
+        }),
+      });
+
+      if (!imgResponse.ok) {
+        throw new Error(`Image generation failed [${imgResponse.status}]`);
+      }
+
+      const imgData = await imgResponse.json();
+      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!base64Url) throw new Error('No image in response');
+
+      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      
+      const filePath = `content/${slugifiedKeyphrase}-${suffix}-${timestamp}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, binaryData, { contentType: 'image/png' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      return { url: publicUrl };
+    };
+
+    const results = await Promise.allSettled([
+      generateAndUpload(heroImageDescription, 'hero'),
+      generateAndUpload(midImageDescription, 'mid'),
+    ]);
+
+    if (results[0].status === 'fulfilled') {
+      featuredImage = results[0].value.url;
+      featuredImageAlt = heroImageAltText || heroImageDescription.slice(0, 125);
+      imagesGenerated++;
+    } else {
+      console.error('Hero image generation failed:', results[0].reason);
+    }
+
+    if (results[1].status === 'fulfilled') {
+      midImage = results[1].value.url;
+      midImageAlt = midImageAltText || midImageDescription.slice(0, 125);
+      imagesGenerated++;
+    } else {
+      console.error('Mid image generation failed:', results[1].reason);
+    }
+  } catch (imgError) {
+    console.error('Image generation error (non-fatal):', imgError);
+  }
+
+  // ── Step 4: Replace IMAGE_PLACEHOLDER_HERE with actual image ──
   if (midImage) {
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${midImageAlt}](${midImage})\n\n`);
   } else {
@@ -513,14 +670,8 @@ ${content}`;
 
   // Safety: strip markdown images with alt text over 50 chars (leaked prompts)
   finalContent = finalContent.replace(/!\[[^\]]{50,}\]\([^)]*\)/g, '');
-
-  // Strip lines starting with ! followed by 50+ chars that aren't proper image markdown
   finalContent = finalContent.replace(/^!\[?[^\]\n]{50,}$/gm, '');
-
-  // Clean old placeholder format
   finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
-
-  // Collapse excessive blank lines
   finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
   return new Response(
@@ -534,6 +685,13 @@ ${content}`;
       featuredImage,
       featuredImageAlt,
       imagesGenerated,
+      categoryId,
+      categoryName,
+      seoTitle,
+      metaTitle,
+      focusKeyphrase,
+      keyphraseSynonyms,
+      metaDescription,
     }),
     { headers: { ...cors, 'Content-Type': 'application/json' } },
   );
