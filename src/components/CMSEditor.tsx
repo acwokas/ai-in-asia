@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,6 +143,14 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     const data = actions.buildSaveData();
     onSave?.(data);
   }, [actions, onSave]);
+
+  // Auto-select 3-Before-9 type when opened via ?type=3b9
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type') === '3b9' && !initialData?.id) {
+      handleArticleTypeChange('three_before_nine');
+    }
+  }, []);
 
   // Handle article type changes with auto-fill for 3-Before-9
   const handleArticleTypeChange = (value: string) => {

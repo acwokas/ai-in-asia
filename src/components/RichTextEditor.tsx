@@ -37,6 +37,7 @@ const RichTextEditor = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const savedSelectionRef = useRef<Range | null>(null);
+  const isInternalEditRef = useRef(false);
   const [isEmpty, setIsEmpty] = useState(!value);
   const imageUploadCounterRef = useRef(0);
   
@@ -72,6 +73,12 @@ const RichTextEditor = ({
   // Handle external content updates (like from Scout Assist)
   useEffect(() => {
     if (!editorRef.current) return;
+    
+    if (isInternalEditRef.current) {
+      isInternalEditRef.current = false;
+      setLastExternalValue(value);
+      return;
+    }
     
     const currentMarkdown = convertHtmlToMarkdown(editorRef.current.innerHTML);
     const isExternalUpdate = value !== currentMarkdown && value !== lastExternalValue;
@@ -264,6 +271,7 @@ const RichTextEditor = ({
     
     setIsEmpty(text.trim().length === 0);
     
+    isInternalEditRef.current = true;
     const markdown = convertHtmlToMarkdown(content);
     onChange(markdown);
   };
