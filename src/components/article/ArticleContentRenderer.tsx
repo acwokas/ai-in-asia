@@ -96,6 +96,10 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       .replace(/\[([^\]]+)\]\((https?:\/\/(?!aiinasia\.com)[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1</a>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline hover:no-underline">$1</a>');
 
+    // Pre-process: ensure blockquotes have blank lines around them so they split into their own blocks
+    consolidated = consolidated.replace(/([^\n])\n(> )/g, '$1\n\n$2');
+    consolidated = consolidated.replace(/(^> .+$)\n([^>\n])/gm, '$1\n\n$2');
+
     // Ensure headings start their own block
     consolidated = consolidated.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
       const safePrefix = prefix || '';
@@ -144,9 +148,20 @@ export const renderArticleContent = (content: any): React.ReactNode => {
           return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
         }
         if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
-          const quoteContent = block.substring(2);
+          const quoteLines = block.split('\n')
+            .map(line => line.replace(/^>\s?/, '').trim())
+            .filter(line => line.length > 0);
+          let quoteText = '';
+          let attribution = '';
+          if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
+            attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
+            quoteText = quoteLines.join(' ');
+          } else {
+            quoteText = quoteLines.join(' ');
+          }
           return `<blockquote class="article-pull-quote">
-            <p>${quoteContent}</p>
+            <p>${quoteText}</p>
+            ${attribution ? `<footer>${attribution}</footer>` : ''}
           </blockquote>`;
         }
         if (block.includes('\n- ') || block.startsWith('- ')) {
@@ -170,7 +185,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       });
       
       const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
       });
       
@@ -203,9 +218,20 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
-        const quoteContent = block.substring(2);
+        const quoteLines = block.split('\n')
+          .map(line => line.replace(/^>\s?/, '').trim())
+          .filter(line => line.length > 0);
+        let quoteText = '';
+        let attribution = '';
+        if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
+          attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
+          quoteText = quoteLines.join(' ');
+        } else {
+          quoteText = quoteLines.join(' ');
+        }
         return `<blockquote class="article-pull-quote">
-          <p>${quoteContent}</p>
+          <p>${quoteText}</p>
+          ${attribution ? `<footer>${attribution}</footer>` : ''}
         </blockquote>`;
       }
       if (block.includes('\n- ') || block.startsWith('- ')) {
@@ -235,7 +261,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     const finalBlocks: React.ReactNode[] = [];
     htmlBlocks.forEach((block, index) => {
       const sanitizedBlock = DOMPurify.sanitize(block, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
       });
       
