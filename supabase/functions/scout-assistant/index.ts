@@ -335,14 +335,28 @@ MID-ARTICLE IMAGE PLACEHOLDER:
 - Do NOT write any image descriptions, alt text, or markdown image syntax in the article body.
 - Do NOT write any markdown image syntax like ![...](...) anywhere in the content.
 
-READABILITY:
-- Break up long text-heavy sections for better readability.
-- Use these techniques where they fit naturally: pull out a key quote as a blockquote (using > markdown syntax) if the article contains a notable statement, add a short bullet list if there are 3+ related points in a paragraph, use bold for key terms or phrases that deserve emphasis.
-- Do NOT add these artificially - only where the content genuinely benefits.
-- Aim for no more than 3-4 paragraphs before a visual break (subheading, blockquote, list, or image).
+FORMATTING RULES (MANDATORY - these are not optional):
+- Maximum 3 short paragraphs before a visual break (subheading, blockquote, bullet list, or numbered list). This is a hard rule, not a suggestion.
+- Each paragraph should be 2-4 sentences maximum. NEVER write paragraphs longer than 5 sentences.
+- You MUST include at least 2 blockquotes using markdown > syntax. Pull out notable quotes, statistics, or key statements. Each blockquote MUST be on its own line starting with > and MUST have a blank line before and after it. Example format:
 
-ENDING:
-- Always end the article with a compelling final paragraph that includes a thought-provoking question or bold statement designed to spark discussion in the comments. This should feel natural, not forced - tie it back to the article's core argument. Do NOT label it as a conclusion or use headings like "Final Thoughts" or "Conclusion". Just make the last paragraph land with impact and invite the reader to respond.
+Previous paragraph text ends here.
+
+> "The cost per prompt is so high that profitability remains elusive for most AI companies." - Industry analyst
+
+Next paragraph starts here.
+
+- You MUST include at least 1 bullet list OR numbered list somewhere in the article to break up dense information.
+- Use **bold** for key terms, names, and important phrases (at least 5-8 bold items throughout the article).
+- Use ## subheadings to break the article into 3-5 clear sections. Each section should have a compelling subheading.
+- Short-form labels like **Short-term:**, **Medium-term:**, **Long-term:** or **Key takeaway:** are encouraged for scannability.
+
+CLOSING PARAGRAPH (MANDATORY):
+- The final paragraph MUST be a direct, provocative or collaborative call to action that drives reader comments.
+- It MUST end with a specific question directed at the reader using "you" or "your".
+- After the question, on the same line, add this exact sentence: "Drop your take in the comments below."
+- Do NOT use headings like "Final Thoughts" or "Conclusion". Just make the last paragraph land with impact.
+- Example ending: "...so the real question isn't whether AI safety matters - it's whether the people making these decisions have earned your trust. What would YOU demand from an AI company before trusting it with critical infrastructure? Drop your take in the comments below."
 
 ADDITIONAL SECTIONS (include these AFTER the article content, clearly delimited):
 
@@ -606,7 +620,7 @@ ${content}`;
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image',
           messages: [
-            { role: 'user', content: `Generate a professional, editorial-quality image for a news article. The image should be photorealistic, well-lit, and suitable for a technology news website. Description: ${description}` },
+            { role: 'user', content: `Create a conceptual digital art illustration for a technology news article. This is NOT a stock photo and NOT photorealistic. Think editorial illustration like a New Yorker cover or Wired magazine feature art. Style: Bold dramatic colours, cinematic lighting, dark moody background (deep navy #0a0a1a or charcoal). Use teal (#0D9488) and electric blue as primary accent colours. The image should be an abstract or metaphorical visual representation of the theme, not a literal depiction. No text, no words, no letters, no UI elements, no screens. Clean composition with breathing room on the left for title overlay. Atmosphere: Professional, modern, slightly futuristic, high editorial quality. Description: ${description}` },
           ],
           modalities: ['image', 'text'],
         }),
@@ -661,17 +675,22 @@ ${content}`;
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // ── Step 4: Replace IMAGE_PLACEHOLDER_HERE with actual image ──
+  // ── Step 4: Safety strip FIRST, then insert our images ──
+
+  // Safety: strip markdown images with alt text over 50 chars (leaked AI prompts)
+  // MUST run BEFORE we insert our own controlled images
+  finalContent = finalContent.replace(/!\[[^\]]{50,}\]\([^)]*\)/g, '');
+  finalContent = finalContent.replace(/^!\[?[^\]\n]{50,}$/gm, '');
+  finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
+
+  // NOW insert mid-article image with safe alt text (capped under 50 chars)
   if (midImage) {
-    finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${midImageAlt}](${midImage})\n\n`);
+    const safeAlt = midImageAlt.substring(0, 45);
+    finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${safeAlt}](${midImage})\n\n`);
   } else {
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, '');
   }
 
-  // Safety: strip markdown images with alt text over 50 chars (leaked prompts)
-  finalContent = finalContent.replace(/!\[[^\]]{50,}\]\([^)]*\)/g, '');
-  finalContent = finalContent.replace(/^!\[?[^\]\n]{50,}$/gm, '');
-  finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
   finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
   return new Response(
