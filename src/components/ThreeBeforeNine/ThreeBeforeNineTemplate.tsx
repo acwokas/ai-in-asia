@@ -396,7 +396,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
                     </h2>
                   </div>
                   {(() => {
-                    const imgUrl = signalImages[signal.number - 1] || article.featured_image_url;
+                    const imgUrl = signalImages[signal.number - 1] || '';
                     return imgUrl ? (
                       <img
                         src={imgUrl}

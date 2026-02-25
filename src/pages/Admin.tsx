@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Users, Mail, Activity, Eye, TrendingUp, BarChart3,
   MessageSquare, RefreshCw, Loader2, CalendarCheck, Megaphone,
-  BookOpen, Bell,
+  BookOpen, Bell, Newspaper,
 } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
@@ -339,6 +339,9 @@ const Admin = () => {
         <div className="flex gap-2 flex-wrap">
           <Button onClick={() => navigate("/editor")} size="sm">
             <FileText className="h-4 w-4 mr-1.5" /> New Article
+          </Button>
+          <Button onClick={() => navigate("/editor?type=3b9")} size="sm" variant="secondary">
+            <Newspaper className="h-4 w-4 mr-1.5" /> New 3-Before-9
           </Button>
           <Button onClick={() => navigate("/admin/guide-editor")} size="sm" variant="outline">
             <BookOpen className="h-4 w-4 mr-1.5" /> New Guide

@@ -57,7 +57,12 @@ export const convertMarkdownToHtml = (markdown: string): string => {
       .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
       // Bold then italic (avoid eating **bold**)
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>")
+      // "Read more:" raw URLs → clickable links
+      .replace(
+        /Read more:\s*(https?:\/\/[^\s<]+)/gi,
+        'Read more: <a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
   };
 
   const lines = processed.split(/\r?\n/);
@@ -107,23 +112,32 @@ export const convertMarkdownToHtml = (markdown: string): string => {
       continue;
     }
 
+    // Normalize 3-Before-9 style headings: ##1. -> ## 1. (and #1. -> # 1.)
+    let normalizedLine = trimmed;
+    if (/^##\d+[\.\:]/.test(normalizedLine)) {
+      normalizedLine = normalizedLine.replace(/^##(\d)/, '## $1');
+    }
+    if (/^#\d+[\.\:]/.test(normalizedLine) && !/^##/.test(normalizedLine)) {
+      normalizedLine = normalizedLine.replace(/^#(\d)/, '# $1');
+    }
+
     // Headings
-    if (/^###\s+/.test(trimmed)) {
+    if (/^###\s+/.test(normalizedLine)) {
       flushParagraph();
       flushList();
-      blocks.push(`<h3>${applyInline(trimmed.replace(/^###\s+/, ""))}</h3>`);
+      blocks.push(`<h3>${applyInline(normalizedLine.replace(/^###\s+/, ""))}</h3>`);
       continue;
     }
-    if (/^##\s+/.test(trimmed)) {
+    if (/^##\s+/.test(normalizedLine)) {
       flushParagraph();
       flushList();
-      blocks.push(`<h2>${applyInline(trimmed.replace(/^##\s+/, ""))}</h2>`);
+      blocks.push(`<h2>${applyInline(normalizedLine.replace(/^##\s+/, ""))}</h2>`);
       continue;
     }
-    if (/^#\s+/.test(trimmed)) {
+    if (/^#\s+/.test(normalizedLine)) {
       flushParagraph();
       flushList();
-      blocks.push(`<h1>${applyInline(trimmed.replace(/^#\s+/, ""))}</h1>`);
+      blocks.push(`<h1>${applyInline(normalizedLine.replace(/^#\s+/, ""))}</h1>`);
       continue;
     }
 
