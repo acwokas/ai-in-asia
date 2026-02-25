@@ -284,7 +284,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                   {state.isRewritingArticle ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Rewriting &amp; generating images...
+                      Rewriting, images, SEO &amp; category...
                     </>
                   ) : (
                     <>

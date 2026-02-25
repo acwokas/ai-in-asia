@@ -476,23 +476,51 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
       if (data?.result) {
         state.setContent(data.result);
+        
+        // Featured image
         if (data.featuredImage) {
           state.setFeaturedImage(data.featuredImage);
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
         }
-        if (data.excerpt) state.setExcerpt(data.excerpt);
+        
+        // Headline
         if (data.headline) state.setTitle(data.headline);
+        
+        // Excerpt
+        if (data.excerpt) state.setExcerpt(data.excerpt);
+        
+        // TL;DR
         if (data.tldr && Array.isArray(data.tldr)) {
           state.setTldrSnapshot(data.tldr);
         }
         if (data.whoShouldPayAttention) state.setWhoShouldPayAttention(data.whoShouldPayAttention);
         if (data.whatChangesNext) state.setWhatChangesNext(data.whatChangesNext);
-        
+
+        // Category
+        if (data.categoryId) {
+          state.setPrimaryCategoryId(data.categoryId);
+        }
+
+        // SEO fields
+        if (data.metaTitle) state.setMetaTitle(data.metaTitle);
+        if (data.seoTitle) state.setSeoTitle(data.seoTitle);
+        if (data.focusKeyphrase) {
+          state.setFocusKeyphrase(data.focusKeyphrase);
+          if (data.featuredImage && !data.featuredImageAlt) {
+            state.setFeaturedImageAlt(data.focusKeyphrase);
+          }
+        }
+        if (data.keyphraseSynonyms) state.setKeyphraseSynonyms(data.keyphraseSynonyms);
+        if (data.metaDescription) state.setMetaDescription(data.metaDescription);
+
+        // Success toast
         const parts: string[] = [];
         if (data.headline) parts.push('headline');
+        if (data.categoryName) parts.push(`category: ${data.categoryName}`);
         if (data.excerpt) parts.push('excerpt');
         if (data.tldr) parts.push('TL;DR');
         if (data.imagesGenerated > 0) parts.push(`${data.imagesGenerated} image${data.imagesGenerated > 1 ? 's' : ''}`);
+        if (data.focusKeyphrase) parts.push('SEO');
         toast.success("Article Rewritten", {
           description: parts.length > 0
             ? `Generated: ${parts.join(', ')}`
