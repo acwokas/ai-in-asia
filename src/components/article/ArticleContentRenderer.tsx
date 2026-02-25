@@ -242,18 +242,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       finalBlocks.push(
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
-/** Generate a URL-safe heading ID from text */
-const generateHeadingId = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/^\d+\.\s*/, '') // strip leading "1. "
-    .replace(/[^\w\s-]/g, '') // strip special chars, emojis, punctuation
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-};
-
 
       if (index === adPosition && totalBlocks > 8) {
         finalBlocks.push(<InArticleAd key="ad-inline" />);

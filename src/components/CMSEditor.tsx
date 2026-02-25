@@ -164,13 +164,31 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
       state.setSlug(`3-before-9-${dateStr}`);
       state.setPrimaryCategoryId('65520fa1-c045-4a40-b7ae-418d22026a0e');
       state.setAuthorId('efae4a91-4c99-4ac3-bfef-21f81d6e7551');
-      state.setFeaturedImage('/images/3-before-9-hero.png');
-      state.setFeaturedImageAlt('3 Before 9 - Your daily AI intelligence briefing');
+      state.setFeaturedImage('');
+      state.setFeaturedImageAlt(`3 Before 9: AI Intelligence Briefing for ${displayDate}`);
       state.setExcerpt('3 must-know AI stories before your 9am coffee. The signals that matter, delivered daily.');
       state.setSeoTitle(`3 Before 9: AI News for ${displayDate} | AI in Asia`);
       state.setMetaDescription('Three essential AI developments you need to know before 9am. Expert analysis on what matters for business leaders in Asia.');
       state.setFocusKeyphrase('AI news Asia');
-      state.setFeaturedOnHomepage(false);
+      state.setFeaturedOnHomepage(true);
+
+      // Generate unique AI hero image
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke('generate-3b9-hero', {
+            body: { displayDate },
+          });
+          if (error) throw error;
+          if (data?.heroImageUrl) {
+            state.setFeaturedImage(data.heroImageUrl);
+            toast.success("Hero image generated", { description: "Unique 3-Before-9 hero image ready" });
+          }
+        } catch (err) {
+          console.error("Failed to generate hero image:", err);
+          state.setFeaturedImage('/images/3-before-9-hero.png');
+          toast.error("Hero image generation failed", { description: "Using default image. You can retry via the image field." });
+        }
+      })();
       state.setWhoShouldPayAttention('AI leaders, founders, enterprise decision-makers, and teams deploying AI across Asia.');
       state.setWhatChangesNext('Regulatory expectations tighten, infrastructure buildout accelerates, and enterprise AI governance matures.');
     }
