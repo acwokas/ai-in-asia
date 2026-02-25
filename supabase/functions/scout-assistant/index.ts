@@ -317,115 +317,67 @@ async function handleRewriteWithImages(
   }
 
   // ── Step 1: Rewrite + get image suggestions in one AI call ──
-  const rewriteSystemPrompt = `You are Scout, an expert editorial assistant for AIinASIA.com.
-Rewrite the article content to be engaging, well-structured, and optimised for SEO.
-Use British English. Maintain factual accuracy.
+  const rewriteSystemPrompt = `You are Scout, the senior editor at AIinASIA.com — a sharp, opinionated editorial voice covering AI across Asia-Pacific.
+Rewrite the article to be engaging, well-structured, and optimised for SEO.
+Use British English throughout. Maintain factual accuracy.
 
 ASIA-PACIFIC ANGLE:
-- Where relevant, weave in an Asia-Pacific perspective — reference regional developments, companies, regulations, or market dynamics that connect to the article's topic.
-- CRITICAL: Only reference real, verifiable facts, companies, regulations, and events. Do NOT fabricate statistics, quotes, company names, policy names, or research papers. If you are not confident a specific Asian reference is factually accurate, do not include it. It is better to have no Asia angle than a fabricated one.
+- Where relevant, weave in an Asia-Pacific perspective — reference regional developments, companies, regulations, or market dynamics.
+- CRITICAL: Only reference REAL, verifiable facts. Do NOT fabricate statistics, quotes, company names, or research. Better no Asia angle than a fake one.
 
-LINKS:
+LINKS (CRITICAL — READ CAREFULLY):
 - Preserve any existing links from the original content exactly as they are.
 - Do NOT create new links to websites not listed below.
+- ALL external links must include the full https:// URL in the markdown.
 ${internalLinksInstruction}${externalLinksSection}
 
 MID-ARTICLE IMAGE PLACEHOLDER:
-- Where a mid-article image should appear, write EXACTLY this on its own line and nothing else: IMAGE_PLACEHOLDER_HERE
-- Do NOT write any image descriptions, alt text, or markdown image syntax in the article body.
-- Do NOT write any markdown image syntax like ![...](...) anywhere in the content.
+- You MUST place exactly one image placeholder in the article body, roughly 40-60% through the content.
+- Write EXACTLY this on its own line and nothing else: IMAGE_PLACEHOLDER_HERE
+- Do NOT write any image descriptions, alt text, or markdown image syntax like ![...](...) in the article body.
 
-FORMATTING RULES (MANDATORY - these are not optional):
-- Maximum 3 short paragraphs before a visual break (subheading, blockquote, bullet list, or numbered list). This is a hard rule, not a suggestion.
-- Each paragraph should be 2-4 sentences maximum. NEVER write paragraphs longer than 5 sentences.
-- You MUST include at least 2 blockquotes using markdown > syntax. Pull out notable quotes, statistics, or key statements. Each blockquote MUST be on its own line starting with > and MUST have a blank line before and after it. Example format:
+FORMATTING RULES (MANDATORY — these are not optional):
+- Maximum 3 short paragraphs before a visual break (subheading, blockquote, bullet list, or numbered list). This is a hard rule.
+- Each paragraph MUST be 2-4 sentences. NEVER write paragraphs longer than 5 sentences.
+- You MUST include at least 2 blockquotes using markdown > syntax. Pull out notable quotes, statistics, or key statements. Each blockquote MUST be on its own line starting with > and MUST have a blank line before and after it. Example:
 
-Previous paragraph text ends here.
+Previous paragraph ends here.
 
-> "The cost per prompt is so high that profitability remains elusive for most AI companies." - Industry analyst
+> "The cost per prompt is so high that profitability remains elusive for most AI companies." — Industry analyst
 
 Next paragraph starts here.
 
-- You MUST include at least 1 bullet list OR numbered list somewhere in the article to break up dense information.
-- Use **bold** for key terms, names, and important phrases (at least 5-8 bold items throughout the article).
-- Use ## subheadings to break the article into 3-5 clear sections. Each section should have a compelling subheading.
-- Short-form labels like **Short-term:**, **Medium-term:**, **Long-term:** or **Key takeaway:** are encouraged for scannability.
+- You MUST include at least 1 bullet list OR numbered list to break up dense information.
+- Use **bold** for key terms, names, and important phrases (at least 5-8 bold items throughout).
+- Use ## subheadings to break the article into 3-5 clear sections with compelling subheadings.
+- Labels like **Short-term:**, **Long-term:**, or **Key takeaway:** are encouraged for scannability.
 
 CLOSING PARAGRAPH (MANDATORY):
 - The final paragraph MUST be a direct, provocative or collaborative call to action that drives reader comments.
 - It MUST end with a specific question directed at the reader using "you" or "your".
-- After the question, on the same line, add this exact sentence: "Drop your take in the comments below."
-- Do NOT use headings like "Final Thoughts" or "Conclusion". Just make the last paragraph land with impact.
-- Example ending: "...so the real question isn't whether AI safety matters - it's whether the people making these decisions have earned your trust. What would YOU demand from an AI company before trusting it with critical infrastructure? Drop your take in the comments below."
+- After the question, on the same line, add: "Drop your take in the comments below."
+- Do NOT use headings like "Final Thoughts" or "Conclusion".
+- Example: "...so the real question isn't whether AI safety matters — it's whether the people making these decisions have earned your trust. What would YOU demand from an AI company before trusting it with critical infrastructure? Drop your take in the comments below."
 
-ADDITIONAL SECTIONS (include these AFTER the article content, clearly delimited):
+Return your response as a JSON object with these SEPARATE fields. Do NOT embed tagged sections inside the article content. Every field is required.
 
-[EXCERPT]
-A punchy teaser under 140 characters that makes someone want to click. NOT a summary - it's a hook. Example: "AI keeps embarrassing itself. But that might be exactly why your brain still matters more."
-[/EXCERPT]
-
-[HEADLINE]
-Write a headline under 60 characters that makes people NEED to click. It should be short, punchy, and create urgency or curiosity without being clickbait. Think newspaper front page, not blog post. Use strong verbs and specific details. Use British English. Do NOT use colons or question marks. Just a bold, declarative statement.
-[/HEADLINE]
-
-[TLDR]
-- Bullet point 1 (under 100 characters)
-- Bullet point 2 (under 100 characters)
-- Bullet point 3 (under 100 characters)
-[/TLDR]
-
-[WHO]
-Audience type 1 | Audience type 2 | Audience type 3
-[/WHO]
-
-[WHAT_NEXT]
-One short sentence about what changes next or implications.
-[/WHAT_NEXT]
-
-[CATEGORY]
-Based on the article's primary topic, select exactly ONE category from this list: News, Business, Life, Learn, Create, Voices, Policy
-- News: breaking developments, announcements, industry updates, current events
-- Business: corporate strategy, startups, funding, markets, enterprise AI adoption
-- Life: lifestyle impacts of AI/tech, health, wellbeing, future of work, society
-- Learn: tutorials, how-tos, explainers, educational content, guides, deep dives
-- Create: creative AI tools, generative AI, design, content creation, creative workflows
-- Voices: opinion, commentary, interviews, thought leadership, personal perspectives
-- Policy: regulation, governance, government policy, compliance, ethics frameworks, geopolitics
-Return ONLY the single category name, nothing else.
-[/CATEGORY]
-
-[SEO_META_TITLE]
-An SEO-optimized HTML meta title under 60 characters. Include the primary keyword. Use British English.
-[/SEO_META_TITLE]
-
-[SEO_TITLE]
-An SEO-optimized display title under 60 characters. Can differ slightly from meta title for click appeal.
-[/SEO_TITLE]
-
-[FOCUS_KEYPHRASE]
-The primary keyword phrase (2-4 words) that this article should rank for.
-[/FOCUS_KEYPHRASE]
-
-[KEYPHRASE_SYNONYMS]
-3-5 comma-separated synonym phrases for the focus keyphrase.
-[/KEYPHRASE_SYNONYMS]
-
-[META_DESCRIPTION]
-A compelling meta description under 155 characters that includes the focus keyphrase. Designed for Google search results.
-[/META_DESCRIPTION]
-
-IMAGE DESCRIPTIONS (for AI generation — NOT to be included in the article text):
-1. A hero/lead image that captures the article's theme
-2. A mid-article image for the IMAGE_PLACEHOLDER_HERE position
-For each, provide a short alt text (under 125 characters) for the img alt attribute.
-
-Return your response in this EXACT JSON format (no markdown fences):
 {
-  "rewrittenContent": "the full rewritten article in markdown with IMAGE_PLACEHOLDER_HERE placeholder and all delimited sections at the end",
-  "heroImageDescription": "detailed description for AI image generation",
-  "heroImageAlt": "short alt text under 125 chars",
-  "midImageDescription": "detailed description for AI image generation",
-  "midImageAlt": "short alt text under 125 chars"
+  "rewrittenContent": "The full rewritten article in markdown. Contains ONLY the article body text with ## subheadings, > blockquotes, bullet lists, bold text, links, and IMAGE_PLACEHOLDER_HERE. Does NOT contain any [HEADLINE] or [EXCERPT] tags — those go in separate fields below.",
+  "headline": "A punchy headline under 60 characters. Newspaper front page energy. No colons or semicolons. British English.",
+  "excerpt": "A hook under 140 characters that makes someone want to click. NOT a summary.",
+  "tldr": ["Bullet 1 under 100 chars", "Bullet 2 under 100 chars", "Bullet 3 under 100 chars"],
+  "whoShouldPayAttention": "Audience 1 | Audience 2 | Audience 3",
+  "whatChangesNext": "One sentence about implications or what happens next.",
+  "category": "Exactly ONE of: News, Business, Life, Learn, Create, Voices, Policy",
+  "seoTitle": "SEO display title under 60 chars",
+  "metaTitle": "HTML meta title under 60 chars with primary keyword",
+  "metaDescription": "Meta description under 155 chars including the focus keyphrase",
+  "focusKeyphrase": "Primary keyword phrase, 2-4 words",
+  "keyphraseSynonyms": "3-5 comma-separated synonym phrases",
+  "heroImageDescription": "Detailed visual description for AI image generation — conceptual and artistic, not stock photo",
+  "heroImageAlt": "Short alt text under 45 chars",
+  "midImageDescription": "Detailed visual description for the mid-article image",
+  "midImageAlt": "Short alt text under 45 chars"
 }`;
 
   const rewritePrompt = `Title: ${title}
@@ -470,14 +422,25 @@ ${content}`;
   let midImageDescription: string;
   let midImageAltText: string;
 
+  let parsed: any = {};
   try {
     const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+    parsed = JSON.parse(cleaned);
     rewrittenContent = parsed.rewrittenContent || rawResult;
     heroImageDescription = parsed.heroImageDescription || '';
     heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
     midImageDescription = parsed.midImageDescription || '';
     midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
+    console.log('Parsed fields check:', {
+      hasHeadline: !!parsed.headline,
+      hasExcerpt: !!parsed.excerpt,
+      hasTldr: !!parsed.tldr,
+      hasCategory: !!parsed.category,
+      hasSeoTitle: !!parsed.seoTitle,
+      hasHeroDesc: !!parsed.heroImageDescription,
+      hasMidDesc: !!parsed.midImageDescription,
+      contentLength: (parsed.rewrittenContent || '').length,
+    });
   } catch {
     console.warn('Could not parse rewrite JSON, returning content without images');
     return new Response(
@@ -486,95 +449,26 @@ ${content}`;
     );
   }
 
-  // ── Step 2: Parse ALL delimited sections FIRST ──
+  // ── Step 2: Extract fields directly from JSON (no more regex tag parsing) ──
   let finalContent = rewrittenContent;
 
-  // Extract excerpt
-  let excerpt = '';
-  const excerptMatch = finalContent.match(/\[EXCERPT\]([\s\S]*?)\[\/EXCERPT\]/);
-  if (excerptMatch) {
-    excerpt = excerptMatch[1].trim().substring(0, 140);
-    finalContent = finalContent.replace(/\[EXCERPT\][\s\S]*?\[\/EXCERPT\]/, '');
-  }
+  // Direct JSON field extraction — no more fragile [TAG] regex parsing
+  const excerpt = (parsed.excerpt || '').substring(0, 140);
+  const headline = (parsed.headline || '').substring(0, 60);
+  const tldr: string[] = Array.isArray(parsed.tldr)
+    ? parsed.tldr.map((b: string) => b.substring(0, 100)).slice(0, 3)
+    : [];
+  const whoShouldPayAttention = parsed.whoShouldPayAttention || '';
+  const whatChangesNext = parsed.whatChangesNext || '';
+  const categoryName = parsed.category || '';
+  const seoTitle = (parsed.seoTitle || '').substring(0, 60);
+  const metaTitle = (parsed.metaTitle || '').substring(0, 60);
+  const metaDescription = (parsed.metaDescription || '').substring(0, 155);
+  const focusKeyphrase = parsed.focusKeyphrase || '';
+  const keyphraseSynonyms = parsed.keyphraseSynonyms || '';
 
-  // Extract headline
-  let headline = '';
-  const headlineMatch = finalContent.match(/\[HEADLINE\]([\s\S]*?)\[\/HEADLINE\]/);
-  if (headlineMatch) {
-    headline = headlineMatch[1].trim().substring(0, 60);
-    finalContent = finalContent.replace(/\[HEADLINE\][\s\S]*?\[\/HEADLINE\]/, '');
-  }
-
-  // Extract TL;DR bullets
-  let tldr: string[] = [];
-  const tldrMatch = finalContent.match(/\[TLDR\]([\s\S]*?)\[\/TLDR\]/);
-  if (tldrMatch) {
-    tldr = tldrMatch[1].trim().split('\n')
-      .map((l: string) => l.replace(/^-\s*/, '').trim())
-      .filter((l: string) => l.length > 0)
-      .slice(0, 3);
-    finalContent = finalContent.replace(/\[TLDR\][\s\S]*?\[\/TLDR\]/, '');
-  }
-
-  // Extract WHO
-  let whoShouldPayAttention = '';
-  const whoMatch = finalContent.match(/\[WHO\]([\s\S]*?)\[\/WHO\]/);
-  if (whoMatch) {
-    whoShouldPayAttention = whoMatch[1].trim();
-    finalContent = finalContent.replace(/\[WHO\][\s\S]*?\[\/WHO\]/, '');
-  }
-
-  // Extract WHAT_NEXT
-  let whatChangesNext = '';
-  const whatMatch = finalContent.match(/\[WHAT_NEXT\]([\s\S]*?)\[\/WHAT_NEXT\]/);
-  if (whatMatch) {
-    whatChangesNext = whatMatch[1].trim();
-    finalContent = finalContent.replace(/\[WHAT_NEXT\][\s\S]*?\[\/WHAT_NEXT\]/, '');
-  }
-
-  // Extract CATEGORY
-  let categoryName = '';
-  const categoryMatch = finalContent.match(/\[CATEGORY\]([\s\S]*?)\[\/CATEGORY\]/);
-  if (categoryMatch) {
-    categoryName = categoryMatch[1].trim();
-    finalContent = finalContent.replace(/\[CATEGORY\][\s\S]*?\[\/CATEGORY\]/, '');
-  }
-
-  // Extract SEO fields
-  let seoTitle = '';
-  const seoTitleMatch = finalContent.match(/\[SEO_TITLE\]([\s\S]*?)\[\/SEO_TITLE\]/);
-  if (seoTitleMatch) {
-    seoTitle = seoTitleMatch[1].trim().substring(0, 60);
-    finalContent = finalContent.replace(/\[SEO_TITLE\][\s\S]*?\[\/SEO_TITLE\]/, '');
-  }
-
-  let metaTitle = '';
-  const metaTitleMatch = finalContent.match(/\[SEO_META_TITLE\]([\s\S]*?)\[\/SEO_META_TITLE\]/);
-  if (metaTitleMatch) {
-    metaTitle = metaTitleMatch[1].trim().substring(0, 60);
-    finalContent = finalContent.replace(/\[SEO_META_TITLE\][\s\S]*?\[\/SEO_META_TITLE\]/, '');
-  }
-
-  let focusKeyphrase = '';
-  const focusMatch = finalContent.match(/\[FOCUS_KEYPHRASE\]([\s\S]*?)\[\/FOCUS_KEYPHRASE\]/);
-  if (focusMatch) {
-    focusKeyphrase = focusMatch[1].trim();
-    finalContent = finalContent.replace(/\[FOCUS_KEYPHRASE\][\s\S]*?\[\/FOCUS_KEYPHRASE\]/, '');
-  }
-
-  let keyphraseSynonyms = '';
-  const synMatch = finalContent.match(/\[KEYPHRASE_SYNONYMS\]([\s\S]*?)\[\/KEYPHRASE_SYNONYMS\]/);
-  if (synMatch) {
-    keyphraseSynonyms = synMatch[1].trim();
-    finalContent = finalContent.replace(/\[KEYPHRASE_SYNONYMS\][\s\S]*?\[\/KEYPHRASE_SYNONYMS\]/, '');
-  }
-
-  let metaDescription = '';
-  const metaDescMatch = finalContent.match(/\[META_DESCRIPTION\]([\s\S]*?)\[\/META_DESCRIPTION\]/);
-  if (metaDescMatch) {
-    metaDescription = metaDescMatch[1].trim().substring(0, 155);
-    finalContent = finalContent.replace(/\[META_DESCRIPTION\][\s\S]*?\[\/META_DESCRIPTION\]/, '');
-  }
+  // Safety: strip any [TAG]...[/TAG] blocks that leaked into the article body
+  finalContent = finalContent.replace(/\[(EXCERPT|HEADLINE|TLDR|WHO|WHAT_NEXT|CATEGORY|SEO_TITLE|SEO_META_TITLE|FOCUS_KEYPHRASE|KEYPHRASE_SYNONYMS|META_DESCRIPTION|IMAGE_PROMPT)\][\s\S]*?\[\/\1\]/g, '');
 
   // ── Look up category ID from database ──
   let categoryId = '';
@@ -620,7 +514,7 @@ ${content}`;
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image',
           messages: [
-            { role: 'user', content: `Create a conceptual digital art illustration for a technology news article. This is NOT a stock photo and NOT photorealistic. Think editorial illustration like a New Yorker cover or Wired magazine feature art. Style: Bold dramatic colours, cinematic lighting, dark moody background (deep navy #0a0a1a or charcoal). Use teal (#0D9488) and electric blue as primary accent colours. The image should be an abstract or metaphorical visual representation of the theme, not a literal depiction. No text, no words, no letters, no UI elements, no screens. Clean composition with breathing room on the left for title overlay. Atmosphere: Professional, modern, slightly futuristic, high editorial quality. Description: ${description}` },
+            { role: 'user', content: `Create conceptual digital art for a technology news article. NOT a stock photo. NOT photorealistic. Think Wired magazine cover art or New Yorker editorial illustration. Style: Bold dramatic colours with cinematic lighting. Dark moody background using deep navy (#0a0a1a) or charcoal tones. Use teal (#0D9488) and electric blue as primary accent colours. Abstract or metaphorical visual representation of the theme — not a literal depiction. No text, no words, no letters, no UI mockups, no computer screens. Clean composition with space on the left side for a title overlay. Professional, modern, slightly futuristic editorial quality. Topic: ${description}` },
           ],
           modalities: ['image', 'text'],
         }),
