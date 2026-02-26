@@ -441,10 +441,37 @@ ${content}`;
       hasMidDesc: !!parsed.midImageDescription,
       contentLength: (parsed.rewrittenContent || '').length,
     });
-  } catch {
-    console.warn('Could not parse rewrite JSON, returning content without images');
+  } catch (parseErr) {
+    console.warn('Could not parse rewrite JSON, attempting fallback extraction:', parseErr);
+    // Try to extract just the rewrittenContent field even if full parse fails
+    let fallbackContent = rawResult;
+    try {
+      // Try to find rewrittenContent value in the raw string
+      const contentMatch = rawResult.match(/"rewrittenContent"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"(?:headline|excerpt|tldr|category)|"\s*})/);
+      if (contentMatch?.[1]) {
+        // Unescape JSON string escapes
+        fallbackContent = contentMatch[1]
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
+        console.log('Fallback extraction succeeded, content length:', fallbackContent.length);
+      } else {
+        // Strip JSON wrappers if present
+        fallbackContent = rawResult
+          .replace(/^```json\s*/i, '')
+          .replace(/```\s*$/i, '')
+          .replace(/^\s*\{\s*"rewrittenContent"\s*:\s*"/i, '')
+          .replace(/"\s*,?\s*"headline"[\s\S]*$/i, '')
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
+          .trim();
+        console.log('Regex strip fallback, content length:', fallbackContent.length);
+      }
+    } catch {
+      console.warn('Fallback extraction also failed, using raw result');
+    }
     return new Response(
-      JSON.stringify({ result: rawResult, imagesGenerated: 0 }),
+      JSON.stringify({ result: fallbackContent, imagesGenerated: 0 }),
       { headers: { ...cors, 'Content-Type': 'application/json' } },
     );
   }

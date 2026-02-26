@@ -483,11 +483,24 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
         }
         
-        // Headline
-        if (data.headline) state.setTitle(data.headline);
+        // Headline + Slug
+        if (data.headline) {
+          state.setTitle(data.headline);
+          if (!initialData) {
+            state.setSlug(generateSlug(data.headline));
+          }
+        }
         
         // Excerpt
         if (data.excerpt) state.setExcerpt(data.excerpt);
+        
+        // Default author to Intelligence Desk for new articles
+        if (!initialData && !state.authorId && authors) {
+          const intelligenceDesk = authors.find((a: any) => a.name === "Intelligence Desk");
+          if (intelligenceDesk) {
+            state.setAuthorId(intelligenceDesk.id);
+          }
+        }
         
         // TL;DR
         if (data.tldr && Array.isArray(data.tldr)) {
