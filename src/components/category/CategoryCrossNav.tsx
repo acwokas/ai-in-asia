@@ -9,7 +9,7 @@ import type React from "react";
 interface CategoryCrossNavProps {
   categories: { slug: string; accent: string; emoji: string; icon: string; label: string; desc: string }[];
   revealProps: {
-    ref: React.RefObject<HTMLDivElement>;
+    ref: React.Ref<HTMLDivElement>;
     visible: boolean;
     style: React.CSSProperties;
   };
