@@ -240,7 +240,7 @@ const GuideDetail = () => {
             </div>
 
             {/* Sidebar */}
-            <GuideDetailSidebar sections={tocSections} />
+            <GuideDetailSidebar sections={tocSections} currentGuideId={g.id} topicCategory={g.topic_category} />
           </div>
         </div>
       </main>
