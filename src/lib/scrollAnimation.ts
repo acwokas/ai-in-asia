@@ -1,35 +1,40 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import type React from "react";
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function useRevealOnScroll() {
-  const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [element, setElement] = useState<HTMLElement | null>(null);
+
+  // Callback ref so we know when the element mounts/unmounts
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    setElement(node);
+  }, []);
+
   useEffect(() => {
     if (prefersReducedMotion()) {
       setVisible(true);
       return;
     }
-    const el = ref.current;
-    if (!el) return;
+    if (!element) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
           obs.disconnect();
-          const timer = setTimeout(() => {
-            if (el) el.style.willChange = 'auto';
+          setTimeout(() => {
+            if (element) element.style.willChange = 'auto';
           }, 600);
-          return () => clearTimeout(timer);
         }
       },
       { threshold: 0.1 }
     );
-    obs.observe(el);
+    obs.observe(element);
     return () => obs.disconnect();
-  }, []);
+  }, [element]);
+
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const reduced = prefersReducedMotion();
   const dist = isMobile ? '12px' : '20px';

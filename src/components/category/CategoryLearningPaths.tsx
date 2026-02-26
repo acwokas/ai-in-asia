@@ -20,7 +20,7 @@ interface CategoryLearningPathsProps {
   paths: LearningPath[];
   categorySlug: string;
   revealProps: {
-    ref: React.RefObject<HTMLDivElement>;
+    ref: React.Ref<HTMLDivElement>;
     visible: boolean;
     style: React.CSSProperties;
   };

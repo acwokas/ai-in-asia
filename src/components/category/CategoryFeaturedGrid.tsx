@@ -13,7 +13,7 @@ interface CategoryFeaturedGridProps {
   cfg: { accent: string; label: string; icon: string };
   slug: string | undefined;
   revealProps: {
-    ref: React.RefObject<HTMLDivElement>;
+    ref: React.Ref<HTMLDivElement>;
     visible: boolean;
     style: React.CSSProperties;
   };

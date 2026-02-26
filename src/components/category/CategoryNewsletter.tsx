@@ -7,7 +7,7 @@ import type React from "react";
 interface CategoryNewsletterProps {
   cfg: { accent: string; label: string };
   revealProps: {
-    ref: React.RefObject<HTMLDivElement>;
+    ref: React.Ref<HTMLDivElement>;
     style: React.CSSProperties;
   };
 }
