@@ -625,10 +625,10 @@ const Index = () => {
           </>
         )}
 
-        {/* 7. Recommended Guides - temporarily hidden during guides rebuild */}
-        {/* <div className="py-14 md:py-20">
+        {/* 7. Recommended Guides */}
+        <div className="py-14 md:py-20">
           <RecommendedGuides />
-        </div> */}
+        </div>
 
         <div className="border-t border-border/30" />
 
