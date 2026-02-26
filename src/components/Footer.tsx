@@ -1,4 +1,5 @@
 import { useState, memo } from "react";
+import { FooterAd } from "@/components/GoogleAds";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,6 +186,9 @@ const Footer = memo(() => {
           )}
         </div>
       </div>
+
+      {/* Google Ad above bottom bar */}
+      <FooterAd />
 
       {/* Bottom bar */}
       <div className="border-t border-border">

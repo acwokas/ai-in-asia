@@ -14,6 +14,7 @@ import { LEARNING_PATHS } from "@/constants/learningPaths";
 import { iconMap } from "@/lib/iconMap";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import { useRevealOnScroll } from "@/lib/scrollAnimation";
+import { MPUAd } from "@/components/GoogleAds";
 
 // Sub-components
 import { CategorySubNav } from "@/components/category/CategorySubNav";
@@ -412,6 +413,11 @@ const Category = () => {
                   </Suspense>
                 </section>
               )}
+
+              {/* Google Ad — MPU between tool and featured grid */}
+              <div className="flex justify-center my-8">
+                <MPUAd />
+              </div>
 
               {/* 6. FEATURED ARTICLES */}
               <CategoryFeaturedGrid
