@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, ArrowRight, Search, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
+import { MPUAd } from "@/components/GoogleAds";
 
 const pillarColors: Record<string, string> = {
   learn: "bg-blue-500",
@@ -62,14 +63,7 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
 
 const AdCard = () => (
   <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col items-center justify-center p-4 gap-2 min-h-[280px]">
-    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Advertisement</span>
-    <div
-      id="guides-ad-1"
-      className="flex items-center justify-center"
-      style={{ width: 300, height: 250, maxWidth: "100%" }}
-    >
-      <span className="text-sm text-muted-foreground/40">Ad</span>
-    </div>
+    <MPUAd />
   </div>
 );
 

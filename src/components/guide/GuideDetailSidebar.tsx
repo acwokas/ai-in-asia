@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { SidebarAd } from "@/components/GoogleAds";
 
 interface TocSection {
   id: string;
@@ -79,13 +80,7 @@ export default function GuideDetailSidebar({ sections }: GuideDetailSidebarProps
 
         {/* Ad slot */}
         <div className="mt-8">
-          <div
-            id="guide-sidebar-ad"
-            data-ad-slot="guide-sidebar"
-            className="w-full aspect-[6/5] rounded-lg border border-dashed border-border flex items-center justify-center"
-          >
-            <span className="text-xs text-muted-foreground/50">Advertisement</span>
-          </div>
+          <SidebarAd />
         </div>
 
         {/* Related Guides placeholder */}
