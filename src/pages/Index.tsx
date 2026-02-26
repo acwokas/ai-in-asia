@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp, Users, Loader2 } from "lucide-react";
+import { FooterAd, MPUAd } from "@/components/GoogleAds";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -603,6 +604,13 @@ const Index = () => {
           }>
             <RecommendedArticles excludeIds={heroLatestIds} />
           </Suspense>
+        </div>
+
+        <div className="border-t border-border/30" />
+
+        {/* Google Ad — between recommended articles and editor's pick */}
+        <div className="flex justify-center py-8">
+          <MPUAd />
         </div>
 
         <div className="border-t border-border/30" />

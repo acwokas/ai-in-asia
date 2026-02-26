@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
-import GoogleAd from "@/components/GoogleAds";
+import { SidebarAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
@@ -644,7 +644,7 @@ const Article = () => {
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
                   <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
                     <div style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(48,62,83,0.15)", borderRadius: "4px" }}>
-                      <GoogleAd slot="sidebar" houseAdType="mpu" />
+                      <SidebarAd />
                     </div>
                   </div>
                   {article.categories?.id && (
