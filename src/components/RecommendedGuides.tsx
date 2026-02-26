@@ -12,14 +12,32 @@ const RecommendedGuides = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, guide_category, level, primary_platform, excerpt, created_at")
+        .select("id, title, slug, guide_category, level, primary_platform, excerpt, created_at, featured_image_url, featured_image_alt")
+        .eq("status", "published")
         .in("guide_category", ["Guide", "Tutorial", "Prompt List", "Platform Guide", "Role Guide"])
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (error) throw error;
-      const shuffled = (data || []).sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, 6);
+      // Pick up to 6 with category variety
+      const items = data || [];
+      const picked: typeof items = [];
+      const usedCategories = new Set<string>();
+      // First pass: one per category
+      for (const item of items) {
+        if (picked.length >= 6) break;
+        if (!usedCategories.has(item.guide_category)) {
+          usedCategories.add(item.guide_category);
+          picked.push(item);
+        }
+      }
+      // Second pass: fill remaining slots randomly
+      const remaining = items.filter(i => !picked.includes(i)).sort(() => Math.random() - 0.5);
+      for (const item of remaining) {
+        if (picked.length >= 6) break;
+        picked.push(item);
+      }
+      return picked.sort(() => Math.random() - 0.5);
     },
   });
 
@@ -119,8 +137,25 @@ const RecommendedGuides = () => {
               <Link
                 key={guide.id}
                 to={`/guides/${guide.slug}`}
-                className={`group flex flex-col border border-border/50 border-l-[3px] ${getCategoryBorderColor(guide.guide_category)} bg-card rounded-lg p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 min-h-[200px]`}
+                className={`group flex flex-col border border-border/50 border-l-[3px] ${getCategoryBorderColor(guide.guide_category)} bg-card rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300`}
               >
+                {/* Image */}
+                <div className="aspect-[16/9] bg-muted relative overflow-hidden">
+                  {guide.featured_image_url ? (
+                    <img
+                      src={guide.featured_image_url}
+                      alt={guide.featured_image_alt || guide.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-6 flex flex-col flex-grow">
                 {/* Category badge — prominent */}
                 <div className="flex items-center gap-2 mb-4">
                   <Badge className={`${categoryConfig.color} border text-[13px] flex items-center gap-1.5 px-2.5 py-1`}>
@@ -156,6 +191,7 @@ const RecommendedGuides = () => {
                     Read
                     <ArrowRight className="h-3 w-3" />
                   </span>
+                </div>
                 </div>
               </Link>
             );
