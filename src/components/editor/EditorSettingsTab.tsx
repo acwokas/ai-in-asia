@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, ExternalLink, Lightbulb, Pencil, Plus } from "lucide-react";
+import { CalendarIcon, ExternalLink, Info, Lightbulb, Pencil, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ interface EditorSettingsTabProps {
   sticky: boolean;
   isTrending: boolean;
   homepageTrending: boolean;
+  featuredPinned: boolean;
   authorId: string;
   authors: Author[] | undefined;
   initialData?: any;
@@ -38,6 +40,7 @@ interface EditorSettingsTabProps {
   onStickyChange: (value: boolean) => void;
   onIsTrendingChange: (value: boolean) => void;
   onHomepageTrendingChange: (value: boolean) => void;
+  onFeaturedPinnedChange: (value: boolean) => void;
   onAuthorIdChange: (value: string) => void;
   onOpenAuthorDialog: (author?: any) => void;
 }
@@ -53,6 +56,7 @@ export const EditorSettingsTab = ({
   sticky,
   isTrending,
   homepageTrending,
+  featuredPinned,
   authorId,
   authors,
   initialData,
@@ -65,6 +69,7 @@ export const EditorSettingsTab = ({
   onStickyChange,
   onIsTrendingChange,
   onHomepageTrendingChange,
+  onFeaturedPinnedChange,
   onAuthorIdChange,
   onOpenAuthorDialog,
 }: EditorSettingsTabProps) => {
@@ -192,6 +197,26 @@ export const EditorSettingsTab = ({
             </p>
           </div>
           <Switch id="featured" checked={featuredOnHomepage} onCheckedChange={onFeaturedOnHomepageChange} />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="featured-pinned">Pin to Featured</Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[220px]">
+                  <p className="text-xs">Pinned articles stay in featured/trending and won't be auto-rotated out</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Prevent auto-rotation from removing this article
+            </p>
+          </div>
+          <Switch id="featured-pinned" checked={featuredPinned} onCheckedChange={onFeaturedPinnedChange} />
         </div>
 
         <div className="flex items-center justify-between">

@@ -55,6 +55,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
   const [sticky, setSticky] = useState(initialData?.sticky ?? false);
   const [isTrending, setIsTrending] = useState(initialData?.is_trending ?? false);
   const [homepageTrending, setHomepageTrending] = useState(initialData?.homepage_trending ?? false);
+  const [featuredPinned, setFeaturedPinned] = useState(initialData?.featured_pinned ?? false);
   
   // Author & Category
   const [authorId, setAuthorId] = useState(initialData?.author_id || "");
@@ -189,6 +190,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     sticky, setSticky,
     isTrending, setIsTrending,
     homepageTrending, setHomepageTrending,
+    featuredPinned, setFeaturedPinned,
     
     // Author & Category
     authorId, setAuthorId,

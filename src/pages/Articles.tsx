@@ -101,12 +101,13 @@ const Articles = () => {
           view_count,
           article_type,
           author_id,
-          primary_category_id,
-          sticky,
-          featured_on_homepage,
-          homepage_trending,
-          is_trending,
-          preview_code,
+           primary_category_id,
+           sticky,
+           featured_on_homepage,
+           homepage_trending,
+           is_trending,
+           featured_pinned,
+           preview_code,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `, { count: 'exact' });
@@ -500,8 +501,13 @@ const Articles = () => {
                         onChange={(e) => handleUpdate(article.id, "title", e.target.value)}
                         className="font-medium"
                       />
-                      <div className="text-xs text-muted-foreground truncate mt-1">
+                      <div className="text-xs text-muted-foreground truncate mt-1 flex items-center gap-1">
                         /{article.slug}
+                        {article.featured_pinned && (
+                          <span title="Pinned to featured">
+                            <Pin className="h-3 w-3 text-primary inline-block" />
+                          </span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

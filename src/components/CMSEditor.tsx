@@ -644,6 +644,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             sticky={state.sticky}
             isTrending={state.isTrending}
             homepageTrending={state.homepageTrending}
+            featuredPinned={state.featuredPinned}
             authorId={state.authorId}
             authors={authors}
             initialData={initialData}
@@ -656,6 +657,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             onStickyChange={state.setSticky}
             onIsTrendingChange={state.setIsTrending}
             onHomepageTrendingChange={state.setHomepageTrending}
+            onFeaturedPinnedChange={state.setFeaturedPinned}
             onAuthorIdChange={state.setAuthorId}
             onOpenAuthorDialog={actions.handleOpenAuthorDialog}
           />
