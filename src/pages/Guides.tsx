@@ -7,9 +7,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search, ChevronDown, Star } from "lucide-react";
+import { Clock, ArrowRight, Search, ChevronDown, Star, Globe } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MPUAd } from "@/components/GoogleAds";
+
+const ASIAN_KEYWORDS = ["asia", "singapore", "malaysia", "indonesia", "thailand", "vietnam", "philippines", "japan", "korea", "china", "india", "taiwan", "hong-kong", "bangkok", "manila", "jakarta", "mumbai", "delhi", "tokyo", "seoul", "halal", "lunar", "chinese-new-year", "diwali", "ramadan", "grab", "gojek", "shopee", "lazada", "line", "wechat", "baidu", "cpf", "hdb", "medisave"];
+
+const ASIAN_KEYWORD_LABELS: Record<string, string> = {
+  singapore: "Singapore", malaysia: "Malaysia", indonesia: "Indonesia", thailand: "Thailand",
+  vietnam: "Vietnam", philippines: "Philippines", japan: "Japan", korea: "Korea",
+  china: "China", india: "India", taiwan: "Taiwan", "hong-kong": "Hong Kong",
+  bangkok: "Bangkok", manila: "Manila", jakarta: "Jakarta", mumbai: "Mumbai",
+  delhi: "Delhi", tokyo: "Tokyo", seoul: "Seoul", asia: "Asia",
+};
 
 const pillarColors: Record<string, string> = {
   learn: "bg-blue-500",
@@ -201,6 +211,35 @@ const Guides = () => {
     }
     return picks;
   }, [editorsPicks]);
+  const { data: asiaGuidesRaw } = useQuery({
+    queryKey: ["asia-spotlight-guides"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, featured_image_url, difficulty, read_time_minutes, updated_at")
+        .eq("status", "published")
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const asiaSpotlight = useMemo(() => {
+    if (!asiaGuidesRaw) return [];
+    const pool = asiaGuidesRaw.filter((g) =>
+      ASIAN_KEYWORDS.some((kw) => g.slug.includes(kw))
+    );
+    if (pool.length === 0) return [];
+    const seed = Math.floor(Date.now() / 86400000);
+    const copy = [...pool];
+    const picks: typeof pool = [];
+    const count = Math.min(4, copy.length);
+    for (let i = 0; i < count; i++) {
+      const idx = ((seed * (i + 1) * 2654435761) >>> 0) % copy.length;
+      picks.push(copy.splice(idx, 1)[0]);
+    }
+    return picks;
+  }, [asiaGuidesRaw]);
 
   const { data: popularGuides } = useQuery({
     queryKey: ["guides-popular"],
@@ -459,6 +498,55 @@ const Guides = () => {
             </div>
           </section>
         ) : null}
+
+        {/* Asia Spotlight */}
+        {asiaSpotlight.length > 0 && (
+          <section className="pt-8 pb-2">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-5">
+                <Globe className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground">Local Guides for Asia</h2>
+              </div>
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                {asiaSpotlight.map((g) => {
+                  const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
+                  const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
+                  return (
+                    <Link
+                      key={g.id}
+                      to={`/guides/${g.slug}`}
+                      className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+                      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      {g.featured_image_url && (
+                        <div className="aspect-video overflow-hidden">
+                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                      )}
+                      <div className="p-4 space-y-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          {regionLabel && (
+                            <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>
+                          )}
+                          {g.difficulty && (
+                            <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>
+                          )}
+                        </div>
+                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read <ArrowRight className="h-3 w-3" /></span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Guides Grid + Sidebar */}
         <section className="py-12 md:py-16">
