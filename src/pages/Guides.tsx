@@ -299,6 +299,18 @@ const Guides = () => {
     return result;
   }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy]);
 
+  const showGrouped = topic === "All" && !debouncedSearch.trim();
+
+  const groupedGuides = useMemo(() => {
+    if (!showGrouped || !filteredGuides.length) return [];
+    const groups: Record<string, typeof filteredGuides> = {};
+    for (const g of filteredGuides) {
+      const cat = g.topic_category || "General";
+      (groups[cat] ??= []).push(g);
+    }
+    return Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+  }, [filteredGuides, showGrouped]);
+
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
 
@@ -593,11 +605,41 @@ const Guides = () => {
                 <div className="flex gap-8">
                   {/* Main guide grid */}
                   <div className="flex-1 min-w-0">
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                      {filteredGuides.map((g: any) => (
-                        <GuideCard key={g.id} g={g} />
-                      ))}
-                    </div>
+                    {showGrouped ? (
+                      <div className="space-y-12">
+                        {groupedGuides.map(([cat, catGuides]) => {
+                          const slug = cat.toLowerCase().replace(/\s+/g, "-");
+                          const visible = catGuides.slice(0, 6);
+                          return (
+                            <div key={cat} id={`cat-${slug}`}>
+                              <div className="flex items-center gap-2 mb-4">
+                                <h2 className="text-xl font-bold text-foreground capitalize">{cat}</h2>
+                                <Badge variant="secondary" className="text-xs bg-muted/60 border-0">{catGuides.length}</Badge>
+                              </div>
+                              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                {visible.map((g: any) => (
+                                  <GuideCard key={g.id} g={g} />
+                                ))}
+                              </div>
+                              {catGuides.length > 6 && (
+                                <button
+                                  onClick={() => setTopic(cat)}
+                                  className="mt-4 text-sm font-medium text-primary hover:underline"
+                                >
+                                  View all {catGuides.length} guides →
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredGuides.map((g: any) => (
+                          <GuideCard key={g.id} g={g} />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Right sidebar — desktop only */}
@@ -624,7 +666,13 @@ const Guides = () => {
                             .map(([cat, count]) => (
                               <button
                                 key={cat}
-                                onClick={() => setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat)}
+                                onClick={() => {
+                                  if (showGrouped) {
+                                    const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
+                                    if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+                                  }
+                                  setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat);
+                                }}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                                   topic.toLowerCase() === cat.toLowerCase()
                                     ? "bg-primary/10 text-primary font-medium"
