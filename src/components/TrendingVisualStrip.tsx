@@ -13,13 +13,23 @@ const TrendingVisualStrip = memo(() => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
-        .select("id, title, slug, featured_image_url, categories:primary_category_id(name, slug)")
+        .select("id, title, slug, featured_image_url, trending_score, categories:primary_category_id(name, slug)")
         .eq("status", "published")
-        .not("title", "ilike", "%3 Before 9%")
-        .order("view_count", { ascending: false, nullsFirst: false })
+        .eq("is_trending", true)
+        .order("trending_score", { ascending: false, nullsFirst: false })
         .limit(6);
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  const { data: refreshTimestamp } = useQuery({
+    queryKey: ["trending-refresh-timestamp"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_trending_refresh_timestamp");
+      if (error) throw error;
+      return data as string | null;
     },
   });
 
@@ -81,6 +91,13 @@ const TrendingVisualStrip = memo(() => {
           );
         })}
       </div>
+
+      {/* Trending refreshed timestamp */}
+      {refreshTimestamp && (
+        <p className="text-muted-foreground text-xs mt-2 text-right">
+          Trending refreshed: {new Date(refreshTimestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        </p>
+      )}
     </section>
   );
 });
