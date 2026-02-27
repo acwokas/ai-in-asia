@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { fixEncoding } from "@/lib/textUtils";
 import { User, TrendingUp, MessageCircle } from "lucide-react";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
@@ -55,7 +56,7 @@ const ArticleCard = ({
             src={getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 450 : 225)} 
             srcSet={image.includes('supabase.co/storage') ? generateResponsiveSrcSet(image, featured ? [400, 800, 1200] : [200, 400, 600]) : undefined}
             sizes={featured ? "(max-width: 768px) 100vw, 800px" : "(max-width: 768px) 100vw, 400px"}
-            alt={title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+            alt={fixEncoding(title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
             className="transition-transform duration-700 group-hover:scale-[1.03]"
             loading="lazy"
             width={featured ? 800 : 450}
@@ -76,13 +77,13 @@ const ArticleCard = ({
           <h3 className={`font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200 ${
             featured ? 'text-2xl md:text-3xl' : 'text-lg'
           }`}>
-            {title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+            {fixEncoding(title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
           </h3>
           
           <p className={`text-muted-foreground line-clamp-2 mt-2 ${
             featured ? 'text-base' : 'text-sm'
           }`}>
-            {excerpt}
+            {fixEncoding(excerpt)}
           </p>
           
           <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-3">

@@ -7,6 +7,7 @@
 import DOMPurify from "dompurify";
 
 import { InArticleAd } from "@/components/GoogleAds";
+import { fixEncoding } from "@/lib/textUtils";
 
 /** Generate a URL-safe heading ID from text */
 export const generateHeadingId = (text: string): string => {
@@ -63,10 +64,12 @@ export const renderArticleContent = (content: any): React.ReactNode => {
 
   // Handle string content (markdown or raw HTML from the editor)
   if (typeof content === 'string') {
-    const hasPromptBoxes = content.includes('prompt-box');
+    // Fix encoding artifacts before any processing
+    let fixedContent = fixEncoding(content);
+    const hasPromptBoxes = fixedContent.includes('prompt-box');
 
     // Consolidate consecutive bullet points
-    let consolidated = normalizeYouTubeEmbeds(content).replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
+    let consolidated = normalizeYouTubeEmbeds(fixedContent).replace(/(- [^\n]+)\n\n(?=- )/g, '$1\n');
 
     // Normalize <hr> separators
     consolidated = consolidated.replace(/<hr\s*\/?>/gi, "\n\n<hr />\n\n");
@@ -289,7 +292,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       
       switch (block.type) {
         case 'paragraph':
-          const contentText = block.content || '';
+          const contentText = fixEncoding(block.content || '');
           const sanitizedContent = DOMPurify.sanitize(processInlineFormatting(contentText), {
             ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
             ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
