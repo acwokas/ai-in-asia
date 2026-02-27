@@ -27,11 +27,16 @@ const DIFFICULTY_OPTIONS = ["All", "Beginner", "Intermediate", "Advanced"] as co
 const PLATFORM_OPTIONS = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"] as const;
 const TOPIC_OPTIONS = [
   "All",
-  "Content & Writing",
-  "Research & Analysis",
-  "SEO & Marketing",
-  "Strategy & Planning",
+  "Business",
+  "Lifestyle",
+  "Creators",
+  "Work",
+  "Education",
+  "Wellness",
+  "Finance",
   "Productivity",
+  "Content",
+  "General",
 ] as const;
 
 const SORT_OPTIONS = [
@@ -80,6 +85,8 @@ const GuideCard = ({ g }: { g: any }) => (
         <img
           src={g.featured_image_url}
           alt={g.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
@@ -167,6 +174,30 @@ const Guides = () => {
     },
   });
 
+  const { data: popularGuides } = useQuery({
+    queryKey: ["guides-popular"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, featured_image_url, topic_category, view_count")
+        .eq("status", "published")
+        .order("view_count", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const topicCounts = useMemo(() => {
+    if (!guides) return {};
+    const counts: Record<string, number> = {};
+    for (const g of guides) {
+      const cat = g.topic_category || "General";
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
+    return counts;
+  }, [guides]);
+
   const filteredGuides = useMemo(() => {
     if (!guides) return [];
     let result = guides.filter((g) => {
@@ -185,7 +216,7 @@ const Guides = () => {
         const gp = (g.platform_tags || []).map((t: string) => t.toLowerCase());
         if (!Array.from(platforms).some((p) => gp.includes(p.toLowerCase()))) return false;
       }
-      if (topic !== "All" && g.topic_category !== topic) return false;
+      if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
       return true;
     });
 
@@ -203,8 +234,6 @@ const Guides = () => {
 
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
-
-  
 
   return (
     <>
@@ -236,7 +265,6 @@ const Guides = () => {
                 animation: "heroOrb2 10s ease-in-out infinite alternate",
               }}
             />
-            {/* Circuit-node pattern — visible on right, fades to transparent on left */}
             <div
               className="absolute inset-0"
               style={{
@@ -397,9 +425,85 @@ const Guides = () => {
                     </div>
                   </div>
 
-                  {/* Right sidebar ad — desktop only */}
+                  {/* Right sidebar — desktop only */}
                   <div className="hidden lg:block w-[300px] shrink-0">
-                    <div className="sticky top-24">
+                    <div className="sticky top-24 space-y-6">
+                      {/* Mini search */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search guides..."
+                          className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+
+                      {/* Browse by Topic */}
+                      <div className="rounded-xl border border-border bg-card p-4">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">Browse by Topic</h3>
+                        <div className="space-y-1 max-h-[260px] overflow-y-auto">
+                          {Object.entries(topicCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([cat, count]) => (
+                              <button
+                                key={cat}
+                                onClick={() => setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat)}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                                  topic.toLowerCase() === cat.toLowerCase()
+                                    ? "bg-primary/10 text-primary font-medium"
+                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                }`}
+                              >
+                                <span className="capitalize">{cat}</span>
+                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0">
+                                  {count}
+                                </Badge>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* Popular Guides */}
+                      {popularGuides && popularGuides.length > 0 && (
+                        <div className="rounded-xl border border-border bg-card p-4">
+                          <h3 className="text-sm font-semibold text-foreground mb-3">Popular Guides</h3>
+                          <div className="space-y-3">
+                            {popularGuides.map((g) => (
+                              <Link
+                                key={g.id}
+                                to={`/guides/${g.slug}`}
+                                className="flex gap-3 group"
+                              >
+                                {g.featured_image_url ? (
+                                  <img
+                                    src={g.featured_image_url}
+                                    alt={g.title}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-16 h-16 rounded object-cover shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded bg-muted shrink-0" />
+                                )}
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                                    {g.title}
+                                  </p>
+                                  {g.topic_category && (
+                                    <Badge variant="secondary" className="mt-1 text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0 capitalize">
+                                      {g.topic_category}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ad */}
                       <AdCard />
                     </div>
                   </div>
