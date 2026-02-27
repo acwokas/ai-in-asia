@@ -32,6 +32,7 @@ import { User, Share2, Bookmark, MessageCircle, Clock, Lock } from "lucide-react
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
+import { fixEncoding } from "@/lib/textUtils";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
@@ -353,8 +354,8 @@ const Article = () => {
       <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} />
       
       <SEOHead
-        title={((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
-        description={(article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA')}
+        title={fixEncoding(((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
+        description={fixEncoding((article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA'))}
         canonical={isPreview ? undefined : shareHandlers.getPublicArticleUrl()}
         ogImage={article.featured_image_url || 'https://aiinasia.com/icons/aiinasia-512.png?v=3'}
         ogImageAlt={article.featured_image_alt || article.title}
@@ -457,12 +458,12 @@ const Article = () => {
                     {article.categories?.name || 'Article'}
                   </span>
                   
-                  <h1 className="article-hero-title">
-                    {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                      <h1 className="article-hero-title">
+                        {fixEncoding(article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
                   </h1>
                   
-                  {article.excerpt && (
-                    <p className="article-hero-excerpt">{article.excerpt}</p>
+                      {article.excerpt && (
+                        <p className="article-hero-excerpt">{fixEncoding(article.excerpt)}</p>
                   )}
 
                   {/* Byline row */}
@@ -509,10 +510,10 @@ const Article = () => {
               </Badge>
               
               <h1 className="article-hero-title text-foreground mb-4">
-                {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+                {fixEncoding(article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
               </h1>
               {article.excerpt && (
-                <p className="text-xl text-muted-foreground mb-6">{article.excerpt}</p>
+                <p className="text-xl text-muted-foreground mb-6">{fixEncoding(article.excerpt)}</p>
               )}
               <div className="flex items-center gap-3 pb-6 border-b border-border text-sm text-muted-foreground flex-wrap">
                 {article.authors?.avatar_url && (

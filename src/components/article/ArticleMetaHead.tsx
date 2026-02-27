@@ -1,4 +1,5 @@
 import SEOHead from "@/components/SEOHead";
+import { fixEncoding } from "@/lib/textUtils";
 
 interface ArticleMetaHeadProps {
   article: {
@@ -27,8 +28,8 @@ export const ArticleMetaHead = ({ article, isPreview, getPublicArticleUrl }: Art
       .replace(/&#39;/g, "'");
   };
 
-  const title = cleanMetaValue((article.meta_title || article.title || 'Article') + '');
-  const description = cleanMetaValue(article.meta_description || article.excerpt || '');
+  const title = fixEncoding(cleanMetaValue((article.meta_title || article.title || 'Article') + ''));
+  const description = fixEncoding(cleanMetaValue(article.meta_description || article.excerpt || ''));
 
   return (
     <SEOHead
