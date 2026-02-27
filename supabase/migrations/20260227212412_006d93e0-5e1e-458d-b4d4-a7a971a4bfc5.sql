@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "temp_anon_insert_guides" ON public.ai_guides;
