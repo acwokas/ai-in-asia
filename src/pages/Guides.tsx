@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search, ChevronDown } from "lucide-react";
+import { Clock, ArrowRight, Search, ChevronDown, Star } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MPUAd } from "@/components/GoogleAds";
 
@@ -173,6 +173,34 @@ const Guides = () => {
       return data;
     },
   });
+
+  const { data: editorsPicks, isLoading: isLoadingPicks } = useQuery({
+    queryKey: ["editors-picks-guides"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, featured_image_url, difficulty, topic_category, updated_at")
+        .eq("status", "published")
+        .eq("is_editors_pick", true)
+        .order("updated_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const dailyPicks = useMemo(() => {
+    if (!editorsPicks || editorsPicks.length === 0) return [];
+    const seed = Math.floor(Date.now() / 86400000);
+    const pool = [...editorsPicks];
+    const picks: typeof editorsPicks = [];
+    const count = Math.min(3, pool.length);
+    for (let i = 0; i < count; i++) {
+      const idx = ((seed * (i + 1) * 2654435761) >>> 0) % pool.length;
+      picks.push(pool.splice(idx, 1)[0]);
+    }
+    return picks;
+  }, [editorsPicks]);
 
   const { data: popularGuides } = useQuery({
     queryKey: ["guides-popular"],
@@ -372,6 +400,65 @@ const Guides = () => {
             </div>
           </div>
         </section>
+
+        {/* Editors' Picks */}
+        {isLoadingPicks ? (
+          <section className="pt-10 pb-2">
+            <div className="container mx-auto px-4">
+              <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="aspect-[16/10] rounded-xl w-full" />
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : dailyPicks.length > 0 ? (
+          <section className="pt-10 pb-2">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-5">
+                <Star className="h-5 w-5 text-primary fill-primary" />
+                <h2 className="text-lg font-bold text-foreground">Editors' Picks</h2>
+              </div>
+              <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+                {dailyPicks.map((g) => (
+                  <Link
+                    key={g.id}
+                    to={`/guides/${g.slug}`}
+                    className="group relative rounded-xl overflow-hidden border border-border"
+                  >
+                    <div className="aspect-[16/10] w-full">
+                      {g.featured_image_url ? (
+                        <img
+                          src={g.featured_image_url}
+                          alt={g.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted" />
+                      )}
+                    </div>
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    {/* Difficulty badge top-right */}
+                    {g.difficulty && (
+                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>
+                        {g.difficulty}
+                      </Badge>
+                    )}
+                    {/* Title overlaid */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">
+                        {g.title}
+                      </h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* Guides Grid + Sidebar */}
         <section className="py-12 md:py-16">
