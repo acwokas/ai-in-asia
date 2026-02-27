@@ -37,7 +37,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.download-and-upload-image]
-verify_jwt = true
+verify_jwt = false
 
 [functions.publish-all-articles]
 verify_jwt = true
@@ -109,7 +109,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-image-prompts]
-verify_jwt = true
+verify_jwt = false
 
 [functions.render-meta-tags]
 verify_jwt = false
@@ -190,7 +190,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-guide-image]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-3b9-hero]
 verify_jwt = true
