@@ -108,6 +108,7 @@ function RelatedGuides({ currentGuideId, topicCategory }: { currentGuideId?: str
           .from("ai_guides")
           .select("id, title, slug, difficulty, featured_image_url, topic_category")
           .eq("status", "published")
+          .not('featured_image_url', 'is', null)
           .eq("topic_category", topicCategory)
           .neq("id", currentGuideId!)
           .limit(4);
@@ -120,6 +121,7 @@ function RelatedGuides({ currentGuideId, topicCategory }: { currentGuideId?: str
           .from("ai_guides")
           .select("id, title, slug, difficulty, featured_image_url, topic_category")
           .eq("status", "published")
+          .not('featured_image_url', 'is', null)
           .not("id", "in", `(${excludeIds.join(",")})`)
           .order("published_at", { ascending: false })
           .limit(4 - matched.length);

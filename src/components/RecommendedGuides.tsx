@@ -24,6 +24,7 @@ const RecommendedGuides = () => {
         .from("ai_guides")
         .select("id, title, slug, featured_image_url, featured_image_alt, one_line_description, topic_category, difficulty")
         .eq("status", "published")
+        .not('featured_image_url', 'is', null)
         .order("created_at", { ascending: false })
         .limit(30);
 
