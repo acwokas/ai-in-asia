@@ -711,6 +711,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       sticky: state.sticky,
       is_trending: state.isTrending,
       homepage_trending: state.homepageTrending,
+      featured_pinned: state.featuredPinned,
       author_id: finalAuthorId || null,
       primary_category_id: state.primaryCategoryId || null,
       scheduled_for: scheduledDateTime,
