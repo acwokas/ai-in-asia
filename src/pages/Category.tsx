@@ -119,7 +119,7 @@ const Category = () => {
       }
       const { data, error } = await supabase
         .from("articles")
-        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, is_trending, featured_on_homepage, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
+        .select(`id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, like_count, comment_count, reading_time_minutes, ai_tags, topic_tags, is_trending, featured_on_homepage, trending_score, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`)
         .eq("primary_category_id", category.id)
         .eq("status", "published")
         .order("published_at", { ascending: false });
@@ -247,18 +247,11 @@ const Category = () => {
   const featuredArticle = useMemo(() => {
     if (isFilterActive) return filteredAllArticles[0];
     if (!articles || articles.length === 0) return null;
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    const isFeaturedOrTrending = (a: any) => a.is_trending || a.featured_on_homepage;
-    for (const days of [30, 60, 90]) {
-      const cutoff = now - days * dayMs;
-      const candidate = articles.find(
-        (a: any) => isFeaturedOrTrending(a) && new Date(a.published_at).getTime() >= cutoff
-      );
-      if (candidate) return candidate;
-    }
-    const anyFeatured = articles.find((a: any) => isFeaturedOrTrending(a));
-    if (anyFeatured) return anyFeatured;
+    // Pick the top trending article by trending_score, fall back to most recent
+    const trendingInCategory = articles
+      .filter((a: any) => a.is_trending)
+      .sort((a: any, b: any) => (b.trending_score || 0) - (a.trending_score || 0));
+    if (trendingInCategory.length > 0) return trendingInCategory[0];
     return articles[0];
   }, [articles, isFilterActive, filteredAllArticles]);
 
@@ -270,7 +263,14 @@ const Category = () => {
   const featuredGridArticles = useMemo(() => {
     if (isFilterActive) return filteredAllArticles.slice(1, 5);
     const excludeIds = new Set([featuredArticle?.id, ...latestArticles.map((a: any) => a.id)].filter(Boolean));
-    return (allCategoryArticles || []).filter((a: any) => !excludeIds.has(a.id)).slice(0, 4);
+    const remaining = (allCategoryArticles || []).filter((a: any) => !excludeIds.has(a.id));
+    // Prefer trending articles sorted by score, backfill with recent
+    const trending = remaining
+      .filter((a: any) => a.is_trending)
+      .sort((a: any, b: any) => (b.trending_score || 0) - (a.trending_score || 0));
+    if (trending.length >= 4) return trending.slice(0, 4);
+    const nonTrending = remaining.filter((a: any) => !a.is_trending);
+    return [...trending, ...nonTrending].slice(0, 4);
   }, [allCategoryArticles, isFilterActive, filteredAllArticles, featuredArticle, latestArticles]);
 
   const filteredDeepCuts = useMemo(() => {
