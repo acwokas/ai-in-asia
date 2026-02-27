@@ -22,6 +22,7 @@ export const useAdminActions = () => {
   const [refreshingContent, setRefreshingContent] = useState(false);
   const [calculatingReadingTimes, setCalculatingReadingTimes] = useState(false);
   const [readingTimeProgress, setReadingTimeProgress] = useState({ current: 0, total: 0 });
+  const [refreshingTrending, setRefreshingTrending] = useState(false);
 
   const handleAutoScheduleComments = async () => {
     try {
@@ -273,6 +274,23 @@ export const useAdminActions = () => {
     }
   };
 
+  const handleRefreshTrending = async () => {
+    try {
+      setRefreshingTrending(true);
+      const { error } = await supabase.rpc('rotate_trending_articles');
+      if (error) throw error;
+      toast.success("Trending articles refreshed successfully");
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+      queryClient.invalidateQueries({ queryKey: ["trending-articles"] });
+    } catch (error: any) {
+      toast.error("Error refreshing trending", {
+        description: error.message || "Failed to refresh trending articles",
+      });
+    } finally {
+      setRefreshingTrending(false);
+    }
+  };
+
   return {
     // State
     scrapingEvents,
@@ -281,12 +299,14 @@ export const useAdminActions = () => {
     refreshingContent,
     calculatingReadingTimes,
     readingTimeProgress,
+    refreshingTrending,
     // Actions
     handleAutoScheduleComments,
     handleCalculateReadingTimes,
     handleScrapeEvents,
     handleFixArticleDates,
     handleRefreshFeaturedContent,
+    handleRefreshTrending,
     approveComment,
     deleteComment,
   };

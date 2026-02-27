@@ -19,6 +19,7 @@ const ExternalRedirect = ({ url }: { url: string }) => {
 // Eager load critical components
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import { useEngagementLoop } from "./hooks/useEngagementLoop";
+import { useTrendingAutoRefresh } from "./hooks/useTrendingAutoRefresh";
 
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -177,6 +178,7 @@ const persister = createIDBPersister();
 
 const EngagementWrapper = () => {
   useEngagementLoop();
+  useTrendingAutoRefresh();
   return null;
 };
 

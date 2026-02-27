@@ -395,8 +395,10 @@ const Admin = () => {
       <AdminQuickActions
         scrapingEvents={adminActions.scrapingEvents}
         refreshingContent={adminActions.refreshingContent}
+        refreshingTrending={adminActions.refreshingTrending}
         onScrapeEvents={adminActions.handleScrapeEvents}
         onRefreshContent={adminActions.handleRefreshFeaturedContent}
+        onRefreshTrending={adminActions.handleRefreshTrending}
       />
 
       {/* ── Two-column layout ───────────────────────────────── */}
