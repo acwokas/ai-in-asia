@@ -1,24 +1,39 @@
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp 
+  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp, RefreshCw 
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface AdminQuickActionsProps {
   scrapingEvents: boolean;
   refreshingContent: boolean;
+  refreshingTrending: boolean;
   onScrapeEvents: () => void;
   onRefreshContent: () => void;
+  onRefreshTrending: () => void;
 }
 
 export const AdminQuickActions = ({
   scrapingEvents,
   refreshingContent,
+  refreshingTrending,
   onScrapeEvents,
   onRefreshContent,
+  onRefreshTrending,
 }: AdminQuickActionsProps) => {
   const navigate = useNavigate();
+
+  const { data: lastRefreshed } = useQuery({
+    queryKey: ["trending-refresh-timestamp"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_trending_refresh_timestamp');
+      return data;
+    },
+  });
 
   return (
     <Card className="mb-8 border-border">
@@ -32,6 +47,30 @@ export const AdminQuickActions = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Trending Refresh */}
+        <div className="mb-6 p-4 border border-border rounded-lg bg-muted/30">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              onClick={onRefreshTrending}
+              variant="default"
+              disabled={refreshingTrending}
+              className="gap-2"
+            >
+              {refreshingTrending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Refresh Trending Now
+            </Button>
+            {lastRefreshed && (
+              <span className="text-xs text-muted-foreground">
+                Last refreshed: {format(new Date(lastRefreshed), "MMM d, yyyy 'at' h:mm a")}
+              </span>
+            )}
+          </div>
+        </div>
+
         {/* Publishing Tools */}
         <div>
           <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase">Publishing & Operations</h3>
