@@ -57,6 +57,19 @@ const SORT_OPTIONS = [
 
 const DIFF_ORDER: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 
+const CATEGORY_TILE_COLORS: Record<string, string> = {
+  Business: "bg-blue-600",
+  Lifestyle: "bg-emerald-500",
+  Creators: "bg-purple-500",
+  Work: "bg-amber-500",
+  Education: "bg-rose-500",
+  Wellness: "bg-teal-500",
+  Finance: "bg-indigo-500",
+  Productivity: "bg-orange-500",
+  Content: "bg-pink-500",
+  General: "bg-gray-500",
+};
+
 type FilterPillProps = {
   label: string;
   active: boolean;
@@ -288,7 +301,6 @@ const Guides = () => {
       return true;
     });
 
-    // Sort
     if (sortBy === "newest") {
       result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     } else if (sortBy === "popular") {
@@ -315,6 +327,11 @@ const Guides = () => {
   const guideCount = guides?.length ?? 0;
   const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <>
       <SEOHead
@@ -328,110 +345,106 @@ const Guides = () => {
       <Header />
 
       <main className="min-h-screen bg-background">
-        {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border" style={{ background: "#040405" }}>
-          <div className="absolute inset-0 overflow-hidden">
-            <div
-              className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20"
-              style={{
-                background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
-                animation: "heroOrb1 8s ease-in-out infinite alternate",
-              }}
-            />
-            <div
-              className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full blur-[100px] opacity-15"
-              style={{
-                background: "radial-gradient(circle, hsl(174 60% 40%) 0%, transparent 70%)",
-                animation: "heroOrb2 10s ease-in-out infinite alternate",
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                maskImage: "linear-gradient(to right, transparent 10%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,1) 75%)",
-                WebkitMaskImage: "linear-gradient(to right, transparent 10%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,1) 75%)",
-              }}
-            >
-              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.07 }}>
-                <defs>
-                  <pattern id="circuit-grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-                    <circle cx="30" cy="30" r="2" fill="#5F72FF" />
-                    <circle cx="0" cy="0" r="1.5" fill="#5F72FF" />
-                    <circle cx="60" cy="0" r="1.5" fill="#5F72FF" />
-                    <circle cx="0" cy="60" r="1.5" fill="#5F72FF" />
-                    <circle cx="60" cy="60" r="1.5" fill="#5F72FF" />
-                    <line x1="0" y1="0" x2="30" y2="30" stroke="#5F72FF" strokeWidth="0.5" />
-                    <line x1="60" y1="0" x2="30" y2="30" stroke="#5F72FF" strokeWidth="0.5" />
-                    <line x1="30" y1="30" x2="60" y2="60" stroke="#5F72FF" strokeWidth="0.5" />
-                    <line x1="30" y1="30" x2="0" y2="60" stroke="#5F72FF" strokeWidth="0.5" />
-                    <line x1="30" y1="0" x2="30" y2="12" stroke="#5F72FF" strokeWidth="0.3" />
-                    <line x1="30" y1="48" x2="30" y2="60" stroke="#5F72FF" strokeWidth="0.3" />
-                    <line x1="0" y1="30" x2="12" y2="30" stroke="#5F72FF" strokeWidth="0.3" />
-                    <line x1="48" y1="30" x2="60" y2="30" stroke="#5F72FF" strokeWidth="0.3" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#circuit-grid)" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="container relative mx-auto px-4 py-16 md:py-24">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold tracking-widest uppercase text-muted-foreground mb-4">
-                AI in Asia Guides
-              </p>
-              <h1 className="mb-5 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl" style={{ color: "#FFFFFF" }}>
-                Stop reading theory.{" "}
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: "linear-gradient(135deg, hsl(var(--primary)), hsl(174 60% 50%), hsl(var(--primary)))",
-                    backgroundSize: "200% 200%",
-                    animation: "heroGradientShift 6s ease-in-out infinite",
-                  }}
-                >
-                  Start building.
-                </span>
-              </h1>
-              <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>
-                Step-by-step workflows, tested prompts, and worked examples for people who actually use AI at work.
-                Every guide written by a practitioner, not a content farm.
-              </p>
-
-              <div className="flex items-center gap-4 text-sm mb-8" style={{ color: "rgba(255,255,255,0.45)" }}>
-                <span className="font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
-                  {isLoading ? "—" : guideCount} guides
-                </span>
-                <span className="w-px h-4 bg-white/20" />
-                <span>Updated monthly</span>
-                <span className="w-px h-4 bg-white/20" />
-                <span>Free, no signup required</span>
+        {/* ROW 1 — Compact header strip */}
+        <section className="border-b border-border" style={{ background: "linear-gradient(135deg, #040405 0%, #0a1a1f 100%)" }}>
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                  AI in Asia Guides
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+                  Master AI with practical guides
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isLoading ? "—" : `${guideCount}+`} step-by-step workflows. Free. No signup.
+                </p>
               </div>
-
-              <div className="relative max-w-xl">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "rgba(255,255,255,0.35)" }} />
+              <div className="relative w-full md:w-80 shrink-0">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search guides... e.g. SEO, competitor analysis, Claude"
-                  className="w-full pl-12 pr-4 py-3.5 rounded-xl text-base outline-none transition-colors"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "#FFFFFF",
-                  }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                  placeholder="Search guides..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors bg-card/60 border border-border text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Filter Bar */}
-        <section className="border-b border-border bg-card/50 py-4 overflow-visible">
-          <div className="container mx-auto px-4 space-y-3 md:space-y-2 overflow-visible">
+        {/* ROW 2 — Category quick-nav tiles */}
+        <section className="border-b border-border" style={{ background: "#080a0f" }}>
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
+              {TOPIC_OPTIONS.filter((t) => t !== "All").map((cat) => {
+                const count = topicCounts[cat] || 0;
+                const colorClass = CATEGORY_TILE_COLORS[cat] || "bg-gray-500";
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      if (showGrouped) {
+                        const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
+                        if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+                      }
+                      setTopic(topic === cat ? "All" : cat);
+                    }}
+                    className={`${colorClass} snap-start shrink-0 min-w-[110px] rounded-xl px-4 py-3 text-left transition-transform hover:scale-105`}
+                  >
+                    <span className="block text-sm font-bold text-white">{cat}</span>
+                    {count > 0 && (
+                      <span className="block text-xs text-white/70 mt-0.5">{count} guides</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ROW 3 — Two highlight cards */}
+        <section className="border-b border-border" style={{ background: "#040405" }}>
+          <div className="container mx-auto px-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {/* Local Guides for Asia */}
+              <button
+                onClick={() => scrollToSection("asia-spotlight")}
+                className="md:col-span-3 rounded-xl p-5 text-left transition-transform hover:scale-[1.01]"
+                style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
+              >
+                <div className="flex items-start gap-3">
+                  <Globe className="h-6 w-6 text-white/90 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-base font-bold text-white">Local Guides for Asia</h3>
+                    <p className="text-sm text-white/70 mt-1">Guides tailored for Singapore, Indonesia, Philippines and more</p>
+                    <span className="inline-block mt-2 text-xs font-semibold text-white/90 underline underline-offset-2">Browse local guides</span>
+                  </div>
+                </div>
+              </button>
+              {/* Editors' Picks */}
+              <button
+                onClick={() => scrollToSection("editors-picks")}
+                className="md:col-span-2 rounded-xl p-5 text-left transition-transform hover:scale-[1.01]"
+                style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}
+              >
+                <div className="flex items-start gap-3">
+                  <Star className="h-6 w-6 text-white/90 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-base font-bold text-white">Editors' Picks</h3>
+                    <p className="text-sm text-white/70 mt-1">Hand-picked by our team</p>
+                    <span className="inline-block mt-2 text-xs font-semibold text-white/90 underline underline-offset-2">See picks</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Filter Bar — compact, moved here */}
+        <section className="border-b border-border bg-card/50 py-3 overflow-visible">
+          <div className="container mx-auto px-4 space-y-2 overflow-visible">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
               {DIFFICULTY_OPTIONS.map((d) => (
@@ -455,7 +468,7 @@ const Guides = () => {
 
         {/* Editors' Picks */}
         {isLoadingPicks ? (
-          <section className="pt-10 pb-2" aria-label="Editors' Picks loading">
+          <section id="editors-picks" className="pt-10 pb-2" aria-label="Editors' Picks loading">
             <div className="container mx-auto px-4">
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
@@ -465,7 +478,7 @@ const Guides = () => {
             </div>
           </section>
         ) : dailyPicks.length > 0 ? (
-          <section className="pt-10 pb-2" aria-label="Editors' Picks guides">
+          <section id="editors-picks" className="pt-10 pb-2" aria-label="Editors' Picks guides">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-2 mb-5">
                 <Star className="h-5 w-5 text-primary fill-primary" />
@@ -526,7 +539,7 @@ const Guides = () => {
 
         {/* Asia Spotlight */}
         {isLoadingAsia ? (
-          <section className="pt-8 pb-2" aria-label="Asia Spotlight loading">
+          <section id="asia-spotlight" className="pt-8 pb-2" aria-label="Asia Spotlight loading">
             <div className="container mx-auto px-4">
               <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
@@ -536,7 +549,7 @@ const Guides = () => {
             </div>
           </section>
         ) : asiaSpotlight.length > 0 ? (
-          <section className="pt-8 pb-2" aria-label="Local guides for Asia">
+          <section id="asia-spotlight" className="pt-8 pb-2" aria-label="Local guides for Asia">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-2 mb-5">
                 <Globe className="h-5 w-5 text-primary" />
@@ -662,7 +675,7 @@ const Guides = () => {
                                   onClick={() => setTopic(cat)}
                                   className="mt-4 text-sm font-medium text-primary hover:underline"
                                 >
-                                  View all {catGuides.length} guides →
+                                  View all {catGuides.length} guides &rarr;
                                 </button>
                               )}
                             </section>
@@ -787,22 +800,6 @@ const Guides = () => {
       </main>
 
       <Footer />
-
-      <style>{`
-        @keyframes heroGradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes heroOrb1 {
-          0% { transform: translate(0, 0) scale(1); }
-          100% { transform: translate(-40px, 30px) scale(1.15); }
-        }
-        @keyframes heroOrb2 {
-          0% { transform: translate(0, 0) scale(1); }
-          100% { transform: translate(30px, -20px) scale(1.1); }
-        }
-      `}</style>
     </>
   );
 };

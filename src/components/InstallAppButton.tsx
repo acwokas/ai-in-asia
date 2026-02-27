@@ -141,7 +141,7 @@ export const InstallAppButton = () => {
   if (!isInstallable || isDismissed) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:w-auto z-40 animate-in slide-in-from-bottom-4 fade-in duration-300">
+    <div className="fixed bottom-20 left-4 right-4 sm:left-4 sm:right-auto sm:w-auto sm:max-w-[320px] z-40 animate-in slide-in-from-bottom-4 fade-in duration-300">
       <div className="bg-card border border-border rounded-lg shadow-lg p-4 flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground">Install AIinASIA</p>
