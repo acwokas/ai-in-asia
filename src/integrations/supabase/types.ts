@@ -905,6 +905,7 @@ export type Database = {
           featured_image_credit: string | null
           featured_image_url: string | null
           featured_on_homepage: boolean | null
+          featured_pinned: boolean | null
           focus_keyphrase: string | null
           governance_maturity: string | null
           homepage_trending: boolean | null
@@ -952,6 +953,8 @@ export type Database = {
           top_list_items: Json | null
           top_list_outro: string | null
           topic_tags: string[] | null
+          trending_rotated_at: string | null
+          trending_score: number | null
           updated_at: string
           updated_by: string | null
           version: number | null
@@ -984,6 +987,7 @@ export type Database = {
           featured_image_credit?: string | null
           featured_image_url?: string | null
           featured_on_homepage?: boolean | null
+          featured_pinned?: boolean | null
           focus_keyphrase?: string | null
           governance_maturity?: string | null
           homepage_trending?: boolean | null
@@ -1031,6 +1035,8 @@ export type Database = {
           top_list_items?: Json | null
           top_list_outro?: string | null
           topic_tags?: string[] | null
+          trending_rotated_at?: string | null
+          trending_score?: number | null
           updated_at?: string
           updated_by?: string | null
           version?: number | null
@@ -1063,6 +1069,7 @@ export type Database = {
           featured_image_credit?: string | null
           featured_image_url?: string | null
           featured_on_homepage?: boolean | null
+          featured_pinned?: boolean | null
           focus_keyphrase?: string | null
           governance_maturity?: string | null
           homepage_trending?: boolean | null
@@ -1110,6 +1117,8 @@ export type Database = {
           top_list_items?: Json | null
           top_list_outro?: string | null
           topic_tags?: string[] | null
+          trending_rotated_at?: string | null
+          trending_score?: number | null
           updated_at?: string
           updated_by?: string | null
           version?: number | null
@@ -4034,6 +4043,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      get_trending_refresh_timestamp: { Args: never; Returns: string }
       get_unique_visitors: {
         Args: { p_end: string; p_start: string }
         Returns: number
@@ -4057,6 +4067,7 @@ export type Database = {
         Args: { edition_uuid: string; variant_letter: string }
         Returns: undefined
       }
+      rotate_trending_articles: { Args: never; Returns: undefined }
       update_reading_streak: { Args: { p_user_id: string }; Returns: undefined }
       update_streak: { Args: { _user_id: string }; Returns: undefined }
       update_trending_articles: { Args: never; Returns: undefined }
