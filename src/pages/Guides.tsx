@@ -211,7 +211,8 @@ const Guides = () => {
     }
     return picks;
   }, [editorsPicks]);
-  const { data: asiaGuidesRaw } = useQuery({
+
+  const { data: asiaGuidesRaw, isLoading: isLoadingAsia } = useQuery({
     queryKey: ["asia-spotlight-guides"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -454,7 +455,7 @@ const Guides = () => {
 
         {/* Editors' Picks */}
         {isLoadingPicks ? (
-          <section className="pt-10 pb-2">
+          <section className="pt-10 pb-2" aria-label="Editors' Picks loading">
             <div className="container mx-auto px-4">
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
@@ -464,45 +465,57 @@ const Guides = () => {
             </div>
           </section>
         ) : dailyPicks.length > 0 ? (
-          <section className="pt-10 pb-2">
+          <section className="pt-10 pb-2" aria-label="Editors' Picks guides">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-2 mb-5">
                 <Star className="h-5 w-5 text-primary fill-primary" />
                 <h2 className="text-lg font-bold text-foreground">Editors' Picks</h2>
               </div>
-              <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+              {/* Desktop grid, mobile horizontal scroll */}
+              <div className="hidden lg:grid gap-6 grid-cols-3">
                 {dailyPicks.map((g) => (
                   <Link
                     key={g.id}
                     to={`/guides/${g.slug}`}
                     className="group relative rounded-xl overflow-hidden border border-border"
                   >
-                    <div className="aspect-[16/10] w-full">
+                    <div className="aspect-[16/10] w-full relative">
                       {g.featured_image_url ? (
-                        <img
-                          src={g.featured_image_url}
-                          alt={g.title}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
+                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full bg-muted" />
                       )}
                     </div>
-                    {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {/* Difficulty badge top-right */}
                     {g.difficulty && (
-                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>
-                        {g.difficulty}
-                      </Badge>
+                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>
                     )}
-                    {/* Title overlaid */}
                     <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">
-                        {g.title}
-                      </h3>
+                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">{g.title}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="lg:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+                {dailyPicks.map((g) => (
+                  <Link
+                    key={g.id}
+                    to={`/guides/${g.slug}`}
+                    className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[85vw] max-w-[360px]"
+                  >
+                    <div className="aspect-[16/10] w-full relative">
+                      {g.featured_image_url ? (
+                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full bg-muted" />
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    {g.difficulty && (
+                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
                     </div>
                   </Link>
                 ))}
@@ -512,26 +525,30 @@ const Guides = () => {
         ) : null}
 
         {/* Asia Spotlight */}
-        {asiaSpotlight.length > 0 && (
-          <section className="pt-8 pb-2">
+        {isLoadingAsia ? (
+          <section className="pt-8 pb-2" aria-label="Asia Spotlight loading">
+            <div className="container mx-auto px-4">
+              <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="aspect-video rounded-xl w-full" />
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : asiaSpotlight.length > 0 ? (
+          <section className="pt-8 pb-2" aria-label="Local guides for Asia">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-2 mb-5">
                 <Globe className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-bold text-foreground">Local Guides for Asia</h2>
               </div>
-              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+              {/* Desktop grid */}
+              <div className="hidden md:grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {asiaSpotlight.map((g) => {
                   const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
                   const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
                   return (
-                    <Link
-                      key={g.id}
-                      to={`/guides/${g.slug}`}
-                      className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-                      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-                    >
+                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg" style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
                       {g.featured_image_url && (
                         <div className="aspect-video overflow-hidden">
                           <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -539,12 +556,8 @@ const Guides = () => {
                       )}
                       <div className="p-4 space-y-2">
                         <div className="flex flex-wrap gap-1.5">
-                          {regionLabel && (
-                            <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>
-                          )}
-                          {g.difficulty && (
-                            <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>
-                          )}
+                          {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
+                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
                         </div>
                         <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -556,9 +569,32 @@ const Guides = () => {
                   );
                 })}
               </div>
+              {/* Mobile horizontal scroll */}
+              <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+                {asiaSpotlight.map((g) => {
+                  const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
+                  const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
+                  return (
+                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[75vw] max-w-[300px]">
+                      {g.featured_image_url && (
+                        <div className="aspect-video overflow-hidden">
+                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="p-4 space-y-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
+                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                        </div>
+                        <h3 className="text-sm font-bold leading-snug line-clamp-2">{g.title}</h3>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </section>
-        )}
+        ) : null}
 
         {/* Guides Grid + Sidebar */}
         <section className="py-12 md:py-16">
@@ -611,12 +647,12 @@ const Guides = () => {
                           const slug = cat.toLowerCase().replace(/\s+/g, "-");
                           const visible = catGuides.slice(0, 6);
                           return (
-                            <div key={cat} id={`cat-${slug}`}>
+                            <section key={cat} id={`cat-${slug}`} aria-label={`${cat} guides`}>
                               <div className="flex items-center gap-2 mb-4">
                                 <h2 className="text-xl font-bold text-foreground capitalize">{cat}</h2>
                                 <Badge variant="secondary" className="text-xs bg-muted/60 border-0">{catGuides.length}</Badge>
                               </div>
-                              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                              <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 sm:gap-6">
                                 {visible.map((g: any) => (
                                   <GuideCard key={g.id} g={g} />
                                 ))}
@@ -629,12 +665,12 @@ const Guides = () => {
                                   View all {catGuides.length} guides →
                                 </button>
                               )}
-                            </div>
+                            </section>
                           );
                         })}
                       </div>
                     ) : (
-                      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 sm:gap-6">
                         {filteredGuides.map((g: any) => (
                           <GuideCard key={g.id} g={g} />
                         ))}
