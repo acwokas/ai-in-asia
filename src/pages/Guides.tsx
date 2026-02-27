@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search, ChevronDown, Star, Globe } from "lucide-react";
+import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MPUAd } from "@/components/GoogleAds";
 
@@ -36,17 +36,8 @@ const diffColors: Record<string, string> = {
 const DIFFICULTY_OPTIONS = ["All", "Beginner", "Intermediate", "Advanced"] as const;
 const PLATFORM_OPTIONS = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"] as const;
 const TOPIC_OPTIONS = [
-  "All",
-  "Business",
-  "Lifestyle",
-  "Creators",
-  "Work",
-  "Education",
-  "Wellness",
-  "Finance",
-  "Productivity",
-  "Content",
-  "General",
+  "All", "Business", "Lifestyle", "Creators", "Work", "Education",
+  "Wellness", "Finance", "Productivity", "Content", "General",
 ] as const;
 
 const SORT_OPTIONS = [
@@ -58,23 +49,13 @@ const SORT_OPTIONS = [
 const DIFF_ORDER: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 
 const CATEGORY_TILE_COLORS: Record<string, string> = {
-  Business: "bg-blue-600",
-  Lifestyle: "bg-emerald-500",
-  Creators: "bg-purple-500",
-  Work: "bg-amber-500",
-  Education: "bg-rose-500",
-  Wellness: "bg-teal-500",
-  Finance: "bg-indigo-500",
-  Productivity: "bg-orange-500",
-  Content: "bg-pink-500",
+  Business: "bg-blue-600", Lifestyle: "bg-emerald-500", Creators: "bg-purple-500",
+  Work: "bg-amber-500", Education: "bg-rose-500", Wellness: "bg-teal-500",
+  Finance: "bg-indigo-500", Productivity: "bg-orange-500", Content: "bg-pink-500",
   General: "bg-gray-500",
 };
 
-type FilterPillProps = {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-};
+type FilterPillProps = { label: string; active: boolean; onClick: () => void };
 
 const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
   <button
@@ -89,11 +70,22 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
   </button>
 );
 
+const InlineMPU = () => (
+  <div className="flex flex-col items-center py-6">
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Advertisement</span>
+    <div className="rounded-xl border border-border bg-card overflow-hidden flex items-center justify-center p-4 min-h-[250px] w-full max-w-[336px]">
+      <MPUAd />
+    </div>
+  </div>
+);
+
 const AdCard = () => (
   <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col items-center justify-center p-4 gap-2 min-h-[280px]">
     <MPUAd />
   </div>
 );
+
+/* ── Card variants for magazine-style layouts ── */
 
 const GuideCard = ({ g }: { g: any }) => (
   <Link
@@ -105,81 +97,245 @@ const GuideCard = ({ g }: { g: any }) => (
   >
     {g.featured_image_url && (
       <div className="aspect-video overflow-hidden">
-        <img
-          src={g.featured_image_url}
-          alt={g.title}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
       </div>
     )}
     <div className="p-5 space-y-3">
       <div className="flex flex-wrap gap-1.5">
-        {g.pillar && (
-          <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>
-            {g.pillar}
-          </Badge>
-        )}
-        {g.difficulty && (
-          <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>
-            {g.difficulty}
-          </Badge>
-        )}
-        {g.platform_tags?.length > 0 &&
-          g.platform_tags.map((tag: string) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0"
-            >
-              {tag}
-            </Badge>
-          ))}
+        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+        {g.platform_tags?.length > 0 && g.platform_tags.map((tag: string) => (
+          <Badge key={tag} variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0">{tag}</Badge>
+        ))}
       </div>
-      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
-        {g.title}
-      </h2>
-      {g.one_line_description && (
-        <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>
-      )}
+      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>}
       <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-        <span className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {g.read_time_minutes || "5"} min read
-        </span>
-        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">
-          Read guide <ArrowRight className="h-3 w-3" />
-        </span>
+        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
       </div>
     </div>
   </Link>
 );
 
+// Large featured card — taller image
+const GuideFeaturedCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url && (
+      <div className="aspect-[4/3] overflow-hidden">
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      </div>
+    )}
+    <div className="p-5 space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+      </div>
+      <h2 className="text-xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-3">{g.title}</h2>
+      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
+      <div className="flex items-center text-xs text-muted-foreground pt-1">
+        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+      </div>
+    </div>
+  </Link>
+);
+
+// Compact horizontal list card
+const GuideListCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group flex gap-3 rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md"
+    style={{ transition: "transform 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url ? (
+      <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-24 h-24 md:w-28 md:h-28 object-cover shrink-0" />
+    ) : (
+      <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
+    )}
+    <div className="py-3 pr-3 flex flex-col justify-center min-w-0 space-y-1">
+      <div className="flex flex-wrap gap-1">
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
+      </div>
+      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+    </div>
+  </Link>
+);
+
+// Landscape wide card
+const GuideLandscapeCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url && (
+      <div className="aspect-[2/1] overflow-hidden">
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      </div>
+    )}
+    <div className="p-4 space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+      </div>
+      <h2 className="text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+      </div>
+    </div>
+  </Link>
+);
+
+// Square compact card
+const GuideSquareCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url && (
+      <div className="aspect-square overflow-hidden">
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      </div>
+    )}
+    <div className="p-3 space-y-1.5">
+      {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
+      <h2 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+    </div>
+  </Link>
+);
+
+// Wide 2-col card with more description
+const GuideWideCard = ({ g }: { g: any }) => (
+  <Link
+    to={`/guides/${g.slug}`}
+    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+  >
+    {g.featured_image_url && (
+      <div className="aspect-video overflow-hidden">
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      </div>
+    )}
+    <div className="p-5 space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+      </div>
+      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
+      </div>
+    </div>
+  </Link>
+);
+
+/* ── Section layout renderers ── */
+
+// "featured" layout: 1 big card left + 2 stacked list cards right
+const FeaturedLayout = ({ guides, mirrored = false }: { guides: any[]; mirrored?: boolean }) => {
+  const big = guides[0];
+  const stacked = guides.slice(1, 3);
+  const rest = guides.slice(3);
+  return (
+    <>
+      <div className={`grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-5 ${mirrored ? "" : ""}`}>
+        <div className={`lg:col-span-3 ${mirrored ? "lg:order-2" : ""}`}>
+          {big && <GuideFeaturedCard g={big} />}
+        </div>
+        <div className={`lg:col-span-2 flex flex-col gap-4 ${mirrored ? "lg:order-1" : ""}`}>
+          {stacked.map((g: any) => <GuideListCard key={g.id} g={g} />)}
+        </div>
+      </div>
+      {rest.length > 0 && (
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6 mt-4">
+          {rest.map((g: any) => <GuideCard key={g.id} g={g} />)}
+        </div>
+      )}
+    </>
+  );
+};
+
+// 3-col landscape
+const LandscapeLayout = ({ guides }: { guides: any[] }) => (
+  <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6">
+    {guides.map((g: any) => <GuideLandscapeCard key={g.id} g={g} />)}
+  </div>
+);
+
+// 4-col square compact
+const SquareLayout = ({ guides }: { guides: any[] }) => (
+  <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+    {guides.map((g: any) => <GuideSquareCard key={g.id} g={g} />)}
+  </div>
+);
+
+// 2-col wide
+const WideLayout = ({ guides }: { guides: any[] }) => (
+  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 sm:gap-6">
+    {guides.map((g: any) => <GuideWideCard key={g.id} g={g} />)}
+  </div>
+);
+
+// Standard 3-col
+const StandardLayout = ({ guides }: { guides: any[] }) => (
+  <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6">
+    {guides.map((g: any) => <GuideCard key={g.id} g={g} />)}
+  </div>
+);
+
+const LAYOUT_SEQUENCE = ["featured", "landscape", "square", "wide", "featured-mirror", "standard"] as const;
+
+const renderSectionLayout = (layout: string, guides: any[]) => {
+  switch (layout) {
+    case "featured": return <FeaturedLayout guides={guides} />;
+    case "featured-mirror": return <FeaturedLayout guides={guides} mirrored />;
+    case "landscape": return <LandscapeLayout guides={guides} />;
+    case "square": return <SquareLayout guides={guides} />;
+    case "wide": return <WideLayout guides={guides} />;
+    default: return <StandardLayout guides={guides} />;
+  }
+};
+
+/* ── Main page component ── */
+
 const Guides = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 250);
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Filters
   const [difficulty, setDifficulty] = useState("All");
   const [platforms, setPlatforms] = useState<Set<string>>(new Set(["All"]));
   const [topic, setTopic] = useState("All");
 
+  const activeFilterCount = (difficulty !== "All" ? 1 : 0) + (!platforms.has("All") ? 1 : 0) + (topic !== "All" ? 1 : 0);
+
   const togglePlatform = (p: string) => {
-    if (p === "All") {
-      setPlatforms(new Set(["All"]));
-      return;
-    }
+    if (p === "All") { setPlatforms(new Set(["All"])); return; }
     setPlatforms((prev) => {
       const next = new Set(prev);
       next.delete("All");
-      if (next.has(p)) {
-        next.delete(p);
-        if (next.size === 0) next.add("All");
-      } else {
-        next.add(p);
-      }
+      if (next.has(p)) { next.delete(p); if (next.size === 0) next.add("All"); }
+      else next.add(p);
       return next;
     });
   };
@@ -240,9 +396,7 @@ const Guides = () => {
 
   const asiaSpotlight = useMemo(() => {
     if (!asiaGuidesRaw) return [];
-    const pool = asiaGuidesRaw.filter((g) =>
-      ASIAN_KEYWORDS.some((kw) => g.slug.includes(kw))
-    );
+    const pool = asiaGuidesRaw.filter((g) => ASIAN_KEYWORDS.some((kw) => g.slug.includes(kw)));
     if (pool.length === 0) return [];
     const seed = Math.floor(Date.now() / 86400000);
     const copy = [...pool];
@@ -284,12 +438,7 @@ const Guides = () => {
     let result = guides.filter((g) => {
       if (debouncedSearch.trim()) {
         const q = debouncedSearch.toLowerCase();
-        const matches =
-          g.title?.toLowerCase().includes(q) ||
-          g.one_line_description?.toLowerCase().includes(q) ||
-          g.pillar?.toLowerCase().includes(q) ||
-          g.difficulty?.toLowerCase().includes(q) ||
-          g.platform_tags?.some((t: string) => t.toLowerCase().includes(q));
+        const matches = g.title?.toLowerCase().includes(q) || g.one_line_description?.toLowerCase().includes(q) || g.pillar?.toLowerCase().includes(q) || g.difficulty?.toLowerCase().includes(q) || g.platform_tags?.some((t: string) => t.toLowerCase().includes(q));
         if (!matches) return false;
       }
       if (difficulty !== "All" && g.difficulty?.toLowerCase() !== difficulty.toLowerCase()) return false;
@@ -300,15 +449,9 @@ const Guides = () => {
       if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
       return true;
     });
-
-    if (sortBy === "newest") {
-      result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-    } else if (sortBy === "popular") {
-      result.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
-    } else if (sortBy === "difficulty") {
-      result.sort((a, b) => (DIFF_ORDER[a.difficulty ?? ""] ?? 99) - (DIFF_ORDER[b.difficulty ?? ""] ?? 99));
-    }
-
+    if (sortBy === "newest") result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    else if (sortBy === "popular") result.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    else if (sortBy === "difficulty") result.sort((a, b) => (DIFF_ORDER[a.difficulty ?? ""] ?? 99) - (DIFF_ORDER[b.difficulty ?? ""] ?? 99));
     return result;
   }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy]);
 
@@ -350,33 +493,73 @@ const Guides = () => {
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-1">
-                  AI in Asia Guides
-                </p>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                  Master AI with practical guides
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {isLoading ? "—" : `${guideCount}+`} step-by-step workflows. Free. No signup.
-                </p>
+                <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-1">AI in Asia Guides</p>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Master AI with practical guides</h1>
+                <p className="text-sm text-muted-foreground mt-1">{isLoading ? "—" : `${guideCount}+`} step-by-step workflows. Free. No signup.</p>
               </div>
-              <div className="relative w-full md:w-80 shrink-0">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search guides..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors bg-card/60 border border-border text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
-                />
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="relative flex-1 md:w-72">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search guides..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors bg-card/60 border border-border text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <button
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm border transition-colors ${
+                    filtersOpen || activeFilterCount > 0
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-card/60 border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  <span className="hidden sm:inline">Filter</span>
+                  {activeFilterCount > 0 && (
+                    <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{activeFilterCount}</span>
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Collapsible Filter Panel */}
+        {filtersOpen && (
+          <section className="border-b border-border bg-card/80 backdrop-blur">
+            <div className="container mx-auto px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold text-foreground">Filters</span>
+                <button onClick={() => setFiltersOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
+                {DIFFICULTY_OPTIONS.map((d) => <FilterPill key={d} label={d} active={difficulty === d} onClick={() => setDifficulty(d)} />)}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
+                {PLATFORM_OPTIONS.map((p) => <FilterPill key={p} label={p} active={platforms.has(p)} onClick={() => togglePlatform(p)} />)}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Topic</span>
+                {TOPIC_OPTIONS.map((t) => <FilterPill key={t} label={t} active={topic === t} onClick={() => setTopic(t)} />)}
+              </div>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => { setDifficulty("All"); setPlatforms(new Set(["All"])); setTopic("All"); }}
+                  className="text-xs text-primary hover:underline mt-1"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* ROW 2 — Category quick-nav tiles */}
         <section className="border-b border-border" style={{ background: "#080a0f" }}>
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-4 py-3">
             <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
               {TOPIC_OPTIONS.filter((t) => t !== "All").map((cat) => {
                 const count = topicCounts[cat] || 0;
@@ -391,12 +574,10 @@ const Guides = () => {
                       }
                       setTopic(topic === cat ? "All" : cat);
                     }}
-                    className={`${colorClass} snap-start shrink-0 min-w-[110px] rounded-xl px-4 py-3 text-left transition-transform hover:scale-105`}
+                    className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105`}
                   >
-                    <span className="block text-sm font-bold text-white">{cat}</span>
-                    {count > 0 && (
-                      <span className="block text-xs text-white/70 mt-0.5">{count} guides</span>
-                    )}
+                    <span className="block text-xs font-bold text-white">{cat}</span>
+                    {count > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{count} guides</span>}
                   </button>
                 );
               })}
@@ -406,35 +587,25 @@ const Guides = () => {
 
         {/* ROW 3 — Two highlight cards */}
         <section className="border-b border-border" style={{ background: "#040405" }}>
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-4 py-3">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {/* Local Guides for Asia */}
-              <button
-                onClick={() => scrollToSection("asia-spotlight")}
-                className="md:col-span-3 rounded-xl p-5 text-left transition-transform hover:scale-[1.01]"
-                style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
-              >
+              <button onClick={() => scrollToSection("asia-spotlight")} className="md:col-span-3 rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
                 <div className="flex items-start gap-3">
-                  <Globe className="h-6 w-6 text-white/90 mt-0.5 shrink-0" />
+                  <Globe className="h-5 w-5 text-white/90 mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="text-base font-bold text-white">Local Guides for Asia</h3>
-                    <p className="text-sm text-white/70 mt-1">Guides tailored for Singapore, Indonesia, Philippines and more</p>
-                    <span className="inline-block mt-2 text-xs font-semibold text-white/90 underline underline-offset-2">Browse local guides</span>
+                    <h3 className="text-sm font-bold text-white">Local Guides for Asia</h3>
+                    <p className="text-xs text-white/70 mt-0.5">Tailored for Singapore, Indonesia, Philippines and more</p>
+                    <span className="inline-block mt-1.5 text-[11px] font-semibold text-white/90 underline underline-offset-2">Browse local guides</span>
                   </div>
                 </div>
               </button>
-              {/* Editors' Picks */}
-              <button
-                onClick={() => scrollToSection("editors-picks")}
-                className="md:col-span-2 rounded-xl p-5 text-left transition-transform hover:scale-[1.01]"
-                style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}
-              >
+              <button onClick={() => scrollToSection("editors-picks")} className="md:col-span-2 rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}>
                 <div className="flex items-start gap-3">
-                  <Star className="h-6 w-6 text-white/90 mt-0.5 shrink-0" />
+                  <Star className="h-5 w-5 text-white/90 mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="text-base font-bold text-white">Editors' Picks</h3>
-                    <p className="text-sm text-white/70 mt-1">Hand-picked by our team</p>
-                    <span className="inline-block mt-2 text-xs font-semibold text-white/90 underline underline-offset-2">See picks</span>
+                    <h3 className="text-sm font-bold text-white">Editors' Picks</h3>
+                    <p className="text-xs text-white/70 mt-0.5">Hand-picked by our team</p>
+                    <span className="inline-block mt-1.5 text-[11px] font-semibold text-white/90 underline underline-offset-2">See picks</span>
                   </div>
                 </div>
               </button>
@@ -442,93 +613,50 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* Filter Bar — compact, moved here */}
-        <section className="border-b border-border bg-card/50 py-3 overflow-visible">
-          <div className="container mx-auto px-4 space-y-2 overflow-visible">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
-              {DIFFICULTY_OPTIONS.map((d) => (
-                <FilterPill key={d} label={d} active={difficulty === d} onClick={() => setDifficulty(d)} />
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
-              {PLATFORM_OPTIONS.map((p) => (
-                <FilterPill key={p} label={p} active={platforms.has(p)} onClick={() => togglePlatform(p)} />
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Topic</span>
-              {TOPIC_OPTIONS.map((t) => (
-                <FilterPill key={t} label={t} active={topic === t} onClick={() => setTopic(t)} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Editors' Picks */}
+        {/* Editors' Picks — compact */}
         {isLoadingPicks ? (
-          <section id="editors-picks" className="pt-10 pb-2" aria-label="Editors' Picks loading">
+          <section id="editors-picks" className="pt-6 pb-2" aria-label="Editors' Picks loading">
             <div className="container mx-auto px-4">
-              <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="aspect-[16/10] rounded-xl w-full" />
-                ))}
+              <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[16/9] rounded-xl w-full" />)}
               </div>
             </div>
           </section>
         ) : dailyPicks.length > 0 ? (
-          <section id="editors-picks" className="pt-10 pb-2" aria-label="Editors' Picks guides">
+          <section id="editors-picks" className="pt-6 pb-2" aria-label="Editors' Picks guides">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-5">
-                <Star className="h-5 w-5 text-primary fill-primary" />
-                <h2 className="text-lg font-bold text-foreground">Editors' Picks</h2>
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="h-4 w-4 text-primary fill-primary" />
+                <h2 className="text-base font-bold text-foreground">Editors' Picks</h2>
               </div>
-              {/* Desktop grid, mobile horizontal scroll */}
-              <div className="hidden lg:grid gap-6 grid-cols-3">
+              <div className="hidden lg:grid gap-4 grid-cols-3">
                 {dailyPicks.map((g) => (
-                  <Link
-                    key={g.id}
-                    to={`/guides/${g.slug}`}
-                    className="group relative rounded-xl overflow-hidden border border-border"
-                  >
-                    <div className="aspect-[16/10] w-full relative">
+                  <Link key={g.id} to={`/guides/${g.slug}`} className="group relative rounded-xl overflow-hidden border border-border">
+                    <div className="aspect-[16/9] w-full relative">
                       {g.featured_image_url ? (
                         <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full bg-muted" />
-                      )}
+                      ) : <div className="w-full h-full bg-muted" />}
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {g.difficulty && (
-                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">{g.title}</h3>
+                    {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="text-sm font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">{g.title}</h3>
                     </div>
                   </Link>
                 ))}
               </div>
-              <div className="lg:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+              <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {dailyPicks.map((g) => (
-                  <Link
-                    key={g.id}
-                    to={`/guides/${g.slug}`}
-                    className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[85vw] max-w-[360px]"
-                  >
-                    <div className="aspect-[16/10] w-full relative">
+                  <Link key={g.id} to={`/guides/${g.slug}`} className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[80vw] max-w-[320px]">
+                    <div className="aspect-[16/9] w-full relative">
                       {g.featured_image_url ? (
-                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full bg-muted" />
-                      )}
+                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+                      ) : <div className="w-full h-full bg-muted" />}
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {g.difficulty && (
-                      <Badge className={`absolute top-3 right-3 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="text-base font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
+                    {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="text-sm font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
                     </div>
                   </Link>
                 ))}
@@ -539,63 +667,51 @@ const Guides = () => {
 
         {/* Asia Spotlight */}
         {isLoadingAsia ? (
-          <section id="asia-spotlight" className="pt-8 pb-2" aria-label="Asia Spotlight loading">
+          <section id="asia-spotlight" className="pt-6 pb-2" aria-label="Asia Spotlight loading">
             <div className="container mx-auto px-4">
-              <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="aspect-video rounded-xl w-full" />
-                ))}
+              <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-video rounded-xl w-full" />)}
               </div>
             </div>
           </section>
         ) : asiaSpotlight.length > 0 ? (
-          <section id="asia-spotlight" className="pt-8 pb-2" aria-label="Local guides for Asia">
+          <section id="asia-spotlight" className="pt-6 pb-2" aria-label="Local guides for Asia">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-5">
-                <Globe className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold text-foreground">Local Guides for Asia</h2>
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-bold text-foreground">Local Guides for Asia</h2>
               </div>
-              {/* Desktop grid */}
-              <div className="hidden md:grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {asiaSpotlight.map((g) => {
                   const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
                   const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
                   return (
-                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg" style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                      {g.featured_image_url && (
-                        <div className="aspect-video overflow-hidden">
-                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        </div>
-                      )}
-                      <div className="p-4 space-y-2">
-                        <div className="flex flex-wrap gap-1.5">
+                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                      <div className="p-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
                           {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
                         </div>
                         <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read <ArrowRight className="h-3 w-3" /></span>
+                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
                         </div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-              {/* Mobile horizontal scroll */}
-              <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+              <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {asiaSpotlight.map((g) => {
                   const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
                   const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
                   return (
-                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[75vw] max-w-[300px]">
-                      {g.featured_image_url && (
-                        <div className="aspect-video overflow-hidden">
-                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="p-4 space-y-2">
-                        <div className="flex flex-wrap gap-1.5">
+                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px]">
+                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover" /></div>}
+                      <div className="p-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
                           {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
                         </div>
@@ -610,83 +726,67 @@ const Guides = () => {
         ) : null}
 
         {/* Guides Grid + Sidebar */}
-        <section className="py-12 md:py-16">
+        <section className="py-8 md:py-12">
           <div className="container mx-auto px-4">
             {isLoading ? (
               <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
                     <Skeleton className="aspect-video w-full" />
-                    <div className="p-5 space-y-3">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                    </div>
+                    <div className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /></div>
                   </div>
                 ))}
               </div>
             ) : filteredGuides.length > 0 ? (
               <>
                 {/* Sort bar */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   {hasActiveFilters ? (
                     <p className="text-sm text-muted-foreground">
                       {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} found
                       {debouncedSearch.trim() ? ` matching "${debouncedSearch}"` : ""}
                     </p>
-                  ) : (
-                    <div />
-                  )}
+                  ) : <div />}
                   <div className="relative">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {SORT_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>Sort by: {o.label}</option>
-                      ))}
+                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary">
+                      {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>Sort by: {o.label}</option>)}
                     </select>
                     <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
                 <div className="flex gap-8">
-                  {/* Main guide grid */}
                   <div className="flex-1 min-w-0">
                     {showGrouped ? (
-                      <div className="space-y-12">
-                        {groupedGuides.map(([cat, catGuides]) => {
+                      <div className="space-y-10">
+                        {groupedGuides.map(([cat, catGuides], sectionIndex) => {
                           const slug = cat.toLowerCase().replace(/\s+/g, "-");
                           const visible = catGuides.slice(0, 6);
+                          const layout = LAYOUT_SEQUENCE[sectionIndex % LAYOUT_SEQUENCE.length];
+
                           return (
-                            <section key={cat} id={`cat-${slug}`} aria-label={`${cat} guides`}>
-                              <div className="flex items-center gap-2 mb-4">
-                                <h2 className="text-xl font-bold text-foreground capitalize">{cat}</h2>
-                                <Badge variant="secondary" className="text-xs bg-muted/60 border-0">{catGuides.length}</Badge>
-                              </div>
-                              <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-                                {visible.map((g: any) => (
-                                  <GuideCard key={g.id} g={g} />
-                                ))}
-                              </div>
-                              {catGuides.length > 6 && (
-                                <button
-                                  onClick={() => setTopic(cat)}
-                                  className="mt-4 text-sm font-medium text-primary hover:underline"
-                                >
-                                  View all {catGuides.length} guides &rarr;
-                                </button>
-                              )}
-                            </section>
+                            <div key={cat}>
+                              <section id={`cat-${slug}`} aria-label={`${cat} guides`}>
+                                <div className="flex items-center gap-2 mb-4">
+                                  <h2 className="text-xl font-bold text-foreground capitalize">{cat}</h2>
+                                  <Badge variant="secondary" className="text-xs bg-muted/60 border-0">{catGuides.length}</Badge>
+                                </div>
+                                {renderSectionLayout(layout, visible)}
+                                {catGuides.length > 6 && (
+                                  <button onClick={() => setTopic(cat)} className="mt-3 text-sm font-medium text-primary hover:underline">
+                                    View all {catGuides.length} guides &rarr;
+                                  </button>
+                                )}
+                              </section>
+                              {/* MPU ad after 2nd and 5th sections */}
+                              {(sectionIndex === 1 || sectionIndex === 4) && <InlineMPU />}
+                            </div>
                           );
                         })}
                       </div>
                     ) : (
                       <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-                        {filteredGuides.map((g: any) => (
-                          <GuideCard key={g.id} g={g} />
-                        ))}
+                        {filteredGuides.map((g: any) => <GuideCard key={g.id} g={g} />)}
                       </div>
                     )}
                   </div>
@@ -694,80 +794,45 @@ const Guides = () => {
                   {/* Right sidebar — desktop only */}
                   <div className="hidden lg:block w-[300px] shrink-0">
                     <div className="sticky top-24 space-y-6">
-                      {/* Mini search */}
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search guides..."
-                          className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                        />
+                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search guides..." className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                       </div>
 
-                      {/* Browse by Topic */}
                       <div className="rounded-xl border border-border bg-card p-4">
                         <h3 className="text-sm font-semibold text-foreground mb-3">Browse by Topic</h3>
                         <div className="space-y-1 max-h-[260px] overflow-y-auto">
-                          {Object.entries(topicCounts)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([cat, count]) => (
-                              <button
-                                key={cat}
-                                onClick={() => {
-                                  if (showGrouped) {
-                                    const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
-                                    if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-                                  }
-                                  setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat);
-                                }}
-                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                                  topic.toLowerCase() === cat.toLowerCase()
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                                }`}
-                              >
-                                <span className="capitalize">{cat}</span>
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0">
-                                  {count}
-                                </Badge>
-                              </button>
-                            ))}
+                          {Object.entries(topicCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                            <button
+                              key={cat}
+                              onClick={() => {
+                                if (showGrouped) {
+                                  const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
+                                  if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+                                }
+                                setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat);
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${topic.toLowerCase() === cat.toLowerCase() ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                            >
+                              <span className="capitalize">{cat}</span>
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0">{count}</Badge>
+                            </button>
+                          ))}
                         </div>
                       </div>
 
-                      {/* Popular Guides */}
                       {popularGuides && popularGuides.length > 0 && (
                         <div className="rounded-xl border border-border bg-card p-4">
                           <h3 className="text-sm font-semibold text-foreground mb-3">Popular Guides</h3>
                           <div className="space-y-3">
                             {popularGuides.map((g) => (
-                              <Link
-                                key={g.id}
-                                to={`/guides/${g.slug}`}
-                                className="flex gap-3 group"
-                              >
+                              <Link key={g.id} to={`/guides/${g.slug}`} className="flex gap-3 group">
                                 {g.featured_image_url ? (
-                                  <img
-                                    src={g.featured_image_url}
-                                    alt={g.title}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="w-16 h-16 rounded object-cover shrink-0"
-                                  />
-                                ) : (
-                                  <div className="w-16 h-16 rounded bg-muted shrink-0" />
-                                )}
+                                  <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover shrink-0" />
+                                ) : <div className="w-16 h-16 rounded bg-muted shrink-0" />}
                                 <div className="min-w-0">
-                                  <p className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                                    {g.title}
-                                  </p>
-                                  {g.topic_category && (
-                                    <Badge variant="secondary" className="mt-1 text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0 capitalize">
-                                      {g.topic_category}
-                                    </Badge>
-                                  )}
+                                  <p className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">{g.title}</p>
+                                  {g.topic_category && <Badge variant="secondary" className="mt-1 text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0 capitalize">{g.topic_category}</Badge>}
                                 </div>
                               </Link>
                             ))}
@@ -775,24 +840,16 @@ const Guides = () => {
                         </div>
                       )}
 
-                      {/* Ad */}
                       <AdCard />
                     </div>
                   </div>
                 </div>
 
-                {/* Mobile/tablet ad — below first few cards */}
-                <div className="lg:hidden mt-8">
-                  <AdCard />
-                </div>
+                <div className="lg:hidden mt-8"><AdCard /></div>
               </>
             ) : (
               <div className="text-center py-16 text-muted-foreground">
-                {hasActiveFilters ? (
-                  <p>No guides match these filters. Try broadening your selection.</p>
-                ) : (
-                  <p>No guides published yet. Check back soon!</p>
-                )}
+                {hasActiveFilters ? <p>No guides match these filters. Try broadening your selection.</p> : <p>No guides published yet. Check back soon!</p>}
               </div>
             )}
           </div>
