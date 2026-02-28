@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, memo } from "react";
+import { useState, useEffect, lazy, Suspense, memo, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Users, Loader2 } from "lucide-react";
+import { TrendingUp, Users, Loader2, BookOpen } from "lucide-react";
 import { FooterAd, MPUAd } from "@/components/GoogleAds";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -66,6 +66,18 @@ const getFreshnessLabel = (publishedAt: string | null, updatedAt: string | null,
   }
   
   return null;
+};
+
+const GRID_ASIA_KEYWORDS = [
+  "asia", "singapore", "malaysia", "thailand", "vietnam", "indonesia", "philippines",
+  "japan", "korea", "china", "india", "hong-kong", "taiwan",
+  "sea", "asean", "southeast", "bangkok", "manila", "jakarta",
+  "mumbai", "delhi", "tokyo", "seoul",
+];
+
+const isAsiaFocused = (slug: string, title: string) => {
+  const lower = (slug + " " + title).toLowerCase();
+  return GRID_ASIA_KEYWORDS.some(kw => lower.includes(kw));
 };
 
 const Index = () => {
@@ -141,25 +153,8 @@ const Index = () => {
     ...secondaryHeroArticles.map((a: any) => a.id),
   ].filter(Boolean) as string[];
 
-  // Compute grid section IDs (trending + remaining latest used in the grid)
-  const secondaryIds = secondaryHeroArticles.map((a: any) => a.id);
-  const gridArticles = [
-    ...(baseTrendingArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
-    ...(latestArticles?.filter((a: any) =>
-      a.slug &&
-      a.id !== featuredArticle?.id &&
-      !secondaryIds.includes(a.id) &&
-      !(baseTrendingArticles || []).some((t: any) => t.id === a.id) &&
-      !a.title?.includes('3 Before 9')
-    ) || []),
-  ];
-  const gridSectionIds = gridArticles.map((a: any) => a.id);
-
-  // Progressive exclude sets for each section
+  // trendingExcludeIds used by TrendingVisualStrip
   const trendingExcludeIds = heroSectionIds;
-  const gridExcludeIds = [...heroSectionIds]; // grid already dedupes internally against hero
-  const postGridIds = [...new Set([...heroSectionIds, ...gridSectionIds])];
-  const heroLatestIds = postGridIds; // used by ForYou, MostDiscussed, RecommendedArticles
 
   // Defer featured authors
   const { data: featuredAuthors } = useQuery({
@@ -230,6 +225,117 @@ const Index = () => {
     }
     return sorted;
   })();
+
+  // Fetch trending strip article IDs for deduplication with grid
+  const { data: trendingStripRawArticles } = useQuery({
+    queryKey: ["trending-strip-ids"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("articles")
+        .select("id")
+        .eq("status", "published")
+        .eq("is_trending", true)
+        .order("trending_score", { ascending: false, nullsFirst: false })
+        .limit(12);
+      return data || [];
+    },
+  });
+
+  // Fetch all published guides for grid mixing (no cache - re-randomize each load)
+  const { data: allPublishedGuides } = useQuery({
+    queryKey: ["grid-all-guides"],
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ai_guides")
+        .select("id, title, slug, featured_image_url, excerpt, read_time_minutes, published_at")
+        .eq("status", "published")
+        .not("featured_image_url", "is", null)
+        .order("published_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  // Compute which article IDs the trending strip is showing
+  const trendingStripShownIds = useMemo(() => {
+    if (!trendingStripRawArticles) return [] as string[];
+    const heroSet = new Set(heroSectionIds);
+    return trendingStripRawArticles
+      .filter(a => !heroSet.has(a.id))
+      .slice(0, 4)
+      .map(a => a.id);
+  }, [trendingStripRawArticles, heroSectionIds]);
+
+  // Compute which guide IDs the trending strip shows (daily seed)
+  const trendingStripGuideIds = useMemo(() => {
+    if (!allPublishedGuides || allPublishedGuides.length === 0) return [] as string[];
+    const today = new Date().toISOString().slice(0, 10);
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) seed = ((seed << 5) - seed + today.charCodeAt(i)) | 0;
+    seed = Math.abs(seed);
+    const tKw = ["singapore", "malaysia", "thailand", "vietnam", "indonesia", "philippines",
+      "japan", "korea", "china", "india", "hong-kong", "taiwan", "bahasa", "halal",
+      "hdb", "bto", "cpf", "iras", "ns-national"];
+    const asian = allPublishedGuides.filter(g => tKw.some(kw => g.slug.includes(kw)));
+    const general = allPublishedGuides.filter(g => !tKw.some(kw => g.slug.includes(kw)));
+    const ids: string[] = [];
+    if (asian.length) ids.push(asian[seed % asian.length].id);
+    if (general.length) ids.push(general[(seed + 7) % general.length].id);
+    return ids;
+  }, [allPublishedGuides]);
+
+  // Pick 3+ guides for the grid (randomized, at least 1 Asia-focused, deduped)
+  const gridGuides = useMemo(() => {
+    if (!allPublishedGuides || allPublishedGuides.length === 0) return [];
+    const excludeSet = new Set(trendingStripGuideIds);
+    const eligible = allPublishedGuides.filter(g => !excludeSet.has(g.id));
+    const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+    const asiaGuides = shuffled.filter(g => isAsiaFocused(g.slug, g.title));
+    const picked: typeof eligible = [];
+    const pickedIds = new Set<string>();
+    if (asiaGuides.length > 0) {
+      picked.push(asiaGuides[0]);
+      pickedIds.add(asiaGuides[0].id);
+    }
+    for (const g of shuffled) {
+      if (picked.length >= 3) break;
+      if (!pickedIds.has(g.id)) {
+        picked.push(g);
+        pickedIds.add(g.id);
+      }
+    }
+    return picked;
+  }, [allPublishedGuides, trendingStripGuideIds]);
+
+  // All IDs shown above the grid (hero + trending strip)
+  const aboveGridIds = useMemo(() => {
+    return new Set([...heroSectionIds, ...trendingStripShownIds]);
+  }, [heroSectionIds, trendingStripShownIds]);
+
+  // Grid articles: 5-7 items, deduped against hero + trending strip
+  const gridArticles = useMemo(() => {
+    const seen = new Set(aboveGridIds);
+    const candidates = [
+      ...(trendingArticles || []),
+      ...(latestArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
+    ];
+    const deduped: any[] = [];
+    for (const a of candidates) {
+      if (!seen.has(a.id) && a.slug) {
+        seen.add(a.id);
+        deduped.push(a);
+      }
+    }
+    return deduped.slice(0, 7);
+  }, [aboveGridIds, trendingArticles, latestArticles]);
+
+  // postGridIds for downstream sections
+  const gridSectionIds = gridArticles.map((a: any) => a.id);
+  const gridGuideIds = gridGuides.map(g => g.id);
+  const postGridIds = [...new Set([...heroSectionIds, ...trendingStripShownIds, ...gridSectionIds, ...gridGuideIds])];
+  const heroLatestIds = postGridIds;
 
   const handleNewsletterSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -492,89 +598,134 @@ const Index = () => {
               ))}
             </div>
           ) : (() => {
-            // Combine all grid-eligible articles: trending + latest (excluding hero & secondary)
-            const secondaryIds = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 4).map((a: any) => a.id) || [];
-            const allGridArticles = [
-              ...(trendingArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
-              ...(latestArticles?.filter((a: any) =>
-                a.slug &&
-                a.id !== featuredArticle?.id &&
-                !secondaryIds.includes(a.id) &&
-                !(trendingArticles || []).some((t: any) => t.id === a.id) &&
-                !a.title?.includes('3 Before 9')
-              ) || []),
-            ];
+            // Build mixed grid: interleave guides among articles
+            type GridItem = { kind: "article" | "guide"; data: any };
+            const mixedItems: GridItem[] = [];
+            let artIdx = 0, guideIdx = 0;
+            const guidePositions = new Set([2, 5, 8]);
+            const totalSlots = Math.min(10, gridArticles.length + gridGuides.length);
+            for (let pos = 0; pos < totalSlots; pos++) {
+              if (guidePositions.has(pos) && guideIdx < gridGuides.length) {
+                mixedItems.push({ kind: "guide", data: gridGuides[guideIdx++] });
+              } else if (artIdx < gridArticles.length) {
+                mixedItems.push({ kind: "article", data: gridArticles[artIdx++] });
+              } else if (guideIdx < gridGuides.length) {
+                mixedItems.push({ kind: "guide", data: gridGuides[guideIdx++] });
+              }
+            }
 
-            if (allGridArticles.length === 0) return null;
-
-            const renderCard = (article: any, isLarge: boolean) => {
-              const categorySlug = article.categories?.slug || 'news';
-              return (
-                <Link
-                  key={article.id}
-                  to={`/${categorySlug}/${article.slug}`}
-                  className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
-                >
-                  <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] max-h-[300px]' : 'h-[160px] max-h-[180px]'}`}>
-                    <img
-                      src={isLarge
-                        ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 800, 400)
-                        : getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 225)
-                      }
-                      alt={article.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                    {article.is_trending && (
-                      <Badge className="absolute top-3 left-3 bg-orange-500 text-white flex items-center gap-1 text-xs">
-                        <TrendingUp className="h-3 w-3" />Trending
-                      </Badge>
-                    )}
-                    {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
-                      <Badge className="absolute top-3 right-3 bg-emerald-600 text-white text-xs">
-                        {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <span className="text-[13px] font-bold uppercase tracking-wider mb-2 block" style={{ color: getCategoryColor(article.categories?.slug) }}>
-                      {article.categories?.name || "Uncategorized"}
-                    </span>
-                    <h3 className={`font-bold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
-                      isLarge ? 'text-[22px] md:text-[24px]' : 'text-[16px] md:text-[17px]'
-                    }`}>
-                      {article.title}
-                    </h3>
-                    {isLarge && article.excerpt && (
-                      <p className="text-muted-foreground text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
-                    )}
-                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground mt-3">
-                      {article.authors?.name && <span>{article.authors.name}</span>}
-                      {article.authors?.name && article.published_at && <span>•</span>}
-                      {article.published_at && (
-                        <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                      )}
-                      <span>•</span>
-                      <span>{article.reading_time_minutes || 5} min read</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            };
+            if (mixedItems.length === 0) return null;
 
             const isFeatured = (index: number) => {
               const pos = index % 10;
               return pos === 0 || pos === 6;
             };
 
+            const renderArticleCard = (article: any, isLarge: boolean) => (
+              <Link
+                to={`/${article.categories?.slug || 'news'}/${article.slug}`}
+                className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
+              >
+                <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] max-h-[300px]' : 'h-[160px] max-h-[180px]'}`}>
+                  <img
+                    src={isLarge
+                      ? getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 800, 400)
+                      : getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 225)
+                    }
+                    alt={article.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                  {article.is_trending && (
+                    <Badge className="absolute top-3 left-3 bg-orange-500 text-white flex items-center gap-1 text-xs">
+                      <TrendingUp className="h-3 w-3" />Trending
+                    </Badge>
+                  )}
+                  {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone) && (
+                    <Badge className="absolute top-3 right-3 bg-emerald-600 text-white text-xs">
+                      {getFreshnessLabel(article.published_at, article.updated_at, article.cornerstone)}
+                    </Badge>
+                  )}
+                </div>
+                <div className="p-4">
+                  <span className="text-[13px] font-bold uppercase tracking-wider mb-2 block" style={{ color: getCategoryColor(article.categories?.slug) }}>
+                    {article.categories?.name || "Uncategorized"}
+                  </span>
+                  <h3 className={`font-bold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
+                    isLarge ? 'text-[22px] md:text-[24px]' : 'text-[16px] md:text-[17px]'
+                  }`}>
+                    {article.title}
+                  </h3>
+                  {isLarge && article.excerpt && (
+                    <p className="text-muted-foreground text-[15px] leading-[1.6] line-clamp-2 mt-2">{article.excerpt}</p>
+                  )}
+                  <div className="flex items-center gap-2 text-[13px] text-muted-foreground mt-3">
+                    {article.authors?.name && <span>{article.authors.name}</span>}
+                    {article.authors?.name && article.published_at && <span>•</span>}
+                    {article.published_at && (
+                      <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    )}
+                    <span>•</span>
+                    <span>{article.reading_time_minutes || 5} min read</span>
+                  </div>
+                </div>
+              </Link>
+            );
+
+            const renderGuideCard = (guide: any, isLarge: boolean) => (
+              <Link
+                to={`/guides/${guide.slug}`}
+                className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
+              >
+                <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] max-h-[300px]' : 'h-[160px] max-h-[180px]'}`}>
+                  <img
+                    src={isLarge
+                      ? getOptimizedThumbnail(guide.featured_image_url || "/placeholder.svg", 800, 400)
+                      : getOptimizedThumbnail(guide.featured_image_url || "/placeholder.svg", 400, 225)
+                    }
+                    alt={guide.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                  <Badge className="absolute top-3 left-3 bg-emerald-600 text-white flex items-center gap-1 text-xs">
+                    <BookOpen className="h-3 w-3" />Guide
+                  </Badge>
+                </div>
+                <div className="p-4">
+                  <span className="text-[13px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1 text-emerald-400">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Guide
+                  </span>
+                  <h3 className={`font-bold leading-[1.25] line-clamp-2 group-hover:text-primary transition-colors ${
+                    isLarge ? 'text-[22px] md:text-[24px]' : 'text-[16px] md:text-[17px]'
+                  }`}>
+                    {guide.title}
+                  </h3>
+                  {isLarge && guide.excerpt && (
+                    <p className="text-muted-foreground text-[15px] leading-[1.6] line-clamp-2 mt-2">{guide.excerpt}</p>
+                  )}
+                  <div className="flex items-center gap-2 text-[13px] text-muted-foreground mt-3">
+                    {guide.published_at && (
+                      <span>{new Date(guide.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    )}
+                    <span>•</span>
+                    <span>{guide.read_time_minutes || 5} min read</span>
+                  </div>
+                </div>
+              </Link>
+            );
+
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                {allGridArticles.map((article: any, i: number) => {
+                {mixedItems.map((item, i) => {
                   const large = isFeatured(i);
                   return (
-                    <div key={article.id} className={large ? 'md:col-span-2' : ''}>
-                      {renderCard(article, large)}
+                    <div key={item.kind === "guide" ? `guide-${item.data.id}` : item.data.id} className={large ? 'md:col-span-2' : ''}>
+                      {item.kind === "guide"
+                        ? renderGuideCard(item.data, large)
+                        : renderArticleCard(item.data, large)}
                     </div>
                   );
                 })}
