@@ -40,7 +40,7 @@ const NAV_ITEMS = [
 const TOOLS_ITEMS = [
   { to: "/guides", label: "AI Guides", description: "Practical guides to using AI effectively", icon: BookOpen },
   { to: "/prompts", label: "Prompt Library", description: "Ready-to-use prompts for every task", icon: Sparkles },
-  { to: "/policy-atlas", label: "Policy Atlas", description: "Track AI regulation across Asia-Pacific", icon: Globe },
+  { to: "/ai-policy-atlas", label: "Policy Atlas", description: "Track AI regulation across Asia-Pacific", icon: Globe },
   { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
 ];
 
