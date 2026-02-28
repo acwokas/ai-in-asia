@@ -224,6 +224,18 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         </section>
       )}
 
+      {/* Body Sections (legacy schema) */}
+      {formData.body_sections?.length > 0 && formData.body_sections.map((section: any, i: number) => (
+        <section key={i} id={`body-section-${i + 1}`} className="mb-12">
+          {section.heading && (
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">{section.heading}</h2>
+          )}
+          {section.text && (
+            <MarkdownText text={section.text} className="text-lg leading-relaxed text-foreground/90 space-y-4" />
+          )}
+        </section>
+      ))}
+
       {/* FAQ - Accordions */}
       {hasContent(formData.faq_items) && (
         <section id="faq" className="mb-12">
