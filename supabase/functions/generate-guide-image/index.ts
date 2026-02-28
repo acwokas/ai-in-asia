@@ -33,7 +33,21 @@ serve(async (req) => {
       .replace(/^(how to|guide to|a guide to|the complete guide to|mastering|understanding)\s+/i, '')
       .trim();
 
-    const prompt = `Cinematic dark still-life photograph related to ${topic}. Moody ambient lighting with warm golden accents on a near-black background. Realistic objects arranged as an elegant composition - think vintage desk items, professional tools, or symbolic objects that represent the topic. Rich textures like leather, wood, brushed metal, aged paper, glass. Photorealistic quality, shallow depth of field, no people, no text, no screens, no UI elements, no diagrams. Shot on medium format camera, 16:9 aspect ratio.`;
+    // Pick colour palette based on title keywords
+    const lower = title.toLowerCase();
+    const palettes = [
+      { keys: ['business', 'finance', 'market', 'revenue', 'startup', 'enterprise', 'roi', 'investment', 'monetis', 'monetiz', 'sales', 'pricing', 'economic'], color: 'warm golden and amber', accent: 'rich gold' },
+      { keys: ['tech', 'programming', 'code', 'developer', 'software', 'api', 'data', 'machine learning', 'deep learning', 'neural', 'algorithm', 'cloud', 'infrastructure', 'automation'], color: 'cool blue and teal', accent: 'electric cyan' },
+      { keys: ['life', 'wellness', 'health', 'mindful', 'wellbeing', 'lifestyle', 'personal', 'mental', 'balance', 'self-care'], color: 'deep burgundy and crimson', accent: 'warm rose' },
+      { keys: ['learn', 'education', 'tutorial', 'course', 'training', 'teach', 'student', 'beginner', 'fundamental', 'introduction', 'guide to'], color: 'rich emerald and jade', accent: 'bright green' },
+      { keys: ['creative', 'content', 'writing', 'design', 'art', 'prompt', 'storytelling', 'video', 'image', 'generat', 'music', 'brand'], color: 'regal purple and violet', accent: 'electric lavender' },
+      { keys: ['productiv', 'workflow', 'efficien', 'organis', 'organiz', 'time management', 'tool', 'system', 'process', 'project management'], color: 'warm copper and bronze', accent: 'burnt orange' },
+    ];
+
+    const matched = palettes.find(p => p.keys.some(k => lower.includes(k)));
+    const palette = matched || { color: 'warm golden and amber', accent: 'rich gold' };
+
+    const prompt = `Cinematic dark still-life photograph related to ${topic}. Moody ambient lighting with ${palette.color} accents on a near-black background, with subtle ${palette.accent} highlights. Realistic objects arranged as an elegant composition - think vintage desk items, professional tools, or symbolic objects that represent the topic. Rich textures like leather, wood, brushed metal, aged paper, glass. Photorealistic quality, shallow depth of field, no people, no text, no screens, no UI elements, no diagrams. Shot on medium format camera, 16:9 aspect ratio.`;
 
     console.log(`Generating image for guide "${slug}" with topic: ${topic}`);
 
