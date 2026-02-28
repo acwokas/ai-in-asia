@@ -42,7 +42,7 @@ const DIFFICULTY_OPTIONS = ["All", "Beginner", "Intermediate", "Advanced"] as co
 const PLATFORM_OPTIONS = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"] as const;
 const TOPIC_OPTIONS = [
   "All", "Business", "Lifestyle", "Creators", "Work", "Education",
-  "Wellness", "Finance", "Productivity", "Content", "General",
+  "Wellness", "Finance", "Productivity", "Content", "Technology", "Safety",
 ] as const;
 
 const SORT_OPTIONS = [
@@ -57,7 +57,7 @@ const CATEGORY_TILE_COLORS: Record<string, string> = {
   Business: "bg-blue-600", Lifestyle: "bg-emerald-500", Creators: "bg-purple-500",
   Work: "bg-amber-500", Education: "bg-rose-500", Wellness: "bg-teal-500",
   Finance: "bg-indigo-500", Productivity: "bg-orange-500", Content: "bg-pink-500",
-  General: "bg-gray-500",
+  Technology: "bg-teal-600", Safety: "bg-red-500",
 };
 
 type FilterPillProps = { label: string; active: boolean; onClick: () => void };
@@ -623,7 +623,7 @@ const Guides = () => {
                 <span className="flex items-center gap-1 text-xs font-bold text-white"><Layers className="h-3 w-3" />Platform</span>
                 {specialCounts.platform > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.platform} guides</span>}
               </Link>
-              {TOPIC_OPTIONS.filter((t) => t !== "All").map((cat) => {
+              {TOPIC_OPTIONS.filter((t) => t !== "All" && (topicCounts[t] || 0) > 0).map((cat) => {
                 const count = topicCounts[cat] || 0;
                 const colorClass = CATEGORY_TILE_COLORS[cat] || "bg-gray-500";
                 return (
@@ -637,50 +637,6 @@ const Guides = () => {
                   </Link>
                 );
               })}
-            </div>
-          </div>
-        </section>
-
-        {/* ROW 3 — Highlight cards */}
-        <section className="border-b border-border" style={{ background: "#040405" }}>
-          <div className="container mx-auto px-4 py-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Link to="/guides/asia" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
-                <div className="flex items-start gap-2">
-                  <Globe className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Asia</h3>
-                    <p className="text-[11px] text-white/70 mt-0.5">Local guides</p>
-                  </div>
-                </div>
-              </Link>
-              <Link to="/guides/startup" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
-                <div className="flex items-start gap-2">
-                  <Rocket className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Startup</h3>
-                    <p className="text-[11px] text-white/70 mt-0.5">Founder guides</p>
-                  </div>
-                </div>
-              </Link>
-              <Link to="/guides/platform" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
-                <div className="flex items-start gap-2">
-                  <Layers className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Platform</h3>
-                    <p className="text-[11px] text-white/70 mt-0.5">Deep dives</p>
-                  </div>
-                </div>
-              </Link>
-              <button onClick={() => scrollToSection("editors-picks")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}>
-                <div className="flex items-start gap-2">
-                  <Star className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Picks</h3>
-                    <p className="text-[11px] text-white/70 mt-0.5">Editor curated</p>
-                  </div>
-                </div>
-              </button>
             </div>
           </div>
         </section>
