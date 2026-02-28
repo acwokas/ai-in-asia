@@ -105,7 +105,7 @@ const RecommendedGuides = () => {
           {guides.map((guide) => (
             <Link
               key={guide.id}
-              to={`/guides/${guide.slug}`}
+              to={`/guides/${(guide.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${guide.slug}`}
               className="group flex flex-col border border-border/50 bg-card rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               {/* Image */}

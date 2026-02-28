@@ -61,7 +61,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, featured_image_url")
+        .select("id, title, slug, featured_image_url, topic_category")
         .eq("status", "published")
         .not("featured_image_url", "is", null)
         .order("created_at", { ascending: false })
@@ -115,7 +115,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
             return (
               <Link
                 key={`guide-${item.id}`}
-                to={`/guides/${item.slug}`}
+                to={`/guides/${((item as any).topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${item.slug}`}
                 className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
                 style={{
                   background: "hsl(215 35% 12%)",

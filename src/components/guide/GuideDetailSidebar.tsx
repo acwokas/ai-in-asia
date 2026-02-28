@@ -147,7 +147,7 @@ function RelatedGuides({ currentGuideId, topicCategory }: { currentGuideId?: str
       <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Related Guides</p>
       <div className="space-y-3">
         {guides.map((g: any) => (
-          <Link key={g.id} to={`/guides/${g.slug}`} className="flex gap-3 group">
+          <Link key={g.id} to={`/guides/${(g.topic_category || "general").toLowerCase().replace(/\\s+/g, "-")}/${g.slug}`} className="flex gap-3 group">
             <div className="w-16 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
               {g.featured_image_url ? (
                 <img src={g.featured_image_url} alt={g.title} className="w-full h-full object-cover" loading="lazy" />
