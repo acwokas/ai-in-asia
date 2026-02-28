@@ -11,15 +11,31 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const { slug, title } = await req.json();
 
-    if (!LOVABLE_API_KEY) {
+    if (!title || !slug) {
       return new Response(
-        JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }),
+        JSON.stringify({ error: 'Missing required fields: slug and title' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract topic from title by removing common prefixes
+    const topic = title
+      .replace(/^(how to|guide to|a guide to|the complete guide to|mastering|understanding)\s+/i, '')
+      .trim();
+
+    const prompt = `Cinematic dark still-life photograph related to ${topic}. Moody ambient lighting with warm golden accents on a near-black background. Realistic objects arranged as an elegant composition - think vintage desk items, professional tools, or symbolic objects that represent the topic. Rich textures like leather, wood, brushed metal, aged paper, glass. Photorealistic quality, shallow depth of field, no people, no text, no screens, no UI elements, no diagrams. Shot on medium format camera, 16:9 aspect ratio.`;
+
+    console.log(`Generating image for guide "${slug}" with topic: ${topic}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -53,14 +69,15 @@ serve(async (req) => {
 
     const data = await response.json();
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const textContent = data.choices?.[0]?.message?.content || '';
 
     if (!imageUrl) {
-      throw new Error('No image generated');
+      throw new Error('No image generated from AI gateway');
     }
 
+    console.log(`Image generated successfully for guide "${slug}"`);
+
     return new Response(
-      JSON.stringify({ image_url: imageUrl, description: textContent }),
+      JSON.stringify({ imageUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
