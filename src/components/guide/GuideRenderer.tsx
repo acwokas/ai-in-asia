@@ -3,6 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, ChevronDown, AlertTriangle } from "lucide-react";
 import CopyableCodeBlock from "@/components/guide/CopyableCodeBlock";
 
+/** Safely parse a value that might be a JSON string, array, or null into an array */
+const safeParseJSON = (val: any): any[] => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string" && val.trim().length > 0) {
+    try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  }
+  return [];
+};
+
 /** Render simple markdown (bold, italic, inline code, links, line breaks) to HTML */
 const renderMarkdown = (text: string): string => {
   if (!text) return "";
@@ -95,10 +104,12 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       </header>
 
       {/* AI Snapshot */}
-      {hasContent(formData.snapshot_bullets) && (
+      {hasContent(formData.snapshot_bullets) && (() => {
+        const bullets = safeParseJSON(formData.snapshot_bullets);
+        return bullets.length > 0 ? (
         <section id="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
           <div className="space-y-3">
-            {formData.snapshot_bullets.filter(Boolean).map((b: any, i: number) => {
+            {bullets.filter(Boolean).map((b: any, i: number) => {
               const text = typeof b === "string" ? b : (b?.text || b?.bullet || JSON.stringify(b));
               return (
                 <div key={i} className="flex items-start gap-3">
@@ -109,7 +120,8 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
             })}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* Why This Matters */}
       {hasContent(formData.why_this_matters) && (
@@ -120,11 +132,14 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       )}
 
       {/* How to Do It - Visual Timeline */}
-      {hasContent(formData.steps) && (
+      {hasContent(formData.steps) && (() => {
+        const steps = safeParseJSON(formData.steps);
+        const filtered = steps.filter((s: any) => s.content?.trim());
+        return filtered.length > 0 ? (
         <section id="how-to-do-it" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">How to Do It</h2>
           <div>
-            {formData.steps.filter((s: any) => s.content?.trim()).map((step: any, i: number, arr: any[]) => (
+            {filtered.map((step: any, i: number, arr: any[]) => (
               <div key={i} className="flex gap-4 mb-8 last:mb-0">
                 <div className="w-12 flex-shrink-0 flex flex-col items-center">
                   <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
@@ -142,7 +157,8 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
             ))}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* What This Actually Looks Like */}
       {hasContent(formData.worked_example) && (
@@ -175,11 +191,14 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       )}
 
       {/* Prompts to Try */}
-      {hasContent(formData.guide_prompts) && (
+      {hasContent(formData.guide_prompts) && (() => {
+        const prompts = safeParseJSON(formData.guide_prompts);
+        const filtered = prompts.filter((p: any) => p.prompt_text?.trim());
+        return filtered.length > 0 ? (
         <section id="prompts-to-try" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Prompts to Try</h2>
           <div className="space-y-8">
-            {formData.guide_prompts.filter((p: any) => p.prompt_text?.trim()).map((prompt: any, i: number) => (
+            {filtered.map((prompt: any, i: number) => (
               <div key={i}>
                 {prompt.title && <h3 className="text-xl font-semibold mb-3 text-foreground">{prompt.title}</h3>}
                 <CopyableCodeBlock content={prompt.prompt_text} />
@@ -190,33 +209,53 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
             ))}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* Common Mistakes */}
-      {hasContent(formData.common_mistakes) && (
+      {hasContent(formData.common_mistakes) && (() => {
+        const mistakes = safeParseJSON(formData.common_mistakes);
+        const filtered = mistakes.filter((m: any) => (m.title || m.mistake)?.trim());
+        return filtered.length > 0 ? (
         <section id="common-mistakes" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Common Mistakes</h2>
           <div className="space-y-4">
-            {formData.common_mistakes.filter((m: any) => m.title?.trim()).map((mistake: any, i: number) => (
+            {filtered.map((mistake: any, i: number) => (
               <div key={i} className="border-l-4 border-amber-500 bg-amber-500/5 rounded-r-lg p-4">
-                <h3 className="font-semibold mb-1 text-foreground">{stripMd(mistake.title)}</h3>
-                <MarkdownText text={mistake.description} className="text-base text-foreground/80 leading-relaxed" />
+                <h3 className="font-semibold mb-1 text-foreground">{stripMd(mistake.title || mistake.mistake)}</h3>
+                <MarkdownText text={mistake.description || mistake.why_it_matters} className="text-base text-foreground/80 leading-relaxed" />
+                {mistake.how_to_avoid && (
+                  <p className="text-sm text-muted-foreground mt-2"><strong>How to avoid:</strong> {stripMd(mistake.how_to_avoid)}</p>
+                )}
               </div>
             ))}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* Tools That Work for This */}
-      {hasContent(formData.recommended_tools) && (
+      {hasContent(formData.recommended_tools) && (() => {
+        const tools = safeParseJSON(formData.recommended_tools);
+        const filtered = tools.filter((t: any) => (t.tool_name || t.name)?.trim());
+        return filtered.length > 0 ? (
         <section id="tools-that-work" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Tools That Work for This</h2>
           <div className="divide-y divide-border">
-            {formData.recommended_tools.filter((t: any) => t.name?.trim()).map((tool: any, i: number) => (
+            {filtered.map((tool: any, i: number) => {
+              const toolName = tool.tool_name || tool.name;
+              return (
               <div key={i} className="py-3">
-                <span className="font-semibold text-foreground">{stripMd(tool.name)}</span>
+                {tool.url ? (
+                  <a href={tool.url} target="_blank" rel="noopener" className="font-semibold text-teal-400 hover:text-teal-300 underline">{stripMd(toolName)}</a>
+                ) : (
+                  <span className="font-semibold text-foreground">{stripMd(toolName)}</span>
+                )}
                 {tool.best_for && (
                   <span className="text-sm text-muted-foreground ml-2">— {stripMd(tool.best_for)}</span>
+                )}
+                {tool.pricing && (
+                  <span className="text-xs text-muted-foreground ml-2">({stripMd(tool.pricing)})</span>
                 )}
                 {tool.description && (
                   <p className="text-foreground/80 mt-1">{stripMd(tool.description)}</p>
@@ -225,10 +264,12 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
                   <p className="text-sm italic text-muted-foreground mt-0.5"><AlertTriangle className="h-3.5 w-3.5 inline text-amber-500 mr-1" />{stripMd(tool.limitation)}</p>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* Body Sections (legacy schema) */}
       {formData.body_sections?.length > 0 && formData.body_sections.map((section: any, i: number) => (
@@ -243,11 +284,14 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       ))}
 
       {/* FAQ - Accordions */}
-      {hasContent(formData.faq_items) && (
+      {hasContent(formData.faq_items) && (() => {
+        const faqs = safeParseJSON(formData.faq_items);
+        const filtered = faqs.filter((f: any) => f.question?.trim());
+        return filtered.length > 0 ? (
         <section id="faq" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Frequently Asked Questions</h2>
           <div className="divide-y divide-border">
-            {formData.faq_items.filter((f: any) => f.question?.trim()).map((faq: any, i: number) => (
+            {filtered.map((faq: any, i: number) => (
               <div key={i}>
                 <button
                   className="w-full flex justify-between items-center cursor-pointer py-4 text-left"
@@ -267,7 +311,8 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
             ))}
           </div>
         </section>
-      )}
+        ) : null;
+      })()}
 
       {/* Next Steps */}
       {hasContent(formData.next_steps) && (
