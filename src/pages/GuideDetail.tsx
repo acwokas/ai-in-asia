@@ -16,6 +16,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
 
+/** Safely parse a JSON field that may be double-encoded (string inside jsonb) */
+const safeParseJsonArray = (val: any): any[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  }
+  return [];
+};
+
 const GuideDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -67,12 +77,13 @@ const GuideDetail = () => {
       if (typeof val === "object") return Object.values(val).some((x: any) => typeof x === "string" && (x as string).trim());
       return false;
     };
-    const bullets = g.snapshot_bullets?.length ? g.snapshot_bullets : [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean);
-    const steps = Array.isArray(g.steps) && g.steps.length ? g.steps : [];
-    const workedExample = g.worked_example && Object.keys(g.worked_example).length && (g.worked_example.prompt || g.worked_example.output) ? g.worked_example : null;
-    const guidePrompts = Array.isArray(g.guide_prompts) && g.guide_prompts.length ? g.guide_prompts : [];
-    const commonMistakes = Array.isArray(g.common_mistakes) && g.common_mistakes.length ? g.common_mistakes : [];
-    const tools = Array.isArray(g.recommended_tools) && g.recommended_tools.length ? g.recommended_tools : [];
+    const rawBullets = safeParseJsonArray(g.snapshot_bullets);
+    const bullets = rawBullets.length ? rawBullets : [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean);
+    const steps = safeParseJsonArray(g.steps);
+    const workedExample = g.worked_example && typeof g.worked_example === "object" && !Array.isArray(g.worked_example) && (g.worked_example.prompt || g.worked_example.output) ? g.worked_example : null;
+    const guidePrompts = safeParseJsonArray(g.guide_prompts);
+    const commonMistakes = safeParseJsonArray(g.common_mistakes);
+    const tools = safeParseJsonArray(g.recommended_tools);
     const faqItems = Array.isArray(g.faq_items) && g.faq_items.length ? g.faq_items : [
       g.faq_q1 ? { question: g.faq_q1, answer: g.faq_a1 } : null,
       g.faq_q2 ? { question: g.faq_q2, answer: g.faq_a2 } : null,
@@ -122,18 +133,26 @@ const GuideDetail = () => {
     published_at: g.published_at,
     featured_image_url: g.featured_image_url,
     featured_image_alt: g.featured_image_alt || g.title,
-    snapshot_bullets: g.snapshot_bullets?.length ? g.snapshot_bullets : [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean),
+    snapshot_bullets: (() => { const raw = safeParseJsonArray(g.snapshot_bullets); return raw.length ? raw.map((b: any) => typeof b === "string" ? b : b?.text || b?.bullet || JSON.stringify(b)) : [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean); })(),
     why_this_matters: g.why_this_matters || g.context_and_background || "",
-    steps: Array.isArray(g.steps) && g.steps.length ? g.steps : [],
-    worked_example: g.worked_example && Object.keys(g.worked_example).length && (g.worked_example.prompt || g.worked_example.output) ? g.worked_example : null,
-    guide_prompts: Array.isArray(g.guide_prompts) && g.guide_prompts.length ? g.guide_prompts : [],
-    common_mistakes: Array.isArray(g.common_mistakes) && g.common_mistakes.length ? g.common_mistakes : [],
-    recommended_tools: Array.isArray(g.recommended_tools) && g.recommended_tools.length ? g.recommended_tools : [],
-    faq_items: Array.isArray(g.faq_items) && g.faq_items.length ? g.faq_items : [
+    steps: safeParseJsonArray(g.steps),
+    worked_example: g.worked_example && typeof g.worked_example === "object" && !Array.isArray(g.worked_example) && (g.worked_example.prompt || g.worked_example.output) ? g.worked_example : null,
+    guide_prompts: safeParseJsonArray(g.guide_prompts),
+    common_mistakes: safeParseJsonArray(g.common_mistakes).map((m: any) => ({
+      title: m.title || m.mistake || "",
+      description: m.description || m.why_it_matters || m.how_to_avoid || [m.why_it_matters, m.how_to_avoid].filter(Boolean).join(" ") || "",
+    })),
+    recommended_tools: safeParseJsonArray(g.recommended_tools).map((t: any) => ({
+      name: t.name || "",
+      description: t.description || "",
+      best_for: t.best_for || "",
+      limitation: t.limitation || "",
+    })),
+    faq_items: (() => { const raw = safeParseJsonArray(g.faq_items); return raw.length ? raw : [
       g.faq_q1 ? { question: g.faq_q1, answer: g.faq_a1 } : null,
       g.faq_q2 ? { question: g.faq_q2, answer: g.faq_a2 } : null,
       g.faq_q3 ? { question: g.faq_q3, answer: g.faq_a3 } : null,
-    ].filter(Boolean),
+    ].filter(Boolean); })(),
     next_steps: g.next_steps || "",
     body_sections: [
       g.body_section_1_heading || g.body_section_1_text ? { heading: g.body_section_1_heading, text: g.body_section_1_text } : null,
