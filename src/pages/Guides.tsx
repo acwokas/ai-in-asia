@@ -80,8 +80,11 @@ const InlineMPU = () => (
 );
 
 const AdCard = () => (
-  <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col items-center justify-center p-4 gap-2 min-h-[280px]">
-    <MPUAd />
+  <div className="flex flex-col items-center">
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Advertisement</span>
+    <div className="rounded-xl border border-border bg-card overflow-hidden flex items-center justify-center w-[300px] h-[250px]">
+      <MPUAd />
+    </div>
   </div>
 );
 

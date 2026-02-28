@@ -156,7 +156,7 @@ export const InArticleAd = () => (
 );
 
 export const FooterAd = () => (
-  <div className="container mx-auto px-4 py-4">
+  <div className="container mx-auto px-4 py-6" style={{ minHeight: '120px', overflow: 'visible' }}>
     <GoogleAd
       slot="8539668053"
       format="horizontal"
