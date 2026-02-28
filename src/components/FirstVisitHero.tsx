@@ -1,30 +1,64 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
-const STORAGE_KEY = "returning-visitor";
+const STORAGE_KEY = "welcome_banner_dismissed";
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+const isDismissedRecently = (): boolean => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const ts = Number(raw);
+    if (Number.isNaN(ts)) return false;
+    return Date.now() - ts < THIRTY_DAYS_MS;
+  } catch {
+    return false;
+  }
+};
 
 const FirstVisitHero = () => {
-  const [dismissed, setDismissed] = useState(
-    () => localStorage.getItem(STORAGE_KEY) === "true"
-  );
+  const { user } = useAuth();
+  const [dismissed, setDismissed] = useState(() => isDismissedRecently());
+  const [collapsing, setCollapsing] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
+  const handleDismiss = useCallback(() => {
+    if (!bannerRef.current) {
+      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+      setDismissed(true);
+      return;
+    }
+    const el = bannerRef.current;
+    el.style.height = `${el.offsetHeight}px`;
+    el.style.overflow = "hidden";
+    setCollapsing(true);
+    requestAnimationFrame(() => {
+      el.style.transition = "height 300ms ease-out, opacity 300ms ease-out";
+      el.style.height = "0px";
+      el.style.opacity = "0";
+    });
+    setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+      setDismissed(true);
+    }, 310);
+  }, []);
+
+  // Logged-in users never see the banner
+  if (user) return null;
   if (dismissed) return null;
 
-  const handleDismiss = () => {
-    localStorage.setItem(STORAGE_KEY, "true");
-    setDismissed(true);
-  };
-
   return (
-    <div className="relative bg-gradient-to-b from-primary/5 to-transparent border-b border-border/30">
+    <div ref={bannerRef} className="relative bg-gradient-to-b from-primary/5 to-transparent border-b border-border/30">
       <button
         onClick={handleDismiss}
-        className="absolute top-3 right-3 md:top-4 md:right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
-        aria-label="Dismiss"
+        className="absolute top-3 right-3 md:top-4 md:right-4 p-1 rounded-md text-muted-foreground hover:text-white transition-colors z-10"
+        style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}
+        aria-label="Dismiss banner"
       >
-        <X className="h-4 w-4" />
+        <X className="h-5 w-5" />
       </button>
 
       <div className="container mx-auto px-4 py-8 md:py-12 text-center max-w-2xl">
@@ -32,7 +66,6 @@ const FirstVisitHero = () => {
           The AI publication built for Asia-Pacific
         </h2>
 
-        {/* Full subtext on desktop, short on mobile */}
         <p className="hidden md:block text-muted-foreground mb-6">
           Daily briefings, regional analysis, and practical guides covering AI across 15+ countries - from Singapore to Tokyo, Mumbai to Sydney.
         </p>
@@ -40,7 +73,6 @@ const FirstVisitHero = () => {
           Daily AI briefings and analysis across 15+ Asia-Pacific countries.
         </p>
 
-        {/* Two CTAs on desktop, one on mobile */}
         <div className="flex items-center justify-center gap-3">
           <Button asChild>
             <Link to="/3-before-9">Read Today's Briefing</Link>
