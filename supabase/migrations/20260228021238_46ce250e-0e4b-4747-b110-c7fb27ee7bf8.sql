@@ -1,0 +1,1 @@
+CREATE POLICY "temp_anon_update_featured_image" ON public.ai_guides FOR UPDATE TO anon USING (true) WITH CHECK (true);
