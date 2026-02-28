@@ -1,0 +1,2 @@
+CREATE POLICY "temp_anon_write_guides_insert" ON public.ai_guides FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "temp_anon_write_guides_update" ON public.ai_guides FOR UPDATE TO anon USING (true) WITH CHECK (true);
