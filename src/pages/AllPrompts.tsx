@@ -31,6 +31,8 @@ const PROMPT_CATEGORIES: {
   accent: string;
   gradient: string;
 }[] = [
+  { slug: "asia", label: "Asia", description: "AI trends, news, and insights from across Asia", topicMatch: "Asia", borderColor: "border-t-amber-500", accent: "bg-amber-500", gradient: "from-amber-600 to-amber-800" },
+  { slug: "startup", label: "Startup", description: "AI for founders, MVPs, fundraising, and growth", topicMatch: "Startup", borderColor: "border-t-violet-500", accent: "bg-violet-500", gradient: "from-violet-600 to-violet-800" },
   { slug: "business", label: "Business", description: "Strategy, marketing, sales, and operations prompts", topicMatch: "Business", borderColor: "border-t-blue-500", accent: "bg-blue-500", gradient: "from-blue-600 to-blue-800" },
   { slug: "education", label: "Education", description: "Teaching, learning, and academic prompts", topicMatch: "Education", borderColor: "border-t-emerald-500", accent: "bg-emerald-500", gradient: "from-emerald-600 to-emerald-800" },
   { slug: "creators", label: "Creators", description: "Design, video, audio, and creative production", topicMatch: "Creators", borderColor: "border-t-purple-500", accent: "bg-purple-500", gradient: "from-purple-600 to-purple-800" },
@@ -225,9 +227,21 @@ const AllPrompts = () => {
         <h3 className="text-sm font-bold leading-snug text-zinc-100 group-hover:text-white line-clamp-2">
           {prompt.prompt_title}
         </h3>
-        <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed flex-1">
-          {prompt.prompt_text}
-        </p>
+        {expandedId === prompt.id ? (
+          <p className="text-xs text-zinc-400 leading-relaxed flex-1 whitespace-pre-wrap">
+            {prompt.prompt_text}
+          </p>
+        ) : (
+          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed flex-1">
+            {prompt.prompt_text}
+          </p>
+        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleExpand(prompt.id); }}
+          className="text-[11px] text-primary hover:underline text-left w-fit"
+        >
+          {expandedId === prompt.id ? "Show less" : "Show full prompt"}
+        </button>
         <p className="text-[11px] text-zinc-500">
           From:{" "}
           <Link
@@ -411,9 +425,9 @@ const AllPrompts = () => {
           </div>
         </section>
 
-        {/* ═══ CATEGORY PILLS ═══ */}
+        {/* ═══ CATEGORY PILLS + PLATFORM PILLS ═══ */}
         <div className="border-b border-zinc-800 bg-zinc-900/95 backdrop-blur-sm sticky top-0 z-20">
-          <div className="container mx-auto px-4 py-3">
+          <div className="container mx-auto px-4 py-3 space-y-2">
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
               <Link
                 to="/prompts"
@@ -440,6 +454,23 @@ const AllPrompts = () => {
                     <span className="ml-1.5 text-[10px] opacity-60">{categoryCounts[cat.slug]}</span>
                   )}
                 </Link>
+              ))}
+            </div>
+            {/* Platform filter pills */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+              <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wide mr-1">Platform</span>
+              {platformFilterList.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPlatformFilter(p)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-medium border transition-colors whitespace-nowrap ${
+                    platformFilter === p
+                      ? "bg-zinc-600 text-zinc-100 border-zinc-500"
+                      : "bg-zinc-800/60 text-zinc-500 border-zinc-700/60 hover:border-zinc-600 hover:text-zinc-300"
+                  }`}
+                >
+                  {p}
+                </button>
               ))}
             </div>
           </div>
@@ -492,7 +523,7 @@ const AllPrompts = () => {
                     <h3 className="text-lg md:text-xl font-bold text-white mb-3">
                       {promptOfTheDay.prompt_title}
                     </h3>
-                    <p className="text-sm text-zinc-300 line-clamp-3 leading-relaxed mb-4 max-w-2xl">
+                    <p className="text-sm text-zinc-300 leading-relaxed mb-4 max-w-2xl whitespace-pre-wrap">
                       {promptOfTheDay.prompt_text}
                     </p>
                     <p className="text-xs text-zinc-500 mb-4">
