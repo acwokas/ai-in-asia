@@ -135,132 +135,162 @@ const GuideCard = ({ g }: { g: any }) => (
 
 // Large featured card — taller image
 const GuideFeaturedCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url && (
-      <div className="aspect-[4/3] overflow-hidden">
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url && (
+        <div className="aspect-[4/3] overflow-hidden">
+          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className="p-5 space-y-3">
+        <div className="flex flex-wrap gap-1.5">
+          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+        </div>
+        <h2 className="text-xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-3">{g.title}</h2>
+        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
+        <div className="flex items-center text-xs text-muted-foreground pt-1">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+        </div>
       </div>
-    )}
-    <div className="p-5 space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-      </div>
-      <h2 className="text-xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-3">{g.title}</h2>
-      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
-      <div className="flex items-center text-xs text-muted-foreground pt-1">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-      </div>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 // Compact horizontal list card
 const GuideListCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group flex gap-3 rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md"
-    style={{ transition: "transform 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url ? (
-      <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-24 h-24 md:w-28 md:h-28 object-cover shrink-0" />
-    ) : (
-      <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
-    )}
-    <div className="py-3 pr-3 flex flex-col justify-center min-w-0 space-y-1">
-      <div className="flex flex-wrap gap-1">
-        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-1 right-1 z-10 h-7 w-7 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="flex gap-3 rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md"
+      style={{ transition: "transform 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url ? (
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-24 h-24 md:w-28 md:h-28 object-cover shrink-0" />
+      ) : (
+        <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
+      )}
+      <div className="py-3 pr-3 flex flex-col justify-center min-w-0 space-y-1">
+        <div className="flex flex-wrap gap-1">
+          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
+        </div>
+        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
       </div>
-      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 // Landscape wide card
 const GuideLandscapeCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url && (
-      <div className="aspect-[2/1] overflow-hidden">
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url && (
+        <div className="aspect-[2/1] overflow-hidden">
+          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className="p-4 space-y-2">
+        <div className="flex flex-wrap gap-1.5">
+          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+        </div>
+        <h2 className="text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+        </div>
       </div>
-    )}
-    <div className="p-4 space-y-2">
-      <div className="flex flex-wrap gap-1.5">
-        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-      </div>
-      <h2 className="text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-      </div>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 // Square compact card
 const GuideSquareCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url && (
-      <div className="aspect-square overflow-hidden">
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url && (
+        <div className="aspect-square overflow-hidden">
+          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className="p-3 space-y-1.5">
+        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
+        <h2 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
       </div>
-    )}
-    <div className="p-3 space-y-1.5">
-      {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
-      <h2 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 // Wide 2-col card with more description
 const GuideWideCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url && (
-      <div className="aspect-video overflow-hidden">
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url && (
+        <div className="aspect-video overflow-hidden">
+          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className="p-5 space-y-3">
+        <div className="flex flex-wrap gap-1.5">
+          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+        </div>
+        <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
+        </div>
       </div>
-    )}
-    <div className="p-5 space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-      </div>
-      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
-      </div>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 /* ── Section layout renderers ── */
@@ -666,34 +696,40 @@ const Guides = () => {
               </div>
               <div className="hidden lg:grid gap-4 grid-cols-3">
                 {dailyPicks.map((g) => (
-                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group relative rounded-xl overflow-hidden border border-border">
-                    <div className="aspect-[16/9] w-full relative">
-                      {g.featured_image_url ? (
-                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : <div className="w-full h-full bg-muted" />}
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-sm font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">{g.title}</h3>
-                    </div>
-                  </Link>
+                  <div key={g.id} className="relative group">
+                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 left-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block relative rounded-xl overflow-hidden border border-border">
+                      <div className="aspect-[16/9] w-full relative">
+                        {g.featured_image_url ? (
+                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : <div className="w-full h-full bg-muted" />}
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                      {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-sm font-bold leading-snug text-white line-clamp-2 group-hover:underline decoration-primary underline-offset-2">{g.title}</h3>
+                      </div>
+                    </Link>
+                  </div>
                 ))}
               </div>
               <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {dailyPicks.map((g) => (
-                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[80vw] max-w-[320px]">
-                    <div className="aspect-[16/9] w-full relative">
-                      {g.featured_image_url ? (
-                        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
-                      ) : <div className="w-full h-full bg-muted" />}
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-sm font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
-                    </div>
-                  </Link>
+                  <div key={g.id} className="relative group snap-start shrink-0 w-[80vw] max-w-[320px]">
+                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 left-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block relative rounded-xl overflow-hidden border border-border">
+                      <div className="aspect-[16/9] w-full relative">
+                        {g.featured_image_url ? (
+                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+                        ) : <div className="w-full h-full bg-muted" />}
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                      {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-sm font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
+                      </div>
+                    </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -716,20 +752,23 @@ const Guides = () => {
               </div>
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {asiaGuides.map((g) => (
-                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                    <div className="p-3 space-y-1.5">
-                      <div className="flex flex-wrap gap-1">
-                        {g.geo && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{g.geo}</Badge>}
-                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
+                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                      <div className="p-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {g.geo && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{g.geo}</Badge>}
+                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                        </div>
+                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                        </div>
                       </div>
-                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
               <Link to="/guides/asia" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
@@ -750,20 +789,23 @@ const Guides = () => {
               </div>
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {startupGuides.map((g) => (
-                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                    <div className="p-3 space-y-1.5">
-                      <div className="flex flex-wrap gap-1">
-                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
+                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                      <div className="p-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+                        </div>
+                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                        </div>
                       </div>
-                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
               <Link to="/guides/startup" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
@@ -784,20 +826,23 @@ const Guides = () => {
               </div>
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {platformGuides.map((g) => (
-                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                    <div className="p-3 space-y-1.5">
-                      <div className="flex flex-wrap gap-1">
-                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                        {g.primary_platform && <Badge className="bg-indigo-500 text-white text-[10px]">{g.primary_platform}</Badge>}
+                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
+                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                      <div className="p-3 space-y-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                          {g.primary_platform && <Badge className="bg-indigo-500 text-white text-[10px]">{g.primary_platform}</Badge>}
+                        </div>
+                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                        </div>
                       </div>
-                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
               <Link to="/guides/platform" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
