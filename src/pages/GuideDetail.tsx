@@ -127,7 +127,7 @@ const GuideDetail = () => {
     pillar: g.pillar || "",
     difficulty: g.difficulty || g.level?.toLowerCase() || "",
     platform_tags: g.platform_tags?.length ? g.platform_tags : [g.primary_platform].filter(Boolean),
-    topic_tags: g.topic_tags?.length ? g.topic_tags : (g.tags ? g.tags.split(",").map((t: string) => t.trim()) : []),
+    topic_tags: g.topic_tags?.length ? g.topic_tags : safeParseJsonArray(g.tags).map((t: any) => String(t).replace(/[\[\]"]/g, "").trim()).filter(Boolean),
     read_time_minutes: g.read_time_minutes || 0,
     one_line_description: g.one_line_description || "",
     published_at: g.published_at,
