@@ -103,6 +103,7 @@ const Guides = lazy(() => import("./pages/Guides"));
 const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 
 const GuideEditor = lazy(() => import("./pages/GuideEditor"));
+const GuideCategoryIndex = lazy(() => import("./pages/GuideCategoryIndex"));
 const AdminGuides = lazy(() => import("./pages/AdminGuides"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const NewsletterPerformance = lazy(() => import("./pages/NewsletterPerformance"));
@@ -298,6 +299,7 @@ const App = () => (
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/category/:categorySlug" element={<GuideCategoryIndex />} />
               <Route path="/guides/:category/:slug" element={<GuideDetail />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}

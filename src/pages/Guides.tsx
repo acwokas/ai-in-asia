@@ -599,49 +599,42 @@ const Guides = () => {
           <div className="container mx-auto px-4 py-3">
             <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
               {/* Special pills */}
-              <button
-                onClick={() => { setSpecialFilter(specialFilter === "asia" ? null : "asia"); setTopic("All"); }}
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "asia" ? "ring-2 ring-white/50" : ""}`}
+              <Link
+                to="/guides/category/asia"
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "asia" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
               >
                 <span className="flex items-center gap-1 text-xs font-bold text-white"><Globe className="h-3 w-3" />Asia</span>
                 {specialCounts.asia > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.asia} guides</span>}
-              </button>
-              <button
-                onClick={() => { setSpecialFilter(specialFilter === "startup" ? null : "startup"); setTopic("All"); }}
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "startup" ? "ring-2 ring-white/50" : ""}`}
+              </Link>
+              <Link
+                to="/guides/category/startup"
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "startup" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}
               >
                 <span className="flex items-center gap-1 text-xs font-bold text-white"><Rocket className="h-3 w-3" />Startup</span>
                 {specialCounts.startup > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.startup} guides</span>}
-              </button>
-              <button
-                onClick={() => { setSpecialFilter(specialFilter === "platform" ? null : "platform"); setTopic("All"); }}
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "platform" ? "ring-2 ring-white/50" : ""}`}
+              </Link>
+              <Link
+                to="/guides/category/platform"
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "platform" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}
               >
                 <span className="flex items-center gap-1 text-xs font-bold text-white"><Layers className="h-3 w-3" />Platform</span>
                 {specialCounts.platform > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.platform} guides</span>}
-              </button>
+              </Link>
               {TOPIC_OPTIONS.filter((t) => t !== "All").map((cat) => {
                 const count = topicCounts[cat] || 0;
                 const colorClass = CATEGORY_TILE_COLORS[cat] || "bg-gray-500";
                 return (
-                  <button
+                  <Link
                     key={cat}
-                    onClick={() => {
-                      setSpecialFilter(null);
-                      if (topic !== cat && !specialFilter) {
-                        const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
-                        if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-                      }
-                      setTopic(topic === cat ? "All" : cat);
-                    }}
-                    className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105`}
+                    to={`/guides/category/${cat.toLowerCase()}`}
+                    className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline`}
                   >
                     <span className="block text-xs font-bold text-white">{cat}</span>
                     {count > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{count} guides</span>}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -652,7 +645,7 @@ const Guides = () => {
         <section className="border-b border-border" style={{ background: "#040405" }}>
           <div className="container mx-auto px-4 py-3">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <button onClick={() => scrollToSection("asia-spotlight")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
+              <Link to="/guides/category/asia" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Globe className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -660,8 +653,8 @@ const Guides = () => {
                     <p className="text-[11px] text-white/70 mt-0.5">Local guides</p>
                   </div>
                 </div>
-              </button>
-              <button onClick={() => scrollToSection("startup-guides")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
+              </Link>
+              <Link to="/guides/category/startup" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Rocket className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -669,8 +662,8 @@ const Guides = () => {
                     <p className="text-[11px] text-white/70 mt-0.5">Founder guides</p>
                   </div>
                 </div>
-              </button>
-              <button onClick={() => scrollToSection("platform-guides")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
+              </Link>
+              <Link to="/guides/category/platform" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Layers className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -678,7 +671,7 @@ const Guides = () => {
                     <p className="text-[11px] text-white/70 mt-0.5">Deep dives</p>
                   </div>
                 </div>
-              </button>
+              </Link>
               <button onClick={() => scrollToSection("editors-picks")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Star className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
@@ -776,6 +769,9 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
+              <Link to="/guides/category/asia" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                View all {asiaGuides.length} Asia guides <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
           </section>
         )}
@@ -807,6 +803,9 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
+              <Link to="/guides/category/startup" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                View all {startupGuides.length} startup guides <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
           </section>
         )}
@@ -838,6 +837,9 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
+              <Link to="/guides/category/platform" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                View all {platformGuides.length} platform guides <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
           </section>
         )}
@@ -890,9 +892,9 @@ const Guides = () => {
                                 </div>
                                 {renderSectionLayout(layout, visible)}
                                 {catGuides.length > 6 && (
-                                  <button onClick={() => setTopic(cat)} className="mt-3 text-sm font-medium text-primary hover:underline">
-                                    View all {catGuides.length} guides &rarr;
-                                  </button>
+                                  <Link to={`/guides/category/${slug}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                                    View all {catGuides.length} guides <ArrowRight className="h-3 w-3" />
+                                  </Link>
                                 )}
                               </section>
                               {/* MPU ad after 2nd and 5th sections */}
@@ -920,20 +922,14 @@ const Guides = () => {
                         <h3 className="text-sm font-semibold text-foreground mb-3">Browse by Topic</h3>
                         <div className="space-y-1 max-h-[260px] overflow-y-auto">
                           {Object.entries(topicCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-                            <button
+                            <Link
                               key={cat}
-                              onClick={() => {
-                                if (showGrouped) {
-                                  const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
-                                  if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-                                }
-                                setTopic(topic.toLowerCase() === cat.toLowerCase() ? "All" : cat);
-                              }}
-                              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${topic.toLowerCase() === cat.toLowerCase() ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"}`}
+                              to={`/guides/category/${cat.toLowerCase()}`}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground no-underline"
                             >
                               <span className="capitalize">{cat}</span>
                               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0">{count}</Badge>
-                            </button>
+                            </Link>
                           ))}
                         </div>
                       </div>
