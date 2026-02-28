@@ -7,9 +7,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X } from "lucide-react";
+import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X, Rocket, Layers } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MPUAd } from "@/components/GoogleAds";
+
+const guideHref = (slug: string, topicCategory?: string | null) => {
+  const cat = (topicCategory || "general").toLowerCase().replace(/\s+/g, "-");
+  return `/guides/${cat}/${slug}`;
+};
 
 const ASIAN_KEYWORDS = ["asia", "singapore", "malaysia", "indonesia", "thailand", "vietnam", "philippines", "japan", "korea", "china", "india", "taiwan", "hong-kong", "bangkok", "manila", "jakarta", "mumbai", "delhi", "tokyo", "seoul", "halal", "lunar", "chinese-new-year", "diwali", "ramadan", "grab", "gojek", "shopee", "lazada", "line", "wechat", "baidu", "cpf", "hdb", "medisave"];
 
@@ -92,7 +97,7 @@ const AdCard = () => (
 
 const GuideCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
     style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
@@ -124,7 +129,7 @@ const GuideCard = ({ g }: { g: any }) => (
 // Large featured card — taller image
 const GuideFeaturedCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
     style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
@@ -152,7 +157,7 @@ const GuideFeaturedCard = ({ g }: { g: any }) => (
 // Compact horizontal list card
 const GuideListCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group flex gap-3 rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md"
     style={{ transition: "transform 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
@@ -176,7 +181,7 @@ const GuideListCard = ({ g }: { g: any }) => (
 // Landscape wide card
 const GuideLandscapeCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
     style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
@@ -203,7 +208,7 @@ const GuideLandscapeCard = ({ g }: { g: any }) => (
 // Square compact card
 const GuideSquareCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
     style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
@@ -225,7 +230,7 @@ const GuideSquareCard = ({ g }: { g: any }) => (
 // Wide 2-col card with more description
 const GuideWideCard = ({ g }: { g: any }) => (
   <Link
-    to={`/guides/${g.slug}`}
+    to={guideHref(g.slug, g.topic_category)}
     className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
     style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
@@ -329,6 +334,8 @@ const Guides = () => {
   const [difficulty, setDifficulty] = useState("All");
   const [platforms, setPlatforms] = useState<Set<string>>(new Set(["All"]));
   const [topic, setTopic] = useState("All");
+  const [specialFilter, setSpecialFilter] = useState<"asia" | "startup" | "platform" | null>(null);
+  const [asiaCountries, setAsiaCountries] = useState<Set<string>>(new Set(["All"]));
 
   const activeFilterCount = (difficulty !== "All" ? 1 : 0) + (!platforms.has("All") ? 1 : 0) + (topic !== "All" ? 1 : 0);
 
@@ -348,7 +355,7 @@ const Guides = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category, updated_at, view_count")
+        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category, updated_at, view_count, geo, audience_role, guide_category, primary_platform")
         .eq("status", "published")
         .order("updated_at", { ascending: false });
       if (error) throw error;
@@ -384,33 +391,7 @@ const Guides = () => {
     return picks;
   }, [editorsPicks]);
 
-  const { data: asiaGuidesRaw, isLoading: isLoadingAsia } = useQuery({
-    queryKey: ["asia-spotlight-guides"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ai_guides")
-        .select("id, title, slug, featured_image_url, difficulty, read_time_minutes, updated_at")
-        .eq("status", "published")
-        .order("updated_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const asiaSpotlight = useMemo(() => {
-    if (!asiaGuidesRaw) return [];
-    const pool = asiaGuidesRaw.filter((g) => ASIAN_KEYWORDS.some((kw) => g.slug.includes(kw)));
-    if (pool.length === 0) return [];
-    const seed = Math.floor(Date.now() / 86400000);
-    const copy = [...pool];
-    const picks: typeof pool = [];
-    const count = Math.min(4, copy.length);
-    for (let i = 0; i < count; i++) {
-      const idx = ((seed * (i + 1) * 2654435761) >>> 0) % copy.length;
-      picks.push(copy.splice(idx, 1)[0]);
-    }
-    return picks;
-  }, [asiaGuidesRaw]);
+  // Asia spotlight query removed - now uses main guides data filtered by geo field
 
   const { data: popularGuides } = useQuery({
     queryKey: ["guides-popular"],
@@ -436,6 +417,8 @@ const Guides = () => {
     return counts;
   }, [guides]);
 
+  const isAsiaGuide = (g: any) => g.geo && g.geo !== "none" && g.geo !== "global";
+
   const filteredGuides = useMemo(() => {
     if (!guides) return [];
     let result = guides.filter((g) => {
@@ -450,15 +433,19 @@ const Guides = () => {
         if (!Array.from(platforms).some((p) => gp.includes(p.toLowerCase()))) return false;
       }
       if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
+      // Special filter
+      if (specialFilter === "asia" && !isAsiaGuide(g)) return false;
+      if (specialFilter === "startup" && g.audience_role !== "Startup Founder") return false;
+      if (specialFilter === "platform" && g.guide_category !== "Platform Guide") return false;
       return true;
     });
     if (sortBy === "newest") result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     else if (sortBy === "popular") result.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
     else if (sortBy === "difficulty") result.sort((a, b) => (DIFF_ORDER[a.difficulty ?? ""] ?? 99) - (DIFF_ORDER[b.difficulty ?? ""] ?? 99));
     return result;
-  }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy]);
+  }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy, specialFilter]);
 
-  const showGrouped = topic === "All" && !debouncedSearch.trim();
+  const showGrouped = topic === "All" && !debouncedSearch.trim() && !specialFilter;
 
   const groupedGuides = useMemo(() => {
     if (!showGrouped || !filteredGuides.length) return [];
@@ -471,7 +458,51 @@ const Guides = () => {
   }, [filteredGuides, showGrouped]);
 
   const guideCount = guides?.length ?? 0;
-  const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim();
+  const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim() || !!specialFilter;
+
+  const specialCounts = useMemo(() => {
+    if (!guides) return { asia: 0, startup: 0, platform: 0 };
+    return {
+      asia: guides.filter((g) => isAsiaGuide(g)).length,
+      startup: guides.filter((g) => g.audience_role === "Startup Founder").length,
+      platform: guides.filter((g) => g.guide_category === "Platform Guide").length,
+    };
+  }, [guides]);
+
+  const asiaGuides = useMemo(() => {
+    if (!guides) return [];
+    let pool = guides.filter((g) => isAsiaGuide(g));
+    if (!asiaCountries.has("All")) {
+      pool = pool.filter((g) => {
+        const geo = (g.geo || "").toLowerCase();
+        return Array.from(asiaCountries).some((c) => geo.includes(c.toLowerCase()));
+      });
+    }
+    return pool;
+  }, [guides, asiaCountries]);
+
+  const startupGuides = useMemo(() => {
+    if (!guides) return [];
+    return guides.filter((g) => g.audience_role === "Startup Founder");
+  }, [guides]);
+
+  const platformGuides = useMemo(() => {
+    if (!guides) return [];
+    return guides.filter((g) => g.guide_category === "Platform Guide");
+  }, [guides]);
+
+  const COUNTRY_OPTIONS = ["All", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
+
+  const toggleCountry = (c: string) => {
+    if (c === "All") { setAsiaCountries(new Set(["All"])); return; }
+    setAsiaCountries((prev) => {
+      const next = new Set(prev);
+      next.delete("All");
+      if (next.has(c)) { next.delete(c); if (next.size === 0) next.add("All"); }
+      else next.add(c);
+      return next;
+    });
+  };
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -550,7 +581,7 @@ const Guides = () => {
               </div>
               {activeFilterCount > 0 && (
                 <button
-                  onClick={() => { setDifficulty("All"); setPlatforms(new Set(["All"])); setTopic("All"); }}
+                  onClick={() => { setDifficulty("All"); setPlatforms(new Set(["All"])); setTopic("All"); setSpecialFilter(null); }}
                   className="text-xs text-primary hover:underline mt-1"
                 >
                   Clear all filters
@@ -564,6 +595,31 @@ const Guides = () => {
         <section className="border-b border-border" style={{ background: "#080a0f" }}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
+              {/* Special pills */}
+              <button
+                onClick={() => { setSpecialFilter(specialFilter === "asia" ? null : "asia"); setTopic("All"); }}
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "asia" ? "ring-2 ring-white/50" : ""}`}
+                style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
+              >
+                <span className="flex items-center gap-1 text-xs font-bold text-white"><Globe className="h-3 w-3" />Asia</span>
+                {specialCounts.asia > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.asia} guides</span>}
+              </button>
+              <button
+                onClick={() => { setSpecialFilter(specialFilter === "startup" ? null : "startup"); setTopic("All"); }}
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "startup" ? "ring-2 ring-white/50" : ""}`}
+                style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}
+              >
+                <span className="flex items-center gap-1 text-xs font-bold text-white"><Rocket className="h-3 w-3" />Startup</span>
+                {specialCounts.startup > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.startup} guides</span>}
+              </button>
+              <button
+                onClick={() => { setSpecialFilter(specialFilter === "platform" ? null : "platform"); setTopic("All"); }}
+                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 ${specialFilter === "platform" ? "ring-2 ring-white/50" : ""}`}
+                style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}
+              >
+                <span className="flex items-center gap-1 text-xs font-bold text-white"><Layers className="h-3 w-3" />Platform</span>
+                {specialCounts.platform > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.platform} guides</span>}
+              </button>
               {TOPIC_OPTIONS.filter((t) => t !== "All").map((cat) => {
                 const count = topicCounts[cat] || 0;
                 const colorClass = CATEGORY_TILE_COLORS[cat] || "bg-gray-500";
@@ -575,7 +631,7 @@ const Guides = () => {
                         const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
                         if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
                       }
-                      setTopic(topic === cat ? "All" : cat);
+                      setSpecialFilter(null); setTopic(topic === cat ? "All" : cat);
                     }}
                     className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105`}
                   >
@@ -588,27 +644,43 @@ const Guides = () => {
           </div>
         </section>
 
-        {/* ROW 3 — Two highlight cards */}
+        {/* ROW 3 — Highlight cards */}
         <section className="border-b border-border" style={{ background: "#040405" }}>
           <div className="container mx-auto px-4 py-3">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              <button onClick={() => scrollToSection("asia-spotlight")} className="md:col-span-3 rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
-                <div className="flex items-start gap-3">
-                  <Globe className="h-5 w-5 text-white/90 mt-0.5 shrink-0" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button onClick={() => scrollToSection("asia-spotlight")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
+                <div className="flex items-start gap-2">
+                  <Globe className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="text-sm font-bold text-white">Local Guides for Asia</h3>
-                    <p className="text-xs text-white/70 mt-0.5">Tailored for Singapore, Indonesia, Philippines and more</p>
-                    <span className="inline-block mt-1.5 text-[11px] font-semibold text-white/90 underline underline-offset-2">Browse local guides</span>
+                    <h3 className="text-sm font-bold text-white">Asia</h3>
+                    <p className="text-[11px] text-white/70 mt-0.5">Local guides</p>
                   </div>
                 </div>
               </button>
-              <button onClick={() => scrollToSection("editors-picks")} className="md:col-span-2 rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}>
-                <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-white/90 mt-0.5 shrink-0" />
+              <button onClick={() => scrollToSection("startup-guides")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
+                <div className="flex items-start gap-2">
+                  <Rocket className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="text-sm font-bold text-white">Editors' Picks</h3>
-                    <p className="text-xs text-white/70 mt-0.5">Hand-picked by our team</p>
-                    <span className="inline-block mt-1.5 text-[11px] font-semibold text-white/90 underline underline-offset-2">See picks</span>
+                    <h3 className="text-sm font-bold text-white">Startup</h3>
+                    <p className="text-[11px] text-white/70 mt-0.5">Founder guides</p>
+                  </div>
+                </div>
+              </button>
+              <button onClick={() => scrollToSection("platform-guides")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
+                <div className="flex items-start gap-2">
+                  <Layers className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Platform</h3>
+                    <p className="text-[11px] text-white/70 mt-0.5">Deep dives</p>
+                  </div>
+                </div>
+              </button>
+              <button onClick={() => scrollToSection("editors-picks")} className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01]" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)" }}>
+                <div className="flex items-start gap-2">
+                  <Star className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Picks</h3>
+                    <p className="text-[11px] text-white/70 mt-0.5">Editor curated</p>
                   </div>
                 </div>
               </button>
@@ -634,7 +706,7 @@ const Guides = () => {
               </div>
               <div className="hidden lg:grid gap-4 grid-cols-3">
                 {dailyPicks.map((g) => (
-                  <Link key={g.id} to={`/guides/${g.slug}`} className="group relative rounded-xl overflow-hidden border border-border">
+                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group relative rounded-xl overflow-hidden border border-border">
                     <div className="aspect-[16/9] w-full relative">
                       {g.featured_image_url ? (
                         <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -650,7 +722,7 @@ const Guides = () => {
               </div>
               <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {dailyPicks.map((g) => (
-                  <Link key={g.id} to={`/guides/${g.slug}`} className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[80vw] max-w-[320px]">
+                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group relative rounded-xl overflow-hidden border border-border snap-start shrink-0 w-[80vw] max-w-[320px]">
                     <div className="aspect-[16/9] w-full relative">
                       {g.featured_image_url ? (
                         <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
@@ -668,65 +740,103 @@ const Guides = () => {
           </section>
         ) : null}
 
-        {/* Asia Spotlight */}
-        {isLoadingAsia ? (
-          <section id="asia-spotlight" className="pt-6 pb-2" aria-label="Asia Spotlight loading">
-            <div className="container mx-auto px-4">
-              <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="aspect-video rounded-xl w-full" />)}
-              </div>
-            </div>
-          </section>
-        ) : asiaSpotlight.length > 0 ? (
+        {/* Asia Guides - full list with country filters */}
+        {asiaGuides.length > 0 && (
           <section id="asia-spotlight" className="pt-6 pb-2" aria-label="Local guides for Asia">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 <Globe className="h-4 w-4 text-primary" />
                 <h2 className="text-base font-bold text-foreground">Local Guides for Asia</h2>
+                <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{asiaGuides.length}</Badge>
               </div>
-              <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {asiaSpotlight.map((g) => {
-                  const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
-                  const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
-                  return (
-                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                      <div className="p-3 space-y-1.5">
-                        <div className="flex flex-wrap gap-1">
-                          {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
-                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                        </div>
-                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+              <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
+                {COUNTRY_OPTIONS.map((c) => (
+                  <FilterPill key={c} label={c} active={asiaCountries.has(c)} onClick={() => toggleCountry(c)} />
+                ))}
               </div>
-              <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
-                {asiaSpotlight.map((g) => {
-                  const regionTag = ASIAN_KEYWORDS.find((kw) => g.slug.includes(kw));
-                  const regionLabel = regionTag ? ASIAN_KEYWORD_LABELS[regionTag] : null;
-                  return (
-                    <Link key={g.id} to={`/guides/${g.slug}`} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px]">
-                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover" /></div>}
-                      <div className="p-3 space-y-1.5">
-                        <div className="flex flex-wrap gap-1">
-                          {regionLabel && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{regionLabel}</Badge>}
-                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                        </div>
-                        <h3 className="text-sm font-bold leading-snug line-clamp-2">{g.title}</h3>
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+                {asiaGuides.map((g) => (
+                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                    <div className="p-3 space-y-1.5">
+                      <div className="flex flex-wrap gap-1">
+                        {g.geo && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{g.geo}</Badge>}
+                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
                       </div>
-                    </Link>
-                  );
-                })}
+                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </section>
-        ) : null}
+        )}
+
+        {/* Startup Guides */}
+        {startupGuides.length > 0 && (
+          <section id="startup-guides" className="pt-6 pb-2" aria-label="Startup Guides">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Rocket className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-bold text-foreground">Startup Guides</h2>
+                <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{startupGuides.length}</Badge>
+              </div>
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+                {startupGuides.map((g) => (
+                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                    <div className="p-3 space-y-1.5">
+                      <div className="flex flex-wrap gap-1">
+                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+                      </div>
+                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Platform Deep Dives */}
+        {platformGuides.length > 0 && (
+          <section id="platform-guides" className="pt-6 pb-2" aria-label="Platform Deep Dives">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Layers className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-bold text-foreground">Platform Deep Dives</h2>
+                <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{platformGuides.length}</Badge>
+              </div>
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
+                {platformGuides.map((g) => (
+                  <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="group rounded-xl border border-border bg-card overflow-hidden snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                    {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                    <div className="p-3 space-y-1.5">
+                      <div className="flex flex-wrap gap-1">
+                        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+                        {g.primary_platform && <Badge className="bg-indigo-500 text-white text-[10px]">{g.primary_platform}</Badge>}
+                      </div>
+                      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+                        <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Guides Grid + Sidebar */}
         <section className="py-8 md:py-12">
@@ -829,7 +939,7 @@ const Guides = () => {
                           <h3 className="text-sm font-semibold text-foreground mb-3">Popular Guides</h3>
                           <div className="space-y-3">
                             {popularGuides.map((g) => (
-                              <Link key={g.id} to={`/guides/${g.slug}`} className="flex gap-3 group">
+                              <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="flex gap-3 group">
                                 {g.featured_image_url ? (
                                   <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover shrink-0" />
                                 ) : <div className="w-16 h-16 rounded bg-muted shrink-0" />}

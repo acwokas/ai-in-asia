@@ -28,7 +28,7 @@ const safeParseJsonArray = (val: any): any[] => {
 };
 
 const GuideDetail = () => {
-  const { slug } = useParams();
+  const { slug, category } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const previewCode = searchParams.get("preview");
@@ -57,15 +57,21 @@ const GuideDetail = () => {
     },
   });
 
-  // Redirect logic
+  // Redirect from /guides/:slug to /guides/:category/:slug
   useEffect(() => {
     if (isLoading) return;
     if (!guide) { navigate("/guides", { replace: true }); return; }
     const g = guide as any;
+    // If no category param, redirect to canonical URL with category
+    if (!category && g.slug) {
+      const topicCat = (g.topic_category || "general").toLowerCase().replace(/\s+/g, "-");
+      navigate(`/guides/${topicCat}/${g.slug}`, { replace: true });
+      return;
+    }
     if (g.status === "published") return;
     if (previewCode && g.preview_code === previewCode) return;
     navigate("/guides", { replace: true });
-  }, [guide, isLoading, previewCode]);
+  }, [guide, isLoading, previewCode, category]);
 
   // Build sections list for TOC
   const tocSections = useMemo(() => {
@@ -219,7 +225,7 @@ const GuideDetail = () => {
       <SEOHead
         title={`${g.meta_title || g.title} | AI in Asia`}
         description={g.one_line_description || g.meta_description || g.excerpt || ""}
-        canonical={`https://aiinasia.com/guides/${g.slug}`}
+        canonical={`https://aiinasia.com/guides/${((guide as any).topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${g.slug}`}
         ogType="article"
         ogImage={g.featured_image_url || "https://aiinasia.com/icons/aiinasia-512.png?v=3"}
         ogImageAlt={g.featured_image_alt || g.title}
