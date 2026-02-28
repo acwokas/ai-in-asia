@@ -2125,6 +2125,35 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_bookmarks: {
+        Row: {
+          created_at: string
+          guide_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guide_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guide_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_bookmarks_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "ai_guides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guide_comments: {
         Row: {
           approved: boolean | null
