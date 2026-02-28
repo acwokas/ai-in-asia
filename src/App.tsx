@@ -32,7 +32,10 @@ const Index = lazy(() => import("./pages/Index"));
 // Lazy load non-critical components
 const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
-const ScoutChatbot = lazy(() => import("./components/ScoutChatbot"));
+const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => {
+  window.location.reload();
+  return import("./components/ScoutChatbot");
+}));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
