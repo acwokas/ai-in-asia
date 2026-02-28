@@ -432,11 +432,14 @@ const Guides = () => {
         const gp = (g.platform_tags || []).map((t: string) => t.toLowerCase());
         if (!Array.from(platforms).some((p) => gp.includes(p.toLowerCase()))) return false;
       }
-      if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
-      // Special filter
-      if (specialFilter === "asia" && !isAsiaGuide(g)) return false;
-      if (specialFilter === "startup" && g.audience_role !== "Startup Founder") return false;
-      if (specialFilter === "platform" && g.guide_category !== "Platform Guide") return false;
+      // Special filters are independent of topic_category
+      if (specialFilter) {
+        if (specialFilter === "asia" && !isAsiaGuide(g)) return false;
+        if (specialFilter === "startup" && g.audience_role !== "Startup Founder") return false;
+        if (specialFilter === "platform" && g.guide_category !== "Platform Guide") return false;
+      } else {
+        if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
+      }
       return true;
     });
     if (sortBy === "newest") result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
@@ -627,11 +630,12 @@ const Guides = () => {
                   <button
                     key={cat}
                     onClick={() => {
-                      if (showGrouped) {
+                      setSpecialFilter(null);
+                      if (topic !== cat && !specialFilter) {
                         const el = document.getElementById(`cat-${cat.toLowerCase().replace(/\s+/g, "-")}`);
                         if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
                       }
-                      setSpecialFilter(null); setTopic(topic === cat ? "All" : cat);
+                      setTopic(topic === cat ? "All" : cat);
                     }}
                     className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105`}
                   >
