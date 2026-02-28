@@ -18,9 +18,10 @@ const platformColors: Record<string, string> = {
   Gemini: "bg-blue-500/20 text-blue-400",
   Midjourney: "bg-purple-500/20 text-purple-400",
   "Multi-platform": "bg-indigo-500/20 text-indigo-400",
+  ElevenLabs: "bg-sky-500/20 text-sky-400",
+  NotebookLM: "bg-lime-500/20 text-lime-400",
+  Generic: "bg-zinc-500/20 text-zinc-400",
 };
-
-const platformFilterList = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"];
 
 const PROMPT_CATEGORIES: {
   slug: string;
@@ -125,7 +126,7 @@ const AllPrompts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guide_prompts")
-        .select("*, ai_guides!inner(title, slug, status, topic_category)")
+        .select("*, ai_guides!inner(title, slug, status, topic_category, audience_role, geo)")
         .eq("ai_guides.status", "published")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -133,12 +134,36 @@ const AllPrompts = () => {
     },
   });
 
+  // FIX 1: Dynamic platform list
+  const platformFilterList = useMemo(() => {
+    if (!prompts) return ["All"];
+    const platformSet = new Set<string>();
+    for (const p of prompts) {
+      if (p.platforms) {
+        for (const plat of p.platforms) platformSet.add(plat);
+      }
+    }
+    const sorted = Array.from(platformSet).sort();
+    return ["All", ...sorted, "Multi-platform"];
+  }, [prompts]);
+
   const categoryCounts = useMemo(() => {
     if (!prompts) return {};
     const counts: Record<string, number> = {};
     for (const p of prompts) {
-      const tc = ((p.ai_guides as any)?.topic_category || "").toLowerCase();
-      const cat = PROMPT_CATEGORIES.find((c) => c.topicMatch.toLowerCase() === tc);
+      const guide = p.ai_guides as any;
+      const tc = (guide?.topic_category || "").toLowerCase();
+      // Count for asia
+      const geo = (guide?.geo || "").toLowerCase();
+      if (geo && geo !== "none" && geo !== "global" && geo !== "") {
+        counts["asia"] = (counts["asia"] || 0) + 1;
+      }
+      // Count for startup
+      if (guide?.audience_role === "Startup Founder") {
+        counts["startup"] = (counts["startup"] || 0) + 1;
+      }
+      // Count for standard categories
+      const cat = PROMPT_CATEGORIES.find((c) => c.slug !== "asia" && c.slug !== "startup" && c.topicMatch.toLowerCase() === tc);
       if (cat) counts[cat.slug] = (counts[cat.slug] || 0) + 1;
     }
     return counts;
@@ -164,10 +189,19 @@ const AllPrompts = () => {
     if (!prompts) return [];
     let filtered = [...prompts];
     if (activeCategory) {
-      filtered = filtered.filter((p) => {
-        const tc = ((p.ai_guides as any)?.topic_category || "").toLowerCase();
-        return tc === activeCategory.topicMatch.toLowerCase();
-      });
+      if (activeCategory.slug === "asia") {
+        filtered = filtered.filter((p) => {
+          const geo = ((p.ai_guides as any)?.geo || "").toLowerCase();
+          return geo && geo !== "none" && geo !== "global" && geo !== "";
+        });
+      } else if (activeCategory.slug === "startup") {
+        filtered = filtered.filter((p) => (p.ai_guides as any)?.audience_role === "Startup Founder");
+      } else {
+        filtered = filtered.filter((p) => {
+          const tc = ((p.ai_guides as any)?.topic_category || "").toLowerCase();
+          return tc === activeCategory.topicMatch.toLowerCase();
+        });
+      }
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -612,22 +646,7 @@ const AllPrompts = () => {
         {/* ═══ INDEX PAGE: Search/filter active — show flat grid ═══ */}
         {isIndexPage && !isLoading && isSearchActive && (
           <div className="container mx-auto px-4 py-8">
-            {/* Platform filter */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="text-xs text-zinc-500 font-medium">Platform</span>
-              {platformFilterList.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPlatformFilter(p)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                    platformFilter === p
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
               <span className="ml-auto text-xs text-zinc-500">
                 <span className="font-semibold text-zinc-300">{filteredPrompts.length}</span> results
               </span>
@@ -647,23 +666,8 @@ const AllPrompts = () => {
         {/* ═══ CATEGORY SUB-PAGE ═══ */}
         {activeCategory && (
           <>
-            {/* Filter Bar */}
             <div className="container mx-auto px-4 py-4">
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                <span className="text-xs text-zinc-500 font-medium">Platform</span>
-                {platformFilterList.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPlatformFilter(p)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                      platformFilter === p
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
                 <span className="ml-auto text-xs text-zinc-500">
                   Showing <span className="font-semibold text-zinc-300">{filteredPrompts.length}</span>
                 </span>
