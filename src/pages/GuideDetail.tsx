@@ -15,6 +15,7 @@ import { ContentAdminControls } from "@/components/ContentAdminControls";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
+import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 
 
 /** Safely parse a JSON field that may be double-encoded (string inside jsonb) */
@@ -258,9 +259,12 @@ const GuideDetail = () => {
             />
           )}
 
-          <Link to="/guides" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Guides
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/guides" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
+              <ArrowLeft className="h-4 w-4" /> Back to Guides
+            </Link>
+            <GuideBookmarkButton guideId={g.id} className="h-9 w-9 p-0" />
+          </div>
 
           <div className="flex gap-8 lg:gap-12">
             {/* Main content */}
