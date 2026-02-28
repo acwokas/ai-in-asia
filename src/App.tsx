@@ -250,6 +250,7 @@ const App = () => (
               <Route path="/contribute" element={<Contribute />} />
               <Route path="/media-and-partners" element={<MediaAndPartners />} />
               <Route path="/prompts" element={<AllPrompts />} />
+              <Route path="/prompts/:category" element={<AllPrompts />} />
               <Route path="/my-prompts" element={<MyPrompts />} />
               <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
               <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />
