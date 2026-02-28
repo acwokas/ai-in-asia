@@ -31,10 +31,18 @@ const NAV_ITEMS = [
   { to: "/category/news", label: "News" },
   { to: "/category/business", label: "Business" },
   { to: "/category/life", label: "Life" },
-  { to: "/category/learn", label: "Learn" },
-  { to: "/category/create", label: "Create" },
   { to: "/category/voices", label: "Voices" },
   { to: "/category/policy", label: "Policy" },
+];
+
+const LEARN_ITEMS = [
+  { to: "/category/learn", label: "Learn Articles", description: "Latest articles on learning AI", icon: BookOpen },
+  { to: "/guides", label: "AI Guides", description: "Step-by-step guides and local AI guides for Asia", icon: BookOpen },
+];
+
+const CREATE_ITEMS = [
+  { to: "/category/create", label: "Create Articles", description: "Latest articles on AI creation", icon: Sparkles },
+  { to: "/prompts", label: "AI Prompt Library", description: "Ready-to-use prompts for every platform", icon: Sparkles },
 ];
 
 const TOOLS_ITEMS = [
@@ -117,6 +125,68 @@ const Header = memo(() => {
                   {label}
                 </Link>
               ))}
+
+              {/* Learn dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
+                      LEARN_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                    }`}
+                  >
+                    Learn <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
+                >
+                  {LEARN_ITEMS.map(({ to, label, description, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
+                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Create dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
+                      CREATE_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                    }`}
+                  >
+                    Create <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
+                >
+                  {CREATE_ITEMS.map(({ to, label, description, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
+                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -354,6 +424,20 @@ const Header = memo(() => {
                   className={`font-medium py-1.5 transition-colors ${isActiveRoute(to) ? 'text-primary' : 'hover:text-primary'}`}
                 >
                   {label}
+                </Link>
+              ))}
+              {/* Learn sub-items */}
+              <span className="font-medium py-1.5 text-foreground/80 mt-1">Learn</span>
+              {LEARN_ITEMS.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Icon className="h-3.5 w-3.5" /> {label}
+                </Link>
+              ))}
+              {/* Create sub-items */}
+              <span className="font-medium py-1.5 text-foreground/80 mt-1">Create</span>
+              {CREATE_ITEMS.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Icon className="h-3.5 w-3.5" /> {label}
                 </Link>
               ))}
             </div>

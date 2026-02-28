@@ -12,6 +12,14 @@ const safeParseJSON = (val: any): any[] => {
   return [];
 };
 
+/** Resolve [INTERNAL LINK: title] placeholders into markdown links */
+const resolveInternalLinks = (text: string): string => {
+  return text.replace(/\[INTERNAL LINK:\s*(.+?)\]/gi, (_match, title) => {
+    const slug = title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+    return `[${title}](/guides/${slug})`;
+  });
+};
+
 /** Render simple markdown (bold, italic, inline code, links, line breaks) to HTML */
 const renderMarkdown = (text: string): string => {
   if (!text) return "";
@@ -22,7 +30,7 @@ const renderMarkdown = (text: string): string => {
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-teal-400 hover:text-teal-300 underline" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-teal-400 hover:text-teal-300 underline">$1</a>')
     .replace(/\n/g, "<br />");
 };
 
@@ -318,7 +326,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       {hasContent(formData.next_steps) && (
         <div id="next-steps" className="bg-gradient-to-br from-teal-500/10 to-blue-500/10 rounded-xl p-6 md:p-8 mb-12">
           <h2 className="text-xl font-bold mb-3 text-foreground">Next Steps</h2>
-          <MarkdownText text={formData.next_steps} className="text-lg leading-relaxed text-foreground/90" />
+          <MarkdownText text={resolveInternalLinks(formData.next_steps)} className="text-lg leading-relaxed text-foreground/90" />
         </div>
       )}
     </article>
