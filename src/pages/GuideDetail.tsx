@@ -87,6 +87,18 @@ const GuideDetail = () => {
     if (hasContent(guidePrompts)) sections.push({ id: "prompts-to-try", label: "Prompts to Try" });
     if (hasContent(commonMistakes)) sections.push({ id: "common-mistakes", label: "Common Mistakes" });
     if (hasContent(tools)) sections.push({ id: "tools-that-work", label: "Tools That Work" });
+    // Body sections (legacy schema)
+    const bodySections = [
+      g.body_section_1_heading || g.body_section_1_text ? { heading: g.body_section_1_heading, text: g.body_section_1_text } : null,
+      g.body_section_2_heading || g.body_section_2_text ? { heading: g.body_section_2_heading, text: g.body_section_2_text } : null,
+      g.body_section_3_heading || g.body_section_3_text ? { heading: g.body_section_3_heading, text: g.body_section_3_text } : null,
+    ].filter(Boolean);
+    bodySections.forEach((bs: any, i: number) => {
+      if (bs.heading) {
+        const id = `body-section-${i + 1}`;
+        sections.push({ id, label: bs.heading });
+      }
+    });
     if (hasContent(faqItems)) sections.push({ id: "faq", label: "FAQ" });
     if (hasContent(g.next_steps)) sections.push({ id: "next-steps", label: "Next Steps" });
     return sections;
@@ -123,6 +135,11 @@ const GuideDetail = () => {
       g.faq_q3 ? { question: g.faq_q3, answer: g.faq_a3 } : null,
     ].filter(Boolean),
     next_steps: g.next_steps || "",
+    body_sections: [
+      g.body_section_1_heading || g.body_section_1_text ? { heading: g.body_section_1_heading, text: g.body_section_1_text } : null,
+      g.body_section_2_heading || g.body_section_2_text ? { heading: g.body_section_2_heading, text: g.body_section_2_text } : null,
+      g.body_section_3_heading || g.body_section_3_text ? { heading: g.body_section_3_heading, text: g.body_section_3_text } : null,
+    ].filter(Boolean),
   };
 
   // JSON-LD schemas
