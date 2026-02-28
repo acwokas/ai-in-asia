@@ -299,8 +299,8 @@ const App = () => (
               <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
               <Route path="/guides" element={<Guides />} />
-              <Route path="/guides/category/:categorySlug" element={<GuideCategoryIndex />} />
               <Route path="/guides/:category/:slug" element={<GuideDetail />} />
+              <Route path="/guides/:categorySlug" element={<GuideCategoryIndex />} />
               <Route path="/guides/:slug" element={<GuideDetail />} />
               {/* Legacy WordPress URL redirect - must be before catch-all */}
               <Route path="/:slug" element={<LegacyArticleRedirect />} />
