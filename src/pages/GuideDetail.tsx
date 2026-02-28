@@ -150,10 +150,13 @@ const GuideDetail = () => {
       description: m.description || m.why_it_matters || m.how_to_avoid || [m.why_it_matters, m.how_to_avoid].filter(Boolean).join(" ") || "",
     })),
     recommended_tools: safeParseJsonArray(g.recommended_tools).map((t: any) => ({
-      name: t.name || "",
+      name: t.tool_name || t.name || "",
       description: t.description || "",
       best_for: t.best_for || "",
       limitation: t.limitation || "",
+      url: t.url || "",
+      pricing: t.pricing || "",
+      tool_name: t.tool_name || t.name || "",
     })),
     faq_items: (() => { const raw = safeParseJsonArray(g.faq_items); return raw.length ? raw : [
       g.faq_q1 ? { question: g.faq_q1, answer: g.faq_a1 } : null,
