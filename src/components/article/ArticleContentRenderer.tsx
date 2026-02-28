@@ -103,6 +103,17 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     consolidated = consolidated.replace(/([^\n])\n(> )/g, '$1\n\n$2');
     consolidated = consolidated.replace(/(^> .+$)\n([^>\n])/gm, '$1\n\n$2');
 
+    // Unwrap <p> tags that contain markdown patterns so block detection works
+    consolidated = consolidated
+      .replace(/<p[^>]*>\s*(#{1,3}\s+)/gi, '$1')
+      .replace(/<p[^>]*>\s*(- )/gi, '$1')
+      .replace(/<p[^>]*>\s*(\d+\.\s)/gi, '$1')
+      .replace(/<p[^>]*>\s*(> )/gi, '$1')
+      .replace(/(#{1,3}\s+[^<]*)<\/p>/gi, '$1')
+      .replace(/(- [^<]*)<\/p>/gi, '$1')
+      .replace(/(\d+\.\s[^<]*)<\/p>/gi, '$1')
+      .replace(/(> [^<]*)<\/p>/gi, '$1');
+
     // Ensure headings start their own block
     consolidated = consolidated.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
       const safePrefix = prefix || '';
