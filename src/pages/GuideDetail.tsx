@@ -10,6 +10,7 @@ import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import GuideRenderer from "@/components/guide/GuideRenderer";
 import GuideDetailSidebar from "@/components/guide/GuideDetailSidebar";
 import GuideMobileToc from "@/components/guide/GuideMobileToc";
+import GuideBackToTop from "@/components/guide/GuideBackToTop";
 import { ContentAdminControls } from "@/components/ContentAdminControls";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -283,6 +284,7 @@ const GuideDetail = () => {
 
       {/* Mobile floating TOC */}
       <GuideMobileToc sections={tocSections} />
+      <GuideBackToTop />
 
       <Footer />
     </>
