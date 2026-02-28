@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, Bookmark, Loader2, Edit, Eye, EyeOff, Send, MessageCircle, Lock } from "lucide-react";
 import FontSizeControl from "@/components/FontSizeControl";
 import FollowButton from "@/components/FollowButton";
+import { fixEncoding } from "@/lib/textUtils";
 
 interface Author {
   id: string;
@@ -169,12 +170,12 @@ const ArticleHeader = ({
 
       
       <h1 className="headline text-4xl md:text-5xl mb-4">
-        {article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
+        {fixEncoding(article.title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
       </h1>
       
       {article.excerpt && (
         <p className="text-xl text-muted-foreground mb-6">
-          {article.excerpt}
+          {fixEncoding(article.excerpt)}
         </p>
       )}
 

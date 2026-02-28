@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { getCategoryColor } from "@/lib/categoryColors";
+import { fixEncoding } from "@/lib/textUtils";
 
 interface ContextualArticle {
   id: string;
@@ -40,11 +41,11 @@ export function ContextualReadingCard({ article }: { article: ContextualArticle 
             className="line-clamp-2 mb-1"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400, fontSize: "1rem", color: "hsl(var(--foreground))", margin: 0, lineHeight: 1.4 }}
           >
-            {article.title}
+            {fixEncoding(article.title)}
           </p>
           {article.excerpt && (
             <p className="line-clamp-1 mb-1" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.875rem", color: "#BFC0C0", margin: "0.25rem 0" }}>
-              {article.excerpt}
+              {fixEncoding(article.excerpt)}
             </p>
           )}
           <div className="flex items-center justify-between">
