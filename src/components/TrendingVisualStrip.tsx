@@ -32,7 +32,13 @@ function pickDailyGuides(allGuides: { id: string; title: string; slug: string; f
   return [asianPick, generalPick].filter(Boolean) as typeof allGuides;
 }
 
-const TrendingVisualStrip = memo(() => {
+interface TrendingVisualStripProps {
+  excludeIds?: string[];
+}
+
+const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps) => {
+  const excludeSet = new Set(excludeIds);
+
   const { data: articles } = useQuery({
     queryKey: ["trending-visual-strip"],
     staleTime: 5 * 60 * 1000,
@@ -43,7 +49,7 @@ const TrendingVisualStrip = memo(() => {
         .eq("status", "published")
         .eq("is_trending", true)
         .order("trending_score", { ascending: false, nullsFirst: false })
-        .limit(4);
+        .limit(12);
       if (error) throw error;
       return data || [];
     },
@@ -75,11 +81,12 @@ const TrendingVisualStrip = memo(() => {
     },
   });
 
-  if (!articles?.length) return null;
+  const filteredArticles = articles?.filter(a => !excludeSet.has(a.id)) || [];
+  if (!filteredArticles.length) return null;
 
   // Build combined 6-item array: articles at 0,2,3,5 — guides at 1,4
   const combined: CombinedItem[] = [];
-  const arts = [...(articles || [])];
+  const arts = filteredArticles.slice(0, 4);
   const gds = [...(guides || [])];
   let ai = 0;
   let gi = 0;

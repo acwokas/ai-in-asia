@@ -13,9 +13,13 @@ interface MostDiscussedArticle {
   latestComment: { content: string; author_name: string } | null;
 }
 
-export default function MostDiscussedSection() {
+interface MostDiscussedSectionProps {
+  excludeIds?: string[];
+}
+
+export default function MostDiscussedSection({ excludeIds = [] }: MostDiscussedSectionProps) {
   const { data: articles } = useQuery({
-    queryKey: ["most-discussed-this-week"],
+    queryKey: ["most-discussed-this-week", excludeIds],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
       const oneWeekAgo = new Date();
@@ -56,7 +60,9 @@ export default function MostDiscussedSection() {
 
       if (commentMap.size === 0) return [];
 
+      const excludeSet = new Set(excludeIds);
       const topArticleIds = [...commentMap.entries()]
+        .filter(([id]) => !excludeSet.has(id))
         .sort((a, b) => b[1].count - a[1].count)
         .slice(0, 4)
         .map(([id]) => id);
