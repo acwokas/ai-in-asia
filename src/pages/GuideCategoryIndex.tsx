@@ -12,7 +12,7 @@ import { guideUrl } from "@/lib/guideUrl";
 
 const ITEMS_PER_PAGE = 12;
 
-const COUNTRY_OPTIONS = ["All", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
+const COUNTRY_OPTIONS = ["All", "China", "Taiwan", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
 
 const diffColors: Record<string, string> = {
   beginner: "bg-green-500",
@@ -116,7 +116,7 @@ const GuideCategoryIndex = () => {
       <SEOHead
         title={`${displayName} Guides | AI in Asia`}
         description={isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`}
-        canonical={`https://aiinasia.com/guides/category/${slug}`}
+        canonical={`https://aiinasia.com/guides/${slug}`}
       />
       <Header />
       <main id="main-content" className="min-h-screen bg-background">

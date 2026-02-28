@@ -494,7 +494,7 @@ const Guides = () => {
     return guides.filter((g) => g.guide_category === "Platform Guide");
   }, [guides]);
 
-  const COUNTRY_OPTIONS = ["All", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
+  const COUNTRY_OPTIONS = ["All", "China", "Taiwan", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
 
   const toggleCountry = (c: string) => {
     if (c === "All") { setAsiaCountries(new Set(["All"])); return; }
@@ -600,7 +600,7 @@ const Guides = () => {
             <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
               {/* Special pills */}
               <Link
-                to="/guides/category/asia"
+                to="/guides/asia"
                 className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "asia" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
               >
@@ -608,7 +608,7 @@ const Guides = () => {
                 {specialCounts.asia > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.asia} guides</span>}
               </Link>
               <Link
-                to="/guides/category/startup"
+                to="/guides/startup"
                 className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "startup" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}
               >
@@ -616,7 +616,7 @@ const Guides = () => {
                 {specialCounts.startup > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.startup} guides</span>}
               </Link>
               <Link
-                to="/guides/category/platform"
+                to="/guides/platform"
                 className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "platform" ? "ring-2 ring-white/50" : ""}`}
                 style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}
               >
@@ -629,7 +629,7 @@ const Guides = () => {
                 return (
                   <Link
                     key={cat}
-                    to={`/guides/category/${cat.toLowerCase()}`}
+                    to={`/guides/${cat.toLowerCase()}`}
                     className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline`}
                   >
                     <span className="block text-xs font-bold text-white">{cat}</span>
@@ -645,7 +645,7 @@ const Guides = () => {
         <section className="border-b border-border" style={{ background: "#040405" }}>
           <div className="container mx-auto px-4 py-3">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Link to="/guides/category/asia" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
+              <Link to="/guides/asia" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Globe className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -654,7 +654,7 @@ const Guides = () => {
                   </div>
                 </div>
               </Link>
-              <Link to="/guides/category/startup" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
+              <Link to="/guides/startup" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Rocket className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -663,7 +663,7 @@ const Guides = () => {
                   </div>
                 </div>
               </Link>
-              <Link to="/guides/category/platform" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
+              <Link to="/guides/platform" className="rounded-xl p-4 text-left transition-transform hover:scale-[1.01] no-underline" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}>
                 <div className="flex items-start gap-2">
                   <Layers className="h-4 w-4 text-white/90 mt-0.5 shrink-0" />
                   <div>
@@ -769,7 +769,7 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
-              <Link to="/guides/category/asia" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              <Link to="/guides/asia" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                 View all {asiaGuides.length} Asia guides <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -803,7 +803,7 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
-              <Link to="/guides/category/startup" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              <Link to="/guides/startup" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                 View all {startupGuides.length} startup guides <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -837,7 +837,7 @@ const Guides = () => {
                   </Link>
                 ))}
               </div>
-              <Link to="/guides/category/platform" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              <Link to="/guides/platform" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                 View all {platformGuides.length} platform guides <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -892,7 +892,7 @@ const Guides = () => {
                                 </div>
                                 {renderSectionLayout(layout, visible)}
                                 {catGuides.length > 6 && (
-                                  <Link to={`/guides/category/${slug}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                                  <Link to={`/guides/${slug}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                                     View all {catGuides.length} guides <ArrowRight className="h-3 w-3" />
                                   </Link>
                                 )}
@@ -924,7 +924,7 @@ const Guides = () => {
                           {Object.entries(topicCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
                             <Link
                               key={cat}
-                              to={`/guides/category/${cat.toLowerCase()}`}
+                              to={`/guides/${cat.toLowerCase()}`}
                               className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground no-underline"
                             >
                               <span className="capitalize">{cat}</span>
