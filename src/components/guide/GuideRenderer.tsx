@@ -98,12 +98,15 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       {hasContent(formData.snapshot_bullets) && (
         <section id="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
           <div className="space-y-3">
-            {formData.snapshot_bullets.filter(Boolean).map((b: string, i: number) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-teal-500 mt-2.5 flex-shrink-0" />
-                <p className="text-base md:text-lg leading-relaxed text-foreground/90">{b}</p>
-              </div>
-            ))}
+            {formData.snapshot_bullets.filter(Boolean).map((b: any, i: number) => {
+              const text = typeof b === "string" ? b : (b?.text || b?.bullet || JSON.stringify(b));
+              return (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-teal-500 mt-2.5 flex-shrink-0" />
+                  <p className="text-base md:text-lg leading-relaxed text-foreground/90">{text}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -212,8 +215,11 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
             {formData.recommended_tools.filter((t: any) => t.name?.trim()).map((tool: any, i: number) => (
               <div key={i} className="py-3">
                 <span className="font-semibold text-foreground">{stripMd(tool.name)}</span>
+                {tool.best_for && (
+                  <span className="text-sm text-muted-foreground ml-2">— {stripMd(tool.best_for)}</span>
+                )}
                 {tool.description && (
-                  <span className="text-foreground/80 ml-2">{stripMd(tool.description)}</span>
+                  <p className="text-foreground/80 mt-1">{stripMd(tool.description)}</p>
                 )}
                 {tool.limitation && (
                   <p className="text-sm italic text-muted-foreground mt-0.5"><AlertTriangle className="h-3.5 w-3.5 inline text-amber-500 mr-1" />{stripMd(tool.limitation)}</p>
