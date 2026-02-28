@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
@@ -26,31 +26,49 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Bookmark } from "lucide-react";
 import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
+import type { LucideIcon } from "lucide-react";
 
-const NAV_ITEMS = [
-  { to: "/category/news", label: "News" },
-  { to: "/category/business", label: "Business" },
-  { to: "/category/life", label: "Life" },
-  { to: "/category/voices", label: "Voices" },
-  { to: "/category/policy", label: "Policy" },
+type NavDropdownItem = { to: string; label: string; description: string; icon: LucideIcon };
+
+const NEWS_ITEMS: NavDropdownItem[] = [
+  { to: "/category/news", label: "News Articles", description: "Latest AI news from across Asia-Pacific", icon: BookOpen },
+  { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
 ];
 
-const LEARN_ITEMS = [
+const BUSINESS_ITEMS: NavDropdownItem[] = [
+  { to: "/category/business", label: "Business Articles", description: "How AI is reshaping industries", icon: BookOpen },
+  { to: "/guides/business", label: "Business Guides", description: "AI guides for business professionals", icon: BookOpen },
+  { to: "/guides/finance", label: "Finance Guides", description: "AI guides for finance and fintech", icon: BookOpen },
+  { to: "/guides/work", label: "Work Guides", description: "AI guides for the workplace", icon: BookOpen },
+];
+
+const LIFE_ITEMS: NavDropdownItem[] = [
+  { to: "/category/life", label: "Life Articles", description: "AI's impact on everyday life", icon: BookOpen },
+  { to: "/guides/wellness", label: "Wellness Guides", description: "AI guides for health and wellbeing", icon: BookOpen },
+  { to: "/guides/lifestyle", label: "Lifestyle Guides", description: "AI guides for everyday life", icon: BookOpen },
+];
+
+const LEARN_ITEMS: NavDropdownItem[] = [
   { to: "/category/learn", label: "Learn Articles", description: "Latest articles on learning AI", icon: BookOpen },
   { to: "/guides", label: "AI Guides", description: "Step-by-step guides and local AI guides for Asia", icon: BookOpen },
 ];
 
-const CREATE_ITEMS = [
+const CREATE_ITEMS: NavDropdownItem[] = [
   { to: "/category/create", label: "Create Articles", description: "Latest articles on AI creation", icon: Sparkles },
   { to: "/prompts", label: "AI Prompt Library", description: "Ready-to-use prompts for every platform", icon: Sparkles },
 ];
 
-const TOOLS_ITEMS = [
-  { to: "/guides", label: "AI Guides", description: "Practical guides to using AI effectively", icon: BookOpen },
-  { to: "/prompts", label: "Prompt Library", description: "Ready-to-use prompts for every task", icon: Sparkles },
+const POLICY_ITEMS: NavDropdownItem[] = [
+  { to: "/category/policy", label: "Policy Articles", description: "Latest articles on AI policy", icon: BookOpen },
   { to: "/ai-policy-atlas", label: "Policy Atlas", description: "Track AI regulation across Asia-Pacific", icon: Globe },
-  { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
 ];
+
+// Desktop nav order: News, Business, Life, Voices (plain), Learn, Create, Policy
+const DROPDOWN_SECTIONS = [
+  { label: "News", items: NEWS_ITEMS },
+  { label: "Business", items: BUSINESS_ITEMS },
+  { label: "Life", items: LIFE_ITEMS },
+] as const;
 
 const Header = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,13 +94,11 @@ const Header = memo(() => {
   });
   const userPoints = userStats?.points;
 
-  // Force dark mode always
   useEffect(() => {
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'dark');
   }, []);
 
-  // Cmd+K / Ctrl+K to open search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -103,6 +119,49 @@ const Header = memo(() => {
 
   const isActiveRoute = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
+  const renderDropdown = (label: string, items: NavDropdownItem[]) => (
+    <DropdownMenu key={label}>
+      <DropdownMenuTrigger asChild>
+        <button
+          className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
+            items.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+          }`}
+        >
+          {label} <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
+      >
+        {items.map(({ to, label: itemLabel, description, icon: Icon }) => (
+          <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
+            <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground">{itemLabel}</span>
+                <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const renderMobileSection = (label: string, items: NavDropdownItem[]) => (
+    <div key={label}>
+      <span className="font-medium py-1.5 text-foreground/80 mt-1 block">{label}</span>
+      {items.map(({ to, label: itemLabel, icon: Icon }) => (
+        <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+          <Icon className="h-3.5 w-3.5" /> {itemLabel}
+        </Link>
+      ))}
+    </div>
+  );
+
   return (
     <>
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -114,119 +173,39 @@ const Header = memo(() => {
             </Link>
             
             <nav className="hidden md:flex items-center space-x-1" aria-label="Main navigation">
-              {NAV_ITEMS.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary ${
-                    isActiveRoute(to) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
-                  }`}
-                >
-                  {label}
-                </Link>
-              ))}
+              {/* News dropdown */}
+              {renderDropdown("News", NEWS_ITEMS)}
+
+              {/* Business dropdown */}
+              {renderDropdown("Business", BUSINESS_ITEMS)}
+
+              {/* Life dropdown */}
+              {renderDropdown("Life", LIFE_ITEMS)}
+
+              {/* Voices plain link */}
+              <Link
+                to="/category/voices"
+                className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary ${
+                  isActiveRoute("/category/voices") ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                }`}
+              >
+                Voices
+              </Link>
 
               {/* Learn dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
-                      LEARN_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
-                    }`}
-                  >
-                    Learn <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
-                >
-                  {LEARN_ITEMS.map(({ to, label, description, icon: Icon }) => (
-                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
-                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
-                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{label}</span>
-                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {renderDropdown("Learn", LEARN_ITEMS)}
 
               {/* Create dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
-                      CREATE_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
-                    }`}
-                  >
-                    Create <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
-                >
-                  {CREATE_ITEMS.map(({ to, label, description, icon: Icon }) => (
-                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
-                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
-                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{label}</span>
-                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {renderDropdown("Create", CREATE_ITEMS)}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
-                      TOOLS_ITEMS.some(t => isActiveRoute(t.to)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
-                    }`}
-                  >
-                    Tools <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
-                >
-                  {TOOLS_ITEMS.map(({ to, label, description, icon: Icon }) => (
-                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
-                      <Link
-                        to={to}
-                        className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors"
-                      >
-                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{label}</span>
-                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Policy dropdown */}
+              {renderDropdown("Policy", POLICY_ITEMS)}
             </nav>
           </div>
 
-          {/* Right side — unchanged */}
+          {/* Right side */}
           <TooltipProvider delayDuration={300}>
             <div className="flex items-center gap-1">
-              {/* Mobile search button */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -242,7 +221,6 @@ const Header = memo(() => {
                 <TooltipContent>Search</TooltipContent>
               </Tooltip>
 
-              {/* Desktop search button */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -395,7 +373,6 @@ const Header = memo(() => {
             className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-[70] md:hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex flex-col p-5">
-            {/* Close button */}
             <div className="flex justify-between items-center mb-4">
               <span className="font-semibold text-lg">Menu</span>
               <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
@@ -403,7 +380,6 @@ const Header = memo(() => {
               </Button>
             </div>
 
-            {/* Search */}
             <button
               onClick={() => { setIsMenuOpen(false); setIsSearchOpen(true); }}
               className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors"
@@ -413,56 +389,28 @@ const Header = memo(() => {
               <kbd className="ml-auto text-xs border border-border rounded px-1.5 py-0.5">⌘K</kbd>
             </button>
 
-            {/* Categories */}
             <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
             <div className="flex flex-col space-y-1 mb-4">
-              {NAV_ITEMS.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`font-medium py-1.5 transition-colors ${isActiveRoute(to) ? 'text-primary' : 'hover:text-primary'}`}
-                >
-                  {label}
-                </Link>
-              ))}
-              {/* Learn sub-items */}
-              <span className="font-medium py-1.5 text-foreground/80 mt-1">Learn</span>
-              {LEARN_ITEMS.map(({ to, label, icon: Icon }) => (
-                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
-                  <Icon className="h-3.5 w-3.5" /> {label}
-                </Link>
-              ))}
-              {/* Create sub-items */}
-              <span className="font-medium py-1.5 text-foreground/80 mt-1">Create</span>
-              {CREATE_ITEMS.map(({ to, label, icon: Icon }) => (
-                <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
-                  <Icon className="h-3.5 w-3.5" /> {label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="border-t border-border my-2" />
-
-            {/* Tools */}
-            <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 mt-2">Tools</span>
-            <div className="flex flex-col space-y-1 mb-4">
-              {TOOLS_ITEMS.map(({ to, label, description, icon: Icon }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-start gap-3 py-2 hover:bg-muted/50 rounded-lg px-2 transition-colors -mx-2"
-                >
-                  <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-foreground">{label}</span>
-                    <span className="text-xs text-muted-foreground leading-snug">{description}</span>
-                  </div>
-                </Link>
-              ))}
+              {/* News */}
+              {renderMobileSection("News", NEWS_ITEMS)}
+              {/* Business */}
+              {renderMobileSection("Business", BUSINESS_ITEMS)}
+              {/* Life */}
+              {renderMobileSection("Life", LIFE_ITEMS)}
+              {/* Voices */}
+              <Link
+                to="/category/voices"
+                onClick={() => setIsMenuOpen(false)}
+                className={`font-medium py-1.5 transition-colors ${isActiveRoute("/category/voices") ? 'text-primary' : 'hover:text-primary'}`}
+              >
+                Voices
+              </Link>
+              {/* Learn */}
+              {renderMobileSection("Learn", LEARN_ITEMS)}
+              {/* Create */}
+              {renderMobileSection("Create", CREATE_ITEMS)}
+              {/* Policy */}
+              {renderMobileSection("Policy", POLICY_ITEMS)}
             </div>
 
             <div className="border-t border-border my-2" />
