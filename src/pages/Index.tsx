@@ -134,11 +134,32 @@ const Index = () => {
   const latestArticles = homepageData?.latest;
   const baseTrendingArticles = homepageData?.trending;
 
-  const heroLatestIds = [
+  // Compute hero section IDs (primary + 4 secondary cards)
+  const secondaryHeroArticles = latestArticles?.filter((a: any) => a.slug && a.id !== featuredArticle?.id).slice(0, 4) || [];
+  const heroSectionIds = [
     featuredArticle?.id,
-    ...(latestArticles?.map((a: any) => a.id) || []),
-    ...(baseTrendingArticles?.map((a: any) => a.id) || [])
+    ...secondaryHeroArticles.map((a: any) => a.id),
   ].filter(Boolean) as string[];
+
+  // Compute grid section IDs (trending + remaining latest used in the grid)
+  const secondaryIds = secondaryHeroArticles.map((a: any) => a.id);
+  const gridArticles = [
+    ...(baseTrendingArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
+    ...(latestArticles?.filter((a: any) =>
+      a.slug &&
+      a.id !== featuredArticle?.id &&
+      !secondaryIds.includes(a.id) &&
+      !(baseTrendingArticles || []).some((t: any) => t.id === a.id) &&
+      !a.title?.includes('3 Before 9')
+    ) || []),
+  ];
+  const gridSectionIds = gridArticles.map((a: any) => a.id);
+
+  // Progressive exclude sets for each section
+  const trendingExcludeIds = heroSectionIds;
+  const gridExcludeIds = [...heroSectionIds]; // grid already dedupes internally against hero
+  const postGridIds = [...new Set([...heroSectionIds, ...gridSectionIds])];
+  const heroLatestIds = postGridIds; // used by ForYou, MostDiscussed, RecommendedArticles
 
   // Defer featured authors
   const { data: featuredAuthors } = useQuery({
@@ -457,7 +478,7 @@ const Index = () => {
         {/* Trending visual cards */}
         <div style={{ background: "rgba(48,62,83,0.08)", padding: "1.5rem 0" }}>
           <Suspense fallback={null}>
-            <TrendingVisualStrip />
+            <TrendingVisualStrip excludeIds={trendingExcludeIds} />
           </Suspense>
         </div>
 
@@ -578,7 +599,7 @@ const Index = () => {
         {/* 4. Most Discussed This Week */}
         <div className="py-10 md:py-14 bg-muted/10">
           <Suspense fallback={null}>
-            <MostDiscussedSection />
+            <MostDiscussedSection excludeIds={heroLatestIds} />
           </Suspense>
         </div>
 
