@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X, Rocket, Layers } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MPUAd } from "@/components/GoogleAds";
+import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 
 const guideHref = (slug: string, topicCategory?: string | null) => {
   const cat = (topicCategory || "general").toLowerCase().replace(/\s+/g, "-");
@@ -96,34 +97,40 @@ const AdCard = () => (
 /* ── Card variants for magazine-style layouts ── */
 
 const GuideCard = ({ g }: { g: any }) => (
-  <Link
-    to={guideHref(g.slug, g.topic_category)}
-    className="group rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-    style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-  >
-    {g.featured_image_url && (
-      <div className="aspect-video overflow-hidden">
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+    >
+      {g.featured_image_url && (
+        <div className="aspect-video overflow-hidden">
+          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className="p-5 space-y-3">
+        <div className="flex flex-wrap gap-1.5">
+          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
+          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
+          {g.platform_tags?.length > 0 && g.platform_tags.map((tag: string) => (
+            <Badge key={tag} variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0">{tag}</Badge>
+          ))}
+        </div>
+        <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>}
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
+          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
+        </div>
       </div>
-    )}
-    <div className="p-5 space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-        {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-        {g.platform_tags?.length > 0 && g.platform_tags.map((tag: string) => (
-          <Badge key={tag} variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0">{tag}</Badge>
-        ))}
-      </div>
-      <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-      {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>}
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-        <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
-      </div>
-    </div>
-  </Link>
+    </Link>
+  </div>
 );
 
 // Large featured card — taller image

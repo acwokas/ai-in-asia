@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -15,6 +15,7 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileDashboard from '@/components/profile/ProfileDashboard';
 import ProfileAchievements from '@/components/profile/ProfileAchievements';
 import ProfileSettingsPage from '@/components/profile/ProfileSettingsPage';
+import ProfileSaved from '@/components/profile/ProfileSaved';
 
 interface UserStats {
   points: number;
@@ -72,7 +73,9 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
 
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabParam === 'achievements' ? 'achievements' : tabParam === 'settings' ? 'settings' : 'dashboard');
+  const [activeTab, setActiveTab] = useState(
+    tabParam === 'achievements' ? 'achievements' : tabParam === 'settings' ? 'settings' : tabParam === 'saved' ? 'saved' : 'dashboard'
+  );
   const tabsRef = useRef<HTMLDivElement>(null);
 
   // Edit state
@@ -96,7 +99,7 @@ const Profile = () => {
 
   // Sync tab param
   useEffect(() => {
-    if (tabParam === 'achievements' || tabParam === 'settings' || tabParam === 'dashboard') {
+    if (tabParam === 'achievements' || tabParam === 'settings' || tabParam === 'dashboard' || tabParam === 'saved') {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -289,16 +292,23 @@ const Profile = () => {
         />
 
         <div className="mb-4">
-          <Link to="/saved" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+          <button
+            onClick={() => {
+              setActiveTab("saved");
+              setTimeout(() => tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }}
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
             <Bookmark className="h-4 w-4" />
-            View your Saved Articles →
-          </Link>
+            View your Saved Items →
+          </button>
         </div>
 
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="saved">Saved</TabsTrigger>
               <TabsTrigger value="achievements">Achievements</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -309,6 +319,10 @@ const Profile = () => {
                 achievements={achievements}
                 onSwitchToAchievements={() => setActiveTab('achievements')}
               />
+            </TabsContent>
+
+            <TabsContent value="saved">
+              <ProfileSaved />
             </TabsContent>
 
             <TabsContent value="achievements">
