@@ -437,6 +437,31 @@ const Index = () => {
             <div className="lg:col-span-8">
               {isLoading ? (
                 <Skeleton className="h-[400px] md:h-[480px] rounded-lg" />
+              ) : new Date().toISOString().slice(0, 10) === "2026-03-01" ? (
+                <Link to="/guides/startup" className="block group">
+                  <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
+                    <img
+                      src="/images/startup-guides-hero.png"
+                      alt="AI guides for startup founders"
+                      loading="eager" decoding="async" fetchPriority="high"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      width={1280} height={480}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: '#E5A54B', padding: '6px 14px' }}>Guides</Badge>
+                        <Badge className="bg-emerald-600 text-white text-xs backdrop-blur-sm" style={{ padding: '6px 14px' }}>Featured</Badge>
+                      </div>
+                      <h2 className="text-white font-bold text-[28px] sm:text-[34px] md:text-[42px] leading-[1.15] mb-2 line-clamp-3 group-hover:text-primary transition-colors" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+                        AI guides for startup founders building and scaling their businesses
+                      </h2>
+                      <div className="flex items-center gap-3 text-white/50 text-[12px]">
+                        <span>Explore our startup guides collection</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               ) : featuredArticle && featuredArticle.slug ? (
                 <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
