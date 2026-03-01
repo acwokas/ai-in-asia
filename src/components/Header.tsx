@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
@@ -61,6 +61,12 @@ const CREATE_ITEMS: NavDropdownItem[] = [
 const POLICY_ITEMS: NavDropdownItem[] = [
   { to: "/category/policy", label: "Policy Articles", description: "Latest articles on AI policy", icon: BookOpen },
   { to: "/ai-policy-atlas", label: "Policy Atlas", description: "Track AI regulation across Asia-Pacific", icon: Globe },
+];
+
+const TOOLS_ITEMS: NavDropdownItem[] = [
+  { to: "/guides", label: "Guides", description: "Step-by-step AI guides for every skill level", icon: BookOpen },
+  { to: "/prompts", label: "Prompts", description: "Ready-to-use prompts for every platform", icon: Sparkles },
+  { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
 ];
 
 // Desktop nav order: News, Business, Life, Voices (plain), Learn, Create, Policy
@@ -200,6 +206,9 @@ const Header = memo(() => {
 
               {/* Policy dropdown */}
               {renderDropdown("Policy", POLICY_ITEMS)}
+
+              {/* Tools dropdown */}
+              {renderDropdown("Tools", TOOLS_ITEMS)}
             </nav>
           </div>
 
@@ -411,6 +420,8 @@ const Header = memo(() => {
               {renderMobileSection("Create", CREATE_ITEMS)}
               {/* Policy */}
               {renderMobileSection("Policy", POLICY_ITEMS)}
+              {/* Tools */}
+              {renderMobileSection("Tools", TOOLS_ITEMS)}
             </div>
 
             <div className="border-t border-border my-2" />
