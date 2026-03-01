@@ -157,6 +157,8 @@ const GuideEditor = () => {
   // Populate form from existing guide
   useEffect(() => {
     if (!existingGuide) return;
+    console.log("Guide ID from URL/params:", id);
+    console.log("Fetched guide data:", existingGuide);
     const g = existingGuide as any;
     const steps = safeParseJSON(g.steps, []);
     const workedExample = safeParseJSON(g.worked_example, {});
@@ -191,6 +193,7 @@ const GuideEditor = () => {
       author_id: g.author_id || null, is_editors_pick: g.is_editors_pick || false,
       preview_code: g.preview_code || "",
     });
+    console.log("Form state after hydration:", { title: g.title, pillar: g.pillar, topicTags: g.topic_tags, steps: safeParseJSON(g.steps, []) });
   }, [existingGuide]);
 
   // Auto-save every 60s
@@ -631,6 +634,15 @@ const GuideEditor = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Temporary Debug Block */}
+      {id && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 text-yellow-800 dark:text-yellow-200 px-4 py-2 text-sm font-mono">
+          <p>Editing guide ID: {id}</p>
+          <p>Data loaded: {existingGuide ? "yes" : "no"}</p>
+          <p>Title from DB: {existingGuide?.title ?? "(none)"}</p>
+          <p>Form title: {formData.title || "(empty)"}</p>
+        </div>
+      )}
       {/* Top Bar */}
       <div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
