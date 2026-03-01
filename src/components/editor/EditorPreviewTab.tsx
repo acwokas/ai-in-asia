@@ -121,7 +121,7 @@ const EditorPreviewTab = ({ state, authorName }: EditorPreviewTabProps) => {
 
               {/* Body */}
               <div
-                className="prose prose-lg dark:prose-invert max-w-none"
+                className="prose prose-lg dark:prose-invert max-w-none article-content"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             </div>

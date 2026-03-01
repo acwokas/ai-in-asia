@@ -297,13 +297,17 @@ All colors MUST be HSL.
     margin-bottom: 0.75rem !important;
   }
 
-  .article-content a {
-    color: #5F72FF;
-    text-decoration: none;
+  .article-content a,
+  .prose a {
+    color: hsl(var(--accent));
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
-  .article-content a:hover {
-    text-decoration: underline;
+  .article-content a:hover,
+  .prose a:hover {
+    color: hsl(var(--accent));
+    text-decoration: none;
   }
 
   /* In-article images: constrained on desktop, breakout on tablet/mobile */
