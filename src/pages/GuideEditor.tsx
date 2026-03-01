@@ -145,28 +145,46 @@ const GuideEditor = () => {
     },
   });
 
+  // Safe JSON parser for JSONB fields that may arrive as strings
+  const safeParseJSON = (val: any, fallback: any = []) => {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch { return fallback; }
+    }
+    return val;
+  };
+
   // Populate form from existing guide
   useEffect(() => {
     if (!existingGuide) return;
     const g = existingGuide as any;
+    const steps = safeParseJSON(g.steps, []);
+    const workedExample = safeParseJSON(g.worked_example, {});
+    const guidePrompts = safeParseJSON(g.guide_prompts, []);
+    const commonMistakes = safeParseJSON(g.common_mistakes, []);
+    const recommendedTools = safeParseJSON(g.recommended_tools, []);
+    const faqItems = safeParseJSON(g.faq_items, []);
+    const snapshotBullets = safeParseJSON(g.snapshot_bullets, []);
+
     setFormData({
       title: g.title || "", slug: g.slug || "",
       pillar: g.pillar || "learn", content_type: g.content_type || g.guide_category || "Guide",
       difficulty: g.difficulty || g.level?.toLowerCase() || "intermediate",
-      platform_tags: g.platform_tags || [], topic_tags: g.topic_tags || [],
+      platform_tags: Array.isArray(g.platform_tags) ? g.platform_tags : [], 
+      topic_tags: Array.isArray(g.topic_tags) ? g.topic_tags : [],
       one_line_description: g.one_line_description || g.meta_description || "",
       read_time_minutes: g.read_time_minutes || 0,
       featured_image_url: g.featured_image_url || "", featured_image_alt: g.featured_image_alt || "",
       guide_category: g.guide_category || "Guide", level: g.level || "Intermediate",
       primary_platform: g.primary_platform || "ChatGPT", status: g.status || "draft",
-      snapshot_bullets: g.snapshot_bullets?.length ? g.snapshot_bullets : (g.tldr_bullet_1 ? [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean) : ["", "", ""]),
+      snapshot_bullets: snapshotBullets.length ? snapshotBullets : (g.tldr_bullet_1 ? [g.tldr_bullet_1, g.tldr_bullet_2, g.tldr_bullet_3].filter(Boolean) : ["", "", ""]),
       why_this_matters: g.why_this_matters || g.context_and_background || "",
-      steps: Array.isArray(g.steps) && g.steps.length ? g.steps : [{ step_number: 1, title: "", content: "" }],
-      worked_example: g.worked_example && Object.keys(g.worked_example).length ? g.worked_example : { prompt: "", output: "", editing_notes: "" },
-      guide_prompts: Array.isArray(g.guide_prompts) && g.guide_prompts.length ? g.guide_prompts : [{ title: "", prompt_text: "", what_to_expect: "" }],
-      common_mistakes: Array.isArray(g.common_mistakes) && g.common_mistakes.length ? g.common_mistakes : [{ title: "", description: "" }],
-      recommended_tools: Array.isArray(g.recommended_tools) && g.recommended_tools.length ? g.recommended_tools : [{ name: "", description: "", limitation: "" }],
-      faq_items: Array.isArray(g.faq_items) && g.faq_items.length ? g.faq_items : (g.faq_q1 ? [{ question: g.faq_q1, answer: g.faq_a1 || "" }, { question: g.faq_q2 || "", answer: g.faq_a2 || "" }, { question: g.faq_q3 || "", answer: g.faq_a3 || "" }].filter(f => f.question) : [{ question: "", answer: "" }]),
+      steps: Array.isArray(steps) && steps.length ? steps : [{ step_number: 1, title: "", content: "" }],
+      worked_example: workedExample && Object.keys(workedExample).length ? workedExample : { prompt: "", output: "", editing_notes: "" },
+      guide_prompts: Array.isArray(guidePrompts) && guidePrompts.length ? guidePrompts : [{ title: "", prompt_text: "", what_to_expect: "" }],
+      common_mistakes: Array.isArray(commonMistakes) && commonMistakes.length ? commonMistakes : [{ title: "", description: "" }],
+      recommended_tools: Array.isArray(recommendedTools) && recommendedTools.length ? recommendedTools : [{ name: "", description: "", limitation: "" }],
+      faq_items: Array.isArray(faqItems) && faqItems.length ? faqItems : (g.faq_q1 ? [{ question: g.faq_q1, answer: g.faq_a1 || "" }, { question: g.faq_q2 || "", answer: g.faq_a2 || "" }, { question: g.faq_q3 || "", answer: g.faq_a3 || "" }].filter(f => f.question) : [{ question: "", answer: "" }]),
       next_steps: g.next_steps || "",
       meta_title: g.meta_title || "", meta_description: g.meta_description || "",
       focus_keyphrase: g.focus_keyphrase || "",
@@ -594,11 +612,17 @@ const GuideEditor = () => {
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
 
   // ---- RENDER ----
-  if (isLoading) {
+  // Show loading when we have an ID but data isn't ready yet (either user or guide still loading)
+  if ((id && (!user || isLoading)) || (id && !existingGuide && !isLoading && !!user)) {
     return (
       <div className={isInsideAdmin ? "flex items-center justify-center py-20" : "min-h-screen flex flex-col"}>
         {!isInsideAdmin && <Header />}
-        <div className={isInsideAdmin ? "" : "flex-1 flex items-center justify-center"}><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        <div className={isInsideAdmin ? "" : "flex-1 flex items-center justify-center"}>
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground">Loading guide...</span>
+          </div>
+        </div>
       </div>
     );
   }
