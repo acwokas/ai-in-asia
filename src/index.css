@@ -348,32 +348,36 @@ All colors MUST be HSL.
     }
   }
 
-  /* Pull quote styling */
-  .article-pull-quote {
+  /* Pull quote / blockquote styling */
+  .article-pull-quote,
+  .prose blockquote:not(.twitter-tweet):not(.instagram-media):not(.tiktok-embed) {
     font-family: 'Inter', sans-serif;
     font-style: italic;
     font-size: 1.3rem;
     line-height: 1.7;
-    color: hsl(var(--foreground));
-    border-left: 4px solid hsl(var(--primary));
-    padding-left: 1.5rem;
-    margin: 2.5rem 0;
-    background: rgba(48, 62, 83, 0.1);
-    border-radius: 0 8px 8px 0;
+    color: hsl(var(--accent));
+    border-left: 3px solid hsl(var(--accent));
     padding: 1.25rem 1.5rem;
+    margin: 2.5rem 0;
+    background: hsl(var(--foreground) / 0.05);
+    border-radius: 0 8px 8px 0;
   }
 
-  .article-pull-quote p {
+  .article-pull-quote p,
+  .prose blockquote:not(.twitter-tweet):not(.instagram-media):not(.tiktok-embed) p {
     margin: 0;
+    color: hsl(var(--accent));
   }
 
   .article-pull-quote footer,
-  .article-pull-quote cite {
+  .article-pull-quote cite,
+  .prose blockquote:not(.twitter-tweet):not(.instagram-media):not(.tiktok-embed) footer,
+  .prose blockquote:not(.twitter-tweet):not(.instagram-media):not(.tiktok-embed) cite {
     display: block;
     font-family: 'Inter', sans-serif;
     font-style: normal;
-    font-size: 0.9rem;
-    color: #BFC0C0;
+    font-size: 0.85rem;
+    color: hsl(var(--muted-foreground));
     margin-top: 0.75rem;
   }
   .prose hr,
