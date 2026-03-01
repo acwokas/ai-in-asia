@@ -337,20 +337,30 @@ MID-ARTICLE IMAGE PLACEHOLDER:
 - Do NOT write any image descriptions, alt text, or markdown image syntax like ![...](...) in the article body.
 
 FORMATTING RULES (MANDATORY — these are not optional):
+- Output the article body as clean HTML, NOT markdown.
+- Use proper HTML tags:
+  - <strong> for bold, <em> for italic
+  - <ul><li> for unordered/bullet lists
+  - <ol><li> for ordered/numbered lists
+  - <h2> for section headings (3-5 sections with compelling headings)
+  - <h3> for subheadings
+  - <p> for paragraphs
+  - <a href="..."> for links (external links must use target="_blank" rel="noopener noreferrer")
+  - <blockquote> for quotes
+- Do NOT use markdown syntax (no **, no *, no #, no 1. for lists)
 - Maximum 3 short paragraphs before a visual break (subheading, blockquote, bullet list, or numbered list). This is a hard rule.
 - Each paragraph MUST be 2-4 sentences. NEVER write paragraphs longer than 5 sentences.
-- You MUST include at least 2 blockquotes using markdown > syntax. Pull out notable quotes, statistics, or key statements. Each blockquote MUST be on its own line starting with > and MUST have a blank line before and after it. Example:
+- You MUST include at least 2 blockquotes. Pull out notable quotes, statistics, or key statements. Example:
 
-Previous paragraph ends here.
+<p>Previous paragraph ends here.</p>
 
-> "The cost per prompt is so high that profitability remains elusive for most AI companies." — Industry analyst
+<blockquote>"The cost per prompt is so high that profitability remains elusive for most AI companies." — Industry analyst</blockquote>
 
-Next paragraph starts here.
+<p>Next paragraph starts here.</p>
 
 - You MUST include at least 1 bullet list OR numbered list to break up dense information.
-- Use **bold** for key terms, names, and important phrases (at least 5-8 bold items throughout).
-- Use ## subheadings to break the article into 3-5 clear sections with compelling subheadings.
-- Labels like **Short-term:**, **Long-term:**, or **Key takeaway:** are encouraged for scannability.
+- Use <strong> for key terms, names, and important phrases (at least 5-8 bold items throughout).
+- Labels like <strong>Short-term:</strong>, <strong>Long-term:</strong>, or <strong>Key takeaway:</strong> are encouraged for scannability.
 
 CLOSING PARAGRAPH (MANDATORY):
 - The final paragraph MUST be a direct, provocative or collaborative call to action that drives reader comments.
@@ -362,7 +372,7 @@ CLOSING PARAGRAPH (MANDATORY):
 Return your response as a JSON object with these SEPARATE fields. Do NOT embed tagged sections inside the article content. Every field is required.
 
 {
-  "rewrittenContent": "The full rewritten article in markdown. Contains ONLY the article body text with ## subheadings, > blockquotes, bullet lists, bold text, links, and IMAGE_PLACEHOLDER_HERE. Does NOT contain any [HEADLINE] or [EXCERPT] tags — those go in separate fields below.",
+  "rewrittenContent": "The full rewritten article in clean HTML. Contains ONLY the article body text with <h2> section headings, <blockquote> quotes, <ul>/<ol> lists, <strong> bold text, <a> links, and IMAGE_PLACEHOLDER_HERE. Does NOT contain any [HEADLINE] or [EXCERPT] tags — those go in separate fields below. Do NOT use any markdown syntax.",
   "headline": "A punchy headline under 60 characters. Newspaper front page energy. No colons or semicolons. British English.",
   "excerpt": "A hook under 140 characters that makes someone want to click. NOT a summary.",
   "tldr": ["Bullet 1 under 100 chars", "Bullet 2 under 100 chars", "Bullet 3 under 100 chars"],
