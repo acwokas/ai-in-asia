@@ -89,7 +89,10 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
       .replace(/\[Tweet\]\([^)]*\)/gi, '')
       .replace(/^\s*Tweet\s*$/gm, '')
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /></div>')
+      // Convert markdown images — match URLs with image extensions as images, everything else as links
+      .replace(/!\[([^\]]*)\]\(([^)]+\.(?:png|jpg|jpeg|gif|webp|svg|avif)(?:\?[^)]*)?)\)/gi, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /></div>')
+      // Strip stray ! before markdown links that aren't images (prevents ![text](non-image-url) rendering as !link)
+      .replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '[$1]($2)')
       .replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>')
       .replace(/(?<!\*)\*([^\*]+?)\*(?!\*)/g, '<em>$1</em>')
       .replace(/\*\*/g, '')
