@@ -48,6 +48,10 @@ export const convertMarkdownToHtml = (markdown: string): string => {
 
   const applyInline = (text: string) => {
     return text
+      // Convert image syntax with actual image extensions to images
+      .replace(/!\[([^\]]*)\]\(([^)]+\.(?:png|jpg|jpeg|gif|webp|svg|avif)(?:\?[^)]*)?)\)/gi, '<img src="$2" alt="$1" class="w-full rounded-lg my-4" loading="lazy" />')
+      // Strip ! prefix from non-image markdown links (prevents ![text](url) rendering with !)
+      .replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '[$1]($2)')
       // Links with new tab marker (^)
       .replace(
         /\[(.+?)\]\((.+?)\)\^/g,
