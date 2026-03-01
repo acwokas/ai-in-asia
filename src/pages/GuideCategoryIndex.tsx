@@ -42,7 +42,7 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
 
 const SPECIAL_CATEGORIES: Record<string, { label: string; description: string; gradient: string }> = {
   asia: { label: "Local Guides for Asia", description: "AI guides tailored for Asian markets, cultures, and regulations", gradient: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" },
-  startup: { label: "Startup Guides", description: "AI guides for startup founders building and scaling their businesses", gradient: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" },
+  startup: { label: "Startup Guides", description: "AI guides for startup founders building and scaling their businesses", gradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)" },
   platform: { label: "Platform Deep Dives", description: "In-depth guides for specific AI platforms and tools", gradient: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" },
 };
 
