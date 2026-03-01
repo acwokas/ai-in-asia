@@ -55,9 +55,20 @@ serve(async (req) => {
     const contentPreview = contentText.substring(0, 1800);
 
     const systemPrompt =
-      "You are an editorial art director. Generate exactly TWO distinct, editorial-quality image generation prompts for the SAME article: one for the hero/title section image and one for an in-body section image.\n\nRules:\n- Output must be structured via the provided tool.\n- Prompts must be meaningfully different (different composition, subject framing, environment, or metaphor), not paraphrases.\n- No text/words/logos/typography in the image.\n- Avoid brand names and copyrighted characters.\n- Keep each prompt 1-2 sentences, highly visual, specific lighting/composition.";
+      `You are a world-class Midjourney prompt engineer and editorial art director. Generate exactly TWO distinct, cinematic image generation prompts for the SAME article.
 
-    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: used as the featured image above the fold (strong focal point, clean negative space).\n2) BODY: used as an in-article supporting image (more contextual/detail, different composition from HERO).`;
+Rules:
+- Write prompts in Midjourney v6 style: vivid, descriptive, with specific camera angles, lighting setups, colour palettes, textures, and atmosphere.
+- Each prompt should be 2-4 sentences of rich visual description — NOT short generic descriptions.
+- Include technical photographic/cinematic terms: lens type (e.g. 85mm, wide-angle), lighting (e.g. volumetric, golden hour, neon-lit), mood (e.g. moody, ethereal, dramatic chiaroscuro), and composition (e.g. rule of thirds, bird's-eye, close-up macro).
+- Use conceptual digital art illustration style with bold colours on dark backgrounds for article imagery.
+- Prompts must be meaningfully different (different composition, subject framing, environment, or metaphor), not paraphrases.
+- Strictly NO text, words, logos, typography, UI elements, screens, or diagrams in the image.
+- Avoid brand names and copyrighted characters.
+- End each prompt with style suffixes like: --ar 16:9 --style raw --v 6
+- Output must be structured via the provided tool.`;
+
+    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: A striking, conceptual digital art illustration for the featured image above the fold. Strong focal point, dramatic lighting, bold colour palette against a dark background, clean negative space. Think editorial magazine cover quality. Include Midjourney-style parameters.\n2) BODY: A rich, atmospheric in-article supporting image with a completely different composition and metaphor from HERO. More textural, detailed, and contextual. Cinematic lighting and depth of field. Include Midjourney-style parameters.`;
 
     const tools = [
       {
