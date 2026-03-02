@@ -150,7 +150,7 @@ export const ContentAdminControls = ({
           .single();
         if (insErr) throw insErr;
         toast(`${label} duplicated`, { description: "Opening the copy in the editor…" });
-        navigate(`/admin/guide-editor?id=${newItem.id}`);
+        navigate(`/admin/guide-editor/${newItem.id}`);
       }
     } catch {
       toast.error("Error", { description: `Failed to duplicate ${label.toLowerCase()}` });
@@ -196,7 +196,7 @@ export const ContentAdminControls = ({
   // ── Edit link ───────────────────────────────────────────
   const editLink = type === "article"
     ? `/editor?id=${item.id}`
-    : `/admin/guide-editor?id=${item.id}`;
+    : `/admin/guide-editor/${item.id}`;
 
   const readerLink = type === "article"
     ? `/${catSlug}/${item.slug}`
