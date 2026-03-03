@@ -389,6 +389,30 @@ All colors MUST be HSL.
     @apply my-10 border-0 border-t;
     border-color: hsl(var(--border));
   }
+
+  /* Inline code styling – teal bg + white text for readability on dark backgrounds */
+  .prose code,
+  .article-content code,
+  article code {
+    background-color: hsl(174 60% 20%);
+    color: hsl(0 0% 95%);
+    padding: 0.15em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    word-break: break-word;
+  }
+
+  /* Don't double-style code inside pre blocks */
+  .prose pre code,
+  .article-content pre code,
+  article pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
   
   .youtube-embed {
     /* Make embeds robust against older inline styles (height:0/overflow:hidden/absolute positioning) */
