@@ -14,6 +14,8 @@ export default function ThreeBeforeNineLatest() {
 
   const { data: latestEdition, isLoading, error } = useQuery({
     queryKey: ["three-before-nine-latest"],
+    staleTime: 0,
+    gcTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("articles")
