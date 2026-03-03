@@ -30,7 +30,10 @@ import AnalyticsProvider from "./components/AnalyticsProvider";
 const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load non-critical components
-const ConsentBanner = lazy(() => import("./components/ConsentBanner"));
+const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() => {
+  window.location.reload();
+  return import("./components/ConsentBanner");
+}));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
 const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => {
   window.location.reload();
