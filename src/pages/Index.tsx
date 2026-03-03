@@ -90,6 +90,17 @@ const Index = () => {
   
   useAutoRefresh();
 
+  // Trigger daily featured content refresh
+  useEffect(() => {
+    const LAST_REFRESH_KEY = 'homepage-featured-refresh-date';
+    const today = new Date().toISOString().slice(0, 10);
+    const lastRefresh = localStorage.getItem(LAST_REFRESH_KEY);
+    if (lastRefresh !== today) {
+      localStorage.setItem(LAST_REFRESH_KEY, today);
+      supabase.functions.invoke('auto-refresh-featured-content', { body: { force: true } }).catch(() => {});
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => setEnableSecondaryQueries(true), 100);
     return () => clearTimeout(timer);

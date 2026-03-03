@@ -20,10 +20,17 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Parse force flag from request body
+    let force = false;
+    try {
+      const body = await req.json();
+      force = body?.force === true;
+    } catch { /* no body or not JSON */ }
     const results = {
       editorsPicksRefreshed: false,
       trendingRefreshed: false,
       homepageTrendingRefreshed: false,
+      homepageFeaturedRefreshed: false,
       details: [] as string[]
     };
 
@@ -40,7 +47,7 @@ Deno.serve(async (req) => {
         .order('updated_at', { ascending: false })
         .limit(1);
 
-      const needsRefresh = !recentPicks?.length || 
+      const needsRefresh = force || !recentPicks?.length || 
         new Date(recentPicks[0].updated_at || recentPicks[0].created_at) < sevenDaysAgo;
 
       if (needsRefresh) {
@@ -85,8 +92,10 @@ Deno.serve(async (req) => {
       .order('updated_at', { ascending: false })
       .limit(1);
 
-    const trendingNeedsRefresh = !trendingArticles?.length ||
-      new Date(trendingArticles[0].updated_at) < sevenDaysAgo;
+    const oneDayAgoCategory = new Date();
+    oneDayAgoCategory.setDate(oneDayAgoCategory.getDate() - 1);
+    const trendingNeedsRefresh = force || !trendingArticles?.length ||
+      new Date(trendingArticles[0].updated_at) < oneDayAgoCategory;
 
     if (trendingNeedsRefresh) {
       // Reset all trending flags
@@ -126,8 +135,10 @@ Deno.serve(async (req) => {
       .order('updated_at', { ascending: false })
       .limit(1);
 
-    const homepageTrendingNeedsRefresh = !homepageTrending?.length ||
-      new Date(homepageTrending[0].updated_at) < sevenDaysAgo;
+    const oneDayAgoTrending = new Date();
+    oneDayAgoTrending.setDate(oneDayAgoTrending.getDate() - 1);
+    const homepageTrendingNeedsRefresh = force || !homepageTrending?.length ||
+      new Date(homepageTrending[0].updated_at) < oneDayAgoTrending;
 
     if (homepageTrendingNeedsRefresh) {
       // Reset all homepage trending flags
@@ -155,6 +166,66 @@ Deno.serve(async (req) => {
 
         results.homepageTrendingRefreshed = true;
         results.details.push(`Refreshed ${popularForHomepage.length} homepage trending articles`);
+      }
+    }
+
+    // Check and refresh featured_on_homepage
+    const { data: currentFeatured } = await supabase
+      .from('articles')
+      .select('updated_at, id')
+      .eq('featured_on_homepage', true)
+      .eq('status', 'published')
+      .order('updated_at', { ascending: false })
+      .limit(1);
+
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const featuredNeedsRefresh = force || !currentFeatured?.length ||
+      new Date(currentFeatured[0].updated_at) < oneDayAgo;
+
+    if (featuredNeedsRefresh) {
+      // Reset all featured_on_homepage flags
+      await supabase
+        .from('articles')
+        .update({ featured_on_homepage: false })
+        .eq('featured_on_homepage', true);
+
+      // Set latest published articles as featured (mix of recent + popular)
+      const { data: recentArticles } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(12);
+
+      const { data: popularArticles } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('status', 'published')
+        .order('view_count', { ascending: false })
+        .order('published_at', { ascending: false })
+        .limit(6);
+
+      // Merge: recent first, then top popular not already included
+      const seenIds = new Set<string>();
+      const finalIds: string[] = [];
+      for (const a of (recentArticles || [])) {
+        if (finalIds.length >= 18) break;
+        if (!seenIds.has(a.id)) { seenIds.add(a.id); finalIds.push(a.id); }
+      }
+      for (const a of (popularArticles || [])) {
+        if (finalIds.length >= 18) break;
+        if (!seenIds.has(a.id)) { seenIds.add(a.id); finalIds.push(a.id); }
+      }
+
+      if (finalIds.length > 0) {
+        await supabase
+          .from('articles')
+          .update({ featured_on_homepage: true })
+          .in('id', finalIds);
+
+        results.homepageFeaturedRefreshed = true;
+        results.details.push(`Refreshed ${finalIds.length} homepage featured articles`);
       }
     }
 
