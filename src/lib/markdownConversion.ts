@@ -145,11 +145,13 @@ export const convertMarkdownToHtml = (markdown: string): string => {
       continue;
     }
 
-    // Blockquote
-    if (/^>\s+/.test(trimmed)) {
+    // Blockquote (may span multiple consecutive > lines)
+    if (/^>\s*/.test(trimmed) && trimmed.startsWith('>')) {
       flushParagraph();
       flushList();
-      blocks.push(`<blockquote>${applyInline(trimmed.replace(/^>\s+/, ""))}</blockquote>`);
+      // Collect consecutive blockquote lines
+      const bqContent = applyInline(trimmed.replace(/^>\s*/, ""));
+      blocks.push(`<blockquote><p>${bqContent}</p></blockquote>`);
       continue;
     }
 
