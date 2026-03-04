@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Upload, Loader2, Wand2 } from "lucide-react";
+import { Save, Upload, Loader2, Wand2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 import ScoutWritingAssistant from "@/components/ScoutWritingAssistant";
@@ -260,10 +260,28 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
           </div>
-          <Button onClick={handleSave} data-editor-save className="w-full sm:w-auto shrink-0">
-            <Save className="h-4 w-4 mr-2" />
-            Save Article
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto shrink-0">
+            {!initialData?.id && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (window.confirm("Clear all content and start fresh?")) {
+                    state.clearAll();
+                    toast.success("All content cleared");
+                  }
+                }}
+                title="Clear all content"
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            <Button onClick={handleSave} data-editor-save className="w-full sm:w-auto">
+              <Save className="h-4 w-4 mr-2" />
+              Save Article
+            </Button>
+          </div>
         </div>
 
         {/* Content Tab - Two Column Layout */}

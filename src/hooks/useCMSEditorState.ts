@@ -158,6 +158,36 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Clear all content
+  const clearAll = () => {
+    setTitle("");
+    setSlug("");
+    setExcerpt("");
+    setContent("");
+    setTldrSnapshot([]);
+    setWhoShouldPayAttention("");
+    setWhatChangesNext("");
+    setSignalImages(["", "", ""]);
+    setFeaturedImage("");
+    setFeaturedImageAlt("");
+    setSeoTitle("");
+    setMetaTitle("");
+    setMetaDescription("");
+    setFocusKeyphrase("");
+    setKeyphraseSynonyms("");
+    setTopListItems([]);
+    setTopListIntro("");
+    setTopListOutro("");
+    setHeadlineOptions(null);
+    setImagePrompts(null);
+    setUndoStack([]);
+    setPolicySections([]);
+    setComparisonTables([]);
+    setLocalResources([]);
+    setSources([]);
+    setTopicTags([]);
+  };
+
   return {
     // Core fields
     title, setTitle,
@@ -246,6 +276,9 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     topListIntro, setTopListIntro,
     topListOutro, setTopListOutro,
     topListShowPromptTools, setTopListShowPromptTools,
+    
+    // Actions
+    clearAll,
     
     // Refs
     contentRef,
