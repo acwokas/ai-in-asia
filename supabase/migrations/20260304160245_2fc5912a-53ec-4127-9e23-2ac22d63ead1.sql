@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Allow update for journey tracking" ON public.newsletter_user_journeys;
