@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -525,6 +526,25 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         }
         if (data.keyphraseSynonyms) state.setKeyphraseSynonyms(data.keyphraseSynonyms);
         if (data.metaDescription) state.setMetaDescription(data.metaDescription);
+
+        // For 3B9 articles, also generate a unique featured thumbnail/hero image
+        if (state.articleType === 'three_before_nine') {
+          const displayDate = state.title.replace('3 Before 9: ', '') || format(new Date(), 'MMMM d, yyyy');
+          toast.info("Generating 3B9 hero thumbnail...", { description: "This will appear on homepage cards" });
+          supabase.functions.invoke('generate-3b9-hero', {
+            body: { displayDate },
+          }).then(({ data: heroData, error: heroError }) => {
+            if (heroError) {
+              console.error("3B9 hero generation failed:", heroError);
+              toast.error("Hero thumbnail failed", { description: "Using default. You can retry from the image field." });
+            } else if (heroData?.heroImageUrl) {
+              state.setFeaturedImage(heroData.heroImageUrl);
+              toast.success("3B9 hero thumbnail generated", { description: "Featured image updated for homepage display" });
+            }
+          }).catch((err) => {
+            console.error("3B9 hero generation error:", err);
+          });
+        }
 
         // Success toast
         const parts: string[] = [];
