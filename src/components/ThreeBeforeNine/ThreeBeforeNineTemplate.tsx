@@ -53,8 +53,6 @@ interface ThreeBeforeNineTemplateProps {
 }
 
 function parseSignals(content: any): Signal[] {
-  const signals: Signal[] = [];
-  
   let textContent = '';
   if (typeof content === 'string') {
     textContent = content;
@@ -62,110 +60,114 @@ function parseSignals(content: any): Signal[] {
     textContent = extractTextFromContent(content);
   }
 
+  // Normalise all HTML to plain-ish text while preserving structure cues
   textContent = textContent
-    .replace(/<\/?div>/gi, '\n')
-    .replace(/<div[^>]*>/gi, '')
+    // Convert HTML headings to markdown-style markers
+    .replace(/<h[1-3][^>]*>\s*/gi, '\n## ')
+    .replace(/<\/h[1-3]>/gi, '\n')
+    // Convert <a> tags to markdown links
+    .replace(/<a\s+[^>]*?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+    // Strip remaining HTML
+    .replace(/<\/?div[^>]*>/gi, '\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<p[^>]*>/gi, '')
     .replace(/<\/p>/gi, '\n')
+    .replace(/<\/?(?:strong|b)>/gi, '**')
+    .replace(/<\/?(?:em|i)>/gi, '*')
+    .replace(/<[^>]+>/g, '')
+    // Normalise whitespace
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/\n{3,}/g, '\n\n')
+    // Decode common HTML entities
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"');
 
-  const sections = textContent.split(/(?=##?\s*\d+[\.\:])/g).filter(s => s.trim());
+  // ── Strategy 1: Numbered sections ──
+  // Match patterns like: ## 1. Title, ##1: Title, # 1. Title, 1. Title, 1: Title, **1. Title**
+  const numberedPattern = /(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*\*\s*)?(\d+)\s*[\.\:\)\-]\s*(?:\*\*\s*)?/g;
+  const numberPositions: { number: number; start: number; contentStart: number }[] = [];
+  let match: RegExpExecArray | null;
 
-  for (const section of sections) {
-    const numMatch = section.match(/^(?:##?\s*)?(\d+)[\.\:]\s*/);
-    if (!numMatch) continue;
-    
-    const number = parseInt(numMatch[1]);
-    const rest = section.slice(numMatch[0].length);
-    
-    const lines = rest.split('\n').map(l => l.trim()).filter(l => l);
-    if (lines.length === 0) continue;
-    
-    let title = lines[0];
-    let startIdx = 1;
-    
-    if (title.length > 100) {
-      const titleEnd = title.match(/^[^.]+[.!?]?\s*(?=[A-Z])/);
-      if (titleEnd) {
-        const explainerPart = title.slice(titleEnd[0].length);
-        title = titleEnd[0].trim();
-        if (explainerPart) {
-          lines.splice(1, 0, explainerPart);
+  while ((match = numberedPattern.exec(textContent)) !== null) {
+    const num = parseInt(match[1]);
+    if (num >= 1 && num <= 5) {
+      numberPositions.push({
+        number: num,
+        start: match.index,
+        contentStart: match.index + match[0].length,
+      });
+    }
+  }
+
+  const signals: Signal[] = [];
+
+  if (numberPositions.length >= 2) {
+    // We have numbered sections — parse each
+    for (let i = 0; i < numberPositions.length; i++) {
+      const pos = numberPositions[i];
+      const end = i + 1 < numberPositions.length
+        ? numberPositions[i + 1].start
+        : textContent.length;
+      const sectionText = textContent.slice(pos.contentStart, end).trim();
+      const parsed = parseSignalSection(sectionText, pos.number);
+      if (parsed) signals.push(parsed);
+    }
+  } else {
+    // ── Strategy 2: Unnumbered — split by headings (## Title) ──
+    const headingSections = textContent.split(/(?=\n\s*##\s+[^#])/g).filter(s => s.trim());
+
+    if (headingSections.length >= 2) {
+      let signalNum = 1;
+      for (const section of headingSections) {
+        const headingMatch = section.match(/^\s*##\s+(.+)/m);
+        if (!headingMatch) continue;
+        const title = headingMatch[1].trim();
+        const body = section.slice(section.indexOf(headingMatch[0]) + headingMatch[0].length).trim();
+        const parsed = parseSignalSection(body, signalNum, title);
+        if (parsed) {
+          signals.push(parsed);
+          signalNum++;
+        }
+      }
+    } else {
+      // ── Strategy 3: Split by double newlines (paragraph blocks) ──
+      const paragraphs = textContent.split(/\n{2,}/).map(p => p.trim()).filter(p => p.length > 10);
+      // Group into chunks of ~3 (title, body, why-it-matters) if we have enough
+      if (paragraphs.length >= 3) {
+        let signalNum = 1;
+        let idx = 0;
+        while (idx < paragraphs.length && signalNum <= 4) {
+          const title = paragraphs[idx];
+          // Gather remaining paragraphs until we hit what looks like the next title (short line)
+          const bodyParts: string[] = [];
+          idx++;
+          while (idx < paragraphs.length) {
+            // If this paragraph is short and the next one exists, it might be a new title
+            if (paragraphs[idx].length < 80 && bodyParts.length >= 1 && idx + 1 < paragraphs.length) break;
+            bodyParts.push(paragraphs[idx]);
+            idx++;
+            if (bodyParts.length >= 3) break;
+          }
+          const combined = bodyParts.join('\n');
+          const parsed = parseSignalSection(combined, signalNum, cleanHtml(title));
+          if (parsed) {
+            signals.push(parsed);
+            signalNum++;
+          }
         }
       }
     }
-    
-    let whyMattersIdx = -1;
-    for (let i = startIdx; i < lines.length; i++) {
-      if (lines[i].toLowerCase().includes('why it matters') || 
-          lines[i].toLowerCase().includes('why this matters') ||
-          lines[i].match(/^\*?\*?why\s+it\s+matters/i)) {
-        whyMattersIdx = i;
-        break;
-      }
-    }
-    
-    let explainer = '';
-    let whyItMatters = '';
-    let readMoreUrl = '';
-    
-    const allText = lines.join('\n');
-    const linkPatterns = [
-      /Read more:\s*\[([^\]]+)\]\(([^)]+)\)/i,
-      /Read more:\s*\[?(https?:\/\/[^\s\]]+)\]?/i,
-      /\[Read more\]\(([^)]+)\)/i,
-    ];
-    
-    for (const pattern of linkPatterns) {
-      const match = allText.match(pattern);
-      if (match) {
-        readMoreUrl = match[2] || match[1];
-        break;
-      }
-    }
-    
-    if (whyMattersIdx > 0) {
-      explainer = lines.slice(startIdx, whyMattersIdx).join(' ').trim();
-      
-      let whyLine = lines[whyMattersIdx];
-      const colonMatch = whyLine.match(/why\s+it\s+matters[^:]*:\s*/i);
-      if (colonMatch) {
-        whyLine = whyLine.slice(colonMatch.index! + colonMatch[0].length);
-      } else {
-        whyLine = whyLine.replace(/^\*?\*?why\s+it\s+matters[^:]*:?\s*/i, '');
-      }
-      
-      const remainingLines = [whyLine, ...lines.slice(whyMattersIdx + 1)].filter(l => l.trim());
-      whyItMatters = remainingLines.join(' ').trim();
-      
-      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
-      whyItMatters = whyItMatters.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]]+\]?/gi, '').trim();
-      whyItMatters = whyItMatters.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
-    } else {
-      explainer = lines.slice(startIdx).join(' ').trim();
-    }
-    
-    explainer = explainer.replace(/\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi, '').trim();
-    explainer = explainer.replace(/\s*Read more:?\s*\[?https?:\/\/[^\s\]]+\]?/gi, '').trim();
-    explainer = explainer.replace(/\s*\[Read more\]\([^)]*\)/gi, '').trim();
-
-    signals.push({
-      number,
-      title: cleanHtml(title),
-      explainer: cleanHtml(explainer),
-      whyItMatters: cleanHtml(whyItMatters),
-      readMoreUrl: readMoreUrl || undefined,
-      isBonus: false
-    });
   }
 
+  // Check for bonus signal
   const bonusMatch = textContent.match(/(?:##?\s*)?Bonus\s*(?:signal)?[:\.\s]*(.+?)(?=##|That's today|$)/is);
   if (bonusMatch) {
     signals.push({
-      number: 4,
+      number: signals.length + 1,
       title: 'Bonus Signal',
       explainer: cleanHtml(bonusMatch[1].trim()),
       whyItMatters: '',
@@ -175,6 +177,108 @@ function parseSignals(content: any): Signal[] {
 
   signals.sort((a, b) => a.number - b.number);
   return signals;
+}
+
+/**
+ * Parse a single signal section's text into structured data.
+ * Handles: title extraction, body/explainer, "why it matters", and read-more URLs.
+ */
+function parseSignalSection(sectionText: string, number: number, preTitle?: string): Signal | null {
+  const lines = sectionText.split('\n').map(l => l.trim()).filter(l => l);
+  if (lines.length === 0 && !preTitle) return null;
+
+  let title = preTitle || '';
+  let startIdx = 0;
+
+  if (!title && lines.length > 0) {
+    title = lines[0];
+    startIdx = 1;
+
+    // If title is very long, try to split it
+    if (title.length > 100) {
+      const titleEnd = title.match(/^[^.]+[.!?]?\s*(?=[A-Z])/);
+      if (titleEnd) {
+        const explainerPart = title.slice(titleEnd[0].length);
+        title = titleEnd[0].trim();
+        if (explainerPart) lines.splice(1, 0, explainerPart);
+      }
+    }
+  }
+
+  // Find "Why it matters" / "What this means" section
+  let whyMattersIdx = -1;
+  for (let i = startIdx; i < lines.length; i++) {
+    if (/why\s+(?:it|this)\s+matters/i.test(lines[i]) ||
+        /what\s+this\s+means/i.test(lines[i])) {
+      whyMattersIdx = i;
+      break;
+    }
+  }
+
+  // Extract URL from any format:
+  // - [text](url)
+  // - Read more: url
+  // - https://bare-url
+  // - <a href="url">
+  let readMoreUrl = '';
+  const allText = lines.join('\n');
+
+  const linkPatterns = [
+    /Read more:\s*\[([^\]]+)\]\(([^)]+)\)/i,
+    /Read more:\s*\[?(https?:\/\/[^\s\]<]+)\]?/i,
+    /\[Read more\]\(([^)]+)\)/i,
+    /\[(?:Read|Source|Link|Full (?:story|article))[^\]]*\]\(([^)]+)\)/i,
+    // Bare URL on its own line (likely the read-more link)
+    /(?:^|\n)\s*(https?:\/\/[^\s]+)\s*$/m,
+  ];
+
+  for (const pattern of linkPatterns) {
+    const m = allText.match(pattern);
+    if (m) {
+      readMoreUrl = m[2] || m[1];
+      break;
+    }
+  }
+
+  let explainer = '';
+  let whyItMatters = '';
+
+  if (whyMattersIdx > 0) {
+    explainer = lines.slice(startIdx, whyMattersIdx).join(' ').trim();
+
+    let whyLine = lines[whyMattersIdx];
+    // Strip the "why it matters:" prefix
+    whyLine = whyLine.replace(/^\*?\*?(?:why\s+(?:it|this)\s+matters|what\s+this\s+means)[^:]*:?\s*\*?\*?\s*/i, '');
+
+    const remainingLines = [whyLine, ...lines.slice(whyMattersIdx + 1)].filter(l => l.trim());
+    whyItMatters = remainingLines.join(' ').trim();
+  } else {
+    explainer = lines.slice(startIdx).join(' ').trim();
+  }
+
+  // Clean URLs out of explainer and whyItMatters
+  const urlCleanPatterns = [
+    /\s*Read more:?\s*\[[^\]]*\]\([^)]*\)/gi,
+    /\s*Read more:?\s*\[?https?:\/\/[^\s\]]+\]?/gi,
+    /\s*\[Read more\]\([^)]*\)/gi,
+    /\s*\[(?:Read|Source|Link|Full (?:story|article))[^\]]*\]\([^)]*\)/gi,
+    /\s*(?:^|\s)https?:\/\/[^\s]+\s*$/gm,
+  ];
+  for (const p of urlCleanPatterns) {
+    explainer = explainer.replace(p, '').trim();
+    whyItMatters = whyItMatters.replace(p, '').trim();
+  }
+
+  if (!title && !explainer) return null;
+
+  return {
+    number,
+    title: cleanHtml(title),
+    explainer: cleanHtml(explainer),
+    whyItMatters: cleanHtml(whyItMatters),
+    readMoreUrl: readMoreUrl || undefined,
+    isBonus: false,
+  };
 }
 
 function extractTextFromContent(content: any): string {
