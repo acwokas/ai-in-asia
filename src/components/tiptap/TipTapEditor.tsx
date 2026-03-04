@@ -51,6 +51,7 @@ const TipTapEditor = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const imageUploadCounterRef = useRef(0);
   const lastExternalValue = useRef(value);
+  const lastEmittedMarkdown = useRef(value);
   const isInternalUpdate = useRef(false);
 
   // Dialog states
@@ -189,6 +190,7 @@ const TipTapEditor = ({
       isInternalUpdate.current = true;
       const html = editor.getHTML();
       const markdown = convertHtmlToMarkdown(html);
+      lastEmittedMarkdown.current = markdown;
       onChange(markdown);
       requestAnimationFrame(() => {
         isInternalUpdate.current = false;
@@ -210,9 +212,12 @@ const TipTapEditor = ({
   // Handle external content updates (e.g. Scout Assist rewrite)
   useEffect(() => {
     if (!editor || isInternalUpdate.current) return;
+    // Skip if this value was emitted by our own onUpdate (round-trip echo)
+    if (value === lastEmittedMarkdown.current) return;
 
     if (value !== lastExternalValue.current) {
       lastExternalValue.current = value;
+      lastEmittedMarkdown.current = value;
       const html = convertMarkdownToHtml(value);
       if (editor.getHTML() !== html) {
         editor.commands.setContent(html, { emitUpdate: false });
