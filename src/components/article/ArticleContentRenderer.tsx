@@ -106,6 +106,12 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       .replace(/\[([^\]]+)\]\((https?:\/\/(?!aiinasia\.com)[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1</a>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline hover:no-underline">$1</a>');
 
+    // Strip wrapping quotes from HTML <blockquote> content (editor-generated)
+    consolidated = consolidated.replace(
+      /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
+      (_, open, inner, close) => `${open}<p>${stripWrappingQuotes(inner)}</p>${close}`
+    );
+
     // Pre-process: ensure blockquotes have blank lines around them so they split into their own blocks
     consolidated = consolidated.replace(/([^\n])\n(> )/g, '$1\n\n$2');
     consolidated = consolidated.replace(/(^> .+$)\n([^>\n])/gm, '$1\n\n$2');
