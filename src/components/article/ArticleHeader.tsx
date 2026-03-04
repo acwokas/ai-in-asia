@@ -35,6 +35,7 @@ interface ArticleHeaderProps {
     status: string;
     reading_time_minutes?: number | null;
     published_at?: string | null;
+    view_count?: number | null;
     authors?: Author | null;
     categories?: Category | null;
   };
@@ -87,7 +88,7 @@ const ArticleHeader = ({
       {/* Admin Controls */}
       {!isLoadingAdmin && isAdmin && (
         <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-3 relative z-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Edit className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="text-sm font-medium">Admin Controls</span>
             {article.status !== 'published' && (
@@ -95,6 +96,9 @@ const ArticleHeader = ({
                 {article.status}
               </Badge>
             )}
+            <span className="text-xs text-muted-foreground ml-2">
+              {article.view_count || 0} views
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
