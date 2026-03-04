@@ -9,6 +9,10 @@ import DOMPurify from "dompurify";
 import { InArticleAd } from "@/components/GoogleAds";
 import { fixEncoding } from "@/lib/textUtils";
 
+/** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
+const stripWrappingQuotes = (text: string): string =>
+  text.replace(/^[\u201c\u201d\u201e\u201f\u2018\u2019"'""'']+|[\u201c\u201d\u201e\u201f\u2018\u2019"'""'']+$/g, '').trim();
+
 /** Generate a URL-safe heading ID from text */
 export const generateHeadingId = (text: string): string => {
   return text
@@ -172,9 +176,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
           let attribution = '';
           if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
             attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
-            quoteText = quoteLines.join(' ');
+            quoteText = stripWrappingQuotes(quoteLines.join(' '));
           } else {
-            quoteText = quoteLines.join(' ');
+            quoteText = stripWrappingQuotes(quoteLines.join(' '));
           }
           return `<blockquote class="article-pull-quote">
             <p>${quoteText}</p>
@@ -242,9 +246,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         let attribution = '';
         if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
           attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
-          quoteText = quoteLines.join(' ');
+          quoteText = stripWrappingQuotes(quoteLines.join(' '));
         } else {
-          quoteText = quoteLines.join(' ');
+          quoteText = stripWrappingQuotes(quoteLines.join(' '));
         }
         return `<blockquote class="article-pull-quote">
           <p>${quoteText}</p>
@@ -344,7 +348,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         case 'quote':
           return (
             <blockquote key={index} className="article-pull-quote">
-              <p>{block.content}</p>
+              <p>{stripWrappingQuotes(block.content || '')}</p>
             </blockquote>
           );
           
