@@ -138,7 +138,8 @@ serve(async (req) => {
     }
 
     const requestData = await req.json();
-    const { articleId, content, title } = requestData;
+    const { articleId, content, title, articleType } = requestData;
+    const is3B9 = articleType === 'three_before_nine';
 
     let contentText = "";
     if (typeof content === "string") {
@@ -157,6 +158,18 @@ serve(async (req) => {
 
     console.log("Starting TL;DR generation...");
     
+    const seoExtras = is3B9 ? `
+4. "metaTitle": An SEO-optimised page title under 60 characters. Include "3 Before 9" and the date or key theme.
+5. "seoTitle": A slightly longer browser tab title under 70 characters.
+6. "metaDescription": A compelling meta description under 155 characters summarising the briefing.
+7. "focusKeyphrase": A 2-4 word SEO keyphrase for this edition.
+8. "keyphraseSynonyms": Comma-separated synonyms or related phrases.
+9. "featuredImageAlt": Short descriptive alt text for the hero image.` : '';
+
+    const seoRequiredFields = is3B9
+      ? ["metaTitle", "seoTitle", "metaDescription", "focusKeyphrase", "keyphraseSynonyms", "featuredImageAlt"]
+      : [];
+
     const systemPrompt = `You are creating a TL;DR Snapshot for an article. 
 CRITICAL RULES:
 - NEVER use em dashes (—)
@@ -172,6 +185,7 @@ ALSO GENERATE:
 1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
 2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
 3. "imagePrompts": For each bullet, provide a 1-2 sentence editorial image generation prompt. Be visually specific - describe composition, lighting, subject matter. No text/words/logos in the image. Avoid brand names and copyrighted characters.
+${seoExtras}
 
 Article: "${title}"
 Content: ${contentText.substring(0, 2000)}`;
@@ -182,7 +196,7 @@ Content: ${contentText.substring(0, 2000)}`;
     let whoShouldPayAttention = "";
     let whatChangesNext = "";
     let signalImages: string[] = [];
-
+    let seoFields: Record<string, string> = {};
     try {
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -223,12 +237,20 @@ Content: ${contentText.substring(0, 2000)}`;
                   imagePrompts: {
                     type: "array",
                     items: { type: "string" },
-                    description: "For each bullet point, generate a 1-2 sentence editorial image generation prompt that would create a relevant, visually striking illustration. Be specific about composition, lighting, and subject. No text/words/logos in the image. Avoid brand names. Example: 'Aerial view of a dense semiconductor fabrication plant with blue-lit clean rooms, dramatic industrial lighting'. Array must have exactly 3 items matching the 3 bullets.",
+                    description: "For each bullet point, generate a 1-2 sentence editorial image generation prompt. Be specific about composition, lighting, and subject. No text/words/logos. Array must have exactly 3 items.",
                     minItems: 3,
                     maxItems: 3
-                  }
+                  },
+                  ...(is3B9 ? {
+                    metaTitle: { type: "string", description: "SEO page title under 60 chars" },
+                    seoTitle: { type: "string", description: "Browser tab title under 70 chars" },
+                    metaDescription: { type: "string", description: "Meta description under 155 chars" },
+                    focusKeyphrase: { type: "string", description: "2-4 word SEO keyphrase" },
+                    keyphraseSynonyms: { type: "string", description: "Comma-separated synonym phrases" },
+                    featuredImageAlt: { type: "string", description: "Short alt text for hero image" },
+                  } : {})
                 },
-                required: ["bullets", "whoShouldPayAttention", "whatChangesNext", "imagePrompts"],
+                required: ["bullets", "whoShouldPayAttention", "whatChangesNext", "imagePrompts", ...seoRequiredFields],
                 additionalProperties: false
               }
             }
@@ -266,6 +288,17 @@ Content: ${contentText.substring(0, 2000)}`;
       whoShouldPayAttention = parsedArgs.whoShouldPayAttention || "";
       whatChangesNext = parsedArgs.whatChangesNext || "";
       const imagePrompts: string[] = parsedArgs.imagePrompts || [];
+      
+      // Extract SEO fields for 3B9
+      seoFields = is3B9 ? {
+        metaTitle: parsedArgs.metaTitle || "",
+        seoTitle: parsedArgs.seoTitle || "",
+        metaDescription: parsedArgs.metaDescription || "",
+        focusKeyphrase: parsedArgs.focusKeyphrase || "",
+        keyphraseSynonyms: parsedArgs.keyphraseSynonyms || "",
+        featuredImageAlt: parsedArgs.featuredImageAlt || "",
+      } : {};
+
       console.log("TL;DR generated successfully:", tldrBullets.length, "bullets");
       
       if (tldrBullets.length < 3) {
@@ -350,7 +383,8 @@ Content: ${contentText.substring(0, 2000)}`;
       JSON.stringify({ 
         success: true, 
         tldr_snapshot: tldrSnapshotData,
-        content: cleanedContent
+        content: cleanedContent,
+        ...seoFields,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

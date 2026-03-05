@@ -289,6 +289,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       const requestBody: any = {
         content: state.content,
         title: state.title,
+        articleType: state.articleType,
       };
       
       if (initialData?.id) {
@@ -314,8 +315,42 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.content) {
           state.setContent(data.content);
         }
+
+        // Apply SEO fields if returned (3B9)
+        if (data.metaTitle) state.setMetaTitle(data.metaTitle);
+        if (data.seoTitle) state.setSeoTitle(data.seoTitle);
+        if (data.metaDescription) state.setMetaDescription(data.metaDescription);
+        if (data.focusKeyphrase) {
+          state.setFocusKeyphrase(data.focusKeyphrase);
+          if (data.featuredImageAlt) state.setFeaturedImageAlt(data.featuredImageAlt);
+        }
+        if (data.keyphraseSynonyms) state.setKeyphraseSynonyms(data.keyphraseSynonyms);
+
+        // For 3B9, also generate a branded hero image
+        if (state.articleType === 'three_before_nine') {
+          const displayDate = state.title.replace(/^3[- ]Before[- ]9[:\s]*/i, '') || format(new Date(), 'MMMM d, yyyy');
+          toast.info("Generating 3B9 hero image...", { description: "Replacing fallback with branded thumbnail" });
+          supabase.functions.invoke('generate-3b9-hero', {
+            body: { displayDate },
+          }).then(({ data: heroData, error: heroError }) => {
+            if (heroError) {
+              console.error("3B9 hero generation failed:", heroError);
+              toast.error("Hero image failed", { description: "Using default. You can retry from the image field." });
+            } else if (heroData?.heroImageUrl) {
+              state.setFeaturedImage(heroData.heroImageUrl);
+              if (data.featuredImageAlt) state.setFeaturedImageAlt(data.featuredImageAlt);
+              toast.success("3B9 hero image generated", { description: "Featured image updated" });
+            }
+          }).catch((err) => {
+            console.error("3B9 hero generation error:", err);
+          });
+        }
+
+        const parts = ["TL;DR snapshot"];
+        if (data.metaTitle) parts.push("SEO");
+        if (state.articleType === 'three_before_nine') parts.push("hero image (generating)");
         toast.success("Success!", {
-          description: "AI Snapshot generated with editorial context",
+          description: `Generated: ${parts.join(', ')}`,
         });
       }
     } catch (error: any) {
