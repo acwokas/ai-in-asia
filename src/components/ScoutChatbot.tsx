@@ -268,13 +268,17 @@ const ScoutChatbot = () => {
         bodyPayload.context = articleContext;
       }
 
+      // Always get a fresh session token to avoid stale auth
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token || session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(bodyPayload),
         }
