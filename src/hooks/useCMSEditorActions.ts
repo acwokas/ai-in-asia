@@ -308,7 +308,15 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           state.setTldrSnapshot(snapshot.bullets);
           state.setWhoShouldPayAttention(snapshot.whoShouldPayAttention || "");
           state.setWhatChangesNext(snapshot.whatChangesNext || "");
-          if (snapshot.signalImages) state.setSignalImages(snapshot.signalImages);
+          if (snapshot.signalImages) {
+            state.setSignalImages(snapshot.signalImages);
+            const imageCount = snapshot.signalImages.filter((img: string) => img).length;
+            if (imageCount > 0) {
+              toast.success(`${imageCount} signal image${imageCount > 1 ? 's' : ''} generated`, {
+                description: "In-article images applied to signals",
+              });
+            }
+          }
         } else if (Array.isArray(snapshot)) {
           state.setTldrSnapshot(snapshot);
         }
@@ -347,6 +355,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         }
 
         const parts = ["TL;DR snapshot"];
+        if (snapshot.signalImages?.filter((img: string) => img).length > 0) parts.push("signal images");
         if (data.metaTitle) parts.push("SEO");
         if (state.articleType === 'three_before_nine') parts.push("hero image (generating)");
         toast.success("Success!", {
