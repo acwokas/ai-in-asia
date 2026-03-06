@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-// GA4 Measurement ID
+// GA4 Measurement ID (loaded via GTM, not directly)
 const GA_MEASUREMENT_ID = "G-M981596ST2";
 
 declare global {
@@ -15,36 +15,34 @@ const GoogleAnalytics = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Only load in production
-    if (import.meta.env.PROD) {
-      // Load GA4 script
-      const script1 = document.createElement("script");
-      script1.async = true;
-      script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-      document.head.appendChild(script1);
-
-      const script2 = document.createElement("script");
-      script2.innerHTML = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${GA_MEASUREMENT_ID}');
-      `;
-      document.head.appendChild(script2);
-
-      return () => {
-        document.head.removeChild(script1);
-        document.head.removeChild(script2);
-      };
+    // Ensure dataLayer and gtag are available (GTM handles loading GA4)
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      if (typeof window.gtag !== 'function') {
+        window.gtag = function () {
+          window.dataLayer!.push(arguments as unknown as any);
+        } as any;
+      }
     }
   }, []);
 
-  // Track page views on route change
+  // Track page views on route change via dataLayer for GTM
   useEffect(() => {
-    if (import.meta.env.PROD && window.gtag) {
-      window.gtag("config", GA_MEASUREMENT_ID, {
-        page_path: location.pathname + location.search,
+    if (typeof window !== 'undefined') {
+      // Push page_view event to dataLayer for GTM triggers
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'virtualPageview',
+        pagePath: location.pathname + location.search,
+        pageTitle: document.title,
       });
+
+      // Also send via gtag for direct GA4 processing
+      if (window.gtag) {
+        window.gtag("config", GA_MEASUREMENT_ID, {
+          page_path: location.pathname + location.search,
+        });
+      }
     }
   }, [location]);
 
@@ -53,29 +51,42 @@ const GoogleAnalytics = () => {
 
 export default GoogleAnalytics;
 
-// Custom event tracking helper
+// Custom event tracking helper - sends to both dataLayer (for GTM) and gtag (for GA4)
 export const trackEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
-  if (import.meta.env.PROD && window.gtag) {
+  if (typeof window === 'undefined') return;
+
+  // Push to dataLayer for GTM
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ...eventParams,
+  });
+
+  // Also send via gtag
+  if (window.gtag) {
     window.gtag("event", eventName, eventParams);
-  } else {
+  }
+
+  if (!import.meta.env.PROD) {
     console.log("GA4 Event (dev mode):", eventName, eventParams);
   }
 };
 
 // Common events
-export const trackArticleView = (articleId: string, title: string) => {
+export const trackArticleView = (articleId: string, title: string, category?: string) => {
   trackEvent("article_view", {
     article_id: articleId,
     article_title: title,
+    article_category: category,
   });
 };
 
 export const trackNewsletterSignup = (location: string) => {
   trackEvent("newsletter_signup", {
-    signup_location: location, // 'popup', 'footer', 'inline'
+    signup_location: location,
   });
 };
 
@@ -92,7 +103,38 @@ export const trackShareClick = (
 ) => {
   trackEvent("share", {
     article_id: articleId,
-    platform: platform, // 'twitter', 'linkedin', 'facebook'
+    platform: platform,
+  });
+};
+
+export const trackCategoryClick = (categoryName: string, categoryUrl: string) => {
+  trackEvent("category_click", {
+    category_name: categoryName,
+    click_url: categoryUrl,
+  });
+};
+
+export const trackSocialClick = (network: string, url: string) => {
+  trackEvent("social_click", {
+    social_network: network,
+    click_url: url,
+  });
+};
+
+export const trackOutboundClick = (url: string, text: string) => {
+  trackEvent("outbound_click", {
+    click_url: url,
+    click_text: text,
+    page_path: window.location.pathname,
+  });
+};
+
+export const trackArticleReadDepth = (articleId: string, depth: number, title: string) => {
+  trackEvent("article_read_depth", {
+    article_id: articleId,
+    scroll_threshold: depth,
+    article_title: title,
+    page_path: window.location.pathname,
   });
 };
 
