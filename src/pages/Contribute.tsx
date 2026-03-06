@@ -19,7 +19,7 @@ const Contribute = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="Contribute to AI in ASIA - Guest Contributor Guidelines"
-        description="AI in ASIA welcomes guest contributions from people working with artificial intelligence across the region. Learn about our submission guidelines and editorial standards."
+        description="AI in ASIA welcomes guest contributions from people working with AI across the region. Learn about our submission guidelines and editorial standards."
         canonical="https://aiinasia.com/contribute"
       />
 
