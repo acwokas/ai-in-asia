@@ -52,7 +52,7 @@ const About = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="About AI in ASIA - The AI Publication Built for Asia-Pacific"
-        description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission, coverage areas, and the team behind the publication."
+        description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission and coverage areas."
         canonical="https://aiinasia.com/about"
       />
 
