@@ -73,7 +73,7 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 100%;
     
     --muted: 220 15% 18%;
-    --muted-foreground: 200 15% 73%;
+    --muted-foreground: 210 10% 80%;
     
     --accent: 188 70% 60%;
     --accent-foreground: 0 0% 95%;
@@ -86,7 +86,7 @@ All colors MUST be HSL.
     --ring: 188 80% 50%;
     
     --graphite: 0 0% 85%;
-    --graphite-light: 220 10% 60%;
+    --graphite-light: 220 10% 72%;
     
     --turquoise: 188 80% 50%;
     --turquoise-light: 188 70% 60%;
