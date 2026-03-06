@@ -10,6 +10,55 @@ import { Link } from "react-router-dom";
 import { FileText, Globe } from "lucide-react";
 import PolicyBreadcrumbs from "@/components/PolicyBreadcrumbs";
 
+// Static region metadata for SEO - ensures unique titles/descriptions even before async data loads
+const REGION_SEO: Record<string, { name: string; title: string; description: string }> = {
+  'southeast-asia': {
+    name: 'Southeast Asia',
+    title: 'Southeast Asia AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across Southeast Asia including Singapore, Indonesia, Thailand, Vietnam, and the Philippines.',
+  },
+  'east-asia': {
+    name: 'East Asia',
+    title: 'East Asia AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across East Asia including Japan, South Korea, Taiwan, and mainland China.',
+  },
+  'central-asia': {
+    name: 'Central Asia',
+    title: 'Central Asia AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across Central Asia including Kazakhstan, Uzbekistan, and neighbouring nations.',
+  },
+  'south-asia': {
+    name: 'South Asia',
+    title: 'South Asia AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across South Asia including India, Bangladesh, Sri Lanka, and Pakistan.',
+  },
+  'middle-east': {
+    name: 'Middle East',
+    title: 'Middle East AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across the Middle East including UAE, Saudi Arabia, Israel, and Qatar.',
+  },
+  'americas': {
+    name: 'Americas',
+    title: 'Americas AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across the Americas including the United States, Canada, Brazil, and Latin America.',
+  },
+  'europe': {
+    name: 'Europe',
+    title: 'Europe AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across Europe including the EU AI Act, UK frameworks, and national strategies.',
+  },
+  'africa': {
+    name: 'Africa',
+    title: 'Africa AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across Africa including Nigeria, Kenya, South Africa, and the African Union.',
+  },
+  'oceania': {
+    name: 'Oceania',
+    title: 'Oceania AI Policy - Regulation & Governance Tracker',
+    description: 'Track AI policy and regulation across Oceania including Australia, New Zealand, and Pacific Island nations.',
+  },
+};
+
 const PolicyRegion = () => {
   const { region } = useParams();
 
@@ -125,8 +174,8 @@ const PolicyRegion = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title={`${regionData?.name || 'Region'} - AI Policy Atlas`}
-        description={regionData?.description || `Explore AI policy and regulation in ${regionData?.name || 'this region'}. Coverage of governance frameworks and developments.`}
+        title={REGION_SEO[region || '']?.title || `${regionData?.name || 'Region'} - AI Policy Atlas`}
+        description={regionData?.description || REGION_SEO[region || '']?.description || `Explore AI policy and regulation in ${regionData?.name || 'this region'}. Coverage of governance frameworks and developments.`}
         canonical={`https://aiinasia.com/ai-policy-atlas/${region}`}
       />
       <Header />
@@ -141,7 +190,7 @@ const PolicyRegion = () => {
         {/* Region Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {regionData?.name}
+            {regionData?.name || REGION_SEO[region || '']?.name || 'AI Policy Region'}
           </h1>
           {regionData?.description && (
             <p className="text-xl text-muted-foreground">
