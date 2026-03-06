@@ -198,7 +198,7 @@ const Newsletter = () => {
             )}
 
             <div className="bg-muted/50 rounded-lg p-6">
-              <h3 className="font-semibold mb-2">What to Expect</h3>
+              <h2 className="font-semibold mb-2">What to Expect</h2>
               <p className="text-sm text-muted-foreground">
                 Every week, you'll receive a carefully curated digest of the most important AI developments in Asia. From breakthrough research to business applications, policy changes to ethical considerations - we cover it all with depth and insight.
               </p>
