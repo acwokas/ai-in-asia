@@ -106,9 +106,9 @@ export default function NewsletterArchive() {
                       })}
                     </div>
                     
-                    <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+                    <h2 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                       {edition.subject_line}
-                    </h3>
+                    </h2>
 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -126,7 +126,7 @@ export default function NewsletterArchive() {
           ) : (
             <Card className="p-12 text-center">
               <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Newsletters Yet</h3>
+              <h2 className="text-xl font-semibold mb-2">No Newsletters Yet</h2>
               <p className="text-muted-foreground">
                 Check back soon for our first edition!
               </p>
