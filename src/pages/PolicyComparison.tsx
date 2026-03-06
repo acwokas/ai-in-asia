@@ -253,7 +253,7 @@ const PolicyComparison = () => {
           <Card>
             <CardContent className="p-12 text-center">
               <Plus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">Start Comparing</h3>
+              <h2 className="text-xl font-semibold mb-2">Start Comparing</h2>
               <p className="text-muted-foreground">
                 Select regions above to begin comparing their AI policy frameworks
               </p>
