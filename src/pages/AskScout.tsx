@@ -203,6 +203,7 @@ const AskScout = () => {
       <SEOHead
         title="Ask Scout - AI Assistant"
         description="Ask Scout anything about AI developments, trends, and news across Asia. Your AI-powered assistant for AI in ASIA."
+        canonical="https://aiinasia.com/ask-scout"
         noIndex={true}
       />
       
