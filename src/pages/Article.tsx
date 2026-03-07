@@ -13,6 +13,7 @@ import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
 import { TopListsContent } from "@/components/TopListsContent";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
+import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
