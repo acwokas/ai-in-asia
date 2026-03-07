@@ -45,12 +45,12 @@ serve(async (req) => {
 
     // Build RSS XML
     let rss = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">\n';
+    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n';
     rss += "  <channel>\n";
     rss += "    <title>AI in ASIA</title>\n";
     rss += `    <link>${baseUrl}</link>\n`;
     rss += "    <description>Stay informed about AI developments, innovations, and insights from across Asia. Features, news, tools and expert opinions on artificial intelligence.</description>\n";
-    rss += "    <language>en-us</language>\n";
+    rss += "    <language>en-gb</language>\n";
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
      rss += `    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml" />\n`;
      rss += `    <atom:link href="${baseUrl}/feed" rel="alternate" type="application/rss+xml" />\n`;
@@ -90,6 +90,10 @@ serve(async (req) => {
         rss += `      <enclosure url="${escapeXml(article.featured_image_url)}" type="image/jpeg" length="0" />\n`;
       }
       
+      if (article.excerpt) {
+        const contentEncoded = `<p>${article.excerpt}</p><p><a href="${articleUrl}">Read the full article on AIinASIA →</a></p>`;
+        rss += `      <content:encoded><![CDATA[${contentEncoded}]]></content:encoded>\n`;
+      }
       rss += "    </item>\n";
     });
 
