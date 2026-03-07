@@ -51,6 +51,11 @@ export const ArticleStructuredData = ({
       },
     },
     isAccessibleForFree: true,
+    inLanguage: "en-GB",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".article-content h2", ".article-content p"],
+    },
     ...(categoryName && { articleSection: categoryName }),
     ...(wordCount && { wordCount }),
     ...(keywords && { keywords }),
