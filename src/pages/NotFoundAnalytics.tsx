@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Flag } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
