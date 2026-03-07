@@ -1,0 +1,1 @@
+ALTER TABLE page_not_found_log ADD COLUMN IF NOT EXISTS user_reported boolean DEFAULT false;
