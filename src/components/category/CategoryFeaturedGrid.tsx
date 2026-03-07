@@ -85,8 +85,9 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
       onMouseLeave={() => setHovered(false)}
       style={{
         borderRadius: 14,
-        background: hovered ? "#151820" : "#0d0e12",
-        border: `1px solid ${hovered ? `${displayTagColor}40` : "#1a1d25"}`,
+        background: hovered ? "hsl(var(--card))" : "hsl(var(--background))",
+        border: `1px solid ${hovered ? `${displayTagColor}40` : "hsl(var(--border))"}`,
+        borderTop: `3px solid ${displayTagColor}`,
         transform: hovered ? "translateY(-2px)" : "translateY(0)",
         transition: "all 0.25s ease",
         cursor: "pointer",
@@ -127,7 +128,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
             </div>
           </div>
         )}
-        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "#ffffff", lineHeight: 1.4, margin: 0 }}>
+        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.4, margin: 0 }}>
           {decodeHtml(article.title)}
         </h3>
       </div>
