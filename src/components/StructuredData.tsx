@@ -13,6 +13,7 @@ interface ArticleStructuredDataProps {
   keywords?: string;
   thumbnailUrl?: string;
   canonicalUrl?: string;
+  authorSlug?: string;
 }
 
 
