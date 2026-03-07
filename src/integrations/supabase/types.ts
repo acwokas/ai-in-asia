@@ -3029,6 +3029,7 @@ export type Database = {
           referrer: string | null
           resolved: boolean | null
           user_agent: string | null
+          user_reported: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -3038,6 +3039,7 @@ export type Database = {
           referrer?: string | null
           resolved?: boolean | null
           user_agent?: string | null
+          user_reported?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -3047,6 +3049,7 @@ export type Database = {
           referrer?: string | null
           resolved?: boolean | null
           user_agent?: string | null
+          user_reported?: boolean | null
         }
         Relationships: []
       }
