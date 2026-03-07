@@ -328,6 +328,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.metaTitle) state.setMetaTitle(data.metaTitle);
         if (data.seoTitle) state.setSeoTitle(data.seoTitle);
         if (data.metaDescription) state.setMetaDescription(data.metaDescription);
+        if (data.aiTags && Array.isArray(data.aiTags)) state.setAiTags(data.aiTags);
         if (data.focusKeyphrase) {
           state.setFocusKeyphrase(data.focusKeyphrase);
           if (data.featuredImageAlt) state.setFeaturedImageAlt(data.featuredImageAlt);
@@ -792,6 +793,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         local_resources: state.localResources,
         sources: state.sources,
         topic_tags: state.topicTags,
+        ai_tags: state.aiTags.length > 0 ? state.aiTags : undefined,
         policy_status: state.policyStatus || null,
         policy_effective_date: state.policyEffectiveDate || null,
         policy_applies_to: state.policyAppliesTo || null,

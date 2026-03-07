@@ -134,6 +134,9 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
   const [topicTags, setTopicTags] = useState<string[]>(
     Array.isArray(initialData?.topic_tags) ? initialData.topic_tags : []
   );
+  const [aiTags, setAiTags] = useState<string[]>(
+    Array.isArray(initialData?.ai_tags) ? initialData.ai_tags : []
+  );
   const [policyStatus, setPolicyStatus] = useState(initialData?.policy_status || "");
   const [policyEffectiveDate, setPolicyEffectiveDate] = useState(initialData?.policy_effective_date || "");
   const [policyAppliesTo, setPolicyAppliesTo] = useState(initialData?.policy_applies_to || "");
@@ -267,6 +270,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     localResources, setLocalResources,
     sources, setSources,
     topicTags, setTopicTags,
+    aiTags, setAiTags,
     policyStatus, setPolicyStatus,
     policyEffectiveDate, setPolicyEffectiveDate,
     policyAppliesTo, setPolicyAppliesTo,
