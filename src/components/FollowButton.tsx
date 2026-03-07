@@ -87,7 +87,7 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
   });
 
   const handleClick = () => {
-    console.log('[FollowButton] Clicked', { followType, followId, hasUser: !!user });
+    
     if (!user) {
       toast("Login Required", {
         description: "Please log in to follow authors and categories",

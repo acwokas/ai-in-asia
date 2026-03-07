@@ -28,8 +28,6 @@ export const TopListsContent = ({ items, articleId, introHtml, outroHtml }: TopL
   const showPromptTools = (items[0] as any)?.showPromptTools ?? true;
   const [showSearchWidget, setShowSearchWidget] = useState(true);
 
-  console.log('[TopListsContent] introHtml:', introHtml);
-  console.log('[TopListsContent] outroHtml:', outroHtml);
 
   const getHtmlContent = (content?: string) => {
     if (!content) return undefined;

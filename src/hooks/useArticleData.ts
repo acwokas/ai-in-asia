@@ -73,7 +73,7 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
       
       const { data, error } = await query.maybeSingle();
       
-      console.log('Article query result:', { data, error });
+      
       if (error) throw error;
       return data;
     },
