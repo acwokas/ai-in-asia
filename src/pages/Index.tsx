@@ -880,40 +880,41 @@ const Index = () => {
         {/* 9. Featured Voices */}
         {(featuredAuthors && featuredAuthors.length > 0) && (
           <>
-            <section className="py-14 md:py-20">
+            <section className="py-14 md:py-20 bg-muted/10">
               <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                  <h2 className="headline text-[28px] md:text-[30px] font-bold mb-3">Featured Voices</h2>
-                  <p className="text-muted-foreground text-lg">Meet the experts shaping AI discourse in Asia</p>
+                <div className="flex items-end justify-between mb-8 border-b border-border pb-4">
+                  <div>
+                    <h2 className="headline text-[22px] md:text-[26px] font-bold">Our Contributors</h2>
+                    <p className="text-muted-foreground text-sm mt-1">The writers and experts behind AI in ASIA</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {featuredAuthors?.map((author) => (
-                    <Link 
-                      key={author.id} 
+                    <Link
+                      key={author.id}
                       to={`/author/${author.slug}`}
-                      className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                      className="group flex items-start gap-4 p-4 rounded-lg border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200"
                     >
                       {author.avatar_url ? (
-                        <img 
-                          src={getOptimizedAvatar(author.avatar_url, 160)} 
-                          srcSet={author.avatar_url.includes('supabase.co/storage') ? generateResponsiveSrcSet(author.avatar_url, [80, 160, 240]) : undefined}
-                          sizes="(max-width: 768px) 96px, 160px"
+                        <img
+                          src={getOptimizedAvatar(author.avatar_url, 96)}
+                          srcSet={author.avatar_url.includes('supabase.co/storage') ? generateResponsiveSrcSet(author.avatar_url, [48, 96, 144]) : undefined}
+                          sizes="56px"
                           alt={author.name}
-                          className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                          loading="lazy" width={96} height={96}
+                          className="w-14 h-14 rounded-full object-cover shrink-0 border border-border"
+                          loading="lazy" width={56} height={56}
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                          {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary shrink-0 flex items-center justify-center text-lg font-bold text-primary-foreground border border-border">
+                          {author.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                         </div>
                       )}
-                      <h3 className="font-semibold text-xl mb-1">{author.name}</h3>
-                      {author.job_title && <p className="text-sm text-muted-foreground mb-3">{author.job_title}</p>}
-                      {author.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{author.bio}</p>}
-                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                        {author.article_count || 0} Articles
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-[16px] leading-snug group-hover:text-primary transition-colors">{author.name}</h3>
+                        {author.job_title && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{author.job_title}</p>}
+                        {author.bio && <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{author.bio}</p>}
+                        <p className="text-xs text-primary/70 font-medium mt-2">{author.article_count || 0} articles</p>
                       </div>
-                      {author.twitter_handle && <p className="text-xs text-muted-foreground mt-2">@{author.twitter_handle}</p>}
                     </Link>
                   ))}
                 </div>
