@@ -118,6 +118,40 @@ const GuideCategoryIndex = () => {
         title={`${displayName} Guides | AI in Asia`}
         description={isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`}
         canonical={`https://aiinasia.com/guides/${slug}`}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `${displayName} Guides — AI in Asia`,
+          "description": isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`,
+          "url": `https://aiinasia.com/guides/${slug}`,
+          "inLanguage": "en-GB",
+          "dateModified": new Date().toISOString(),
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(guides && guides.length > 0 && {
+            "hasPart": guides.slice(0, 10).map((g: any) => ({
+              "@type": "Article",
+              "headline": g.title,
+              "url": `https://aiinasia.com/guides/${(g.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${g.slug}`,
+              "dateModified": g.updated_at,
+              "image": g.featured_image_url || undefined,
+            }))
+          })
+        }}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: "Home", url: "https://aiinasia.com" },
+          { name: "Guides", url: "https://aiinasia.com/guides" },
+          { name: displayName, url: `https://aiinasia.com/guides/${slug}` },
+        ]}
       />
       <Header />
       <main id="main-content" className="min-h-screen bg-background">
