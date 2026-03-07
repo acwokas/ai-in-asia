@@ -191,8 +191,21 @@ const NotFoundAnalytics = () => {
           <Link to="/admin"><ArrowLeft className="mr-2 h-4 w-4" />Back to Admin</Link>
         </Button>
 
-        <h1 className="text-3xl font-bold mb-1">404 Audit</h1>
-        <p className="text-muted-foreground mb-8">Broken URLs hitting your site — fix them with one-click redirects.</p>
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">404 Audit</h1>
+            <p className="text-muted-foreground">Broken URLs hitting your site — fix them with one-click redirects.</p>
+          </div>
+          {allPaths && allPaths.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => exportToCSV(realPaths)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          )}
+        </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
