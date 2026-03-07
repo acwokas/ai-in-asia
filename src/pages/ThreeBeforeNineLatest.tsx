@@ -40,7 +40,7 @@ export default function ThreeBeforeNineLatest() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <SEOHead title="3 Before 9 - Latest Edition" description="The latest 3 Before 9 morning briefing from AI in ASIA." noIndex={true} />
+        <SEOHead title="3 Before 9 — Daily AI Briefing for Asia" description="Your daily AI news briefing covering the stories that matter across Asia-Pacific. Published every weekday morning." noIndex={false} />
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-amber-400 mx-auto mb-4" />
           <p className="text-slate-400">Loading latest edition...</p>
