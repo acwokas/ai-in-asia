@@ -20,7 +20,11 @@ serve(async (req) => {
       messages: z.array(z.object({
         role: z.enum(['user', 'assistant', 'system']),
         content: z.string().min(1).max(10000)
-      })).min(1).max(50)
+      })).min(1).max(50),
+      context: z.object({
+        title: z.string().optional(),
+        category: z.string().optional(),
+      }).optional(),
     });
 
     const body = await req.json();
