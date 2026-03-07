@@ -14,7 +14,7 @@ Disallow: /editor
 Disallow: /auth
 Disallow: /saved
 Disallow: /profile
-Disallow: /search
+
 
 # Explicitly welcome major search engines
 User-agent: Googlebot
