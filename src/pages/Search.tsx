@@ -486,10 +486,30 @@ const Search = () => {
           </div>
 
           {!isFetching && searchQuery && results?.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No articles found matching your search.
+            <div className="text-center py-12 max-w-md mx-auto">
+              <p className="text-muted-foreground mb-2">
+                No articles found for <span className="text-foreground font-medium">"{searchQuery}"</span>.
               </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Try different keywords, or ask Scout — our AI assistant can answer questions about AI across Asia even if we haven't covered it yet.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchParams({});
+                  }}
+                  className="text-sm px-4 py-2 rounded-md border border-border hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Clear search
+                </button>
+                <a
+                  href={`/?scout=${encodeURIComponent(searchQuery)}`}
+                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Ask Scout about "{searchQuery}"
+                </a>
+              </div>
             </div>
           )}
         </section>
