@@ -132,6 +132,7 @@ export const OrganizationStructuredData = () => {
       "https://twitter.com/aiinasia",
       "https://x.com/aiinasia",
       "https://linkedin.com/company/aiinasia",
+      "https://www.youtube.com/@aiinasia",
       "https://aiinasia.com",
     ],
     contactPoint: {
