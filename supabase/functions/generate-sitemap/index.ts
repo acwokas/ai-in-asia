@@ -101,6 +101,21 @@ serve(async (req) => {
       });
     }
 
+    // Guide category index pages
+    const guideCategories = [
+      "business", "lifestyle", "creators", "work", "education",
+      "wellness", "finance", "productivity", "content", "technology",
+      "safety", "general", "platform",
+    ];
+    for (const cat of guideCategories) {
+      urls.push({
+        loc: `${baseUrl}/guides/${cat}`,
+        lastmod: today,
+        changefreq: 'weekly',
+        priority: 0.6,
+      });
+    }
+
     // Authors
     const { data: authors } = await supabase
       .from("authors")
