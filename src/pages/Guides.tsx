@@ -568,7 +568,7 @@ const Guides = () => {
           "itemListElement": guides.slice(0, 20).map((g: any, i: number) => ({
             "@type": "ListItem",
             "position": i + 1,
-            "url": `https://aiinasia.com/guides/${g.topic_category ? g.topic_category.toLowerCase().replace(/\s+/g, '-') : 'general'}/${g.slug}`,
+            "url": `https://aiinasia.com${guideHref(g.slug, g.topic_category)}`,
             "name": g.title,
           }))
         } : undefined}
