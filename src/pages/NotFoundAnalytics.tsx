@@ -127,6 +127,7 @@ const NotFoundAnalytics = () => {
   const realPaths = allPaths?.filter(p => !isBotPath(p.path)) || [];
   const unresolvedReal = realPaths.filter(p => !p.resolved);
   const resolvedReal = realPaths.filter(p => p.resolved);
+  const reportedByVisitors = realPaths.filter(p => p.user_reported && !p.resolved);
   const displayPaths = showResolved ? realPaths : unresolvedReal;
 
   const totalRealHits = unresolvedReal.reduce((s, p) => s + p.count, 0);
