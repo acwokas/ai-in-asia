@@ -177,6 +177,41 @@ const PolicyRegion = () => {
         title={REGION_SEO[region || '']?.title || `${regionData?.name || 'Region'} - AI Policy Atlas`}
         description={regionData?.description || REGION_SEO[region || '']?.description || `Explore AI policy and regulation in ${regionData?.name || 'this region'}. Coverage of governance frameworks and developments.`}
         canonical={`https://aiinasia.com/ai-policy-atlas/${region}`}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": REGION_SEO[region || '']?.title || `${regionData?.name || 'Region'} — AI Policy Atlas`,
+          "description": regionData?.description || REGION_SEO[region || '']?.description || `AI policy and regulation coverage for ${regionData?.name || 'this region'}`,
+          "url": `https://aiinasia.com/ai-policy-atlas/${region}`,
+          "inLanguage": "en-GB",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aiinasia.com" },
+              { "@type": "ListItem", "position": 2, "name": "AI Policy Atlas", "item": "https://aiinasia.com/ai-policy-atlas" },
+              { "@type": "ListItem", "position": 3, "name": regionData?.name || "Region", "item": `https://aiinasia.com/ai-policy-atlas/${region}` }
+            ]
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(articles && articles.length > 0 && {
+            "numberOfItems": articles.length,
+            "hasPart": articles.slice(0, 10).map((a: any) => ({
+              "@type": "Article",
+              "headline": a.title,
+              "url": `https://aiinasia.com/ai-policy-atlas/${region}/${a.slug}`,
+              "datePublished": a.published_at,
+              ...(a.country && { "about": { "@type": "Place", "name": a.country } })
+            }))
+          })
+        }}
       />
       <Header />
       
