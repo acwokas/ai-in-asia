@@ -439,7 +439,7 @@ Return your response as a single JSON object with these fields. Every field is r
   "rewrittenContent": "Full article in clean HTML. Contains the article body with <h2>/<h3>/<h4> headings, By The Numbers block, blockquotes, lists, tables where appropriate, FAQ section, IMAGE_PLACEHOLDER_HERE, and links. No markdown. No [TAG] wrappers.",
   "headline": "Punchy headline under 60 characters. Specific and newsworthy. No colons or semicolons. British English.",
   "excerpt": "A hook under 140 characters. Make the reader need to click. Not a summary.",
-  "tldr": ["Bullet 1 under 100 chars — specific stat or fact", "Bullet 2 under 100 chars", "Bullet 3 under 100 chars — so what / implication"],
+  "tldr": ["Bullet 1 under 100 chars, specific stat or fact", "Bullet 2 under 100 chars", "Bullet 3 under 100 chars, so what / implication"],
   "whoShouldPayAttention": "Audience 1 | Audience 2 | Audience 3",
   "whatChangesNext": "One specific, forward-looking sentence.",
   "category": "Exactly one of: News, Business, Life, Learn, Create, Voices, Policy",
