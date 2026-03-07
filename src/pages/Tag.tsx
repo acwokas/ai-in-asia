@@ -152,7 +152,7 @@ const Tag = () => {
 
         <section className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles?.map((article: any) => (
+            {articles?.slice(0, displayLimit).map((article: any) => (
               <ArticleCard
                 key={article.id}
                 title={article.title}
