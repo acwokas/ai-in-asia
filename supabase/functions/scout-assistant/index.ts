@@ -709,6 +709,11 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
   // NOW insert mid-article image with safe alt text (capped under 50 chars)
   if (midImage) {
     const safeAlt = midImageAlt.substring(0, 45);
+    finalContent = finalContent.replace(
+      /IMAGE_PLACEHOLDER_HERE\n<figcaption>(.*?)<\/figcaption>/g,
+      `\n\n<figure>\n\n![${safeAlt}](${midImage})\n\n<figcaption>$1</figcaption>\n</figure>\n\n`
+    );
+    // Fallback for IMAGE_PLACEHOLDER_HERE without figcaption
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${safeAlt}](${midImage})\n\n`);
   } else {
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, '');
