@@ -157,6 +157,49 @@ ALT3: [alternative option 3]`;
   }
 });
 
+// ── Perplexity enrichment helper ─────────────────────────────────────
+async function enrichWithPerplexity(title: string, content: string, apiKey: string): Promise<string> {
+  if (!apiKey) return '';
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'sonar',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a research assistant. Provide factual, current information with citations. Focus on Asia-Pacific where possible. Be concise and factual only — no opinions.',
+          },
+          {
+            role: 'user',
+            content: `For a news article titled "${title}", provide:
+1. 3-5 current statistics or data points with their sources (publication name and approximate date)
+2. Any notable Asia-Pacific specific developments, companies, or regulations related to this topic
+3. One or two recent expert quotes or statements (with attribution — name, title, organisation) if they exist in public record
+4. Any significant recent developments in the last 60 days
+
+Be specific. Only include verifiable information. Format as a simple numbered list.`,
+          },
+        ],
+        max_tokens: 600,
+        return_citations: true,
+      }),
+    });
+    if (!response.ok) return '';
+    const data = await response.json();
+    const enrichment = data.choices?.[0]?.message?.content || '';
+    const citations = data.citations ? `\n\nSources: ${data.citations.slice(0, 5).join(', ')}` : '';
+    return enrichment + citations;
+  } catch (err) {
+    console.error('Perplexity enrichment failed (non-fatal):', err);
+    return '';
+  }
+}
+
 // ── rewrite-with-images ──────────────────────────────────────────────
 async function handleRewriteWithImages(
   content: string,
@@ -164,8 +207,18 @@ async function handleRewriteWithImages(
   apiKey: string,
   cors: Record<string, string>,
 ) {
+  // Requires PERPLEXITY_API_KEY to be set in Supabase Edge Function secrets
+  // Add via: Supabase Dashboard → Edge Functions → Manage secrets → PERPLEXITY_API_KEY
+  // Get key from: https://www.perplexity.ai/settings/api
+
   const title = context?.title || '';
   const contextKeyphrase = context?.focusKeyphrase || '';
+
+  const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY') || '';
+  const enrichmentData = await enrichWithPerplexity(title, content, PERPLEXITY_API_KEY);
+  const enrichmentSection = enrichmentData
+    ? `\n\nRESEARCH ENRICHMENT (verified facts and citations you MUST draw from):\n${enrichmentData}\n`
+    : '';
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
