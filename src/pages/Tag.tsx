@@ -19,6 +19,7 @@ import {
 
 const Tag = () => {
   const { slug } = useParams();
+  const [displayLimit, setDisplayLimit] = useState(20);
 
   const { data: tag, isLoading: tagLoading } = useQuery({
     queryKey: ["tag", slug],
