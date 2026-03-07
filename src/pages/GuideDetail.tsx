@@ -198,7 +198,12 @@ const GuideDetail = () => {
     "@type": "Article",
     headline: g.title,
     description: g.one_line_description || g.meta_description || g.excerpt || "",
-    image: g.featured_image_url || "https://aiinasia.com/icons/aiinasia-512.png?v=3",
+    image: {
+      "@type": "ImageObject",
+      url: g.featured_image_url || "https://aiinasia.com/icons/aiinasia-512.png?v=3",
+      width: 1200,
+      height: 675,
+    },
     datePublished: g.published_at || g.created_at,
     dateModified: g.updated_at,
     author: { "@type": "Organization", name: "AI in Asia" },
