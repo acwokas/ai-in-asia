@@ -301,6 +301,26 @@ const Category = () => {
           "name": `${cfg.label} - AI in Asia`,
           "description": cfg.metaDesc,
           "url": `https://aiinasia.com/category/${slug}`,
+          "dateModified": new Date().toISOString(),
+          "inLanguage": "en-GB",
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(articles && articles.length > 0 && {
+            "hasPart": articles.slice(0, 10).map((a: any) => ({
+              "@type": "Article",
+              "headline": a.title,
+              "url": `https://aiinasia.com/${a.categories?.slug || slug}/${a.slug}`,
+              "datePublished": a.published_at,
+              "image": a.featured_image_url || undefined,
+            }))
+          })
         }}
       />
       {category && (
