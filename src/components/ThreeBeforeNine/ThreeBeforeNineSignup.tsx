@@ -49,7 +49,7 @@ export default function ThreeBeforeNineSignup() {
           .from("briefing_subscriptions")
           .insert({
             email: email.toLowerCase(),
-            briefing_type: "3-before-9",
+            briefing_type: "three_before_nine",
             is_active: true
           });
         if (error) throw error;
