@@ -374,7 +374,16 @@ const Article = () => {
           tags: [...(article.ai_tags || []), ...(article.topic_tags || [])].filter(Boolean),
           twitterHandle: article.authors?.twitter_handle || undefined,
         }}
-      />
+      >
+        {article.featured_image_url && (
+          <link
+            rel="preload"
+            as="image"
+            href={article.featured_image_url}
+            fetchPriority="high"
+          />
+        )}
+      </SEOHead>
 
       <ArticleStructuredData
         title={article.title}
