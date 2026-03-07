@@ -76,6 +76,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
   const displayTag = tag || cfg.label;
   const displayTagColor = tagColor || cfg.accent;
   const meta = article.published_at ? new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : undefined;
+  const commentCount = article.comment_count || 0;
 
   return (
     <div
