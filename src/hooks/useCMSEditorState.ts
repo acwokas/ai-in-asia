@@ -42,6 +42,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
   const [status, setStatus] = useState(initialData?.status || "draft");
   const [featuredImage, setFeaturedImage] = useState(initialData?.featured_image_url || "");
   const [featuredImageAlt, setFeaturedImageAlt] = useState(initialData?.featured_image_alt || "");
+  const [featuredImageCaption, setFeaturedImageCaption] = useState(initialData?.featured_image_caption || "");
   
   // SEO fields
   const [seoTitle, setSeoTitle] = useState(initialData?.seo_title || "");
