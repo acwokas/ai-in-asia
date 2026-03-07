@@ -270,6 +270,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     localResources, setLocalResources,
     sources, setSources,
     topicTags, setTopicTags,
+    aiTags, setAiTags,
     policyStatus, setPolicyStatus,
     policyEffectiveDate, setPolicyEffectiveDate,
     policyAppliesTo, setPolicyAppliesTo,
