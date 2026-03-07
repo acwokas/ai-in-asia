@@ -143,7 +143,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     setShowPublishChecklist(false);
     const data = actions.buildSaveData();
     onSave?.(data);
-  }, [actions, onSave]);
+    markClean();
+  }, [actions, onSave, markClean]);
 
   // Auto-select 3-Before-9 type when opened via ?type=3b9
   useEffect(() => {
