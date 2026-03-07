@@ -24,13 +24,20 @@ import NotificationPrompt from "@/components/NotificationPrompt";
 
 const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
 const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
-const TrendingVisualStrip = lazy(() => import("@/components/TrendingVisualStrip").catch(() => { window.location.reload(); return import("@/components/TrendingVisualStrip"); }));
+const safeReloadOnce = () => {
+  const key = 'chunk_reload_attempted';
+  if (!sessionStorage.getItem(key)) {
+    sessionStorage.setItem(key, '1');
+    window.location.reload();
+  }
+};
 
-const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles").catch(() => { window.location.reload(); return import("@/components/RecommendedArticles"); }));
-const EditorsPick = lazy(() => import("@/components/EditorsPick").catch(() => { window.location.reload(); return import("@/components/EditorsPick"); }));
-const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents").catch(() => { window.location.reload(); return import("@/components/UpcomingEvents"); }));
-const ForYouSection = lazy(() => import("@/components/ForYouSection").catch(() => { window.location.reload(); return import("@/components/ForYouSection"); }));
-const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding").catch(() => { window.location.reload(); return import("@/components/ThreeBeforeNineLanding"); }));
+const TrendingVisualStrip = lazy(() => import("@/components/TrendingVisualStrip").catch(() => { safeReloadOnce(); return import("@/components/TrendingVisualStrip"); }));
+const RecommendedArticles = lazy(() => import("@/components/RecommendedArticles").catch(() => { safeReloadOnce(); return import("@/components/RecommendedArticles"); }));
+const EditorsPick = lazy(() => import("@/components/EditorsPick").catch(() => { safeReloadOnce(); return import("@/components/EditorsPick"); }));
+const UpcomingEvents = lazy(() => import("@/components/UpcomingEvents").catch(() => { safeReloadOnce(); return import("@/components/UpcomingEvents"); }));
+const ForYouSection = lazy(() => import("@/components/ForYouSection").catch(() => { safeReloadOnce(); return import("@/components/ForYouSection"); }));
+const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding").catch(() => { safeReloadOnce(); return import("@/components/ThreeBeforeNineLanding"); }));
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
