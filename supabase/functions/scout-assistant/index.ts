@@ -580,6 +580,15 @@ ${content}`;
   // Safety: strip any [TAG]...[/TAG] blocks that leaked into the article body
   finalContent = finalContent.replace(/\[(EXCERPT|HEADLINE|TLDR|WHO|WHAT_NEXT|CATEGORY|SEO_TITLE|SEO_META_TITLE|FOCUS_KEYPHRASE|KEYPHRASE_SYNONYMS|META_DESCRIPTION|IMAGE_PROMPT)\][\s\S]*?\[\/\1\]/g, '');
 
+  // Hard strip: remove all em dashes regardless of what the AI output
+  // \u2014 (em dash), \u2013 (en dash), \u2015 (horizontal bar) all normalised
+  finalContent = finalContent
+    .replace(/\u2014/g, ',')   // em dash -> comma
+    .replace(/\u2013/g, ',')   // en dash -> comma
+    .replace(/\u2015/g, ',')   // horizontal bar -> comma
+    .replace(/ — /g, '. ')     // spaced em dash -> full stop (catches any that slipped through)
+    .replace(/ – /g, ', ');    // spaced en dash -> comma
+
   // ── Look up category ID from database ──
   let categoryId = '';
   if (categoryName) {
