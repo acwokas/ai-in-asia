@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp, RefreshCw 
+  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp, RefreshCw, AlertTriangle 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -33,6 +33,19 @@ export const AdminQuickActions = ({
       const { data } = await supabase.rpc('get_trending_refresh_timestamp');
       return data;
     },
+  });
+
+  const { data: reported404Count } = useQuery({
+    queryKey: ["reported-404-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("page_not_found_log")
+        .select("*", { count: "exact", head: true })
+        .eq("user_reported", true)
+        .eq("resolved", false);
+      return count || 0;
+    },
+    refetchInterval: 5 * 60 * 1000,
   });
 
   return (
@@ -138,6 +151,19 @@ export const AdminQuickActions = ({
             </Button>
             <Button onClick={() => navigate("/admin/seo-tools")} variant="outline" className="justify-start border-primary/30 text-primary hover:bg-primary/10">
               SEO Tools
+            </Button>
+            <Button
+              onClick={() => navigate("/admin/404-analytics")}
+              variant="outline"
+              className={`justify-start relative ${reported404Count ? "border-orange-500/50 text-orange-500 hover:bg-orange-500/10" : "border-primary/30 text-primary hover:bg-primary/10"}`}
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              404 Audit
+              {reported404Count ? (
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold">
+                  {reported404Count > 9 ? "9+" : reported404Count}
+                </span>
+              ) : null}
             </Button>
           </div>
         </div>
