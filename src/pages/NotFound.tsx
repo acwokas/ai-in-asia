@@ -83,6 +83,7 @@ const NotFound = () => {
         referrer: document.referrer || null,
         user_agent: navigator.userAgent,
         resolved: false,
+        user_reported: true,
       });
       setReported(true);
     } catch {}
