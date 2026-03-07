@@ -526,6 +526,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.featuredImage) {
           state.setFeaturedImage(data.featuredImage);
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
+          if (data.featuredImageCaption) state.setFeaturedImageCaption(data.featuredImageCaption);
         }
         
         // Headline + Slug
