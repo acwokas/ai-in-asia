@@ -643,7 +643,7 @@ STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow 
 
 PEOPLE: Where the topic involves people, show real human subjects — diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
 
-HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichés. No flat design or illustration. No dark or black backgrounds. No generic "technology" imagery (keyboards, screens, server racks). The image must be unmistakably about the specific topic, not a generic tech visual.` }
+HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichés. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
           ],
           modalities: ['image', 'text'],
         }),
