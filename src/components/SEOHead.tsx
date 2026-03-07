@@ -94,7 +94,7 @@ export const SEOHead = ({
       <meta property="og:image:width" content={ogImageWidth || "1200"} />
       <meta property="og:image:height" content={ogImageHeight || "630"} />
       <meta property="og:image:alt" content={resolvedImageAlt} />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:locale" content="en_GB" />
 
       {/* Article-specific OG */}
       {articleMeta?.publishedTime && (
