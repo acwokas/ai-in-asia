@@ -47,7 +47,7 @@ export const ArticleStructuredData = ({
       name: "AI in Asia",
       logo: {
         "@type": "ImageObject",
-        url: "https://aiinasia.com/logo.png",
+        url: "https://aiinasia.com/icons/aiinasia-512.png",
       },
     },
     isAccessibleForFree: true,
