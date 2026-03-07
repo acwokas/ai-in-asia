@@ -35,6 +35,7 @@ interface ArticleHeaderProps {
     status: string;
     reading_time_minutes?: number | null;
     published_at?: string | null;
+    updated_at?: string | null;
     view_count?: number | null;
     authors?: Author | null;
     categories?: Category | null;
