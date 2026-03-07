@@ -94,7 +94,12 @@ serve(async (req) => {
       }
       
       if (article.featured_image_url) {
-        rss += `      <enclosure url="${escapeXml(article.featured_image_url)}" type="image/jpeg" length="0" />\n`;
+        const imageUrl = article.featured_image_url;
+        const ext = imageUrl.split('?')[0].split('.').pop()?.toLowerCase();
+        const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+        rss += `      <enclosure url="${escapeXml(imageUrl)}" type="${mimeType}" length="0" />\n`;
+        rss += `      <media:content url="${escapeXml(imageUrl)}" type="${mimeType}" medium="image" />\n`;
+        rss += `      <media:thumbnail url="${escapeXml(imageUrl)}" />\n`;
       }
       
       if (article.excerpt) {
