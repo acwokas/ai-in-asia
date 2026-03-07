@@ -109,6 +109,9 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
         <Linkedin className="h-[18px] w-[18px]" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
+        <TelegramIcon className="h-[18px] w-[18px]" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
       </Button>
