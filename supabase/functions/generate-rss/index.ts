@@ -50,7 +50,7 @@ serve(async (req) => {
     rss += "    <title>AI in ASIA</title>\n";
     rss += `    <link>${baseUrl}</link>\n`;
     rss += "    <description>Stay informed about AI developments, innovations, and insights from across Asia. Features, news, tools and expert opinions on artificial intelligence.</description>\n";
-    rss += "    <language>en-us</language>\n";
+    rss += "    <language>en-gb</language>\n";
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
      rss += `    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml" />\n`;
      rss += `    <atom:link href="${baseUrl}/feed" rel="alternate" type="application/rss+xml" />\n`;
