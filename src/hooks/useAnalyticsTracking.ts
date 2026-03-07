@@ -171,7 +171,7 @@ export const useAnalyticsTracking = () => {
   const { user } = useAuth();
 
   // Do not track admin, editor, auth, or profile pages
-  const isInternalPath = ['/admin', '/editor', '/auth', '/profile', '/connection-test'].some(
+  const isInternalPath = ['/admin', '/editor', '/auth', '/profile', '/connection-test', '/not-found'].some(
     prefix => location.pathname.startsWith(prefix)
   );
 
