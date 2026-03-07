@@ -13,6 +13,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const url = new URL(req.url);
+  const isNewsSitemap = url.searchParams.get('type') === 'news';
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -20,7 +23,7 @@ serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Static pages
-    const urls: { loc: string; lastmod: string; changefreq: string; priority: number }[] = [
+    const urls: { loc: string; lastmod: string; changefreq: string; priority: number; title?: string; publishedAt?: string; isNews?: boolean }[] = [
       { loc: `${baseUrl}/`, lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: `${baseUrl}/about`, lastmod: today, changefreq: 'monthly', priority: 0.8 },
       { loc: `${baseUrl}/contact`, lastmod: today, changefreq: 'monthly', priority: 0.6 },
@@ -57,7 +60,7 @@ serve(async (req) => {
     while (true) {
       const { data: batch, error } = await supabase
         .from("articles")
-        .select("slug, updated_at, published_at, categories:primary_category_id(slug)")
+        .select("slug, title, updated_at, published_at, categories:primary_category_id(slug)")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
         .range(from, from + pageSize - 1);
@@ -72,6 +75,9 @@ serve(async (req) => {
           lastmod: new Date(a.updated_at).toISOString().split('T')[0],
           changefreq: days <= 7 ? 'daily' : days <= 30 ? 'weekly' : 'monthly',
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
+          title: (a as any).title || '',
+          publishedAt: a.published_at,
+          isNews: days <= 2,
         });
       }
       if (batch.length < pageSize) break;
@@ -186,13 +192,36 @@ serve(async (req) => {
     urls.push({ loc: `${baseUrl}/ai-policy-atlas/compare`, lastmod: today, changefreq: 'weekly', priority: 0.6 });
     urls.push({ loc: `${baseUrl}/ai-policy-atlas/updates`, lastmod: today, changefreq: 'daily', priority: 0.7 });
 
-    // Build single flat urlset
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    for (const u of urls) {
-      xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>\n`;
+    let xml: string;
+
+    if (isNewsSitemap) {
+      // Google News sitemap — articles published within last 2 days only
+      const newsArticles = urls.filter((u: any) => u.isNews);
+      xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n';
+      for (const u of newsArticles as any[]) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${u.loc}</loc>\n`;
+        xml += `    <news:news>\n`;
+        xml += `      <news:publication>\n`;
+        xml += `        <news:name>AI in Asia</news:name>\n`;
+        xml += `        <news:language>en</news:language>\n`;
+        xml += `      </news:publication>\n`;
+        xml += `      <news:publication_date>${new Date(u.publishedAt).toISOString()}</news:publication_date>\n`;
+        xml += `      <news:title>${u.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</news:title>\n`;
+        xml += `    </news:news>\n`;
+        xml += `  </url>\n`;
+      }
+      xml += '</urlset>';
+    } else {
+      // Main sitemap
+      xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      for (const u of urls) {
+        xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>\n`;
+      }
+      xml += '</urlset>';
     }
-    xml += '</urlset>';
 
     console.log(`Generated sitemap with ${urls.length} URLs`);
 
