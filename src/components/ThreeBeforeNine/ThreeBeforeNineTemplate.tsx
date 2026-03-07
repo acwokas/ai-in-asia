@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { Clock, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
+import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { useAdminRole } from "@/hooks/useAdminRole";
