@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export interface AdminActionState {
   scrapingEvents: boolean;
-  fixingDates: boolean;
+  
   autoScheduling: boolean;
   refreshingContent: boolean;
   calculatingReadingTimes: boolean;
