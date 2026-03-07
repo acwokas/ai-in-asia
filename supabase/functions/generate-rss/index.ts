@@ -90,6 +90,10 @@ serve(async (req) => {
         rss += `      <enclosure url="${escapeXml(article.featured_image_url)}" type="image/jpeg" length="0" />\n`;
       }
       
+      if (article.excerpt) {
+        const contentEncoded = `<p>${article.excerpt}</p><p><a href="${articleUrl}">Read the full article on AIinASIA →</a></p>`;
+        rss += `      <content:encoded><![CDATA[${contentEncoded}]]></content:encoded>\n`;
+      }
       rss += "    </item>\n";
     });
 
