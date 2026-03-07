@@ -27,6 +27,29 @@
     }
   ],
   "categories": ["news", "technology", "education"],
-  "lang": "en",
-  "dir": "ltr"
+  "lang": "en-GB",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "3 Before 9",
+      "short_name": "3B9",
+      "description": "Today's daily AI briefing",
+      "url": "/news/3-before-9",
+      "icons": [{ "src": "/icons/aiinasia-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Latest News",
+      "short_name": "News",
+      "description": "Latest AI news across Asia",
+      "url": "/category/news",
+      "icons": [{ "src": "/icons/aiinasia-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Search",
+      "short_name": "Search",
+      "description": "Search AIinASIA",
+      "url": "/search",
+      "icons": [{ "src": "/icons/aiinasia-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
