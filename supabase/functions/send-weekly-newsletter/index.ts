@@ -573,11 +573,16 @@ Deno.serve(async (req) => {
 
         const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
+        const unsubUrl = createUnsubscribeUrl(sendRecord.id, edition.id, subscriber.id);
         await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: subjectLine,
           html,
+          headers: {
+            'List-Unsubscribe': `<${unsubUrl}>, <mailto:unsubscribe@aiinasia.com?subject=unsubscribe>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         });
 
         sentCount++;
