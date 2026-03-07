@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Flag } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -34,6 +34,7 @@ interface PathSummary {
   last_seen: string;
   resolved: boolean;
   redirect_created: boolean;
+  user_reported: boolean;
   referrers: string[];
 }
 
@@ -49,7 +50,7 @@ const NotFoundAnalytics = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("page_not_found_log")
-        .select("path, referrer, created_at, resolved, redirect_created")
+        .select("path, referrer, created_at, resolved, redirect_created, user_reported")
         .order("created_at", { ascending: false })
         .limit(2000);
 
@@ -67,6 +68,7 @@ const NotFoundAnalytics = () => {
           if (log.referrer && !existing.referrers.includes(log.referrer)) {
             existing.referrers.push(log.referrer);
           }
+          if (log.user_reported) existing.user_reported = true;
         } else {
           summaryMap.set(log.path, {
             path: log.path,
@@ -74,6 +76,7 @@ const NotFoundAnalytics = () => {
             last_seen: log.created_at,
             resolved: log.resolved || false,
             redirect_created: log.redirect_created || false,
+            user_reported: log.user_reported || false,
             referrers: log.referrer ? [log.referrer] : [],
           });
         }
@@ -124,6 +127,7 @@ const NotFoundAnalytics = () => {
   const realPaths = allPaths?.filter(p => !isBotPath(p.path)) || [];
   const unresolvedReal = realPaths.filter(p => !p.resolved);
   const resolvedReal = realPaths.filter(p => p.resolved);
+  const reportedByVisitors = realPaths.filter(p => p.user_reported && !p.resolved);
   const displayPaths = showResolved ? realPaths : unresolvedReal;
 
   const totalRealHits = unresolvedReal.reduce((s, p) => s + p.count, 0);
@@ -152,7 +156,7 @@ const NotFoundAnalytics = () => {
         <p className="text-muted-foreground mb-8">Broken URLs hitting your site — fix them with one-click redirects.</p>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-4 gap-4 mb-8">
           <Card className="p-5">
             <div className="text-2xl font-bold text-destructive">{unresolvedReal.length}</div>
             <div className="text-sm text-muted-foreground">Broken URLs</div>
@@ -160,6 +164,10 @@ const NotFoundAnalytics = () => {
           <Card className="p-5">
             <div className="text-2xl font-bold">{totalRealHits}</div>
             <div className="text-sm text-muted-foreground">Total Hits</div>
+          </Card>
+          <Card className="p-5 border-orange-500/30">
+            <div className="text-2xl font-bold text-orange-500">{reportedByVisitors.length}</div>
+            <div className="text-sm text-muted-foreground">Reported by visitors</div>
           </Card>
           <Card className="p-5">
             <div className="text-2xl font-bold text-muted-foreground">{totalBotHits}</div>
@@ -184,6 +192,103 @@ const NotFoundAnalytics = () => {
             {showBots ? "Hide bot probes" : `Show bot probes (${botPaths.length})`}
           </Button>
         </div>
+
+        {/* Reported by visitors section */}
+        {reportedByVisitors.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Flag className="h-4 w-4 text-orange-500" />
+              Reported by visitors
+              <Badge variant="outline" className="text-orange-500 border-orange-500/30 text-xs">
+                Priority
+              </Badge>
+            </h2>
+            <div className="space-y-2">
+              {reportedByVisitors.map((summary) => {
+                const isExpanded = expandedPath === summary.path;
+                const redirectTo = redirectInputs[summary.path] || "";
+                return (
+                  <Card key={summary.path} className="overflow-hidden border-orange-500/20 bg-orange-500/5">
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <code className="text-sm font-mono bg-muted px-2 py-0.5 rounded truncate max-w-[400px]">
+                              {summary.path}
+                            </code>
+                            <Badge variant="destructive" className="text-xs shrink-0">
+                              {summary.count} {summary.count === 1 ? "hit" : "hits"}
+                            </Badge>
+                            <Badge className="text-xs bg-orange-500/20 text-orange-600 border-orange-500/30">
+                              Visitor reported
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Last hit: {new Date(summary.last_seen).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            {summary.referrers.length > 0 && (
+                              <span className="ml-3">
+                                From: {summary.referrers.slice(0, 2).map(r => {
+                                  try { return new URL(r).hostname; } catch { return r; }
+                                }).join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setExpandedPath(isExpanded ? null : summary.path)}
+                          >
+                            Fix it
+                            {isExpanded ? <ChevronUp className="ml-1 h-3 w-3" /> : <ChevronDown className="ml-1 h-3 w-3" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => markResolvedMutation.mutate(summary.path)}
+                            disabled={markResolvedMutation.isPending}
+                          >
+                            Dismiss
+                          </Button>
+                        </div>
+                      </div>
+                      {isExpanded && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <p className="text-sm text-muted-foreground mb-3">Redirect this broken URL to:</p>
+                          <div className="flex gap-2 items-center">
+                            <code className="text-sm bg-muted px-2 py-1.5 rounded shrink-0 text-muted-foreground">
+                              {summary.path}
+                            </code>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <Input
+                              placeholder="/the-correct-url"
+                              value={redirectTo}
+                              onChange={(e) => setRedirectInputs(prev => ({ ...prev, [summary.path]: e.target.value }))}
+                              className="flex-1"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && redirectTo.trim()) {
+                                  createRedirectMutation.mutate({ fromPath: summary.path, toPath: redirectTo.trim() });
+                                }
+                              }}
+                            />
+                            <Button
+                              size="sm"
+                              disabled={!redirectTo.trim() || createRedirectMutation.isPending}
+                              onClick={() => createRedirectMutation.mutate({ fromPath: summary.path, toPath: redirectTo.trim() })}
+                            >
+                              Create redirect
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
