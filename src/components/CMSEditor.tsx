@@ -646,6 +646,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
             slug={state.slug}
             excerpt={state.excerpt}
             featuredImage={state.featuredImage}
+            aiTags={state.aiTags}
+            onAiTagsChange={state.setAiTags}
           />
         </TabsContent>
 
