@@ -349,7 +349,18 @@ const Article = () => {
     );
   }
 
-  
+
+      {/* FAQ structured data — auto-parsed from Scout-generated FAQ sections */}
+      {(() => {
+        const contentStr = typeof article.content === 'string' ? article.content : JSON.stringify(article.content || '');
+        const faqMatches = [...contentStr.matchAll(/<h[34][^>]*>\s*([^<]+\?)\s*<\/h[34]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+        if (faqMatches.length === 0) return null;
+        const questions = faqMatches.map(m => ({
+          question: m[1].replace(/<[^>]+>/g, '').trim(),
+          answer: m[2].replace(/<[^>]+>/g, '').trim(),
+        })).filter(q => q.question && q.answer).slice(0, 5);
+        return questions.length > 0 ? <FAQPageStructuredData questions={questions} /> : null;
+      })()}
 
   return (
     <>
