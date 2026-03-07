@@ -23,7 +23,7 @@ serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Static pages
-    const urls: { loc: string; lastmod: string; changefreq: string; priority: number; title?: string; publishedAt?: string; isNews?: boolean }[] = [
+    const urls: { loc: string; lastmod: string; changefreq: string; priority: number; title?: string; publishedAt?: string; imageUrl?: string; isNews?: boolean }[] = [
       { loc: `${baseUrl}/`, lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: `${baseUrl}/about`, lastmod: today, changefreq: 'monthly', priority: 0.8 },
       { loc: `${baseUrl}/contact`, lastmod: today, changefreq: 'monthly', priority: 0.6 },
@@ -60,7 +60,7 @@ serve(async (req) => {
     while (true) {
       const { data: batch, error } = await supabase
         .from("articles")
-        .select("slug, title, updated_at, published_at, categories:primary_category_id(slug)")
+        .select("slug, title, updated_at, published_at, featured_image_url, categories:primary_category_id(slug)")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
         .range(from, from + pageSize - 1);
@@ -77,6 +77,7 @@ serve(async (req) => {
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
           title: (a as any).title || '',
           publishedAt: a.published_at,
+          imageUrl: (a as any).featured_image_url || '',
           isNews: days <= 2,
         });
       }
@@ -217,9 +218,15 @@ serve(async (req) => {
     } else {
       // Main sitemap
       xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
       for (const u of urls) {
-        xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>\n`;
+        const imageUrl = (u as any).imageUrl || '';
+        const title = ((u as any).title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n`;
+        if (imageUrl) {
+          xml += `    <image:image>\n      <image:loc>${imageUrl}</image:loc>\n      <image:title>${title}</image:title>\n    </image:image>\n`;
+        }
+        xml += `  </url>\n`;
       }
       xml += '</urlset>';
     }
