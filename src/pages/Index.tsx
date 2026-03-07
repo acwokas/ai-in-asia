@@ -512,6 +512,12 @@ const Index = () => {
                             <span>{featuredArticle.authors.name}</span>
                           </>
                         )}
+                        {featuredArticle.comment_count > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>{featuredArticle.comment_count} {featuredArticle.comment_count === 1 ? 'comment' : 'comments'}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -604,6 +610,12 @@ const Index = () => {
                           )}
                           <span>·</span>
                           <span>{article.reading_time_minutes || 5} min</span>
+                          {article.comment_count > 0 && (
+                            <>
+                              <span>·</span>
+                              <span>{article.comment_count} {article.comment_count === 1 ? 'comment' : 'comments'}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </Link>
@@ -704,6 +716,12 @@ const Index = () => {
                     )}
                     <span>•</span>
                     <span>{article.reading_time_minutes || 5} min read</span>
+                    {article.comment_count > 0 && (
+                      <>
+                        <span>•</span>
+                        <span>{article.comment_count} {article.comment_count === 1 ? 'comment' : 'comments'}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
