@@ -126,7 +126,7 @@ export const OrganizationStructuredData = () => {
     "@type": "Organization",
     name: "AI in ASIA",
     url: "https://aiinasia.com",
-    logo: "https://aiinasia.com/logo.png",
+    logo: "https://aiinasia.com/icons/aiinasia-512.png",
     description: "Leading platform for AI news, insights, and innovation across Asia",
     sameAs: [
       "https://twitter.com/aiinasia",
