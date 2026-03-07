@@ -389,6 +389,7 @@ const Article = () => {
         keywords={[...(article.ai_tags || []), ...(article.topic_tags || [])].filter(Boolean).join(', ') || undefined}
         thumbnailUrl={article.featured_image_url || undefined}
         canonicalUrl={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`}
+        authorSlug={article.authors?.slug || undefined}
       />
 
       <BreadcrumbStructuredData

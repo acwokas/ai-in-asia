@@ -48,6 +48,7 @@ export const ArticleStructuredData = ({
     author: {
       "@type": "Person",
       name: authorName,
+      ...(authorSlug && { url: `https://aiinasia.com/author/${authorSlug}` }),
     },
     publisher: {
       "@type": "Organization",
