@@ -123,7 +123,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <h4 style={{ fontSize: 13, fontWeight: 600, color: "#e5e7eb", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                <h4 style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {decodeHtml(article.title)}
                 </h4>
                 <span style={{ fontSize: 12, color: "#9ca3af", marginTop: 4, display: "block" }}>
