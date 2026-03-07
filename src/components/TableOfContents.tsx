@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { List, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -83,25 +84,33 @@ function useActiveHeading(headings: TocItem[]) {
 
 /** Shared TOC link list for desktop rail */
 function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem[]; activeId: string; categoryColor?: string }) {
-  const handleClick = useCallback(
-    (id: string) => {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    },
-    []
-  );
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Only show H2s in the rail
+  const handleClick = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const handleCopyLink = useCallback((e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(id);
+      toast("Link copied", { description: "Section link copied to clipboard" });
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }, []);
+
   const h2Headings = headings.filter(h => h.level === 2);
 
   return (
     <nav aria-label="Table of contents">
       <ul className="flex flex-col" style={{ gap: "0.6rem" }}>
         {h2Headings.map(({ id, text }) => (
-          <li key={id}>
+          <li key={id} className="group relative flex items-start gap-1">
             <button
               onClick={() => handleClick(id)}
-              className="text-left w-full cursor-pointer transition-colors duration-200"
+              className="text-left flex-1 cursor-pointer transition-colors duration-200"
               style={{
                 fontFamily: "'Nunito', sans-serif",
                 fontSize: "0.9rem",
@@ -112,6 +121,18 @@ function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem
               }}
             >
               {text}
+            </button>
+            <button
+              onClick={(e) => handleCopyLink(e, id)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground flex-shrink-0 mt-0.5"
+              title="Copy link to section"
+              aria-label="Copy link to section"
+            >
+              {copiedId === id ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              )}
             </button>
           </li>
         ))}
