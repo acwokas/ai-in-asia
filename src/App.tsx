@@ -26,22 +26,22 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { Skeleton } from "./components/ui/skeleton";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 
+// Safe reload guard to prevent infinite loops on stale chunks
+const safeReloadOnce = () => {
+  const key = 'chunk_reload_attempted';
+  if (!sessionStorage.getItem(key)) {
+    sessionStorage.setItem(key, '1');
+    window.location.reload();
+  }
+};
+
 // Lazy load Index page to reduce initial bundle
-const Index = lazy(() => import("./pages/Index").catch(() => {
-  window.location.reload();
-  return import("./pages/Index");
-}));
+const Index = lazy(() => import("./pages/Index").catch(() => { safeReloadOnce(); return import("./pages/Index"); }));
 
 // Lazy load non-critical components
-const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() => {
-  window.location.reload();
-  return import("./components/ConsentBanner");
-}));
+const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() => { safeReloadOnce(); return import("./components/ConsentBanner"); }));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
-const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => {
-  window.location.reload();
-  return import("./components/ScoutChatbot");
-}));
+const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => { safeReloadOnce(); return import("./components/ScoutChatbot"); }));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
