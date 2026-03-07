@@ -715,6 +715,20 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
 
   finalContent = finalContent.replace(/\n{3,}/g, '\n\n').trim();
 
+  // Touch updated_at so sitemap recrawl priority is refreshed after every rewrite
+  const articleId = context?.articleId || context?.currentArticleId;
+  if (articleId) {
+    try {
+      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+      await supabaseClient
+        .from('articles')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', articleId);
+    } catch (touchErr) {
+      console.error('Failed to touch updated_at (non-fatal):', touchErr);
+    }
+  }
+
   return new Response(
     JSON.stringify({
       result: finalContent,
