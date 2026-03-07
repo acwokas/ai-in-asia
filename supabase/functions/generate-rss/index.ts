@@ -54,6 +54,13 @@ serve(async (req) => {
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
      rss += `    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml" />\n`;
      rss += `    <atom:link href="${baseUrl}/feed" rel="alternate" type="application/rss+xml" />\n`;
+     rss += `    <image>\n`;
+     rss += `      <url>https://aiinasia.com/icons/aiinasia-512.png</url>\n`;
+     rss += `      <title>AI in ASIA</title>\n`;
+     rss += `      <link>${baseUrl}</link>\n`;
+     rss += `      <width>144</width>\n`;
+     rss += `      <height>144</height>\n`;
+     rss += `    </image>\n`;
 
     // Add articles
     articles?.forEach((article: any) => {
