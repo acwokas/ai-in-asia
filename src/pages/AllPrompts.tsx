@@ -438,7 +438,7 @@ const AllPrompts = () => {
       />
       <Header />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* ═══ HERO ═══ */}
         <section className="relative overflow-hidden border-b border-zinc-800" style={{ background: "linear-gradient(135deg, #040405 0%, #0a1a1f 50%, #0f1020 100%)" }}>
           <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">

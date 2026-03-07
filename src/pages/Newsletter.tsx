@@ -124,7 +124,7 @@ const Newsletter = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         
-        <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
+        <main id="main-content" className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
           <Breadcrumb className="mb-6">
             <BreadcrumbList>
               <BreadcrumbItem>

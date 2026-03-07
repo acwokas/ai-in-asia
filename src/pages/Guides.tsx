@@ -575,7 +575,7 @@ const Guides = () => {
       />
       <Header />
 
-      <main className="min-h-screen bg-background">
+      <main id="main-content" className="min-h-screen bg-background">
         {/* ROW 1 — Compact header strip */}
         <section className="border-b border-border" style={{ background: "linear-gradient(135deg, #040405 0%, #0a1a1f 100%)" }}>
           <div className="container mx-auto px-4 py-6">

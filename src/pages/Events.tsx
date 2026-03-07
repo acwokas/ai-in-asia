@@ -422,7 +422,7 @@ const Events = () => {
         />
 
         {/* Events List */}
-        <main className="flex-1 container mx-auto px-4 py-6">
+        <main id="main-content" className="flex-1 container mx-auto px-4 py-6">
           {isLoading ? (
             <div className="text-center py-12">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-muted-foreground" />
