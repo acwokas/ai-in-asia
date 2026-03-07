@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useBlocker } from "react-router-dom";
 import { format } from "date-fns";
 
 interface UseEditorAutoSaveOptions {
@@ -46,35 +45,33 @@ export const useEditorAutoSave = ({ status, buildSaveData, onSave, articleId }: 
     return () => clearInterval(interval);
   }, [status, isDirty, buildSaveData, onSave, articleId]);
 
-  // Block browser tab close / refresh
+  // Block browser tab close / refresh AND back/forward navigation
   useEffect(() => {
     if (!isDirty) return;
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
     };
     window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [isDirty]);
 
-  // Block React Router back/forward navigation (catches mobile back button)
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
-  // When blocker fires, show native confirm dialog
-  useEffect(() => {
-    if (blocker.state === "blocked") {
+    // Push a dummy history entry so the back button triggers popstate
+    window.history.pushState({ editorDirtyGuard: true }, "");
+    const onPopState = (_e: PopStateEvent) => {
       const confirmed = window.confirm(
         "You have unsaved changes. Leave anyway and lose your work?"
       );
-      if (confirmed) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
+      if (!confirmed) {
+        // Re-push the guard entry so the next back press is also caught
+        window.history.pushState({ editorDirtyGuard: true }, "");
       }
-    }
-  }, [blocker]);
+      // If confirmed, the browser naturally navigates back
+    };
+    window.addEventListener("popstate", onPopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handler);
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, [isDirty]);
 
   return { autoSaveLabel, isDirty, markDirty, markClean, setIsDirty };
 };
