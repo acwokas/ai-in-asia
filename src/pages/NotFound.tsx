@@ -46,17 +46,19 @@ const NotFound = () => {
   // ── 2. Log 404 + fire GA (only once redirect check is done and no rule found) ─
   useEffect(() => {
     if (checkingRedirect || redirectRule) return;
-    track404Error(location.pathname, "page_not_found");
-    const log = async () => {
-      try {
-        await supabase.from("page_not_found_log").insert({
-          path: location.pathname,
-          referrer: document.referrer || null,
-          user_agent: navigator.userAgent,
-        });
-      } catch {}
-    };
-    log();
+    if (!isBotPath(location.pathname)) {
+      track404Error(location.pathname, "page_not_found");
+      const log = async () => {
+        try {
+          await supabase.from("page_not_found_log").insert({
+            path: location.pathname,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+          });
+        } catch {}
+      };
+      log();
+    }
   }, [checkingRedirect, redirectRule, location.pathname]);
 
   // ── 3. Contextual article suggestions from URL slug ────────────────────────
