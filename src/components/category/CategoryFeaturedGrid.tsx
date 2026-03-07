@@ -128,7 +128,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
             </div>
           </div>
         )}
-        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "#ffffff", lineHeight: 1.4, margin: 0 }}>
+        <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.4, margin: 0 }}>
           {decodeHtml(article.title)}
         </h3>
       </div>

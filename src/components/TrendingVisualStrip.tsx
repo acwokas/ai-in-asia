@@ -155,8 +155,8 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
               to={`/${catSlug}/${item.slug}`}
               className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
               style={{
-                background: "hsl(215 35% 12%)",
-                border: "1px solid hsl(0 0% 100% / 0.06)",
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
               }}
             >
               <div className="aspect-[16/10] overflow-hidden">
