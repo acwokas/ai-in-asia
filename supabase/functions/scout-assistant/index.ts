@@ -324,7 +324,7 @@ async function handleRewriteWithImages(
         .select('title, url, source_name, domain')
         .textSearch('title', externalSearchTerms, { type: 'websearch' })
         .order('published_at', { ascending: false })
-        .limit(15);
+        .limit(8);
 
       if (extLinks && extLinks.length > 0) {
         const seenDomains = new Set<string>();
