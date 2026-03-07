@@ -78,6 +78,7 @@ const Tag = () => {
         title={`${tag?.name || 'Tag'} - Tagged Articles`}
         description={tag?.description || `Explore articles tagged with ${tag?.name}. ${articles?.length || 0} articles covering AI news, insights, and developments.`}
         canonical={`https://aiinasia.com/tag/${tag?.slug}`}
+        noIndex={!articles || articles.length < 3}
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
