@@ -197,6 +197,15 @@ const Editor = () => {
               console.error('Comment check failed:', err);
             }
           })();
+
+          // Notify search engines via IndexNow (fire and forget)
+          (async () => {
+            try {
+              await supabase.functions.invoke('notify-search-engines');
+            } catch (err) {
+              console.error('IndexNow notification failed:', err);
+            }
+          })();
         }
 
         await queryClient.invalidateQueries({ queryKey: ["homepage-articles"] });
