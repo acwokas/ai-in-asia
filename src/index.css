@@ -146,6 +146,12 @@ All colors MUST be HSL.
     padding-left: 0.5rem;
     margin-bottom: 0.5rem;
     line-height: 1.75;
+    accent-color: hsl(var(--primary));
+  }
+
+  article ul > li::marker,
+  .prose ul > li::marker {
+    color: hsl(var(--primary));
   }
 }
 
