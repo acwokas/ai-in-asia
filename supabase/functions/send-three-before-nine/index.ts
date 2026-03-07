@@ -9,6 +9,13 @@ const corsHeaders = {
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 const SITE_URL = 'https://aiinasia.com';
 
+function createBriefingUnsubscribeUrl(subscriberId: string): string {
+  const unsubUrl = new URL(`${Deno.env.get('SUPABASE_URL')}/functions/v1/unsubscribe-newsletter`);
+  unsubUrl.searchParams.set('type', 'briefing');
+  unsubUrl.searchParams.set('sub', subscriberId);
+  return unsubUrl.toString();
+}
+
 // Send 3-Before-9 briefing to subscribers
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,7 +62,7 @@ Deno.serve(async (req) => {
     // Get active briefing subscribers
     const { data: subscribers } = await supabase
       .from('briefing_subscriptions')
-      .select('email')
+      .select('id, email')
       .eq('briefing_type', 'three_before_nine')
       .eq('is_active', true);
 
@@ -151,11 +158,16 @@ Deno.serve(async (req) => {
 
     for (const subscriber of subscribers) {
       try {
+        const unsubUrl = createBriefingUnsubscribeUrl(subscriber.id);
         await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: `3-Before-9 · ${dateFormatted}`,
           html: emailHtml,
+          headers: {
+            'List-Unsubscribe': `<${unsubUrl}>, <mailto:unsubscribe@aiinasia.com?subject=unsubscribe>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         });
         sentCount++;
       } catch (error) {
