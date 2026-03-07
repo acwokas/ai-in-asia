@@ -451,7 +451,7 @@ const Article = () => {
           {/* Hero Image with overlay */}
           {article.featured_image_url ? (
             <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
-              <div className="article-hero rounded-lg">
+              <figure className="article-hero rounded-lg">
                 <img
                   src={getOptimizedHeroImage(article.featured_image_url, 1080)}
                   srcSet={generateResponsiveSrcSet(article.featured_image_url)}
