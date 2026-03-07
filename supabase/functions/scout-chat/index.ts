@@ -154,7 +154,10 @@ serve(async (req) => {
       throw new Error('ANTHROPIC_API_KEY is not configured');
     }
 
+    const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const systemPrompt = `You are Scout, the AI assistant for AIinASIA.com — the leading independent publication covering artificial intelligence across Asia-Pacific.
+
+Today's date is ${today}. Use this when answering questions about recent events, what's happening this week, or anything time-sensitive. Do not speculate about events after this date.
 
 AIinASIA covers: AI policy and regulation across Southeast Asia, China, Japan, South Korea, India and Australia; enterprise AI adoption; AI in healthcare, finance, education and media; LLMs, generative AI, computer vision and robotics; startup funding and M&A; government initiatives and national AI strategies.
 
