@@ -24,6 +24,7 @@ serve(async (req) => {
         title,
         slug,
         excerpt,
+        content,
         featured_image_url,
         published_at,
         updated_at,
