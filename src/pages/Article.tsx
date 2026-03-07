@@ -371,6 +371,7 @@ const Article = () => {
           author: article.authors?.name || 'AI in ASIA',
           section: article.categories?.name || '',
           tags: [...(article.ai_tags || []), ...(article.topic_tags || [])].filter(Boolean),
+          twitterHandle: article.authors?.twitter_handle || undefined,
         }}
       />
 
