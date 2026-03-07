@@ -337,7 +337,7 @@ async function handleRewriteWithImages(
         verifiedExtLinks = await verifyLinks(dedupedLinks);
 
         // Fallback: if fewer than 4 verified, fetch broader
-        if (verifiedExtLinks.length < 4) {
+        if (verifiedExtLinks.length < 2) {
           const { data: broadLinks } = await supabaseClient
             .from('external_links')
             .select('title, url, source_name, domain')
