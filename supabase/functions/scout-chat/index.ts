@@ -391,26 +391,13 @@ Boundaries:
       }
     }
     
-    // No tool calls, stream the response directly
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      start(controller) {
-        const content = message?.content || '';
-        const chunk = {
-          choices: [{
-            delta: { content },
-            finish_reason: 'stop'
-          }]
-        };
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      }
-    });
-    
-    return new Response(stream, {
-      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
-    });
+    // No tool calls — return text directly
+    const textBlock = message?.find((b: any) => b.type === 'text');
+    const content = textBlock?.text || '';
+    return new Response(
+      JSON.stringify({ content }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error in scout-chat function:', error);
     return new Response(
