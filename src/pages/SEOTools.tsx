@@ -284,6 +284,7 @@ const SEOTools = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead noIndex={true} title="SEO Tools" description="Internal SEO management tools." />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
