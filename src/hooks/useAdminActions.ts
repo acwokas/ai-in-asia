@@ -17,7 +17,7 @@ export const useAdminActions = () => {
   const queryClient = useQueryClient();
   
   const [scrapingEvents, setScrapingEvents] = useState(false);
-  const [fixingDates, setFixingDates] = useState(false);
+  
   const [autoScheduling, setAutoScheduling] = useState(false);
   const [refreshingContent, setRefreshingContent] = useState(false);
   const [calculatingReadingTimes, setCalculatingReadingTimes] = useState(false);
