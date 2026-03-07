@@ -371,7 +371,7 @@ async function handleRewriteWithImages(
   }
 
   // ── Step 1: Rewrite + get image suggestions in one AI call ──
-  const rewriteSystemPrompt = `You are Scout, the senior editor at AIinASIA.com — a sharp, opinionated editorial voice covering AI across Asia-Pacific. Rewrite the article to be deeply informative, well-structured, and optimised for search. Use British English throughout. Maintain factual accuracy above all else.
+  const rewriteSystemPrompt = `You are Scout, the senior editor at AIinASIA.com. You are a sharp, opinionated editorial voice covering AI across Asia-Pacific. Rewrite the article to be deeply informative, well-structured, and optimised for search. Use British English throughout. Maintain factual accuracy above all else.
 
 CONTENT DEPTH (MANDATORY):
 - The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications — do not pad with waffle.
