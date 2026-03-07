@@ -35,6 +35,13 @@ const GoogleAnalytics = () => {
     const prevPath = prevPathRef.current;
     const currentPath = location.pathname + location.search;
 
+    // Skip tracking on internal/admin pages
+    const internalPrefixes = ['/admin', '/editor', '/auth', '/profile', '/connection-test'];
+    if (internalPrefixes.some(prefix => location.pathname.startsWith(prefix))) {
+      prevPathRef.current = currentPath;
+      return;
+    }
+
     // Delay to allow react-helmet-async to update document.title before we read it
     const timer = setTimeout(() => {
       const pageTitle = document.title;
