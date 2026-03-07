@@ -345,6 +345,7 @@ export const useAnalyticsTracking = () => {
 
   // Track scroll depth
   useEffect(() => {
+    if (isInternalPath) return;
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -354,7 +355,7 @@ export const useAnalyticsTracking = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isInternalPath]);
 
   // Track page views on route change — skip internal pages
   useEffect(() => {
