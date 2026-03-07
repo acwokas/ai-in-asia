@@ -199,20 +199,34 @@ Boundaries:
 
     console.log('Calling AI gateway with', messages.length, 'messages');
     
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages,
+        tools: [
+          {
+            name: 'search_articles',
+            description: 'Search for articles, events, and AI tools in the AIinASIA database by keywords. Use this when users ask about specific topics, companies, people, events, or tools.',
+            input_schema: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query (e.g., "Rory Sutherland", "Lenovo", "OpenAI")'
+                }
+              },
+              required: ['query']
+            }
+          }
         ],
-        tools,
-        stream: false, // Disable streaming to handle tool calls
       }),
     });
 
