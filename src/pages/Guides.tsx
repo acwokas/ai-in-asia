@@ -558,6 +558,20 @@ const Guides = () => {
         ogType="website"
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
         ogImageAlt="AI Guides, Prompts & Tools - AI in Asia"
+        schemaJson={guides && guides.length > 0 ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "AI Guides for Asia-Pacific",
+          "description": "Practical AI guides, prompt collections, and tool recommendations for practitioners across Asia.",
+          "url": "https://aiinasia.com/guides",
+          "numberOfItems": guides.length,
+          "itemListElement": guides.slice(0, 20).map((g: any, i: number) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "url": `https://aiinasia.com/guides/${g.topic_category ? g.topic_category.toLowerCase().replace(/\s+/g, '-') : 'general'}/${g.slug}`,
+            "name": g.title,
+          }))
+        } : undefined}
       />
       <Header />
 
