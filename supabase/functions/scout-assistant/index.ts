@@ -401,7 +401,8 @@ ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}
 
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Place exactly one IMAGE_PLACEHOLDER_HERE on its own line roughly 40-60% through the content.
-- Do NOT write image descriptions or markdown image syntax in the article body.
+- On the line immediately after IMAGE_PLACEHOLDER_HERE, write a short descriptive caption for the image wrapped in a figcaption tag: <figcaption>Caption text here — no longer than 15 words, describes what the image shows, may naturally include the focus keyphrase.</figcaption>
+- Do NOT write markdown image syntax or full <figure> tags — just IMAGE_PLACEHOLDER_HERE followed by the <figcaption> on the next line.
 
 FORMATTING RULES (ALL MANDATORY):
 - Output clean HTML only. No markdown syntax whatsoever.
@@ -708,6 +709,11 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
   // NOW insert mid-article image with safe alt text (capped under 50 chars)
   if (midImage) {
     const safeAlt = midImageAlt.substring(0, 45);
+    finalContent = finalContent.replace(
+      /IMAGE_PLACEHOLDER_HERE\n<figcaption>(.*?)<\/figcaption>/g,
+      `\n\n<figure>\n\n![${safeAlt}](${midImage})\n\n<figcaption>$1</figcaption>\n</figure>\n\n`
+    );
+    // Fallback for IMAGE_PLACEHOLDER_HERE without figcaption
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, `\n\n![${safeAlt}](${midImage})\n\n`);
   } else {
     finalContent = finalContent.replace(/IMAGE_PLACEHOLDER_HERE/g, '');
