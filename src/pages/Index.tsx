@@ -119,6 +119,10 @@ const Index = () => {
     staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const oneMonthAgoISO = oneMonthAgo.toISOString();
+
       const { data: articles, error } = await supabase
         .from("articles")
         .select(`
@@ -130,6 +134,7 @@ const Index = () => {
         `)
         .eq("status", "published")
         .eq("featured_on_homepage", true)
+        .gte("published_at", oneMonthAgoISO)
         .order("sticky", { ascending: false })
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(18);
