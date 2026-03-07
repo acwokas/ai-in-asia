@@ -356,10 +356,12 @@ export const useAnalyticsTracking = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track page views on route change
+  // Track page views on route change — skip internal pages
   useEffect(() => {
-    trackPageView();
-  }, [location.pathname, location.search]);
+    if (!isInternalPath) {
+      trackPageView();
+    }
+  }, [location.pathname, location.search, isInternalPath]);
 
   // Handle page visibility changes (tab switching, minimizing)
   useEffect(() => {
