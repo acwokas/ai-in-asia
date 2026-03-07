@@ -112,6 +112,7 @@ export const createArticleShareHandlers = (
     linkedin: () => shareHandlers.linkedin(shareUrl),
     reddit: () => shareHandlers.reddit(shareUrl, articleTitle),
     whatsapp: () => shareHandlers.whatsapp(directUrl, articleTitle),
+    telegram: () => shareHandlers.telegram(directUrl, articleTitle),
     email: () => shareHandlers.email(directUrl, articleTitle),
     copy: () => shareHandlers.copyToClipboard(directUrl),
   };
