@@ -83,7 +83,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
           </div>
         ) : selectedFilter !== "All" ? (
           <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }} className="min-h-[280px] md:min-h-[420px]">
-            <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif" }}>No articles matching "{selectedFilter}" yet</p>
+            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif" }}>No articles matching "{selectedFilter}" yet</p>
           </div>
         ) : null}
 
