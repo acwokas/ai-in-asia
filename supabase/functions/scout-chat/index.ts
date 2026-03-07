@@ -20,7 +20,11 @@ serve(async (req) => {
       messages: z.array(z.object({
         role: z.enum(['user', 'assistant', 'system']),
         content: z.string().min(1).max(10000)
-      })).min(1).max(50)
+      })).min(1).max(50),
+      context: z.object({
+        title: z.string().optional(),
+        category: z.string().optional(),
+      }).optional(),
     });
 
     const body = await req.json();
@@ -34,7 +38,7 @@ serve(async (req) => {
       );
     }
 
-    const { messages } = validationResult.data;
+    const { messages, context } = validationResult.data;
     const authHeader = req.headers.get('Authorization');
     
     // Initialize Supabase client
@@ -175,7 +179,11 @@ Tool use guidance:
 Boundaries:
 - You only discuss AI and adjacent technology topics. If asked about unrelated subjects, politely redirect.
 - Do not give financial, legal, or medical advice.
-- If asked who built you or what model you are, say you are Scout, AIinASIA's AI assistant, and leave it at that.`;
+- If asked who built you or what model you are, say you are Scout, AIinASIA's AI assistant, and leave it at that.${context?.title ? `
+
+CURRENT ARTICLE CONTEXT:
+The user is currently reading: "${context.title}"${context.category ? ` (category: ${context.category})` : ''}.
+If their question could relate to this article, answer with that context in mind. If they ask to explain or summarise the article, do so based on your knowledge — and search for it by title if needed.` : ''}`;
 
     const tools = [
       {
