@@ -45,7 +45,7 @@ serve(async (req) => {
 
     // Build RSS XML
     let rss = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n';
+    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/">\n';
     rss += "  <channel>\n";
     rss += "    <title>AI in ASIA</title>\n";
     rss += `    <link>${baseUrl}</link>\n`;
@@ -54,6 +54,13 @@ serve(async (req) => {
     rss += `    <lastBuildDate>${buildDate}</lastBuildDate>\n`;
      rss += `    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml" />\n`;
      rss += `    <atom:link href="${baseUrl}/feed" rel="alternate" type="application/rss+xml" />\n`;
+     rss += `    <image>\n`;
+     rss += `      <url>https://aiinasia.com/icons/aiinasia-512.png</url>\n`;
+     rss += `      <title>AI in ASIA</title>\n`;
+     rss += `      <link>${baseUrl}</link>\n`;
+     rss += `      <width>144</width>\n`;
+     rss += `      <height>144</height>\n`;
+     rss += `    </image>\n`;
 
     // Add articles
     articles?.forEach((article: any) => {
@@ -87,7 +94,12 @@ serve(async (req) => {
       }
       
       if (article.featured_image_url) {
-        rss += `      <enclosure url="${escapeXml(article.featured_image_url)}" type="image/jpeg" length="0" />\n`;
+        const imageUrl = article.featured_image_url;
+        const ext = imageUrl.split('?')[0].split('.').pop()?.toLowerCase();
+        const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+        rss += `      <enclosure url="${escapeXml(imageUrl)}" type="${mimeType}" length="0" />\n`;
+        rss += `      <media:content url="${escapeXml(imageUrl)}" type="${mimeType}" medium="image" />\n`;
+        rss += `      <media:thumbnail url="${escapeXml(imageUrl)}" />\n`;
       }
       
       if (article.excerpt) {
