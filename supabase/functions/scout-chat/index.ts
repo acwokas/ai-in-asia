@@ -38,7 +38,7 @@ serve(async (req) => {
       );
     }
 
-    const { messages } = validationResult.data;
+    const { messages, context } = validationResult.data;
     const authHeader = req.headers.get('Authorization');
     
     // Initialize Supabase client
