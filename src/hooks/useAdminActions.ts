@@ -251,7 +251,7 @@ export const useAdminActions = () => {
   return {
     // State
     scrapingEvents,
-    fixingDates,
+    
     autoScheduling,
     refreshingContent,
     calculatingReadingTimes,
