@@ -362,7 +362,7 @@ const Article = () => {
         title={fixEncoding(((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
         description={fixEncoding((article.meta_description || article.excerpt || '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA'))}
         canonical={isPreview ? undefined : shareHandlers.getPublicArticleUrl()}
-        ogImage={article.featured_image_url || 'https://aiinasia.com/icons/aiinasia-512.png?v=3'}
+        ogImage={article.featured_image_url || 'https://aiinasia.com/icons/aiinasia-og-default.png'}
         ogImageAlt={article.featured_image_alt || article.title}
         ogType="article"
         noIndex={isPreview}
