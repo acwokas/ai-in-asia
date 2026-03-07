@@ -169,6 +169,12 @@ export const setupGlobalErrorTracking = () => {
 export const useAnalyticsTracking = () => {
   const location = useLocation();
   const { user } = useAuth();
+
+  // Do not track admin, editor, auth, or profile pages
+  const isInternalPath = ['/admin', '/editor', '/auth', '/profile', '/connection-test'].some(
+    prefix => location.pathname.startsWith(prefix)
+  );
+
   const lastPathRef = useRef<string | null>(null);
   const pageViewIdRef = useRef<string | null>(null);
   const pageStartTimeRef = useRef<number>(Date.now());
