@@ -35,7 +35,12 @@ export const ArticleStructuredData = ({
     "@type": categorySlug === "news" ? "NewsArticle" : "Article",
     headline: title,
     description: description,
-    image: imageUrl || "https://aiinasia.com/default-og-image.jpg",
+    image: {
+      "@type": "ImageObject",
+      url: imageUrl || "https://aiinasia.com/default-og-image.jpg",
+      width: 1200,
+      height: 675,
+    },
     datePublished: datePublished,
     dateModified: dateModified || datePublished,
     author: {
