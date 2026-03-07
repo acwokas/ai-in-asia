@@ -112,7 +112,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const actions = useCMSEditorActions({ state, initialData, authors });
 
   // Auto-save for drafts
-  const { autoSaveLabel, markDirty } = useEditorAutoSave({
+  const { autoSaveLabel, markDirty, markClean } = useEditorAutoSave({
     status: state.status,
     buildSaveData: actions.buildSaveData,
     onSave,
