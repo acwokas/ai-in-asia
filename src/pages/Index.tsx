@@ -34,7 +34,7 @@ const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLa
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
-import FirstVisitHero from "@/components/FirstVisitHero";
+
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 // Editorial freshness labels for homepage articles - selective to be meaningful
@@ -435,8 +435,6 @@ const Index = () => {
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 
-        {/* First-time visitor hero banner */}
-        <FirstVisitHero />
 
         
 
