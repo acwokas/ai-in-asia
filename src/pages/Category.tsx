@@ -257,7 +257,9 @@ const Category = () => {
 
   const latestArticles = useMemo(() => {
     if (isFilterActive) return filteredAllArticles.slice(1, 5);
-    return (articles || []).filter((a: any) => a.id !== featuredArticle?.id).slice(0, 4);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    return (articles || []).filter((a: any) => a.id !== featuredArticle?.id && new Date(a.published_at) >= oneMonthAgo).slice(0, 4);
   }, [articles, isFilterActive, filteredAllArticles, featuredArticle]);
 
   const featuredGridArticles = useMemo(() => {
