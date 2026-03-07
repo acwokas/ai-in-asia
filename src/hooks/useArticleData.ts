@@ -53,12 +53,6 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
         : undefined,
     enabled: !!cleanSlug,
     queryFn: async () => {
-      console.log('Article fetch params:', { 
-        cleanSlug, 
-        previewCode, 
-        isPreview,
-        fullUrl: window.location.href 
-      });
       
       let query = supabase
         .from("articles")
@@ -71,15 +65,15 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
       
       if (previewCode) {
         query = query.eq("preview_code", previewCode);
-        console.log('Looking for article with preview code:', previewCode);
+        
       } else {
         query = query.eq("status", "published");
-        console.log('Looking for published article');
+        
       }
       
       const { data, error } = await query.maybeSingle();
       
-      console.log('Article query result:', { data, error });
+      
       if (error) throw error;
       return data;
     },
