@@ -435,9 +435,9 @@ Return your response as a single JSON object with these fields. Every field is r
   "metaDescription": "Under 155 chars. Include the focus keyphrase. Make it compelling enough to click.",
   "focusKeyphrase": "Primary keyword phrase, 2-4 words",
   "keyphraseSynonyms": "3-5 comma-separated synonym phrases",
-  "heroImageDescription": "Detailed visual description for AI image generation — specific to article topic, magazine editorial style",
+  "heroImageDescription": "Write a specific photo brief as if directing a photographer. Describe: (1) the primary subject and action — a real person, place, object, or scene directly related to the article topic; (2) the setting and environment; (3) the mood or emotion you want the image to convey. Be specific to THIS article — not a generic AI or tech image. Example: 'A Southeast Asian woman in her 30s reviewing data on a tablet in a modern Singapore office, expression focused and confident, warm afternoon light through floor-to-ceiling windows, cityscape visible behind her.'",
   "heroImageAlt": "Short alt text under 45 chars — include focus keyphrase if natural",
-  "midImageDescription": "Detailed visual description for mid-article image — different scene/angle from hero",
+  "midImageDescription": "Write a specific photo brief for a supporting in-article image. This must show a DIFFERENT subject, angle, or moment from the hero image — zoom in on a detail, show a different person or location, or illustrate a specific point made in the article body. Same specificity rules: real scene, real subject, directly related to the article. Example: 'Close-up of hands on a laptop keyboard with a translation interface visible on screen, shallow depth of field, soft natural light from the left, warm tones.'",
   "midImageAlt": "Short alt text under 45 chars"
 }`;
 
