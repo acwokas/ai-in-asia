@@ -184,6 +184,35 @@ const LearningPathDetail = () => {
         title={`${path.title} - ${cfg.label} Learning Path`}
         description={path.longDesc.slice(0, 155)}
         canonical={`https://aiinasia.com/category/${categorySlug}/learn/${pathSlug}`}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": `${path.title} — ${cfg.label} Learning Path`,
+          "description": path.longDesc,
+          "url": `https://aiinasia.com/category/${categorySlug}/learn/${pathSlug}`,
+          "inLanguage": "en-GB",
+          "educationalLevel": path.difficulty,
+          "timeRequired": `PT${path.time.replace(/\s/g, '').toUpperCase()}`,
+          "keywords": path.tags.join(', '),
+          "provider": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(displayArticles.length > 0 && {
+            "hasPart": displayArticles.map((a: any, i: number) => ({
+              "@type": "CourseUnit",
+              "position": i + 1,
+              "name": a.title,
+              "description": a.excerpt || '',
+              "url": `https://aiinasia.com/${a.categories?.slug || categorySlug}/${a.slug}`
+            }))
+          })
+        }}
       />
       <Header />
 
