@@ -92,7 +92,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
           <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "hsl(var(--foreground))", margin: "0 0 4px 0" }} className="hidden md:block">Latest</h3>
           {latestArticles.length === 0 && isFilterActive ? (
             <div style={{ padding: "16px 14px", borderRadius: 14, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: 0 }}>No recent articles for this tag</p>
+              <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", margin: 0 }}>No recent articles for this tag</p>
             </div>
           ) : latestArticles.map((article: any) => (
             <Link
