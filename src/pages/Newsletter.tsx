@@ -93,6 +93,32 @@ const Newsletter = () => {
         title="Subscribe to Newsletter"
         description="Get weekly AI insights, breaking news, and expert analysis delivered straight to your inbox. Join thousands of AI enthusiasts across Asia."
         canonical="https://aiinasia.com/newsletter"
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Subscribe to AI in Asia Newsletter",
+          "description": "Get weekly AI insights, breaking news, and expert analysis delivered straight to your inbox.",
+          "url": "https://aiinasia.com/newsletter",
+          "inLanguage": "en-GB",
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          "potentialAction": {
+            "@type": "SubscribeAction",
+            "target": "https://aiinasia.com/newsletter",
+            "object": {
+              "@type": "NewsletterService",
+              "name": "AI in Asia Weekly",
+              "description": "Weekly AI insights and breaking news across Asia-Pacific"
+            }
+          }
+        }}
       />
 
       <div className="min-h-screen flex flex-col">
