@@ -498,6 +498,7 @@ ${content}`;
     rewrittenContent = parsed.rewrittenContent || rawResult;
     heroImageDescription = parsed.heroImageDescription || '';
     heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
+    heroImageCaption = parsed.heroImageCaption || '';
     midImageDescription = parsed.midImageDescription || '';
     midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
     console.log('Parsed fields check:', {
