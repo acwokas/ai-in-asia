@@ -595,7 +595,7 @@ ${content}`;
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const generateAndUpload = async (description: string, suffix: string): Promise<{ url: string }> => {
+    const generateHeroImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
       const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
@@ -606,40 +606,76 @@ ${content}`;
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image',
           messages: [
-            { role: 'user', content: `Generate a magazine-quality featured image for a news article. The image should look like it belongs on the cover of Wired, Bloomberg Businessweek, or MIT Technology Review. STYLE RULES: Bright, colorful, high-contrast editorial photography or photorealistic style. Natural lighting, warm tones, rich saturated colors. Real-world scenes with people, places, objects relevant to the article topic. Diverse representation (prioritise Asian subjects where the article topic is Asia-specific). NO dark or navy backgrounds. NO teal or electric blue color schemes. NO abstract geometric shapes or glowing nodes. NO AI cliches (robot hands, glowing brains, matrix code, circuit boards, binary numbers). NO text or words in the image. Composition should leave space for a title overlay if needed (avoid busy center). The image must be SPECIFIC to the article topic, not a generic tech/AI visual. Article topic: ${description}` },
+            { role: 'user', content: `Editorial magazine cover photograph. ${description}
+
+COMPOSITION: Wide establishing shot. Strong visual hierarchy. Subject positioned right-of-centre or upper third, leaving clear negative space on the left for a title overlay. Foreground element to add depth.
+
+LIGHTING: Cinematic. Either soft directional window light with gentle shadows, warm golden-hour outdoor light, or dramatic studio lighting with clear key and fill. Rich contrast without crushing blacks.
+
+STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human — like a spread in Bloomberg Businessweek or Monocle magazine.
+
+PEOPLE: Where the topic involves people, show real human subjects — diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
+
+HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichés. No flat design or illustration. No dark or black backgrounds. No generic "technology" imagery (keyboards, screens, server racks). The image must be unmistakably about the specific topic, not a generic tech visual.` }
           ],
           modalities: ['image', 'text'],
         }),
       });
-
-      if (!imgResponse.ok) {
-        throw new Error(`Image generation failed [${imgResponse.status}]`);
-      }
-
+      if (!imgResponse.ok) throw new Error(`Hero image generation failed [${imgResponse.status}]`);
       const imgData = await imgResponse.json();
       const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (!base64Url) throw new Error('No image in response');
-
       const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
       const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-      
-      const filePath = `content/${slugifiedKeyphrase}-${suffix}-${timestamp}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from('article-images')
-        .upload(filePath, binaryData, { contentType: 'image/png' });
-
+      const filePath = `content/${slugifiedKeyphrase}-hero-${timestamp}.png`;
+      const { error: uploadError } = await supabase.storage.from('article-images').upload(filePath, binaryData, { contentType: 'image/png' });
       if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('article-images').getPublicUrl(filePath);
+      return { url: publicUrl };
+    };
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('article-images')
-        .getPublicUrl(filePath);
+    const generateMidImage = async (description: string): Promise<{ url: string }> => {
+      const timestamp = Date.now();
+      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image',
+          messages: [
+            { role: 'user', content: `Editorial in-article photograph. ${description}
 
+COMPOSITION: Tighter than a cover shot — medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
+
+LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting — this image should feel like a documentary or reportage photograph.
+
+STYLE: Photorealistic, 50–85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded — like a supporting photograph inside The Economist or Wired.
+
+PEOPLE: Where relevant, show people in action or mid-task — working, talking, interacting with technology or environment. Real and candid, not posed.
+
+HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
+          ],
+          modalities: ['image', 'text'],
+        }),
+      });
+      if (!imgResponse.ok) throw new Error(`Mid image generation failed [${imgResponse.status}]`);
+      const imgData = await imgResponse.json();
+      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!base64Url) throw new Error('No image in response');
+      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const filePath = `content/${slugifiedKeyphrase}-mid-${timestamp}.png`;
+      const { error: uploadError } = await supabase.storage.from('article-images').upload(filePath, binaryData, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('article-images').getPublicUrl(filePath);
       return { url: publicUrl };
     };
 
     const results = await Promise.allSettled([
-      generateAndUpload(heroImageDescription, 'hero'),
-      generateAndUpload(midImageDescription, 'mid'),
+      generateHeroImage(heroImageDescription),
+      generateMidImage(midImageDescription),
     ]);
 
     if (results[0].status === 'fulfilled') {
