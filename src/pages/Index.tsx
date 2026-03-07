@@ -636,6 +636,9 @@ const Index = () => {
 
         {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="headline text-[22px] md:text-[26px] font-bold">Latest Stories</h2>
+          </div>
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
