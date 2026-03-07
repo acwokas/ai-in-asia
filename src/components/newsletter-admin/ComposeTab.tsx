@@ -190,9 +190,10 @@ export default function ComposeTab() {
   const handleSendTest = async () => {
     if (!latestEdition) return;
     try {
-      await supabase.functions.invoke("send-weekly-newsletter", {
+      const { error } = await supabase.functions.invoke("send-weekly-newsletter", {
         body: { edition_id: latestEdition.id, test_email: "me@adrianwatkins.com" },
       });
+      if (error) throw error;
       toast.success("Test email sent to me@adrianwatkins.com");
     } catch (error: any) {
       toast.error(error.message || "Failed to send test");
