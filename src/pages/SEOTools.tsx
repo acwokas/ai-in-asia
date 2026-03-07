@@ -616,7 +616,7 @@ const SEOTools = () => {
                 <div className="flex items-center gap-4">
                   <LinkIcon className="h-8 w-8 text-primary" />
                   <div className="flex-1">
-                    <p className="font-medium">Sitemap URL</p>
+                    <p className="font-medium">Main Sitemap</p>
                     <a 
                       href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap`}
                       target="_blank" 
@@ -631,6 +631,28 @@ const SEOTools = () => {
                     onClick={() => window.open(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap`, "_blank")}
                   >
                     View Sitemap
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <LinkIcon className="h-8 w-8 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-medium">Google News Sitemap</p>
+                    <a 
+                      href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-1">Articles published in the last 48 hours only. Submit this URL to Google Search Console separately.</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news`, "_blank")}
+                  >
+                    View News Sitemap
                   </Button>
                 </div>
 
