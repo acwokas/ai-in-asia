@@ -1,24 +1,90 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AIinASIA is offline</title>
+  <title>You're offline — AIinASIA</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#000; color:#fff; }
-    .wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px; }
-    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px; }
-    a { color: #fff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #040405; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    header a { color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; letter-spacing: -0.3px; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 48px 24px; flex: 1; }
+    .status { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 6px 14px; font-size: 13px; color: #9ca3af; margin-bottom: 32px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+    .subtitle { color: #9ca3af; font-size: 15px; line-height: 1.6; margin-bottom: 40px; }
+    .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #5F72FF; margin-bottom: 16px; }
+    .articles { display: flex; flex-direction: column; gap: 12px; }
+    .article-link { display: block; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .article-link:hover { background: rgba(255,255,255,0.07); }
+    .article-link h3 { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+    .article-link p { font-size: 13px; color: #9ca3af; }
+    .empty { color: #9ca3af; font-size: 14px; padding: 24px 0; }
+    .retry { margin-top: 40px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .retry-btn { display: inline-block; background: #5F72FF; color: #fff; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
   </style>
 </head>
 <body>
+  <header>
+    <a href="/">AIinASIA</a>
+  </header>
   <div class="wrap">
-    <h1>You are offline</h1>
-    <div class="card">
-      <p>AIinASIA cannot reach the internet right now.</p>
-      <p>Try again when you are back online.</p>
-      <p><a href="/">Return to homepage</a></p>
+    <div class="status"><span class="dot"></span>No internet connection</div>
+    <h1>You're offline</h1>
+    <p class="subtitle">No worries — here are some articles you've visited recently that are available to read offline.</p>
+
+    <div class="section-title">Available to read now</div>
+    <div class="articles" id="cached-articles">
+      <p class="empty">No cached articles found. Visit some articles while online and they'll appear here next time.</p>
+    </div>
+
+    <div class="retry">
+      <button class="retry-btn" onclick="window.location.reload()">Try again</button>
     </div>
   </div>
+
+  <script>
+    async function loadCachedArticles() {
+      try {
+        const cache = await caches.open('aiinasia-v4');
+        const keys = await cache.keys();
+        const articleUrls = keys
+          .map(r => new URL(r.url))
+          .filter(u => {
+            const parts = u.pathname.split('/').filter(Boolean);
+            return parts.length === 2 && !['api', 'functions', 'storage', 'icons', 'offline', 'admin', 'editor'].includes(parts[0]);
+          })
+          .map(u => u.pathname)
+          .slice(0, 8);
+
+        if (articleUrls.length === 0) return;
+
+        const container = document.getElementById('cached-articles');
+        container.innerHTML = '';
+
+        for (const path of articleUrls) {
+          const parts = path.split('/').filter(Boolean);
+          const slug = parts[1] || '';
+          const title = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const category = parts[0].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+          const a = document.createElement('a');
+          a.href = path;
+          a.className = 'article-link';
+          a.innerHTML = '<h3>' + title + '</h3><p>' + category + '</p>';
+          container.appendChild(a);
+        }
+      } catch (e) {
+        // Cache API unavailable or blocked
+      }
+    }
+
+    loadCachedArticles();
+
+    window.addEventListener('online', () => {
+      window.location.href = document.referrer || '/';
+    });
+  </script>
 </body>
 </html>
