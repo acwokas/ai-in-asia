@@ -75,8 +75,8 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
           </Link>
         ) : slug === "policy" && selectedFilter === "All" ? (
           <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, flexDirection: "column", gap: 16 }} className="min-h-[280px] md:min-h-[420px]">
-            <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, textAlign: "center" }}>Policy coverage launching soon.</p>
-            <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", textAlign: "center" }}>Explore the AI Policy Atlas in the meantime.</p>
+            <p style={{ fontSize: 16, color: "hsl(var(--foreground))", fontFamily: "Poppins, sans-serif", fontWeight: 700, textAlign: "center" }}>Policy coverage launching soon.</p>
+            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", textAlign: "center" }}>Explore the AI Policy Atlas in the meantime.</p>
             <Link to="/ai-policy-atlas" style={{ padding: "10px 20px", borderRadius: 10, background: "#eab308", color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
               Open Policy Atlas &rarr;
             </Link>
