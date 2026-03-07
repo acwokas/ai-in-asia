@@ -145,6 +145,11 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not configured');
+    }
+
     const systemPrompt = `You are Scout, the AI assistant for AIinASIA.com — the leading independent publication covering artificial intelligence across Asia-Pacific.
 
 AIinASIA covers: AI policy and regulation across Southeast Asia, China, Japan, South Korea, India and Australia; enterprise AI adoption; AI in healthcare, finance, education and media; LLMs, generative AI, computer vision and robotics; startup funding and M&A; government initiatives and national AI strategies.
@@ -194,20 +199,34 @@ Boundaries:
 
     console.log('Calling AI gateway with', messages.length, 'messages');
     
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages,
+        tools: [
+          {
+            name: 'search_articles',
+            description: 'Search for articles, events, and AI tools in the AIinASIA database by keywords. Use this when users ask about specific topics, companies, people, events, or tools.',
+            input_schema: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query (e.g., "Rory Sutherland", "Lenovo", "OpenAI")'
+                }
+              },
+              required: ['query']
+            }
+          }
         ],
-        tools,
-        stream: false, // Disable streaming to handle tool calls
       }),
     });
 
@@ -235,13 +254,14 @@ Boundaries:
     console.log('AI response:', JSON.stringify(aiResponse));
     
     // Check if AI wants to call a tool
-    const message = aiResponse.choices[0]?.message;
-    if (message?.tool_calls && message.tool_calls.length > 0) {
-      const toolCall = message.tool_calls[0];
-      console.log('Tool call detected:', toolCall.function.name);
+    const message = aiResponse.content;
+    const toolUseBlock = message?.find((b: any) => b.type === 'tool_use');
+    if (toolUseBlock) {
+      const toolCall = toolUseBlock;
+      console.log('Tool call detected:', toolCall.name);
       
-      if (toolCall.function.name === 'search_articles') {
-        const args = JSON.parse(toolCall.function.arguments);
+      if (toolCall.name === 'search_articles') {
+        const args = toolCall.input;
         // Sanitize query for use in ilike patterns
         const sanitizedQuery = args.query.replace(/[%_\\]/g, '\\$&').slice(0, 200);
         console.log('Searching for:', sanitizedQuery);
@@ -340,55 +360,44 @@ Boundaries:
         const articlesText = resultsText || 'No articles, events, or tools found matching that query.';
         
         // Send tool result back to AI
-        const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const finalResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            system: systemPrompt,
             messages: [
-              { role: 'system', content: systemPrompt },
               ...messages,
-              message,
+              { role: 'assistant', content: message },
               {
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: articlesText
+                role: 'user',
+                content: [{ type: 'tool_result', tool_use_id: toolCall.id, content: articlesText }]
               }
             ],
-            stream: true,
           }),
         });
-        
-        console.log('Returning final stream to client');
-        return new Response(finalResponse.body, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
-        });
+
+        const finalData = await finalResponse.json();
+        const finalText = finalData.content?.find((b: any) => b.type === 'text')?.text || 'Sorry, I could not find relevant results.';
+        return new Response(
+          JSON.stringify({ content: finalText }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
     
-    // No tool calls, stream the response directly
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      start(controller) {
-        const content = message?.content || '';
-        const chunk = {
-          choices: [{
-            delta: { content },
-            finish_reason: 'stop'
-          }]
-        };
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      }
-    });
-    
-    return new Response(stream, {
-      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
-    });
+    // No tool calls — return text directly
+    const textBlock = message?.find((b: any) => b.type === 'text');
+    const content = textBlock?.text || '';
+    return new Response(
+      JSON.stringify({ content }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error in scout-chat function:', error);
     return new Response(
