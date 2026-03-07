@@ -431,7 +431,7 @@ const Index = () => {
       </Suspense>
       <NotificationPrompt />
       
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 

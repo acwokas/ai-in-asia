@@ -116,7 +116,7 @@ const Tag = () => {
 
       <Header />
       
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <section className="bg-muted/30 py-12">
           <div className="container mx-auto px-4">
             <Breadcrumb className="mb-6">
