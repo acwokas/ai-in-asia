@@ -11,6 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { track404Error } from "@/components/GoogleAnalytics";
 
+const BOT_PATTERNS = [
+  '/wp-', '/.env', '/phpMyAdmin', '/xmlrpc', '/admin.php',
+  '/config.php', '/setup.php', '/install.php', '/.git',
+  '/cgi-bin', '/boaform', '/telescope', '/vendor',
+  '/owa/', '/autodiscover', '/ecp/', '/api/v1/pods',
+  '/console', '/actuator', '/solr/', '/jmx-console',
+];
+
+const isBotPath = (path: string) =>
+  BOT_PATTERNS.some(p => path.toLowerCase().includes(p.toLowerCase()));
+
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,17 +46,19 @@ const NotFound = () => {
   // ── 2. Log 404 + fire GA (only once redirect check is done and no rule found) ─
   useEffect(() => {
     if (checkingRedirect || redirectRule) return;
-    track404Error(location.pathname, "page_not_found");
-    const log = async () => {
-      try {
-        await supabase.from("page_not_found_log").insert({
-          path: location.pathname,
-          referrer: document.referrer || null,
-          user_agent: navigator.userAgent,
-        });
-      } catch {}
-    };
-    log();
+    if (!isBotPath(location.pathname)) {
+      track404Error(location.pathname, "page_not_found");
+      const log = async () => {
+        try {
+          await supabase.from("page_not_found_log").insert({
+            path: location.pathname,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+          });
+        } catch {}
+      };
+      log();
+    }
   }, [checkingRedirect, redirectRule, location.pathname]);
 
   // ── 3. Contextual article suggestions from URL slug ────────────────────────
