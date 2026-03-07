@@ -60,7 +60,7 @@ serve(async (req) => {
     while (true) {
       const { data: batch, error } = await supabase
         .from("articles")
-        .select("slug, updated_at, published_at, categories:primary_category_id(slug)")
+        .select("slug, title, updated_at, published_at, categories:primary_category_id(slug)")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
         .range(from, from + pageSize - 1);
