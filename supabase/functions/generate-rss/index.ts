@@ -45,7 +45,7 @@ serve(async (req) => {
 
     // Build RSS XML
     let rss = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n';
+    rss += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/">\n';
     rss += "  <channel>\n";
     rss += "    <title>AI in ASIA</title>\n";
     rss += `    <link>${baseUrl}</link>\n`;
