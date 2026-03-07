@@ -76,6 +76,33 @@ const Tag = () => {
         title={`${tag?.name || 'Tag'} - Tagged Articles`}
         description={tag?.description || `Explore articles tagged with ${tag?.name}. ${articles?.length || 0} articles covering AI news, insights, and developments.`}
         canonical={`https://aiinasia.com/tag/${tag?.slug}`}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `${tag?.name || 'Tag'} — AI in Asia`,
+          "description": tag?.description || `Articles tagged with ${tag?.name} on AIinASIA`,
+          "url": `https://aiinasia.com/tag/${tag?.slug}`,
+          "inLanguage": "en-GB",
+          "dateModified": new Date().toISOString(),
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(articles && articles.length > 0 && {
+            "hasPart": articles.slice(0, 10).map((a: any) => ({
+              "@type": "Article",
+              "headline": a.title,
+              "url": `https://aiinasia.com/${a.categories?.slug || 'news'}/${a.slug}`,
+              "datePublished": a.published_at,
+              "image": a.featured_image_url || undefined,
+            }))
+          })
+        }}
       />
 
       <BreadcrumbStructuredData
