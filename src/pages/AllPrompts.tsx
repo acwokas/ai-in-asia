@@ -408,6 +408,33 @@ const AllPrompts = () => {
           ? `${activeCategory.description}. Ready-to-use AI prompts for ChatGPT, Claude, Gemini, and more.`
           : "Ready-to-use prompts across every AI platform. Copy, customise, and create."}
         canonical={activeCategory ? `https://aiinasia.com/prompts/${activeCategory.slug}` : "https://aiinasia.com/prompts"}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": activeCategory ? `${activeCategory.label} AI Prompts` : "AI Prompt Library",
+          "description": activeCategory
+            ? `${activeCategory.description}. Ready-to-use AI prompts for ChatGPT, Claude, Gemini, and more.`
+            : "Ready-to-use prompts across every AI platform. Copy, customise, and create.",
+          "url": activeCategory ? `https://aiinasia.com/prompts/${activeCategory.slug}` : "https://aiinasia.com/prompts",
+          "inLanguage": "en-GB",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aiinasia.com" },
+              { "@type": "ListItem", "position": 2, "name": "Prompt Library", "item": "https://aiinasia.com/prompts" },
+              ...(activeCategory ? [{ "@type": "ListItem", "position": 3, "name": activeCategory.label, "item": `https://aiinasia.com/prompts/${activeCategory.slug}` }] : [])
+            ]
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          }
+        }}
       />
       <Header />
 
