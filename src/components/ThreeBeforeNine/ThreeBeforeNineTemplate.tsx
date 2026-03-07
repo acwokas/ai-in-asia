@@ -356,7 +356,7 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         title={article.meta_title || article.title}
         description={article.meta_description || article.excerpt || ''}
         canonical={canonicalUrl}
-        ogImage="https://aiinasia.com/images/3-before-9-hero.png"
+        ogImage="https://aiinasia.com/images/3-before-9-hero.webp"
         ogType="article"
       />
 
