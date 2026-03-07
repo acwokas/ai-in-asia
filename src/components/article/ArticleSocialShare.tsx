@@ -52,6 +52,9 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#0A66C2] cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
         <Linkedin className="h-4 w-4" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#229ED9] cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
+        <TelegramIcon className="h-4 w-4" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
       </Button>
