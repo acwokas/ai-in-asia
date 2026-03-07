@@ -473,7 +473,7 @@ export const useAnalyticsTracking = () => {
           // Silent fail
         }
       }
-    }, 30000); // Every 30 seconds
+    }, 180000); // Every 3 minutes (was 30 seconds — reduced to cut Supabase write volume)
 
     return () => clearInterval(intervalId);
   }, [updateSessionInDb]);
