@@ -811,7 +811,17 @@ const Index = () => {
 
         <div className="border-t border-border/30" />
 
-        {/* 5. Recommended Articles ("You May Like") */}
+        {/* 5. Editor's Pick */}
+        {editorsPick && (
+          <>
+            <section className="container mx-auto px-4 py-14 md:py-20 bg-muted/10">
+              <EditorsPick article={editorsPick} />
+            </section>
+            <div className="border-t border-border/30" />
+          </>
+        )}
+
+        {/* 6. Recommended Articles ("You May Like") */}
         <div className="py-14 md:py-20">
           <Suspense fallback={
             <div className="container mx-auto px-4">
@@ -835,22 +845,10 @@ const Index = () => {
 
         <div className="border-t border-border/30" />
 
-        {/* Google Ad — between recommended articles and editor's pick */}
+        {/* Google Ad */}
         <div className="flex justify-center py-8">
           <MPUAd />
         </div>
-
-        <div className="border-t border-border/30" />
-
-        {/* 6. Editor's Pick */}
-        {editorsPick && (
-          <>
-            <section className="container mx-auto px-4 py-14 md:py-20 bg-muted/10">
-              <EditorsPick article={editorsPick} />
-            </section>
-            <div className="border-t border-border/30" />
-          </>
-        )}
 
         {/* 7. Recommended Guides */}
         <div className="py-14 md:py-20">
