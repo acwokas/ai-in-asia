@@ -479,7 +479,7 @@ ${content}`;
   }
 
   const rewriteData = await rewriteResponse.json();
-  const rawResult = rewriteData.choices?.[0]?.message?.content || '';
+  const rawResult = rewriteData.content?.[0]?.text || '';
 
   let rewrittenContent: string;
   let heroImageDescription: string;
