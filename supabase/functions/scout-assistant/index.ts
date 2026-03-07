@@ -386,7 +386,7 @@ ASIA-PACIFIC ANGLE (MANDATORY — not optional):
 QUOTES AND BLOCKQUOTES:
 - You MUST include at least 2 <blockquote> elements.
 - Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data with attribution, or (c) a striking statistic or data point in quote style. NEVER fabricate a quote.
-- Format: <blockquote>"Quote text." — Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point — Source Name</blockquote>
+- Format: <blockquote>"Quote text." - Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point - Source Name</blockquote>
 
 KEYWORD OPTIMISATION:
 - Use the focus keyphrase naturally 4-6 times throughout the article (including in at least one H2).
