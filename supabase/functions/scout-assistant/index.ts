@@ -443,7 +443,7 @@ Return your response as a single JSON object with these fields. Every field is r
   "whoShouldPayAttention": "Audience 1 | Audience 2 | Audience 3",
   "whatChangesNext": "One specific, forward-looking sentence.",
   "category": "Exactly one of: News, Business, Life, Learn, Create, Voices, Policy",
-  "seoTitle": "SEO display title under 60 chars — include focus keyphrase",
+  "seoTitle": "SEO display title under 60 chars. Include focus keyphrase.",
   "metaTitle": "HTML meta title under 60 chars with primary keyword near the start",
   "metaDescription": "Under 155 chars. Include the focus keyphrase. Make it compelling enough to click.",
   "focusKeyphrase": "Primary keyword phrase, 2-4 words",
