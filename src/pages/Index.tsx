@@ -34,7 +34,7 @@ const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLa
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
-import FirstVisitHero from "@/components/FirstVisitHero";
+
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 // Editorial freshness labels for homepage articles - selective to be meaningful
