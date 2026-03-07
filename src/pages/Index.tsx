@@ -628,7 +628,7 @@ const Index = () => {
         <div className="mt-3" />
 
         {/* Trending visual cards */}
-        <div style={{ background: "rgba(48,62,83,0.08)", padding: "1.5rem 0" }}>
+        <div className="bg-muted/40 border-y border-border/40" style={{ padding: "1.5rem 0" }}>
           <Suspense fallback={null}>
             <TrendingVisualStrip excludeIds={trendingExcludeIds} />
           </Suspense>
