@@ -342,7 +342,7 @@ async function handleRewriteWithImages(
             .from('external_links')
             .select('title, url, source_name, domain')
             .order('published_at', { ascending: false })
-            .limit(30);
+            .limit(12);
 
           if (broadLinks && broadLinks.length > 0) {
             const existingDomains = new Set(verifiedExtLinks.map((l: any) => l.domain));
