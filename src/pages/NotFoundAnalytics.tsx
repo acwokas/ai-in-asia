@@ -50,7 +50,7 @@ const NotFoundAnalytics = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("page_not_found_log")
-        .select("path, referrer, created_at, resolved, redirect_created")
+        .select("path, referrer, created_at, resolved, redirect_created, user_reported")
         .order("created_at", { ascending: false })
         .limit(2000);
 
