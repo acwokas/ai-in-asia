@@ -710,6 +710,12 @@ const Index = () => {
                     )}
                     <span>•</span>
                     <span>{article.reading_time_minutes || 5} min read</span>
+                    {article.comment_count > 0 && (
+                      <>
+                        <span>•</span>
+                        <span>{article.comment_count} {article.comment_count === 1 ? 'comment' : 'comments'}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
