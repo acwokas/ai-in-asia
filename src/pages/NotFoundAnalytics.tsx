@@ -38,6 +38,45 @@ interface PathSummary {
   referrers: string[];
 }
 
+const slugToTitle = (path: string) => {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .pop()
+    ?.replace(/-/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase())
+    || "";
+};
+
+const exportToCSV = (paths: PathSummary[]) => {
+  const header = ["URL", "Slug", "Title", "Hits", "Last Seen", "Status"];
+  const rows = paths.map(p => {
+    const slug = p.path.split("/").filter(Boolean).pop() || "";
+    const title = slugToTitle(p.path);
+    const status = p.redirect_created ? "Redirected" : p.resolved ? "Resolved" : "Unresolved";
+    return [
+      `https://aiinasia.com${p.path}`,
+      slug,
+      title,
+      p.count,
+      new Date(p.last_seen).toLocaleDateString("en-GB"),
+      status,
+    ];
+  });
+
+  const csv = [header, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `404-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
 const NotFoundAnalytics = () => {
   const queryClient = useQueryClient();
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
