@@ -435,8 +435,6 @@ const Index = () => {
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 
-        {/* First-time visitor hero banner */}
-        <FirstVisitHero />
 
         
 
