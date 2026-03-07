@@ -25,6 +25,8 @@ interface EditorSEOTabProps {
   excerpt?: string;
   featuredImage?: string;
   categorySlug?: string;
+  aiTags?: string[];
+  onAiTagsChange?: (tags: string[]) => void;
 }
 
 export const EditorSEOTab = ({
