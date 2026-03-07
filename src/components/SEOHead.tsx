@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 const SITE_NAME = "AI in ASIA";
 const SITE_URL = "https://aiinasia.com";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/aiinasia-512.png?v=3`;
-const TWITTER_HANDLE = "@aiinasia";
+const TWITTER_HANDLE = "@AI_in_Asia";
 
 interface SEOHeadProps {
   title: string;
