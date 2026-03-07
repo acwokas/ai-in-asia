@@ -253,11 +253,11 @@ const Index = () => {
     },
   });
 
-  // Fetch all published guides for grid mixing (no cache - re-randomize each load)
+  // Fetch all published guides for grid mixing (randomisation is client-side, cached data still shuffled fresh)
   const { data: allPublishedGuides } = useQuery({
     queryKey: ["grid-all-guides"],
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data } = await supabase
         .from("ai_guides")
