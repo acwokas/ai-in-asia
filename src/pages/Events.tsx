@@ -51,6 +51,7 @@ interface Event {
   status: string;
   editorial_note?: string | null;
   is_sponsored?: boolean;
+  image_url?: string | null;
 }
 
 const EVENTS_PER_PAGE = 20;
@@ -313,6 +314,7 @@ const Events = () => {
           organizer={event.organizer || undefined}
           url={event.website_url || undefined}
           eventType={event.event_type}
+          imageUrl={event.image_url || undefined}
         />
       ))}
 
