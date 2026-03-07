@@ -214,6 +214,7 @@ export const EventStructuredData = ({
   organizer,
   url,
   eventType,
+  imageUrl,
 }: {
   name: string;
   description?: string;
@@ -225,6 +226,7 @@ export const EventStructuredData = ({
   organizer?: string;
   url?: string;
   eventType?: string;
+  imageUrl?: string;
 }) => {
   const structuredData = {
     "@context": "https://schema.org",
@@ -249,8 +251,19 @@ export const EventStructuredData = ({
       },
     }),
     ...(url && { url: url }),
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventAttendanceMode: (() => {
+      const loc = (location || '').toLowerCase();
+      if (loc.includes('virtual') || loc.includes('online')) return 'https://schema.org/OnlineEventAttendanceMode';
+      if (loc.includes('hybrid')) return 'https://schema.org/MixedEventAttendanceMode';
+      return 'https://schema.org/OfflineEventAttendanceMode';
+    })(),
     eventStatus: "https://schema.org/EventScheduled",
+    ...(imageUrl && {
+      image: {
+        "@type": "ImageObject",
+        url: imageUrl,
+      },
+    }),
   };
 
   return (

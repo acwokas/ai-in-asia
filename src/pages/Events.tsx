@@ -313,6 +313,7 @@ const Events = () => {
           organizer={event.organizer || undefined}
           url={event.website_url || undefined}
           eventType={event.event_type}
+          imageUrl={event.image_url || undefined}
         />
       ))}
 
