@@ -23,6 +23,7 @@ interface SEOHeadProps {
     author?: string;
     section?: string;
     tags?: string[];
+    twitterHandle?: string;
   };
   /** Extra children like preload/preconnect links */
   children?: React.ReactNode;
