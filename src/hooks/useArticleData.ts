@@ -65,7 +65,7 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
       
       if (previewCode) {
         query = query.eq("preview_code", previewCode);
-        console.log('Looking for article with preview code:', previewCode);
+        
       } else {
         query = query.eq("status", "published");
         console.log('Looking for published article');
