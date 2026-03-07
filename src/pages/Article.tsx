@@ -362,8 +362,6 @@ const Article = () => {
         canonical={isPreview ? undefined : shareHandlers.getPublicArticleUrl()}
         ogImage={article.featured_image_url || 'https://aiinasia.com/icons/aiinasia-512.png?v=3'}
         ogImageAlt={article.featured_image_alt || article.title}
-        ogImageWidth="1200"
-        ogImageHeight="630"
         ogType="article"
         noIndex={isPreview}
         articleMeta={{
