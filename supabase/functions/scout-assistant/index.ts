@@ -301,7 +301,7 @@ async function handleRewriteWithImages(
         links.map(async (link: any) => {
           try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 3000);
+            const timeout = setTimeout(() => controller.abort(), 1500);
             const resp = await fetch(link.url, { method: 'HEAD', signal: controller.signal, redirect: 'follow' });
             clearTimeout(timeout);
             return resp.ok ? link : null;
