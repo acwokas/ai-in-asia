@@ -77,6 +77,10 @@ export const shareHandlers = {
     window.open(`https://wa.me/?text=${text}`, '_blank');
   },
 
+  telegram: (url: string, title: string) => {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+  },
+
   email: (url: string, title: string) => {
     const subject = encodeURIComponent(title);
     const body = encodeURIComponent(`Check out this article:\n\n${title}\n${url}`);
