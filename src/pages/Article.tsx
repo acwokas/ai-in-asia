@@ -13,6 +13,7 @@ import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
 import { TopListsContent } from "@/components/TopListsContent";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
+import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
@@ -675,6 +676,11 @@ const Article = () => {
           {/* Learning Path callout */}
           <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
             <LearningPathCallout article={article} />
+          </div>
+
+          {/* Newsletter signup — shown before comments on all article types */}
+          <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
+            <EndOfContentNewsletter />
           </div>
 
           {/* Comments — hidden on policy articles */}
