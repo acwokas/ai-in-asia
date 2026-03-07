@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
 import { SidebarAd } from "@/components/GoogleAds";
-import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
+import { ArticleStructuredData, BreadcrumbStructuredData, FAQPageStructuredData } from "@/components/StructuredData";
 import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
