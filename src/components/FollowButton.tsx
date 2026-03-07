@@ -44,12 +44,6 @@ const FollowButton = ({ followType, followId, followName }: FollowButtonProps) =
         return;
       }
 
-      console.log("FollowButton: toggling follow", {
-        userId: user.id,
-        followType,
-        followId,
-        isFollowing,
-      });
 
       if (isFollowing) {
         const { error } = await supabase
