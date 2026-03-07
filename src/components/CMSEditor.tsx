@@ -136,7 +136,8 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
     const data = actions.buildSaveData();
     onSave?.(data);
-  }, [state.status, actions, onSave]);
+    markClean();
+  }, [state.status, actions, onSave, markClean]);
 
   const handleConfirmPublish = useCallback(() => {
     setShowPublishChecklist(false);
