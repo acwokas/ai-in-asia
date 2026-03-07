@@ -410,6 +410,7 @@ FORMATTING RULES (ALL MANDATORY):
 - NEVER use em dashes (— or –). Replace any em dash construction with a full stop, a comma, or rewrite the sentence. This is a hard rule - no exceptions.
 - Use: <h2> for main sections (4-6 sections), <h3> for subheadings, <h4> for FAQ questions
 - NEVER use <h1> tags. The article title is already rendered as H1 by the page template. Using <h1> in the body creates a duplicate heading and will break SEO.
+- The article MUST open with a <h2> subheading as its very first element - never start with a <p> tag. The opening <h2> should frame the story angle, not restate the headline. Think of it as a deck head.
 - <p> for paragraphs — 2-4 sentences each, NEVER more than 5 sentences
 - <strong> for bold (minimum 6 per article), <em> for italic
 - <ul><li> and <ol><li> for lists — you MUST include at least 2 separate list blocks in the article
