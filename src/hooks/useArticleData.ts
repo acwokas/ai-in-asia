@@ -68,7 +68,7 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
         
       } else {
         query = query.eq("status", "published");
-        console.log('Looking for published article');
+        
       }
       
       const { data, error } = await query.maybeSingle();
