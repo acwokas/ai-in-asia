@@ -360,32 +360,34 @@ Boundaries:
         const articlesText = resultsText || 'No articles, events, or tools found matching that query.';
         
         // Send tool result back to AI
-        const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const finalResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            system: systemPrompt,
             messages: [
-              { role: 'system', content: systemPrompt },
               ...messages,
-              message,
+              { role: 'assistant', content: message },
               {
-                role: 'tool',
-                tool_call_id: toolCall.id,
-                content: articlesText
+                role: 'user',
+                content: [{ type: 'tool_result', tool_use_id: toolCall.id, content: articlesText }]
               }
             ],
-            stream: true,
           }),
         });
-        
-        console.log('Returning final stream to client');
-        return new Response(finalResponse.body, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
-        });
+
+        const finalData = await finalResponse.json();
+        const finalText = finalData.content?.find((b: any) => b.type === 'text')?.text || 'Sorry, I could not find relevant results.';
+        return new Response(
+          JSON.stringify({ content: finalText }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
     
