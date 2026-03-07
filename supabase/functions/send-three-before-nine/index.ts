@@ -158,11 +158,16 @@ Deno.serve(async (req) => {
 
     for (const subscriber of subscribers) {
       try {
+        const unsubUrl = createBriefingUnsubscribeUrl(subscriber.id);
         await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: `3-Before-9 · ${dateFormatted}`,
           html: emailHtml,
+          headers: {
+            'List-Unsubscribe': `<${unsubUrl}>, <mailto:unsubscribe@aiinasia.com?subject=unsubscribe>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         });
         sentCount++;
       } catch (error) {
