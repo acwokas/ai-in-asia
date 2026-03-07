@@ -56,6 +56,7 @@ const About = () => {
         description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission and coverage areas."
         canonical="https://aiinasia.com/about"
       />
+      <OrganizationStructuredData />
 
       <Header />
 
