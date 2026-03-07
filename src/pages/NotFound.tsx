@@ -65,6 +65,12 @@ const NotFound = () => {
     { name: "Learn", slug: "learn", icon: Compass },
   ];
 
+  // If a redirect rule exists, send the user there silently
+  if (checkingRedirect) return null;
+  if (redirectRule?.to_path) {
+    return <Navigate to={redirectRule.to_path} replace />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
