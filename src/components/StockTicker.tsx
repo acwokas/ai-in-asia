@@ -18,7 +18,6 @@ const StockTicker = () => {
   const { data: stocks, isLoading } = useQuery({
     queryKey: ['stock-prices'],
     queryFn: async () => {
-      // First try to get from database
       const { data, error } = await supabase
         .from('stock_prices')
         .select('*')
@@ -26,25 +25,32 @@ const StockTicker = () => {
 
       if (error) throw error;
 
-      // If no data, trigger a fetch
       if (!data || data.length === 0) {
-        await supabase.functions.invoke('fetch-stock-data');
-        
-        // Wait a moment and try again
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const { data: newData, error: newError } = await supabase
-          .from('stock_prices')
-          .select('*')
-          .order('symbol', { ascending: true });
-        
-        if (newError) throw newError;
-        return newData as StockPrice[];
+        const THROTTLE_KEY = 'stock_fetch_last_invoked';
+        const lastInvoked = parseInt(sessionStorage.getItem(THROTTLE_KEY) || '0', 10);
+        const oneHourAgo = Date.now() - 60 * 60 * 1000;
+
+        if (lastInvoked < oneHourAgo) {
+          sessionStorage.setItem(THROTTLE_KEY, String(Date.now()));
+          await supabase.functions.invoke('fetch-stock-data');
+
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const { data: newData, error: newError } = await supabase
+            .from('stock_prices')
+            .select('*')
+            .order('symbol', { ascending: true });
+
+          if (newError) throw newError;
+          return newData as StockPrice[];
+        }
+
+        return [];
       }
 
       return data as StockPrice[];
     },
-    refetchInterval: 60000, // Refresh every minute
-    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -69,7 +75,6 @@ const StockTicker = () => {
     return null;
   }
 
-  // Duplicate stocks for seamless infinite scroll
   const displayStocks = [...stocks, ...stocks];
 
   return (
@@ -89,9 +94,7 @@ const StockTicker = () => {
                 <div
                   className={cn(
                     "flex items-center gap-1 text-xs font-medium",
-                    stock.change_amount >= 0
-                      ? "text-[#10b981]"
-                      : "text-[#ef4444]"
+                    stock.change_amount >= 0 ? "text-[#10b981]" : "text-[#ef4444]"
                   )}
                 >
                   {stock.change_amount >= 0 ? (
@@ -112,35 +115,17 @@ const StockTicker = () => {
           </div>
         </div>
       </div>
-      
+
       <style>{`
-        .ticker-wrapper {
-          overflow: hidden;
-          white-space: nowrap;
-        }
-        
-        .ticker-content {
-          display: inline-block;
-          animation: scroll 45s linear infinite;
-        }
-        
-        .group:hover .ticker-content {
-          animation-play-state: paused;
-        }
-        
+        .ticker-wrapper { overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-block; animation: scroll 45s linear infinite; }
+        .group:hover .ticker-content { animation-play-state: paused; }
         @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
-        
         @media (max-width: 768px) {
-          .ticker-content {
-            animation-duration: 30s;
-          }
+          .ticker-content { animation-duration: 30s; }
         }
       `}</style>
     </div>
