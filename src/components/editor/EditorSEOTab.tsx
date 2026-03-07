@@ -48,6 +48,8 @@ export const EditorSEOTab = ({
   excerpt = '',
   featuredImage = '',
   categorySlug = '',
+  aiTags = [],
+  onAiTagsChange,
 }: EditorSEOTabProps) => {
   const displayTitle = metaTitle || seoTitle || title || 'Article Title';
   const displayDescription = metaDescription || excerpt || 'Add a meta description to control how this appears in search results.';
