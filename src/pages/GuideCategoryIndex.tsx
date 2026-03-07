@@ -148,9 +148,9 @@ const GuideCategoryIndex = () => {
       />
       <BreadcrumbStructuredData
         items={[
-          { name: "Home", url: "https://aiinasia.com" },
-          { name: "Guides", url: "https://aiinasia.com/guides" },
-          { name: displayName, url: `https://aiinasia.com/guides/${slug}` },
+          { name: "Home", url: "/" },
+          { name: "Guides", url: "/guides" },
+          { name: displayName, url: `/guides/${slug}` },
         ]}
       />
       <Header />
