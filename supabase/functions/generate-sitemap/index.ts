@@ -23,7 +23,7 @@ serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Static pages
-    const urls: { loc: string; lastmod: string; changefreq: string; priority: number }[] = [
+    const urls: { loc: string; lastmod: string; changefreq: string; priority: number; title?: string; publishedAt?: string; isNews?: boolean }[] = [
       { loc: `${baseUrl}/`, lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: `${baseUrl}/about`, lastmod: today, changefreq: 'monthly', priority: 0.8 },
       { loc: `${baseUrl}/contact`, lastmod: today, changefreq: 'monthly', priority: 0.6 },
