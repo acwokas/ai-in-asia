@@ -13,6 +13,7 @@ interface ArticleStructuredDataProps {
   keywords?: string;
   thumbnailUrl?: string;
   canonicalUrl?: string;
+  authorSlug?: string;
 }
 
 
@@ -29,6 +30,7 @@ export const ArticleStructuredData = ({
   keywords,
   thumbnailUrl,
   canonicalUrl,
+  authorSlug,
 }: ArticleStructuredDataProps) => {
   const structuredData = {
     "@context": "https://schema.org",
@@ -46,6 +48,7 @@ export const ArticleStructuredData = ({
     author: {
       "@type": "Person",
       name: authorName,
+      ...(authorSlug && { url: `https://aiinasia.com/author/${authorSlug}` }),
     },
     publisher: {
       "@type": "Organization",
