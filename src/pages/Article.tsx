@@ -514,7 +514,7 @@ const Article = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </figure>
               {article.featured_image_caption && (
                 <p className="text-xs text-muted-foreground/70 text-center mt-2 italic px-2">{article.featured_image_caption}</p>
               )}
