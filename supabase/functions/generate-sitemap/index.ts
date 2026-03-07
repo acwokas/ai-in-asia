@@ -77,6 +77,7 @@ serve(async (req) => {
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
           title: (a as any).title || '',
           publishedAt: a.published_at,
+          imageUrl: (a as any).featured_image_url || '',
           isNews: days <= 2,
         });
       }
