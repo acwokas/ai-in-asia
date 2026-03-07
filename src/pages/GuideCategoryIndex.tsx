@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
+import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +118,40 @@ const GuideCategoryIndex = () => {
         title={`${displayName} Guides | AI in Asia`}
         description={isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`}
         canonical={`https://aiinasia.com/guides/${slug}`}
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `${displayName} Guides — AI in Asia`,
+          "description": isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`,
+          "url": `https://aiinasia.com/guides/${slug}`,
+          "inLanguage": "en-GB",
+          "dateModified": new Date().toISOString(),
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          ...(guides && guides.length > 0 && {
+            "hasPart": guides.slice(0, 10).map((g: any) => ({
+              "@type": "Article",
+              "headline": g.title,
+              "url": `https://aiinasia.com/guides/${(g.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${g.slug}`,
+              "dateModified": g.updated_at,
+              "image": g.featured_image_url || undefined,
+            }))
+          })
+        }}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Guides", url: "/guides" },
+          { name: displayName, url: `/guides/${slug}` },
+        ]}
       />
       <Header />
       <main id="main-content" className="min-h-screen bg-background">
