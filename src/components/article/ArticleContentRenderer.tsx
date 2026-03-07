@@ -211,10 +211,15 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
       });
       
-      const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
+      let sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
       });
+
+      sanitizedHtml = sanitizedHtml.replace(
+        /(<h3[^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h3>\s*)(<ul[\s\S]*?<\/ul>)/g,
+        '<div class="by-the-numbers">$1$2</div>'
+      );
       
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
