@@ -254,13 +254,14 @@ Boundaries:
     console.log('AI response:', JSON.stringify(aiResponse));
     
     // Check if AI wants to call a tool
-    const message = aiResponse.choices[0]?.message;
-    if (message?.tool_calls && message.tool_calls.length > 0) {
-      const toolCall = message.tool_calls[0];
-      console.log('Tool call detected:', toolCall.function.name);
+    const message = aiResponse.content;
+    const toolUseBlock = message?.find((b: any) => b.type === 'tool_use');
+    if (toolUseBlock) {
+      const toolCall = toolUseBlock;
+      console.log('Tool call detected:', toolCall.name);
       
-      if (toolCall.function.name === 'search_articles') {
-        const args = JSON.parse(toolCall.function.arguments);
+      if (toolCall.name === 'search_articles') {
+        const args = toolCall.input;
         // Sanitize query for use in ilike patterns
         const sanitizedQuery = args.query.replace(/[%_\\]/g, '\\$&').slice(0, 200);
         console.log('Searching for:', sanitizedQuery);
