@@ -129,8 +129,8 @@ export const OrganizationStructuredData = () => {
     logo: "https://aiinasia.com/icons/aiinasia-512.png",
     description: "Leading platform for AI news, insights, and innovation across Asia",
     sameAs: [
-      "https://twitter.com/aiinasia",
-      "https://x.com/aiinasia",
+      "https://twitter.com/AI_in_Asia",
+      "https://x.com/AI_in_Asia",
       "https://linkedin.com/company/aiinasia",
       "https://www.youtube.com/@aiinasia",
       "https://aiinasia.com",
