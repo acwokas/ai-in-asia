@@ -385,8 +385,12 @@ ASIA-PACIFIC ANGLE (MANDATORY — not optional):
 
 QUOTES AND BLOCKQUOTES:
 - You MUST include at least 2 <blockquote> elements.
-- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data with attribution, or (c) a striking statistic or data point in quote style. NEVER fabricate a quote.
-- Format: <blockquote>"Quote text." - Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point - Source Name</blockquote>
+- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data attributed to a named individual, or (c) a striking statistic or data point with its original research source. NEVER fabricate a quote. NEVER use a media outlet, publication, or website as the attribution — only real named people.
+- Format: <blockquote>"Quote text." — First Name Last Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point — Original Research Organisation</blockquote>
+- Wrong: <blockquote>"AI is transforming healthcare." — TechCrunch</blockquote>
+- Right: <blockquote>"AI is transforming healthcare." — Dr Sarah Chen, Chief Medical Officer, Ping An Health</blockquote>
+- Wrong: <blockquote>"Revenue grew 40% year on year." — Bloomberg</blockquote>
+- Right: <blockquote>Revenue grew 40% year on year — ByteDance Q3 2025 Earnings Report</blockquote>
 
 KEYWORD OPTIMISATION:
 - Use the focus keyphrase naturally 4-6 times throughout the article (including in at least one H2).
