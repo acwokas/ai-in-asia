@@ -397,6 +397,7 @@ LINKS:
 - Do NOT preserve links from the original content. Replace them all with links from the lists provided below.
 - ALL external links must use the exact URLs provided. Do NOT invent or modify URLs.
 - ALL internal links must use the exact paths provided. Do NOT invent or modify paths.
+- Anchor text for internal links must be descriptive and contextual — never use "click here", "read more", "this article", or the raw article title as the entire anchor. Instead write natural anchor text that describes what the reader will find, incorporating the focus keyphrase or related keywords where it reads naturally. Example: instead of <a href="/path">Singapore AI regulation article</a>, write <a href="/path">Singapore's evolving AI regulatory framework</a>.
 ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}
 
 MID-ARTICLE IMAGE PLACEHOLDER:
