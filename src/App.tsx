@@ -27,7 +27,10 @@ import { Skeleton } from "./components/ui/skeleton";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 
 // Lazy load Index page to reduce initial bundle
-const Index = lazy(() => import("./pages/Index"));
+const Index = lazy(() => import("./pages/Index").catch(() => {
+  window.location.reload();
+  return import("./pages/Index");
+}));
 
 // Lazy load non-critical components
 const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() => {
