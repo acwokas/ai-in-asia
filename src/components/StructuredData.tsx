@@ -30,6 +30,7 @@ export const ArticleStructuredData = ({
   keywords,
   thumbnailUrl,
   canonicalUrl,
+  authorSlug,
 }: ArticleStructuredDataProps) => {
   const structuredData = {
     "@context": "https://schema.org",
