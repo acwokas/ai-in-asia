@@ -51,6 +51,7 @@ interface Event {
   status: string;
   editorial_note?: string | null;
   is_sponsored?: boolean;
+  image_url?: string | null;
 }
 
 const EVENTS_PER_PAGE = 20;
