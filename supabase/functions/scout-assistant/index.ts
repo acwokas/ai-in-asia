@@ -301,7 +301,7 @@ async function handleRewriteWithImages(
         links.map(async (link: any) => {
           try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 3000);
+            const timeout = setTimeout(() => controller.abort(), 1500);
             const resp = await fetch(link.url, { method: 'HEAD', signal: controller.signal, redirect: 'follow' });
             clearTimeout(timeout);
             return resp.ok ? link : null;
@@ -324,7 +324,7 @@ async function handleRewriteWithImages(
         .select('title, url, source_name, domain')
         .textSearch('title', externalSearchTerms, { type: 'websearch' })
         .order('published_at', { ascending: false })
-        .limit(15);
+        .limit(8);
 
       if (extLinks && extLinks.length > 0) {
         const seenDomains = new Set<string>();
@@ -337,12 +337,12 @@ async function handleRewriteWithImages(
         verifiedExtLinks = await verifyLinks(dedupedLinks);
 
         // Fallback: if fewer than 4 verified, fetch broader
-        if (verifiedExtLinks.length < 4) {
+        if (verifiedExtLinks.length < 2) {
           const { data: broadLinks } = await supabaseClient
             .from('external_links')
             .select('title, url, source_name, domain')
             .order('published_at', { ascending: false })
-            .limit(30);
+            .limit(12);
 
           if (broadLinks && broadLinks.length > 0) {
             const existingDomains = new Set(verifiedExtLinks.map((l: any) => l.domain));
