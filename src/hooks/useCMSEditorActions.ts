@@ -526,6 +526,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.featuredImage) {
           state.setFeaturedImage(data.featuredImage);
           state.setFeaturedImageAlt(data.featuredImageAlt || '');
+          if (data.featuredImageCaption) state.setFeaturedImageCaption(data.featuredImageCaption);
         }
         
         // Headline + Slug
@@ -766,6 +767,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       status: finalStatus,
       featured_image_url: state.featuredImage,
       featured_image_alt: state.featuredImageAlt,
+      featured_image_caption: state.featuredImageCaption || null,
       seo_title: state.seoTitle,
       meta_title: state.metaTitle,
       meta_description: state.metaDescription,
