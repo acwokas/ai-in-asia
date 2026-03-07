@@ -441,7 +441,8 @@ Return your response as a single JSON object with these fields. Every field is r
   "heroImageAlt": "Short alt text under 45 chars — include focus keyphrase if natural",
   "heroImageCaption": "One sentence caption for the hero image — describes what is shown, max 20 words, may include focus keyphrase naturally. Written as a caption a photo editor would use, not marketing copy.",
   "midImageDescription": "Write a specific photo brief for a supporting in-article image. This must show a DIFFERENT subject, angle, or moment from the hero image — zoom in on a detail, show a different person or location, or illustrate a specific point made in the article body. Same specificity rules: real scene, real subject, directly related to the article. Example: 'Close-up of hands on a laptop keyboard with a translation interface visible on screen, shallow depth of field, soft natural light from the left, warm tones.'",
-  "midImageAlt": "Short alt text under 45 chars"
+  "midImageAlt": "Short alt text under 45 chars",
+  "aiTags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
 }`;
 
   const rewritePrompt = `Title: ${title}
