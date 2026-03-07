@@ -30,7 +30,7 @@ export default function ThreeBeforeNineSignup() {
         .from("briefing_subscriptions")
         .select("id, is_active")
         .eq("email", email.toLowerCase())
-        .eq("briefing_type", "3-before-9")
+        .eq("briefing_type", "three_before_nine")
         .maybeSingle();
 
       if (existing?.is_active) {
