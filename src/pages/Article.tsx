@@ -96,7 +96,7 @@ const Article = () => {
         .from("articles")
         .select(`
           *,
-          authors!articles_author_id_fkey (id, name, slug, bio, avatar_url, job_title),
+          authors!articles_author_id_fkey (id, name, slug, bio, avatar_url, job_title, twitter_handle),
           categories!articles_primary_category_id_fkey (name, slug, id)
         `)
         .eq("slug", cleanSlug);
@@ -371,6 +371,7 @@ const Article = () => {
           author: article.authors?.name || 'AI in ASIA',
           section: article.categories?.name || '',
           tags: [...(article.ai_tags || []), ...(article.topic_tags || [])].filter(Boolean),
+          twitterHandle: article.authors?.twitter_handle || undefined,
         }}
       />
 

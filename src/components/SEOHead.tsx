@@ -23,6 +23,7 @@ interface SEOHeadProps {
     author?: string;
     section?: string;
     tags?: string[];
+    twitterHandle?: string;
   };
   /** Extra children like preload/preconnect links */
   children?: React.ReactNode;
@@ -116,6 +117,9 @@ export const SEOHead = ({
       {/* Twitter Card */}
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:site" content={TWITTER_HANDLE} />
+      {articleMeta?.twitterHandle && (
+        <meta name="twitter:creator" content={`@${articleMeta.twitterHandle.replace(/^@/, '')}`} />
+      )}
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={resolvedImage} />
