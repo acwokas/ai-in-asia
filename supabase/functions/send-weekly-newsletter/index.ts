@@ -506,11 +506,16 @@ Deno.serve(async (req) => {
       const html = await generateNewsletterHTML(edition, testSubscriber, testSendId, supabase);
 
       console.log('Calling Resend API...');
+      const testUnsubUrl = createUnsubscribeUrl(testSendId, edition.id, 'test-subscriber');
       const { data: emailResult, error: emailError } = await resend.emails.send({
         from: 'AI in ASIA <contact@aiinasia.com>',
         to: test_email,
         subject: `[TEST] ${edition.subject_line}`,
         html,
+        headers: {
+          'List-Unsubscribe': `<${testUnsubUrl}>, <mailto:unsubscribe@aiinasia.com?subject=unsubscribe>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
 
       if (emailError) {
@@ -568,11 +573,16 @@ Deno.serve(async (req) => {
 
         const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
+        const unsubUrl = createUnsubscribeUrl(sendRecord.id, edition.id, subscriber.id);
         await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: subjectLine,
           html,
+          headers: {
+            'List-Unsubscribe': `<${unsubUrl}>, <mailto:unsubscribe@aiinasia.com?subject=unsubscribe>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         });
 
         sentCount++;
