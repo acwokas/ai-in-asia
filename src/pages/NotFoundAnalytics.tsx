@@ -156,7 +156,7 @@ const NotFoundAnalytics = () => {
         <p className="text-muted-foreground mb-8">Broken URLs hitting your site — fix them with one-click redirects.</p>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-4 gap-4 mb-8">
           <Card className="p-5">
             <div className="text-2xl font-bold text-destructive">{unresolvedReal.length}</div>
             <div className="text-sm text-muted-foreground">Broken URLs</div>
@@ -164,6 +164,10 @@ const NotFoundAnalytics = () => {
           <Card className="p-5">
             <div className="text-2xl font-bold">{totalRealHits}</div>
             <div className="text-sm text-muted-foreground">Total Hits</div>
+          </Card>
+          <Card className="p-5 border-orange-500/30">
+            <div className="text-2xl font-bold text-orange-500">{reportedByVisitors.length}</div>
+            <div className="text-sm text-muted-foreground">Reported by visitors</div>
           </Card>
           <Card className="p-5">
             <div className="text-2xl font-bold text-muted-foreground">{totalBotHits}</div>
