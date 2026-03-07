@@ -143,49 +143,6 @@ export const useAdminActions = () => {
     }
   };
 
-  const handleFixArticleDates = async () => {
-    try {
-      setFixingDates(true);
-      
-      toast("Processing dates...", {
-        description: "This will take 2-3 minutes. Please wait.",
-      });
-      
-      const csvResponse = await fetch('/import-data/ai-in-asia-export2-updated.csv');
-      const csvData = await csvResponse.text();
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), 300000)
-      );
-      
-      const requestPromise = supabase.functions.invoke('fix-article-dates', {
-        body: { csvData }
-      });
-      
-      const { data, error } = await Promise.race([requestPromise, timeoutPromise]) as any;
-      
-      if (error) throw error;
-
-      const results = data?.results;
-      toast.success("Article dates fixed!", {
-        description: `${results?.updated || 0} articles updated, ${results?.skipped || 0} skipped`,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["articles"] });
-    } catch (error: any) {
-      if (error.message === 'timeout' || error.message?.includes('fetch')) {
-        toast("Processing may still be running", {
-          description: "The operation is taking longer than expected. Check the logs or refresh the page in a minute.",
-        });
-      } else {
-        toast.error("Error fixing dates", {
-          description: error.message || "Failed to fix article dates",
-        });
-      }
-    } finally {
-      setFixingDates(false);
-    }
-  };
 
   const handleRefreshFeaturedContent = async () => {
     try {
