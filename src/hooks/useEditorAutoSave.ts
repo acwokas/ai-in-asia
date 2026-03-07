@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useBlocker } from "react-router-dom";
 import { format } from "date-fns";
 
 interface UseEditorAutoSaveOptions {
@@ -13,9 +14,12 @@ export const useEditorAutoSave = ({ status, buildSaveData, onSave, articleId }: 
   const [isDirty, setIsDirty] = useState(false);
   const lastSavedRef = useRef<string>("");
 
-  // Mark dirty whenever buildSaveData changes
   const markDirty = useCallback(() => {
     setIsDirty(true);
+  }, []);
+
+  const markClean = useCallback(() => {
+    setIsDirty(false);
   }, []);
 
   // Auto-save every 60s for drafts only
@@ -42,7 +46,7 @@ export const useEditorAutoSave = ({ status, buildSaveData, onSave, articleId }: 
     return () => clearInterval(interval);
   }, [status, isDirty, buildSaveData, onSave, articleId]);
 
-  // Warn before navigating away with unsaved changes
+  // Block browser tab close / refresh
   useEffect(() => {
     if (!isDirty) return;
     const handler = (e: BeforeUnloadEvent) => {
@@ -52,5 +56,25 @@ export const useEditorAutoSave = ({ status, buildSaveData, onSave, articleId }: 
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
 
-  return { autoSaveLabel, isDirty, markDirty, setIsDirty };
+  // Block React Router back/forward navigation (catches mobile back button)
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // When blocker fires, show native confirm dialog
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const confirmed = window.confirm(
+        "You have unsaved changes. Leave anyway and lose your work?"
+      );
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
+
+  return { autoSaveLabel, isDirty, markDirty, markClean, setIsDirty };
 };

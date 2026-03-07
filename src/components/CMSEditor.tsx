@@ -112,7 +112,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
   const actions = useCMSEditorActions({ state, initialData, authors });
 
   // Auto-save for drafts
-  const { autoSaveLabel, markDirty } = useEditorAutoSave({
+  const { autoSaveLabel, markDirty, markClean } = useEditorAutoSave({
     status: state.status,
     buildSaveData: actions.buildSaveData,
     onSave,
@@ -121,7 +121,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
   // localStorage backup & restore
   useEditorLocalBackup({
-    articleId: initialData?.id,
+    articleId: initialData?.id ?? "new-article",
     buildSaveData: actions.buildSaveData,
     initialData,
     onRestore: (data) => {
@@ -136,13 +136,15 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
     }
     const data = actions.buildSaveData();
     onSave?.(data);
-  }, [state.status, actions, onSave]);
+    markClean();
+  }, [state.status, actions, onSave, markClean]);
 
   const handleConfirmPublish = useCallback(() => {
     setShowPublishChecklist(false);
     const data = actions.buildSaveData();
     onSave?.(data);
-  }, [actions, onSave]);
+    markClean();
+  }, [actions, onSave, markClean]);
 
   // Auto-select 3-Before-9 type when opened via ?type=3b9
   useEffect(() => {
@@ -398,7 +400,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <Input
                   id="slug"
                   value={state.slug}
-                  onChange={(e) => state.setSlug(e.target.value)}
+                  onChange={(e) => { state.setSlug(e.target.value); markDirty(); }}
                   placeholder="article-url-slug"
                 />
               </div>
