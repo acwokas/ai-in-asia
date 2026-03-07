@@ -222,22 +222,7 @@ const Header = memo(() => {
                     size="icon"
                     onClick={() => setIsSearchOpen(true)}
                     aria-label="Search"
-                    className="flex lg:hidden h-10 w-10"
-                  >
-                    <Search className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Search</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsSearchOpen(true)}
-                    aria-label="Search"
-                    className="hidden lg:flex h-10 w-10"
+                    className="flex h-10 w-10"
                   >
                     <Search className="h-5 w-5" />
                   </Button>
