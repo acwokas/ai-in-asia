@@ -76,6 +76,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
   const displayTag = tag || cfg.label;
   const displayTagColor = tagColor || cfg.accent;
   const meta = article.published_at ? new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : undefined;
+  const commentCount = article.comment_count || 0;
 
   return (
     <div
@@ -118,7 +119,12 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
         {(displayTag || meta) && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             {displayTag && displayTagColor ? <GlowBadge color={displayTagColor} small>{displayTag}</GlowBadge> : <span />}
-            {meta && <span style={{ fontSize: 12, color: "#9ca3af" }}>{meta}</span>}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {commentCount > 0 && (
+                <span style={{ fontSize: 11, color: "#9ca3af" }}>{commentCount} {commentCount === 1 ? "comment" : "comments"}</span>
+              )}
+              {meta && <span style={{ fontSize: 12, color: "#9ca3af" }}>{meta}</span>}
+            </div>
           </div>
         )}
         <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "#ffffff", lineHeight: 1.4, margin: 0 }}>
