@@ -76,6 +76,7 @@ const NotFoundAnalytics = () => {
             last_seen: log.created_at,
             resolved: log.resolved || false,
             redirect_created: log.redirect_created || false,
+            user_reported: log.user_reported || false,
             referrers: log.referrer ? [log.referrer] : [],
           });
         }
