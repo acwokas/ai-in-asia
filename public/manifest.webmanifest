@@ -1,6 +1,7 @@
 {
   "name": "AIinASIA",
   "short_name": "AIinASIA",
+  "id": "https://aiinasia.com/",
   "description": "AI news, tools, and practical guidance across Asia.",
   "start_url": "/",
   "scope": "/",
