@@ -11,6 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { track404Error } from "@/components/GoogleAnalytics";
 
+const BOT_PATTERNS = [
+  '/wp-', '/.env', '/phpMyAdmin', '/xmlrpc', '/admin.php',
+  '/config.php', '/setup.php', '/install.php', '/.git',
+  '/cgi-bin', '/boaform', '/telescope', '/vendor',
+  '/owa/', '/autodiscover', '/ecp/', '/api/v1/pods',
+  '/console', '/actuator', '/solr/', '/jmx-console',
+];
+
+const isBotPath = (path: string) =>
+  BOT_PATTERNS.some(p => path.toLowerCase().includes(p.toLowerCase()));
+
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
