@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { Clock, ExternalLink, Edit, Eye, EyeOff, Send, Loader2 } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
+import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
 import ThreeBeforeNineSignup from "./ThreeBeforeNineSignup";
 import ThreeBeforeNineRecent from "./ThreeBeforeNineRecent";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -356,8 +357,27 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         title={article.meta_title || article.title}
         description={article.meta_description || article.excerpt || ''}
         canonical={canonicalUrl}
-        ogImage="https://aiinasia.com/images/3-before-9-hero.webp"
+        ogImage={article.featured_image_url || "https://aiinasia.com/images/3-before-9-hero.webp"}
         ogType="article"
+      />
+      <ArticleStructuredData
+        title={article.title}
+        description={article.meta_description || article.excerpt || ''}
+        imageUrl={article.featured_image_url || "https://aiinasia.com/images/3-before-9-hero.webp"}
+        datePublished={article.published_at}
+        dateModified={article.updated_at}
+        authorName={article.author?.name || 'Intelligence Desk'}
+        authorSlug={article.author?.slug}
+        categoryName="3 Before 9"
+        categorySlug="news"
+        canonicalUrl={canonicalUrl}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: "Home", url: "https://aiinasia.com" },
+          { name: "3 Before 9", url: "https://aiinasia.com/3-before-9" },
+          { name: article.title, url: canonicalUrl },
+        ]}
       />
 
       {/* Admin Controls */}
