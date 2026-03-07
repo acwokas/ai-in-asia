@@ -169,6 +169,17 @@ const Tag = () => {
             ))}
           </div>
 
+          {articles && articles.length > displayLimit && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => setDisplayLimit(prev => prev + 20)}
+                className="px-6 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors"
+              >
+                Load more articles
+              </button>
+            </div>
+          )}
+
           {!articles || articles.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No articles found with this tag.</p>
