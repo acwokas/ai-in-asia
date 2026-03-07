@@ -75,6 +75,9 @@ serve(async (req) => {
           lastmod: new Date(a.updated_at).toISOString().split('T')[0],
           changefreq: days <= 7 ? 'daily' : days <= 30 ? 'weekly' : 'monthly',
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
+          title: (a as any).title || '',
+          publishedAt: a.published_at,
+          isNews: days <= 2,
         });
       }
       if (batch.length < pageSize) break;
