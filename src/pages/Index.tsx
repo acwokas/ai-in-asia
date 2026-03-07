@@ -512,6 +512,12 @@ const Index = () => {
                             <span>{featuredArticle.authors.name}</span>
                           </>
                         )}
+                        {featuredArticle.comment_count > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>{featuredArticle.comment_count} {featuredArticle.comment_count === 1 ? 'comment' : 'comments'}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
