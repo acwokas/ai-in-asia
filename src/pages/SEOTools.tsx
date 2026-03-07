@@ -679,12 +679,13 @@ const SEOTools = () => {
 
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground mb-2">
-                    <strong>Note:</strong> Submit your sitemap to search engines:
+                    <strong>Note:</strong> Submit both sitemaps to search engines:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Google Search Console: Add and verify your sitemap</li>
-                    <li>Bing Webmaster Tools: Submit your sitemap URL</li>
-                    <li>The sitemap is automatically updated when articles are published</li>
+                    <li>Google Search Console: Submit both the main sitemap and the Google News sitemap as separate entries</li>
+                    <li>Bing Webmaster Tools: Submit the main sitemap URL</li>
+                    <li>The Google News sitemap only includes articles from the last 48 hours — Google crawls it frequently for Discover and News tab eligibility</li>
+                    <li>Both sitemaps are automatically updated on every request</li>
                   </ul>
                 </div>
               </CardContent>
