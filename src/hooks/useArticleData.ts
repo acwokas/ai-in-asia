@@ -53,12 +53,6 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
         : undefined,
     enabled: !!cleanSlug,
     queryFn: async () => {
-      console.log('Article fetch params:', { 
-        cleanSlug, 
-        previewCode, 
-        isPreview,
-        fullUrl: window.location.href 
-      });
       
       let query = supabase
         .from("articles")
