@@ -187,6 +187,14 @@ const GuideDetail = () => {
     "@type": "HowTo",
     name: g.title,
     description: g.one_line_description || g.meta_description || g.excerpt || "",
+    ...(g.featured_image_url && {
+      image: {
+        "@type": "ImageObject",
+        url: g.featured_image_url,
+        width: 1200,
+        height: 675,
+      }
+    }),
     step: formData.steps.map((s: any, i: number) => ({
       "@type": "HowToStep", position: i + 1,
       name: s.title || `Step ${i + 1}`, text: s.content,
