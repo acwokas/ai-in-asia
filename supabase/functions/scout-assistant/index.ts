@@ -749,6 +749,7 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
       whatChangesNext,
       featuredImage,
       featuredImageAlt,
+      featuredImageCaption: heroImageCaption,
       imagesGenerated,
       categoryId,
       categoryName,
