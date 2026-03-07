@@ -22,8 +22,8 @@ import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
 
-const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection"));
-const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker"));
+const MostDiscussedSection = lazy(() => import("@/components/MostDiscussedSection").catch(() => { safeReloadOnce(); return import("@/components/MostDiscussedSection"); }));
+const ThreeBeforeNineTicker = lazy(() => import("@/components/ThreeBeforeNineTicker").catch(() => { safeReloadOnce(); return import("@/components/ThreeBeforeNineTicker"); }));
 const safeReloadOnce = () => {
   const key = 'chunk_reload_attempted';
   if (!sessionStorage.getItem(key)) {
