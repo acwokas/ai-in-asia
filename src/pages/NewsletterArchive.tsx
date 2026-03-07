@@ -34,6 +34,7 @@ export default function NewsletterArchive() {
   return (
     <>
       <SEOHead
+          noIndex={true}
         title="Newsletter Archive"
         description="Browse past editions of the AI in ASIA newsletter. Catch up on weekly AI insights, breaking news, and expert analysis."
         canonical="https://aiinasia.com/newsletter/archive"

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -283,6 +284,7 @@ const SEOTools = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead noIndex={true} title="SEO Tools" description="Internal SEO management tools." />
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
