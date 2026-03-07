@@ -35,6 +35,19 @@ export const AdminQuickActions = ({
     },
   });
 
+  const { data: reported404Count } = useQuery({
+    queryKey: ["reported-404-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("page_not_found_log")
+        .select("*", { count: "exact", head: true })
+        .eq("user_reported", true)
+        .eq("resolved", false);
+      return count || 0;
+    },
+    refetchInterval: 5 * 60 * 1000,
+  });
+
   return (
     <Card className="mb-8 border-border">
       <CardHeader>
