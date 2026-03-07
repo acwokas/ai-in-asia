@@ -130,7 +130,9 @@ export const OrganizationStructuredData = () => {
     description: "Leading platform for AI news, insights, and innovation across Asia",
     sameAs: [
       "https://twitter.com/aiinasia",
+      "https://x.com/aiinasia",
       "https://linkedin.com/company/aiinasia",
+      "https://aiinasia.com",
     ],
     contactPoint: {
       "@type": "ContactPoint",
