@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
+import { OrganizationStructuredData } from "@/components/StructuredData";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -55,6 +56,7 @@ const About = () => {
         description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission and coverage areas."
         canonical="https://aiinasia.com/about"
       />
+      <OrganizationStructuredData />
 
       <Header />
 
