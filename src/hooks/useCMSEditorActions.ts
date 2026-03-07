@@ -328,6 +328,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         if (data.metaTitle) state.setMetaTitle(data.metaTitle);
         if (data.seoTitle) state.setSeoTitle(data.seoTitle);
         if (data.metaDescription) state.setMetaDescription(data.metaDescription);
+        if (data.aiTags && Array.isArray(data.aiTags)) state.setAiTags(data.aiTags);
         if (data.focusKeyphrase) {
           state.setFocusKeyphrase(data.focusKeyphrase);
           if (data.featuredImageAlt) state.setFeaturedImageAlt(data.featuredImageAlt);
