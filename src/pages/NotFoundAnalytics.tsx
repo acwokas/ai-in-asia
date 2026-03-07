@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Flag } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Flag, Download } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -37,6 +37,45 @@ interface PathSummary {
   user_reported: boolean;
   referrers: string[];
 }
+
+const slugToTitle = (path: string) => {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .pop()
+    ?.replace(/-/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase())
+    || "";
+};
+
+const exportToCSV = (paths: PathSummary[]) => {
+  const header = ["URL", "Slug", "Title", "Hits", "Last Seen", "Status"];
+  const rows = paths.map(p => {
+    const slug = p.path.split("/").filter(Boolean).pop() || "";
+    const title = slugToTitle(p.path);
+    const status = p.redirect_created ? "Redirected" : p.resolved ? "Resolved" : "Unresolved";
+    return [
+      `https://aiinasia.com${p.path}`,
+      slug,
+      title,
+      p.count,
+      new Date(p.last_seen).toLocaleDateString("en-GB"),
+      status,
+    ];
+  });
+
+  const csv = [header, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `404-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
 const NotFoundAnalytics = () => {
   const queryClient = useQueryClient();
@@ -152,8 +191,21 @@ const NotFoundAnalytics = () => {
           <Link to="/admin"><ArrowLeft className="mr-2 h-4 w-4" />Back to Admin</Link>
         </Button>
 
-        <h1 className="text-3xl font-bold mb-1">404 Audit</h1>
-        <p className="text-muted-foreground mb-8">Broken URLs hitting your site — fix them with one-click redirects.</p>
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">404 Audit</h1>
+            <p className="text-muted-foreground">Broken URLs hitting your site — fix them with one-click redirects.</p>
+          </div>
+          {allPaths && allPaths.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => exportToCSV(realPaths)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          )}
+        </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
