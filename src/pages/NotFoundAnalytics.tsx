@@ -34,6 +34,7 @@ interface PathSummary {
   last_seen: string;
   resolved: boolean;
   redirect_created: boolean;
+  user_reported: boolean;
   referrers: string[];
 }
 
