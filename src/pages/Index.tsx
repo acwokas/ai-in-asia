@@ -733,6 +733,7 @@ const Index = () => {
               <Link
                 to={`/guides/${(guide.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${guide.slug}`}
                 className="group block article-card rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full"
+                style={{ borderTop: `3px solid #10b981` }}
               >
                 <div className={`relative overflow-hidden ${isLarge ? 'h-[280px] max-h-[300px]' : 'h-[160px] max-h-[180px]'}`}>
                   <img
