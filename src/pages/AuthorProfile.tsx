@@ -153,6 +153,9 @@ const AuthorProfile = () => {
           bio={author.bio}
           imageUrl={author.avatar_url}
           url={`/author/${author.slug}`}
+          twitterHandle={author.twitter_handle || undefined}
+          linkedinUrl={author.linkedin_url || undefined}
+          websiteUrl={author.website_url || undefined}
         />
       )}
       <Header />

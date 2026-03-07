@@ -161,12 +161,24 @@ export const PersonStructuredData = ({
   bio,
   imageUrl,
   url,
+  twitterHandle,
+  linkedinUrl,
+  websiteUrl,
 }: {
   name: string;
   bio?: string;
   imageUrl?: string;
   url: string;
+  twitterHandle?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
 }) => {
+  const sameAs = [
+    twitterHandle && `https://twitter.com/${twitterHandle}`,
+    linkedinUrl,
+    websiteUrl,
+  ].filter(Boolean);
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -174,6 +186,7 @@ export const PersonStructuredData = ({
     ...(bio && { description: bio }),
     ...(imageUrl && { image: imageUrl }),
     url: `https://aiinasia.com${url}`,
+    ...(sameAs.length > 0 && { sameAs }),
   };
 
   return (
