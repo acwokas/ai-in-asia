@@ -202,7 +202,7 @@ const GuideDetail = () => {
     datePublished: g.published_at || g.created_at,
     dateModified: g.updated_at,
     author: { "@type": "Organization", name: "AI in Asia" },
-    publisher: { "@type": "Organization", name: "AI in Asia", logo: { "@type": "ImageObject", url: "https://aiinasia.com/logo.png" } },
+    publisher: { "@type": "Organization", name: "AI in Asia", logo: { "@type": "ImageObject", url: "https://aiinasia.com/icons/aiinasia-512.png" } },
   };
 
   // Build the admin control item shape
