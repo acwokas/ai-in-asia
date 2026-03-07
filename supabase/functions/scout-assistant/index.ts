@@ -416,7 +416,7 @@ FORMATTING RULES (ALL MANDATORY):
 - <ul><li> and <ol><li> for lists — you MUST include at least 2 separate list blocks in the article
 - <a href="..."> for links (external links: target="_blank" rel="noopener noreferrer")
 - <blockquote> for quotes and data callouts
-- MAXIMUM 2 consecutive paragraphs before a visual break (subheading, blockquote, list, or callout). This is a hard rule — dense prose blocks will be penalised by search crawlers.
+- MAXIMUM 2 consecutive paragraphs before a visual break (subheading, blockquote, list, or callout). This is a hard rule. Dense prose blocks will be penalised by search crawlers.
 - Where the article compares options, tools, approaches, or time periods: use a <table> with <thead> and <tbody>. This is strongly preferred over prose comparisons.
 
 CLOSING SECTION (MANDATORY - two distinct elements, rendered separately):
