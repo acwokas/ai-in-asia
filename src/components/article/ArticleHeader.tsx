@@ -236,6 +236,19 @@ const ArticleHeader = ({
                   year: "numeric",
                 })}
               </span>
+              {article.updated_at && article.published_at &&
+                new Date(article.updated_at).getTime() - new Date(article.published_at).getTime() > 24 * 60 * 60 * 1000 && (
+                <>
+                  <span>•</span>
+                  <span className="whitespace-nowrap text-xs">
+                    Updated {new Date(article.updated_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </>
+              )}
               <span>•</span>
               <button 
                 onClick={() => document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' })}
