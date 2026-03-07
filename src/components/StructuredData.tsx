@@ -39,7 +39,7 @@ export const ArticleStructuredData = ({
     description: description,
     image: {
       "@type": "ImageObject",
-      url: imageUrl || "https://aiinasia.com/default-og-image.jpg",
+      url: imageUrl || "https://aiinasia.com/icons/aiinasia-512.png?v=3",
       width: 1200,
       height: 675,
     },
