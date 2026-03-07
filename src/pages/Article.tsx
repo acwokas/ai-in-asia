@@ -516,7 +516,7 @@ const Article = () => {
                 </div>
               </div>
               {article.featured_image_caption && (
-                <p className="text-sm text-muted-foreground text-center mt-2">{article.featured_image_caption}</p>
+                <p className="text-xs text-muted-foreground/70 text-center mt-2 italic px-2">{article.featured_image_caption}</p>
               )}
             </div>
           ) : (

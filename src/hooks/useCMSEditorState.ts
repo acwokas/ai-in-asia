@@ -208,6 +208,7 @@ export const useCMSEditorState = ({ initialData }: CMSEditorStateOptions) => {
     status, setStatus,
     featuredImage, setFeaturedImage,
     featuredImageAlt, setFeaturedImageAlt,
+    featuredImageCaption, setFeaturedImageCaption,
     
     // SEO
     seoTitle, setSeoTitle,
