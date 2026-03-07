@@ -26,24 +26,41 @@ const GoogleAnalytics = () => {
     }
   }, []);
 
+  const prevPathRef = useRef<string>('');
+
   // Track page views on route change via dataLayer for GTM
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window === 'undefined') return;
+
+    const prevPath = prevPathRef.current;
+    const currentPath = location.pathname + location.search;
+
+    // Delay to allow react-helmet-async to update document.title before we read it
+    const timer = setTimeout(() => {
+      const pageTitle = document.title;
+
       // Push page_view event to dataLayer for GTM triggers
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'virtualPageview',
-        pagePath: location.pathname + location.search,
-        pageTitle: document.title,
+        pagePath: currentPath,
+        pageTitle,
+        pageReferrer: prevPath ? window.location.origin + prevPath : document.referrer,
       });
 
-      // Also send via gtag for direct GA4 processing
+      // Send via gtag for direct GA4 processing with full context
       if (window.gtag) {
         window.gtag("config", GA_MEASUREMENT_ID, {
-          page_path: location.pathname + location.search,
+          page_path: currentPath,
+          page_title: pageTitle,
+          page_referrer: prevPath ? window.location.origin + prevPath : document.referrer,
         });
       }
-    }
+
+      prevPathRef.current = currentPath;
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [location]);
 
   return null;
