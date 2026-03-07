@@ -65,7 +65,7 @@ export function CategoryFeaturedGrid({ articles, cfg, slug, revealProps, selecte
           ))}
         </div>
       ) : selectedFilter !== "All" ? (
-        <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+        <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
       ) : null}
     </section>
   );
@@ -122,9 +122,9 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
             {displayTag && displayTagColor ? <GlowBadge color={displayTagColor} small>{displayTag}</GlowBadge> : <span />}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {commentCount > 0 && (
-                <span style={{ fontSize: 11, color: "#9ca3af" }}>{commentCount} {commentCount === 1 ? "comment" : "comments"}</span>
+                <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{commentCount} {commentCount === 1 ? "comment" : "comments"}</span>
               )}
-              {meta && <span style={{ fontSize: 12, color: "#9ca3af" }}>{meta}</span>}
+              {meta && <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{meta}</span>}
             </div>
           </div>
         )}
