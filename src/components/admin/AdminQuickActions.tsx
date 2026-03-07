@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp, RefreshCw 
+  BarChart, Calendar, Loader2, Wrench, Link2, Activity, Clock, MessageSquare, Mail, TrendingUp, RefreshCw, AlertTriangle 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
