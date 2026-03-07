@@ -616,7 +616,7 @@ const SEOTools = () => {
                 <div className="flex items-center gap-4">
                   <LinkIcon className="h-8 w-8 text-primary" />
                   <div className="flex-1">
-                    <p className="font-medium">Sitemap URL</p>
+                    <p className="font-medium">Main Sitemap</p>
                     <a 
                       href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap`}
                       target="_blank" 
@@ -631,6 +631,28 @@ const SEOTools = () => {
                     onClick={() => window.open(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap`, "_blank")}
                   >
                     View Sitemap
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <LinkIcon className="h-8 w-8 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-medium">Google News Sitemap</p>
+                    <a 
+                      href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-1">Articles published in the last 48 hours only. Submit this URL to Google Search Console separately.</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap?type=news`, "_blank")}
+                  >
+                    View News Sitemap
                   </Button>
                 </div>
 
@@ -657,12 +679,13 @@ const SEOTools = () => {
 
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground mb-2">
-                    <strong>Note:</strong> Submit your sitemap to search engines:
+                    <strong>Note:</strong> Submit both sitemaps to search engines:
                   </p>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Google Search Console: Add and verify your sitemap</li>
-                    <li>Bing Webmaster Tools: Submit your sitemap URL</li>
-                    <li>The sitemap is automatically updated when articles are published</li>
+                    <li>Google Search Console: Submit both the main sitemap and the Google News sitemap as separate entries</li>
+                    <li>Bing Webmaster Tools: Submit the main sitemap URL</li>
+                    <li>The Google News sitemap only includes articles from the last 48 hours — Google crawls it frequently for Discover and News tab eligibility</li>
+                    <li>Both sitemaps are automatically updated on every request</li>
                   </ul>
                 </div>
               </CardContent>
