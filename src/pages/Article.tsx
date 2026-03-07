@@ -678,6 +678,11 @@ const Article = () => {
             <LearningPathCallout article={article} />
           </div>
 
+          {/* Newsletter signup — shown before comments on all article types */}
+          <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
+            <EndOfContentNewsletter />
+          </div>
+
           {/* Comments — hidden on policy articles */}
           {article.article_type !== 'policy_article' && (
             <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
