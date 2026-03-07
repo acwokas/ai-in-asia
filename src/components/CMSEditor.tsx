@@ -121,7 +121,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
 
   // localStorage backup & restore
   useEditorLocalBackup({
-    articleId: initialData?.id,
+    articleId: initialData?.id ?? "new-article",
     buildSaveData: actions.buildSaveData,
     initialData,
     onRestore: (data) => {
