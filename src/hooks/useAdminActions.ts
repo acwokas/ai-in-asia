@@ -261,7 +261,7 @@ export const useAdminActions = () => {
     handleAutoScheduleComments,
     handleCalculateReadingTimes,
     handleScrapeEvents,
-    handleFixArticleDates,
+    
     handleRefreshFeaturedContent,
     handleRefreshTrending,
     approveComment,
