@@ -15,6 +15,7 @@ import { TopListsContent } from "@/components/TopListsContent";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
+import RecommendedGuides from "@/components/RecommendedGuides";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
