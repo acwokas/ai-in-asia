@@ -14,6 +14,7 @@ import EditorNoteContent from "@/components/EditorNoteContent";
 import { TopListsContent } from "@/components/TopListsContent";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
+import InlineRelatedArticles from "@/components/InlineRelatedArticles";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import FontSizeControl from "@/components/FontSizeControl";
@@ -615,6 +616,17 @@ const Article = () => {
                 {/* Author Bio */}
                 <ArticleAuthorBio authors={article.authors} />
 
+                {/* Inline related articles — shown mid-flow after content */}
+                {article.primary_category_id && article.article_type !== 'policy_article' && (
+                  <div style={{ marginTop: '2.5rem' }}>
+                    <InlineRelatedArticles
+                      currentArticleId={article.id}
+                      categoryId={article.primary_category_id}
+                      categorySlug={article.categories?.slug || 'news'}
+                    />
+                  </div>
+                )}
+
                 {/* Share Thoughts CTA */}
                 {article.article_type !== 'policy_article' && (
                   <div style={{ marginTop: '2.5rem' }}>
@@ -622,7 +634,7 @@ const Article = () => {
                   </div>
                 )}
 
-                {/* Related articles */}
+                {/* Continue Reading */}
                 <div style={{ marginTop: '2rem' }}>
                   <ContinueReading currentArticleId={article.id} categoryId={article.primary_category_id || undefined} categorySlug={article.categories?.slug} />
                 </div>
