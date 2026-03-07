@@ -68,6 +68,7 @@ const NotFoundAnalytics = () => {
           if (log.referrer && !existing.referrers.includes(log.referrer)) {
             existing.referrers.push(log.referrer);
           }
+          if (log.user_reported) existing.user_reported = true;
         } else {
           summaryMap.set(log.path, {
             path: log.path,
