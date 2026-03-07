@@ -561,7 +561,7 @@ const Index = () => {
                 <>
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="rounded-lg overflow-hidden border border-border/50">
-                      <Skeleton className="h-[110px] w-full" />
+                      <Skeleton className="h-[150px] w-full" />
                       <div className="p-2.5 space-y-1.5">
                         <Skeleton className="h-3 w-16" />
                         <Skeleton className="h-4 w-full" />
