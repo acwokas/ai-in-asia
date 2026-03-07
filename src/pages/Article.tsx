@@ -727,6 +727,13 @@ const Article = () => {
             <LearningPathCallout article={article} />
           </div>
 
+          {/* Recommended Guides — cross-link to long-form content */}
+          {article.article_type !== 'policy_article' && (
+            <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
+              <RecommendedGuides />
+            </div>
+          )}
+
           {/* Newsletter signup — shown before comments on all article types */}
           <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
             <EndOfContentNewsletter />
