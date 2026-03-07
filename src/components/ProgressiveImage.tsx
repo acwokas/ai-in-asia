@@ -58,10 +58,20 @@ export const ProgressiveImage = memo(({
     return () => observer.disconnect();
   }, [loading]);
 
+  const [hasError, setHasError] = useState(false);
+  const FALLBACK_IMAGE = "https://aiinasia.com/icons/aiinasia-512.png?v=3";
+
   const handleLoad = () => {
     setIsLoaded(true);
     onLoad?.();
   };
+
+  const handleError = () => {
+    setHasError(true);
+    setIsLoaded(true);
+  };
+
+  const resolvedSrc = hasError ? FALLBACK_IMAGE : src;
 
   // Generate tiny placeholder (10px width) for blur-up effect
   const placeholderSrc = src.includes('supabase.co/storage')
