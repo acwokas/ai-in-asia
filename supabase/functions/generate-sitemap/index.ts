@@ -87,12 +87,13 @@ serve(async (req) => {
     // Guides
     const { data: guides } = await supabase
       .from("ai_guides")
-      .select("slug, updated_at")
+      .select("slug, updated_at, topic_category")
       .order("updated_at", { ascending: false });
 
     for (const g of (guides || [])) {
+      const cat = (g.topic_category || "general").toLowerCase().replace(/\s+/g, "-");
       urls.push({
-        loc: `${baseUrl}/guides/${g.slug}`,
+        loc: `${baseUrl}/guides/${cat}/${g.slug}`,
         lastmod: new Date(g.updated_at).toISOString().split('T')[0],
         changefreq: 'weekly',
         priority: 0.7,
