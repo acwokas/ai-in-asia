@@ -57,7 +57,7 @@ const Tag = () => {
         .eq("article_tags.tag_id", tagData.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
-        .limit(20);
+        .limit(100);
       
       if (error) throw error;
       return data;
