@@ -169,6 +169,12 @@ export const setupGlobalErrorTracking = () => {
 export const useAnalyticsTracking = () => {
   const location = useLocation();
   const { user } = useAuth();
+
+  // Do not track admin, editor, auth, or profile pages
+  const isInternalPath = ['/admin', '/editor', '/auth', '/profile', '/connection-test'].some(
+    prefix => location.pathname.startsWith(prefix)
+  );
+
   const lastPathRef = useRef<string | null>(null);
   const pageViewIdRef = useRef<string | null>(null);
   const pageStartTimeRef = useRef<number>(Date.now());
@@ -339,6 +345,7 @@ export const useAnalyticsTracking = () => {
 
   // Track scroll depth
   useEffect(() => {
+    if (isInternalPath) return;
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -348,12 +355,14 @@ export const useAnalyticsTracking = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isInternalPath]);
 
-  // Track page views on route change
+  // Track page views on route change — skip internal pages
   useEffect(() => {
-    trackPageView();
-  }, [location.pathname, location.search]);
+    if (!isInternalPath) {
+      trackPageView();
+    }
+  }, [location.pathname, location.search, isInternalPath]);
 
   // Handle page visibility changes (tab switching, minimizing)
   useEffect(() => {
