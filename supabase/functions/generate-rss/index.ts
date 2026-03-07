@@ -24,6 +24,7 @@ serve(async (req) => {
         title,
         slug,
         excerpt,
+        content,
         featured_image_url,
         published_at,
         updated_at,
@@ -102,8 +103,15 @@ serve(async (req) => {
         rss += `      <media:thumbnail url="${escapeXml(imageUrl)}" />\n`;
       }
       
-      if (article.excerpt) {
-        const contentEncoded = `<p>${article.excerpt}</p><p><a href="${articleUrl}">Read the full article on AIinASIA →</a></p>`;
+      const fullContent = typeof article.content === 'string' && article.content.trim().length > 100
+        ? article.content
+        : null;
+      const contentEncoded = fullContent
+        ? `${fullContent}<p style="margin-top:2em;border-top:1px solid #eee;padding-top:1em;"><a href="${articleUrl}">Read on AIinASIA →</a></p>`
+        : article.excerpt
+          ? `<p>${article.excerpt}</p><p><a href="${articleUrl}">Read the full article on AIinASIA →</a></p>`
+          : null;
+      if (contentEncoded) {
         rss += `      <content:encoded><![CDATA[${contentEncoded}]]></content:encoded>\n`;
       }
       rss += "    </item>\n";
