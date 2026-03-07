@@ -487,6 +487,7 @@ ${content}`;
   let rewrittenContent: string;
   let heroImageDescription: string;
   let heroImageAltText: string;
+  let heroImageCaption: string = '';
   let midImageDescription: string;
   let midImageAltText: string;
 
