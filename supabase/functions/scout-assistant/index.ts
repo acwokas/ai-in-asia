@@ -447,16 +447,20 @@ Focus Keyphrase: ${contextKeyphrase}
 Article Content:
 ${content}`;
 
-  const rewriteResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
+
+  const rewriteResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      system: rewriteSystemPrompt,
       messages: [
-        { role: 'system', content: rewriteSystemPrompt },
         { role: 'user', content: rewritePrompt },
       ],
     }),
