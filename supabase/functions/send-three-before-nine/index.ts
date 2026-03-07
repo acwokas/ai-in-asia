@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     // Get active briefing subscribers
     const { data: subscribers } = await supabase
       .from('briefing_subscriptions')
-      .select('email')
+      .select('id, email')
       .eq('briefing_type', 'three_before_nine')
       .eq('is_active', true);
 
