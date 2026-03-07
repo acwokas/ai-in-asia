@@ -126,7 +126,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
                 <h4 style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {decodeHtml(article.title)}
                 </h4>
-                <span style={{ fontSize: 12, color: "#9ca3af", marginTop: 4, display: "block" }}>
+                <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, display: "block" }}>
                   {article.reading_time_minutes || 5} min
                 </span>
               </div>
