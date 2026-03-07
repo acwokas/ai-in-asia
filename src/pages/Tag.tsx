@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -18,6 +19,7 @@ import {
 
 const Tag = () => {
   const { slug } = useParams();
+  const [displayLimit, setDisplayLimit] = useState(20);
 
   const { data: tag, isLoading: tagLoading } = useQuery({
     queryKey: ["tag", slug],
@@ -55,7 +57,7 @@ const Tag = () => {
         .eq("article_tags.tag_id", tagData.id)
         .eq("status", "published")
         .order("published_at", { ascending: false })
-        .limit(20);
+        .limit(100);
       
       if (error) throw error;
       return data;
@@ -150,7 +152,7 @@ const Tag = () => {
 
         <section className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles?.map((article: any) => (
+            {articles?.slice(0, displayLimit).map((article: any) => (
               <ArticleCard
                 key={article.id}
                 title={article.title}
@@ -166,6 +168,17 @@ const Tag = () => {
               />
             ))}
           </div>
+
+          {articles && articles.length > displayLimit && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => setDisplayLimit(prev => prev + 20)}
+                className="px-6 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors"
+              >
+                Load more articles
+              </button>
+            </div>
+          )}
 
           {!articles || articles.length === 0 && (
             <div className="text-center py-12">
