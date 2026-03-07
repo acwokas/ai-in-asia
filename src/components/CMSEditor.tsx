@@ -400,7 +400,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
                 <Input
                   id="slug"
                   value={state.slug}
-                  onChange={(e) => state.setSlug(e.target.value)}
+                  onChange={(e) => { state.setSlug(e.target.value); markDirty(); }}
                   placeholder="article-url-slug"
                 />
               </div>
