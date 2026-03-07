@@ -706,7 +706,7 @@ const Article = () => {
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
                   <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
-                    <div style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(48,62,83,0.15)", borderRadius: "4px" }}>
+                    <div style={{ border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", borderRadius: "4px" }}>
                       <SidebarAd />
                     </div>
                   </div>
