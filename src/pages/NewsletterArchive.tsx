@@ -37,6 +37,35 @@ export default function NewsletterArchive() {
         title="Newsletter Archive"
         description="Browse past editions of the AI in ASIA newsletter. Catch up on weekly AI insights, breaking news, and expert analysis."
         canonical="https://aiinasia.com/newsletter/archive"
+        schemaJson={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "AI in Asia Newsletter Archive",
+          "description": "Browse past editions of the AI in Asia newsletter. Weekly AI insights, breaking news, and expert analysis across Asia-Pacific.",
+          "url": "https://aiinasia.com/newsletter/archive",
+          "inLanguage": "en-GB",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aiinasia.com" },
+              { "@type": "ListItem", "position": 2, "name": "Newsletter", "item": "https://aiinasia.com/newsletter" },
+              { "@type": "ListItem", "position": 3, "name": "Archive", "item": "https://aiinasia.com/newsletter/archive" }
+            ]
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "AI in Asia",
+            "url": "https://aiinasia.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://aiinasia.com/icons/aiinasia-512.png"
+            }
+          },
+          "potentialAction": {
+            "@type": "SubscribeAction",
+            "target": "https://aiinasia.com/newsletter"
+          }
+        }}
       />
 
       <div className="min-h-screen flex flex-col">
