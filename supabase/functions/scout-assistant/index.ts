@@ -458,7 +458,7 @@ ${content}`;
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 8000,
       system: rewriteSystemPrompt,
       messages: [
         { role: 'user', content: rewritePrompt },
