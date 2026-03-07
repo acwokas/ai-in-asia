@@ -561,7 +561,7 @@ const Index = () => {
                 <>
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="rounded-lg overflow-hidden border border-border/50">
-                      <Skeleton className="h-[110px] w-full" />
+                      <Skeleton className="h-[150px] w-full" />
                       <div className="p-2.5 space-y-1.5">
                         <Skeleton className="h-3 w-16" />
                         <Skeleton className="h-4 w-full" />
@@ -585,7 +585,7 @@ const Index = () => {
                       className="group rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-200 flex flex-col"
                       style={{ borderTop: `3px solid ${catColor}` }}
                     >
-                      <div className="relative w-full h-[110px] overflow-hidden">
+                      <div className="relative w-full h-[150px] overflow-hidden">
                         <img
                           src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 220)}
                           alt={article.title}
@@ -636,6 +636,9 @@ const Index = () => {
 
         {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="headline text-[22px] md:text-[26px] font-bold">Latest Stories</h2>
+          </div>
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
