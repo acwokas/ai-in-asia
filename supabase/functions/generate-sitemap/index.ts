@@ -192,13 +192,36 @@ serve(async (req) => {
     urls.push({ loc: `${baseUrl}/ai-policy-atlas/compare`, lastmod: today, changefreq: 'weekly', priority: 0.6 });
     urls.push({ loc: `${baseUrl}/ai-policy-atlas/updates`, lastmod: today, changefreq: 'daily', priority: 0.7 });
 
-    // Build single flat urlset
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    for (const u of urls) {
-      xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>\n`;
+    let xml: string;
+
+    if (isNewsSitemap) {
+      // Google News sitemap — articles published within last 2 days only
+      const newsArticles = urls.filter((u: any) => u.isNews);
+      xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n';
+      for (const u of newsArticles as any[]) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${u.loc}</loc>\n`;
+        xml += `    <news:news>\n`;
+        xml += `      <news:publication>\n`;
+        xml += `        <news:name>AI in Asia</news:name>\n`;
+        xml += `        <news:language>en</news:language>\n`;
+        xml += `      </news:publication>\n`;
+        xml += `      <news:publication_date>${new Date(u.publishedAt).toISOString()}</news:publication_date>\n`;
+        xml += `      <news:title>${u.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</news:title>\n`;
+        xml += `    </news:news>\n`;
+        xml += `  </url>\n`;
+      }
+      xml += '</urlset>';
+    } else {
+      // Main sitemap
+      xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      for (const u of urls) {
+        xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>\n`;
+      }
+      xml += '</urlset>';
     }
-    xml += '</urlset>';
 
     console.log(`Generated sitemap with ${urls.length} URLs`);
 
