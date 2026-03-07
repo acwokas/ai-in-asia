@@ -211,10 +211,15 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
       });
       
-      const sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
+      let sanitizedHtml = DOMPurify.sanitize(htmlBlocks.join('\n\n'), {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'data-prompt-title', 'data-prompt-content', 'type', 'lang', 'dir', 'data-instgrm-captioned', 'data-instgrm-permalink', 'data-instgrm-version', 'cite', 'data-video-id', 'datetime', 'onclick']
       });
+
+      sanitizedHtml = sanitizedHtml.replace(
+        /(<h3[^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h3>\s*)(<ul[\s\S]*?<\/ul>)/g,
+        '<div class="by-the-numbers">$1$2</div>'
+      );
       
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
@@ -284,14 +289,40 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Inject ad after certain blocks
     const totalBlocks = htmlBlocks.length;
     const adPosition = Math.floor(totalBlocks * 0.7);
-    
-    const finalBlocks: React.ReactNode[] = [];
-    htmlBlocks.forEach((block, index) => {
-      const sanitizedBlock = DOMPurify.sanitize(block, {
+
+    // Join, sanitize, and post-process as a single string for cross-block patterns
+    let joinedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
+      ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
+    });
+
+    joinedHtml = joinedHtml.replace(
+      /(<h3[^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h3>\s*)(<ul[\s\S]*?<\/ul>)/g,
+      '<div class="by-the-numbers">$1$2</div>'
+    );
+
+    // Split back into blocks for ad injection
+    const sanitizedBlocks = htmlBlocks.map((_, index) => {
+      // Re-sanitize individual blocks for keying
+      return DOMPurify.sanitize(htmlBlocks[index], {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
       });
-      
+    });
+
+    // Check if by-the-numbers wrapper was applied — if so, use joined version
+    if (joinedHtml.includes('by-the-numbers')) {
+      const finalBlocks: React.ReactNode[] = [
+        <div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} />
+      ];
+      if (totalBlocks > 8) {
+        // Ad injection not feasible with joined HTML, skip
+      }
+      return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
+    }
+
+    const finalBlocks: React.ReactNode[] = [];
+    sanitizedBlocks.forEach((sanitizedBlock, index) => {
       finalBlocks.push(
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
