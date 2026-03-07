@@ -185,7 +185,7 @@ const CMSEditor = ({ initialData, onSave }: CMSEditorProps) => {
           }
         } catch (err) {
           console.error("Failed to generate hero image:", err);
-          state.setFeaturedImage('/images/3-before-9-hero.png');
+          state.setFeaturedImage('/images/3-before-9-hero.webp');
           toast.error("Hero image generation failed", { description: "Using default image. You can retry via the image field." });
         }
       })();

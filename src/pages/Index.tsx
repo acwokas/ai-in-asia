@@ -452,7 +452,7 @@ const Index = () => {
                 <Link to="/guides/startup" className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
-                      src="/images/startup-guides-hero.png"
+                      src="/images/startup-guides-hero.webp"
                       alt="AI guides for startup founders"
                       loading="eager" decoding="async" fetchPriority="high"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
