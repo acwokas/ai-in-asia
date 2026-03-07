@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createIDBPersister } from "@/lib/queryPersister";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -192,6 +192,130 @@ const EngagementWrapper = () => {
   return null;
 };
 
+const RootLayout = () => (
+  <>
+    <a href="#main-content" className="skip-to-content">Skip to main content</a>
+    <AnalyticsProvider>
+      <ScrollToTop />
+      <GoogleAnalytics />
+      <EngagementWrapper />
+      <Suspense fallback={null}>
+        <ConsentBanner />
+      </Suspense>
+      <Suspense fallback={null}>
+        <InstallAppButton />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ScoutChatbot />
+      </Suspense>
+      <Suspense fallback={<HomepageSkeleton />}>
+        <Outlet />
+      </Suspense>
+    </AnalyticsProvider>
+  </>
+);
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      { path: "/", element: <Index /> },
+      { path: "/:category/:slug", element: <Article /> },
+      { path: "/category/:slug/all", element: <CategoryAll /> },
+      { path: "/category/:slug/learn/:pathSlug", element: <LearningPathDetail /> },
+      { path: "/category/:slug", element: <Category /> },
+      { path: "/tag/:slug", element: <Tag /> },
+      { path: "/author/:slug", element: <AuthorProfile /> },
+      { path: "/sitemap.xml", element: <SitemapRedirect /> },
+      { path: "/rss.xml", element: <RssRedirect /> },
+      { path: "/rss", element: <RssRedirect /> },
+      { path: "/feed", element: <FeedRedirect /> },
+      { path: "/search", element: <Search /> },
+      { path: "/auth", element: <Auth /> },
+      { path: "/editor", element: <Editor /> },
+      { path: "/editor/:id", element: <Editor /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/about", element: <About /> },
+      { path: "/contact", element: <Contact /> },
+      { path: "/privacy", element: <Privacy /> },
+      { path: "/terms", element: <Terms /> },
+      { path: "/cookie-policy", element: <CookiePolicy /> },
+      { path: "/events", element: <Events /> },
+      { path: "/events/submit", element: <SubmitEvent /> },
+      { path: "/tools", element: <ExternalRedirect url="https://adrianwatkins.com/tools" /> },
+      { path: "/ask-scout", element: <AskScout /> },
+      { path: "/newsletter", element: <Newsletter /> },
+      { path: "/newsletter/archive", element: <NewsletterArchive /> },
+      { path: "/newsletter/weekly/latest", element: <NewsletterWeeklyLatest /> },
+      { path: "/newsletter/forward/:id", element: <NewsletterForward /> },
+      { path: "/newsletter/:id/email-preview", element: <NewsletterEmailPreview /> },
+      { path: "/newsletter/:id", element: <NewsletterView /> },
+      { path: "/saved", element: <SavedArticles /> },
+      { path: "/editorial-standards", element: <EditorialStandards /> },
+      { path: "/contribute", element: <Contribute /> },
+      { path: "/media-and-partners", element: <MediaAndPartners /> },
+      { path: "/prompts", element: <AllPrompts /> },
+      { path: "/prompts/:category", element: <AllPrompts /> },
+      { path: "/my-prompts", element: <MyPrompts /> },
+      { path: "/ai-policy-atlas", element: <PolicyAtlas /> },
+      { path: "/ai-policy-atlas/compare", element: <PolicyComparison /> },
+      { path: "/ai-policy-atlas/updates", element: <PolicyUpdates /> },
+      { path: "/ai-policy-atlas/:category/:slug", element: <Article /> },
+      { path: "/ai-policy-atlas/:region", element: <PolicyRegion /> },
+      { path: "/unsubscribe", element: <Unsubscribe /> },
+      { path: "/redirects", element: <Redirects /> },
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Admin /> },
+          { path: "dashboard", element: <Admin /> },
+          { path: "articles", element: <Articles /> },
+          { path: "calendar", element: <ContentCalendar /> },
+          { path: "internal-links", element: <InternalLinksManager /> },
+          { path: "link-health", element: <LinkHealthMonitor /> },
+          { path: "bulk-links-undo", element: <BulkLinksUndo /> },
+          { path: "fix-broken-links", element: <FixBrokenLinks /> },
+          { path: "content-freshness", element: <ContentFreshness /> },
+          { path: "ai-comments", element: <AIComments /> },
+          { path: "comments", element: <CommentModeration /> },
+          { path: "knowledge-engine", element: <KnowledgeEngine /> },
+          { path: "bulk-operations", element: <BulkOperations /> },
+          { path: "analytics", element: <ContentAnalytics /> },
+          { path: "seo", element: <SEODashboard /> },
+          { path: "seo-tools", element: <Navigate to="/admin/seo" replace /> },
+          { path: "bulk-seo", element: <Navigate to="/admin/seo?tab=bulk" replace /> },
+          { path: "author-management", element: <AuthorManagement /> },
+          { path: "editors-picks", element: <EditorsPickManager /> },
+          { path: "process-comments", element: <ProcessPendingComments /> },
+          { path: "category-sponsors", element: <CategorySponsorsManager /> },
+          { path: "404-analytics", element: <NotFoundAnalytics /> },
+          { path: "guides", element: <AdminGuides /> },
+          { path: "newsletter", element: <NewsletterAdmin /> },
+          { path: "newsletter-analytics", element: <Navigate to="/admin/newsletter?tab=subscribers" replace /> },
+          { path: "newsletter-performance", element: <Navigate to="/admin/newsletter?tab=analytics" replace /> },
+          { path: "newsletter-manager", element: <Navigate to="/admin/newsletter" replace /> },
+          { path: "unsubscribes", element: <Navigate to="/admin/newsletter?tab=subscribers" replace /> },
+          { path: "site-analytics", element: <SiteAnalytics /> },
+          { path: "content-insights", element: <ContentInsights /> },
+          { path: "guide-editor", element: <GuideEditor /> },
+          { path: "guide-editor/:id", element: <GuideEditor /> },
+          { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
+          { path: "settings", element: <AdminSettings /> },
+        ],
+      },
+      { path: "/news/3-before-9", element: <ThreeBeforeNineLatest /> },
+      { path: "/3-before-9", element: <ThreeBeforeNineLatest /> },
+      { path: "/guides", element: <Guides /> },
+      { path: "/guides/:category/:slug", element: <GuideDetail /> },
+      { path: "/guides/:categorySlug", element: <GuideCategoryIndex /> },
+      { path: "/guides/:slug", element: <GuideDetail /> },
+      { path: "/:slug", element: <LegacyArticleRedirect /> },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+]);
+
 const App = () => (
   <PersistQueryClientProvider
     client={queryClient}
@@ -200,126 +324,8 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <DatabaseErrorBoundary>
-          
           <Sonner />
-          <BrowserRouter>
-            <a href="#main-content" className="skip-to-content">Skip to main content</a>
-            <AnalyticsProvider>
-            <ScrollToTop />
-            <GoogleAnalytics />
-            <EngagementWrapper />
-            <Suspense fallback={null}>
-              <ConsentBanner />
-            </Suspense>
-            <Suspense fallback={null}>
-              <InstallAppButton />
-            </Suspense>
-            <Suspense fallback={null}>
-              <ScoutChatbot />
-            </Suspense>
-            <Suspense fallback={null}>
-              <InstallAppButton />
-            </Suspense>
-            <Suspense fallback={<HomepageSkeleton />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/:category/:slug" element={<Article />} />
-              <Route path="/category/:slug/all" element={<CategoryAll />} />
-              <Route path="/category/:slug/learn/:pathSlug" element={<LearningPathDetail />} />
-              <Route path="/category/:slug" element={<Category />} />
-              <Route path="/tag/:slug" element={<Tag />} />
-              <Route path="/author/:slug" element={<AuthorProfile />} />
-              <Route path="/sitemap.xml" element={<SitemapRedirect />} />
-              <Route path="/rss.xml" element={<RssRedirect />} />
-              <Route path="/rss" element={<RssRedirect />} />
-              <Route path="/feed" element={<FeedRedirect />} />
-              <Route path="/search" element={<Search />} />
-              
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/editor" element={<Editor />} />
-              <Route path="/editor/:id" element={<Editor />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/cookie-policy" element={<CookiePolicy />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/submit" element={<SubmitEvent />} />
-              <Route path="/tools" element={<ExternalRedirect url="https://adrianwatkins.com/tools" />} />
-              <Route path="/ask-scout" element={<AskScout />} />
-              <Route path="/newsletter" element={<Newsletter />} />
-              <Route path="/newsletter/archive" element={<NewsletterArchive />} />
-              <Route path="/newsletter/weekly/latest" element={<NewsletterWeeklyLatest />} />
-              <Route path="/newsletter/forward/:id" element={<NewsletterForward />} />
-              <Route path="/newsletter/:id/email-preview" element={<NewsletterEmailPreview />} />
-              <Route path="/newsletter/:id" element={<NewsletterView />} />
-              <Route path="/saved" element={<SavedArticles />} />
-              <Route path="/editorial-standards" element={<EditorialStandards />} />
-              <Route path="/contribute" element={<Contribute />} />
-              <Route path="/media-and-partners" element={<MediaAndPartners />} />
-              <Route path="/prompts" element={<AllPrompts />} />
-              <Route path="/prompts/:category" element={<AllPrompts />} />
-              <Route path="/my-prompts" element={<MyPrompts />} />
-              <Route path="/ai-policy-atlas" element={<PolicyAtlas />} />
-              <Route path="/ai-policy-atlas/compare" element={<PolicyComparison />} />
-              <Route path="/ai-policy-atlas/updates" element={<PolicyUpdates />} />
-              <Route path="/ai-policy-atlas/:category/:slug" element={<Article />} />
-              <Route path="/ai-policy-atlas/:region" element={<PolicyRegion />} />
-              <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/redirects" element={<Redirects />} />
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Admin />} />
-                <Route path="dashboard" element={<Admin />} />
-                <Route path="articles" element={<Articles />} />
-                <Route path="calendar" element={<ContentCalendar />} />
-                <Route path="internal-links" element={<InternalLinksManager />} />
-                <Route path="link-health" element={<LinkHealthMonitor />} />
-                <Route path="bulk-links-undo" element={<BulkLinksUndo />} />
-                <Route path="fix-broken-links" element={<FixBrokenLinks />} />
-                <Route path="content-freshness" element={<ContentFreshness />} />
-                <Route path="ai-comments" element={<AIComments />} />
-                <Route path="comments" element={<CommentModeration />} />
-                <Route path="knowledge-engine" element={<KnowledgeEngine />} />
-                <Route path="bulk-operations" element={<BulkOperations />} />
-                <Route path="analytics" element={<ContentAnalytics />} />
-                <Route path="seo" element={<SEODashboard />} />
-                <Route path="seo-tools" element={<Navigate to="/admin/seo" replace />} />
-                <Route path="bulk-seo" element={<Navigate to="/admin/seo?tab=bulk" replace />} />
-                <Route path="author-management" element={<AuthorManagement />} />
-                <Route path="editors-picks" element={<EditorsPickManager />} />
-                <Route path="process-comments" element={<ProcessPendingComments />} />
-                <Route path="category-sponsors" element={<CategorySponsorsManager />} />
-                <Route path="404-analytics" element={<NotFoundAnalytics />} />
-                <Route path="guides" element={<AdminGuides />} />
-                <Route path="newsletter" element={<NewsletterAdmin />} />
-                <Route path="newsletter-analytics" element={<Navigate to="/admin/newsletter?tab=subscribers" replace />} />
-                <Route path="newsletter-performance" element={<Navigate to="/admin/newsletter?tab=analytics" replace />} />
-                <Route path="newsletter-manager" element={<Navigate to="/admin/newsletter" replace />} />
-                <Route path="unsubscribes" element={<Navigate to="/admin/newsletter?tab=subscribers" replace />} />
-                <Route path="site-analytics" element={<SiteAnalytics />} />
-                <Route path="content-insights" element={<ContentInsights />} />
-                <Route path="guide-editor" element={<GuideEditor />} />
-                <Route path="guide-editor/:id" element={<GuideEditor />} />
-                
-                <Route path="event-submissions" element={<AdminEventSubmissionsPage />} />
-                <Route path="settings" element={<AdminSettings />} />
-              </Route>
-              {/* 3-Before-9 rolling redirect - must be before /:category/:slug */}
-              <Route path="/news/3-before-9" element={<ThreeBeforeNineLatest />} />
-              <Route path="/3-before-9" element={<ThreeBeforeNineLatest />} />
-              <Route path="/guides" element={<Guides />} />
-              <Route path="/guides/:category/:slug" element={<GuideDetail />} />
-              <Route path="/guides/:categorySlug" element={<GuideCategoryIndex />} />
-              <Route path="/guides/:slug" element={<GuideDetail />} />
-              {/* Legacy WordPress URL redirect - must be before catch-all */}
-              <Route path="/:slug" element={<LegacyArticleRedirect />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            
-          </Suspense>
-          </AnalyticsProvider>
-        </BrowserRouter>
+          <RouterProvider router={router} />
         </DatabaseErrorBoundary>
       </TooltipProvider>
     </AuthProvider>
