@@ -289,55 +289,12 @@ const ScoutChatbot = () => {
         throw new Error(errorData.error || `Failed to get response (${response.status})`);
       }
 
-      if (!response.body) throw new Error("No response body");
+      const data = await response.json();
+      const assistantContent = data.content || "";
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let assistantContent = "";
-      let textBuffer = "";
+      if (!assistantContent) throw new Error("Empty response from Scout");
 
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          textBuffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex;
-          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-            const line = textBuffer.slice(0, newlineIndex).trim();
-            textBuffer = textBuffer.slice(newlineIndex + 1);
-
-            if (!line || line.startsWith(':')) continue;
-            if (!line.startsWith('data: ')) continue;
-            
-            const data = line.slice(6);
-            if (data === '[DONE]') break;
-
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta;
-              
-              if (delta?.content) {
-                assistantContent += delta.content;
-                setMessages((prev) =>
-                  prev.map((msg, i) =>
-                    i === prev.length - 1
-                      ? { ...msg, content: assistantContent }
-                      : msg
-                  )
-                );
-              }
-            } catch (e) {
-              // skip malformed lines
-            }
-          }
-        }
-      } catch (streamError) {
-        throw streamError;
-      }
+      setMessages((prev) => [...prev, { role: "assistant", content: assistantContent }]);
 
       setIsLoading(false);
       fetchQueryLimit();
