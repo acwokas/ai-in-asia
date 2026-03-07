@@ -65,7 +65,7 @@ export function CategoryFeaturedGrid({ articles, cfg, slug, revealProps, selecte
           ))}
         </div>
       ) : selectedFilter !== "All" ? (
-        <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+        <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
       ) : null}
     </section>
   );
