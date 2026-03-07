@@ -64,7 +64,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
               <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 27, color: "#fff", lineHeight: 1.25, margin: "0 0 10px 0", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
                 {decodeHtml(featuredArticle.title)}
               </h2>
-              <p style={{ fontSize: 14, color: "#d1d5db", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
+              <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
                 {featuredArticle.excerpt?.slice(0, 160)}...
               </p>
               <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: TOKENS.MUTED }}>
