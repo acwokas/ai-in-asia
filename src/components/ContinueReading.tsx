@@ -13,29 +13,61 @@ interface ContinueReadingProps {
 
 const ContinueReading = ({ currentArticleId, categoryId, categorySlug }: ContinueReadingProps) => {
   const { data: nextArticle } = useQuery({
-    queryKey: ["next-article", currentArticleId, categoryId],
+    queryKey: ["next-article-relevant", currentArticleId, categoryId],
     enabled: !!currentArticleId,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
+      // Fetch the current article's tags first
+      const { data: currentArticle } = await supabase
+        .from('articles')
+        .select('ai_tags, topic_tags')
+        .eq('id', currentArticleId)
+        .maybeSingle();
+
+      const currentTags = [
+        ...((currentArticle?.ai_tags as string[]) || []),
+        ...((currentArticle?.topic_tags as string[]) || []),
+      ].map(t => t.toLowerCase());
+
+      // Fetch recent candidates from same category
       let query = supabase
-        .from("articles")
+        .from('articles')
         .select(`
           id, title, slug, excerpt, featured_image_url, reading_time_minutes,
+          ai_tags, topic_tags,
           authors (name, slug),
           categories:primary_category_id (name, slug)
         `)
-        .eq("status", "published")
-        .neq("id", currentArticleId)
-        .order("published_at", { ascending: false })
-        .limit(1);
+        .eq('status', 'published')
+        .neq('id', currentArticleId)
+        .order('published_at', { ascending: false })
+        .limit(10);
 
       if (categoryId) {
-        query = query.eq("primary_category_id", categoryId);
+        query = query.eq('primary_category_id', categoryId);
       }
 
-      const { data, error } = await query.maybeSingle();
+      const { data, error } = await query;
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) return null;
+
+      // Score by shared tags, fall back to most recent
+      if (currentTags.length === 0) return data[0];
+
+      let best = data[0];
+      let bestScore = -1;
+      for (const a of data) {
+        const aTags = [
+          ...((a.ai_tags as string[]) || []),
+          ...((a.topic_tags as string[]) || []),
+        ].map(t => t.toLowerCase());
+        const score = aTags.filter(t => currentTags.includes(t)).length;
+        if (score > bestScore) {
+          bestScore = score;
+          best = a;
+        }
+      }
+      return best;
     },
   });
 
