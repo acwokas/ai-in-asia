@@ -36,6 +36,7 @@ import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { fixEncoding } from "@/lib/textUtils";
+import { calculateReadingTime } from '@/lib/readingTime';
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
@@ -384,7 +385,7 @@ const Article = () => {
         authorName={article.authors?.name || 'AI in ASIA'}
         categoryName={article.categories?.name || ''}
         categorySlug={article.categories?.slug || ''}
-        wordCount={article.reading_time_minutes ? article.reading_time_minutes * 200 : undefined}
+        wordCount={article.content ? calculateReadingTime(article.content, article.title || '') * 200 : undefined}
         keywords={[...(article.ai_tags || []), ...(article.topic_tags || [])].filter(Boolean).join(', ') || undefined}
         thumbnailUrl={article.featured_image_url || undefined}
         canonicalUrl={article.canonical_url || `https://aiinasia.com/${categorySlug}/${articleSlug}`}
