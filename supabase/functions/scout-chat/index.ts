@@ -145,6 +145,11 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not configured');
+    }
+
     const systemPrompt = `You are Scout, the AI assistant for AIinASIA.com — the leading independent publication covering artificial intelligence across Asia-Pacific.
 
 AIinASIA covers: AI policy and regulation across Southeast Asia, China, Japan, South Korea, India and Australia; enterprise AI adoption; AI in healthcare, finance, education and media; LLMs, generative AI, computer vision and robotics; startup funding and M&A; government initiatives and national AI strategies.
