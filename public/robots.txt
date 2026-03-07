@@ -15,6 +15,9 @@ Disallow: /auth
 Disallow: /saved
 Disallow: /profile
 
+# Disallow preview URLs (already noindex but belt-and-braces)
+Disallow: /*?preview=
+
 
 # Explicitly welcome major search engines
 User-agent: Googlebot
