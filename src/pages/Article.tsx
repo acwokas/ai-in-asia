@@ -611,6 +611,31 @@ const Article = () => {
                 <p className="text-sm text-muted-foreground mb-2" style={{ marginTop: '2rem' }}>What did you think?</p>
                 <ArticleReactions articleId={article.id} />
 
+                {/* Clickable topic tags — internal navigation */}
+                {(() => {
+                  const allTags = [...(article.ai_tags || []), ...(article.topic_tags || [])]
+                    .filter(Boolean)
+                    .filter((t, i, arr) => arr.indexOf(t) === i)
+                    .slice(0, 8);
+                  if (allTags.length === 0) return null;
+                  return (
+                    <div className="flex flex-wrap gap-2" style={{ marginTop: '1.25rem' }}>
+                      {allTags.map((tag: string) => {
+                        const slug = tag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        return (
+                          <Link
+                            key={tag}
+                            to={`/tag/${slug}`}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                          >
+                            #{tag}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
                 {/* Compact Author Footer */}
                 <div className="flex items-center gap-3" style={{ marginTop: '3.5rem', paddingTop: '1.5rem', borderTop: '1px solid hsl(var(--border))' }}>
                   {article.authors?.avatar_url && (
