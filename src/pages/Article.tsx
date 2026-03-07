@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
 import { SidebarAd } from "@/components/GoogleAds";
-import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
+import { ArticleStructuredData, BreadcrumbStructuredData, FAQPageStructuredData } from "@/components/StructuredData";
 import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
 import EditorNoteContent from "@/components/EditorNoteContent";
@@ -349,7 +349,8 @@ const Article = () => {
     );
   }
 
-  
+
+
 
   return (
     <>
@@ -408,6 +409,18 @@ const Article = () => {
             steps={steps}
           />
         ) : null;
+      })()}
+
+      {/* FAQ structured data — auto-parsed from Scout-generated FAQ sections */}
+      {(() => {
+        const contentStr = typeof article.content === 'string' ? article.content : JSON.stringify(article.content || '');
+        const faqMatches = [...contentStr.matchAll(/<h[34][^>]*>\s*([^<]+\?)\s*<\/h[34]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
+        if (faqMatches.length === 0) return null;
+        const questions = faqMatches.map(m => ({
+          question: m[1].replace(/<[^>]+>/g, '').trim(),
+          answer: m[2].replace(/<[^>]+>/g, '').trim(),
+        })).filter(q => q.question && q.answer).slice(0, 5);
+        return questions.length > 0 ? <FAQPageStructuredData questions={questions} /> : null;
       })()}
 
       <div className="min-h-screen flex flex-col">
