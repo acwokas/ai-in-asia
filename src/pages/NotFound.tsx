@@ -1,5 +1,6 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,6 +16,19 @@ const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: redirectRule, isLoading: checkingRedirect } = useQuery({
+    queryKey: ["redirect-check", location.pathname],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("redirects")
+        .select("to_path")
+        .eq("from_path", location.pathname)
+        .maybeSingle();
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
