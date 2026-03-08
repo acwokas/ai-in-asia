@@ -1,0 +1,1 @@
+UPDATE articles SET author_id = 'efae4a91-4c99-4ac3-bfef-21f81d6e7551' WHERE status = 'published' AND author_id IS NULL;

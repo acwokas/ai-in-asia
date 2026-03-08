@@ -66,7 +66,7 @@ export const ArticleAuthorFooter = ({
             authors?.avatar_url ? (
               <img 
                 src={authors.avatar_url} 
-                alt={authors?.name || 'Anonymous'}
+                alt={authors?.name || 'Intelligence Desk'}
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0"
               />
             ) : (

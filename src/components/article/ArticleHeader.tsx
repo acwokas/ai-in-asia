@@ -217,7 +217,7 @@ const ArticleHeader = ({
                   {article.authors.name}
                 </Link>
               ) : (
-                <span className="truncate">{article.authors?.name || 'Anonymous'}</span>
+                <span className="truncate">{article.authors?.name || 'Intelligence Desk'}</span>
               )}
             </div>
             {article.authors?.job_title && (
