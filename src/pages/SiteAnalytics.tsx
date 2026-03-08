@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/Header";
+
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
@@ -502,7 +502,6 @@ const SiteAnalytics = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
         <nav className="mb-6 flex items-center gap-2 text-sm" aria-label="Breadcrumb">
