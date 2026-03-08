@@ -24,6 +24,21 @@
     <link rel="apple-touch-icon" href="/icons/aiinasia-ios-180.png" />
     
     <!-- Default meta tags (overridden by react-helmet-async per page) -->
+    <title>AI in Asia – AI Policy Atlas, News & Innovation Across Asia-Pacific</title>
+    <meta name="description" content="Track AI regulation, governance frameworks, and innovation across 40+ Asia-Pacific jurisdictions. Policy Atlas, news, events, and analysis." />
+
+    <!-- Open Graph defaults (overridden per page by react-helmet-async) -->
+    <meta property="og:site_name" content="AI in Asia" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AI in Asia – AI Policy Atlas, News & Innovation" />
+    <meta property="og:description" content="Track AI regulation and governance frameworks across 40+ Asia-Pacific jurisdictions." />
+    <meta property="og:url" content="https://aiinasia.com/" />
+    <meta property="og:image" content="https://aiinasia.com/images/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI in Asia – AI Policy Atlas" />
+    <meta name="twitter:description" content="Track AI regulation and governance across Asia-Pacific." />
+    <meta name="twitter:image" content="https://aiinasia.com/images/og-default.png" />
+
     
     
     <!-- Performance optimizations -->
@@ -62,6 +77,29 @@
 
     <!-- Ahrefs Analytics -->
     <script src="https://analytics.ahrefs.com/analytics.js" data-key="ehgmS75pUla8HpRhvnD/1w" async></script>
+
+    <!-- Machine-readable data feeds -->
+    <link rel="alternate" type="application/json" title="Policy Atlas JSON" href="/api/policy-atlas.json" />
+    <link rel="alternate" type="application/json" title="Events JSON" href="/api/events.json" />
+    <link rel="author" href="/llms.txt" />
+
+    <!-- Schema.org Organization JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "AI in Asia",
+      "url": "https://aiinasia.com",
+      "logo": "https://aiinasia.com/favicon.png",
+      "description": "Policy-tracking and news platform covering AI regulation, governance, and innovation across the Asia-Pacific region.",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "hello@aiinasia.com",
+        "contactType": "editorial"
+      }
+    }
+    </script>
   </head>
 
   <body>
