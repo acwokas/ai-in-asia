@@ -88,3 +88,11 @@ Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?
 
 # Polite crawl rate
 Crawl-delay: 1
+
+# Machine-readable data feeds and AI-friendly resources
+# LLM site map: https://aiinasia.com/llms.txt
+# Policy Atlas JSON: https://aiinasia.com/api/policy-atlas.json
+# Events JSON: https://aiinasia.com/api/events.json
+# Source Packs JSON: https://aiinasia.com/api/source-packs.json
+# RSS Feed: https://aiinasia.com/rss
+# Atom Feed: https://aiinasia.com/feed
