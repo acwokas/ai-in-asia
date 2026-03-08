@@ -1,0 +1,321 @@
+{
+  "$schema": "https://aiinasia.com/api/policy-atlas-schema.json",
+  "name": "AI Policy Atlas",
+  "description": "Machine-readable index of AI governance frameworks tracked by AI in Asia",
+  "publisher": "AI in Asia",
+  "url": "https://aiinasia.com/ai-policy-atlas",
+  "updated": "2026-03-08",
+  "license": "All rights reserved. Contact hello@aiinasia.com for syndication.",
+  "regions": [
+    {
+      "id": "north-asia",
+      "name": "North Asia",
+      "url": "https://aiinasia.com/ai-policy-atlas/north-asia",
+      "countries": [
+        {
+          "name": "Japan",
+          "iso": "JP",
+          "status": "binding_law",
+          "framework": "AI Promotion Act",
+          "enacted": "2025-05-28",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        },
+        {
+          "name": "South Korea",
+          "iso": "KR",
+          "status": "binding_law",
+          "framework": "AI Basic Act",
+          "enacted": "2026-01-22",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        },
+        {
+          "name": "Taiwan",
+          "iso": "TW",
+          "status": "binding_law",
+          "framework": "AI Basic Act",
+          "enacted": "2026-01-14",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        },
+        {
+          "name": "China",
+          "iso": "CN",
+          "status": "binding_law",
+          "framework": "Multi-layered AI regulations (Algorithm Recommendation, Deep Synthesis, Generative AI)",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        },
+        {
+          "name": "Hong Kong",
+          "iso": "HK",
+          "status": "voluntary",
+          "framework": "Ethical AI Framework",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        },
+        {
+          "name": "Mongolia",
+          "iso": "MN",
+          "status": "emerging",
+          "framework": "National AI Programme",
+          "url": "https://aiinasia.com/ai-policy-atlas/north-asia"
+        }
+      ]
+    },
+    {
+      "id": "asean",
+      "name": "ASEAN",
+      "url": "https://aiinasia.com/ai-policy-atlas/asean",
+      "countries": [
+        {
+          "name": "Singapore",
+          "iso": "SG",
+          "status": "voluntary",
+          "framework": "Model AI Governance Framework + Agentic AI Framework (Jan 2026)",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        },
+        {
+          "name": "Thailand",
+          "iso": "TH",
+          "status": "emerging",
+          "framework": "Royal Decree on AI Systems Business (draft)",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        },
+        {
+          "name": "Vietnam",
+          "iso": "VN",
+          "status": "voluntary",
+          "framework": "National AI Strategy 2025-2030",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        },
+        {
+          "name": "Indonesia",
+          "iso": "ID",
+          "status": "binding_law",
+          "framework": "Presidential Regulation on AI (2025)",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        },
+        {
+          "name": "Philippines",
+          "iso": "PH",
+          "status": "legislative_draft",
+          "framework": "Proposed AI Development Authority Act",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        },
+        {
+          "name": "Malaysia",
+          "iso": "MY",
+          "status": "voluntary",
+          "framework": "National AI Roadmap",
+          "url": "https://aiinasia.com/ai-policy-atlas/asean"
+        }
+      ]
+    },
+    {
+      "id": "south-asia",
+      "name": "South Asia",
+      "url": "https://aiinasia.com/ai-policy-atlas/south-asia",
+      "countries": [
+        {
+          "name": "India",
+          "iso": "IN",
+          "status": "voluntary",
+          "framework": "Digital India Act / advisory framework",
+          "url": "https://aiinasia.com/ai-policy-atlas/south-asia"
+        },
+        {
+          "name": "Sri Lanka",
+          "iso": "LK",
+          "status": "emerging",
+          "framework": "National AI Strategy (developing)",
+          "url": "https://aiinasia.com/ai-policy-atlas/south-asia"
+        },
+        {
+          "name": "Bangladesh",
+          "iso": "BD",
+          "status": "voluntary",
+          "framework": "National AI Strategy 2024",
+          "url": "https://aiinasia.com/ai-policy-atlas/south-asia"
+        }
+      ]
+    },
+    {
+      "id": "oceania",
+      "name": "Oceania",
+      "url": "https://aiinasia.com/ai-policy-atlas/oceania",
+      "countries": [
+        {
+          "name": "Australia",
+          "iso": "AU",
+          "status": "voluntary",
+          "framework": "Voluntary AI Safety Standard (mandatory guardrails abandoned Sept 2024)",
+          "url": "https://aiinasia.com/ai-policy-atlas/oceania"
+        },
+        {
+          "name": "New Zealand",
+          "iso": "NZ",
+          "status": "voluntary",
+          "framework": "Algorithm Charter for Aotearoa",
+          "url": "https://aiinasia.com/ai-policy-atlas/oceania"
+        },
+        {
+          "name": "Pacific Islands",
+          "iso": "",
+          "status": "emerging",
+          "framework": "Regional digital transformation strategies",
+          "url": "https://aiinasia.com/ai-policy-atlas/oceania"
+        }
+      ]
+    },
+    {
+      "id": "mena",
+      "name": "MENA",
+      "url": "https://aiinasia.com/ai-policy-atlas/mena",
+      "countries": [
+        {
+          "name": "UAE",
+          "iso": "AE",
+          "status": "voluntary",
+          "framework": "National AI Strategy 2031",
+          "url": "https://aiinasia.com/ai-policy-atlas/mena"
+        },
+        {
+          "name": "Saudi Arabia",
+          "iso": "SA",
+          "status": "voluntary",
+          "framework": "National Strategy for Data & AI",
+          "url": "https://aiinasia.com/ai-policy-atlas/mena"
+        },
+        {
+          "name": "Israel",
+          "iso": "IL",
+          "status": "voluntary",
+          "framework": "AI Policy and Ethics Guidelines",
+          "url": "https://aiinasia.com/ai-policy-atlas/mena"
+        },
+        {
+          "name": "Qatar",
+          "iso": "QA",
+          "status": "emerging",
+          "framework": "National AI Strategy",
+          "url": "https://aiinasia.com/ai-policy-atlas/mena"
+        }
+      ]
+    },
+    {
+      "id": "africa",
+      "name": "Africa",
+      "url": "https://aiinasia.com/ai-policy-atlas/africa",
+      "countries": [
+        {
+          "name": "South Africa",
+          "iso": "ZA",
+          "status": "voluntary",
+          "framework": "AI Policy Framework",
+          "url": "https://aiinasia.com/ai-policy-atlas/africa"
+        },
+        {
+          "name": "Nigeria",
+          "iso": "NG",
+          "status": "voluntary",
+          "framework": "National AI Strategy",
+          "url": "https://aiinasia.com/ai-policy-atlas/africa"
+        },
+        {
+          "name": "Kenya",
+          "iso": "KE",
+          "status": "emerging",
+          "framework": "Blockchain & AI Taskforce",
+          "url": "https://aiinasia.com/ai-policy-atlas/africa"
+        },
+        {
+          "name": "Rwanda",
+          "iso": "RW",
+          "status": "emerging",
+          "framework": "National AI Policy",
+          "url": "https://aiinasia.com/ai-policy-atlas/africa"
+        }
+      ]
+    },
+    {
+      "id": "latin-america",
+      "name": "Latin America",
+      "url": "https://aiinasia.com/ai-policy-atlas/latin-america",
+      "countries": [
+        {
+          "name": "Brazil",
+          "iso": "BR",
+          "status": "legislative_draft",
+          "framework": "AI Bill (PL 2338/2023, in Congress)",
+          "url": "https://aiinasia.com/ai-policy-atlas/latin-america"
+        },
+        {
+          "name": "Chile",
+          "iso": "CL",
+          "status": "voluntary",
+          "framework": "National AI Policy",
+          "url": "https://aiinasia.com/ai-policy-atlas/latin-america"
+        },
+        {
+          "name": "Colombia",
+          "iso": "CO",
+          "status": "voluntary",
+          "framework": "AI Ethical Framework",
+          "url": "https://aiinasia.com/ai-policy-atlas/latin-america"
+        },
+        {
+          "name": "Mexico",
+          "iso": "MX",
+          "status": "emerging",
+          "framework": "AI Strategy (developing)",
+          "url": "https://aiinasia.com/ai-policy-atlas/latin-america"
+        }
+      ]
+    },
+    {
+      "id": "europe",
+      "name": "Europe",
+      "url": "https://aiinasia.com/ai-policy-atlas/europe",
+      "countries": [
+        {
+          "name": "European Union",
+          "iso": "EU",
+          "status": "binding_law",
+          "framework": "EU AI Act (effective Aug 2024)",
+          "url": "https://aiinasia.com/ai-policy-atlas/europe"
+        }
+      ]
+    },
+    {
+      "id": "anglosphere",
+      "name": "Anglosphere",
+      "url": "https://aiinasia.com/ai-policy-atlas/anglosphere",
+      "countries": [
+        {
+          "name": "United States",
+          "iso": "US",
+          "status": "voluntary",
+          "framework": "Executive Order on AI Safety (Oct 2023)",
+          "url": "https://aiinasia.com/ai-policy-atlas/anglosphere"
+        },
+        {
+          "name": "United Kingdom",
+          "iso": "GB",
+          "status": "voluntary",
+          "framework": "Pro-innovation AI regulation",
+          "url": "https://aiinasia.com/ai-policy-atlas/anglosphere"
+        },
+        {
+          "name": "Canada",
+          "iso": "CA",
+          "status": "legislative_draft",
+          "framework": "Artificial Intelligence and Data Act (AIDA)",
+          "url": "https://aiinasia.com/ai-policy-atlas/anglosphere"
+        }
+      ]
+    }
+  ],
+  "status_legend": {
+    "binding_law": "Enacted legislation with binding force",
+    "legislative_draft": "Bill introduced or under legislative review",
+    "voluntary": "Government-endorsed guidelines or voluntary framework",
+    "emerging": "Early-stage policy development or no formal framework"
+  }
+}
