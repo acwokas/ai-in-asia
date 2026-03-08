@@ -187,10 +187,6 @@ const Footer = memo(() => {
         </div>
       </div>
 
-      {/* Google Ad above bottom bar */}
-      <div className="py-2" style={{ overflow: 'visible' }}>
-        <FooterAd />
-      </div>
 
       {/* Bottom bar */}
       <div className="border-t border-border">
