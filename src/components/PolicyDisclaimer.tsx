@@ -30,7 +30,7 @@ const PolicyDisclaimer = ({ lastEditorialReview }: PolicyDisclaimerProps) => {
       <p className="text-sm text-muted-foreground">
         Related coverage on AIinASIA explores how these policies affect businesses, platforms, and adoption across the region.{" "}
         <Link 
-          to="/category/regulation" 
+          to="/category/policy" 
           className="text-primary hover:underline font-medium"
         >
           View AI regulation coverage
