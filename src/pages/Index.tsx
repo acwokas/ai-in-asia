@@ -337,12 +337,12 @@ const Index = () => {
     return new Set([...heroSectionIds, ...trendingStripShownIds]);
   }, [heroSectionIds, trendingStripShownIds]);
 
-  // Grid articles: 5-7 items, deduped against hero + trending strip
+  // Grid articles: 5-7 items, deduped against hero + trending strip, category-diverse
   const gridArticles = useMemo(() => {
     const seen = new Set(aboveGridIds);
     const candidates = [
-      ...(trendingArticles || []),
       ...(latestArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
+      ...(trendingArticles || []),
     ];
     const deduped: any[] = [];
     for (const a of candidates) {
@@ -351,7 +351,32 @@ const Index = () => {
         deduped.push(a);
       }
     }
-    return deduped.slice(0, 7);
+    // Sort by published_at descending
+    deduped.sort((a, b) => {
+      const da = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const db = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return db - da;
+    });
+    // Pick category-diverse: one per unique category first, then fill remaining
+    const result: any[] = [];
+    const usedCategories = new Set<string>();
+    // First pass: one article per unique category
+    for (const a of deduped) {
+      if (result.length >= 7) break;
+      const catId = a.primary_category_id || 'uncategorized';
+      if (!usedCategories.has(catId)) {
+        usedCategories.add(catId);
+        result.push(a);
+      }
+    }
+    // Second pass: fill remaining slots
+    for (const a of deduped) {
+      if (result.length >= 7) break;
+      if (!result.includes(a)) {
+        result.push(a);
+      }
+    }
+    return result;
   }, [aboveGridIds, trendingArticles, latestArticles]);
 
   // postGridIds for downstream sections
