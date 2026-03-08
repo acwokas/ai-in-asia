@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/Header";
+
 import { 
   BarChart3, Users, Eye, Clock, TrendingUp, TrendingDown, 
   Globe, Smartphone, Monitor, ArrowRight, ExternalLink,
