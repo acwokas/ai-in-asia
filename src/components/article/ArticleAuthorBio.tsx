@@ -81,7 +81,7 @@ export const ArticleAuthorFooter = ({
                   {authors.name}
                 </Link>
               ) : (
-                <span className="truncate">{authors?.name || 'Anonymous'}</span>
+                <span className="truncate">{authors?.name || 'Intelligence Desk'}</span>
               )}
             </div>
             {authors?.job_title && (
