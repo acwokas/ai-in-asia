@@ -202,7 +202,7 @@ const ArticleHeader = ({
             article.authors?.avatar_url ? (
               <img 
                 src={article.authors.avatar_url} 
-                alt={article.authors?.name || 'Anonymous'}
+                alt={article.authors?.name || 'Intelligence Desk'}
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0"
               />
             ) : (
