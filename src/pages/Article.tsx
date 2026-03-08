@@ -508,7 +508,7 @@ const Article = () => {
                         <img src={getOptimizedAvatar(article.authors.avatar_url, 40)} alt={article.authors.name} className="w-8 h-8 rounded-full object-cover border border-white/30" />
                       </Link>
                     )}
-                    <span className="text-white/90 text-sm font-semibold">{article.authors?.name || 'Anonymous'}</span>
+                    <span className="text-white/90 text-sm font-semibold">{article.authors?.name || 'Intelligence Desk'}</span>
                     <span className="text-white/50 text-sm">•</span>
                     <time dateTime={article.published_at || ''} className="text-white/70 text-sm">
                       {article.published_at && new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
