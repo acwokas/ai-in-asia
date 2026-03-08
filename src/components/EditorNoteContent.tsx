@@ -55,7 +55,7 @@ const EditorNoteContent = ({ article, renderContent }: EditorNoteContentProps) =
           Related coverage on AIinASIA explores how these developments affect businesses, 
           platforms, and adoption across the region.{" "}
           <Link 
-            to="/category/regulation" 
+            to="/category/policy" 
             className="text-primary hover:underline font-medium"
           >
             View our policy and regulation coverage
