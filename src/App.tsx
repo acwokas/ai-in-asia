@@ -223,6 +223,7 @@ const router = createBrowserRouter([
       { path: "/:category/:slug", element: <Article /> },
       { path: "/category/:slug/all", element: <CategoryAll /> },
       { path: "/category/:slug/learn/:pathSlug", element: <LearningPathDetail /> },
+      { path: "/category/regulation", element: <Navigate to="/category/policy" replace /> },
       { path: "/category/:slug", element: <Category /> },
       { path: "/tag/:slug", element: <Tag /> },
       { path: "/author/:slug", element: <AuthorProfile /> },
