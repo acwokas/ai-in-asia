@@ -1,0 +1,192 @@
+{
+  "name": "AI Policy Source Packs",
+  "description": "Primary-source links per country for AI governance research and citation",
+  "publisher": "AI in Asia",
+  "updated": "2026-03-08",
+  "countries": {
+    "JP": {
+      "name": "Japan",
+      "sources": [
+        {
+          "title": "AI Promotion Act (2025)",
+          "type": "legislation",
+          "url": "https://www.japaneselawtranslation.go.jp/",
+          "language": "ja/en"
+        },
+        {
+          "title": "METI AI Governance Guidelines",
+          "type": "government",
+          "url": "https://www.meti.go.jp/english/policy/economy/ai_governance/",
+          "language": "en"
+        },
+        {
+          "title": "AIST AI Research Center",
+          "type": "research",
+          "url": "https://www.airc.aist.go.jp/en/",
+          "language": "en"
+        }
+      ]
+    },
+    "KR": {
+      "name": "South Korea",
+      "sources": [
+        {
+          "title": "AI Basic Act (effective Jan 2026)",
+          "type": "legislation",
+          "url": "https://www.law.go.kr/",
+          "language": "ko"
+        },
+        {
+          "title": "MSIT AI Policy",
+          "type": "government",
+          "url": "https://www.msit.go.kr/eng/",
+          "language": "en"
+        },
+        {
+          "title": "NIA AI Ethics",
+          "type": "government",
+          "url": "https://www.nia.or.kr/",
+          "language": "ko"
+        }
+      ]
+    },
+    "TW": {
+      "name": "Taiwan",
+      "sources": [
+        {
+          "title": "AI Basic Act (promulgated Jan 2026)",
+          "type": "legislation",
+          "url": "https://law.moj.gov.tw/",
+          "language": "zh-TW"
+        },
+        {
+          "title": "NSTC AI Policy",
+          "type": "government",
+          "url": "https://www.nstc.gov.tw/",
+          "language": "zh-TW/en"
+        }
+      ]
+    },
+    "CN": {
+      "name": "China",
+      "sources": [
+        {
+          "title": "CAC Generative AI Measures (2023)",
+          "type": "legislation",
+          "url": "http://www.cac.gov.cn/",
+          "language": "zh-CN"
+        },
+        {
+          "title": "MIIT AI Industry Development",
+          "type": "government",
+          "url": "https://www.miit.gov.cn/",
+          "language": "zh-CN"
+        },
+        {
+          "title": "TC260 AI Standards",
+          "type": "standards",
+          "url": "https://www.tc260.org.cn/",
+          "language": "zh-CN"
+        }
+      ]
+    },
+    "SG": {
+      "name": "Singapore",
+      "sources": [
+        {
+          "title": "Model AI Governance Framework",
+          "type": "government",
+          "url": "https://www.pdpc.gov.sg/help-and-resources/2020/01/model-ai-governance-framework",
+          "language": "en"
+        },
+        {
+          "title": "IMDA Agentic AI Framework (2026)",
+          "type": "government",
+          "url": "https://www.imda.gov.sg/",
+          "language": "en"
+        },
+        {
+          "title": "AI Verify Foundation",
+          "type": "tools",
+          "url": "https://aiverifyfoundation.sg/",
+          "language": "en"
+        }
+      ]
+    },
+    "IN": {
+      "name": "India",
+      "sources": [
+        {
+          "title": "MeitY AI Initiatives",
+          "type": "government",
+          "url": "https://www.meity.gov.in/artificial-intelligence",
+          "language": "en"
+        },
+        {
+          "title": "NITI Aayog National AI Strategy",
+          "type": "government",
+          "url": "https://niti.gov.in/",
+          "language": "en"
+        }
+      ]
+    },
+    "AU": {
+      "name": "Australia",
+      "sources": [
+        {
+          "title": "Voluntary AI Safety Standard",
+          "type": "government",
+          "url": "https://www.industry.gov.au/",
+          "language": "en"
+        },
+        {
+          "title": "eSafety Commissioner AI",
+          "type": "government",
+          "url": "https://www.esafety.gov.au/",
+          "language": "en"
+        }
+      ]
+    },
+    "EU": {
+      "name": "European Union",
+      "sources": [
+        {
+          "title": "EU AI Act (Regulation 2024/1689)",
+          "type": "legislation",
+          "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+          "language": "en"
+        },
+        {
+          "title": "EU AI Office",
+          "type": "government",
+          "url": "https://digital-strategy.ec.europa.eu/en/policies/ai-office",
+          "language": "en"
+        }
+      ]
+    },
+    "BR": {
+      "name": "Brazil",
+      "sources": [
+        {
+          "title": "AI Bill PL 2338/2023",
+          "type": "legislation",
+          "url": "https://www.camara.leg.br/",
+          "language": "pt"
+        },
+        {
+          "title": "ANPD AI Sandbox",
+          "type": "government",
+          "url": "https://www.gov.br/anpd/",
+          "language": "pt"
+        }
+      ]
+    }
+  },
+  "source_types": {
+    "legislation": "Official legal text or gazette entry",
+    "government": "Government ministry or agency resource",
+    "research": "Academic or research institution",
+    "standards": "Standards body or technical committee",
+    "tools": "Governance testing or compliance tools"
+  }
+}
