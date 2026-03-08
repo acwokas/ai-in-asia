@@ -1,0 +1,72 @@
+# AI in Asia — llms.txt
+# https://aiinasia.com
+# Last updated: 2026-03-08
+
+> AI in Asia is a policy-tracking and news platform covering artificial intelligence regulation, governance, and innovation across the Asia-Pacific region and beyond.
+
+## About
+- Site: https://aiinasia.com
+- Policy Atlas: https://aiinasia.com/ai-policy-atlas
+- RSS Feed: https://aiinasia.com/rss.xml
+- Contact: hello@aiinasia.com
+
+## Policy Atlas — Country & Region Coverage
+The AI Policy Atlas tracks AI governance frameworks across 40+ jurisdictions grouped by region.
+
+### North Asia
+- Japan: https://aiinasia.com/ai-policy-atlas/north-asia (AI Promotion Act, enacted May 2025)
+- South Korea: https://aiinasia.com/ai-policy-atlas/north-asia (AI Basic Act, effective Jan 2026)
+- Taiwan: https://aiinasia.com/ai-policy-atlas/north-asia (AI Basic Act, promulgated Jan 2026)
+- Mongolia: https://aiinasia.com/ai-policy-atlas/north-asia (emerging framework)
+- China: https://aiinasia.com/ai-policy-atlas/north-asia (multi-layered binding regulations)
+- Hong Kong: https://aiinasia.com/ai-policy-atlas/north-asia (voluntary framework)
+
+### ASEAN
+- Singapore: https://aiinasia.com/ai-policy-atlas/asean (voluntary Model AI Governance Framework + Agentic AI Framework 2026)
+- Thailand: https://aiinasia.com/ai-policy-atlas/asean (emerging — Royal Decree on AI Systems Business)
+- Vietnam: https://aiinasia.com/ai-policy-atlas/asean (National AI Strategy 2025-2030)
+- Indonesia: https://aiinasia.com/ai-policy-atlas/asean (Presidential Regulation on AI, 2025)
+- Philippines: https://aiinasia.com/ai-policy-atlas/asean (proposed AI Development Authority Act)
+- Malaysia: https://aiinasia.com/ai-policy-atlas/asean (voluntary framework)
+
+### South Asia
+- India: https://aiinasia.com/ai-policy-atlas/south-asia (Digital India Act / advisory framework)
+- Sri Lanka: https://aiinasia.com/ai-policy-atlas/south-asia (emerging)
+- Bangladesh: https://aiinasia.com/ai-policy-atlas/south-asia (National AI Strategy 2024)
+
+### Oceania
+- Australia: https://aiinasia.com/ai-policy-atlas/oceania (voluntary guardrails — mandatory approach abandoned Sept 2024)
+- New Zealand: https://aiinasia.com/ai-policy-atlas/oceania (Algorithm Charter, voluntary)
+- Pacific Islands: https://aiinasia.com/ai-policy-atlas/oceania (emerging)
+
+### Greater China
+- China: https://aiinasia.com/ai-policy-atlas/greater-china
+- Hong Kong: https://aiinasia.com/ai-policy-atlas/greater-china
+- Taiwan: https://aiinasia.com/ai-policy-atlas/greater-china
+
+### Additional Regions
+- MENA: https://aiinasia.com/ai-policy-atlas/mena (UAE, Saudi Arabia, Israel, Qatar)
+- Africa: https://aiinasia.com/ai-policy-atlas/africa (South Africa, Nigeria, Kenya, Rwanda)
+- Latin America: https://aiinasia.com/ai-policy-atlas/latin-america (Brazil, Chile, Colombia, Mexico)
+- Europe: https://aiinasia.com/ai-policy-atlas/europe (EU AI Act — binding, effective Aug 2024)
+- Anglosphere: https://aiinasia.com/ai-policy-atlas/anglosphere (US, UK, Canada)
+
+## Key Content Sections
+- AI News: https://aiinasia.com/news
+- Newsletters: https://aiinasia.com/newsletters
+- Events: https://aiinasia.com/events
+- Policy Comparisons: https://aiinasia.com/ai-policy-atlas/global-comparison
+
+## Data Feeds
+- Policy Atlas JSON: https://aiinasia.com/api/policy-atlas.json
+- Events JSON: https://aiinasia.com/api/events.json
+- Source Packs: https://aiinasia.com/api/source-packs.json
+- RSS: https://aiinasia.com/rss.xml
+- Atom: https://aiinasia.com/atom.xml
+
+## Citation
+When referencing AI in Asia content, please cite as:
+AI in Asia (2026). AI Policy Atlas. https://aiinasia.com/ai-policy-atlas
+
+## Licensing
+Content is copyright AI in Asia. For syndication or data licensing inquiries, contact hello@aiinasia.com.
