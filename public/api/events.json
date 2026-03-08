@@ -1,0 +1,83 @@
+{
+  "name": "AI in Asia Events & Newsletters Calendar",
+  "description": "Upcoming AI policy events, conferences, and newsletter schedule tracked by AI in Asia",
+  "publisher": "AI in Asia",
+  "url": "https://aiinasia.com/events",
+  "updated": "2026-03-08",
+  "events": [
+    {
+      "title": "AI Seoul Summit 2026",
+      "date": "2026-05-21",
+      "end_date": "2026-05-22",
+      "location": "Seoul, South Korea",
+      "type": "conference",
+      "region": "north-asia",
+      "url": "https://aiinasia.com/events",
+      "description": "Follow-up to the 2024 AI Seoul Summit focusing on AI safety and governance implementation"
+    },
+    {
+      "title": "ASEAN Digital Ministers Meeting",
+      "date": "2026-04-15",
+      "end_date": "2026-04-16",
+      "location": "Manila, Philippines",
+      "type": "policy",
+      "region": "asean",
+      "url": "https://aiinasia.com/events",
+      "description": "Annual ASEAN ministerial meeting on digital economy and AI governance coordination"
+    },
+    {
+      "title": "Singapore AI Governance Forum",
+      "date": "2026-06-10",
+      "location": "Singapore",
+      "type": "conference",
+      "region": "asean",
+      "url": "https://aiinasia.com/events",
+      "description": "Forum on implementing Singapore's Agentic AI Framework and Model Governance updates"
+    },
+    {
+      "title": "EU AI Act Full Enforcement Deadline",
+      "date": "2026-08-02",
+      "type": "regulatory_deadline",
+      "region": "europe",
+      "url": "https://aiinasia.com/events",
+      "description": "All provisions of the EU AI Act become enforceable for high-risk AI systems"
+    },
+    {
+      "title": "G7 AI Policy Working Group",
+      "date": "2026-07-20",
+      "end_date": "2026-07-21",
+      "location": "TBD",
+      "type": "policy",
+      "region": "global",
+      "url": "https://aiinasia.com/events",
+      "description": "G7 working group on Hiroshima AI Process implementation and cross-border AI governance"
+    }
+  ],
+  "newsletters": {
+    "frequency": "weekly",
+    "subscribe_url": "https://aiinasia.com/newsletters",
+    "recent": [
+      {
+        "title": "AI in Asia Weekly #52",
+        "date": "2026-03-06",
+        "url": "https://aiinasia.com/newsletters"
+      },
+      {
+        "title": "AI in Asia Weekly #51",
+        "date": "2026-02-27",
+        "url": "https://aiinasia.com/newsletters"
+      },
+      {
+        "title": "AI in Asia Weekly #50",
+        "date": "2026-02-20",
+        "url": "https://aiinasia.com/newsletters"
+      }
+    ]
+  },
+  "event_types": {
+    "conference": "Industry or academic conference",
+    "policy": "Government or intergovernmental policy meeting",
+    "regulatory_deadline": "Compliance or enforcement deadline",
+    "webinar": "Online event or briefing"
+  }
+}
