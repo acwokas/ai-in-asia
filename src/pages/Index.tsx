@@ -882,13 +882,6 @@ const Index = () => {
           </Suspense>
         </div>
 
-        <div className="border-t border-border/30" />
-
-        {/* Google Ad */}
-        <div className="flex justify-center py-8">
-          <MPUAd />
-        </div>
-
         {/* 7. Recommended Guides */}
         <div className="py-14 md:py-20">
           <RecommendedGuides />
