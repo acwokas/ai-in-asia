@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+const CANONICAL_ORIGIN =
+  window.location.hostname === 'localhost'
+    ? window.location.origin
+    : 'https://aiinasia.com';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -46,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${CANONICAL_ORIGIN}/`;
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
@@ -62,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/profile' },
+      options: { redirectTo: CANONICAL_ORIGIN + '/profile' },
     });
     if (error) throw error;
   };
@@ -70,14 +75,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithApple = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
-      options: { redirectTo: window.location.origin + '/profile' },
+      options: { redirectTo: CANONICAL_ORIGIN + '/profile' },
     });
     if (error) throw error;
   };
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth?mode=reset`,
+      redirectTo: `${CANONICAL_ORIGIN}/auth?mode=reset`,
     });
     return { error };
   };
