@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+const CANONICAL_ORIGIN =
+  window.location.hostname === 'localhost'
+    ? window.location.origin
+    : 'https://aiinasia.com';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;

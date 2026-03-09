@@ -3,6 +3,19 @@
   <head>
     <script>
       (function() {
+        if (window.location.hostname === 'ai-in-asia.lovable.app') {
+          window.location.replace(
+            'https://aiinasia.com' +
+            window.location.pathname +
+            window.location.search +
+            window.location.hash
+          );
+          return;
+        }
+      })();
+    </script>
+    <script>
+      (function() {
         var stored = localStorage.getItem('theme');
         var isDark = stored ? stored === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
         if (isDark) document.documentElement.classList.add('dark');
