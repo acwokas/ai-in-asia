@@ -458,17 +458,17 @@ All colors MUST be HSL.
     margin: 2rem 0;
     font-size: 0.95rem;
     line-height: 1.5;
-    overflow: hidden;
     border-radius: 8px;
     border: 1px solid hsl(var(--border));
-  }
-
-  /* Wrap tables for mobile horizontal scroll */
-  .article-content table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
+  }
+
+  .article-content table td,
+  .article-content table th {
+    white-space: normal;
+    word-break: break-word;
   }
 
   .article-content thead {
