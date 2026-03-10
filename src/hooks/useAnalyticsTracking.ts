@@ -357,7 +357,7 @@ export const useAnalyticsTracking = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isInternalPath]);
 
-  // Track page views on route change — skip internal pages
+  // Track page views on route change â skip internal pages
   useEffect(() => {
     if (!isInternalPath) {
       trackPageView();
@@ -365,36 +365,47 @@ export const useAnalyticsTracking = () => {
   }, [location.pathname, location.search, isInternalPath]);
 
   // Handle page visibility changes (tab switching, minimizing)
+  // Throttled: skip if last write was <10 s ago to avoid rapid tab-switch spam
+  const lastVisibilityWriteRef = useRef<number>(0);
+
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'hidden') {
-        // Update current pageview and session when tab becomes hidden
-        const stored = localStorage.getItem(SESSION_KEY);
-        if (stored && pageViewIdRef.current) {
-          try {
-            const sessionData: SessionData = JSON.parse(stored);
-            const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
-            const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+      if (document.visibilityState !== 'hidden') return;
 
-            // Update pageview
-            await supabase
-              .from('analytics_pageviews')
-              .update({
-                time_on_page_seconds: timeSpent,
-                scroll_depth_percent: scrollDepthRef.current,
-                is_exit: true,
-              })
-              .eq('id', pageViewIdRef.current);
+      const now = Date.now();
+      if (now - lastVisibilityWriteRef.current < 10_000) return; // throttle
 
-            // Update session
-            await updateSessionInDb(sessionData.sessionId, {
-              duration_seconds: durationSeconds,
-              exit_page: location.pathname,
-            });
-          } catch {
-            // Silent fail
-          }
-        }
+      const stored = localStorage.getItem(SESSION_KEY);
+      if (!stored || !pageViewIdRef.current) return;
+
+      try {
+        const sessionData: SessionData = JSON.parse(stored);
+        const timeSpent = Math.round((now - pageStartTimeRef.current) / 1000);
+
+        // Only write if the user actually spent meaningful time on the page
+        if (timeSpent < 2) return;
+
+        lastVisibilityWriteRef.current = now;
+
+        const durationSeconds = Math.round((now - sessionData.startedAt) / 1000);
+
+        // Update pageview
+        await supabase
+          .from('analytics_pageviews')
+          .update({
+            time_on_page_seconds: timeSpent,
+            scroll_depth_percent: scrollDepthRef.current,
+            is_exit: true,
+          })
+          .eq('id', pageViewIdRef.current);
+
+        // Update session
+        await updateSessionInDb(sessionData.sessionId, {
+          duration_seconds: durationSeconds,
+          exit_page: location.pathname,
+        });
+      } catch {
+        // Silent fail
       }
     };
 
@@ -402,48 +413,46 @@ export const useAnalyticsTracking = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [location.pathname, updateSessionInDb]);
 
-  // Mark exit page on unload
+  // Mark exit page on unload using sendBeacon (non-blocking, reliable on tab close)
   useEffect(() => {
     const handleBeforeUnload = () => {
       const stored = localStorage.getItem(SESSION_KEY);
-      if (stored && pageViewIdRef.current) {
-        try {
-          const sessionData: SessionData = JSON.parse(stored);
-          const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
-          const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+      if (!stored || !pageViewIdRef.current) return;
 
-          // Use synchronous XHR for exit tracking (sendBeacon doesn't work with Supabase)
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      try {
+        const sessionData: SessionData = JSON.parse(stored);
+        const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
+        const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
 
-          // Update pageview with is_exit = true
-          const pageviewXhr = new XMLHttpRequest();
-          pageviewXhr.open('PATCH', `${supabaseUrl}/rest/v1/analytics_pageviews?id=eq.${pageViewIdRef.current}`, false);
-          pageviewXhr.setRequestHeader('Content-Type', 'application/json');
-          pageviewXhr.setRequestHeader('apikey', supabaseKey);
-          pageviewXhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
-          pageviewXhr.setRequestHeader('Prefer', 'return=minimal');
-          pageviewXhr.send(JSON.stringify({
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const headers = { 'Content-Type': 'application/json', apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Prefer: 'return=minimal' };
+
+        // sendBeacon only supports POST, so use fetch with keepalive (works in all modern browsers).
+        // keepalive flag ensures the request completes even after the page unloads.
+        fetch(`${supabaseUrl}/rest/v1/analytics_pageviews?id=eq.${pageViewIdRef.current}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
             time_on_page_seconds: timeSpent,
             scroll_depth_percent: scrollDepthRef.current,
             is_exit: true,
-          }));
+          }),
+          keepalive: true,
+        }).catch(() => {});
 
-          // Update session with final duration
-          const sessionXhr = new XMLHttpRequest();
-          sessionXhr.open('PATCH', `${supabaseUrl}/rest/v1/analytics_sessions?session_id=eq.${sessionData.sessionId}`, false);
-          sessionXhr.setRequestHeader('Content-Type', 'application/json');
-          sessionXhr.setRequestHeader('apikey', supabaseKey);
-          sessionXhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
-          sessionXhr.setRequestHeader('Prefer', 'return=minimal');
-          sessionXhr.send(JSON.stringify({
+        fetch(`${supabaseUrl}/rest/v1/analytics_sessions?session_id=eq.${sessionData.sessionId}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
             duration_seconds: durationSeconds,
             ended_at: new Date().toISOString(),
             exit_page: location.pathname,
-          }));
-        } catch {
-          // Silent fail
-        }
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {
+        // Silent fail
       }
     };
 
@@ -451,7 +460,7 @@ export const useAnalyticsTracking = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [location.pathname]);
 
-  // Periodic session update (every 30 seconds while active)
+  // Periodic session update (every 5 minutes while active)
   useEffect(() => {
     const intervalId = setInterval(async () => {
       const stored = localStorage.getItem(SESSION_KEY);
@@ -482,7 +491,7 @@ export const useAnalyticsTracking = () => {
           // Silent fail
         }
       }
-    }, 180000); // Every 3 minutes (was 30 seconds — reduced to cut Supabase write volume)
+    }, 300_000); // Every 5 minutes â balances data freshness vs Supabase write volume
 
     return () => clearInterval(intervalId);
   }, [updateSessionInDb]);
