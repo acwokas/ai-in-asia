@@ -45,7 +45,7 @@ export function CategoryDeepCuts({ articles, cfg, slug, revealProps, selectedFil
           ))}
         </div>
       ) : selectedFilter !== "All" ? (
-        <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+        <p style={{ fontSize: 14, color: "#9ca3af", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
       ) : null}
     </section>
   );
