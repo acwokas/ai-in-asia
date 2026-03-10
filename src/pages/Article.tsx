@@ -612,6 +612,12 @@ const Article = () => {
                   ) : (
                     renderArticleContent(article.content)
                   )}
+                </div>
+
+                {/* Editorial Callout - excluded from three_before_nine and policy_article */}
+                {(article.article_type as string) !== 'three_before_nine' && article.article_type !== 'policy_article' && (
+                  <EditorialCallout />
+                )}
 
                 {/* Reactions */}
                 <p className="text-sm text-muted-foreground mb-2" style={{ marginTop: '2rem' }}>What did you think?</p>
