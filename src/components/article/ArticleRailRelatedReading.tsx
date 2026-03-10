@@ -61,7 +61,7 @@ export function ArticleRailRelatedReading({ categoryId, categoryName, categorySl
               <div className="min-w-0 flex-1">
                 <p
                   className="text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2"
-                  style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.9rem", color: "hsl(var(--foreground))" }}
+                  style={{ fontSize: "0.9rem", color: "hsl(var(--foreground))" }}
                 >
                   {a.title}
                 </p>
