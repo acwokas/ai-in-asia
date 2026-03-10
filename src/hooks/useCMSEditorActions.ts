@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { compressImage } from "@/lib/imageCompression";
+import { compressImage, compressForOG } from "@/lib/imageCompression";
 import { generateSlug } from "@/lib/markdownConversion";
 import type { CMSEditorState } from "./useCMSEditorState";
 
@@ -139,9 +139,21 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
         .getPublicUrl(filePath);
 
       state.setFeaturedImage(publicUrl);
-      
+
+      // Generate and upload OG-optimized image (1200Ã630 JPEG â¤250 KB) for social sharing
+      try {
+        const ogFile = await compressForOG(compressedFile, baseFileName);
+        const ogPath = `og/${baseFileName}-og.jpg`;
+        await supabase.storage
+          .from('article-images')
+          .upload(ogPath, ogFile, { upsert: true });
+      } catch (ogErr) {
+        // Non-critical â hero image still works, social preview may just be larger
+        console.warn('OG image generation failed:', ogErr);
+      }
+
       toast.success("Image uploaded", {
-        description: `Optimized and uploaded (${originalSizeMB}MB → ${compressedSizeMB}MB)`,
+        description: `Optimized and uploaded (${originalSizeMB}MB â ${compressedSizeMB}MB)`,
       });
     } catch (error) {
       console.error('Error uploading image:', error);
