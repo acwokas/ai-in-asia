@@ -1,31 +1,18 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
-// GA4 Measurement ID (loaded via GTM, not directly)
-const GA_MEASUREMENT_ID = "G-M981596ST2";
+// GA4 is loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
+// Previously, events were also sent via gtag("config"/event") which caused double-counting
+// because gtag() just pushes to dataLayer anyway (see the stub in index.html).
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
     dataLayer?: any[];
   }
 }
 
 const GoogleAnalytics = () => {
   const location = useLocation();
-
-  useEffect(() => {
-    // Ensure dataLayer and gtag are available (GTM handles loading GA4)
-    if (typeof window !== 'undefined') {
-      window.dataLayer = window.dataLayer || [];
-      if (typeof window.gtag !== 'function') {
-        window.gtag = function () {
-          window.dataLayer!.push(arguments as unknown as any);
-        } as any;
-      }
-    }
-  }, []);
-
   const prevPathRef = useRef<string>('');
 
   // Track page views on route change via dataLayer for GTM
@@ -46,7 +33,6 @@ const GoogleAnalytics = () => {
     const timer = setTimeout(() => {
       const pageTitle = document.title;
 
-      // Push page_view event to dataLayer for GTM triggers
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'virtualPageview',
@@ -54,15 +40,6 @@ const GoogleAnalytics = () => {
         pageTitle,
         pageReferrer: prevPath ? window.location.origin + prevPath : document.referrer,
       });
-
-      // Send via gtag for direct GA4 processing with full context
-      if (window.gtag) {
-        window.gtag("config", GA_MEASUREMENT_ID, {
-          page_path: currentPath,
-          page_title: pageTitle,
-          page_referrer: prevPath ? window.location.origin + prevPath : document.referrer,
-        });
-      }
 
       prevPathRef.current = currentPath;
     }, 300);
@@ -75,24 +52,18 @@ const GoogleAnalytics = () => {
 
 export default GoogleAnalytics;
 
-// Custom event tracking helper - sends to both dataLayer (for GTM) and gtag (for GA4)
+// Custom event tracking helper - pushes to dataLayer for GTM â GA4
 export const trackEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
   if (typeof window === 'undefined') return;
 
-  // Push to dataLayer for GTM
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     event: eventName,
     ...eventParams,
   });
-
-  // Also send via gtag
-  if (window.gtag) {
-    window.gtag("event", eventName, eventParams);
-  }
 
   if (!import.meta.env.PROD) {
     console.log("GA4 Event (dev mode):", eventName, eventParams);
