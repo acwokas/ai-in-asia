@@ -615,7 +615,7 @@ const Article = () => {
                 </div>
 
                 {/* Editorial Callout - excluded from three_before_nine and policy_article */}
-                {article.article_type !== 'three_before_nine' && article.article_type !== 'policy_article' && (
+                {(article.article_type as string) !== 'three_before_nine' && article.article_type !== 'policy_article' && (
                   <EditorialCallout />
                 )}
 
