@@ -9,8 +9,11 @@ import { track404Error } from "@/components/GoogleAnalytics";
 
 export const ArticleNotFound = () => {
   useEffect(() => {
+    // Signal prerenderer that this page is ready (even for 404s)
+    (window as any).prerenderReady = true;
+
     track404Error(window.location.pathname, "article_not_found");
-    
+
     const log404 = async () => {
       try {
         await supabase.from("page_not_found_log").insert({
