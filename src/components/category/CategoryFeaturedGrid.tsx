@@ -65,7 +65,7 @@ export function CategoryFeaturedGrid({ articles, cfg, slug, revealProps, selecte
           ))}
         </div>
       ) : selectedFilter !== "All" ? (
-        <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
+        <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
       ) : null}
     </section>
   );
@@ -106,7 +106,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              transform: hovered ? "scale(1.03)" : "scale(1)",
+              transform: hovered? "scale(1.03)" : "scale(1)",
               transition: "transform 0.3s ease",
             }}
           />
