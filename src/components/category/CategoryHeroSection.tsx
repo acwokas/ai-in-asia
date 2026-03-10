@@ -64,7 +64,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
               <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 27, color: "#fff", lineHeight: 1.25, margin: "0 0 10px 0", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
                 {decodeHtml(featuredArticle.title)}
               </h2>
-              <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, fontFamily: "Nunito, sans-serif", margin: 0 }}>
+              <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, margin: 0 }}>
                 {featuredArticle.excerpt?.slice(0, 160)}...
               </p>
               <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: TOKENS.MUTED }}>
@@ -76,14 +76,14 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
         ) : slug === "policy" && selectedFilter === "All" ? (
           <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, flexDirection: "column", gap: 16 }} className="min-h-[280px] md:min-h-[420px]">
             <p style={{ fontSize: 16, color: "hsl(var(--foreground))", fontFamily: "Poppins, sans-serif", fontWeight: 700, textAlign: "center" }}>Policy coverage launching soon.</p>
-            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", textAlign: "center" }}>Explore the AI Policy Atlas in the meantime.</p>
+            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", textAlign: "center" }}>Explore the AI Policy Atlas in the meantime.</p>
             <Link to="/ai-policy-atlas" style={{ padding: "10px 20px", borderRadius: 10, background: "#eab308", color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
               Open Policy Atlas &rarr;
             </Link>
           </div>
         ) : selectedFilter !== "All" ? (
           <div style={{ borderRadius: 20, border: `1px solid ${TOKENS.BORDER}`, background: TOKENS.CARD_BG, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }} className="min-h-[280px] md:min-h-[420px]">
-            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif" }}>No articles matching "{selectedFilter}" yet</p>
+            <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))" }}>No articles matching "{selectedFilter}" yet</p>
           </div>
         ) : null}
 
@@ -92,7 +92,7 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
           <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "hsl(var(--foreground))", margin: "0 0 4px 0" }} className="hidden md:block">Latest</h3>
           {latestArticles.length === 0 && isFilterActive ? (
             <div style={{ padding: "16px 14px", borderRadius: 14, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", fontFamily: "Nunito, sans-serif", margin: 0 }}>No recent articles for this tag</p>
+              <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", margin: 0 }}>No recent articles for this tag</p>
             </div>
           ) : latestArticles.map((article: any) => (
             <Link
