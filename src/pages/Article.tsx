@@ -27,8 +27,7 @@ import ShareThoughtsCTA from "@/components/ShareThoughtsCTA";
 import NextArticleProgress from "@/components/NextArticleProgress";
 import MobileActionBar from "@/components/MobileActionBar";
 import { useRecentArticles } from "@/hooks/useRecentArticles";
-import ArticleReactions from "@/components/ArticleReactions";
-import EditorialCallout from "@/components/article/EditorialCallout";
+import ArticleReactions from "@/omponents/ArticleReactios";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -612,12 +611,6 @@ const Article = () => {
                   ) : (
                     renderArticleContent(article.content)
                   )}
-                </div>
-
-                {/* Editorial Callout - excluded from three_before_nine and policy_article */}
-                {(article.article_type as string) !== 'three_before_nine' && article.article_type !== 'policy_article' && (
-                  <EditorialCallout />
-                )}
 
                 {/* Reactions */}
                 <p className="text-sm text-muted-foreground mb-2" style={{ marginTop: '2rem' }}>What did you think?</p>
