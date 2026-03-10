@@ -2,9 +2,32 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_NAME = "AI in ASIA";
 const SITE_URL = "https://aiinasia.com";
-// TODO: Create /public/icons/aiinasia-og-default.png at 1200×630 to replace the 512×512 icon fallback
+// TODO: Create /public/icons/aiinasia-og-default.png at 1200Ã630 to replace the 512Ã512 icon fallback
 const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/aiinasia-og-default.png`;
 const TWITTER_HANDLE = "@AI_in_Asia";
+
+/**
+ * Convert a Supabase article-image URL to its OG-optimized counterpart.
+ * Convention: `og/{basename}-og.jpg` in the same bucket.
+ *
+ * Example:
+ *   in:  .../article-images/content/my-hero-123.png
+ *   out: .../article-images/og/my-hero-123-og.jpg
+ *
+ * Non-Supabase URLs are returned unchanged.
+ */
+const getOgImageUrl = (url: string): string => {
+  if (!url.includes('/article-images/')) return url;
+  try {
+    const base = url.substring(0, url.indexOf('/article-images/') + '/article-images/'.length);
+    const pathAfterBucket = url.substring(base.length); // e.g. "content/my-hero-123.png"
+    const filename = pathAfterBucket.split('/').pop()!;           // "my-hero-123.png"
+    const baseName = filename.replace(/\.[^/.]+$/, '');           // "my-hero-123"
+    return `${base}og/${baseName}-og.jpg`;
+  } catch {
+    return url;
+  }
+};
 
 interface SEOHeadProps {
   title: string;
@@ -69,6 +92,8 @@ export const SEOHead = ({
 }: SEOHeadProps) => {
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
   const resolvedImage = ogImage || DEFAULT_OG_IMAGE;
+  // Use the OG-optimized JPEG for social sharing tags (WhatsApp needs <300 KB)
+  const socialImage = ogImage ? getOgImageUrl(ogImage) : DEFAULT_OG_IMAGE;
   const resolvedImageAlt = ogImageAlt || title;
   const twitterCard = ogImage ? "summary_large_image" : "summary";
   const normalizedCanonical = canonical ? normalizeCanonical(canonical) : undefined;
@@ -92,9 +117,9 @@ export const SEOHead = ({
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
       {normalizedCanonical && <meta property="og:url" content={normalizedCanonical} />}
-      <meta property="og:image" content={resolvedImage} />
-      <meta property="og:image:width" content={ogImageWidth || "1200"} />
-      <meta property="og:image:height" content={ogImageHeight || "630"} />
+      <meta property="og:image" content={socialImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={resolvedImageAlt} />
       <meta property="og:locale" content="en_GB" />
 
@@ -123,7 +148,7 @@ export const SEOHead = ({
       )}
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={resolvedImage} />
+      <meta name="twitter:image" content={socialImage} />
       <meta name="twitter:image:alt" content={resolvedImageAlt} />
 
       {/* Structured Data */}
