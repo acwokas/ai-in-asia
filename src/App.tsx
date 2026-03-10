@@ -161,16 +161,8 @@ const HomepageSkeleton = () => (
   </div>
 );
 
-// Defer Google Ads script loading until after initial render
-if (typeof window !== 'undefined') {
-  setTimeout(() => {
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4181437297386228";
-    script.crossOrigin = "anonymous";
-    document.head.appendChild(script);
-  }, 2000);
-}
+// AdSense script is loaded once via loadGoogleAdsScript() in main.tsx
+// (with duplicate-injection guard). Removed redundant unguarded loader that was here.
 
 const queryClient = new QueryClient({
   defaultOptions: {
