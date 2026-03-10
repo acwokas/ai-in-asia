@@ -31,10 +31,19 @@ export const AdminQuickActions = ({
   const [ogMigrating, setOgMigrating] = useState(false);
   const [ogProgress, setOgProgress] = useState("");
 
-  /** One-time migration: generate OG-optimised JPEGs for all existing articles */
+  /**
+   * Batch-generate OG-optimised JPEGs for all existing articles.
+   * Processes in batches of BATCH_SIZE with a short pause between batches
+   * to avoid browser memory pressure and Supabase rate limits.
+   * Safe to re-run — skips articles that already have an OG image.
+   */
   const handleGenerateOgImages = async () => {
     setOgMigrating(true);
     setOgProgress("Fetching articles…");
+
+    const BATCH_SIZE = 5;            // images per batch
+    const PAUSE_MS = 1_500;          // breathing room between batches
+    const OG_W = 1200, OG_H = 630, MAX_BYTES = 250 * 1024;
 
     try {
       const { data: articles, error } = await supabase
@@ -50,18 +59,18 @@ export const AdminQuickActions = ({
       }
 
       let processed = 0, skipped = 0, failed = 0;
-      const OG_W = 1200, OG_H = 630, MAX_BYTES = 250 * 1024;
+      const total = articles.length;
 
-      for (let i = 0; i < articles.length; i++) {
+      for (let i = 0; i < total; i++) {
         const art = articles[i];
-        setOgProgress(`${i + 1}/${articles.length} — ${art.slug}`);
+        setOgProgress(`${i + 1}/${total}  ✓${processed} ✗${failed} ⏭${skipped} — ${art.slug?.slice(0, 30)}`);
 
         // Derive OG path
         const marker = "/article-images/";
-        const idx = art.featured_image_url.indexOf(marker);
-        if (idx === -1) { skipped++; continue; }
+        const mIdx = art.featured_image_url.indexOf(marker);
+        if (mIdx === -1) { skipped++; continue; }
 
-        const storagePath = art.featured_image_url.substring(idx + marker.length);
+        const storagePath = art.featured_image_url.substring(mIdx + marker.length);
         const filename = storagePath.split("/").pop()!;
         const baseName = filename.replace(/\.[^/.]+$/, "");
         const ogPath = `og/${baseName}-og.jpg`;
@@ -118,9 +127,15 @@ export const AdminQuickActions = ({
           console.warn(`OG fail: ${art.slug}`, err);
           failed++;
         }
+
+        // Pause between batches to let the browser breathe and avoid rate limits
+        if ((i + 1) % BATCH_SIZE === 0 && i + 1 < total) {
+          setOgProgress(`Pausing after batch ${Math.ceil((i + 1) / BATCH_SIZE)}…`);
+          await new Promise(r => setTimeout(r, PAUSE_MS));
+        }
       }
 
-      toast.success(`OG images done: ${processed} created, ${skipped} skipped, ${failed} failed`);
+      toast.success(`OG images done: ${processed} created, ${skipped} already existed, ${failed} failed`);
       setOgProgress("");
     } catch (err: any) {
       toast.error("Migration failed", { description: err.message });

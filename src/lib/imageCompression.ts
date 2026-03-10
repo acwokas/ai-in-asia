@@ -107,23 +107,37 @@ export const compressImage = async (
         // Enable image smoothing for better quality
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
-        // Detect if image has transparency by checking file type
-        const isPNG = file.type === 'image/png';
-        const isGIF = file.type === 'image/gif';
-        const isWebP = file.type === 'image/webp';
-        const hasTransparency = isPNG || isGIF || isWebP;
-        
-        // For non-transparent formats, fill with white background
+
+        // Check for ACTUAL transparency by drawing the image and scanning
+        // the alpha channel. Only preserve PNG if pixels are truly transparent.
+        const couldHaveAlpha = file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/webp';
+        let hasTransparency = false;
+
+        if (couldHaveAlpha) {
+          // Draw at current size to check alpha (use a temp canvas for large images)
+          const checkW = Math.min(width, 512);
+          const checkH = Math.min(height, 512);
+          const tmpCanvas = document.createElement('canvas');
+          tmpCanvas.width = checkW;
+          tmpCanvas.height = checkH;
+          const tmpCtx = tmpCanvas.getContext('2d', { alpha: true })!;
+          tmpCtx.drawImage(img, 0, 0, checkW, checkH);
+          const pixels = tmpCtx.getImageData(0, 0, checkW, checkH).data;
+          // Sample every 4th pixel for speed — still catches transparent regions
+          for (let i = 3; i < pixels.length; i += 16) {
+            if (pixels[i] < 250) { hasTransparency = true; break; }
+          }
+        }
+
+        // For non-transparent images, fill with white background and output JPEG
         if (!hasTransparency) {
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(0, 0, width, height);
         }
-        // For transparent formats, don't fill - let transparency be preserved
-        
+
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Use PNG for transparent images, JPEG for others
+        // Use PNG only for images with real transparency, JPEG for everything else
         const outputFormat = hasTransparency ? 'image/png' : 'image/jpeg';
         const fileExtension = hasTransparency ? '.png' : '.jpg';
 
