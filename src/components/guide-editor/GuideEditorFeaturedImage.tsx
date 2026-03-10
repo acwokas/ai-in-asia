@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { compressImage } from "@/lib/imageCompression";
+import { compressImage, compressForOG } from "@/lib/imageCompression";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -52,24 +52,24 @@ THE MOST IMPORTANT RULE:
 Every prompt MUST start with a CONCRETE PHYSICAL OBJECT or SCENE that serves as a visual metaphor for the guide topic. NOT abstract digital concepts.
 
 TOPIC-TO-METAPHOR MAPPING (use these as inspiration, not literally):
-- Writing/articles → pen, typewriter, manuscript, ink, fountain pen nib
-- SEO/search → blueprint, architecture, map, compass, topographic map
-- Competitor analysis → chess pieces, war room table, binoculars, telescope
-- Content repurposing → origami unfolding, prism splitting light, kaleidoscope
-- Brand voice → tuning fork, sound waves, fingerprint, vocal cords
-- Meetings/summarising → documents compressing into a crystal, hourglass
-- Pitch decks → spotlight on a stage, podium, projection
-- Email marketing → sealed letters, postal sorting room, wax seals
-- Data analysis → microscope, laboratory, specimen jars, scales
-- Social media → megaphone, stage lights, broadcast tower
-- Productivity → clockwork mechanism, Swiss watch internals, gears
-- Strategy/planning → architectural model, chessboard, navigation chart
-- Learning/education → open book with light, magnifying glass, orrery
-- Customer research → detective desk, interview chair, listening device
-- Code/development → circuit board close-up, soldering iron, blueprint
+- Writing/articles â pen, typewriter, manuscript, ink, fountain pen nib
+- SEO/search â blueprint, architecture, map, compass, topographic map
+- Competitor analysis â chess pieces, war room table, binoculars, telescope
+- Content repurposing â origami unfolding, prism splitting light, kaleidoscope
+- Brand voice â tuning fork, sound waves, fingerprint, vocal cords
+- Meetings/summarising â documents compressing into a crystal, hourglass
+- Pitch decks â spotlight on a stage, podium, projection
+- Email marketing â sealed letters, postal sorting room, wax seals
+- Data analysis â microscope, laboratory, specimen jars, scales
+- Social media â megaphone, stage lights, broadcast tower
+- Productivity â clockwork mechanism, Swiss watch internals, gears
+- Strategy/planning â architectural model, chessboard, navigation chart
+- Learning/education â open book with light, magnifying glass, orrery
+- Customer research â detective desk, interview chair, listening device
+- Code/development â circuit board close-up, soldering iron, blueprint
 
 PROMPT 1 (Hero/Lead image):
-"[CONCRETE OBJECT/SCENE as metaphor for topic], [specific visual details: lighting, texture, angle], [colour: dark background with 1-2 accent colours from: blue #5F72FF, teal #0D9488, amber #E5A54B, coral #E06050, violet #9B72FF — vary across guides], editorial illustration style, rich colour palette, no text, no words, no letters, no UI elements, clean composition --ar 16:9 --s 250 --v 6.1"
+"[CONCRETE OBJECT/SCENE as metaphor for topic], [specific visual details: lighting, texture, angle], [colour: dark background with 1-2 accent colours from: blue #5F72FF, teal #0D9488, amber #E5A54B, coral #E06050, violet #9B72FF â vary across guides], editorial illustration style, rich colour palette, no text, no words, no letters, no UI elements, clean composition --ar 16:9 --s 250 --v 6.1"
 
 PROMPT 2 (Alternative/Social image):
 Same topic but DIFFERENT metaphor, angle, and colour pair. If Prompt 1 is macro/close-up, Prompt 2 should be wider scene. If Prompt 1 uses blue/amber, Prompt 2 uses teal/coral. Two genuinely different options.
@@ -188,6 +188,17 @@ RULES:
       const { data: { publicUrl } } = supabase.storage.from("article-images").getPublicUrl(fileName);
       onUpdateField("featured_image_url", publicUrl);
       setUploadProgress(100);
+
+      // Generate OG-optimized image for social sharing
+      try {
+        const guideSlug = title.trim() ? slugifyTitle(title) : `guide-untitled-${Date.now()}`;
+        const ogFile = await compressForOG(compressed, `guide-${guideSlug}`);
+        await supabase.storage
+          .from("article-images")
+          .upload(`og/guide-${guideSlug}-og.jpg`, ogFile, { upsert: true });
+      } catch (ogErr) {
+        console.warn("OG image generation failed:", ogErr);
+      }
 
       // Auto-fill alt text if empty
       if (!imageAlt && title.trim()) {
