@@ -14,7 +14,7 @@ export function CategoryHeader({ category, cfg, newThisWeek, isLoading }: Catego
     <section style={{ position: "relative", padding: "48px 0 32px", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 30% 20%, ${cfg.accent}0f, transparent 70%)` }} />
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", position: "relative" }}>
-        <div style={{ fontSize: 13, color: TOKENS.MUTED, marginBottom: 12, fontFamily: "Nunito, sans-serif" }}>
+        <div style={{ fontSize: 13, color: TOKENS.MUTED, marginBottom: 12 }}>
           <Link to="/" style={{ color: TOKENS.MUTED, textDecoration: "none" }}>Home</Link>
           <span style={{ margin: "0 8px" }}>/</span>
           <span style={{ color: "#fff" }}>{category?.name}</span>
@@ -28,7 +28,7 @@ export function CategoryHeader({ category, cfg, newThisWeek, isLoading }: Catego
                 {category?.name}
               </h1>
             )}
-            <p style={{ fontSize: 15, color: "#9ca3af", fontFamily: "Nunito, sans-serif", maxWidth: 600 }}>{cfg.desc}</p>
+            <p style={{ fontSize: 15, color: "#9ca3af", maxWidth: 600 }}>{cfg.desc}</p>
           </div>
           {newThisWeek > 0 && (
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, color: cfg.accent }}>
