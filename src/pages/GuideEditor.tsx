@@ -110,7 +110,7 @@ const GuideEditor = () => {
   const [importText, setImportText] = useState("");
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [aiLoading, setAiLoading] = useState<string | null>(null);
-  const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
 
