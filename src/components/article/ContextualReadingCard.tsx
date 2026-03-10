@@ -44,7 +44,7 @@ export function ContextualReadingCard({ article }: { article: ContextualArticle 
             {fixEncoding(article.title)}
           </p>
           {article.excerpt && (
-            <p className="line-clamp-1 mb-1" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.875rem", color: "#BFC0C0", margin: "0.25rem 0" }}>
+            <p className="line-clamp-1 mb-1" style={{ fontSize: "0.875rem", color: "#BFC0C0", margin: "0.25rem 0" }}>
               {fixEncoding(article.excerpt)}
             </p>
           )}
@@ -55,7 +55,7 @@ export function ContextualReadingCard({ article }: { article: ContextualArticle 
             >
               {cat?.name || "Article"}
             </span>
-            <span style={{ fontSize: "0.875rem", color: "#5F72FF" }}>Read more →</span>
+            <span style={{ fontSize: "0.875rem", color: "#5F72FF" }}>Read more â</span>
           </div>
         </div>
       </div>
