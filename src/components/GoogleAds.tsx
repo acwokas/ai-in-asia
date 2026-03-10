@@ -25,7 +25,7 @@ const GoogleAd = ({
 }: GoogleAdProps) => {
   const [showHouseAd, setShowHouseAd] = useState(false);
   const adRef = useRef<HTMLElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const impressionTracked = useRef(false);
 
   // Track Google Ad impression when ad loads successfully
