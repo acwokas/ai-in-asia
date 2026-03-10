@@ -32,7 +32,7 @@ export const OpinionPoll = () => {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🗳️</span>
+            <span style={{ fontSize: 20 }}>ð³ï¸</span>
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#ffffff" }}>
               Weekly Debate
             </span>
@@ -58,7 +58,6 @@ export const OpinionPoll = () => {
         </h3>
         <p
           style={{
-            fontFamily: "Nunito, sans-serif",
             fontSize: 13,
             color: "#6b7280",
             lineHeight: 1.6,
@@ -89,7 +88,6 @@ export const OpinionPoll = () => {
                   background: "#0d0e12",
                   border: `1px solid ${isSelected ? opt.color + "66" : "#1a1d25"}`,
                   color: "#ffffff",
-                  fontFamily: "Nunito, sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
                   lineHeight: 1.4,
@@ -143,7 +141,6 @@ export const OpinionPoll = () => {
               border: "1px solid rgba(6, 182, 212, 0.15)",
               fontSize: 13,
               color: "#6b7280",
-              fontFamily: "Nunito, sans-serif",
               lineHeight: 1.6,
             }}
           >
