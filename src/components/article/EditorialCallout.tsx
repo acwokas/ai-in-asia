@@ -1,29 +1,36 @@
 import React from "react";
 import logo from "@/assets/aiinasia-logo.png";
 
-interface EditorialCalloutProps {
-  viewText: string;
-  ctaQuestion: string;
-  ctaHighlight: string;
-  onDropTake?: () => void;
-  onShare?: () => void;
-}
+const EditorialCallout: React.FC = () => {
+  const handleDropTake = () => {
+    const commentsSection = document.getElementById("comments-section");
+    if (commentsSection) {
+      commentsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
-const EditorialCallout: React.FC<EditorialCalloutProps> = ({
-  viewText,
-  ctaQuestion,
-  ctaHighlight,
-  onDropTake,
-  onShare,
-}) => {
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = document.title;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // User cancelled or share failed — fall back to clipboard
+        await navigator.clipboard.writeText(url);
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+  };
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
 
         .editorial-callout-wrapper {
-          background: #0d1117;
-          padding: 48px 24px;
+          padding: 36px 0 8px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -190,7 +197,9 @@ const EditorialCallout: React.FC<EditorialCalloutProps> = ({
               className="editorial-view-logo"
             />
             <p className="editorial-view-label">THE AIINASIA VIEW</p>
-            <p className="editorial-view-body">{viewText}</p>
+            <p className="editorial-view-body">
+              Asia-Pacific is moving faster on AI adoption than any other region, but the gap between headlines and reality is growing. We cut through the noise to bring you what actually matters: the policies, products, and power shifts shaping AI across the continent. This story is part of that mission.
+            </p>
           </div>
 
           {/* Divider */}
@@ -207,14 +216,14 @@ const EditorialCallout: React.FC<EditorialCalloutProps> = ({
               YOUR TAKE
             </p>
             <p className="editorial-cta-question">
-              {ctaQuestion}{" "}
-              <span className="editorial-cta-highlight">{ctaHighlight}</span>
+              We cover the story.{" "}
+              <span className="editorial-cta-highlight">You tell us what it means on the ground.</span>
             </p>
             <div className="editorial-cta-actions">
-              <button className="editorial-btn-primary" onClick={onDropTake}>
+              <button className="editorial-btn-primary" onClick={handleDropTake}>
                 Drop your take
               </button>
-              <button className="editorial-btn-secondary" onClick={onShare}>
+              <button className="editorial-btn-secondary" onClick={handleShare}>
                 Share
               </button>
             </div>
