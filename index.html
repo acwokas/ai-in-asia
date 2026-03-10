@@ -26,7 +26,9 @@
       (function() {
         var path = window.location.pathname.toLowerCase();
         if (path.indexOf('/admin') !== -1) return;
-        setTimeout(function() { window.location.reload(); }, 60 * 60 * 1000);
+        setTimeout(function() {
+          window.location.reload();
+        }, 60 * 60 * 1000);
       })();
     </script>
     <meta charset="UTF-8" />
@@ -44,21 +46,26 @@
     <meta name="apple-mobile-web-app-title" content="AIinASIA" />
     <link rel="apple-touch-icon" href="/icons/aiinasia-ios-180.png" />
     
+    <!-- Prerender signal: stays false until React sets article-specific meta -->
+    <script>window.prerenderReady = false;</script>
+
     <!-- Default meta tags (overridden by react-helmet-async per page) -->
-    <title>AI in Asia – AI Policy Atlas, News & Innovation Across Asia-Pacific</title>
-    <meta name="description" content="Track AI regulation, governance frameworks, and innovation across 40+ Asia-Pacific jurisdictions. Policy Atlas, news, events, and analysis." />
+    <title data-rh="true">AI in Asia â AI Policy Atlas, News & Innovation Across Asia-Pacific</title>
+    <meta data-rh="true" name="description" content="Track AI regulation, governance frameworks, and innovation across 40+ Asia-Pacific jurisdictions. Policy Atlas, news, events, and analysis." />
 
     <!-- Open Graph defaults (overridden per page by react-helmet-async) -->
-    <meta property="og:site_name" content="AI in Asia" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="AI in Asia – AI Policy Atlas, News & Innovation" />
-    <meta property="og:description" content="Track AI regulation and governance frameworks across 40+ Asia-Pacific jurisdictions." />
-    <meta property="og:url" content="https://aiinasia.com/" />
-    <meta property="og:image" content="https://aiinasia.com/images/og-default.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AI in Asia – AI Policy Atlas" />
-    <meta name="twitter:description" content="Track AI regulation and governance across Asia-Pacific." />
-    <meta name="twitter:image" content="https://aiinasia.com/images/og-default.png" />
+    <meta data-rh="true" property="og:site_name" content="AI in Asia" />
+    <meta data-rh="true" property="og:type" content="website" />
+    <meta data-rh="true" property="og:title" content="AI in Asia â AI Policy Atlas, News & Innovation" />
+    <meta data-rh="true" property="og:description" content="Track AI regulation and governance frameworks across 40+ Asia-Pacific jurisdictions." />
+    <meta data-rh="true" property="og:url" content="https://aiinasia.com/" />
+    <meta data-rh="true" property="og:image" content="https://aiinasia.com/images/og-default.png" />
+    <meta data-rh="true" property="og:image:width" content="1200" />
+    <meta data-rh="true" property="og:image:height" content="630" />
+    <meta data-rh="true" name="twitter:card" content="summary_large_image" />
+    <meta data-rh="true" name="twitter:title" content="AI in Asia â AI Policy Atlas" />
+    <meta data-rh="true" name="twitter:description" content="Track AI regulation and governance across Asia-Pacific." />
+    <meta data-rh="true" name="twitter:image" content="https://aiinasia.com/images/og-default.png" />
 
     
     
@@ -66,7 +73,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://pbmtnvxywplgpldmlygv.supabase.co" />
-    <link rel="preconnect" href="https://api.mapbox.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     
     
@@ -80,7 +86,7 @@
     <link rel="alternate" hreflang="x-default" href="https://aiinasia.com/" />
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
     
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
