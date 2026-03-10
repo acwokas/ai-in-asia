@@ -31,19 +31,10 @@ export const AdminQuickActions = ({
   const [ogMigrating, setOgMigrating] = useState(false);
   const [ogProgress, setOgProgress] = useState("");
 
-  /**
-   * Batch-generate OG-optimised JPEGs for all existing articles.
-   * Processes in batches of BATCH_SIZE with a short pause between batches
-   * to avoid browser memory pressure and Supabase rate limits.
-   * Safe to re-run â skips articles that already have an OG image.
-   */
+  /** One-time migration: generate OG-optimised JPEGs for all existing articles */
   const handleGenerateOgImages = async () => {
     setOgMigrating(true);
-    setOgProgress("Fetching articlesâ¦");
-
-    const BATCH_SIZE = 5;            // images per batch
-    const PAUSE_MS = 1_500;          // breathing room between batches
-    const OG_W = 1200, OG_H = 630, MAX_BYTES = 250 * 1024;
+    setOgProgress("Fetching articles…");
 
     try {
       const { data: articles, error } = await supabase
@@ -59,18 +50,18 @@ export const AdminQuickActions = ({
       }
 
       let processed = 0, skipped = 0, failed = 0;
-      const total = articles.length;
+      const OG_W = 1200, OG_H = 630, MAX_BYTES = 250 * 1024;
 
-      for (let i = 0; i < total; i++) {
+      for (let i = 0; i < articles.length; i++) {
         const art = articles[i];
-        setOgProgress(`${i + 1}/${total}  â${processed} â${failed} â­${skipped} â ${art.slug?.slice(0, 30)}`);
+        setOgProgress(`${i + 1}/${articles.length} — ${art.slug}`);
 
         // Derive OG path
         const marker = "/article-images/";
-        const mIdx = art.featured_image_url.indexOf(marker);
-        if (mIdx === -1) { skipped++; continue; }
+        const idx = art.featured_image_url.indexOf(marker);
+        if (idx === -1) { skipped++; continue; }
 
-        const storagePath = art.featured_image_url.substring(mIdx + marker.length);
+        const storagePath = art.featured_image_url.substring(idx + marker.length);
         const filename = storagePath.split("/").pop()!;
         const baseName = filename.replace(/\.[^/.]+$/, "");
         const ogPath = `og/${baseName}-og.jpg`;
@@ -87,7 +78,7 @@ export const AdminQuickActions = ({
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const blob = await res.blob();
 
-          // Resize to 1200Ã630 JPEG via canvas
+          // Resize to 1200×630 JPEG via canvas
           const bitmap = await createImageBitmap(blob);
           const canvas = document.createElement("canvas");
           canvas.width = OG_W;
@@ -106,7 +97,7 @@ export const AdminQuickActions = ({
           else { sh = bitmap.width / dstR; sy = (bitmap.height - sh) / 2; }
           ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, OG_W, OG_H);
 
-          // Encode JPEG, reduce quality until â¤250 KB
+          // Encode JPEG, reduce quality until ≤250 KB
           let quality = 0.82;
           let jpegBlob: Blob | null = null;
           while (quality >= 0.3) {
@@ -127,167 +118,14 @@ export const AdminQuickActions = ({
           console.warn(`OG fail: ${art.slug}`, err);
           failed++;
         }
-
-        // Pause between batches to let the browser breathe and avoid rate limits
-        if ((i + 1) % BATCH_SIZE === 0 && i + 1 < total) {
-          setOgProgress(`Pausing after batch ${Math.ceil((i + 1) / BATCH_SIZE)}â¦`);
-          await new Promise(r => setTimeout(r, PAUSE_MS));
-        }
       }
 
-      toast.success(`OG images done: ${processed} created, ${skipped} already existed, ${failed} failed`);
+      toast.success(`OG images done: ${processed} created, ${skipped} skipped, ${failed} failed`);
       setOgProgress("");
     } catch (err: any) {
       toast.error("Migration failed", { description: err.message });
     } finally {
       setOgMigrating(false);
-    }
-  };
-
-  const [compressMigrating, setCompressMigrating] = useState(false);
-  const [compressProgress, setCompressProgress] = useState("");
-
-  /**
-   * Batch-compress oversized hero images for site performance.
-   * - Downloads each hero image
-   * - Skips images already âi 300 KB (they're fine)
-   * - Re-encodes as JPEG (1920Ã1080 max, quality 85, âi¤500 KB target)
-   * - Replaces original in storage and updates DB URL if format changed
-   * - Batched with pauses to avoid browser/Supabase pressure
-   */
-  const handleCompressHeroImages = async () => {
-    setCompressMigrating(true);
-    setCompressProgress("Fetching articlesâ¦");
-
-    const BATCH_SIZE = 5;
-    const PAUSE_MS = 1_500;
-    const SKIP_THRESHOLD = 300 * 1024;   // don't touch images already under 300 KB
-    const MAX_W = 1920, MAX_H = 1080;
-    const TARGET_BYTES = 500 * 1024;     // aim for â¤500 KB
-
-    try {
-      const { data: articles, error } = await supabase
-        .from("articles")
-        .select("id, slug, featured_image_url")
-        .not("featured_image_url", "is", null)
-        .neq("featured_image_url", "");
-
-      if (error) throw error;
-      if (!articles?.length) { toast.info("No articles found"); return; }
-
-      let compressed = 0, skipped = 0, failed = 0;
-      let savedKB = 0;
-      const total = articles.length;
-
-      for (let i = 0; i < total; i++) {
-        const art = articles[i];
-        setCompressProgress(`${i + 1}/${total}  â${compressed} â­${skipped} â${failed} â  ${art.slug?.slice(0, 30)}`);
-
-        const marker = "/article-images/";
-        const mIdx = art.featured_image_url.indexOf(marker);
-        if (mIdx === -1) { skipped++; continue; }
-
-        try {
-          // HEAD request to check size without downloading
-          const headRes = await fetch(art.featured_image_url, { method: "HEAD" });
-          const contentLength = Number(headRes.headers.get("content-length") || 0);
-          if (contentLength > 0 && contentLength <= SKIP_THRESHOLD) { skipped++; continue; }
-
-          // Download full image
-          const res = await fetch(art.featured_image_url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const blob = await res.blob();
-          if (blob.size <= SKIP_THRESHOLD) { skipped++; continue; }
-
-          const originalSize = blob.size;
-
-          // Decode and resize via canvas
-          const bitmap = await createImageBitmap(blob);
-          let w = bitmap.width, h = bitmap.height;
-          if (w > MAX_W || h > MAX_H) {
-            const ratio = Math.min(MAX_W / w, MAX_H / h);
-            w = Math.round(w * ratio);
-            h = Math.round(h * ratio);
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d")!;
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-
-          // Check actual transparency (same logic as compressImage fix)
-          let hasTransparency = false;
-          if (blob.type === "image/png" || blob.type === "image/webp" || blob.type === "image/gif") {
-            const checkW = Math.min(w, 512), checkH = Math.min(h, 512);
-            const tmp = document.createElement("canvas");
-            tmp.width = checkW; tmp.height = checkH;
-            const tmpCtx = tmp.getContext("2d", { alpha: true })!;
-            tmpCtx.drawImage(bitmap, 0, 0, checkW, checkH);
-            const px = tmpCtx.getImageData(0, 0, checkW, checkH).data;
-            for (let p = 3; p < px.length; p += 16) {
-              if (px[p] < 250) { hasTransparency = true; break; }
-            }
-          }
-
-          if (!hasTransparency) {
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, w, h);
-          }
-          ctx.drawImage(bitmap, 0, 0, w, h);
-
-          // Always output JPEG unless truly transparent
-          if (hasTransparency) { skipped++; continue; } // keep transparent PNGs as-is
-
-          // Encode JPEG, step down quality until â¤ target
-          let quality = 0.85;
-          let jpegBlob: Blob | null = null;
-          while (quality >= 0.4) {
-            jpegBlob = await new Promise<Blob | null>(r => canvas.toBlob(r, "image/jpeg", quality));
-            if (jpegBlob && jpegBlob.size <= TARGET_BYTES) break;
-            quality -= 0.07;
-          }
-          if (!jpegBlob || jpegBlob.size >= originalSize) { skipped++; continue; } // no gain
-
-          // Upload compressed version (replace original path)
-          const storagePath = art.featured_image_url.substring(mIdx + marker.length);
-          const jpegPath = storagePath.replace(/\.[^/.]+$/, ".jpg");
-
-          const { error: upErr } = await supabase.storage
-            .from("article-images")
-            .upload(jpegPath, jpegBlob, { contentType: "image/jpeg", upsert: true });
-          if (upErr) throw upErr;
-
-          // If extension changed (e.g. .png â .jpg), update the article's URL
-          if (jpegPath !== storagePath) {
-            const base = art.featured_image_url.substring(0, mIdx + marker.length);
-            const newUrl = `${base}${jpegPath}`;
-            await supabase.from("articles").update({ featured_image_url: newUrl }).eq("id", art.id);
-
-            // Also remove the old file to save storage
-            await supabase.storage.from("article-images").remove([storagePath]);
-          }
-
-          savedKB += Math.round((originalSize - jpegBlob.size) / 1024);
-          compressed++;
-        } catch (err: any) {
-          console.warn(`Compress fail: ${art.slug}`, err);
-          failed++;
-        }
-
-        if ((i + 1) % BATCH_SIZE === 0 && i + 1 < total) {
-          setCompressProgress(`Pausing after batch ${Math.ceil((i + 1) / BATCH_SIZE)}â¦`);
-          await new Promise(r => setTimeout(r, PAUSE_MS));
-        }
-      }
-
-      toast.success(`Compression done: ${compressed} optimised (${savedKB} KB saved), ${skipped} already fine, ${failed} failed`);
-      setCompressProgress("");
-    } catch (err: any) {
-      toast.error("Compression failed", { description: err.message });
-    } finally {
-      setCompressMigrating(false);
     }
   };
 
@@ -408,30 +246,12 @@ export const AdminQuickActions = ({
               {ogMigrating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {ogProgress || "Generatingâ¦"}
+                  {ogProgress || "Generating…"}
                 </>
               ) : (
                 <>
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Generate OG Images
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleCompressHeroImages}
-              variant="outline"
-              className="justify-start text-muted-foreground hover:text-foreground"
-              disabled={compressMigrating}
-            >
-              {compressMigrating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {compressProgress || "Compressingâ¦"}
-                </>
-              ) : (
-                <>
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Compress Hero Images
                 </>
               )}
             </Button>
