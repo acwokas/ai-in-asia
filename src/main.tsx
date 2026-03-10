@@ -5,6 +5,16 @@ import { del } from "idb-keyval";
 import App from "./App.tsx";
 import "./index.css";
 import { loadGoogleAdsScript } from "./components/GoogleAds";
+// Auto-reload on stale chunk errors after deployment
+window.addEventListener("vite:preloadError", (event) => {
+    event.preventDefault();
+    const reloaded = sessionStorage.getItem("chunk-reload");
+    if (!reloaded) {
+          sessionStorage.setItem("chunk-reload", "true");
+          window.location.reload();
+    }
+});
+
 
 // Register service worker for image caching
 if ("serviceWorker" in navigator) {
