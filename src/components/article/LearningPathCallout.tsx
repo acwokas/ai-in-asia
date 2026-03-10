@@ -41,7 +41,6 @@ export function LearningPathCallout({ article }: LearningPathCalloutProps) {
           style={{
             fontSize: 13,
             color: "#d1d5db",
-            fontFamily: "Nunito, sans-serif",
             margin: 0,
             lineHeight: 1.5,
           }}
@@ -77,7 +76,7 @@ export function LearningPathCallout({ article }: LearningPathCalloutProps) {
           transition: "all 0.2s ease",
         }}
       >
-        Continue the path →
+        Continue the path â
       </Link>
     </div>
   );
