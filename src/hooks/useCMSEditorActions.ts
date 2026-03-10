@@ -140,7 +140,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
       state.setFeaturedImage(publicUrl);
 
-      // Generate and upload OG-optimized image (1200Ã630 JPEG â¤250 KB) for social sharing
+      // Generate and upload OG-optimized image (1200×630 JPEG ≤250 KB) for social sharing
       try {
         const ogFile = await compressForOG(compressedFile, baseFileName);
         const ogPath = `og/${baseFileName}-og.jpg`;
@@ -148,12 +148,12 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           .from('article-images')
           .upload(ogPath, ogFile, { upsert: true });
       } catch (ogErr) {
-        // Non-critical â hero image still works, social preview may just be larger
+        // Non-critical — hero image still works, social preview may just be larger
         console.warn('OG image generation failed:', ogErr);
       }
 
       toast.success("Image uploaded", {
-        description: `Optimized and uploaded (${originalSizeMB}MB â ${compressedSizeMB}MB)`,
+        description: `Optimized and uploaded (${originalSizeMB}MB → ${compressedSizeMB}MB)`,
       });
     } catch (error) {
       console.error('Error uploading image:', error);
