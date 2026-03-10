@@ -28,8 +28,8 @@ const EditorialCallout: React.FC = () => {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col items-center w-full pt-0 pb-2">
-        <div className="w-full max-w-[640px]">
+      <div className="w-full pt-0 pb-2">
+        <div className="w-full">
           {/* Divider */}
           <div className="flex items-center w-full py-2">
             <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
