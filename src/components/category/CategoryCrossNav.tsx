@@ -53,7 +53,7 @@ function CrossCategoryCard({ cat }: { cat: { slug: string; accent: string; emoji
         <CategoryIcon icon={cat.icon} accent={cat.accent} size="md" />
       </div>
       <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: cat.accent, margin: "0 0 4px 0" }}>{cat.label}</h4>
-      <p style={{ fontSize: 12, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+      <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
         {cat.desc}
       </p>
     </div>
