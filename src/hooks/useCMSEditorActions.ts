@@ -726,6 +726,9 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
       const dateTime = new Date(state.publishedAt);
       dateTime.setHours(hours, minutes, 0, 0);
       publishedDateTime = dateTime.toISOString();
+    } else if (finalStatus === 'published' && !publishedDateTime) {
+      // Auto-set published_at to current time when publishing without a custom date
+      publishedDateTime = new Date().toISOString();
     }
 
     let previewCode = initialData?.preview_code;
