@@ -144,6 +144,153 @@ export const AdminQuickActions = ({
     }
   };
 
+  const [compressMigrating, setCompressMigrating] = useState(false);
+  const [compressProgress, setCompressProgress] = useState("");
+
+  /**
+   * Batch-compress oversized hero images for site performance.
+   * - Downloads each hero image
+   * - Skips images already ≤ 300 KB (they're fine)
+   * - Re-encodes as JPEG (1920×1080 max, quality 85, ≤500 KB target)
+   * - Replaces original in storage and updates DB URL if format changed
+   * - Batched with pauses to avoid browser/Supabase pressure
+   */
+  const handleCompressHeroImages = async () => {
+    setCompressMigrating(true);
+    setCompressProgress("Fetching articles…");
+
+    const BATCH_SIZE = 5;
+    const PAUSE_MS = 1_500;
+    const SKIP_THRESHOLD = 300 * 1024;   // don't touch images already under 300 KB
+    const MAX_W = 1920, MAX_H = 1080;
+    const TARGET_BYTES = 500 * 1024;     // aim for ≤500 KB
+
+    try {
+      const { data: articles, error } = await supabase
+        .from("articles")
+        .select("id, slug, featured_image_url")
+        .not("featured_image_url", "is", null)
+        .neq("featured_image_url", "");
+
+      if (error) throw error;
+      if (!articles?.length) { toast.info("No articles found"); return; }
+
+      let compressed = 0, skipped = 0, failed = 0;
+      let savedKB = 0;
+      const total = articles.length;
+
+      for (let i = 0; i < total; i++) {
+        const art = articles[i];
+        setCompressProgress(`${i + 1}/${total}  ✓${compressed} ⏭${skipped} ✗${failed} — ${art.slug?.slice(0, 30)}`);
+
+        const marker = "/article-images/";
+        const mIdx = art.featured_image_url.indexOf(marker);
+        if (mIdx === -1) { skipped++; continue; }
+
+        try {
+          // HEAD request to check size without downloading
+          const headRes = await fetch(art.featured_image_url, { method: "HEAD" });
+          const contentLength = Number(headRes.headers.get("content-length") || 0);
+          if (contentLength > 0 && contentLength <= SKIP_THRESHOLD) { skipped++; continue; }
+
+          // Download full image
+          const res = await fetch(art.featured_image_url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          if (blob.size <= SKIP_THRESHOLD) { skipped++; continue; }
+
+          const originalSize = blob.size;
+
+          // Decode and resize via canvas
+          const bitmap = await createImageBitmap(blob);
+          let w = bitmap.width, h = bitmap.height;
+          if (w > MAX_W || h > MAX_H) {
+            const ratio = Math.min(MAX_W / w, MAX_H / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d")!;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          // Check actual transparency (same logic as compressImage fix)
+          let hasTransparency = false;
+          if (blob.type === "image/png" || blob.type === "image/webp" || blob.type === "image/gif") {
+            const checkW = Math.min(w, 512), checkH = Math.min(h, 512);
+            const tmp = document.createElement("canvas");
+            tmp.width = checkW; tmp.height = checkH;
+            const tmpCtx = tmp.getContext("2d", { alpha: true })!;
+            tmpCtx.drawImage(bitmap, 0, 0, checkW, checkH);
+            const px = tmpCtx.getImageData(0, 0, checkW, checkH).data;
+            for (let p = 3; p < px.length; p += 16) {
+              if (px[p] < 250) { hasTransparency = true; break; }
+            }
+          }
+
+          if (!hasTransparency) {
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, w, h);
+          }
+          ctx.drawImage(bitmap, 0, 0, w, h);
+
+          // Always output JPEG unless truly transparent
+          if (hasTransparency) { skipped++; continue; } // keep transparent PNGs as-is
+
+          // Encode JPEG, step down quality until ≤ target
+          let quality = 0.85;
+          let jpegBlob: Blob | null = null;
+          while (quality >= 0.4) {
+            jpegBlob = await new Promise<Blob | null>(r => canvas.toBlob(r, "image/jpeg", quality));
+            if (jpegBlob && jpegBlob.size <= TARGET_BYTES) break;
+            quality -= 0.07;
+          }
+          if (!jpegBlob || jpegBlob.size >= originalSize) { skipped++; continue; } // no gain
+
+          // Upload compressed version (replace original path)
+          const storagePath = art.featured_image_url.substring(mIdx + marker.length);
+          const jpegPath = storagePath.replace(/\.[^/.]+$/, ".jpg");
+
+          const { error: upErr } = await supabase.storage
+            .from("article-images")
+            .upload(jpegPath, jpegBlob, { contentType: "image/jpeg", upsert: true });
+          if (upErr) throw upErr;
+
+          // If extension changed (e.g. .png → .jpg), update the article's URL
+          if (jpegPath !== storagePath) {
+            const base = art.featured_image_url.substring(0, mIdx + marker.length);
+            const newUrl = `${base}${jpegPath}`;
+            await supabase.from("articles").update({ featured_image_url: newUrl }).eq("id", art.id);
+
+            // Also remove the old file to save storage
+            await supabase.storage.from("article-images").remove([storagePath]);
+          }
+
+          savedKB += Math.round((originalSize - jpegBlob.size) / 1024);
+          compressed++;
+        } catch (err: any) {
+          console.warn(`Compress fail: ${art.slug}`, err);
+          failed++;
+        }
+
+        if ((i + 1) % BATCH_SIZE === 0 && i + 1 < total) {
+          setCompressProgress(`Pausing after batch ${Math.ceil((i + 1) / BATCH_SIZE)}…`);
+          await new Promise(r => setTimeout(r, PAUSE_MS));
+        }
+      }
+
+      toast.success(`Compression done: ${compressed} optimised (${savedKB} KB saved), ${skipped} already fine, ${failed} failed`);
+      setCompressProgress("");
+    } catch (err: any) {
+      toast.error("Compression failed", { description: err.message });
+    } finally {
+      setCompressMigrating(false);
+    }
+  };
+
   const { data: lastRefreshed } = useQuery({
     queryKey: ["trending-refresh-timestamp"],
     queryFn: async () => {
@@ -267,6 +414,24 @@ export const AdminQuickActions = ({
                 <>
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Generate OG Images
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleCompressHeroImages}
+              variant="outline"
+              className="justify-start text-muted-foreground hover:text-foreground"
+              disabled={compressMigrating}
+            >
+              {compressMigrating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {compressProgress || "Compressing…"}
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Compress Hero Images
                 </>
               )}
             </Button>
