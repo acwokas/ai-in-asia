@@ -23,10 +23,10 @@ const EditorialCallout: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full pt-2 pb-2">
+    <div className="flex flex-col items-center w-full pt-0 pb-2">
       <div className="w-full max-w-[640px]">
         {/* Divider */}
-        <div className="flex items-center w-full py-4">
+        <div className="flex items-center w-full py-2">
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
           <span className="mx-3 text-xs text-muted-foreground/40">◇</span>
           <div className="flex-1 h-px bg-gradient-to-l from-border to-transparent" />
