@@ -377,7 +377,7 @@ const Category = () => {
                 {(() => { const GlobeIcon = iconMap["globe"]; return GlobeIcon ? <GlobeIcon style={{ width: 28, height: 28, color: "#eab308", flexShrink: 0 }} /> : null; })()}
                 <div>
                   <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff" }}>AI Policy Atlas</div>
-                  <div style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.4 }}>
                     Interactive tracker of AI regulation across Asia-Pacific. Explore frameworks, timelines, and government positions.
                   </div>
                 </div>

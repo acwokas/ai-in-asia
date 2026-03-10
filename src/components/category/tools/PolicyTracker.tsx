@@ -98,7 +98,7 @@ export const PolicyTracker = () => {
             AI Regulation Tracker
           </h3>
         </div>
-        <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 16px 0" }}>
+        <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 16px 0" }}>
           Where Asia-Pacific stands on AI governance
         </p>
 
@@ -153,7 +153,7 @@ export const PolicyTracker = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 16px" }}>
-            <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 12px 0" }}>
+            <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 12px 0" }}>
               No country entries yet. Explore the full Policy Atlas for regional overviews.
             </p>
             <Link
@@ -194,7 +194,7 @@ export const PolicyTracker = () => {
                     </span>
                   </div>
                   <GlowBadge color={maturity.color} small>{maturity.label}</GlowBadge>
-                  <span style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: 13, color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {article.excerpt || article.title}
                   </span>
                   <Link
@@ -218,7 +218,7 @@ export const PolicyTracker = () => {
             Explore the full interactive Policy Atlas &rarr;
           </Link>
           {policyArticles && policyArticles.length > 0 && (
-            <p style={{ fontSize: 11, color: "#6b7280", fontFamily: "Nunito, sans-serif", marginTop: 8 }}>
+            <p style={{ fontSize: 11, color: "#6b7280", marginTop: 8 }}>
               Last updated: {new Date(Math.max(...policyArticles.map((a) => new Date(a.updated_at).getTime()))).toLocaleDateString()}
             </p>
           )}

@@ -9,11 +9,9 @@ import { BreadcrumbStructuredData } from "@/components/StructuredData";
 import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/categoryTokens";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { CategoryIcon } from "@/components/category/CategoryIcon";
+import { decodeHtml } from "@/lib/textUtils";
 
 const ITEMS_PER_PAGE = 12;
-
-const decodeHtml = (s: string) =>
-  s?.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'") || "";
 
 const getArticleTagNames = (article: any): string[] => {
   const relationTags = (article.article_tags || [])
@@ -223,7 +221,6 @@ const CategoryAll = () => {
               fontSize: 13,
               color: TOKENS.MUTED,
               marginBottom: 16,
-              fontFamily: "Nunito, sans-serif",
             }}
           >
             <Link to="/" style={{ color: TOKENS.MUTED, textDecoration: "none" }}>
@@ -348,7 +345,6 @@ const CategoryAll = () => {
                   border: `1px solid ${sortMode === opt.key ? cfg.accent + "66" : TOKENS.BORDER}`,
                   background: sortMode === opt.key ? cfg.accent + "1a" : "transparent",
                   color: sortMode === opt.key ? cfg.accent : TOKENS.MUTED,
-                  fontFamily: "Nunito, sans-serif",
                   fontWeight: 700,
                   fontSize: 12,
                   cursor: "pointer",
@@ -394,7 +390,6 @@ const CategoryAll = () => {
                 style={{
                   fontSize: 15,
                   color: "#9ca3af",
-                  fontFamily: "Nunito, sans-serif",
                 }}
               >
                 No articles matching "{selectedFilter}" yet
@@ -494,7 +489,6 @@ const CategoryAll = () => {
                         style={{
                           fontSize: 11,
                           color: TOKENS.MUTED,
-                          fontFamily: "Nunito, sans-serif",
                         }}
                       >
                         {article.published_at
@@ -528,7 +522,6 @@ const CategoryAll = () => {
                         fontSize: 13,
                         color: "#9ca3af",
                         lineHeight: 1.5,
-                        fontFamily: "Nunito, sans-serif",
                         margin: 0,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -546,7 +539,6 @@ const CategoryAll = () => {
                         marginTop: 10,
                         fontSize: 11,
                         color: TOKENS.MUTED,
-                        fontFamily: "Nunito, sans-serif",
                       }}
                     >
                       {article.authors?.name && <span>{article.authors.name}</span>}

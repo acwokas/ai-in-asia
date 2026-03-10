@@ -42,7 +42,7 @@ export const PulseTracker = () => {
             }}
           />
         </div>
-        <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 16px 0", fontFamily: "Nunito, sans-serif" }}>
+        <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 16px 0" }}>
           Live signals from across Asia-Pacific this week
         </p>
 
@@ -122,7 +122,6 @@ function SignalCard({ signal }: { signal: (typeof SIGNALS)[number] }) {
             fontSize: 13,
             fontWeight: 600,
             color: "#ffffff",
-            fontFamily: "Nunito, sans-serif",
             lineHeight: 1.4,
           }}
         >

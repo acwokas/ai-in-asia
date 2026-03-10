@@ -63,7 +63,7 @@ export const ROICalculator = () => {
             <input type="range" min={20000} max={200000} step={5000} value={salary} onChange={(e) => setSalary(+e.target.value)} style={sliderStyle} />
 
             <div style={{ height: 20 }} />
-            <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "Nunito, sans-serif", marginBottom: 8 }}>Industry</div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>Industry</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {INDUSTRIES.map((ind) => (
                 <button
@@ -106,7 +106,7 @@ export const ROICalculator = () => {
                   <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 22, color: ACCENT, lineHeight: 1.1 }}>
                     {s.value}
                   </div>
-                  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4, fontFamily: "Nunito, sans-serif" }}>
+                  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
                     {s.label}
                   </div>
                 </div>
@@ -122,7 +122,6 @@ export const ROICalculator = () => {
                 border: `1px solid ${ACCENT}25`,
                 fontSize: 13,
                 color: "#9ca3af",
-                fontFamily: "Nunito, sans-serif",
                 lineHeight: 1.6,
               }}
             >
@@ -141,7 +140,7 @@ export const ROICalculator = () => {
 function SliderRow({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-      <span style={{ fontSize: 12, color: "#6b7280", fontFamily: "Nunito, sans-serif" }}>{label}</span>
+      <span style={{ fontSize: 12, color: "#6b7280" }}>{label}</span>
       <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#10b981" }}>{value}</span>
     </div>
   );

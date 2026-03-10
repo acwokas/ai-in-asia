@@ -32,7 +32,7 @@ import EditorialCallout from "@/components/article/EditorialCallout";
 import { ThreeBeforeNineTemplate } from "@/components/ThreeBeforeNine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Share2, Bookmark, MessageCircle, Clock, Lock } from "lucide-react";
+import { Bookmark, Clock, Lock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -76,6 +76,11 @@ const Article = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const previewCode = urlParams.get('preview');
   const isPreview = !!previewCode;
+
+  // Reset prerenderReady on navigation so the prerenderer waits for new data
+  useEffect(() => {
+    (window as any).prerenderReady = false;
+  }, [cleanSlug]);
 
   // Fetch article
   const { data: article, isLoading } = useQuery({
@@ -162,6 +167,19 @@ const Article = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [article?.id]);
+
+  // Signal to prerenderers (lovablehtml, prerender.io, etc.) that
+  // the page is ready to snapshot — i.e. article data has loaded and
+  // react-helmet-async has injected the article-specific meta tags.
+  useEffect(() => {
+    if (!isLoading) {
+      // Fires for both successful loads and 404s (article === null).
+      // Small delay to ensure Helmet has flushed meta tags into <head>.
+      requestAnimationFrame(() => {
+        (window as any).prerenderReady = true;
+      });
+    }
+  }, [article, isLoading]);
 
   // Prompt box copy handler
   useEffect(() => {

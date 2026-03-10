@@ -67,7 +67,7 @@ export const PromptBuilder = () => {
               Quick Prompt Builder
             </span>
           </div>
-          <span style={{ fontSize: 11, color: "#6b7280", fontFamily: "Nunito, sans-serif" }}>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>
             Powered by{" "}
             <a href="https://promptandgo.ai" target="_blank" rel="noopener noreferrer" style={{ color: COPY_COLOR, textDecoration: "none" }}>
               PromptAndGo.ai
@@ -125,7 +125,6 @@ export const PromptBuilder = () => {
                   color: "#d1d5db",
                   lineHeight: 1.5,
                   margin: 0,
-                  fontFamily: "Nunito, sans-serif",
                   flex: 1,
                 }}
               >

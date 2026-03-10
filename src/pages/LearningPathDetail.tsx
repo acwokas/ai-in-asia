@@ -17,8 +17,7 @@ import { filterArticlesForPath } from "@/lib/learningPathMatcher";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { awardPoints } from "@/lib/gamification";
-
-const decodeHtml = (s: string) => s?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'") || '';
+import { decodeHtml } from "@/lib/textUtils";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   Beginner: "#22c55e",
@@ -221,7 +220,7 @@ const LearningPathDetail = () => {
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 30% 20%, ${path.color}12, transparent 70%)` }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", position: "relative" }}>
           {/* Breadcrumb */}
-          <nav style={{ fontSize: 13, color: TOKENS.MUTED, marginBottom: 20, fontFamily: "Nunito, sans-serif" }}>
+          <nav style={{ fontSize: 13, color: TOKENS.MUTED, marginBottom: 20 }}>
             <Link to="/" style={{ color: TOKENS.MUTED, textDecoration: "none" }}>Home</Link>
             <span style={{ margin: "0 8px" }}>/</span>
             <Link to={`/category/${categorySlug}`} style={{ color: TOKENS.MUTED, textDecoration: "none" }}>{category?.name || cfg.label}</Link>
@@ -241,7 +240,7 @@ const LearningPathDetail = () => {
                 </h1>
               </div>
 
-              <p style={{ fontSize: 15, color: "#d1d5db", fontFamily: "Nunito, sans-serif", lineHeight: 1.65, marginBottom: 16 }}>
+              <p style={{ fontSize: 15, color: "#d1d5db", lineHeight: 1.65, marginBottom: 16 }}>
                 {path.longDesc}
               </p>
 
@@ -328,7 +327,7 @@ const LearningPathDetail = () => {
               <div style={{ padding: "40px 24px", borderRadius: 16, background: TOKENS.CARD_BG, border: `1px solid ${TOKENS.BORDER}`, textAlign: "center" }}>
                 {(() => { const BookIcon = iconMap["book-open"]; return BookIcon ? <BookIcon style={{ width: 36, height: 36, marginBottom: 12, color: cfg.accent }} /> : null; })()}
                 <p style={{ fontSize: 16, color: "#fff", fontFamily: "Poppins, sans-serif", fontWeight: 700, marginBottom: 6 }}>We're building this learning path</p>
-                <p style={{ fontSize: 14, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", marginBottom: 16 }}>Check back soon, or explore {cfg.label} articles in the meantime.</p>
+                <p style={{ fontSize: 14, color: TOKENS.MUTED, marginBottom: 16 }}>Check back soon, or explore {cfg.label} articles in the meantime.</p>
                 <Link
                   to={`/category/${categorySlug}`}
                   style={{ display: "inline-block", padding: "10px 24px", borderRadius: 10, background: cfg.accent, color: "#000", fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
@@ -422,7 +421,7 @@ const LearningPathDetail = () => {
                             </Link>
 
                             {article.excerpt && (
-                              <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", lineHeight: 1.5, margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                              <p style={{ fontSize: 13, color: "#9ca3af", lineHeight: 1.5, margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                                 {article.excerpt}
                               </p>
                             )}
@@ -491,7 +490,7 @@ const LearningPathDetail = () => {
                         <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 11, color: readArticles.has(a.id) ? path.color : TOKENS.MUTED, flexShrink: 0, marginTop: 2 }}>
                           {readArticles.has(a.id) ? "✓" : `${i + 1}.`}
                         </span>
-                        <span style={{ fontSize: 12, color: readArticles.has(a.id) ? "#d1d5db" : "#9ca3af", fontFamily: "Nunito, sans-serif", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                        <span style={{ fontSize: 12, color: readArticles.has(a.id) ? "#d1d5db" : "#9ca3af", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                           {decodeHtml(a.title)}
                         </span>
                       </a>
@@ -596,7 +595,7 @@ const LearningPathDetail = () => {
                       <GlowBadge color={catCfg.accent} small>{catCfg.label}</GlowBadge>
                     </div>
                     <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", marginBottom: 4 }}>{cp.title}</h4>
-                    <p style={{ fontSize: 12, color: TOKENS.MUTED, fontFamily: "Nunito, sans-serif", margin: 0 }}>{cp.desc}</p>
+                    <p style={{ fontSize: 12, color: TOKENS.MUTED, margin: 0 }}>{cp.desc}</p>
                     <div style={{ marginTop: 10, fontSize: 11, color: cp.color, fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
                       {cp.articles} articles - {cp.time}
                     </div>

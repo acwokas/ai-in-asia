@@ -133,7 +133,7 @@ export const PromptStudio = () => {
               Prompt Studio Lite
             </span>
           </div>
-          <span style={{ fontSize: 11, color: "#6b7280", fontFamily: "Nunito, sans-serif" }}>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>
             Inspired by EDGE Elevate
           </span>
         </div>
@@ -167,7 +167,7 @@ export const PromptStudio = () => {
               >
                 {label}
               </div>
-              <div style={{ fontSize: 11, color: "#6b7280", fontFamily: "Nunito, sans-serif", marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
                 {desc}
               </div>
             </button>
@@ -190,7 +190,6 @@ export const PromptStudio = () => {
                 background: "#0d0e12",
                 border: "1px solid #1a1d25",
                 color: "#d1d5db",
-                fontFamily: "Nunito, sans-serif",
                 fontSize: 13,
                 lineHeight: 1.6,
                 resize: "vertical",
@@ -253,7 +252,6 @@ export const PromptStudio = () => {
                   style={{
                     fontSize: 12,
                     color: "#d1d5db",
-                    fontFamily: "Nunito, sans-serif",
                     lineHeight: 1.6,
                     whiteSpace: "pre-wrap",
                     margin: 0,
@@ -310,7 +308,6 @@ export const PromptStudio = () => {
                         fontSize: 12,
                         fontWeight: 600,
                         color: isActive ? "#d1d5db" : "#6b7280",
-                        fontFamily: "Nunito, sans-serif",
                       }}
                     >
                       {p}
@@ -329,7 +326,6 @@ export const PromptStudio = () => {
                 border: `1px solid ${ACCENT}15`,
                 fontSize: 11,
                 color: "#9ca3af",
-                fontFamily: "Nunito, sans-serif",
                 lineHeight: 1.5,
               }}
             >

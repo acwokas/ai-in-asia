@@ -357,7 +357,7 @@ export const useAnalyticsTracking = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isInternalPath]);
 
-  // Track page views on route change â skip internal pages
+  // Track page views on route change — skip internal pages
   useEffect(() => {
     if (!isInternalPath) {
       trackPageView();
@@ -491,7 +491,7 @@ export const useAnalyticsTracking = () => {
           // Silent fail
         }
       }
-    }, 300_000); // Every 5 minutes â balances data freshness vs Supabase write volume
+    }, 300_000); // Every 5 minutes — balances data freshness vs Supabase write volume
 
     return () => clearInterval(intervalId);
   }, [updateSessionInDb]);

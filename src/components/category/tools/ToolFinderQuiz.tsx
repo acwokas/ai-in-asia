@@ -114,7 +114,6 @@ export const ToolFinderQuiz = () => {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                fontFamily: "Nunito, sans-serif",
                 textDecoration: "underline",
               }}
             >
@@ -172,7 +171,7 @@ export const ToolFinderQuiz = () => {
                 Here are your top picks
               </h3>
             </div>
-            <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 16px 0", fontFamily: "Nunito, sans-serif" }}>
+            <p style={{ fontSize: 12, color: "#6b7280", margin: "0 0 16px 0" }}>
               Based on: {answers.join(" - ")}
             </p>
 
@@ -213,7 +212,7 @@ export const ToolFinderQuiz = () => {
                     <div style={{ fontSize: 13, color: "#f59e0b", letterSpacing: 2, marginBottom: 4 }}>
                       {starStr(r.stars)}
                     </div>
-                    <p style={{ fontSize: 13, color: "#9ca3af", margin: 0, fontFamily: "Nunito, sans-serif", lineHeight: 1.5 }}>
+                    <p style={{ fontSize: 13, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
                       {r.why}
                     </p>
                   </div>
@@ -267,7 +266,7 @@ function OptionButton({ emoji, label, onClick }: { emoji: string; label: string;
       }}
     >
       <span style={{ fontSize: 28 }}>{emoji}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", fontFamily: "Nunito, sans-serif", textAlign: "center" }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", textAlign: "center" }}>
         {label}
       </span>
     </button>

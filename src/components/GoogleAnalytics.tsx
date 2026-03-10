@@ -52,7 +52,7 @@ const GoogleAnalytics = () => {
 
 export default GoogleAnalytics;
 
-// Custom event tracking helper - pushes to dataLayer for GTM â GA4
+// Custom event tracking helper - pushes to dataLayer for GTM → GA4
 export const trackEvent = (
   eventName: string,
   eventParams?: Record<string, any>

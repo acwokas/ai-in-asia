@@ -112,7 +112,6 @@ function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem
               onClick={() => handleClick(id)}
               className="text-left flex-1 cursor-pointer transition-colors duration-200"
               style={{
-                fontFamily: "'Nunito', sans-serif",
                 fontSize: "0.9rem",
                 lineHeight: 1.4,
                 paddingLeft: "0.75rem",
