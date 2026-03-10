@@ -103,12 +103,12 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
               fontSize: 10,
               color: path.color,
             }}>
-              ✓ Completed
+              â Completed
             </span>
           )}
         </div>
         <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 15, color: "#f3f4f6", margin: "0 0 0 0", lineHeight: 1.3 }}>{path.title}</h4>
-        <p style={{ fontSize: 13, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "6px 0 12px 0", lineHeight: 1.5 }}>{path.desc}</p>
+        <p style={{ fontSize: 13, color: "#9ca3af", margin: "6px 0 12px 0", lineHeight: 1.5 }}>{path.desc}</p>
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
             {path.articles} articles - {path.time}
