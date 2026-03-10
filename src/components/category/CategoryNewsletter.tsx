@@ -62,7 +62,7 @@ export function CategoryNewsletter({ cfg, revealProps }: CategoryNewsletterProps
         <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 28, color: "#fff", margin: "0 0 8px 0" }}>
           Never Miss an AI Breakthrough
         </h2>
-        <p style={{ fontSize: 14, color: "#9ca3af", fontFamily: "Nunito, sans-serif", margin: "0 0 24px 0" }}>
+        <p style={{ fontSize: 14, color: "#9ca3af", margin: "0 0 24px 0" }}>
           Get the best of {cfg.label} delivered to your inbox every week.
         </p>
         <form onSubmit={handleSubscribe} className="flex flex-col min-[480px]:flex-row justify-center gap-2 max-w-[440px] mx-auto">
@@ -79,7 +79,6 @@ export function CategoryNewsletter({ cfg, revealProps }: CategoryNewsletterProps
               border: `1px solid ${TOKENS.BORDER}`,
               background: TOKENS.CARD_BG,
               color: "#fff",
-              fontFamily: "Nunito, sans-serif",
               fontSize: 14,
               outline: "none",
             }}
