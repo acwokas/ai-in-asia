@@ -52,6 +52,7 @@ const Comments = ({ articleId }: CommentsProps) => {
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [postAnonymously, setPostAnonymously] = useState(false);
 
   // Pre-fill for logged-in users
   useEffect(() => {
@@ -72,7 +73,10 @@ const Comments = ({ articleId }: CommentsProps) => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const success = await handleSubmitComment(authorName, authorEmail, content, user?.id);
+    const userId = postAnonymously ? undefined : user?.id;
+    const name = postAnonymously ? "Anonymous" : authorName;
+    const email = postAnonymously ? "" : authorEmail;
+    const success = await handleSubmitComment(name, email, content, userId);
     if (success) {
       if (!user) {
         setAuthorName("");
@@ -190,6 +194,7 @@ const Comments = ({ articleId }: CommentsProps) => {
               submitting={submitting}
               onSubmit={handleFormSubmit}
               isLoggedIn={!!user}
+              isAdmin={isAdmin}
               displayName={authorName}
             />
           </>

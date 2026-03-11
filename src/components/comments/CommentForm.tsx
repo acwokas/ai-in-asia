@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { User, Pencil } from "lucide-react";
 
 interface CommentFormProps {
   authorName: string;
@@ -17,7 +18,9 @@ interface CommentFormProps {
   submitting: boolean;
   onSubmit: (e: React.FormEvent) => void;
   isLoggedIn?: boolean;
+  isAdmin?: boolean;
   displayName?: string;
+  onAnonymousChange?: (isAnonymous: boolean) => void;
 }
 
 export const CommentForm = ({
@@ -32,22 +35,86 @@ export const CommentForm = ({
   submitting,
   onSubmit,
   isLoggedIn = false,
+  isAdmin = false,
   displayName,
+  onAnonymousChange,
 }: CommentFormProps) => {
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+
+  const handleAnonymousToggle = (checked: boolean) => {
+    setPostAnonymously(checked);
+    onAnonymousChange?.(checked);
+    if (checked) {
+      setAuthorName("Anonymous");
+    } else if (displayName) {
+      setAuthorName(displayName);
+    }
+  };
+
   return (
     <div className="bg-muted/30 rounded-lg p-6 mt-8">
       <h3 className="font-semibold text-lg mb-4">Leave a Comment</h3>
       <form onSubmit={onSubmit} className="space-y-4">
         {isLoggedIn ? (
-          <div className="flex items-center gap-3 py-2">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-muted-foreground">
-              Commenting as <span className="font-medium text-foreground">{displayName || authorName}</span>
-            </span>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 py-2">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                  <User className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              {editingName && isAdmin ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    className="h-8 text-sm max-w-[200px]"
+                    placeholder="Display name"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingName(false)}
+                    className="h-8 text-xs"
+                  >
+                    Done
+                  </Button>
+                </div>
+              ) : (
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  Commenting as{" "}
+                  <span className="font-medium text-foreground">
+                    {postAnonymously ? "Anonymous" : (displayName || authorName)}
+                  </span>
+                  {isAdmin && !postAnonymously && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingName(true)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      title="Change display name"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="anonymous-check"
+                checked={postAnonymously}
+                onCheckedChange={(checked) => handleAnonymousToggle(checked as boolean)}
+              />
+              <label
+                htmlFor="anonymous-check"
+                className="text-sm text-muted-foreground leading-none cursor-pointer"
+              >
+                Post anonymously
+              </label>
+            </div>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">

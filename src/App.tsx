@@ -60,6 +60,7 @@ const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const Admin = lazy(() => import("./pages/Admin"));
 
 const Articles = lazy(() => import("./pages/Articles"));
+const ArticlesFeed = lazy(() => import("./pages/ArticlesFeed"));
 const Editor = lazy(() => import("./pages/Editor"));
 const Profile = lazy(() => import("./pages/Profile"));
 const About = lazy(() => import("./pages/About"));
@@ -243,6 +244,7 @@ const router = createBrowserRouter([
       { path: "/newsletter/forward/:id", element: <NewsletterForward /> },
       { path: "/newsletter/:id/email-preview", element: <NewsletterEmailPreview /> },
       { path: "/newsletter/:id", element: <NewsletterView /> },
+      { path: "/articles", element: <ArticlesFeed /> },
       { path: "/saved", element: <SavedArticles /> },
       { path: "/editorial-standards", element: <EditorialStandards /> },
       { path: "/contribute", element: <Contribute /> },

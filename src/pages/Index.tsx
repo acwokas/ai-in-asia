@@ -658,6 +658,13 @@ const Index = () => {
                 });
               })()}
             </div>
+
+            {/* View all latest articles link */}
+            <div className="lg:col-span-12 flex justify-end mt-2">
+              <Link to="/articles" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                View all latest articles →
+              </Link>
+            </div>
           </div>
         </section>
 
