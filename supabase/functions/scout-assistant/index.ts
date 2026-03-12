@@ -203,6 +203,42 @@ Be specific. Only include verifiable information. Format as a simple numbered li
   }
 }
 
+// ── Extract embeddable social / video URLs from source content ─────
+function extractEmbedUrls(content: string): { youtube: string[]; social: string[] } {
+  const youtube: string[] = [];
+  const social: string[] = [];
+
+  // YouTube: full URLs, short URLs, and embed URLs
+  const ytRegex = /https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})[^\s)"']*/gi;
+  let m: RegExpExecArray | null;
+  const seenYt = new Set<string>();
+  while ((m = ytRegex.exec(content)) !== null) {
+    const videoId = m[1];
+    if (!seenYt.has(videoId)) {
+      seenYt.add(videoId);
+      youtube.push(`https://www.youtube.com/watch?v=${videoId}`);
+    }
+  }
+
+  // Twitter / X posts
+  const twRegex = /https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+[^\s)"']*/gi;
+  while ((m = twRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
+
+  // Instagram posts / reels
+  const igRegex = /https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\/[\w-]+[^\s)"']*/gi;
+  while ((m = igRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
+
+  // TikTok videos
+  const tkRegex = /https?:\/\/(?:www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+[^\s)"']*/gi;
+  while ((m = tkRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
+
+  // LinkedIn posts
+  const liRegex = /https?:\/\/(?:www\.)?linkedin\.com\/(?:posts|feed\/update)\/[\w:-]+[^\s)"']*/gi;
+  while ((m = liRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
+
+  return { youtube: [...new Set(youtube)].slice(0, 3), social: [...new Set(social)].slice(0, 3) };
+}
+
 // ââ rewrite-with-images ââââââââââââââââââââââââââââââââââââââââââââââ
 async function handleRewriteWithImages(
   content: string,
@@ -222,6 +258,20 @@ async function handleRewriteWithImages(
   const enrichmentSection = enrichmentData
     ? `\n\nRESEARCH ENRICHMENT (verified facts and citations you MUST draw from):\n${enrichmentData}\n`
     : '';
+
+  // ── Extract YouTube / social media URLs from source content ──
+  const embedUrls = extractEmbedUrls(content);
+  let embedSection = '';
+  if (embedUrls.youtube.length > 0 || embedUrls.social.length > 0) {
+    const parts: string[] = [];
+    if (embedUrls.youtube.length > 0) {
+      parts.push('YouTube videos (embed as responsive iframe):\n' + embedUrls.youtube.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n'));
+    }
+    if (embedUrls.social.length > 0) {
+      parts.push('Social media posts (embed as a clickable link with context):\n' + embedUrls.social.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n'));
+    }
+    embedSection = `\n\nEMBEDDED MEDIA FROM SOURCE (MANDATORY — include these in the rewritten article):\n${parts.join('\n\n')}\n`;
+  }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -403,11 +453,18 @@ KEYWORD OPTIMISATION:
 LINKS:
 - Do NOT preserve any links from the original pasted content. Never link back to the domain or source from which the original article came.
 - ALL external links must use the exact URLs provided in the external links list or the PERPLEXITY CITATION URLS section of the Research Enrichment block. Do NOT invent or modify URLs.
-- MANDATORY: You MUST use at least one URL from the PERPLEXITY CITATION URLS list as a working external link in the article body. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference — do not dump it at the end.
+- MANDATORY (SEO-CRITICAL): Every article MUST contain at least one external link from the PERPLEXITY CITATION URLS list, formatted as <a href="URL" target="_blank" rel="noopener noreferrer">descriptive anchor text</a>. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference. This is non-negotiable for SEO ranking. If no Perplexity citation URLs are available, use the best external link from the external links list. An article with zero outbound external links will fail editorial review.
 - MANDATORY: Any statistic, data point, or named research report cited in the article MUST have an inline external link using target="_blank" rel="noopener noreferrer". Use the closest matching URL from the Perplexity citations or external links list. Never leave a cited statistic or named report unlinked.
 - ALL internal links must use the exact paths provided. Do NOT invent or modify paths.
 - Anchor text for internal links must be descriptive and contextual. Never use "click here", "read more", "this article", or the raw article title as the entire anchor. Instead write natural anchor text that describes what the reader will find, incorporating the focus keyphrase or related keywords where it reads naturally. Example: instead of <a href="/path">Singapore AI regulation article</a>, write <a href="/path">Singapore's evolving AI regulatory framework</a>.
-${internalLinksInstruction}${externalLinksSection}${enrichmentSection}
+${internalLinksInstruction}${externalLinksSection}${enrichmentSection}${embedSection}
+
+EMBEDDED MEDIA (MANDATORY if present):
+- If the EMBEDDED MEDIA FROM SOURCE section is provided below, you MUST include every listed URL in the rewritten article.
+- YouTube videos: embed as a responsive iframe: <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin:1.5em 0;"><iframe src="https://www.youtube.com/embed/VIDEO_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div> Replace VIDEO_ID with the 11-character ID from the URL. Place the embed contextually near relevant content, not dumped at the end.
+- Twitter/X posts: embed as a styled link: <blockquote><a href="TWEET_URL" target="_blank" rel="noopener noreferrer">View the original post on X</a></blockquote> with a sentence of context before it.
+- Instagram, TikTok, LinkedIn posts: embed as a styled external link: <a href="POST_URL" target="_blank" rel="noopener noreferrer">View on [Platform Name]</a> wrapped in context.
+- NEVER strip or ignore social media URLs from the source material. They are editorial assets.
 
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Place exactly one IMAGE_PLACEHOLDER_HERE on its own line roughly 40-60% through the content.
@@ -597,6 +654,12 @@ ${content}`;
     .replace(/\u2015/g, ',')   // horizontal bar -> comma
     .replace(/ â /g, '. ')     // spaced em dash -> full stop (catches any that slipped through)
     .replace(/ â /g, ', ');    // spaced en dash -> comma
+
+  // ── Validate external links exist (SEO requirement) ──
+  const hasExternalLink = /target="_blank"/.test(finalContent) || /target=\\"_blank\\"/.test(finalContent);
+  if (!hasExternalLink) {
+    console.warn('SEO WARNING: Rewritten article contains ZERO external links. This harms SEO ranking.');
+  }
 
   // ââ Look up category ID from database ââ
   let categoryId = '';
