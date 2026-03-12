@@ -157,7 +157,7 @@ ALT3: [alternative option 3]`;
   }
 });
 
-// ── Perplexity enrichment helper ─────────────────────────────────────
+// ââ Perplexity enrichment helper âââââââââââââââââââââââââââââââââââââ
 async function enrichWithPerplexity(title: string, content: string, apiKey: string): Promise<string> {
   if (!apiKey) return '';
   try {
@@ -172,14 +172,14 @@ async function enrichWithPerplexity(title: string, content: string, apiKey: stri
         messages: [
           {
             role: 'system',
-            content: 'You are a research assistant. Provide factual, current information with citations. Focus on Asia-Pacific where possible. Be concise and factual only — no opinions.',
+            content: 'You are a research assistant. Provide factual, current information with citations. Focus on Asia-Pacific where possible. Be concise and factual only â no opinions.',
           },
           {
             role: 'user',
             content: `For a news article titled "${title}", provide:
 1. 3-5 current statistics or data points with their sources (publication name and approximate date)
 2. Any notable Asia-Pacific specific developments, companies, or regulations related to this topic
-3. One or two recent expert quotes or statements (with attribution — name, title, organisation) if they exist in public record
+3. One or two recent expert quotes or statements (with attribution â name, title, organisation) if they exist in public record
 4. Any significant recent developments in the last 60 days
 
 Be specific. Only include verifiable information. Format as a simple numbered list.`,
@@ -192,15 +192,18 @@ Be specific. Only include verifiable information. Format as a simple numbered li
     if (!response.ok) return '';
     const data = await response.json();
     const enrichment = data.choices?.[0]?.message?.content || '';
-    const citations = data.citations ? `\n\nSources: ${data.citations.slice(0, 5).join(', ')}` : '';
-    return enrichment + citations;
+    const citationUrls: string[] = data.citations ? data.citations.slice(0, 5) : [];
+    const citationBlock = citationUrls.length > 0
+      ? `\n\nPERPLEXITY CITATION URLS (verified, live sources — use at least one as an external link in the article, preferring tier-1 outlets: Reuters, AP, Bloomberg, FT, Nikkei Asia, SCMP, The Straits Times, or equivalent):\n${citationUrls.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n')}`
+      : '';
+    return enrichment + citationBlock;
   } catch (err) {
     console.error('Perplexity enrichment failed (non-fatal):', err);
     return '';
   }
 }
 
-// ── rewrite-with-images ──────────────────────────────────────────────
+// ââ rewrite-with-images ââââââââââââââââââââââââââââââââââââââââââââââ
 async function handleRewriteWithImages(
   content: string,
   context: any,
@@ -208,7 +211,7 @@ async function handleRewriteWithImages(
   cors: Record<string, string>,
 ) {
   // Requires PERPLEXITY_API_KEY to be set in Supabase Edge Function secrets
-  // Add via: Supabase Dashboard → Edge Functions → Manage secrets → PERPLEXITY_API_KEY
+  // Add via: Supabase Dashboard â Edge Functions â Manage secrets â PERPLEXITY_API_KEY
   // Get key from: https://www.perplexity.ai/settings/api
 
   const title = context?.title || '';
@@ -224,7 +227,7 @@ async function handleRewriteWithImages(
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const headers = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` };
 
-  // ── Internal links: guarantee 5+ ──
+  // ââ Internal links: guarantee 5+ ââ
   const stopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some'];
   const searchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -283,7 +286,7 @@ async function handleRewriteWithImages(
     ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- Available internal links:\n${availableLinks.join('\n')}\n`
     : '';
 
-  // ── External links: pre-verify before passing to AI ──
+  // ââ External links: pre-verify before passing to AI ââ
   const extStopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some', 'also', 'most', 'very', 'just', 'even', 'much'];
   const externalSearchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -370,36 +373,38 @@ async function handleRewriteWithImages(
     console.error('Failed to fetch external links (non-fatal):', extErr);
   }
 
-  // ── Step 1: Rewrite + get image suggestions in one AI call ──
+  // ââ Step 1: Rewrite + get image suggestions in one AI call ââ
   const rewriteSystemPrompt = `You are Scout, the senior editor at AIinASIA.com. You are a sharp, opinionated editorial voice covering AI across Asia-Pacific. Rewrite the article to be deeply informative, well-structured, and optimised for search. Use British English throughout. Maintain factual accuracy above all else.
 
 CONTENT DEPTH (MANDATORY):
-- The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications — do not pad with waffle.
+- The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications â do not pad with waffle.
 - Include a "By The Numbers" block near the top of the article: a short <ul> of 3-5 specific statistics or data points relevant to the topic. These MUST come from the original content or the Research Enrichment data below. Label it with <h3>By The Numbers</h3> or <strong>By The Numbers</strong>.
 - Include a FAQ section at the END of the article (before the closing paragraph): 2-3 questions a reader would genuinely ask, with concise answers. Format as: <h3>Frequently Asked Questions</h3> followed by <h4>Question?</h4><p>Answer.</p> pairs. Questions should target common search queries related to the topic.
 
-ASIA-PACIFIC ANGLE (MANDATORY — not optional):
+ASIA-PACIFIC ANGLE (MANDATORY â not optional):
 - Every article MUST include a named Asia-Pacific section or clearly labelled callout. Use a <h2> like "What This Means for Asia" or "The Asia-Pacific Picture" or similar relevant heading.
 - Reference at least one specific country, company, regulator, or market dynamic by name. Use the Research Enrichment data for this if the original article lacks it.
 - CRITICAL: Only reference REAL, verifiable facts. Do NOT fabricate statistics, company names, quotes, or research. Better a shorter Asia section with real data than a longer one with invented content.
 
 QUOTES AND BLOCKQUOTES:
 - You MUST include at least 2 <blockquote> elements.
-- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data attributed to a named individual, or (c) a striking statistic or data point with its original research source. NEVER fabricate a quote. NEVER use a media outlet, publication, or website as the attribution — only real named people.
-- Format: <blockquote>"Quote text." — First Name Last Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point — Original Research Organisation</blockquote>
-- Wrong: <blockquote>"AI is transforming healthcare." — TechCrunch</blockquote>
-- Right: <blockquote>"AI is transforming healthcare." — Dr Sarah Chen, Chief Medical Officer, Ping An Health</blockquote>
-- Wrong: <blockquote>"Revenue grew 40% year on year." — Bloomberg</blockquote>
-- Right: <blockquote>Revenue grew 40% year on year — ByteDance Q3 2025 Earnings Report</blockquote>
+- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data attributed to a named individual, or (c) a striking statistic or data point with its original research source. NEVER fabricate a quote. NEVER use a media outlet, publication, or website as the attribution â only real named people.
+- Format: <blockquote>"Quote text." â First Name Last Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point â Original Research Organisation</blockquote>
+- Wrong: <blockquote>"AI is transforming healthcare." â TechCrunch</blockquote>
+- Right: <blockquote>"AI is transforming healthcare." â Dr Sarah Chen, Chief Medical Officer, Ping An Health</blockquote>
+- Wrong: <blockquote>"Revenue grew 40% year on year." â Bloomberg</blockquote>
+- Right: <blockquote>Revenue grew 40% year on year â ByteDance Q3 2025 Earnings Report</blockquote>
 
 KEYWORD OPTIMISATION:
 - Use the focus keyphrase naturally 4-6 times throughout the article (including in at least one H2).
 - Use each keyphrase synonym 1-2 times each.
-- Do not force keywords awkwardly — natural usage only.
+- Do not force keywords awkwardly â natural usage only.
 
 LINKS:
-- Do NOT preserve links from the original content. Replace them all with links from the lists provided below.
-- ALL external links must use the exact URLs provided. Do NOT invent or modify URLs.
+- Do NOT preserve any links from the original pasted content. Never link back to the domain or source from which the original article came.
+- ALL external links must use the exact URLs provided in the external links list or the PERPLEXITY CITATION URLS section of the Research Enrichment block. Do NOT invent or modify URLs.
+- MANDATORY: You MUST use at least one URL from the PERPLEXITY CITATION URLS list as a working external link in the article body. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference — do not dump it at the end.
+- MANDATORY: Any statistic, data point, or named research report cited in the article MUST have an inline external link using target="_blank" rel="noopener noreferrer". Use the closest matching URL from the Perplexity citations or external links list. Never leave a cited statistic or named report unlinked.
 - ALL internal links must use the exact paths provided. Do NOT invent or modify paths.
 - Anchor text for internal links must be descriptive and contextual. Never use "click here", "read more", "this article", or the raw article title as the entire anchor. Instead write natural anchor text that describes what the reader will find, incorporating the focus keyphrase or related keywords where it reads naturally. Example: instead of <a href="/path">Singapore AI regulation article</a>, write <a href="/path">Singapore's evolving AI regulatory framework</a>.
 ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}
@@ -407,17 +412,17 @@ ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Place exactly one IMAGE_PLACEHOLDER_HERE on its own line roughly 40-60% through the content.
 - On the line immediately after IMAGE_PLACEHOLDER_HERE, write a short descriptive caption for the image wrapped in a figcaption tag: <figcaption>Caption text here, no longer than 15 words, describes what the image shows, may naturally include the focus keyphrase.</figcaption>
-- Do NOT write markdown image syntax or full <figure> tags — just IMAGE_PLACEHOLDER_HERE followed by the <figcaption> on the next line.
+- Do NOT write markdown image syntax or full <figure> tags â just IMAGE_PLACEHOLDER_HERE followed by the <figcaption> on the next line.
 
 FORMATTING RULES (ALL MANDATORY):
 - Output clean HTML only. No markdown syntax whatsoever.
-- NEVER use em dashes (— or –). Replace any em dash construction with a full stop, a comma, or rewrite the sentence. This is a hard rule - no exceptions.
+- NEVER use em dashes (â or â). Replace any em dash construction with a full stop, a comma, or rewrite the sentence. This is a hard rule - no exceptions.
 - Use: <h2> for main sections (4-6 sections), <h3> for subheadings, <h4> for FAQ questions
 - NEVER use <h1> tags. The article title is already rendered as H1 by the page template. Using <h1> in the body creates a duplicate heading and will break SEO.
 - The article MUST open with a <h2> subheading as its very first element - never start with a <p> tag. The opening <h2> should frame the story angle, not restate the headline. Think of it as a deck head.
-- <p> for paragraphs — 2-4 sentences each, NEVER more than 5 sentences
+- <p> for paragraphs â 2-4 sentences each, NEVER more than 5 sentences
 - <strong> for bold (minimum 6 per article), <em> for italic
-- <ul><li> and <ol><li> for lists — you MUST include at least 2 separate list blocks in the article
+- <ul><li> and <ol><li> for lists â you MUST include at least 2 separate list blocks in the article
 - <a href="..."> for links (external links: target="_blank" rel="noopener noreferrer")
 - <blockquote> for quotes and data callouts
 - MAXIMUM 2 consecutive paragraphs before a visual break (subheading, blockquote, list, or callout). This is a hard rule. Dense prose blocks will be penalised by search crawlers.
@@ -563,10 +568,10 @@ ${content}`;
     );
   }
 
-  // ── Step 2: Extract fields directly from JSON (no more regex tag parsing) ──
+  // ââ Step 2: Extract fields directly from JSON (no more regex tag parsing) ââ
   let finalContent = rewrittenContent;
 
-  // Direct JSON field extraction — no more fragile [TAG] regex parsing
+  // Direct JSON field extraction â no more fragile [TAG] regex parsing
   const excerpt = (parsed.excerpt || '').substring(0, 140);
   const headline = (parsed.headline || '').substring(0, 60);
   const tldr: string[] = Array.isArray(parsed.tldr)
@@ -590,10 +595,10 @@ ${content}`;
     .replace(/\u2014/g, ',')   // em dash -> comma
     .replace(/\u2013/g, ',')   // en dash -> comma
     .replace(/\u2015/g, ',')   // horizontal bar -> comma
-    .replace(/ — /g, '. ')     // spaced em dash -> full stop (catches any that slipped through)
-    .replace(/ – /g, ', ');    // spaced en dash -> comma
+    .replace(/ â /g, '. ')     // spaced em dash -> full stop (catches any that slipped through)
+    .replace(/ â /g, ', ');    // spaced en dash -> comma
 
-  // ── Look up category ID from database ──
+  // ââ Look up category ID from database ââ
   let categoryId = '';
   if (categoryName) {
     try {
@@ -612,7 +617,7 @@ ${content}`;
     }
   }
 
-  // ── Step 3: Generate images using focusKeyphrase for filenames ──
+  // ââ Step 3: Generate images using focusKeyphrase for filenames ââ
   const slugifiedKeyphrase = focusKeyphrase
     ? focusKeyphrase.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50)
     : 'ai-generated';
@@ -643,11 +648,11 @@ COMPOSITION: Wide establishing shot. Strong visual hierarchy. Subject positioned
 
 LIGHTING: Cinematic. Either soft directional window light with gentle shadows, warm golden-hour outdoor light, or dramatic studio lighting with clear key and fill. Rich contrast without crushing blacks.
 
-STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human — like a spread in Bloomberg Businessweek or Monocle magazine.
+STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human â like a spread in Bloomberg Businessweek or Monocle magazine.
 
-PEOPLE: Where the topic involves people, show real human subjects — diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
+PEOPLE: Where the topic involves people, show real human subjects â diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
 
-HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichés. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
+HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichÃ©s. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
           ],
           modalities: ['image', 'text'],
         }),
@@ -678,15 +683,15 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
           messages: [
             { role: 'user', content: `Editorial in-article photograph. ${description}
 
-COMPOSITION: Tighter than a cover shot — medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
+COMPOSITION: Tighter than a cover shot â medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
 
-LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting — this image should feel like a documentary or reportage photograph.
+LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting â this image should feel like a documentary or reportage photograph.
 
-STYLE: Photorealistic, 50–85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded — like a supporting photograph inside The Economist or Wired.
+STYLE: Photorealistic, 50â85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded â like a supporting photograph inside The Economist or Wired.
 
-PEOPLE: Where relevant, show people in action or mid-task — working, talking, interacting with technology or environment. Real and candid, not posed.
+PEOPLE: Where relevant, show people in action or mid-task â working, talking, interacting with technology or environment. Real and candid, not posed.
 
-HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
+HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichÃ©s (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
           ],
           modalities: ['image', 'text'],
         }),
@@ -728,7 +733,7 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // ── Step 4: Safety strip FIRST, then insert our images ──
+  // ââ Step 4: Safety strip FIRST, then insert our images ââ
 
   // Safety: strip markdown images with alt text over 50 chars (leaked AI prompts)
   // MUST run BEFORE we insert our own controlled images
@@ -789,7 +794,7 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichés (r
   );
 }
 
-// ── validate-links ───────────────────────────────────────────────────
+// ââ validate-links âââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function handleValidateLinks(content: string, cors: Record<string, string>) {
   // Extract URLs from markdown links and bare URLs
   const markdownLinks = [...(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g))].map(m => m[2]);
