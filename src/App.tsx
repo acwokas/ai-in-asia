@@ -131,30 +131,65 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
 const AdminEventSubmissionsPage = lazy(() => import("./components/admin/AdminEventSubmissions"));
 
-// Lightweight skeleton loader for instant display
+// Lightweight skeleton loader for instant display — matches homepage hero layout
 const HomepageSkeleton = () => (
   <div className="min-h-screen flex flex-col">
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 py-4">
-        <Skeleton className="h-12 w-48" />
-      </div>
-    </div>
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-3">
-          <Skeleton className="h-6 w-24 mb-6" />
-          <Skeleton className="aspect-video rounded-lg mb-4" />
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="aspect-[16/9] rounded-lg mb-4" />
+    {/* Header bar */}
+    <div className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Skeleton className="h-8 w-32" />
+        <div className="hidden md:flex items-center gap-6">
+          {[...Array(7)].map((_, i) => (
+            <Skeleton key={i} className="h-4 w-16" />
           ))}
         </div>
-        <div className="lg:col-span-6">
-          <Skeleton className="h-[600px] rounded-lg" />
+        <Skeleton className="h-9 w-20 rounded-full" />
+      </div>
+    </div>
+    {/* Ticker bar */}
+    <div className="border-b border-border/30">
+      <div className="container mx-auto px-4 py-2">
+        <Skeleton className="h-4 w-full max-w-[600px]" />
+      </div>
+    </div>
+    {/* Hero: 8-col lead + 4-col secondary grid */}
+    <div className="container mx-auto px-4 pt-3 pb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Primary hero story */}
+        <div className="lg:col-span-8">
+          <div className="relative h-[400px] md:h-[480px] rounded-lg overflow-hidden">
+            <Skeleton className="absolute inset-0" />
+            <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-8 md:h-10 w-full max-w-[500px]" />
+              <Skeleton className="h-8 md:h-10 w-3/4 max-w-[380px]" />
+              <Skeleton className="h-4 w-full max-w-[450px] hidden md:block" />
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="lg:col-span-3">
-          <Skeleton className="h-6 w-32 mb-6" />
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg mb-4" />
+        {/* Secondary story cards (2×2) */}
+        <div className="lg:col-span-4 grid grid-cols-2 gap-3 lg:h-[480px]">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="rounded-lg overflow-hidden border border-border/50 flex flex-col" style={{ borderTop: '3px solid hsl(var(--muted))' }}>
+              <Skeleton className="w-full h-[150px]" />
+              <div className="p-2.5 flex flex-col flex-1 space-y-1.5">
+                <Skeleton className="h-2.5 w-14 rounded-sm" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <div className="flex items-center gap-2 mt-auto pt-1">
+                  <Skeleton className="h-2.5 w-12" />
+                  <Skeleton className="h-2.5 w-14" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
