@@ -175,7 +175,7 @@ const ArticlesFeed = () => {
       <SEOHead
         title="Latest Articles | AIinASIA"
         description="Browse the latest AI news, business insights, lifestyle guides, and more from across Asia."
-        canonicalUrl="https://aiinasia.com/articles"
+        canonical="https://aiinasia.com/articles"
       />
       <Header />
 
