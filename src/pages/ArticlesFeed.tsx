@@ -116,13 +116,22 @@ const ArticleCard = ({ article }: { article: any }) => {
 /* ── skeleton loader ───────────────────────────────────────────────── */
 
 const CardSkeleton = () => (
-  <div className="rounded-lg overflow-hidden border border-border">
+  <div className="rounded-lg overflow-hidden border border-border/30">
     <Skeleton className="h-[180px] w-full" />
-    <div className="p-4 space-y-3">
-      <Skeleton className="h-3 w-16" />
+    <div className="p-4 space-y-2.5">
+      <Skeleton className="h-2.5 w-14 rounded-sm" />
       <Skeleton className="h-5 w-full" />
-      <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-3 w-full" />
+      <Skeleton className="h-3 w-2/3" />
+      <div className="flex items-center gap-2 pt-1">
+        <Skeleton className="w-5 h-5 rounded-full" />
+        <Skeleton className="h-2.5 w-16" />
+        <Skeleton className="h-2.5 w-1" />
+        <Skeleton className="h-2.5 w-12" />
+        <Skeleton className="h-2.5 w-1" />
+        <Skeleton className="h-2.5 w-14" />
+      </div>
     </div>
   </div>
 );
@@ -166,7 +175,7 @@ const ArticlesFeed = () => {
       <SEOHead
         title="Latest Articles | AIinASIA"
         description="Browse the latest AI news, business insights, lifestyle guides, and more from across Asia."
-        canonical="https://aiinasia.com/articles"
+        canonicalUrl="https://aiinasia.com/articles"
       />
       <Header />
 

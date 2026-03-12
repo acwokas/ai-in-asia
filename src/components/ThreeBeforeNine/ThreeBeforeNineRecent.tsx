@@ -35,7 +35,14 @@ export default function ThreeBeforeNineRecent({ currentSlug }: ThreeBeforeNineRe
         <h3 className="text-2xl font-bold text-foreground mb-6 font-display">Recent Editions</h3>
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-48 rounded-xl" />
+            <div key={i} className="rounded-xl border border-border/30 overflow-hidden">
+              <Skeleton className="h-32 w-full" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
           ))}
         </div>
       </div>

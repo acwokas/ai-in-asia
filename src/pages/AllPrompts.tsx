@@ -705,9 +705,10 @@ const AllPrompts = () => {
               {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="bg-zinc-800/60 border border-zinc-700/50 rounded-lg p-5 space-y-3">
+                    <div key={i} className="bg-zinc-800/60 border border-zinc-700/50 rounded-lg p-5 space-y-2.5">
                       <Skeleton className="h-5 w-3/4 bg-zinc-700" />
                       <Skeleton className="h-4 w-full bg-zinc-700" />
+                      <Skeleton className="h-4 w-5/6 bg-zinc-700" />
                       <Skeleton className="h-4 w-1/2 bg-zinc-700" />
                       <div className="flex gap-2 pt-2">
                         <Skeleton className="h-5 w-16 rounded-full bg-zinc-700" />
@@ -736,16 +737,37 @@ const AllPrompts = () => {
           <div className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-[120px] rounded-xl bg-zinc-800" />
+                <div key={i} className="rounded-xl border border-zinc-700/50 overflow-hidden">
+                  <Skeleton className="h-[80px] w-full bg-zinc-800" />
+                  <div className="p-3 space-y-2">
+                    <Skeleton className="h-4 w-3/4 bg-zinc-700" />
+                    <Skeleton className="h-3 w-1/2 bg-zinc-700" />
+                  </div>
+                </div>
               ))}
             </div>
-            <Skeleton className="h-[180px] rounded-xl bg-zinc-800 mb-8" />
+            <div className="rounded-xl border border-zinc-700/50 p-5 mb-8 space-y-3">
+              <Skeleton className="h-5 w-32 bg-zinc-700" />
+              <Skeleton className="h-4 w-full bg-zinc-800" />
+              <Skeleton className="h-4 w-5/6 bg-zinc-800" />
+              <Skeleton className="h-4 w-4/5 bg-zinc-800" />
+            </div>
             {Array.from({ length: 2 }).map((_, i) => (
               <div key={i} className="mb-8">
                 <Skeleton className="h-6 w-48 bg-zinc-700 mb-4" />
-                <div className="flex gap-4">
+                <div className="flex gap-4 overflow-hidden">
                   {Array.from({ length: 4 }).map((_, j) => (
-                    <Skeleton key={j} className="h-[200px] w-[300px] rounded-xl bg-zinc-800 flex-shrink-0" />
+                    <div key={j} className="rounded-xl border border-zinc-700/50 overflow-hidden flex-shrink-0 w-[300px]">
+                      <Skeleton className="h-[120px] w-full bg-zinc-800" />
+                      <div className="p-4 space-y-2">
+                        <Skeleton className="h-4 w-3/4 bg-zinc-700" />
+                        <Skeleton className="h-3 w-full bg-zinc-700" />
+                        <div className="flex gap-2 pt-1">
+                          <Skeleton className="h-5 w-14 rounded-full bg-zinc-700" />
+                          <Skeleton className="h-5 w-12 rounded-full bg-zinc-700" />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

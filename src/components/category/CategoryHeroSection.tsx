@@ -20,12 +20,41 @@ interface CategoryHeroSectionProps {
 export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug, isFilterActive, selectedFilter, isLoading }: CategoryHeroSectionProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
-        <Skeleton className="aspect-[16/10] rounded-2xl" />
-        <div className="space-y-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+      <section style={{ marginBottom: 48 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6">
+          {/* Hero card skeleton */}
+          <div className="min-h-[280px] md:min-h-[420px] rounded-[20px] overflow-hidden border border-border/30 relative">
+            <Skeleton className="absolute inset-0" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-8 w-full max-w-[400px]" />
+              <Skeleton className="h-8 w-3/4 max-w-[300px]" />
+              <Skeleton className="h-3 w-full max-w-[350px]" />
+              <div className="flex gap-3">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          </div>
+          {/* Latest sidebar skeleton */}
+          <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible">
+            <Skeleton className="h-4 w-12 mb-1 hidden md:block" />
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex gap-3 p-3 rounded-[14px] border border-border/30 min-w-[200px] md:min-w-0">
+                <Skeleton className="w-[60px] h-[60px] rounded-lg flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-2 w-10" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 

@@ -22,13 +22,19 @@ export function CategoryHeader({ category, cfg, newThisWeek, isLoading }: Catego
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
             {isLoading ? (
-              <Skeleton className="h-12 w-64 mb-2" />
+              <div className="space-y-3">
+                <Skeleton className="h-10 md:h-12 w-48 md:w-64" />
+                <Skeleton className="h-4 w-full max-w-[400px]" />
+                <Skeleton className="h-4 w-3/4 max-w-[300px]" />
+              </div>
             ) : (
-              <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }} className="text-2xl sm:text-3xl md:text-[38px]">
-                {category?.name}
-              </h1>
+              <>
+                <h1 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, color: "#fff", margin: "0 0 6px 0", lineHeight: 1.1 }} className="text-2xl sm:text-3xl md:text-[38px]">
+                  {category?.name}
+                </h1>
+                <p style={{ fontSize: 15, color: "#9ca3af", maxWidth: 600 }}>{cfg.desc}</p>
+              </>
             )}
-            <p style={{ fontSize: 15, color: "#9ca3af", maxWidth: 600 }}>{cfg.desc}</p>
           </div>
           {newThisWeek > 0 && (
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 13, color: cfg.accent }}>

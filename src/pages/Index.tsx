@@ -482,7 +482,25 @@ const Index = () => {
             {/* PRIMARY STORY */}
             <div className="lg:col-span-8">
               {isLoading ? (
-                <Skeleton className="h-[400px] md:h-[480px] rounded-lg" />
+                <div className="relative h-[400px] md:h-[480px] rounded-lg overflow-hidden">
+                  <Skeleton className="absolute inset-0" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                    <Skeleton className="h-8 md:h-10 w-full max-w-[500px]" />
+                    <Skeleton className="h-8 md:h-10 w-3/4 max-w-[380px]" />
+                    <Skeleton className="h-4 w-full max-w-[450px] hidden md:block" />
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-3 w-2" />
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-3 w-2" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                </div>
               ) : new Date().toISOString().slice(0, 10) === "2026-03-01" ? (
                 <Link to="/guides/startup" className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
@@ -597,12 +615,19 @@ const Index = () => {
               {isLoading ? (
                 <>
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="rounded-lg overflow-hidden border border-border/50">
-                      <Skeleton className="h-[150px] w-full" />
-                      <div className="p-2.5 space-y-1.5">
-                        <Skeleton className="h-3 w-16" />
+                    <div key={i} className="rounded-lg overflow-hidden border border-border/50 flex flex-col" style={{ borderTop: '3px solid hsl(var(--muted))' }}>
+                      <div className="relative w-full h-[150px] overflow-hidden">
+                        <Skeleton className="w-full h-full" />
+                      </div>
+                      <div className="p-2.5 flex flex-col flex-1 space-y-1.5">
+                        <Skeleton className="h-2.5 w-14 rounded-sm" />
                         <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <div className="flex items-center gap-2 mt-auto pt-1">
+                          <Skeleton className="h-2.5 w-12" />
+                          <Skeleton className="h-2.5 w-1" />
+                          <Skeleton className="h-2.5 w-14" />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -687,7 +712,20 @@ const Index = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[...Array(9)].map((_, i) => (
-                <Skeleton key={i} className={`rounded-lg ${i % 4 === 0 ? 'md:col-span-2 h-72' : 'h-56'}`} />
+                <div key={i} className={`rounded-lg overflow-hidden border border-border/30 ${i % 4 === 0 ? 'md:col-span-2' : ''}`}>
+                  <Skeleton className={`w-full ${i % 4 === 0 ? 'h-48' : 'h-36'}`} />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-2.5 w-14 rounded-sm" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-full" />
+                    <div className="flex items-center gap-2 pt-1">
+                      <Skeleton className="h-2.5 w-12" />
+                      <Skeleton className="h-2.5 w-1" />
+                      <Skeleton className="h-2.5 w-14" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (() => {
@@ -871,14 +909,22 @@ const Index = () => {
         <div className="py-14 md:py-20">
           <Suspense fallback={
             <div className="container mx-auto px-4">
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-64" />
+              <div className="space-y-6">
+                <Skeleton className="h-7 w-48" />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="space-y-3">
-                      <Skeleton className="h-48 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
+                    <div key={i} className="rounded-lg overflow-hidden border border-border/30">
+                      <Skeleton className="h-44 w-full" />
+                      <div className="p-4 space-y-2">
+                        <Skeleton className="h-2.5 w-14 rounded-sm" />
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-3 w-full" />
+                        <div className="flex items-center gap-2 pt-1">
+                          <Skeleton className="h-2.5 w-12" />
+                          <Skeleton className="h-2.5 w-14" />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -900,11 +946,18 @@ const Index = () => {
         <div className="py-14 md:py-20 bg-muted/10">
           <Suspense fallback={
             <div className="container mx-auto px-4">
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-64" />
+              <div className="space-y-6">
+                <Skeleton className="h-7 w-48" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-40 w-full" />
+                    <div key={i} className="rounded-xl border border-border/30 overflow-hidden">
+                      <Skeleton className="h-32 w-full" />
+                      <div className="p-4 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
