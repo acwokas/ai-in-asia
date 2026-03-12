@@ -7,26 +7,16 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/aiinasia-og-default.png`;
 const TWITTER_HANDLE = "@AI_in_Asia";
 
 /**
- * Convert a Supabase article-image URL to its OG-optimized counterpart.
- * Convention: `og/{basename}-og.jpg` in the same bucket.
+ * Return the image URL to use for og:image / twitter:image social tags.
  *
- * Example:
- *   in:  .../article-images/content/my-hero-123.png
- *   out: .../article-images/og/my-hero-123-og.jpg
- *
- * Non-Supabase URLs are returned unchanged.
+ * Previously this converted content images to an `og/{basename}-og.jpg`
+ * convention, but those OG-optimized copies are not generated yet.
+ * Until an image-processing pipeline produces them, we fall back to the
+ * original content image so crawlers (WhatsApp, Facebook, Twitter, etc.)
+ * always receive a valid, reachable URL instead of a 404.
  */
 const getOgImageUrl = (url: string): string => {
-  if (!url.includes('/article-images/')) return url;
-  try {
-    const base = url.substring(0, url.indexOf('/article-images/') + '/article-images/'.length);
-    const pathAfterBucket = url.substring(base.length); // e.g. "content/my-hero-123.png"
-    const filename = pathAfterBucket.split('/').pop()!;           // "my-hero-123.png"
-    const baseName = filename.replace(/\.[^/.]+$/, '');           // "my-hero-123"
-    return `${base}og/${baseName}-og.jpg`;
-  } catch {
-    return url;
-  }
+  return url;
 };
 
 interface SEOHeadProps {
