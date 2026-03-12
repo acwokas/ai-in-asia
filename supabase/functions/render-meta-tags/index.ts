@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        'Cache-Control': 'public, max-age=300, s-maxage=300',
       },
     });
   } catch (error) {
