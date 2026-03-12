@@ -333,7 +333,7 @@ async function handleRewriteWithImages(
   }
 
   const internalLinksInstruction = availableLinks.length > 0
-    ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- Available internal links:\n${availableLinks.join('\n')}\n`
+    ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- CRITICAL: Internal links MUST use plain markdown syntax [text](/path) — do NOT add target="_blank", do NOT add rel attributes, do NOT append ^ to internal links. Only external links get target="_blank".\n- Internal links must flow INLINE within sentences — never place them on their own line or as standalone blocks.\n- Available internal links:\n${availableLinks.join('\n')}\n`
     : '';
 
   // ââ External links: pre-verify before passing to AI ââ
@@ -428,7 +428,7 @@ async function handleRewriteWithImages(
 
 CONTENT DEPTH (MANDATORY):
 - The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications â do not pad with waffle.
-- Include a "By The Numbers" block near the top of the article: a short <ul> of 3-5 specific statistics or data points relevant to the topic. These MUST come from the original content or the Research Enrichment data below. Label it with <h3>By The Numbers</h3> or <strong>By The Numbers</strong>.
+- Include a "By The Numbers" block near the top of the article: a short <ul> of 3-5 specific statistics or data points relevant to the topic. These MUST come from the original content or the Research Enrichment data below. Label it with ## By The Numbers (markdown h2) immediately followed by the bullet list. Do NOT use HTML tags for this heading.
 - Include a FAQ section at the END of the article (before the closing paragraph): 2-3 questions a reader would genuinely ask, with concise answers. Format as: <h3>Frequently Asked Questions</h3> followed by <h4>Question?</h4><p>Answer.</p> pairs. Questions should target common search queries related to the topic.
 
 ASIA-PACIFIC ANGLE (MANDATORY â not optional):
@@ -455,7 +455,7 @@ LINKS:
 - ALL external links must use the exact URLs provided in the external links list or the PERPLEXITY CITATION URLS section of the Research Enrichment block. Do NOT invent or modify URLs.
 - MANDATORY (SEO-CRITICAL): Every article MUST contain at least one external link from the PERPLEXITY CITATION URLS list, formatted as <a href="URL" target="_blank" rel="noopener noreferrer">descriptive anchor text</a>. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference. This is non-negotiable for SEO ranking. If no Perplexity citation URLs are available, use the best external link from the external links list. An article with zero outbound external links will fail editorial review.
 - MANDATORY: Any statistic, data point, or named research report cited in the article MUST have an inline external link using target="_blank" rel="noopener noreferrer". Use the closest matching URL from the Perplexity citations or external links list. Never leave a cited statistic or named report unlinked.
-- ALL internal links must use the exact paths provided. Do NOT invent or modify paths.
+- ALL internal links must use the exact markdown paths provided (e.g. [text](/category/slug)). Do NOT invent or modify paths. Do NOT add target="_blank" or rel attributes to internal links — they open in the same tab. Do NOT append ^ to internal links.
 - Anchor text for internal links must be descriptive and contextual. Never use "click here", "read more", "this article", or the raw article title as the entire anchor. Instead write natural anchor text that describes what the reader will find, incorporating the focus keyphrase or related keywords where it reads naturally. Example: instead of <a href="/path">Singapore AI regulation article</a>, write <a href="/path">Singapore's evolving AI regulatory framework</a>.
 ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}${embedSection}
 

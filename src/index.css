@@ -428,7 +428,9 @@ All colors MUST be HSL.
   }
 
   .article-content .by-the-numbers h3,
-  .prose .by-the-numbers h3 {
+  .article-content .by-the-numbers h4,
+  .prose .by-the-numbers h3,
+  .prose .by-the-numbers h4 {
     color: #5F72FF;
     font-size: 0.85rem;
     font-weight: 700;

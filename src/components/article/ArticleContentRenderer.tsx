@@ -26,6 +26,32 @@ export const generateHeadingId = (text: string): string => {
 };
 
 
+/**
+ * Strip external-link attributes (target="_blank", rel, external icon SVG, inline-flex class)
+ * from links pointing to internal paths (relative URLs or aiinasia.com).
+ * This ensures internal links behave as same-tab inline links even if the LLM
+ * mistakenly formatted them as external.
+ */
+const cleanInternalLinks = (html: string): string => {
+  // Match <a ...> tags whose href starts with "/" or points to aiinasia.com
+  return html.replace(
+    /<a\s+([^>]*?)href="(\/[^"]*|https?:\/\/(www\.)?aiinasia\.com[^"]*)"([^>]*?)>([\s\S]*?)<\/a>/gi,
+    (_match, before, href, _www, after, inner) => {
+      // Combine all attributes (before + after href)
+      let attrs = (before + after)
+        .replace(/\s*target="_blank"\s*/g, ' ')
+        .replace(/\s*rel="noopener noreferrer"\s*/g, ' ')
+        .replace(/inline-flex\s*/g, '')
+        .replace(/items-center\s*/g, '')
+        .replace(/gap-1\s*/g, '')
+        .trim();
+      // Strip SVG icon from inner content
+      const cleanInner = inner.replace(/<svg[\s\S]*?<\/svg>/gi, '').trim();
+      return `<a ${attrs}href="${href}">${cleanInner}</a>`;
+    }
+  );
+};
+
 // Process inline formatting for text content
 const processInlineFormatting = (text: string): string => {
   if (!text || typeof text !== 'string') return text;
@@ -102,6 +128,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       .replace(/\*\*/g, '')
       .replace(/\[([^\]]*subscribe[^\]]*)\]\((https?:\/\/)?(www\.)?aiinasia\.com[^\)]*\)/gi, '[Subscribe to our newsletter](/newsletter)')
       .replace(/\[([^\]]+)\]\((https?:\/\/)?(www\.)?aiinasia\.com\/connect\/?[^\)]*\)/gi, '[$1](/contact)')
+      // Strip ^ suffix from internal links (relative paths and aiinasia.com) BEFORE external icon processing
+      .replace(/\[([^\]]+)\]\((\/[^)]+)\)\^/g, '[$1]($2)')
+      .replace(/\[([^\]]+)\]\((https?:\/\/(www\.)?aiinasia\.com[^)]*)\)\^/g, '[$1]($2)')
       .replace(/\[([^\]]+)\]\(([^)]+)\)\^/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline inline-flex items-center gap-1">$1<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline ml-0.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg></a>')
       .replace(/\[([^\]]+)\]\((https?:\/\/(?!aiinasia\.com)[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1</a>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline hover:no-underline">$1</a>');
@@ -217,10 +246,13 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       });
 
       sanitizedHtml = sanitizedHtml.replace(
-        /(<h3[^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h3>\s*)(<ul[\s\S]*?<\/ul>)/g,
+        /(<h[34][^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h[34]>\s*)(<ul[\s\S]*?<\/ul>)/g,
         '<div class="by-the-numbers">$1$2</div>'
       );
-      
+
+      // Clean internal links that were incorrectly marked as external
+      sanitizedHtml = cleanInternalLinks(sanitizedHtml);
+
       return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
     }
     
@@ -297,9 +329,12 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     });
 
     joinedHtml = joinedHtml.replace(
-      /(<h3[^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h3>\s*)(<ul[\s\S]*?<\/ul>)/g,
+      /(<h[34][^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h[34]>\s*)(<ul[\s\S]*?<\/ul>)/g,
       '<div class="by-the-numbers">$1$2</div>'
     );
+
+    // Clean internal links that were incorrectly marked as external
+    joinedHtml = cleanInternalLinks(joinedHtml);
 
     // Split back into blocks for ad injection
     const sanitizedBlocks = htmlBlocks.map((_, index) => {
