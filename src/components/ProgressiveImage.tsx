@@ -60,7 +60,6 @@ export const ProgressiveImage = memo(({
   }, [loading]);
 
   const [hasError, setHasError] = useState(false);
-  const FALLBACK_IMAGE = "https://aiinasia.com/icons/aiinasia-512.png?v=3";
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -72,18 +71,33 @@ export const ProgressiveImage = memo(({
     setIsLoaded(true);
   };
 
-  const resolvedSrc = hasError ? FALLBACK_IMAGE : src;
-
   // Generate tiny placeholder (10px width) for blur-up effect
   const placeholderSrc = src.includes('supabase.co/storage')
     ? `${src}?width=10&quality=50`
     : src;
 
+  if (hasError) {
+    return (
+      <div
+        ref={imgRef}
+        className={cn(
+          "relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-muted to-muted/60",
+          className
+        )}
+        style={{ width: width || "100%", height: height || "100%" }}
+        role="img"
+        aria-label={alt}
+      >
+        <ImageOff className="h-8 w-8 text-muted-foreground/40" />
+      </div>
+    );
+  }
+
   return (
     <div ref={imgRef} className={cn("relative overflow-hidden", className)}>
       {/* Tiny blurred placeholder */}
       <img
-        src={hasError ? FALLBACK_IMAGE : placeholderSrc}
+        src={placeholderSrc}
         alt=""
         aria-hidden="true"
         className={cn(
@@ -95,9 +109,9 @@ export const ProgressiveImage = memo(({
       {/* Full resolution image */}
       {isInView && (
         <img
-          src={resolvedSrc}
-          srcSet={hasError ? undefined : srcSet}
-          sizes={hasError ? undefined : sizes}
+          src={src}
+          srcSet={srcSet}
+          sizes={sizes}
           alt={alt}
           width={width}
           height={height}
