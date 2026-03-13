@@ -225,7 +225,7 @@ serve(async (req) => {
     let xml: string;
 
     if (isNewsSitemap) {
-      // Google News sitemap — articles published within last 2 days only
+      // Google News sitemap â articles published within last 2 days only
       const newsArticles = urls.filter((u: any) => u.isNews);
       xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n';
@@ -248,7 +248,9 @@ serve(async (req) => {
       xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
       for (const u of urls) {
-        const imageUrl = ((u as any).imageUrl || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const rawImageUrl = (u as any).imageUrl || '';
+        const absoluteImageUrl = rawImageUrl.startsWith('/') ? `${baseUrl}${rawImageUrl}` : rawImageUrl;
+        const imageUrl = absoluteImageUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const title = ((u as any).title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n`;
         if (imageUrl) {
