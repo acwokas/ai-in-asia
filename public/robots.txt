@@ -18,7 +18,6 @@ Disallow: /profile
 # Disallow preview URLs (already noindex but belt-and-braces)
 Disallow: /*?preview=
 
-
 # Explicitly welcome major search engines
 User-agent: Googlebot
 Allow: /
@@ -83,8 +82,6 @@ Allow: /
 
 # Sitemaps for fast indexing
 Sitemap: https://aiinasia.com/sitemap.xml
-Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap
-Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?type=news
 
 # Polite crawl rate
 Crawl-delay: 1
