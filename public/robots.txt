@@ -80,8 +80,9 @@ Allow: /
 User-agent: Omgilibot
 Allow: /
 
-# Sitemaps for fast indexing
-Sitemap: https://aiinasia.com/sitemap.xml
+# Sitemaps for fast indexing (served by edge function)
+Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap
+Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?type=news
 
 # Polite crawl rate
 Crawl-delay: 1
