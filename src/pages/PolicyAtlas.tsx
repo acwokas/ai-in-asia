@@ -13,7 +13,7 @@ import { Search, Globe, FileText, GitCompare, ArrowRight } from "lucide-react";
 import PolicyMap from "@/components/PolicyMap";
 
 const PolicyAtlas = () => {
-  const [searchQuery, setSearchQuery] = useState(");
+  const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
