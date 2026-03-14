@@ -287,6 +287,7 @@ const router = createBrowserRouter([
       { path: "/prompts", element: <AllPrompts /> },
       { path: "/prompts/:category", element: <AllPrompts /> },
       { path: "/my-prompts", element: <MyPrompts /> },
+      { path: "/ai/policy-atlas", element: <Navigate to="/ai-policy-atlas" replace /> },
       { path: "/ai-policy-atlas", element: <PolicyAtlas /> },
       { path: "/ai-policy-atlas/compare", element: <PolicyComparison /> },
       { path: "/ai-policy-atlas/updates", element: <PolicyUpdates /> },
