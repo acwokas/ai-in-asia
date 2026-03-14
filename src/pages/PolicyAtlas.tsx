@@ -13,13 +13,13 @@ import { Search, Globe, FileText, GitCompare, ArrowRight } from "lucide-react";
 import PolicyMap from "@/components/PolicyMap";
 
 const PolicyAtlas = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery])
 
   const { data: searchResults } = useQuery({
     queryKey: ['policy-search', debouncedSearch],
@@ -170,6 +170,7 @@ const PolicyAtlas = () => {
       "url": "https://aiinasia.com"
     },
     "keywords": ["AI policy", "artificial intelligence regulation", "AI governance", "digital governance", "Asia-Pacific AI policy"],
+    "license": "https://creativecommons.org/licenses/by/4.0/",
     "temporalCoverage": "2024/..",
     "spatialCoverage": {
       "@type": "Place",
