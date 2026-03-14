@@ -953,6 +953,7 @@ export type Database = {
           top_list_items: Json | null
           top_list_outro: string | null
           topic_tags: string[] | null
+          trending_excluded: boolean | null
           trending_rotated_at: string | null
           trending_score: number | null
           updated_at: string
@@ -1035,6 +1036,7 @@ export type Database = {
           top_list_items?: Json | null
           top_list_outro?: string | null
           topic_tags?: string[] | null
+          trending_excluded?: boolean | null
           trending_rotated_at?: string | null
           trending_score?: number | null
           updated_at?: string
@@ -1117,6 +1119,7 @@ export type Database = {
           top_list_items?: Json | null
           top_list_outro?: string | null
           topic_tags?: string[] | null
+          trending_excluded?: boolean | null
           trending_rotated_at?: string | null
           trending_score?: number | null
           updated_at?: string
