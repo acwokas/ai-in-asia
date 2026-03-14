@@ -126,8 +126,11 @@ const Index = () => {
       areaServed: { "@type": "Place", name: "Asia-Pacific" },
       publishingPrinciples: "https://www.aiinasia.com/about",
       sameAs: [
-        "https://www.linkedin.com/company/aiinasia",
-        "https://twitter.com/aiinasia",
+        "https://www.facebook.com/profile.php?id=61561997634431",
+        "https://www.instagram.com/aiinasia",
+        "https://www.youtube.com/@AIinAsia",
+        "https://www.tiktok.com/@aiinasia",
+        "https://x.com/AI_in_Asia",
       ],
     };
     const script = document.createElement("script");
