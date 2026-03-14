@@ -113,6 +113,31 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Inject NewsMediaOrganization JSON-LD
+  useEffect(() => {
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "NewsMediaOrganization",
+      name: "AI in Asia",
+      url: "https://www.aiinasia.com",
+      logo: "https://www.aiinasia.com/og-image.png",
+      description: "Independent AI news and analysis covering artificial intelligence developments across the Asia-Pacific region.",
+      foundingDate: "2024",
+      areaServed: { "@type": "Place", name: "Asia-Pacific" },
+      publishingPrinciples: "https://www.aiinasia.com/about",
+      sameAs: [
+        "https://www.linkedin.com/company/aiinasia",
+        "https://twitter.com/aiinasia",
+      ],
+    };
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-jsonld", "news-media-org");
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, []);
+
   // Optimized: Fetch homepage articles and trending in a single efficient query
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["homepage-articles"],
