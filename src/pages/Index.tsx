@@ -467,6 +467,7 @@ const Index = () => {
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
         ogImageAlt="AI in ASIA - AI News from Asia"
       >
+        <link rel="alternate" type="application/rss+xml" title="AI in Asia RSS Feed" href="https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/rss-feed" />
         <link rel="preconnect" href="https://pbmtnvxywplgpldmlygv.supabase.co" />
         <link rel="dns-prefetch" href="https://pbmtnvxywplgpldmlygv.supabase.co" />
         {featuredArticle?.featured_image_url && (
