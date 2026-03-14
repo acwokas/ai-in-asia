@@ -126,6 +126,9 @@ export const SEOHead = ({
       {articleMeta?.section && (
         <meta property="article:section" content={articleMeta.section} />
       )}
+      {articleMeta && (
+        <meta name="author" content="AI in Asia" />
+      )}
       {articleMeta?.tags?.map((tag, i) => (
         <meta key={i} property="article:tag" content={tag} />
       ))}
