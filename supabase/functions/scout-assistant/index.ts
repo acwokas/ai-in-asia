@@ -157,7 +157,7 @@ ALT3: [alternative option 3]`;
   }
 });
 
-// ââ Perplexity enrichment helper âââââââââââââââââââââââââââââââââââââ
+// -- Perplexity enrichment helper --
 async function enrichWithPerplexity(title: string, content: string, apiKey: string): Promise<string> {
   if (!apiKey) return '';
   try {
@@ -172,14 +172,14 @@ async function enrichWithPerplexity(title: string, content: string, apiKey: stri
         messages: [
           {
             role: 'system',
-            content: 'You are a research assistant. Provide factual, current information with citations. Focus on Asia-Pacific where possible. Be concise and factual only â no opinions.',
+            content: 'You are a research assistant. Provide factual, current information with citations. Focus on Asia-Pacific where possible. Be concise and factual only - no opinions.',
           },
           {
             role: 'user',
             content: `For a news article titled "${title}", provide:
 1. 3-5 current statistics or data points with their sources (publication name and approximate date)
 2. Any notable Asia-Pacific specific developments, companies, or regulations related to this topic
-3. One or two recent expert quotes or statements (with attribution â name, title, organisation) if they exist in public record
+3. One or two recent expert quotes or statements (with attribution - name, title, organisation) if they exist in public record
 4. Any significant recent developments in the last 60 days
 
 Be specific. Only include verifiable information. Format as a simple numbered list.`,
@@ -194,7 +194,7 @@ Be specific. Only include verifiable information. Format as a simple numbered li
     const enrichment = data.choices?.[0]?.message?.content || '';
     const citationUrls: string[] = data.citations ? data.citations.slice(0, 5) : [];
     const citationBlock = citationUrls.length > 0
-      ? `\n\nPERPLEXITY CITATION URLS (verified, live sources — use at least one as an external link in the article, preferring tier-1 outlets: Reuters, AP, Bloomberg, FT, Nikkei Asia, SCMP, The Straits Times, or equivalent):\n${citationUrls.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n')}`
+      ? `\n\nPERPLEXITY CITATION URLS (verified, live sources - use at least one as an external link in the article, preferring tier-1 outlets: Reuters, AP, Bloomberg, FT, Nikkei Asia, SCMP, The Straits Times, or equivalent):\n${citationUrls.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n')}`
       : '';
     return enrichment + citationBlock;
   } catch (err) {
@@ -203,12 +203,11 @@ Be specific. Only include verifiable information. Format as a simple numbered li
   }
 }
 
-// ── Extract embeddable social / video URLs from source content ─────
+// -- Extract embeddable social / video URLs from source content --
 function extractEmbedUrls(content: string): { youtube: string[]; social: string[] } {
   const youtube: string[] = [];
   const social: string[] = [];
 
-  // YouTube: full URLs, short URLs, and embed URLs
   const ytRegex = /https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})[^\s)"']*/gi;
   let m: RegExpExecArray | null;
   const seenYt = new Set<string>();
@@ -220,36 +219,28 @@ function extractEmbedUrls(content: string): { youtube: string[]; social: string[
     }
   }
 
-  // Twitter / X posts
   const twRegex = /https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+[^\s)"']*/gi;
   while ((m = twRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
 
-  // Instagram posts / reels
   const igRegex = /https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\/[\w-]+[^\s)"']*/gi;
   while ((m = igRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
 
-  // TikTok videos
   const tkRegex = /https?:\/\/(?:www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+[^\s)"']*/gi;
   while ((m = tkRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
 
-  // LinkedIn posts
   const liRegex = /https?:\/\/(?:www\.)?linkedin\.com\/(?:posts|feed\/update)\/[\w:-]+[^\s)"']*/gi;
   while ((m = liRegex.exec(content)) !== null) social.push(m[0].replace(/[.,;:!?)]+$/, ''));
 
   return { youtube: [...new Set(youtube)].slice(0, 3), social: [...new Set(social)].slice(0, 3) };
 }
 
-// ââ rewrite-with-images ââââââââââââââââââââââââââââââââââââââââââââââ
+// -- rewrite-with-images --
 async function handleRewriteWithImages(
   content: string,
   context: any,
   apiKey: string,
   cors: Record<string, string>,
 ) {
-  // Requires PERPLEXITY_API_KEY to be set in Supabase Edge Function secrets
-  // Add via: Supabase Dashboard â Edge Functions â Manage secrets â PERPLEXITY_API_KEY
-  // Get key from: https://www.perplexity.ai/settings/api
-
   const title = context?.title || '';
   const contextKeyphrase = context?.focusKeyphrase || '';
 
@@ -259,7 +250,7 @@ async function handleRewriteWithImages(
     ? `\n\nRESEARCH ENRICHMENT (verified facts and citations you MUST draw from):\n${enrichmentData}\n`
     : '';
 
-  // ── Extract YouTube / social media URLs from source content ──
+  // Extract YouTube / social media URLs from source content
   const embedUrls = extractEmbedUrls(content);
   let embedSection = '';
   if (embedUrls.youtube.length > 0 || embedUrls.social.length > 0) {
@@ -270,14 +261,14 @@ async function handleRewriteWithImages(
     if (embedUrls.social.length > 0) {
       parts.push('Social media posts (embed as a clickable link with context):\n' + embedUrls.social.map((u: string, i: number) => `${i + 1}. ${u}`).join('\n'));
     }
-    embedSection = `\n\nEMBEDDED MEDIA FROM SOURCE (MANDATORY — include these in the rewritten article):\n${parts.join('\n\n')}\n`;
+    embedSection = `\n\nEMBEDDED MEDIA FROM SOURCE (MANDATORY - include these in the rewritten article):\n${parts.join('\n\n')}\n`;
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const headers = { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` };
 
-  // ââ Internal links: guarantee 5+ ââ
+  // Internal links: guarantee 5+
   const stopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some'];
   const searchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -317,7 +308,6 @@ async function handleRewriteWithImages(
     addArticles(Array.isArray(relevantArticles) ? relevantArticles : []);
     addArticles(Array.isArray(recentArticles) ? recentArticles : []);
 
-    // Fallback: if fewer than 5, fetch 20 most recent
     if (availableLinks.length < 5) {
       const fallbackResp = await fetch(
         `${supabaseUrl}/rest/v1/articles?select=title,slug,categories:categories!article_categories(slug)&status=eq.published&order=published_at.desc&limit=20`,
@@ -333,10 +323,10 @@ async function handleRewriteWithImages(
   }
 
   const internalLinksInstruction = availableLinks.length > 0
-    ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- CRITICAL: Internal links MUST use plain markdown syntax [text](/path) — do NOT add target="_blank", do NOT add rel attributes, do NOT append ^ to internal links. Only external links get target="_blank".\n- Internal links must flow INLINE within sentences — never place them on their own line or as standalone blocks.\n- Available internal links:\n${availableLinks.join('\n')}\n`
+    ? `\nINTERNAL LINKS:\n- You MUST incorporate at least 3 internal links from the following list. Place them where they are contextually relevant. Use the exact markdown format provided - do NOT modify the URLs.\n- CRITICAL: Internal links MUST use plain markdown syntax [text](/path) - do NOT add target="_blank", do NOT add rel attributes, do NOT append ^ to internal links. Only external links get target="_blank".\n- Internal links must flow INLINE within sentences - never place them on their own line or as standalone blocks.\n- Available internal links:\n${availableLinks.join('\n')}\n`
     : '';
 
-  // ââ External links: pre-verify before passing to AI ââ
+  // External links: pre-verify before passing to AI
   const extStopWords = ['that', 'this', 'with', 'from', 'they', 'their', 'have', 'been', 'will', 'what', 'when', 'where', 'which', 'about', 'than', 'into', 'more', 'some', 'also', 'most', 'very', 'just', 'even', 'much'];
   const externalSearchTerms = title.split(/\s+/)
     .filter((w: string) => w.length > 3)
@@ -389,7 +379,6 @@ async function handleRewriteWithImages(
 
         verifiedExtLinks = await verifyLinks(dedupedLinks);
 
-        // Fallback: if fewer than 4 verified, fetch broader
         if (verifiedExtLinks.length < 2) {
           const { data: broadLinks } = await supabaseClient
             .from('external_links')
@@ -423,67 +412,63 @@ async function handleRewriteWithImages(
     console.error('Failed to fetch external links (non-fatal):', extErr);
   }
 
-  // ââ Step 1: Rewrite + get image suggestions in one AI call ââ
+  // Step 1: Rewrite + get image suggestions in one AI call
   const rewriteSystemPrompt = `You are Scout, the senior editor at AIinASIA.com. You are a sharp, opinionated editorial voice covering AI across Asia-Pacific. Rewrite the article to be deeply informative, well-structured, and optimised for search. Use British English throughout. Maintain factual accuracy above all else.
 
 CONTENT DEPTH (MANDATORY):
-- The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications â do not pad with waffle.
-- Include a "By The Numbers" block near the top of the article: a short <ul> of 3-5 specific statistics or data points relevant to the topic. These MUST come from the original content or the Research Enrichment data below. Label it with ## By The Numbers (markdown h2) immediately followed by the bullet list. Do NOT use HTML tags for this heading.
+- The rewritten article MUST be at least 900 words. If the source material is thin, add genuine context, background, and implications - do not pad with waffle.
+- Include a "By The Numbers" block near the top of the article: a short <ul> of 3-5 specific statistics or data points relevant to the topic. These MUST come from the original content or the Research Enrichment data below. Label it with <h3>By The Numbers</h3> immediately followed by the bullet list.
 - Include a FAQ section at the END of the article (before the closing paragraph): 2-3 questions a reader would genuinely ask, with concise answers. Format as: <h3>Frequently Asked Questions</h3> followed by <h4>Question?</h4><p>Answer.</p> pairs. Questions should target common search queries related to the topic.
 
-ASIA-PACIFIC ANGLE (MANDATORY â not optional):
+ASIA-PACIFIC ANGLE (MANDATORY - not optional):
 - Every article MUST include a named Asia-Pacific section or clearly labelled callout. Use a <h2> like "What This Means for Asia" or "The Asia-Pacific Picture" or similar relevant heading.
 - Reference at least one specific country, company, regulator, or market dynamic by name. Use the Research Enrichment data for this if the original article lacks it.
 - CRITICAL: Only reference REAL, verifiable facts. Do NOT fabricate statistics, company names, quotes, or research. Better a shorter Asia section with real data than a longer one with invented content.
 
 QUOTES AND BLOCKQUOTES:
 - You MUST include at least 2 <blockquote> elements.
-- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data attributed to a named individual, or (c) a striking statistic or data point with its original research source. NEVER fabricate a quote. NEVER use a media outlet, publication, or website as the attribution â only real named people.
-- Format: <blockquote>"Quote text." â First Name Last Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point â Original Research Organisation</blockquote>
-- Wrong: <blockquote>"AI is transforming healthcare." â TechCrunch</blockquote>
-- Right: <blockquote>"AI is transforming healthcare." â Dr Sarah Chen, Chief Medical Officer, Ping An Health</blockquote>
-- Wrong: <blockquote>"Revenue grew 40% year on year." â Bloomberg</blockquote>
-- Right: <blockquote>Revenue grew 40% year on year â ByteDance Q3 2025 Earnings Report</blockquote>
+- Blockquotes must ONLY contain: (a) direct quotes from named individuals that appear in the original source content, (b) verified quotes from the Research Enrichment data attributed to a named individual, or (c) a striking statistic or data point with its original research source. NEVER fabricate a quote. NEVER use a media outlet, publication, or website as the attribution - only real named people.
+- Format: <blockquote>"Quote text." - First Name Last Name, Title, Organisation</blockquote> or <blockquote>Statistic or data point - Original Research Organisation</blockquote>
 
 KEYWORD OPTIMISATION:
 - Use the focus keyphrase naturally 4-6 times throughout the article (including in at least one H2).
 - Use each keyphrase synonym 1-2 times each.
-- Do not force keywords awkwardly â natural usage only.
+- Do not force keywords awkwardly - natural usage only.
 
 LINKS:
 - Do NOT preserve any links from the original pasted content. Never link back to the domain or source from which the original article came.
 - ALL external links must use the exact URLs provided in the external links list or the PERPLEXITY CITATION URLS section of the Research Enrichment block. Do NOT invent or modify URLs.
-- MANDATORY (SEO-CRITICAL): Every article MUST contain at least one external link from the PERPLEXITY CITATION URLS list, formatted as <a href="URL" target="_blank" rel="noopener noreferrer">descriptive anchor text</a>. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference. This is non-negotiable for SEO ranking. If no Perplexity citation URLs are available, use the best external link from the external links list. An article with zero outbound external links will fail editorial review.
+- MANDATORY (SEO-CRITICAL): Every article MUST contain at least one external link from the PERPLEXITY CITATION URLS list, formatted as <a href="URL" target="_blank" rel="noopener noreferrer">descriptive anchor text</a>. Prioritise tier-1 outlets (Reuters, AP, Bloomberg, Financial Times, Nikkei Asia, South China Morning Post, The Straits Times, or equivalent). Weave it naturally into a sentence as a supporting reference. This is non-negotiable for SEO ranking.
 - MANDATORY: Any statistic, data point, or named research report cited in the article MUST have an inline external link using target="_blank" rel="noopener noreferrer". Use the closest matching URL from the Perplexity citations or external links list. Never leave a cited statistic or named report unlinked.
-- ALL internal links must use the exact markdown paths provided (e.g. [text](/category/slug)). Do NOT invent or modify paths. Do NOT add target="_blank" or rel attributes to internal links — they open in the same tab. Do NOT append ^ to internal links.
-- Anchor text for internal links must be descriptive and contextual. Never use "click here", "read more", "this article", or the raw article title as the entire anchor. Instead write natural anchor text that describes what the reader will find, incorporating the focus keyphrase or related keywords where it reads naturally. Example: instead of <a href="/path">Singapore AI regulation article</a>, write <a href="/path">Singapore's evolving AI regulatory framework</a>.
+- ALL internal links must use the exact markdown paths provided (e.g. [text](/category/slug)). Do NOT invent or modify paths. Do NOT add target="_blank" or rel attributes to internal links - they open in the same tab. Do NOT append ^ to internal links.
+- Anchor text for internal links must be descriptive and contextual. Never use "click here", "read more", "this article", or the raw article title as the entire anchor.
 ${internalLinksInstruction}${externalLinksSection}${enrichmentSection}${embedSection}
 
 EMBEDDED MEDIA (MANDATORY if present):
 - If the EMBEDDED MEDIA FROM SOURCE section is provided below, you MUST include every listed URL in the rewritten article.
-- YouTube videos: embed as a responsive iframe: <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin:1.5em 0;"><iframe src="https://www.youtube.com/embed/VIDEO_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div> Replace VIDEO_ID with the 11-character ID from the URL. Place the embed contextually near relevant content, not dumped at the end.
+- YouTube videos: embed as a responsive iframe: <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin:1.5em 0;"><iframe src="https://www.youtube.com/embed/VIDEO_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>
 - Twitter/X posts: embed as a styled link: <blockquote><a href="TWEET_URL" target="_blank" rel="noopener noreferrer">View the original post on X</a></blockquote> with a sentence of context before it.
-- Instagram, TikTok, LinkedIn posts: embed as a styled external link: <a href="POST_URL" target="_blank" rel="noopener noreferrer">View on [Platform Name]</a> wrapped in context.
+- Instagram, TikTok, LinkedIn posts: embed as a styled external link with context.
 - NEVER strip or ignore social media URLs from the source material. They are editorial assets.
 
 MID-ARTICLE IMAGE PLACEHOLDER:
 - Place exactly one IMAGE_PLACEHOLDER_HERE on its own line roughly 40-60% through the content.
-- On the line immediately after IMAGE_PLACEHOLDER_HERE, write a short descriptive caption for the image wrapped in a figcaption tag: <figcaption>Caption text here, no longer than 15 words, describes what the image shows, may naturally include the focus keyphrase.</figcaption>
-- Do NOT write markdown image syntax or full <figure> tags â just IMAGE_PLACEHOLDER_HERE followed by the <figcaption> on the next line.
+- On the line immediately after IMAGE_PLACEHOLDER_HERE, write a short descriptive caption for the image wrapped in a figcaption tag: <figcaption>Caption text here, no longer than 15 words.</figcaption>
+- Do NOT write markdown image syntax or full <figure> tags - just IMAGE_PLACEHOLDER_HERE followed by the <figcaption> on the next line.
 
 FORMATTING RULES (ALL MANDATORY):
 - Output clean HTML only. No markdown syntax whatsoever.
-- NEVER use em dashes (â or â). Replace any em dash construction with a full stop, a comma, or rewrite the sentence. This is a hard rule - no exceptions.
+- NEVER use em dashes. Replace any em dash construction with a full stop, a comma, or rewrite the sentence. This is a hard rule - no exceptions.
 - Use: <h2> for main sections (4-6 sections), <h3> for subheadings, <h4> for FAQ questions
-- NEVER use <h1> tags. The article title is already rendered as H1 by the page template. Using <h1> in the body creates a duplicate heading and will break SEO.
+- NEVER use <h1> tags. The article title is already rendered as H1 by the page template.
 - The article MUST open with a <h2> subheading as its very first element - never start with a <p> tag. The opening <h2> should frame the story angle, not restate the headline. Think of it as a deck head.
-- <p> for paragraphs â 2-4 sentences each, NEVER more than 5 sentences
+- <p> for paragraphs - 2-4 sentences each, NEVER more than 5 sentences
 - <strong> for bold (minimum 6 per article), <em> for italic
-- <ul><li> and <ol><li> for lists â you MUST include at least 2 separate list blocks in the article
+- <ul><li> and <ol><li> for lists - you MUST include at least 2 separate list blocks in the article
 - <a href="..."> for links (external links: target="_blank" rel="noopener noreferrer")
 - <blockquote> for quotes and data callouts
-- MAXIMUM 2 consecutive paragraphs before a visual break (subheading, blockquote, list, or callout). This is a hard rule. Dense prose blocks will be penalised by search crawlers.
-- Where the article compares options, tools, approaches, or time periods: use a <table> with <thead> and <tbody>. This is strongly preferred over prose comparisons.
+- MAXIMUM 2 consecutive paragraphs before a visual break (subheading, blockquote, list, or callout).
+- Where the article compares options, tools, approaches, or time periods: use a <table> with <thead> and <tbody>.
 
 CLOSING SECTION (MANDATORY - two distinct elements, rendered separately):
 
@@ -493,11 +478,9 @@ Element 1 - Scout's editorial position, wrapped in a styled callout div:
 Element 2 - Reader invitation, as a plain <p> tag immediately after the div:
 <p>1 sentence ending with a specific, direct question using "you" or "your", followed by "Drop your take in the comments below."</p>
 
-Example output:
-<div class="scout-view"><strong>The AIinASIA View:</strong> The real risk here isn't the technology. It's the regulatory vacuum that lets companies deploy it without meaningful accountability. Asia's fragmented policy landscape makes this especially urgent.</div>
-<p>So here's what we want to know: what would it actually take for you to trust an AI system with a high-stakes decision? Drop your take in the comments below.</p>
-
 Do NOT use "Final Thoughts", "Conclusion", or any closing heading. The two elements must always appear together at the end, in order.
+
+CRITICAL JSON FORMATTING RULE: Your entire response must be a valid JSON object. The "rewrittenContent" field contains HTML with quotes - you MUST escape all double quotes inside HTML attribute values as \\". For example: <a href=\\"https://example.com\\" target=\\"_blank\\">. This is essential for JSON validity.
 
 Return your response as a single JSON object with these fields. Every field is required:
 
@@ -514,13 +497,12 @@ Return your response as a single JSON object with these fields. Every field is r
   "metaDescription": "Under 155 chars. Include the focus keyphrase. Make it compelling enough to click.",
   "focusKeyphrase": "Primary keyword phrase, 2-4 words",
   "keyphraseSynonyms": "3-5 comma-separated synonym phrases",
-  "aiTags": Array of 4-8 lowercase tag strings. These power internal content recommendations and search. Use specific, searchable terms: technology names, company names, country names, policy frameworks, topic areas. Examples: "openai", "singapore", "generative ai", "healthcare ai", "llm", "regulation", "startups". No spaces within a tag. Use hyphens for multi-word tags e.g. "large-language-models".
-  "heroImageDescription": "Write a specific photo brief as if directing a photographer on location. You MUST describe a concrete, specific scene tied directly to this article's subject matter. BANNED CONCEPTS: people using computers or laptops, people looking at screens, people typing, people sitting at desks, anyone described as 'reviewing data', generic office settings, abstract 'technology' scenes. GOOD EXAMPLES: a factory floor with robotics, a street market with payment terminals, a government minister at a podium, a port with autonomous vehicles, a hospital ward with medical equipment, a classroom with students. Describe: (1) the primary subject and action in this specific story; (2) the precise location and environment; (3) the mood. Be uncomfortably specific.",
+  "aiTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "heroImageDescription": "Specific photo brief as if directing a photographer on location. BANNED: people using computers, looking at screens, typing, sitting at desks, generic office settings, abstract technology scenes. Describe a concrete real-world scene.",
   "heroImageAlt": "Short alt text under 45 chars. Include focus keyphrase if natural.",
-  "heroImageCaption": "One sentence caption for the hero image. Describes what is shown, max 20 words, may include focus keyphrase naturally. Written as a caption a photo editor would use, not marketing copy.",
-  "midImageDescription": "Write a specific photo brief for a supporting in-article image. This must show a DIFFERENT subject, angle, or moment from the hero image. Zoom in on a detail, show a different person or location, or illustrate a specific point made in the article body. Same specificity rules: real scene, real subject, directly related to the article. Example: 'Close-up of hands on a laptop keyboard with a translation interface visible on screen, shallow depth of field, soft natural light from the left, warm tones.'",
-  "midImageAlt": "Short alt text under 45 chars",
-  "aiTags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+  "heroImageCaption": "One sentence caption for the hero image. Max 20 words.",
+  "midImageDescription": "Specific photo brief for a supporting in-article image showing a DIFFERENT subject or angle from the hero.",
+  "midImageAlt": "Short alt text under 45 chars"
 }`;
 
   const rewritePrompt = `Title: ${title}
@@ -563,72 +545,115 @@ ${content}`;
   const rewriteData = await rewriteResponse.json();
   const rawResult = rewriteData.content?.[0]?.text || '';
 
-  let rewrittenContent: string;
-  let heroImageDescription: string;
-  let heroImageAltText: string;
   let heroImageCaption: string = '';
-  let midImageDescription: string;
-  let midImageAltText: string;
 
+  // -- Parse JSON response with robust fallback --
   let parsed: any = {};
   try {
     const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     parsed = JSON.parse(cleaned);
-    rewrittenContent = parsed.rewrittenContent || rawResult;
-    heroImageDescription = parsed.heroImageDescription || '';
-    heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
-    heroImageCaption = parsed.heroImageCaption || '';
-    midImageDescription = parsed.midImageDescription || '';
-    midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
-    console.log('Parsed fields check:', {
-      hasHeadline: !!parsed.headline,
-      hasExcerpt: !!parsed.excerpt,
-      hasTldr: !!parsed.tldr,
-      hasCategory: !!parsed.category,
-      hasSeoTitle: !!parsed.seoTitle,
-      hasHeroDesc: !!parsed.heroImageDescription,
-      hasMidDesc: !!parsed.midImageDescription,
-      contentLength: (parsed.rewrittenContent || '').length,
-    });
+    console.log('JSON parse succeeded');
   } catch (parseErr) {
-    console.warn('Could not parse rewrite JSON, attempting fallback extraction:', parseErr);
-    // Try to extract just the rewrittenContent field even if full parse fails
+    console.warn('Full JSON parse failed, attempting field-by-field extraction:', parseErr);
+    
+    // Helper: extract a simple string field from raw JSON text
+    const extractField = (field: string, raw: string): string => {
+      const regex = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`);
+      const match = raw.match(regex);
+      if (match?.[1]) {
+        return match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      }
+      return '';
+    };
+    
+    // Helper: extract an array field from raw JSON text
+    const extractArray = (field: string, raw: string): string[] => {
+      const regex = new RegExp(`"${field}"\\s*:\\s*\\[((?:[^\\]]|\\n)*?)\\]`);
+      const match = raw.match(regex);
+      if (match?.[1]) {
+        try {
+          return JSON.parse(`[${match[1]}]`);
+        } catch { return []; }
+      }
+      return [];
+    };
+
+    // Extract rewrittenContent using character-walking approach (handles unescaped content)
     let fallbackContent = rawResult;
     try {
-      // Try to find rewrittenContent value in the raw string
-      const contentMatch = rawResult.match(/"rewrittenContent"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"(?:headline|excerpt|tldr|category)|"\s*})/);
-      if (contentMatch?.[1]) {
-        // Unescape JSON string escapes
-        fallbackContent = contentMatch[1]
-          .replace(/\\n/g, '\n')
-          .replace(/\\"/g, '"')
-          .replace(/\\\\/g, '\\');
-        console.log('Fallback extraction succeeded, content length:', fallbackContent.length);
-      } else {
-        // Strip JSON wrappers if present
-        fallbackContent = rawResult
-          .replace(/^```json\s*/i, '')
-          .replace(/```\s*$/i, '')
-          .replace(/^\s*\{\s*"rewrittenContent"\s*:\s*"/i, '')
-          .replace(/"\s*,?\s*"headline"[\s\S]*$/i, '')
-          .replace(/\\n/g, '\n')
-          .replace(/\\"/g, '"')
-          .trim();
-        console.log('Regex strip fallback, content length:', fallbackContent.length);
+      const contentStart = rawResult.indexOf('"rewrittenContent"');
+      if (contentStart > -1) {
+        const colonPos = rawResult.indexOf(':', contentStart + 18);
+        const valueStart = rawResult.indexOf('"', colonPos + 1);
+        if (valueStart > -1) {
+          let i = valueStart + 1;
+          while (i < rawResult.length) {
+            if (rawResult[i] === '\\') { i += 2; continue; }
+            if (rawResult[i] === '"') break;
+            i++;
+          }
+          fallbackContent = rawResult.substring(valueStart + 1, i)
+            .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          console.log('Fallback content extraction succeeded, length:', fallbackContent.length);
+        }
       }
-    } catch {
-      console.warn('Fallback extraction also failed, using raw result');
-    }
-    return new Response(
-      JSON.stringify({ result: fallbackContent, imagesGenerated: 0 }),
-      { headers: { ...cors, 'Content-Type': 'application/json' } },
-    );
+    } catch { /* use rawResult */ }
+
+    parsed = {
+      rewrittenContent: fallbackContent,
+      headline: extractField('headline', rawResult),
+      excerpt: extractField('excerpt', rawResult),
+      tldr: extractArray('tldr', rawResult),
+      whoShouldPayAttention: extractField('whoShouldPayAttention', rawResult),
+      whatChangesNext: extractField('whatChangesNext', rawResult),
+      category: extractField('category', rawResult),
+      seoTitle: extractField('seoTitle', rawResult),
+      metaTitle: extractField('metaTitle', rawResult),
+      metaDescription: extractField('metaDescription', rawResult),
+      focusKeyphrase: extractField('focusKeyphrase', rawResult),
+      keyphraseSynonyms: extractField('keyphraseSynonyms', rawResult),
+      heroImageDescription: extractField('heroImageDescription', rawResult),
+      heroImageAlt: extractField('heroImageAlt', rawResult),
+      heroImageCaption: extractField('heroImageCaption', rawResult),
+      midImageDescription: extractField('midImageDescription', rawResult),
+      midImageAlt: extractField('midImageAlt', rawResult),
+      aiTags: extractArray('aiTags', rawResult),
+    };
+    console.log('Fallback field extraction results:', {
+      hasContent: !!parsed.rewrittenContent && parsed.rewrittenContent.length > 100,
+      contentLength: (parsed.rewrittenContent || '').length,
+      hasHeadline: !!parsed.headline,
+      hasExcerpt: !!parsed.excerpt,
+      hasTldr: parsed.tldr?.length > 0,
+      hasHeroDesc: !!parsed.heroImageDescription,
+      hasMidDesc: !!parsed.midImageDescription,
+      hasSeoTitle: !!parsed.seoTitle,
+      hasFocusKeyphrase: !!parsed.focusKeyphrase,
+    });
   }
 
-  // ââ Step 2: Extract fields directly from JSON (no more regex tag parsing) ââ
+  // Assign variables from parsed (works for both full parse and fallback extraction)
+  const rewrittenContent = parsed.rewrittenContent || rawResult;
+  const heroImageDescription = parsed.heroImageDescription || '';
+  const heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
+  heroImageCaption = parsed.heroImageCaption || '';
+  const midImageDescription = parsed.midImageDescription || '';
+  const midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
+
+  console.log('Final parsed fields:', {
+    hasHeadline: !!parsed.headline,
+    hasExcerpt: !!parsed.excerpt,
+    hasTldr: Array.isArray(parsed.tldr) && parsed.tldr.length > 0,
+    hasCategory: !!parsed.category,
+    hasSeoTitle: !!parsed.seoTitle,
+    hasHeroDesc: !!heroImageDescription,
+    hasMidDesc: !!midImageDescription,
+    contentLength: rewrittenContent.length,
+  });
+
   let finalContent = rewrittenContent;
 
-  // Direct JSON field extraction â no more fragile [TAG] regex parsing
+  // Direct JSON field extraction
   const excerpt = (parsed.excerpt || '').substring(0, 140);
   const headline = (parsed.headline || '').substring(0, 60);
   const tldr: string[] = Array.isArray(parsed.tldr)
@@ -647,21 +672,20 @@ ${content}`;
   finalContent = finalContent.replace(/\[(EXCERPT|HEADLINE|TLDR|WHO|WHAT_NEXT|CATEGORY|SEO_TITLE|SEO_META_TITLE|FOCUS_KEYPHRASE|KEYPHRASE_SYNONYMS|META_DESCRIPTION|IMAGE_PROMPT)\][\s\S]*?\[\/\1\]/g, '');
 
   // Hard strip: remove all em dashes regardless of what the AI output
-  // \u2014 (em dash), \u2013 (en dash), \u2015 (horizontal bar) all normalised
   finalContent = finalContent
     .replace(/\u2014/g, ',')   // em dash -> comma
     .replace(/\u2013/g, ',')   // en dash -> comma
     .replace(/\u2015/g, ',')   // horizontal bar -> comma
-    .replace(/ â /g, '. ')     // spaced em dash -> full stop (catches any that slipped through)
-    .replace(/ â /g, ', ');    // spaced en dash -> comma
+    .replace(/ \u2014 /g, '. ')
+    .replace(/ \u2013 /g, ', ');
 
-  // ── Validate external links exist (SEO requirement) ──
+  // Validate external links exist (SEO requirement)
   const hasExternalLink = /target="_blank"/.test(finalContent) || /target=\\"_blank\\"/.test(finalContent);
   if (!hasExternalLink) {
     console.warn('SEO WARNING: Rewritten article contains ZERO external links. This harms SEO ranking.');
   }
 
-  // ââ Look up category ID from database ââ
+  // Look up category ID from database
   let categoryId = '';
   if (categoryName) {
     try {
@@ -680,7 +704,7 @@ ${content}`;
     }
   }
 
-  // ââ Step 3: Generate images using focusKeyphrase for filenames ââ
+  // Step 3: Generate images using focusKeyphrase for filenames
   const slugifiedKeyphrase = focusKeyphrase
     ? focusKeyphrase.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50)
     : 'ai-generated';
@@ -711,11 +735,11 @@ COMPOSITION: Wide establishing shot. Strong visual hierarchy. Subject positioned
 
 LIGHTING: Cinematic. Either soft directional window light with gentle shadows, warm golden-hour outdoor light, or dramatic studio lighting with clear key and fill. Rich contrast without crushing blacks.
 
-STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human â like a spread in Bloomberg Businessweek or Monocle magazine.
+STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human.
 
-PEOPLE: Where the topic involves people, show real human subjects â diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
+PEOPLE: Where the topic involves people, show real human subjects. Diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
 
-HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual clichÃ©s. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
+HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual cliches. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
           ],
           modalities: ['image', 'text'],
         }),
@@ -746,15 +770,15 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
           messages: [
             { role: 'user', content: `Editorial in-article photograph. ${description}
 
-COMPOSITION: Tighter than a cover shot â medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
+COMPOSITION: Tighter than a cover shot, medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
 
-LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting â this image should feel like a documentary or reportage photograph.
+LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting, this image should feel like a documentary or reportage photograph.
 
-STYLE: Photorealistic, 50â85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded â like a supporting photograph inside The Economist or Wired.
+STYLE: Photorealistic, 50-85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded.
 
-PEOPLE: Where relevant, show people in action or mid-task â working, talking, interacting with technology or environment. Real and candid, not posed.
+PEOPLE: Where relevant, show people in action or mid-task, working, talking, interacting with technology or environment. Real and candid, not posed.
 
-HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichÃ©s (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
+HARD RULES: No text, logos, watermarks, or UI elements. No AI visual cliches (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
           ],
           modalities: ['image', 'text'],
         }),
@@ -796,10 +820,9 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichÃ©s 
     console.error('Image generation error (non-fatal):', imgError);
   }
 
-  // ââ Step 4: Safety strip FIRST, then insert our images ââ
+  // Step 4: Safety strip FIRST, then insert our images
 
   // Safety: strip markdown images with alt text over 50 chars (leaked AI prompts)
-  // MUST run BEFORE we insert our own controlled images
   finalContent = finalContent.replace(/!\[[^\]]{50,}\]\([^)]*\)/g, '');
   finalContent = finalContent.replace(/^!\[?[^\]\n]{50,}$/gm, '');
   finalContent = finalContent.replace(/\[MID_ARTICLE_IMAGE\]/g, '');
@@ -857,9 +880,8 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual clichÃ©s 
   );
 }
 
-// ââ validate-links âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// -- validate-links --
 async function handleValidateLinks(content: string, cors: Record<string, string>) {
-  // Extract URLs from markdown links and bare URLs
   const markdownLinks = [...(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g))].map(m => m[2]);
   const bareUrls = [...(content.matchAll(/https?:\/\/[^\s\)]+/g))].map(m => m[0]);
   const allUrls = [...new Set([...markdownLinks, ...bareUrls])].slice(0, 20);
