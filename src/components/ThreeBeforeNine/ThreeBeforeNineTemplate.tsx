@@ -451,6 +451,34 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
         </div>
       )}
 
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-muted/30 border-b border-border" aria-label="Breadcrumb">
+        <div className="max-w-3xl mx-auto px-6 py-3">
+          <ol className="flex items-center gap-2 text-sm text-muted-foreground">
+            <li>
+              <Link to="/" className="hover:text-foreground transition-colors flex items-center gap-1">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+            </li>
+            <li>
+              <ChevronRight className="h-4 w-4" />
+            </li>
+            <li>
+              <Link to="/news/3-before-9" className="hover:text-foreground transition-colors hover:underline">
+                3 Before 9
+              </Link>
+            </li>
+            <li>
+              <ChevronRight className="h-4 w-4" />
+            </li>
+            <li className="text-foreground font-medium" aria-current="page">
+              {format(new Date(article.published_at || Date.now()), "d MMM yyyy")}
+            </li>
+          </ol>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <header className="relative bg-muted/50 border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-[60px] text-center">
