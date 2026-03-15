@@ -574,55 +574,80 @@ ${content}`;
   try {
     const cleaned = rawResult.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     parsed = JSON.parse(cleaned);
-    rewrittenContent = parsed.rewrittenContent || rawResult;
-    heroImageDescription = parsed.heroImageDescription || '';
-    heroImageAltText = (parsed.heroImageAlt || '').slice(0, 125);
-    heroImageCaption = parsed.heroImageCaption || '';
-    midImageDescription = parsed.midImageDescription || '';
-    midImageAltText = (parsed.midImageAlt || '').slice(0, 125);
-    console.log('Parsed fields check:', {
-      hasHeadline: !!parsed.headline,
-      hasExcerpt: !!parsed.excerpt,
-      hasTldr: !!parsed.tldr,
-      hasCategory: !!parsed.category,
-      hasSeoTitle: !!parsed.seoTitle,
-      hasHeroDesc: !!parsed.heroImageDescription,
-      hasMidDesc: !!parsed.midImageDescription,
-      contentLength: (parsed.rewrittenContent || '').length,
-    });
   } catch (parseErr) {
-    console.warn('Could not parse rewrite JSON, attempting fallback extraction:', parseErr);
-    // Try to extract just the rewrittenContent field even if full parse fails
+    console.warn('Could not parse rewrite JSON, attempting field-by-field extraction:', parseErr);
+    // Extract individual fields from the raw JSON string even when full parse fails
+    const extractField = (field: string, raw: string): string => {
+      // Match "field": "value" handling escaped quotes
+      const regex = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`);
+      const match = raw.match(regex);
+      if (match?.[1]) {
+        return match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      }
+      return '';
+    };
+    const extractArray = (field: string, raw: string): string[] => {
+      const regex = new RegExp(`"${field}"\\s*:\\s*\\[((?:[^\\]]|\\n)*?)\\]`);
+      const match = raw.match(regex);
+      if (match?.[1]) {
+        try {
+          return JSON.parse(`[${match[1]}]`);
+        } catch { return []; }
+      }
+      return [];
+    };
+
+    // Try to extract rewrittenContent - it's the largest field and most likely to cause parse failure
     let fallbackContent = rawResult;
     try {
-      // Try to find rewrittenContent value in the raw string
-      const contentMatch = rawResult.match(/"rewrittenContent"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"(?:headline|excerpt|tldr|category)|"\s*})/);
-      if (contentMatch?.[1]) {
-        // Unescape JSON string escapes
-        fallbackContent = contentMatch[1]
-          .replace(/\\n/g, '\n')
-          .replace(/\\"/g, '"')
-          .replace(/\\\\/g, '\\');
-        console.log('Fallback extraction succeeded, content length:', fallbackContent.length);
-      } else {
-        // Strip JSON wrappers if present
-        fallbackContent = rawResult
-          .replace(/^```json\s*/i, '')
-          .replace(/```\s*$/i, '')
-          .replace(/^\s*\{\s*"rewrittenContent"\s*:\s*"/i, '')
-          .replace(/"\s*,?\s*"headline"[\s\S]*$/i, '')
-          .replace(/\\n/g, '\n')
-          .replace(/\\"/g, '"')
-          .trim();
-        console.log('Regex strip fallback, content length:', fallbackContent.length);
+      // Find rewrittenContent value - look for the field then grab everything until the next top-level field
+      const contentStart = rawResult.indexOf('"rewrittenContent"');
+      if (contentStart > -1) {
+        // Find the opening quote of the value
+        const valueStart = rawResult.indexOf('"', contentStart + '"rewrittenContent"'.length + 1);
+        if (valueStart > -1) {
+          // Walk through the string handling escapes to find the closing quote
+          let i = valueStart + 1;
+          while (i < rawResult.length) {
+            if (rawResult[i] === '\\') { i += 2; continue; }
+            if (rawResult[i] === '"') break;
+            i++;
+          }
+          fallbackContent = rawResult.substring(valueStart + 1, i)
+            .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        }
       }
-    } catch {
-      console.warn('Fallback extraction also failed, using raw result');
-    }
-    return new Response(
-      JSON.stringify({ result: fallbackContent, imagesGenerated: 0 }),
-      { headers: { ...cors, 'Content-Type': 'application/json' } },
-    );
+    } catch { /* use rawResult */ }
+
+    parsed = {
+      rewrittenContent: fallbackContent,
+      headline: extractField('headline', rawResult),
+      excerpt: extractField('excerpt', rawResult),
+      tldr: extractArray('tldr', rawResult),
+      whoShouldPayAttention: extractField('whoShouldPayAttention', rawResult),
+      whatChangesNext: extractField('whatChangesNext', rawResult),
+      category: extractField('category', rawResult),
+      seoTitle: extractField('seoTitle', rawResult),
+      metaTitle: extractField('metaTitle', rawResult),
+      metaDescription: extractField('metaDescription', rawResult),
+      focusKeyphrase: extractField('focusKeyphrase', rawResult),
+      keyphraseSynonyms: extractField('keyphraseSynonyms', rawResult),
+      heroImageDescription: extractField('heroImageDescription', rawResult),
+      heroImageAlt: extractField('heroImageAlt', rawResult),
+      heroImageCaption: extractField('heroImageCaption', rawResult),
+      midImageDescription: extractField('midImageDescription', rawResult),
+      midImageAlt: extractField('midImageAlt', rawResult),
+      aiTags: extractArray('aiTags', rawResult),
+    };
+    console.log('Fallback field extraction results:', {
+      hasContent: !!parsed.rewrittenContent,
+      contentLength: (parsed.rewrittenContent || '').length,
+      hasHeadline: !!parsed.headline,
+      hasExcerpt: !!parsed.excerpt,
+      hasTldr: parsed.tldr?.length > 0,
+      hasHeroDesc: !!parsed.heroImageDescription,
+      hasMidDesc: !!parsed.midImageDescription,
+    });
   }
 
   // ââ Step 2: Extract fields directly from JSON (no more regex tag parsing) ââ
