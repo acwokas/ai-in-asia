@@ -563,12 +563,7 @@ ${content}`;
   const rewriteData = await rewriteResponse.json();
   const rawResult = rewriteData.content?.[0]?.text || '';
 
-  let rewrittenContent: string;
-  let heroImageDescription: string;
-  let heroImageAltText: string;
   let heroImageCaption: string = '';
-  let midImageDescription: string;
-  let midImageAltText: string;
 
   let parsed: any = {};
   try {
