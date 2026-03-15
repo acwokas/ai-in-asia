@@ -337,6 +337,7 @@ const router = createBrowserRouter([
         ],
       },
       { path: "/news/3-before-9", element: <ThreeBeforeNineLatest /> },
+      { path: "/news/3-before-9/editions", element: <ThreeBeforeNineArchive /> },
       { path: "/3-before-9", element: <ThreeBeforeNineLatest /> },
       { path: "/guides", element: <Guides /> },
       { path: "/guides/:category/:slug", element: <GuideDetail /> },

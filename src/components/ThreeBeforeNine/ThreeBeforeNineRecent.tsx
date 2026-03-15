@@ -58,7 +58,7 @@ export default function ThreeBeforeNineRecent({ currentSlug }: ThreeBeforeNineRe
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold text-foreground font-display">Recent Editions</h3>
         <Link 
-          to="/news/3-before-9"
+          to="/news/3-before-9/editions"
           className="text-sm hover:opacity-80 transition-colors flex items-center gap-1"
           style={{ color: AMBER }}
         >
