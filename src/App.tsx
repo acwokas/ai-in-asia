@@ -125,6 +125,7 @@ const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
 
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
+const ThreeBeforeNineArchive = lazy(() => import("./pages/ThreeBeforeNineArchive"));
 const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -336,6 +337,7 @@ const router = createBrowserRouter([
         ],
       },
       { path: "/news/3-before-9", element: <ThreeBeforeNineLatest /> },
+      { path: "/news/3-before-9/editions", element: <ThreeBeforeNineArchive /> },
       { path: "/3-before-9", element: <ThreeBeforeNineLatest /> },
       { path: "/guides", element: <Guides /> },
       { path: "/guides/:category/:slug", element: <GuideDetail /> },

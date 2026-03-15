@@ -91,9 +91,10 @@ serve(async (req) => {
         "Cache-Control": "public, max-age=3600",
       },
     });
-  } catch (err) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Sitemap error:", err);
-    return new Response(`<?xml version="1.0"?><error>${err.message}</error>`, {
+    return new Response(`<?xml version="1.0"?><error>${message}</error>`, {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/xml" },
     });
