@@ -147,7 +147,7 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
         <WhatsAppIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="Share on LinkedIn">
         <Linkedin className="h-[18px] w-[18px]" />
       </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
