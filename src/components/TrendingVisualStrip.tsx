@@ -124,8 +124,8 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                 }}
               >
                 <div className="aspect-[16/10] overflow-hidden">
-                  <img
-                    src={getOptimizedThumbnail(item.featured_image_url || "/placeholder.svg", 320, 200)}
+                  <ArticleFallbackImage
+                    src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
                     alt={item.title}
                     width={320}
                     height={200}
