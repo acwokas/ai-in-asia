@@ -76,8 +76,17 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#229ED9] cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
         <TelegramIcon className="h-4 w-4" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#00B900] cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE">
+        <LineIcon className="h-4 w-4" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+        <TikTokIcon className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+        <WeChatIcon className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-teal-500 cursor-pointer relative" onClick={handleCopy} title="Copy link">
         {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Link2 className="h-4 w-4" />}
