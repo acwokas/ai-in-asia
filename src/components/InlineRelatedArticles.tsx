@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Card } from "./ui/card";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 interface InlineRelatedArticlesProps {
   currentArticleId: string;
