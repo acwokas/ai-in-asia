@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 import { CategoryIcon } from "@/components/category/CategoryIcon";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
 import { TOKENS } from "@/constants/categoryTokens";
 import { decodeHtml } from "@/lib/textUtils";
