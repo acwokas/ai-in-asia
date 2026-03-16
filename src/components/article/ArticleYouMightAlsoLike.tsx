@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { memo } from "react";
 
