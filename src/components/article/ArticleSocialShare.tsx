@@ -45,6 +45,17 @@ const TelegramIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+/** Try native share (mobile) → fallback to copy */
+const nativeShareOrCopy = async (url: string, title: string): Promise<boolean> => {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, url });
+      return true;
+    } catch { /* user cancelled */ }
+  }
+  return shareHandlers.copyToClipboard(url);
+};
+
 interface ArticleSocialShareProps {
   categorySlug: string;
   articleSlug: string;
