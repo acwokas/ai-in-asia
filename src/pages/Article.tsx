@@ -46,6 +46,7 @@ import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLik
 import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 // Lazy-load Comments (below the fold)
 const Comments = lazy(() => import("@/components/Comments"));
