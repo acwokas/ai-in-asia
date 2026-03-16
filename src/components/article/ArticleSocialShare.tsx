@@ -4,10 +4,31 @@ import { Button } from "@/components/ui/button";
 import { shareHandlers, getShareUrl, getArticleUrl } from "@/lib/socialShare";
 
 
-// X (Twitter) icon – simple SVG since lucide doesn't have the X logo
+// X (Twitter) icon
 const XIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+// LINE icon
+const LineIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.271.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
+  </svg>
+);
+
+// TikTok icon
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.82a8.17 8.17 0 0 0 4.77 1.53V6.9a4.84 4.84 0 0 1-1.01-.21z" />
+  </svg>
+);
+
+// WeChat icon
+const WeChatIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05a6.42 6.42 0 0 1-.246-1.753c0-3.74 3.46-6.775 7.725-6.775.267 0 .526.015.783.04C16.792 4.31 13.154 2.187 8.691 2.187zm-2.6 5.307a1.09 1.09 0 1 1 0-2.182 1.09 1.09 0 0 1 0 2.182zm5.394 0a1.09 1.09 0 1 1 0-2.182 1.09 1.09 0 0 1 0 2.182zm4.523 10.317c-3.685 0-6.673-2.613-6.673-5.833 0-3.22 2.988-5.834 6.673-5.834S22.68 8.76 22.68 11.98c0 1.732-.929 3.345-2.473 4.47a.482.482 0 0 0-.173.54l.266 1.027c.013.049.033.096.033.148 0 .133-.107.24-.24.24a.27.27 0 0 1-.136-.044l-1.316-.77a.704.704 0 0 0-.585-.08 8.506 8.506 0 0 1-2.048.25zm-2.27-4.07a.884.884 0 1 1 0-1.77.884.884 0 0 1 0 1.77zm4.38 0a.884.884 0 1 1 0-1.77.884.884 0 0 1 0 1.77z" />
   </svg>
 );
 
@@ -55,8 +76,17 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#229ED9] cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
         <TelegramIcon className="h-4 w-4" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#00B900] cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE">
+        <LineIcon className="h-4 w-4" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+        <TikTokIcon className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+        <WeChatIcon className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-teal-500 cursor-pointer relative" onClick={handleCopy} title="Copy link">
         {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Link2 className="h-4 w-4" />}
@@ -112,8 +142,17 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
         <TelegramIcon className="h-[18px] w-[18px]" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#00B900] hover:bg-[#00B900]/10 cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE">
+        <LineIcon className="h-[18px] w-[18px]" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+        <TikTokIcon className="h-[18px] w-[18px]" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+        <WeChatIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-teal-500 hover:bg-teal-500/10 cursor-pointer" onClick={handleCopy} title="Copy link">
@@ -165,7 +204,7 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
   // We place this just above it
   return (
     <div className="fixed bottom-12 inset-x-0 z-30 md:hidden animate-in slide-in-from-bottom duration-200">
-      <div className="h-10 bg-background/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-center gap-6 px-4">
+      <div className="h-10 bg-background/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-center gap-4 px-4">
         <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
           <WhatsAppIcon className="h-4 w-4" />
         </button>
@@ -175,8 +214,17 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
         <button className="text-muted-foreground hover:text-[#229ED9] transition-colors cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Telegram">
           <TelegramIcon className="h-4 w-4" />
         </button>
+        <button className="text-muted-foreground hover:text-[#00B900] transition-colors cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="LINE">
+          <LineIcon className="h-4 w-4" />
+        </button>
         <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="X">
           <XIcon className="h-4 w-4" />
+        </button>
+        <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={handleCopy} title="TikTok (copy link)">
+          <TikTokIcon className="h-4 w-4" />
+        </button>
+        <button className="text-muted-foreground hover:text-[#07C160] transition-colors cursor-pointer" onClick={handleCopy} title="WeChat (copy link)">
+          <WeChatIcon className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-teal-500 transition-colors relative cursor-pointer" onClick={handleCopy} title="Copy link">
           {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Link2 className="h-4 w-4" />}
