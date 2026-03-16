@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 interface EditorsPickProps {
   article: {
@@ -33,8 +34,8 @@ const EditorsPickComponent = ({ article }: EditorsPickProps) => {
             <span className="text-xs font-bold uppercase">Editor's Pick</span>
           </div>
           <div className="aspect-[21/9] overflow-hidden">
-            <img 
-              src={getOptimizedHeroImage(article.featured_image_url || "/placeholder.svg", 1280)} 
+            <ArticleFallbackImage 
+              src={getOptimizedHeroImage(article.featured_image_url || "", 1280)} 
               srcSet={article.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(article.featured_image_url, [640, 960, 1280]) : undefined}
               sizes="(max-width: 768px) 100vw, 1280px"
               alt={article.title}

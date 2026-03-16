@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Flame, BookOpen } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 type CombinedItem =
   | { type: "article"; id: string; title: string; slug: string; featured_image_url: string | null; categories: { name: string; slug: string } | null }
@@ -123,14 +124,15 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                 }}
               >
                 <div className="aspect-[16/10] overflow-hidden">
-                  <img
-                    src={getOptimizedThumbnail(item.featured_image_url || "/placeholder.svg", 320, 200)}
+                  <ArticleFallbackImage
+                    src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
                     alt={item.title}
                     width={320}
                     height={200}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
+
                 </div>
                 <div className="p-2.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider block mb-1 text-emerald-400 flex items-center gap-1">
@@ -160,8 +162,8 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
               }}
             >
               <div className="aspect-[16/10] overflow-hidden">
-                <img
-                  src={getOptimizedThumbnail(item.featured_image_url || "/placeholder.svg", 320, 200)}
+                <ArticleFallbackImage
+                  src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
                   alt={item.title}
                   width={320}
                   height={200}

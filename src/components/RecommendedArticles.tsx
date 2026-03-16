@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 interface RecommendedArticlesProps {
   excludeIds?: string[];
@@ -79,8 +80,8 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
           >
             <div className="relative aspect-[16/10] overflow-hidden">
-              <img
-                src={getOptimizedThumbnail(featuredArticle.featured_image_url || "/placeholder.svg", 640, 400)}
+              <ArticleFallbackImage
+                src={featuredArticle.featured_image_url ? getOptimizedThumbnail(featuredArticle.featured_image_url, 640, 400) : null}
                 alt={featuredArticle.title}
                 loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"

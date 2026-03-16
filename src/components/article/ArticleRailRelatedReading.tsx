@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { getCategoryColor } from "@/lib/categoryColors";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 interface Props {
   categoryId: string;
@@ -50,14 +51,12 @@ export function ArticleRailRelatedReading({ categoryId, categoryName, categorySl
               to={`/${cat?.slug || categorySlug}/${a.slug}`}
               className="flex gap-3 group"
             >
-              {a.featured_image_url && (
-                <img
-                  src={a.featured_image_url}
-                  alt={a.title}
-                  className="w-[80px] h-[60px] rounded object-cover flex-shrink-0"
-                  loading="lazy"
-                />
-              )}
+              <ArticleFallbackImage
+                src={a.featured_image_url}
+                alt={a.title}
+                className="w-[80px] h-[60px] rounded flex-shrink-0"
+                loading="lazy"
+              />
               <div className="min-w-0 flex-1">
                 <p
                   className="text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2"

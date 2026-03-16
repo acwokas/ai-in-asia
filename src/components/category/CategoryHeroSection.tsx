@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 import { CategoryIcon } from "@/components/category/CategoryIcon";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
 import { TOKENS } from "@/constants/categoryTokens";
 import { decodeHtml } from "@/lib/textUtils";
@@ -76,14 +77,12 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
             className="min-h-[280px] md:min-h-[420px]"
           >
             <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at top right, ${cfg.accent}12, transparent 60%)` }} />
-            {featuredArticle.featured_image_url && (
-              <img
-                src={getOptimizedHeroImage(featuredArticle.featured_image_url, 1280)}
-                alt={featuredArticle.featured_image_alt || featuredArticle.title}
-                loading="eager"
-                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, opacity: 0.85, filter: "brightness(1.1)" }}
-              />
-            )}
+            <ArticleFallbackImage
+              src={featuredArticle.featured_image_url ? getOptimizedHeroImage(featuredArticle.featured_image_url, 1280) : null}
+              alt={featuredArticle.featured_image_alt || featuredArticle.title}
+              loading="eager"
+              style={{ width: "100%", height: "100%", position: "absolute", inset: 0, opacity: 0.85, filter: "brightness(1.1)" }}
+            />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%", background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)" }} />
             <div style={{ position: "absolute", top: 20, left: 20, display: "flex", gap: 8 }}>
               <GlowBadge color={cfg.accent}>{cfg.label}</GlowBadge>
@@ -139,18 +138,12 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
                 transition: "border-color 0.2s ease",
               }}
             >
-              {article.featured_image_url ? (
-                <img
-                  src={getOptimizedThumbnail(article.featured_image_url, 60, 60)}
-                  alt={article.featured_image_alt || article.title}
-                  loading="lazy"
-                  style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
-                />
-              ) : (
-                <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="lg" />
-                </div>
-              )}
+              <ArticleFallbackImage
+                src={article.featured_image_url ? getOptimizedThumbnail(article.featured_image_url, 60, 60) : null}
+                alt={article.featured_image_alt || article.title}
+                loading="lazy"
+                style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0 }}
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h4 style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {decodeHtml(article.title)}
