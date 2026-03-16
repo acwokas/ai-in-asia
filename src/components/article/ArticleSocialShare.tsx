@@ -219,7 +219,7 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
         <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
           <WhatsAppIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-[#0A66C2] transition-colors cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="LinkedIn">
+        <button className="text-muted-foreground hover:text-[#0A66C2] transition-colors cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="LinkedIn">
           <Linkedin className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-[#229ED9] transition-colors cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Telegram">
