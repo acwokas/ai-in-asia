@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Flame, BookOpen } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 type CombinedItem =
   | { type: "article"; id: string; title: string; slug: string; featured_image_url: string | null; categories: { name: string; slug: string } | null }
