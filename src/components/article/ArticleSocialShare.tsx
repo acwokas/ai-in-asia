@@ -93,10 +93,10 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok">
         <TikTokIcon className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat">
         <WeChatIcon className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-teal-500 cursor-pointer relative" onClick={handleCopy} title="Copy link">
