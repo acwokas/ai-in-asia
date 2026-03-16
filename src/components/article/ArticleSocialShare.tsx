@@ -142,8 +142,17 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
         <TelegramIcon className="h-[18px] w-[18px]" />
       </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#00B900] hover:bg-[#00B900]/10 cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE">
+        <LineIcon className="h-[18px] w-[18px]" />
+      </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+        <TikTokIcon className="h-[18px] w-[18px]" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+        <WeChatIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-teal-500 hover:bg-teal-500/10 cursor-pointer" onClick={handleCopy} title="Copy link">
