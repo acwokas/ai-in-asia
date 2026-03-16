@@ -125,6 +125,7 @@ export const createArticleShareHandlers = (
     reddit: () => shareHandlers.reddit(shareUrl, articleTitle),
     whatsapp: () => shareHandlers.whatsapp(directUrl, articleTitle),
     telegram: () => shareHandlers.telegram(directUrl, articleTitle),
+    line: () => shareHandlers.line(directUrl),
     email: () => shareHandlers.email(directUrl, articleTitle),
     copy: () => shareHandlers.copyToClipboard(directUrl),
   };
