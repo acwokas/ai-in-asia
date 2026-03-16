@@ -4,6 +4,7 @@ import { SectionHeader } from "@/components/category/SectionHeader";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 import { CategoryIcon } from "@/components/category/CategoryIcon";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
+import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 import { decodeHtml } from "@/lib/textUtils";
 import { staggerStyle } from "@/lib/scrollAnimation";
 import type React from "react";
