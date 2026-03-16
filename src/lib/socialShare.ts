@@ -81,6 +81,14 @@ export const shareHandlers = {
     window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
   },
 
+  line: (url: string) => {
+    window.open(
+      `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`,
+      '_blank',
+      'width=600,height=400'
+    );
+  },
+
   email: (url: string, title: string) => {
     const subject = encodeURIComponent(title);
     const body = encodeURIComponent(`Check out this article:\n\n${title}\n${url}`);
