@@ -4,6 +4,7 @@ import { fixEncoding } from "@/lib/textUtils";
 import { User, TrendingUp, MessageCircle } from "lucide-react";
 import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { FALLBACK_IMAGE_URL } from "@/components/ui/ArticleFallbackImage";
 import { ReadingTimeIndicator } from "@/components/ReadingTimeIndicator";
 import { getCategoryColor } from "@/lib/categoryColors";
 
