@@ -96,26 +96,19 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
       }}
     >
       <div style={{ width: "100%", height: imageHeight, overflow: "hidden" }}>
-        {article.featured_image_url ? (
-          <img
-            src={getOptimizedThumbnail(article.featured_image_url, 400, imageHeight)}
-            alt={article.featured_image_alt || article.title}
-            width={400}
-            height={imageHeight}
-            loading="lazy"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transform: hovered? "scale(1.03)" : "scale(1)",
-              transition: "transform 0.3s ease",
-            }}
-          />
-        ) : (
-          <div style={{ width: "100%", height: "100%", background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="xl" />
-          </div>
-        )}
+        <ArticleFallbackImage
+          src={article.featured_image_url ? getOptimizedThumbnail(article.featured_image_url, 400, imageHeight) : null}
+          alt={article.featured_image_alt || article.title}
+          width={400}
+          height={imageHeight}
+          loading="lazy"
+          style={{
+            width: "100%",
+            height: "100%",
+            transform: hovered ? "scale(1.03)" : "scale(1)",
+            transition: "transform 0.3s ease",
+          }}
+        />
       </div>
       <div style={{ padding: "14px" }}>
         {(displayTag || meta) && (

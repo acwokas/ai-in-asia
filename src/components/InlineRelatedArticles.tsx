@@ -61,18 +61,16 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
             className="group"
           >
             <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow">
-              {article.featured_image_url && (
-                <div className="aspect-video overflow-hidden">
-                  <img
-                    src={article.featured_image_url}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                    width={400}
-                    height={225}
-                  />
-                </div>
-              )}
+              <div className="aspect-video overflow-hidden">
+                <ArticleFallbackImage
+                  src={article.featured_image_url}
+                  alt={article.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                  width={400}
+                  height={225}
+                />
+              </div>
               <div className="p-4">
                 <h4 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {article.title}

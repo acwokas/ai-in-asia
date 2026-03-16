@@ -522,7 +522,7 @@ const Article = () => {
           {article.featured_image_url ? (
             <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
               <figure className="article-hero rounded-lg">
-                <img
+                <ArticleFallbackImage
                   src={getOptimizedHeroImage(article.featured_image_url, 1080)}
                   srcSet={generateResponsiveSrcSet(article.featured_image_url)}
                   sizes="(max-width: 768px) 100vw, 1080px"
@@ -531,15 +531,6 @@ const Article = () => {
                   height={607}
                   loading="eager"
                   fetchPriority="high"
-                  onError={(e) => {
-                    const img = e.currentTarget;
-                    img.onerror = null;
-                    img.src = 'https://aiinasia.com/icons/aiinasia-512.png?v=3';
-                    img.srcset = '';
-                    img.style.objectFit = 'contain';
-                    img.style.padding = '2rem';
-                    img.style.background = '#0d1117';
-                  }}
                 />
                 <div className="article-hero-gradient" />
                 <div className="article-hero-content max-w-[1080px]">

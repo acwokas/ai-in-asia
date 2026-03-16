@@ -54,7 +54,7 @@ const ArticleCard = ({
       <Link to={`/${categorySlug}/${slug}`} className="flex flex-col h-full">
         <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
           <ProgressiveImage
-            src={image ? getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 450 : 225) : "https://aiinasia.com/icons/aiinasia-512.png?v=3"}
+            src={image && !image.includes("placeholder.svg") && !image.includes("aiinasia-logo") ? getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 450 : 225) : FALLBACK_IMAGE_URL}
             srcSet={image && image.includes('supabase.co/storage') ? generateResponsiveSrcSet(image, featured ? [400, 800, 1200] : [200, 400, 600]) : undefined}
             sizes={featured ? "(max-width: 768px) 100vw, 800px" : "(max-width: 768px) 100vw, 400px"}
             alt={fixEncoding(title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}

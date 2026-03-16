@@ -82,16 +82,14 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
               className="group block rounded-lg overflow-hidden border border-border/40 hover:-translate-y-0.5 transition-all duration-200"
               style={{ background: "hsl(var(--card))" }}
             >
-              {a.featured_image_url && (
-                <div className="aspect-[16/9] overflow-hidden">
-                  <img
-                    src={a.featured_image_url}
-                    alt={a.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              <div className="aspect-[16/9] overflow-hidden">
+                <ArticleFallbackImage
+                  src={a.featured_image_url}
+                  alt={a.title}
+                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                  loading="lazy"
+                />
+              </div>
               <div className="p-4">
                 <span
                   className="inline-block px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider rounded-full mb-2"

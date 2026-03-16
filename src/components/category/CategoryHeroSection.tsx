@@ -138,18 +138,12 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
                 transition: "border-color 0.2s ease",
               }}
             >
-              {article.featured_image_url ? (
-                <img
-                  src={getOptimizedThumbnail(article.featured_image_url, 60, 60)}
-                  alt={article.featured_image_alt || article.title}
-                  loading="lazy"
-                  style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
-                />
-              ) : (
-                <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `${cfg.accent}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <CategoryIcon icon={cfg.icon} accent={cfg.accent} size="lg" />
-                </div>
-              )}
+              <ArticleFallbackImage
+                src={article.featured_image_url ? getOptimizedThumbnail(article.featured_image_url, 60, 60) : null}
+                alt={article.featured_image_alt || article.title}
+                loading="lazy"
+                style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0 }}
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h4 style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.35, margin: 0, fontFamily: "Poppins, sans-serif", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {decodeHtml(article.title)}
