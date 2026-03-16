@@ -132,6 +132,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
+
                 </div>
                 <div className="p-2.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider block mb-1 text-emerald-400 flex items-center gap-1">
