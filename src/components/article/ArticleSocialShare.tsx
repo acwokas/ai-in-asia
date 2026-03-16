@@ -45,6 +45,17 @@ const TelegramIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+/** Try native share (mobile) → fallback to copy */
+const nativeShareOrCopy = async (url: string, title: string): Promise<boolean> => {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, url });
+      return true;
+    } catch { /* user cancelled */ }
+  }
+  return shareHandlers.copyToClipboard(url);
+};
+
 interface ArticleSocialShareProps {
   categorySlug: string;
   articleSlug: string;
@@ -70,7 +81,7 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#25D366] cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
         <WhatsAppIcon className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#0A66C2] cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#0A66C2] cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="Share on LinkedIn">
         <Linkedin className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#229ED9] cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
@@ -82,10 +93,10 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok">
         <TikTokIcon className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#07C160] cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat">
         <WeChatIcon className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-teal-500 cursor-pointer relative" onClick={handleCopy} title="Copy link">
@@ -136,7 +147,7 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
         <WhatsAppIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="Share on LinkedIn">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="Share on LinkedIn">
         <Linkedin className="h-[18px] w-[18px]" />
       </Button>
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram">
@@ -148,10 +159,10 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok">
         <TikTokIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat">
         <WeChatIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
@@ -208,7 +219,7 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
         <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
           <WhatsAppIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-[#0A66C2] transition-colors cursor-pointer" onClick={() => shareHandlers.linkedin(shareUrl)} title="LinkedIn">
+        <button className="text-muted-foreground hover:text-[#0A66C2] transition-colors cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="LinkedIn">
           <Linkedin className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-[#229ED9] transition-colors cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Telegram">
@@ -220,10 +231,10 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
         <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="X">
           <XIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={handleCopy} title="TikTok (copy link)">
+        <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="TikTok">
           <TikTokIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-[#07C160] transition-colors cursor-pointer" onClick={handleCopy} title="WeChat (copy link)">
+        <button className="text-muted-foreground hover:text-[#07C160] transition-colors cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="WeChat">
           <WeChatIcon className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-teal-500 transition-colors relative cursor-pointer" onClick={handleCopy} title="Copy link">
