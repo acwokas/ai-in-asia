@@ -159,10 +159,10 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
       <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={handleCopy} title="Share on TikTok (copy link)">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok">
         <TikTokIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={handleCopy} title="Share on WeChat (copy link)">
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat">
         <WeChatIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
