@@ -231,10 +231,10 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
         <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="X">
           <XIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={handleCopy} title="TikTok (copy link)">
+        <button className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="TikTok">
           <TikTokIcon className="h-4 w-4" />
         </button>
-        <button className="text-muted-foreground hover:text-[#07C160] transition-colors cursor-pointer" onClick={handleCopy} title="WeChat (copy link)">
+        <button className="text-muted-foreground hover:text-[#07C160] transition-colors cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="WeChat">
           <WeChatIcon className="h-4 w-4" />
         </button>
         <button className="text-muted-foreground hover:text-teal-500 transition-colors relative cursor-pointer" onClick={handleCopy} title="Copy link">
