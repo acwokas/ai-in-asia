@@ -3091,6 +3091,39 @@ export type Database = {
           },
         ]
       }
+      platform_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          media_format: string
+          platform_name: string
+          post_type: string
+          publer_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          media_format: string
+          platform_name: string
+          post_type: string
+          publer_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          media_format?: string
+          platform_name?: string
+          post_type?: string
+          publer_account_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       popup_settings: {
         Row: {
           active_popup: string
