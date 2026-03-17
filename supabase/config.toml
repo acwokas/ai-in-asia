@@ -194,3 +194,6 @@ verify_jwt = false
 
 [functions.generate-3b9-hero]
 verify_jwt = true
+
+[functions.publish-to-social]
+verify_jwt = false
