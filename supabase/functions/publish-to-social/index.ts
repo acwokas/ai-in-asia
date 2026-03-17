@@ -65,7 +65,7 @@ async function fetchSocialCopy(
     if (!error && data) {
       const text = await data.text()
       if (text.trim()) {
-        console.log(`  ✓ Found social copy for ${platform} at ${path}`)
+        console.log(`  â Found social copy for ${platform} at ${path}`)
         return text.trim()
       }
     }
@@ -80,7 +80,7 @@ async function fetchSocialCopy(
   const fallback = excerpt
     ? `${article.title}\n\n${excerpt}`
     : article.title
-  console.log(`  ⚠ No social copy for ${platform}, using fallback`)
+  console.log(`  â  No social copy for ${platform}, using fallback`)
   return fallback
 }
 
@@ -115,14 +115,14 @@ async function uploadMediaToPubler(
   imageUrl: string,
 ): Promise<string | null> {
   try {
-    console.log(`  ↗ Uploading media to Publer: ${imageUrl}`)
+    console.log(`  â Uploading media to Publer: ${imageUrl}`)
     const uploadRes = await publerRequest('POST', '/media/from-url', apiKey, workspaceId, {
       url: imageUrl,
     })
 
     const jobId = uploadRes?.id || uploadRes?.job_id
     if (!jobId) {
-      console.error('  ✗ No job ID returned from media upload', uploadRes)
+      console.error('  â No job ID returned from media upload', uploadRes)
       return null
     }
 
@@ -130,22 +130,22 @@ async function uploadMediaToPubler(
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, 2000))
       const status = await publerRequest('GET', `/job_status/${jobId}`, apiKey, workspaceId)
-      console.log(`  ⏳ Job ${jobId} status: ${JSON.stringify(status)}`)
+      console.log(`  â³ Job ${jobId} status: ${JSON.stringify(status)}`)
 
       if (status?.status === 'complete' || status?.payload) {
         const mediaId = status?.payload?.id || status?.payload?.media_id || status?.id
-        console.log(`  ✓ Media uploaded, ID: ${mediaId}`)
+        console.log(`  â Media uploaded, ID: ${mediaId}`)
         return mediaId || null
       }
       if (status?.status === 'error' || status?.status === 'failed') {
-        console.error(`  ✗ Media upload job failed:`, status)
+        console.error(`  â Media upload job failed:`, status)
         return null
       }
     }
-    console.error(`  ✗ Media upload timed out for job ${jobId}`)
+    console.error(`  â Media upload timed out for job ${jobId}`)
     return null
   } catch (err) {
-    console.error(`  ✗ Media upload error:`, err)
+    console.error(`  â Media upload error:`, err)
     return null
   }
 }
@@ -165,7 +165,7 @@ async function schedulePost(
     ...(mediaId ? { media_ids: [mediaId] } : {}),
   }
 
-  console.log(`  📅 Scheduling post for ${scheduledTime}`)
+  console.log(`  ð Scheduling post for ${scheduledTime}`)
   return publerRequest('POST', '/posts/schedule', apiKey, workspaceId, payload)
 }
 
@@ -248,14 +248,14 @@ Deno.serve(async (req) => {
 
     const results: Array<{ article: string; platform: string; status: string; error?: string }> = []
 
-    // 4) Process each article × platform
+    // 4) Process each article Ã platform
     for (const article of articles as Article[]) {
-      console.log(`\n📰 Processing: "${article.title}" (${article.slug})`)
+      console.log(`\nð° Processing: "${article.title}" (${article.slug})`)
 
       for (const platform of platforms as PlatformAccount[]) {
         const key = `${article.id}:${platform.platform_name}`
         if (postedSet.has(key)) {
-          console.log(`  ⏭ Already posted to ${platform.platform_name}, skipping`)
+          console.log(`  â­ Already posted to ${platform.platform_name}, skipping`)
           continue
         }
 
@@ -306,23 +306,24 @@ Deno.serve(async (req) => {
           })
 
           if (insertErr) {
-            console.error(`  ✗ DB insert error for ${platform.platform_name}:`, insertErr)
+            console.error(`  â DB insert error for ${platform.platform_name}:`, insertErr)
             results.push({ article: article.slug, platform: platform.platform_name, status: 'db_error', error: insertErr.message })
           } else {
-            console.log(`  ✓ Scheduled on ${platform.platform_name} for ${scheduledIso}`)
+            console.log(`  â Scheduled on ${platform.platform_name} for ${scheduledIso}`)
             results.push({ article: article.slug, platform: platform.platform_name, status: 'scheduled' })
           }
         } catch (err: any) {
-          console.error(`  ✗ Error posting to ${platform.platform_name}:`, err)
+          console.error(`  â Error posting to ${platform.platform_name}:`, err)
 
           // Record failure
-          await supabase.from('social_posts').insert({
+          const { error: failInsertErr } = await supabase.from('social_posts').insert({
             article_id: article.id,
             article_slug: article.slug,
             platform: platform.platform_name,
             status: 'failed',
             error_message: err.message || 'Unknown error',
-          }).catch(() => {})
+          })
+          if (failInsertErr) console.error('Failed to log error:', failInsertErr.message)
 
           results.push({ article: article.slug, platform: platform.platform_name, status: 'failed', error: err.message })
         }
