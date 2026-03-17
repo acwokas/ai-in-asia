@@ -3608,6 +3608,68 @@ export type Database = {
         }
         Relationships: []
       }
+      social_posts: {
+        Row: {
+          article_id: string
+          article_slug: string
+          created_at: string
+          error_message: string | null
+          id: string
+          media_url: string | null
+          platform: string
+          post_copy: string | null
+          posted_at: string | null
+          publer_media_id: string | null
+          publer_post_id: string | null
+          publer_response: Json | null
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          article_id: string
+          article_slug: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          media_url?: string | null
+          platform: string
+          post_copy?: string | null
+          posted_at?: string | null
+          publer_media_id?: string | null
+          publer_post_id?: string | null
+          publer_response?: Json | null
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string
+          article_slug?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          media_url?: string | null
+          platform?: string
+          post_copy?: string | null
+          posted_at?: string | null
+          publer_media_id?: string | null
+          publer_post_id?: string | null
+          publer_response?: Json | null
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_prices: {
         Row: {
           change_amount: number
