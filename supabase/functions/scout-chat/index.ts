@@ -294,6 +294,8 @@ If their question could relate to this article, answer with that context in mind
         const sanitizedQuery = args.query.replace(/[%_\\]/g, '\\$&').slice(0, 200);
         console.log('Searching for:', sanitizedQuery);
         
+        let resultsText = '';
+        
         // Search by title/excerpt using ilike
         const { data: ilikeResults } = await supabase
           .from('articles')
