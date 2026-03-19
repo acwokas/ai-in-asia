@@ -65,7 +65,7 @@ async function fetchSocialCopy(
     if (!error && data) {
       const text = await data.text()
       if (text.trim()) {
-        console.log(`  â Found social copy for ${platform} at ${path}`)
+        console.log(`  ✓ Found social copy for ${platform} at ${path}`)
         return text.trim()
       }
     }
@@ -80,7 +80,7 @@ async function fetchSocialCopy(
   const fallback = excerpt
     ? `${article.title}\n\n${excerpt}`
     : article.title
-  console.log(`  â  No social copy for ${platform}, using fallback`)
+  console.log(`  ⚠ No social copy for ${platform}, using fallback`)
   return fallback
 }
 
@@ -93,9 +93,10 @@ async function publerRequest(
 ): Promise<any> {
   const url = `${PUBLER_BASE}${path}`
   const headers: Record<string, string> = {
-    'Authorization': `Bearer ${apiKey}`,
+    'Authorization': `Bearer-API ${apiKey}`,
     'Publer-Workspace-Id': workspaceId,
     'Content-Type': 'application/json',
+    'User-Agent': 'AIinAsia/1.0',
   }
 
   const opts: RequestInit = { method, headers }
@@ -109,63 +110,26 @@ async function publerRequest(
   return res.json()
 }
 
-async function uploadMediaToPubler(
-  apiKey: string,
-  workspaceId: string,
-  imageUrl: string,
-): Promise<string | null> {
-  try {
-    console.log(`  â Uploading media to Publer: ${imageUrl}`)
-    const uploadRes = await publerRequest('POST', '/media/from-url', apiKey, workspaceId, {
-      url: imageUrl,
-    })
-
-    const jobId = uploadRes?.id || uploadRes?.job_id
-    if (!jobId) {
-      console.error('  â No job ID returned from media upload', uploadRes)
-      return null
-    }
-
-    // Poll job status (max 30 attempts, 2s apart = 60s max)
-    for (let i = 0; i < 30; i++) {
-      await new Promise((r) => setTimeout(r, 2000))
-      const status = await publerRequest('GET', `/job_status/${jobId}`, apiKey, workspaceId)
-      console.log(`  â³ Job ${jobId} status: ${JSON.stringify(status)}`)
-
-      if (status?.status === 'complete' || status?.payload) {
-        const mediaId = status?.payload?.id || status?.payload?.media_id || status?.id
-        console.log(`  â Media uploaded, ID: ${mediaId}`)
-        return mediaId || null
-      }
-      if (status?.status === 'error' || status?.status === 'failed') {
-        console.error(`  â Media upload job failed:`, status)
-        return null
-      }
-    }
-    console.error(`  â Media upload timed out for job ${jobId}`)
-    return null
-  } catch (err) {
-    console.error(`  â Media upload error:`, err)
-    return null
-  }
-}
-
 async function schedulePost(
   apiKey: string,
   workspaceId: string,
   accountId: string,
   copy: string,
   scheduledTime: string,
-  mediaId: string | null,
+  mediaUrl: string | null,
 ): Promise<any> {
-  const payload: Record<string, unknown> = {
-    account_ids: [accountId],
+  const postData: Record<string, unknown> = {
+    account_id: accountId,
     text: copy,
     scheduled_at: scheduledTime,
-    ...(mediaId ? { media_ids: [mediaId] } : {}),
+    ...(mediaUrl ? { media_url: mediaUrl } : {}),
   }
 
-  console.log(`  ð Scheduling post for ${scheduledTime}`)
+  const payload = {
+    bulk: [postData],
+  }
+
+  console.log(`  📅 Scheduling post for ${scheduledTime}`)
   return publerRequest('POST', '/posts/schedule', apiKey, workspaceId, payload)
 }
 
@@ -248,14 +212,14 @@ Deno.serve(async (req) => {
 
     const results: Array<{ article: string; platform: string; status: string; error?: string }> = []
 
-    // 4) Process each article Ã platform
+    // 4) Process each article × platform
     for (const article of articles as Article[]) {
-      console.log(`\nð° Processing: "${article.title}" (${article.slug})`)
+      console.log(`\n📰 Processing: "${article.title}" (${article.slug})`)
 
       for (const platform of platforms as PlatformAccount[]) {
         const key = `${article.id}:${platform.platform_name}`
         if (postedSet.has(key)) {
-          console.log(`  â­ Already posted to ${platform.platform_name}, skipping`)
+          console.log(`  ⭐ Already posted to ${platform.platform_name}, skipping`)
           continue
         }
 
@@ -263,14 +227,11 @@ Deno.serve(async (req) => {
           // a) Get social copy
           const copy = await fetchSocialCopy(supabase, article.slug, platform.platform_name, article)
 
-          // b) Determine media URL from storage
+          // b) Determine media URL from storage (with /social/ prefix)
           const mediaFile = PLATFORM_MEDIA[platform.platform_name] || 'landscape.jpg'
-          const mediaStorageUrl = `${supabaseUrl}/storage/v1/object/public/article-images/${article.slug}/${mediaFile}`
+          const mediaStorageUrl = `${supabaseUrl}/storage/v1/object/public/article-images/social/${article.slug}/${mediaFile}`
 
-          // c) Upload media to Publer
-          const mediaId = await uploadMediaToPubler(publerApiKey, publerWorkspaceId, mediaStorageUrl)
-
-          // d) Calculate staggered schedule time
+          // c) Calculate staggered schedule time
           const offsetMinutes = PLATFORM_OFFSETS[platform.platform_name] || 60
           const publishedAt = new Date(article.published_at)
           const scheduledFor = new Date(publishedAt.getTime() + offsetMinutes * 60 * 1000)
@@ -279,25 +240,24 @@ Deno.serve(async (req) => {
           const finalSchedule = scheduledFor > now ? scheduledFor : new Date(now.getTime() + 5 * 60 * 1000)
           const scheduledIso = finalSchedule.toISOString()
 
-          // e) Schedule post on Publer
+          // d) Schedule post on Publer (passing media URL directly)
           const publerRes = await schedulePost(
             publerApiKey,
             publerWorkspaceId,
             platform.publer_account_id,
             copy,
             scheduledIso,
-            mediaId,
+            mediaStorageUrl,
           )
 
           const publerPostId = publerRes?.id || publerRes?.post_id || null
 
-          // f) Insert record into social_posts
+          // e) Insert record into social_posts
           const { error: insertErr } = await supabase.from('social_posts').insert({
             article_id: article.id,
             article_slug: article.slug,
             platform: platform.platform_name,
             publer_post_id: publerPostId,
-            publer_media_id: mediaId,
             status: 'scheduled',
             scheduled_for: scheduledIso,
             post_copy: copy,
@@ -306,24 +266,27 @@ Deno.serve(async (req) => {
           })
 
           if (insertErr) {
-            console.error(`  â DB insert error for ${platform.platform_name}:`, insertErr)
+            console.error(`  ✗ DB insert error for ${platform.platform_name}:`, insertErr)
             results.push({ article: article.slug, platform: platform.platform_name, status: 'db_error', error: insertErr.message })
           } else {
-            console.log(`  â Scheduled on ${platform.platform_name} for ${scheduledIso}`)
+            console.log(`  ✓ Scheduled on ${platform.platform_name} for ${scheduledIso}`)
             results.push({ article: article.slug, platform: platform.platform_name, status: 'scheduled' })
           }
         } catch (err: any) {
-          console.error(`  â Error posting to ${platform.platform_name}:`, err)
+          console.error(`  ✗ Error posting to ${platform.platform_name}:`, err)
 
-          // Record failure
-          const { error: failInsertErr } = await supabase.from('social_posts').insert({
-            article_id: article.id,
-            article_slug: article.slug,
-            platform: platform.platform_name,
-            status: 'failed',
-            error_message: err.message || 'Unknown error',
-          })
-          if (failInsertErr) console.error('Failed to log error:', failInsertErr.message)
+          // Record failure using try/catch instead of .catch()
+          try {
+            await supabase.from('social_posts').insert({
+              article_id: article.id,
+              article_slug: article.slug,
+              platform: platform.platform_name,
+              status: 'failed',
+              error_message: err.message || 'Unknown error',
+            })
+          } catch (failInsertErr: any) {
+            console.error('Failed to log error:', failInsertErr.message)
+          }
 
           results.push({ article: article.slug, platform: platform.platform_name, status: 'failed', error: err.message })
         }
