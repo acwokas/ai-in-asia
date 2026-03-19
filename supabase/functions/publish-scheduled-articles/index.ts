@@ -81,6 +81,26 @@ Deno.serve(async (req) => {
           title: article.title,
           success: true
         })
+
+        // Send push notification for newly published article
+        try {
+          const slug = article.slug || article.id
+          await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              title: 'New on AIinASIA',
+              body: article.title,
+              url: `/article/${slug}`,
+            }),
+          })
+          console.log(`Push notification sent for: ${article.title}`)
+        } catch (pushErr) {
+          console.error(`Push notification failed for ${article.id}:`, pushErr)
+        }
       }
     }
 
