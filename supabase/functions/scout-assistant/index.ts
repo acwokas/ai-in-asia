@@ -14,10 +14,10 @@ serve(async (req) => {
 
   try {
     const { action, content, context } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error('GOOGLE_AI_API_KEY is not configured');
     }
 
     // Handle validate-links action separately
@@ -27,7 +27,7 @@ serve(async (req) => {
 
     // Handle rewrite-with-images action separately
     if (action === 'rewrite-with-images') {
-      return await handleRewriteWithImages(content, context, LOVABLE_API_KEY, corsHeaders);
+      return await handleRewriteWithImages(content, context, GOOGLE_AI_API_KEY, corsHeaders);
     }
 
     let systemPrompt = '';
@@ -98,14 +98,14 @@ ALT3: [alternative option 3]`;
         throw new Error('Invalid action');
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${GOOGLE_AI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -122,7 +122,7 @@ ALT3: [alternative option 3]`;
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'AI service requires additional credits.' }),
+          JSON.stringify({ error: 'AI service requires additional credits. Please check your Google AI API quota.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -720,14 +720,14 @@ ${content}`;
 
     const generateHeroImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const imgResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Editorial magazine cover photograph. ${description}
 
@@ -759,14 +759,14 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
 
     const generateMidImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      const imgResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const imgResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Editorial in-article photograph. ${description}
 

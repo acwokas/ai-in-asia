@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('Generating 3-Before-9 briefing...');
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
     let signals = '';
     const signalSummaries: string[] = [];
 
-    if (lovableApiKey) {
+    if (googleApiKey) {
       for (const article of selectedArticles) {
         const summaryPrompt = `Write a brief 2-sentence signal for a morning briefing about this article:
 Title: "${article.title}"
@@ -123,14 +123,14 @@ The signal should:
 
 Return ONLY the two sentences.`;
 
-        const response = await fetch('https://api.lovable.dev/v1/chat/completions', {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: summaryPrompt }],
             max_tokens: 150,
             temperature: 0.6,
@@ -163,21 +163,21 @@ Return ONLY the two sentences.`;
       whatChangesNext: 'Monitor developments through the week as these stories evolve.',
     };
 
-    if (lovableApiKey) {
+    if (googleApiKey) {
       const tldrPrompt = `Based on these 3 AI news signals:
 ${selectedArticles.map((a, i) => `${i + 1}. ${a.title}`).join('\n')}
 
 Generate 3 brief TLDR bullets (each 8-12 words) that summarize the key takeaways for the day.
 Return as JSON: { "bullets": ["bullet1", "bullet2", "bullet3"] }`;
 
-      const tldrResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+      const tldrResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          'Authorization': `Bearer ${googleApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-lite',
+          model: 'gemini-2.5-flash-lite',
           messages: [{ role: 'user', content: tldrPrompt }],
           max_tokens: 200,
           temperature: 0.6,

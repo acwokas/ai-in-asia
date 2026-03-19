@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
 
     await requireAdmin(supabase, user.id)
 
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured')
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY')
+    if (!googleApiKey) {
+      throw new Error('GOOGLE_AI_API_KEY not configured')
     }
 
     console.log('Starting AI-powered event scraping...')
@@ -76,14 +76,14 @@ Deno.serve(async (req) => {
         console.log(`Extracting events from ${source.name} using AI...`)
 
         // Use AI to extract structured event data
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'gemini-2.5-flash',
             messages: [
               {
                 role: 'system',
