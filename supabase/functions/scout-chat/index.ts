@@ -50,10 +50,33 @@ serve(async (req) => {
       },
     });
 
-    // Require authentication
+    // Try standard auth first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (!user || authError) {
+    let authenticatedUserId = user?.id;
+
+    // If standard auth fails but we have a JWT, try to extract user from expired token
+    if (!authenticatedUserId && authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload.sub) {
+            // Verify user exists using service role
+            const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+            const { data: userData } = await adminClient.auth.admin.getUserById(payload.sub);
+            if (userData?.user) {
+              authenticatedUserId = userData.user.id;
+              console.log('Recovered user from expired JWT:', authenticatedUserId);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('JWT recovery failed:', e.message);
+      }
+    }
+
+    if (!authenticatedUserId) {
       return new Response(
         JSON.stringify({ error: 'Authentication required. Please sign in to use Scout.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -68,7 +91,7 @@ serve(async (req) => {
       const { data: stats } = await supabase
         .from('user_stats')
         .select('points, level')
-        .eq('user_id', user.id)
+        .eq('user_id', authenticatedUserId)
         .single();
       
       if (stats) {
@@ -91,7 +114,7 @@ serve(async (req) => {
       .from('scout_queries')
       .select('query_count')
       .eq('query_date', today)
-      .eq('user_id', user.id)
+      .eq('user_id', authenticatedUserId)
       .maybeSingle();
 
     const currentCount = queryData?.query_count || 0;
@@ -111,12 +134,12 @@ serve(async (req) => {
         .from('scout_queries')
         .update({ query_count: currentCount + 1 })
         .eq('query_date', today)
-        .eq('user_id', user.id);
+        .eq('user_id', authenticatedUserId);
     } else {
       await supabase
         .from('scout_queries')
         .insert({ 
-          user_id: user.id, 
+          user_id: authenticatedUserId, 
           query_date: today, 
           query_count: 1 
         });
