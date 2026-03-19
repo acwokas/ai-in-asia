@@ -143,10 +143,10 @@ serve(async (req) => {
       category_slug: (a.categories as any)?.slug || 'news'
     })) || [];
     
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error('GOOGLE_AI_API_KEY is not configured');
     }
 
     const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
@@ -252,7 +252,7 @@ If their question could relate to this article, answer with that context in mind
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'AI service requires additional credits.' }),
+          JSON.stringify({ error: 'AI service requires additional credits. Please check your Google AI API quota.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

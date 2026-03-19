@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Check for admin auth if called manually
@@ -141,8 +141,8 @@ Last week's trends: ${lastWorthWatching?.trends?.content || 'N/A'}`;
      }
 
     // Generate content using Lovable AI
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY is required for AI content generation');
+    if (!googleApiKey) {
+      throw new Error('GOOGLE_AI_API_KEY is required for AI content generation');
     }
 
     // Generate Editor's Note (if requested)
@@ -165,14 +165,14 @@ Write a friendly, conversational Editor's Note (60-80 words) that:
 Return ONLY the paragraph text, no headers or quotes.`;
 
       console.log('Generating Editor\'s Note...');
-      const editorNoteResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const editorNoteResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          'Authorization': `Bearer ${googleApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-3-flash-preview',
+          model: 'gemini-3-flash-preview',
           messages: [
             { role: 'system', content: 'You are a friendly AI news editor writing for curious professionals in Asia. Be warm, clear, and occasionally witty. Avoid corporate jargon - write like a human, not a press release.' },
             { role: 'user', content: editorNotePrompt }
@@ -218,14 +218,14 @@ Write a punchy "Emerging AI Trends" section (40-60 words) that:
 
 Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
 
-    const trendsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const trendsResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${googleApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [{ role: 'user', content: trendsPrompt }],
         max_tokens: 200,
         temperature: 0.7,
@@ -262,14 +262,14 @@ Write a fun "Upcoming Events" section (40-60 words) that:
 
 Return a JSON object with "title" and "content" keys. The title should be a catchy 3-5 word headline. Return ONLY valid JSON.`;
 
-    const eventsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const eventsResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${googleApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [{ role: 'user', content: eventsPrompt }],
         max_tokens: 200,
         temperature: 0.7,
@@ -302,14 +302,14 @@ Write a "Company Spotlight" section (40-60 words) that:
 
 Return a JSON object with "title" and "content" keys. The title should name the company/companies featured. Return ONLY valid JSON.`;
 
-    const spotlightResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const spotlightResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${googleApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [{ role: 'user', content: spotlightPrompt }],
         max_tokens: 200,
         temperature: 0.7,
@@ -349,14 +349,14 @@ Write a "Policy Watch" section (40-60 words) that:
 
 Return a JSON object with "title" and "content" keys. The title should reference the key regulatory focus. Return ONLY valid JSON.`;
 
-    const policyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const policyResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${googleApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [{ role: 'user', content: policyPrompt }],
         max_tokens: 200,
         temperature: 0.7,
@@ -421,14 +421,14 @@ Write exactly one sentence that:
 Return ONLY the sentence. No labels. No explanation.`;
        }
 
-       const continuityResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+       const continuityResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
          method: 'POST',
          headers: {
-           'Authorization': `Bearer ${lovableApiKey}`,
+           'Authorization': `Bearer ${googleApiKey}`,
            'Content-Type': 'application/json',
          },
          body: JSON.stringify({
-           model: 'google/gemini-2.5-flash-lite',
+           model: 'gemini-2.5-flash-lite',
            messages: [{ role: 'user', content: continuityPrompt }],
            max_tokens: 100,
            temperature: 0.6,
@@ -467,14 +467,14 @@ Examples of good tension framing:
 
 Return ONLY the sentence. No labels. No explanation.`;
 
-        const weeklyPromiseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const weeklyPromiseResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: weeklyPromisePrompt }],
             max_tokens: 80,
             temperature: 0.6,
@@ -510,14 +510,14 @@ Rules:
 
 Return ONLY the sentences. No labels. No explanation.`;
 
-        const adriansTakeResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const adriansTakeResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: adriansTakePrompt }],
             max_tokens: 150,
             temperature: 0.7,
@@ -556,14 +556,14 @@ Bad examples (avoid):
 
 Return ONLY the sentence. No explanation.`;
 
-        const collectiveResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const collectiveResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: collectivePrompt }],
             max_tokens: 50,
             temperature: 0.5,
@@ -622,14 +622,14 @@ Rules:
 
 Return a JSON object with "worth_it_if" and "skip_if" keys. Return ONLY valid JSON.`;
 
-        const roadmapResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const roadmapResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [{ role: 'user', content: roadmapPrompt }],
             max_tokens: 100,
             temperature: 0.6,
@@ -679,14 +679,14 @@ Generate 2 fun email subject lines (A/B test variants) that:
 
 Return a JSON object with "subject_a" and "subject_b" keys. Return ONLY valid JSON.`;
 
-      const subjectResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const subjectResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          'Authorization': `Bearer ${googleApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-3-flash-preview',
+          model: 'gemini-3-flash-preview',
           messages: [{ role: 'user', content: subjectPrompt }],
           max_tokens: 150,
           temperature: 0.8,
@@ -729,14 +729,14 @@ The sentence should:
 
 Return ONLY the sentence, no quotes.`;
 
-        const summaryResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const summaryResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-lite',
+            model: 'gemini-2.5-flash-lite',
             messages: [
               { role: 'user', content: summaryPrompt }
             ],

@@ -9,7 +9,7 @@ const corsHeaders = {
 async function generateAndUploadSignalImages(
   imagePrompts: string[],
   supabase: any,
-  lovableApiKey: string
+  googleApiKey: string
 ): Promise<string[]> {
   const signalImages: string[] = [];
 
@@ -17,14 +17,14 @@ async function generateAndUploadSignalImages(
     try {
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          'Authorization': `Bearer ${googleApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: imagePrompts[i] }
           ],
@@ -99,10 +99,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
 
-    if (!lovableApiKey) {
-      throw new Error("LOVABLE_API_KEY not configured");
+    if (!googleApiKey) {
+      throw new Error("GOOGLE_AI_API_KEY not configured");
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -198,15 +198,15 @@ Content: ${contentText.substring(0, 2000)}`;
     let signalImages: string[] = [];
     let seoFields: Record<string, string> = {};
     try {
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${lovableApiKey}`,
+          "Authorization": `Bearer ${googleApiKey}`,
           "Content-Type": "application/json",
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "gemini-2.5-flash",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: "Generate 3 concise TL;DR bullet points plus the editorial context lines." }
@@ -269,7 +269,7 @@ Content: ${contentText.substring(0, 2000)}`;
           throw new Error("Rate limit exceeded. Please try again in a moment.");
         }
         if (aiResponse.status === 402) {
-          throw new Error("Payment required. Please add credits to your Lovable AI workspace.");
+          throw new Error("Payment required. Please check your Google AI API quota.");
         }
         throw new Error(`AI API error: ${aiResponse.status} - ${errorText}`);
       }
@@ -308,7 +308,7 @@ Content: ${contentText.substring(0, 2000)}`;
       // Generate signal images using Gemini image model
       if (imagePrompts.length > 0) {
         try {
-          signalImages = await generateAndUploadSignalImages(imagePrompts, supabase, lovableApiKey);
+          signalImages = await generateAndUploadSignalImages(imagePrompts, supabase, googleApiKey);
           console.log(`Generated ${signalImages.filter(Boolean).length} signal images`);
         } catch (imgErr) {
           console.error("Signal image generation failed (non-blocking):", imgErr);

@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase configuration");
@@ -69,21 +69,21 @@ serve(async (req) => {
       .filter(Boolean);
 
     // Use AI to generate smart recommendations
-    if (LOVABLE_API_KEY) {
+    if (GOOGLE_AI_API_KEY) {
       const articleTitles = readingHistory
         .map((h: any) => h.articles?.title)
         .filter(Boolean)
         .slice(0, 10)
         .join(", ");
 
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "Authorization": `Bearer ${GOOGLE_AI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "gemini-2.5-flash",
           messages: [
             {
               role: "system",

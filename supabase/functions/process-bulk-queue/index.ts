@@ -15,10 +15,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
 
-    if (!lovableApiKey) {
-      throw new Error("LOVABLE_API_KEY not configured");
+    if (!googleApiKey) {
+      throw new Error("GOOGLE_AI_API_KEY not configured");
     }
 
     // Check for authorization - support both admin users and internal service calls
@@ -178,11 +178,11 @@ serve(async (req) => {
     try {
       // Process based on operation type
       if (job.operation_type === "add_internal_links") {
-        await processInternalLinks(supabase, job, lovableApiKey);
+        await processInternalLinks(supabase, job, googleApiKey);
       } else if (job.operation_type === "generate_ai_comments") {
-        await processAIComments(supabase, job, lovableApiKey);
+        await processAIComments(supabase, job, googleApiKey);
       } else if (job.operation_type === "generate_seo") {
-        await processSEOGeneration(supabase, job, lovableApiKey);
+        await processSEOGeneration(supabase, job, googleApiKey);
       } else if (job.operation_type === "tldr_context_update") {
         // This operation is handled by bulk-update-tldr-context edge function
         // Skip it here - it has its own background processing
@@ -240,7 +240,7 @@ serve(async (req) => {
   }
 });
 
-async function processInternalLinks(supabase: any, job: any, lovableApiKey: string) {
+async function processInternalLinks(supabase: any, job: any, googleApiKey: string) {
   const articleIds = job.article_ids as string[];
   const options = job.options || {};
   const ARTICLES_PER_RUN = 15; // Process 15 articles per invocation to avoid timeout
@@ -338,14 +338,14 @@ async function processInternalLinks(supabase: any, job: any, lovableApiKey: stri
         }
 
         // Use AI to add links
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${lovableApiKey}`,
+            Authorization: `Bearer ${googleApiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: "gemini-2.5-flash",
             messages: [
               {
                 role: "system",
@@ -473,7 +473,7 @@ Return ONLY the updated content with links added. Do not change any other aspect
   }
 }
 
-async function processAIComments(supabase: any, job: any, lovableApiKey: string) {
+async function processAIComments(supabase: any, job: any, googleApiKey: string) {
   const articleIds = job.article_ids as string[];
   const options = job.options || {};
   const ARTICLES_PER_RUN = 5; // Process 5 articles per invocation (each article = 3-5 AI calls)
@@ -671,14 +671,14 @@ ${temporalInstruction ? `NOTE: ${temporalInstruction}` : ''}
 
 Write ONE comment that references something SPECIFIC from the article content.`;
 
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${lovableApiKey}`,
+              'Authorization': `Bearer ${googleApiKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
+              model: 'gemini-2.5-flash',
               messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: prompt }
@@ -828,7 +828,7 @@ Write ONE comment that references something SPECIFIC from the article content.`;
   }
 }
 
-async function processSEOGeneration(supabase: any, job: any, lovableApiKey: string) {
+async function processSEOGeneration(supabase: any, job: any, googleApiKey: string) {
   const articleIds = job.article_ids as string[];
   const ARTICLES_PER_RUN = 30; // Process 30 articles per invocation
   const processedSoFar = job.processed_items || 0;
@@ -879,14 +879,14 @@ async function processSEOGeneration(supabase: any, job: any, lovableApiKey: stri
       const fullText = `${article.title}\n\n${article.excerpt || ""}\n\n${textContent}`.substring(0, 3000);
 
       // Generate SEO metadata
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
+          Authorization: `Bearer ${googleApiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "gemini-2.5-flash",
           messages: [
             {
               role: "system",

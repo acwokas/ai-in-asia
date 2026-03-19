@@ -27,12 +27,12 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
 
-    if (!lovableApiKey) {
-      console.error('LOVABLE_API_KEY is not set in environment variables');
+    if (!googleApiKey) {
+      console.error('GOOGLE_AI_API_KEY is not set in environment variables');
       return new Response(
-        JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }), 
+        JSON.stringify({ error: 'GOOGLE_AI_API_KEY not configured' }), 
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('LOVABLE_API_KEY is configured:', lovableApiKey ? 'yes' : 'no');
+    console.log('GOOGLE_AI_API_KEY is configured:', googleApiKey ? 'yes' : 'no');
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         console.log(`Fetched ${html.length} characters from ${source.name}`);
 
         // Use AI to extract tool data from HTML
-        if (lovableApiKey) {
+        if (googleApiKey) {
           console.log(`Calling AI to extract tools from ${source.name}...`);
           
           // Clean HTML to focus on content
@@ -112,14 +112,14 @@ Deno.serve(async (req) => {
             console.log(`Cleaned HTML to ${cleanedHtml.length} characters`);
           }
           
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${lovableApiKey}`,
+              'Authorization': `Bearer ${googleApiKey}`,
             },
             body: JSON.stringify({
-              model: 'google/gemini-2.5-pro',
+              model: 'gemini-2.5-pro',
               messages: [
                 {
                   role: 'system',
@@ -231,7 +231,7 @@ ${cleanedHtml}`
             failedScrapes++;
           }
         } else {
-          console.error('LOVABLE_API_KEY not configured');
+          console.error('GOOGLE_AI_API_KEY not configured');
           failedScrapes++;
         }
 
