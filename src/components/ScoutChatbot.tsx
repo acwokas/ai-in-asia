@@ -1,3 +1,4 @@
+// Session refresh fix - v2
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
