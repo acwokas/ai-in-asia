@@ -1052,3 +1052,9 @@ blockquote.tiktok-embed {
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
+
+/* Hide empty paragraphs from markdown conversion */
+.prose p:empty,
+article p:empty {
+  display: none;
+}
