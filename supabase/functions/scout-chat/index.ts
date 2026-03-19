@@ -192,6 +192,7 @@ Response format:
 
 Tool use guidance:
 - Call search_articles whenever the user asks about a specific company, person, country, technology, policy, event, or named topic.
+- When the user asks what is trending, what is new, or for general updates, use search_articles with a broad query like "latest" or "AI". The search results will include recent articles. Summarise the most interesting findings and link to the articles.
 - Do NOT call search_articles for general knowledge questions (e.g. "what is a large language model", "explain reinforcement learning").
 - After searching, synthesise the results into a direct answer — don't just list article titles.
 - If search returns no results, say so honestly and answer from your own knowledge if you can.
@@ -337,6 +338,17 @@ If their question could relate to this article, answer with that context in mind
             seenIds.add(a.id);
             articles.push(a);
           }
+        }
+
+        // Fallback: if no keyword matches, fetch recent articles
+        if (articles.length === 0) {
+          const { data: recentArticles } = await supabase
+            .from('articles')
+            .select('id, title, slug, excerpt')
+            .eq('status', 'published')
+            .order('published_at', { ascending: false })
+            .limit(10);
+          if (recentArticles) articles.push(...recentArticles);
         }
         
         if (articles && articles.length > 0) {
