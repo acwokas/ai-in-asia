@@ -269,8 +269,12 @@ const ScoutChatbot = () => {
       }
 
       // Always get a fresh session token to avoid stale auth
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      const token = freshSession?.access_token || session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
+      const activeSession = refreshedSession || session;
+      if (!activeSession?.access_token) {
+        throw new Error("Please sign in to use Scout.");
+      }
+      const token = activeSession.access_token;
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scout-chat`,

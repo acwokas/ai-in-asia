@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
           <li>There may be a database connection issue</li>
         </ul>
         <p>
-          <a href="https://ai-in-asia.lovable.app/admin/calendar" style="color: #3182ce;">
+          <a href="https://aiinasia.com/admin/calendar" style="color: #3182ce;">
             View Content Calendar →
           </a>
         </p>
