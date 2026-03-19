@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     // Find all articles that are scheduled for publishing and the time has passed
     const { data: scheduledArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, scheduled_for, status')
+      .select('id, title, slug, scheduled_for, status')
       .eq('status', 'scheduled')
       .not('scheduled_for', 'is', null)
       .lte('scheduled_for', now)
