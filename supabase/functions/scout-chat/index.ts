@@ -315,6 +315,20 @@ If their question could relate to this article, answer with that context in mind
           .order('published_at', { ascending: false })
           .limit(10);
         
+        // Search events
+        const { data: searchEvents } = await supabase
+          .from('events')
+          .select('id, title, slug, description, start_date, location')
+          .or(`title.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
+          .limit(5);
+
+        // Search AI tools
+        const { data: searchTools } = await supabase
+          .from('ai_tools')
+          .select('id, name, description, url, category')
+          .or(`name.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
+          .limit(5);
+
         // Combine and deduplicate
         const seenIds = new Set<string>();
         const articles: typeof ilikeResults = [];
@@ -331,14 +345,14 @@ If their question could relate to this article, answer with that context in mind
           ).join('\n\n') + '\n\n';
         }
         
-        if (events && events.length > 0) {
-          resultsText += '📅 **Events:**\n\n' + events.map(e => 
+        if (searchEvents && searchEvents.length > 0) {
+          resultsText += '📅 **Events:**\n\n' + searchEvents.map(e => 
             `- ${e.title}\n  ${e.description || ''}\n  ${e.location} - ${new Date(e.start_date).toLocaleDateString()}\n  Link: /events/${e.slug || e.id}`
           ).join('\n\n') + '\n\n';
         }
         
-        if (tools && tools.length > 0) {
-          resultsText += '🔧 **AI Tools:**\n\n' + tools.map(t => 
+        if (searchTools && searchTools.length > 0) {
+          resultsText += '🔧 **AI Tools:**\n\n' + searchTools.map(t => 
             `- ${t.name}${t.category ? ` (${t.category})` : ''}\n  ${t.description || ''}\n  Link: ${t.url}`
           ).join('\n\n') + '\n\n';
         }
