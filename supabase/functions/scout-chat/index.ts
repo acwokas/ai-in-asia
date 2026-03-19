@@ -294,83 +294,39 @@ If their question could relate to this article, answer with that context in mind
         const sanitizedQuery = args.query.replace(/[%_\\]/g, '\\$&').slice(0, 200);
         console.log('Searching for:', sanitizedQuery);
         
-        // First search by title and excerpt
-        const { data: titleExcerptResults } = await supabase
+        // Search by title/excerpt using ilike
+        const { data: ilikeResults } = await supabase
           .from('articles')
-          .select('id, title, slug, excerpt, content')
+          .select('id, title, slug, excerpt')
           .eq('status', 'published')
           .or(`title.ilike.%${sanitizedQuery}%,excerpt.ilike.%${sanitizedQuery}%`)
-          .limit(5);
+          .order('published_at', { ascending: false })
+          .limit(10);
         
-        // Then get ALL published articles to search content (no limit)
-        const { data: allArticles } = await supabase
+        // Search by full-text search on title
+        const searchTerms = sanitizedQuery.split(/\s+/).filter(Boolean).slice(0, 6).join(' | ');
+        const { data: ftsResults } = await supabase
           .from('articles')
-          .select('id, title, slug, excerpt, content')
-          .eq('status', 'published');
+          .select('id, title, slug, excerpt')
+          .eq('status', 'published')
+          .textSearch('title', searchTerms, { type: 'websearch', config: 'english' })
+          .order('published_at', { ascending: false })
+          .limit(10);
         
-        // Filter articles by searching through content text
-        const contentMatches = allArticles?.filter(article => {
-          if (!article.content || !Array.isArray(article.content)) return false;
-          
-          const contentText = article.content
-            .map((block: any) => {
-              if (block.type === 'paragraph' && block.content && Array.isArray(block.content)) {
-                return block.content
-                  .filter((item: any) => item.type === 'text')
-                  .map((item: any) => item.text)
-                  .join('');
-              }
-              return '';
-            })
-            .join(' ')
-            .toLowerCase();
-          
-          return contentText.includes(sanitizedQuery.toLowerCase());
-        }) || [];
-        
-        // Combine and deduplicate results
-        const articleIds = new Set(titleExcerptResults?.map(a => a.id) || []);
-        const uniqueContentMatches = contentMatches.filter(a => !articleIds.has(a.id));
-        const articles = [...(titleExcerptResults || []), ...uniqueContentMatches].slice(0, 10);
-        
-        // Search events
-        const { data: events } = await supabase
-          .from('events')
-          .select('id, title, slug, description, start_date, location')
-          .or(`title.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%,location.ilike.%${sanitizedQuery}%`)
-          .limit(5);
-        
-        // Search AI tools
-        const { data: tools } = await supabase
-          .from('ai_tools')
-          .select('id, name, description, url, category')
-          .or(`name.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%,category.ilike.%${sanitizedQuery}%`)
-          .limit(5);
-        
-        console.log('Found articles:', articles?.length || 0, 'events:', events?.length || 0, 'tools:', tools?.length || 0);
-        
-        // Format results for AI
-        let resultsText = '';
+        // Combine and deduplicate
+        const seenIds = new Set<string>();
+        const articles: typeof ilikeResults = [];
+        for (const a of [...(ilikeResults || []), ...(ftsResults || [])]) {
+          if (!seenIds.has(a.id)) {
+            seenIds.add(a.id);
+            articles.push(a);
+          }
+        }
         
         if (articles && articles.length > 0) {
-          resultsText += '📰 **Articles:**\n\n' + articles.map(a => {
-            // Extract text content from jsonb content field
-            let contentText = '';
-            if (a.content && Array.isArray(a.content)) {
-              contentText = a.content
-                .filter((block: any) => block.type === 'paragraph' && block.content && Array.isArray(block.content))
-                .map((block: any) => 
-                  block.content
-                    .filter((item: any) => item.type === 'text')
-                    .map((item: any) => item.text)
-                    .join('')
-                )
-                .join(' ')
-                .slice(0, 500); // First 500 chars of content
-            }
-            
-            return `- ${a.title}\n  ${a.excerpt || ''}\n  Content: ${contentText}\n  Link: /article/${a.slug}`;
-          }).join('\n\n') + '\n\n';
+          resultsText += '📰 **Articles:**\n\n' + articles.map(a => 
+            `- ${a.title}\n  ${a.excerpt || ''}\n  Link: /article/${a.slug}`
+          ).join('\n\n') + '\n\n';
         }
         
         if (events && events.length > 0) {
