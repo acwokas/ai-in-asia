@@ -162,7 +162,6 @@ const Index = () => {
         `)
         .eq("status", "published")
         .eq("featured_on_homepage", true)
-        .neq("article_type", "three_before_nine")
         .gte("published_at", oneMonthAgoISO)
         .order("sticky", { ascending: false })
         .order("published_at", { ascending: false, nullsFirst: false })
