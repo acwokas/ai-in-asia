@@ -7,7 +7,9 @@ import { ArrowRight } from "lucide-react";
 const ThreeBeforeNineTicker = memo(() => {
   const { data } = useQuery({
     queryKey: ["3b9-ticker"],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data: edition, error } = await supabase
         .from("articles")
