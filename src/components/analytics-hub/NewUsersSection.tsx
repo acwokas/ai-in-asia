@@ -85,7 +85,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-2 max-w-sm">
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{data.totalSessions.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(data?.totalSessions ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
