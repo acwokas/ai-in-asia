@@ -27,7 +27,7 @@ export function useGA4BriefingTracking(
 
     const timer = setTimeout(() => {
       const cards = document.querySelectorAll(
-        '[data-signal], [data-story], .signal-card, .story-card, article section, [class*="signal"]'
+        'div.space-y-8 > article, main > div > article, article.relative.bg-card'
       );
 
       let targets: Element[] = Array.from(cards);
