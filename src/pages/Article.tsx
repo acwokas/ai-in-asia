@@ -199,15 +199,28 @@ const Article = () => {
       for (const m of MILESTONES) {
         if (pct >= m && !ga4FiredDepths.current.has(m)) {
           ga4FiredDepths.current.add(m);
+
+          if (m === 25) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: "article_read_25", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
+          }
+
+          if (m === 50) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: "article_read_50", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
+          }
+
+          if (m === 75) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: "article_read_75", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
+          }
+
           if (m === 90) {
             const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
             if (seconds >= 60) {
               window.dataLayer = window.dataLayer || [];
               window.dataLayer.push({ event: "article_read_complete", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category, time_on_page: seconds });
             }
-          } else {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: `article_read_${m}`, article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
           }
         }
       }
@@ -234,7 +247,7 @@ const Article = () => {
   // useEffect #3 — Newsletter CTA tracking
   useEffect(() => {
     if (!ga4ArticleId) return;
-    const targets = document.querySelectorAll(".newsletter-cta, [data-newsletter]");
+    const targets = document.querySelectorAll(".newsletter-cta");
     if (!targets.length) return;
 
     const viewedSet = new WeakSet<Element>();
