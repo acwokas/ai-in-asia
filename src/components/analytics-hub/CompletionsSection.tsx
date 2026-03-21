@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface Props {
   startDate: string;
@@ -31,8 +31,8 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
           .limit(500),
       ]);
 
-      const events = completionsRes.data || [];
-      const guideViews = guideViewsRes.data || [];
+      const events = completionsRes.data ?? [];
+      const guideViews = guideViewsRes.data ?? [];
 
       const milestones = {
         "article_read_25": events.filter(e => e.event_name === "article_read_25").length,
@@ -43,7 +43,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 
       // Top completed articles by title from event_data, fallback to path
       const titleCounts: Record<string, number> = {};
-      events
+      (events ?? [])
         .filter(e => e.event_name === "article_read_complete")
         .forEach(e => {
           const ed = e.event_data as any;
@@ -53,20 +53,31 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       const topCompleted = Object.entries(titleCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
-        .map(([name, count]) => ({ name: name.length > 40 ? name.slice(0, 37) + "…" : name, fullName: name, count }));
+        .map(([name, count]) => ({
+          name: (name ?? "unknown").length > 40 ? (name ?? "unknown").slice(0, 37) + "…" : (name ?? "unknown"),
+          fullName: name ?? "unknown",
+          count: count ?? 0,
+        }));
 
       const avgGuideScroll = guideViews.length > 0
-        ? Math.round(guideViews.reduce((s, g) => s + (g.scroll_depth_percent || 0), 0) / guideViews.length)
+        ? Math.round((guideViews ?? []).reduce((s, g) => s + (g?.scroll_depth_percent ?? 0), 0) / guideViews.length)
         : 0;
       const avgGuideTime = guideViews.length > 0
-        ? Math.round(guideViews.reduce((s, g) => s + (g.time_on_page_seconds || 0), 0) / guideViews.length)
+        ? Math.round((guideViews ?? []).reduce((s, g) => s + (g?.time_on_page_seconds ?? 0), 0) / guideViews.length)
         : 0;
 
       const completionRate = milestones["article_read_25"] > 0
         ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100)
         : 0;
 
-      return { milestones, topCompleted, avgGuideScroll, avgGuideTime, guideViewCount: guideViews.length, completionRate };
+      return {
+        milestones,
+        topCompleted: topCompleted ?? [],
+        avgGuideScroll,
+        avgGuideTime,
+        guideViewCount: (guideViews ?? []).length,
+        completionRate,
+      };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -123,7 +134,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
                   {(data?.topCompleted ?? []).map(row => (
                     <TableRow key={row.fullName}>
                       <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
-                      <TableCell className="text-right font-medium">{row.count}</TableCell>
+                      <TableCell className="text-right font-medium">{(row?.count ?? 0).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -151,7 +162,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 const StatRow = ({ label, value }: { label: string; value: string | number }) => (
   <div className="flex justify-between items-center p-2 rounded border">
     <span className="text-sm text-muted-foreground">{label}</span>
-    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? value.toLocaleString() : value}</Badge>
+    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? (value ?? 0).toLocaleString() : value}</Badge>
   </div>
 );
 
