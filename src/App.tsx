@@ -120,6 +120,7 @@ const AdminGuides = lazy(() => import("./pages/AdminGuides"));
 const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
 const NewsletterPerformance = lazy(() => import("./pages/NewsletterPerformance"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
+const AnalyticsAll = lazy(() => import("./pages/AnalyticsAll"));
 const ContentInsights = lazy(() => import("./pages/ContentInsights"));
 const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
