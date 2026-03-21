@@ -100,10 +100,10 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         {/* Top completed bar chart + table */}
         <div>
           <h4 className="text-sm font-medium mb-3">Top 10 Completed Articles</h4>
-          {data.topCompleted.length ? (
+          {(data?.topCompleted ?? []).length ? (
             <>
               <ChartContainer config={{ count: { label: "Completions", color: "hsl(var(--accent-foreground))" } }} className="h-[250px]">
-                <BarChart data={data.topCompleted} layout="vertical" margin={{ left: 120 }}>
+                <BarChart data={data?.topCompleted ?? []} layout="vertical" margin={{ left: 120 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                   <XAxis type="number" className="text-xs" />
                   <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
