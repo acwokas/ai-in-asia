@@ -111,7 +111,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
       {/* Top entry pages table */}
       <div>
         <h4 className="text-sm font-medium mb-3">Top Entry Pages</h4>
-        {data.topEntryPages.length ? (
+        {data?.topEntryPages?.length ? (
           <Table>
             <TableHeader>
               <TableRow>
