@@ -105,7 +105,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       {/* Clicked elements horizontal bar chart */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data.totalNavEvents} events)</h4>
+        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data?.totalNavEvents ?? 0} events)</h4>
         {data.clickedElements.length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
             <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
