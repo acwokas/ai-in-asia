@@ -134,7 +134,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.topPages.map(p => (
+            {(data?.topPages ?? []).map(p => (
               <TableRow key={p.path}>
                 <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
                 <TableCell className="text-right font-mono text-xs">{p.views}</TableCell>
