@@ -47,10 +47,10 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
   const filtered = categoryFilter === "all"
-    ? data.articles
-    : data.articles.filter(a => a.primary_category_id === categoryFilter);
+    ? (data?.articles ?? [])
+    : (data?.articles ?? []).filter(a => a.primary_category_id === categoryFilter);
 
-  const sorted = [...filtered].sort((a, b) => b.engagement - a.engagement);
+  const sorted = [...filtered].sort((a, b) => (b.engagement ?? 0) - (a.engagement ?? 0));
   const top10 = sorted.slice(0, 10);
   const bottom10 = sorted.length > 10 ? sorted.slice(-10).reverse() : [];
 
