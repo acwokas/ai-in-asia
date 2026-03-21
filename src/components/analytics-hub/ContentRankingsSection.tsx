@@ -61,7 +61,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
 
   const getCategoryName = (id: string | null) => {
     if (!id) return "—";
-    return data.categories.find(c => c.id === id)?.name || "—";
+    return data?.categories?.find(c => c.id === id)?.name || "—";
   };
 
   return (
