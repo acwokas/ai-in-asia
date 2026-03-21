@@ -161,7 +161,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Devices</h4>
           <div className="space-y-1.5">
-            {Object.entries(data.deviceCounts).map(([device, count]) => (
+            {Object.entries(data?.deviceCounts ?? {}).map(([device, count]) => (
               <div key={device} className="flex justify-between text-xs border rounded p-2">
                 <span className="capitalize">{device}</span>
                 <Badge variant="outline" className="text-[10px]">{count}</Badge>
