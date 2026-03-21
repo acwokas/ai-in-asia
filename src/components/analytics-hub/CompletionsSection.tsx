@@ -75,8 +75,10 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
   const funnelData = [
-    { stage: "25%", count: data.milestones["article_read_25"] },
-    { stage: "50%", count: data.milestones["article_read_50"] },
+    { stage: "25%", count: data?.milestones?.["article_read_25"] ?? 0 },
+    { stage: "50%", count: data?.milestones?.["article_read_50"] ?? 0 },
+    { stage: "75%", count: data?.milestones?.["article_read_75"] ?? 0 },
+    { stage: "Complete", count: data?.milestones?.["article_read_complete"] ?? 0 },
     { stage: "75%", count: data.milestones["article_read_75"] },
     { stage: "Complete", count: data.milestones["article_read_complete"] },
   ];
