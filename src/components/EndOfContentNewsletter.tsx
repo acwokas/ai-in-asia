@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { z } from "zod";
 import { isNewsletterSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
+import { trackEvent } from "@/components/GoogleAnalytics";
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
 
