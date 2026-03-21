@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { EmptyDataNotice } from "./EmptyDataNotice";
 
 interface Props {
   startDate: string;
@@ -41,7 +42,6 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         "article_read_complete": events.filter(e => e.event_name === "article_read_complete").length,
       };
 
-      // Top completed articles by title from event_data, fallback to path
       const titleCounts: Record<string, number> = {};
       (events ?? [])
         .filter(e => e.event_name === "article_read_complete")
@@ -70,6 +70,8 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100)
         : 0;
 
+      const hasData = events.length > 0;
+
       return {
         milestones,
         topCompleted: topCompleted ?? [],
@@ -77,6 +79,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         avgGuideTime,
         guideViewCount: (guideViews ?? []).length,
         completionRate,
+        hasData,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -84,6 +87,15 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 
   if (isLoading) return <SectionSkeleton />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
+
+  if (!data.hasData) {
+    return (
+      <div className="space-y-4">
+        <EmptyDataNotice message="Article read milestone events (25%, 50%, 75%, complete) will populate within 24–48 hours of tracking setup" />
+        <EmptyDataNotice variant="coming-soon" message="Guide completion tracking — integration coming soon" />
+      </div>
+    );
+  }
 
   const funnelData = [
     { stage: "25%", count: data?.milestones?.["article_read_25"] ?? 0 },
@@ -141,18 +153,22 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
               </Table>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">No completions recorded yet</p>
+            <EmptyDataNotice message="No article completions recorded yet — events will appear as readers finish articles" />
           )}
         </div>
 
         {/* Guide stats */}
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
-          <div className="space-y-3">
-            <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
-            <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
-            <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
-          </div>
+          {data.guideViewCount > 0 ? (
+            <div className="space-y-3">
+              <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
+              <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
+              <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
+            </div>
+          ) : (
+            <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking — integration coming soon" />
+          )}
         </div>
       </div>
     </div>
