@@ -219,6 +219,8 @@ const persister = createIDBPersister();
 const EngagementWrapper = () => {
   useEngagementLoop();
   useTrendingAutoRefresh();
+  useGA4NewUserTracking();
+  useGA4ReturningUserTracking();
   return null;
 };
 
