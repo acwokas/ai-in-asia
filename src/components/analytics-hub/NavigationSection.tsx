@@ -150,7 +150,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Top Referrers</h4>
           <div className="space-y-1.5">
-            {data.topReferrers.map(r => (
+            {(data?.topReferrers ?? []).map(r => (
               <div key={r.domain} className="flex justify-between text-xs border rounded p-2">
                 <span className="truncate">{r.domain}</span>
                 <Badge variant="secondary" className="text-[10px]">{r.count}</Badge>
