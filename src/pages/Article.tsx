@@ -44,6 +44,7 @@ import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
 import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
 import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
+import { useGA4ContentTracking } from "@/hooks/useGA4ContentTracking";
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
@@ -164,6 +165,9 @@ const Article = () => {
       });
     }
   }, [article?.id]);
+
+  // GA4 scroll depth, engagement score, newsletter CTA tracking
+  useGA4ContentTracking(article);
 
   useEffect(() => {
     window.scrollTo(0, 0);
