@@ -167,6 +167,7 @@ const Article = () => {
   }, [article?.id]);
 
   // GA4 scroll depth, engagement score, newsletter CTA tracking
+  console.log("[GA4] Article component mounting tracking for:", article?.id);
   useGA4ContentTracking(article);
 
   useEffect(() => {

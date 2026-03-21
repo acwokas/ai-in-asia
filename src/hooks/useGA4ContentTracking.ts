@@ -24,6 +24,7 @@ export const useGA4ContentTracking = (
 
   // ── Scroll-depth milestones on .article-content ──────────────────────
   useEffect(() => {
+    console.log("[GA4] Content tracking initialized for:", article?.title);
     if (!articleId) return;
     startTime.current = Date.now();
     maxDepth.current = 0;
