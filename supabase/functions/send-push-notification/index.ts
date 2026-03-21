@@ -1,6 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-// web-push removed: use the Web Push API via fetch instead
-// import webpush from 'npm:web-push'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +6,55 @@ const corsHeaders = {
 }
 
 const VAPID_PUBLIC_KEY = 'BD8frhjMCLpofBswS-zbKdQGp6-8PVlVFUZvqr_C3NLHw5WFhk-yk7d2xvCTue2SDDHFd35t8YPQ4Ah7aH95pWY'
+
+// --- VAPID / Web Push helpers (no npm:web-push dependency) ---
+
+function base64UrlToUint8Array(base64url: string): Uint8Array {
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
+  const pad = (4 - (base64.length % 4)) % 4
+  const raw = atob(base64 + '='.repeat(pad))
+  return Uint8Array.from(raw, c => c.charCodeAt(0))
+}
+
+async function importVapidKey(base64Key: string): Promise<CryptoKey> {
+  const raw = base64UrlToUint8Array(base64Key)
+  return crypto.subtle.importKey('pkcs8', raw, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
+}
+
+function uint8ToBase64Url(arr: Uint8Array): string {
+  let binary = ''
+  for (const byte of arr) binary += String.fromCharCode(byte)
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+async function createVapidAuthHeader(endpoint: string, vapidPrivateKey: string): Promise<{ authorization: string; cryptoKey: string }> {
+  const url = new URL(endpoint)
+  const audience = `${url.protocol}//${url.host}`
+  const expiration = Math.floor(Date.now() / 1000) + 12 * 60 * 60
+
+  const header = uint8ToBase64Url(new TextEncoder().encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })))
+  const payload = uint8ToBase64Url(new TextEncoder().encode(JSON.stringify({
+    aud: audience,
+    exp: expiration,
+    sub: 'mailto:hello@aiinasia.com',
+  })))
+
+  const unsignedToken = `${header}.${payload}`
+  const key = await importVapidKey(vapidPrivateKey)
+  const signature = new Uint8Array(await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    key,
+    new TextEncoder().encode(unsignedToken),
+  ))
+
+  // Convert from DER to raw r||s if needed (WebCrypto returns raw 64 bytes for P-256)
+  const jwt = `${unsignedToken}.${uint8ToBase64Url(signature)}`
+
+  return {
+    authorization: `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
+    cryptoKey: `p256ecdsa=${VAPID_PUBLIC_KEY}`,
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,11 +68,10 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Check admin auth (allow internal calls with service key via Authorization header)
+    // Check admin auth
     const authHeader = req.headers.get('Authorization')
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '')
-      // Allow service role key for internal calls
       if (token !== supabaseServiceKey) {
         const { data: { user }, error: authError } = await supabase.auth.getUser(token)
         if (authError || !user) {
@@ -53,13 +99,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    webpush.setVapidDetails(
-      'mailto:hello@aiinasia.com',
-      VAPID_PUBLIC_KEY,
-      vapidPrivateKey
-    )
-
-    // Fetch all subscriptions
     const { data: subscriptions, error: fetchError } = await supabase
       .from('push_subscriptions')
       .select('id, endpoint, p256dh, auth')
@@ -75,25 +114,34 @@ Deno.serve(async (req) => {
 
     for (const sub of subscriptions || []) {
       try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
+        const vapidHeaders = await createVapidAuthHeader(sub.endpoint, vapidPrivateKey)
+
+        const response = await fetch(sub.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'TTL': '86400',
+            'Authorization': vapidHeaders.authorization,
+            'Crypto-Key': vapidHeaders.cryptoKey,
           },
-          payload
-        )
-        successCount++
+          body: new TextEncoder().encode(payload),
+        })
+
+        if (response.ok || response.status === 201) {
+          successCount++
+        } else if (response.status === 410 || response.status === 404) {
+          expiredIds.push(sub.id)
+          failCount++
+        } else {
+          failCount++
+          console.error(`Push failed for ${sub.endpoint}: ${response.status}`)
+        }
       } catch (err: any) {
         failCount++
-        // Remove expired/invalid subscriptions (410 Gone or 404)
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          expiredIds.push(sub.id)
-        }
         console.error(`Push failed for ${sub.endpoint}:`, err.message)
       }
     }
 
-    // Clean up expired subscriptions
     if (expiredIds.length > 0) {
       await supabase.from('push_subscriptions').delete().in('id', expiredIds)
       console.log(`Removed ${expiredIds.length} expired subscriptions`)
