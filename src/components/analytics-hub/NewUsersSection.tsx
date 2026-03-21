@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -12,17 +11,42 @@ interface Props {
   range: string;
 }
 
+const PAGE_SIZE = 1000;
+
 export const NewUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-new-users", range],
     queryFn: async () => {
-      const [sessionsRes, recentSessionsRes, landingRes] = await Promise.all([
+      const fetchAllSessionStarts = async () => {
+        const rows: Array<{ started_at: string | null }> = [];
+        let from = 0;
+
+        while (true) {
+          const { data: batch, error } = await supabase
+            .from("analytics_sessions")
+            .select("started_at")
+            .gte("started_at", startDate)
+            .order("started_at", { ascending: true })
+            .range(from, from + PAGE_SIZE - 1);
+
+          if (error) throw error;
+
+          const safeBatch = batch ?? [];
+          rows.push(...safeBatch);
+
+          if (safeBatch.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+
+        return rows;
+      };
+
+      const [sessionsCountRes, sessionStarts, recentSessionsRes, landingRes] = await Promise.all([
         supabase
           .from("analytics_sessions")
-          .select("session_id, started_at")
-          .gte("started_at", startDate)
-          .order("started_at", { ascending: true })
-          .limit(1000),
+          .select("*", { count: "exact", head: true })
+          .gte("started_at", startDate),
+        fetchAllSessionStarts(),
         supabase
           .from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
@@ -37,13 +61,12 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .limit(1000),
       ]);
 
-      const sessions = sessionsRes.data ?? [];
+      const sessionsForChart = sessionStarts ?? [];
       const recentSessions = recentSessionsRes.data ?? [];
       const landings = landingRes.data ?? [];
 
-      // Daily sessions for AreaChart
       const dailyCounts: Record<string, number> = {};
-      (sessions ?? []).forEach((s) => {
+      sessionsForChart.forEach((s) => {
         if (!s?.started_at) return;
         const parsed = parseISO(s.started_at);
         if (Number.isNaN(parsed.getTime())) return;
@@ -57,14 +80,13 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         : parsedStart;
       const end = new Date();
       const allDays = eachDayOfInterval({ start, end });
-      const dailySessions = allDays.map(d => {
+      const dailySessions = allDays.map((d) => {
         const key = format(d, "yyyy-MM-dd");
         return { date: format(d, "MMM d"), sessions: dailyCounts[key] || 0 };
       });
 
-      // Top entry pages
       const landingCounts: Record<string, number> = {};
-      (landings ?? []).forEach((l) => {
+      landings.forEach((l) => {
         const p = l?.landing_page || "/";
         landingCounts[p] = (landingCounts[p] || 0) + 1;
       });
@@ -74,11 +96,10 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         .map(([page, count]) => ({ page, count }));
 
       return {
-        totalSessions: (sessions ?? []).length,
-        activeNow: (recentSessions ?? []).length,
-        dailySessions: dailySessions ?? [],
-        topEntryPages: topEntryPages ?? [],
-        recentSessions: (recentSessions ?? []).slice(0, 6),
+        totalSessions: sessionsCountRes.count ?? 0,
+        activeNow: recentSessions.length,
+        dailySessions,
+        topEntryPages,
       };
     },
     staleTime: 60 * 1000,
@@ -100,7 +121,6 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         </div>
       </div>
 
-      {/* Daily sessions AreaChart */}
       <div>
         <h4 className="text-sm font-medium mb-3">Daily Sessions</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
@@ -114,7 +134,6 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         </ChartContainer>
       </div>
 
-      {/* Top entry pages table */}
       <div>
         <h4 className="text-sm font-medium mb-3">Top Entry Pages</h4>
         {data?.topEntryPages?.length ? (
