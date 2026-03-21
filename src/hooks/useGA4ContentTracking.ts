@@ -46,12 +46,23 @@ export const useGA4ContentTracking = (
       for (const m of MILESTONES) {
         if (pct >= m && !firedDepths.current.has(m)) {
           firedDepths.current.add(m);
-          trackEvent("article_scroll_depth", {
-            article_id: articleId,
-            article_title: title,
-            article_category: categoryName,
-            depth_percent: m,
-          });
+          if (m === 90) {
+            const seconds = Math.round((Date.now() - startTime.current) / 1000);
+            if (seconds >= 60) {
+              trackEvent("article_read_complete", {
+                article_id: articleId,
+                article_title: title,
+                article_category: categoryName,
+                time_on_page: seconds,
+              });
+            }
+          } else {
+            trackEvent(`article_read_${m}`, {
+              article_id: articleId,
+              article_title: title,
+              article_category: categoryName,
+            });
+          }
         }
       }
     };
