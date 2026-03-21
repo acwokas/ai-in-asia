@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
   {
     title: "Analytics",
     items: [
+      { label: "Analytics Hub", path: "/admin/analytics/all", icon: LayoutDashboard },
       { label: "Site Dashboard", path: "/admin/dashboard", icon: Activity },
       { label: "Site Analytics", path: "/admin/site-analytics", icon: BarChart },
       { label: "Content Analytics", path: "/admin/analytics", icon: PieChart },
