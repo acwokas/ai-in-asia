@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useGA4GuideTracking } from "@/hooks/useGA4ContentTracking";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -57,6 +58,9 @@ const GuideDetail = () => {
       return data;
     },
   });
+
+  // GA4 guide engagement tracking
+  useGA4GuideTracking((guide as any)?.id, (guide as any)?.title, (guide as any)?.topic_category);
 
   // Redirect from /guides/:slug to /guides/:category/:slug
   useEffect(() => {
