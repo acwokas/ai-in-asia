@@ -26,7 +26,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
           .gte("viewed_at", startDate)
           .limit(200),
         supabase
-          .from("three_before_nine_editions")
+          .from("newsletter_editions")
           .select("id, edition_date, subject_line, published_at")
           .eq("status", "published")
           .order("edition_date", { ascending: false })
