@@ -80,7 +80,12 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
     { stage: "75%", count: data?.milestones?.["article_read_75"] ?? 0 },
     { stage: "Complete", count: data?.milestones?.["article_read_complete"] ?? 0 },
   ];
-        <ChartContainer config={{ count: { label: "Readers", color: "hsl(var(--primary))" } }} className="h-[200px]">
+
+  return (
+    <div className="space-y-6">
+      {/* Funnel chart */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data?.completionRate ?? 0}%)</h4>
           <BarChart data={funnelData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
             <XAxis dataKey="stage" className="text-xs" />
