@@ -15,9 +15,10 @@ export function useGA4NavigationTracking() {
         '[data-share], .share-btn, [aria-label*="share" i], [aria-label*="Share" i]'
       );
       if (shareBtn) {
-        const platform =
+      const platform =
           shareBtn.getAttribute("data-share") ||
           shareBtn.getAttribute("aria-label") ||
+          shareBtn.textContent?.trim() ||
           "unknown";
         push("social_share_click", {
           platform: platform.toLowerCase().replace(/share (on|to|via) /i, ""),
