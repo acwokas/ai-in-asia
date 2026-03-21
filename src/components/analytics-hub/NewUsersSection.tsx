@@ -89,7 +89,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{data.activeNow}</p>
+          <p className="text-2xl font-bold">{data?.activeNow ?? 0}</p>
           <p className="text-xs text-muted-foreground">Active (15 min)</p>
         </div>
       </div>
