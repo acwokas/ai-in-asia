@@ -173,7 +173,7 @@ export const useGA4GuideTracking = (
     return () => {
       const seconds = Math.round((Date.now() - startTime.current) / 1000);
       if (seconds >= 5) {
-        trackEvent("content_time_spent", {
+        trackEvent("guide_time_spent", {
           content_type: "guide",
           content_id: guideId,
           content_title: title,
