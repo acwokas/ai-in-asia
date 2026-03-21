@@ -119,7 +119,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.topCompleted.map(row => (
+                  {(data?.topCompleted ?? []).map(row => (
                     <TableRow key={row.fullName}>
                       <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
                       <TableCell className="text-right font-medium">{row.count}</TableCell>
