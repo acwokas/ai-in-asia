@@ -38,7 +38,7 @@ import { toast } from "sonner";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { fixEncoding } from "@/lib/textUtils";
 import { calculateReadingTime } from '@/lib/readingTime';
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
