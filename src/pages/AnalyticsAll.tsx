@@ -91,7 +91,7 @@ const AnalyticsAll = () => {
     { label: "Avg Engagement (s)", value: quickStats?.avgEngagement ?? 0, icon: Zap, color: "text-yellow-500" },
     { label: "Article Completions", value: quickStats?.completions ?? 0, icon: BookCheck, color: "text-purple-500" },
     { label: "Newsletter Subscribers", value: quickStats?.subscribers ?? 0, icon: Mail, color: "text-pink-500" },
-    { label: "Active Now", value: "—", icon: BarChart3, color: "text-cyan-500" },
+    { label: "Active Now", value: quickStats?.activeNow ?? 0, icon: BarChart3, color: "text-cyan-500" },
   ];
 
   const sections: { id: string; title: string; icon: React.ElementType; color: string; component: React.ReactNode }[] = [
