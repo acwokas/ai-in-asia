@@ -42,6 +42,15 @@ const EndOfContentNewsletter = () => {
         markNewsletterSubscribed();
         setIsSubscribed(true);
         await awardNewsletterPoints(user?.id ?? null, supabase);
+
+        // GA4 event with hashed email
+        const emailBytes = new TextEncoder().encode(validatedEmail.toLowerCase());
+        const hashBuffer = await crypto.subtle.digest("SHA-256", emailBytes);
+        const emailHash = Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        trackEvent("newsletter_cta_submit", { email_hash: emailHash, signup_source: "end_of_content" });
+
         toast("You're in!", {
           description: "Welcome to the AI in ASIA newsletter.",
         });

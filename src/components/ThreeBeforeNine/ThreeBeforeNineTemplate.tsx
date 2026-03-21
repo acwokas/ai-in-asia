@@ -319,6 +319,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
   const signals = parseSignals(article.content);
   const publishDate = article.published_at ? new Date(article.published_at) : new Date();
   const formattedDate = format(publishDate, "EEEE, d MMMM yyyy");
+
+  useGA4BriefingTracking(article.id, article.published_at, signals.length);
   
   const tldr = article.tldr_snapshot as { whoShouldPayAttention?: string; whatChangesNext?: string; signalImages?: string[] } | null;
   const signalImages = tldr?.signalImages || [];
