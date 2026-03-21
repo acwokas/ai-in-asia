@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useGA4BriefingTracking } from "@/hooks/useGA4BriefingTracking";
 import { Clock, ExternalLink, Edit, Eye, EyeOff, Send, Loader2, ChevronRight, Home } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
@@ -318,6 +319,8 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
   const signals = parseSignals(article.content);
   const publishDate = article.published_at ? new Date(article.published_at) : new Date();
   const formattedDate = format(publishDate, "EEEE, d MMMM yyyy");
+
+  useGA4BriefingTracking(article.id, article.published_at, signals.length);
   
   const tldr = article.tldr_snapshot as { whoShouldPayAttention?: string; whatChangesNext?: string; signalImages?: string[] } | null;
   const signalImages = tldr?.signalImages || [];
