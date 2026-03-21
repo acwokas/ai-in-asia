@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface Props {
   startDate: string;
@@ -13,7 +15,13 @@ export const NavigationSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-navigation", range],
     queryFn: async () => {
-      const [pageviewsRes, sessionsRes, eventsRes] = await Promise.all([
+      const [eventsRes, pageviewsRes, sessionsRes] = await Promise.all([
+        supabase
+          .from("analytics_events")
+          .select("event_name, event_data")
+          .in("event_name", ["nav_click", "nav_category_click", "cta_click", "search_performed", "social_share_click"])
+          .gte("created_at", startDate)
+          .limit(500),
         supabase
           .from("analytics_pageviews")
           .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
@@ -21,20 +29,26 @@ export const NavigationSection = ({ startDate, range }: Props) => {
           .limit(1000),
         supabase
           .from("analytics_sessions")
-          .select("referrer_domain, landing_page, exit_page, device_type")
+          .select("referrer_domain, device_type")
           .gte("started_at", startDate)
           .limit(1000),
-        supabase
-          .from("analytics_events")
-          .select("event_name, event_data")
-          .in("event_name", ["nav_click", "nav_category_click", "search_performed", "social_share_click"])
-          .gte("created_at", startDate)
-          .limit(500),
       ]);
 
+      const events = eventsRes.data || [];
       const pageviews = pageviewsRes.data || [];
       const sessions = sessionsRes.data || [];
-      const events = eventsRes.data || [];
+
+      // Clicked elements for horizontal bar chart
+      const elementCounts: Record<string, number> = {};
+      events.forEach(e => {
+        const ed = e.event_data as any;
+        const label = ed?.label || ed?.element || ed?.category || ed?.platform || e.event_name;
+        elementCounts[label] = (elementCounts[label] || 0) + 1;
+      });
+      const clickedElements = Object.entries(elementCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 12)
+        .map(([name, count]) => ({ name: name.length > 25 ? name.slice(0, 22) + "…" : name, count }));
 
       // Top pages
       const pageCounts: Record<string, { views: number; avgTime: number; avgScroll: number }> = {};
@@ -47,15 +61,14 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       });
       const topPages = Object.entries(pageCounts)
         .map(([path, d]) => ({
-          path,
-          views: d.views,
+          path, views: d.views,
           avgTime: d.views > 0 ? Math.round(d.avgTime / d.views) : 0,
           avgScroll: d.views > 0 ? Math.round(d.avgScroll / d.views) : 0,
         }))
         .sort((a, b) => b.views - a.views)
         .slice(0, 10);
 
-      // Top referrer domains
+      // Referrers
       const refCounts: Record<string, number> = {};
       sessions.forEach(s => {
         const r = s.referrer_domain || "direct";
@@ -66,32 +79,48 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         .slice(0, 8)
         .map(([domain, count]) => ({ domain, count }));
 
-      // Device breakdown
+      // Devices
       const deviceCounts: Record<string, number> = {};
       sessions.forEach(s => {
         const d = s.device_type || "unknown";
         deviceCounts[d] = (deviceCounts[d] || 0) + 1;
       });
 
-      // Exit pages
+      // Exits
       const exitCounts: Record<string, number> = {};
       pageviews.filter(pv => pv.is_exit).forEach(pv => {
         exitCounts[pv.page_path] = (exitCounts[pv.page_path] || 0) + 1;
       });
-      const topExits = Object.entries(exitCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([path, count]) => ({ path, count }));
+      const topExits = Object.entries(exitCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([path, count]) => ({ path, count }));
 
-      return { topPages, topReferrers, deviceCounts, topExits, navEvents: events.length };
+      return { clickedElements, topPages, topReferrers, deviceCounts, topExits, totalNavEvents: events.length };
     },
     staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) return <Skeleton className="h-48 w-full" />;
+  if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
   return (
     <div className="space-y-6">
+      {/* Clicked elements horizontal bar chart */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data.totalNavEvents} events)</h4>
+        {data.clickedElements.length ? (
+          <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
+            <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+              <XAxis type="number" className="text-xs" />
+              <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ChartContainer>
+        ) : (
+          <p className="text-sm text-muted-foreground">No navigation events recorded</p>
+        )}
+      </div>
+
       {/* Top Pages */}
       <div>
         <h4 className="text-sm font-medium mb-3">Top Pages</h4>
@@ -105,7 +134,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.topPages.map(p => (
+            {data.topPages.map(p => (
               <TableRow key={p.path}>
                 <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
                 <TableCell className="text-right font-mono text-xs">{p.views}</TableCell>
@@ -118,11 +147,10 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Referrers */}
         <div>
           <h4 className="text-sm font-medium mb-2">Top Referrers</h4>
           <div className="space-y-1.5">
-            {data?.topReferrers.map(r => (
+            {data.topReferrers.map(r => (
               <div key={r.domain} className="flex justify-between text-xs border rounded p-2">
                 <span className="truncate">{r.domain}</span>
                 <Badge variant="secondary" className="text-[10px]">{r.count}</Badge>
@@ -130,12 +158,10 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             ))}
           </div>
         </div>
-
-        {/* Devices */}
         <div>
           <h4 className="text-sm font-medium mb-2">Devices</h4>
           <div className="space-y-1.5">
-            {Object.entries(data?.deviceCounts || {}).map(([device, count]) => (
+            {Object.entries(data.deviceCounts).map(([device, count]) => (
               <div key={device} className="flex justify-between text-xs border rounded p-2">
                 <span className="capitalize">{device}</span>
                 <Badge variant="outline" className="text-[10px]">{count}</Badge>
@@ -143,12 +169,10 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             ))}
           </div>
         </div>
-
-        {/* Exit pages */}
         <div>
           <h4 className="text-sm font-medium mb-2">Top Exit Pages</h4>
           <div className="space-y-1.5">
-            {data?.topExits.map(e => (
+            {data.topExits.map(e => (
               <div key={e.path} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[140px]">{e.path}</span>
                 <Badge variant="secondary" className="text-[10px]">{e.count}</Badge>
