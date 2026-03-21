@@ -44,7 +44,7 @@ import { useSocialEmbeds } from "@/components/SocialEmbeds";
 import { ArticleRailRelatedReading } from "@/components/article/ArticleRailRelatedReading";
 import ArticleYouMightAlsoLike from "@/components/article/ArticleYouMightAlsoLike";
 import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from "@/components/article/ArticleSocialShare";
-import { useGA4ContentTracking } from "@/hooks/useGA4ContentTracking";
+// GA4 content tracking is inlined below to survive Vite tree-shaking
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
