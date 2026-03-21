@@ -21,6 +21,7 @@ import GoogleAnalytics from "./components/GoogleAnalytics";
 import { useEngagementLoop } from "./hooks/useEngagementLoop";
 import { useTrendingAutoRefresh } from "./hooks/useTrendingAutoRefresh";
 import { useGA4NewUserTracking, useGA4ReturningUserTracking } from "./hooks/useGA4UserBehavior";
+import { useGA4NavigationTracking } from "./hooks/useGA4NavigationTracking";
 
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -221,6 +222,7 @@ const EngagementWrapper = () => {
   useTrendingAutoRefresh();
   useGA4NewUserTracking();
   useGA4ReturningUserTracking();
+  useGA4NavigationTracking();
   return null;
 };
 

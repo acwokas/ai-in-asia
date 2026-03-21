@@ -3,6 +3,7 @@ import { Search, X, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
+import { trackEvent } from "@/components/GoogleAnalytics";
 
 interface SearchResult {
   id: string;
@@ -75,6 +76,10 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
 
       if (!error && data) {
         setResults(data as unknown as SearchResult[]);
+        trackEvent("search_performed", {
+          search_term: debouncedQuery.trim(),
+          result_count: data.length,
+        });
       }
       setIsLoading(false);
     };
