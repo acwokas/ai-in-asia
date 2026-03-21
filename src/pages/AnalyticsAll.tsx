@@ -35,37 +35,52 @@ const AnalyticsAll = () => {
   const { data: quickStats, isLoading: statsLoading } = useQuery({
     queryKey: ["analytics-hub-stats", range],
     queryFn: async () => {
-      const [sessionsRes, eventsRes, subscribersRes] = await Promise.all([
+      const now = new Date();
+      const fifteenMinAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
+
+      const [sessionsCountRes, uniqueVisitorsRes, completionsRes, subscribersRes, avgEngRes, activeNowRes] = await Promise.all([
         supabase
           .from("analytics_sessions")
-          .select("session_id, user_id, duration_seconds, is_bounce")
+          .select("*", { count: "exact", head: true })
           .gte("started_at", startDate) as any,
+        supabase.rpc("get_unique_visitors", {
+          p_start: startDate,
+          p_end: now.toISOString(),
+        }) as any,
         supabase
           .from("analytics_events")
-          .select("event_name")
+          .select("*", { count: "exact", head: true })
+          .eq("event_name", "article_read_complete")
           .gte("created_at", startDate) as any,
         supabase
           .from("newsletter_subscribers" as any)
           .select("id", { count: "exact", head: true })
           .eq("status", "active"),
+        supabase
+          .from("analytics_sessions")
+          .select("duration_seconds, is_bounce")
+          .gte("started_at", startDate)
+          .eq("is_bounce", false)
+          .gt("duration_seconds", 0)
+          .limit(1000) as any,
+        supabase
+          .from("analytics_sessions")
+          .select("*", { count: "exact", head: true })
+          .gte("started_at", fifteenMinAgo) as any,
       ]);
 
-      const sessions = sessionsRes.data || [];
-      const events = eventsRes.data || [];
-      const uniqueVisitors = new Set(sessions.map((s: any) => s.user_id || s.session_id)).size;
-      const completions = events.filter((e: any) => e.event_name === "article_read_complete").length;
-
-      const engagedSessions = sessions.filter((s: any) => !s.is_bounce && s.duration_seconds && s.duration_seconds > 0);
+      const engagedSessions = avgEngRes.data ?? [];
       const avgEngagement = engagedSessions.length > 0
-        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds || 0), 0) / engagedSessions.length)
+        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0) / engagedSessions.length)
         : 0;
 
       return {
-        totalSessions: sessions.length,
-        uniqueVisitors,
+        totalSessions: sessionsCountRes.count ?? 0,
+        uniqueVisitors: uniqueVisitorsRes.data ?? 0,
         avgEngagement,
-        completions,
-        subscribers: subscribersRes.count || 0,
+        completions: completionsRes.count ?? 0,
+        subscribers: subscribersRes.count ?? 0,
+        activeNow: activeNowRes.count ?? 0,
       };
     },
   });
@@ -76,7 +91,7 @@ const AnalyticsAll = () => {
     { label: "Avg Engagement (s)", value: quickStats?.avgEngagement ?? 0, icon: Zap, color: "text-yellow-500" },
     { label: "Article Completions", value: quickStats?.completions ?? 0, icon: BookCheck, color: "text-purple-500" },
     { label: "Newsletter Subscribers", value: quickStats?.subscribers ?? 0, icon: Mail, color: "text-pink-500" },
-    { label: "Active Now", value: "—", icon: BarChart3, color: "text-cyan-500" },
+    { label: "Active Now", value: quickStats?.activeNow ?? 0, icon: BarChart3, color: "text-cyan-500" },
   ];
 
   const sections: { id: string; title: string; icon: React.ElementType; color: string; component: React.ReactNode }[] = [
