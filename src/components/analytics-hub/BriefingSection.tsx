@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { format, eachWeekOfInterval, parseISO, endOfWeek, isWithinInterval } from "date-fns";
+import { EmptyDataNotice } from "./EmptyDataNotice";
 
 interface Props {
   startDate: string;
@@ -15,7 +16,6 @@ export const BriefingSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-briefing", range],
     queryFn: async () => {
-      // Query from Dec 2025 for weekly chart, but use startDate for stats
       const dec2025 = "2025-12-01T00:00:00.000Z";
       const chartStart = dec2025 < startDate ? dec2025 : startDate;
 
@@ -52,7 +52,6 @@ export const BriefingSection = ({ startDate, range }: Props) => {
       const contextExpands = (events ?? []).filter(e => e?.event_name === "briefing_context_expand").length;
       const completionRate = views > 0 ? Math.round((completions / views) * 100) : 0;
 
-      // Weekly sessions LineChart since Dec 2025
       const parsedStart = parseISO(chartStart);
       const start = Number.isNaN(parsedStart.getTime()) ? new Date("2025-12-01T00:00:00.000Z") : parsedStart;
       const end = new Date();
@@ -73,17 +72,14 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         ? Math.round((sessions ?? []).reduce((sum, p) => sum + (p?.duration_seconds ?? 0), 0) / sessions.length)
         : 0;
 
+      const hasEventData = events.length > 0;
+
       return {
-        views,
-        storyReads,
-        completions,
-        outboundClicks,
-        contextExpands,
-        completionRate,
+        views, storyReads, completions, outboundClicks, contextExpands, completionRate,
         weeklyData: weeklyData ?? [],
         editions: editions ?? [],
-        totalBriefingSessions,
-        avgDuration,
+        totalBriefingSessions, avgDuration,
+        hasEventData,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -94,21 +90,27 @@ export const BriefingSection = ({ startDate, range }: Props) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "Briefing Views", value: data?.views ?? 0 },
-          { label: "Stories Read", value: data?.storyReads ?? 0 },
-          { label: "Completions", value: data?.completions ?? 0 },
-          { label: "Completion Rate", value: `${data?.completionRate ?? 0}%` },
-        ].map(s => (
-          <div key={s.label} className="rounded-lg border p-3 text-center">
-            <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      {!data.hasEventData && (
+        <EmptyDataNotice message="Briefing tracking events (view, story read, complete) will populate within 24–48 hours" />
+      )}
 
-      {/* Weekly sessions LineChart */}
+      {data.hasEventData && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Briefing Views", value: data?.views ?? 0 },
+            { label: "Stories Read", value: data?.storyReads ?? 0 },
+            { label: "Completions", value: data?.completions ?? 0 },
+            { label: "Completion Rate", value: `${data?.completionRate ?? 0}%` },
+          ].map(s => (
+            <div key={s.label} className="rounded-lg border p-3 text-center">
+              <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Weekly sessions LineChart - always show since this uses session data not custom events */}
       <div>
         <h4 className="text-sm font-medium mb-3">Weekly 3 Before 9 Sessions (since Dec 2025)</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
@@ -125,19 +127,32 @@ export const BriefingSection = ({ startDate, range }: Props) => {
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h4 className="text-sm font-medium mb-3">Engagement Breakdown</h4>
-          <div className="space-y-2">
-            {[
-              { label: "Outbound Clicks", value: data?.outboundClicks ?? 0 },
-              { label: "Context Expands", value: data?.contextExpands ?? 0 },
-              { label: "Total Sessions", value: data?.totalBriefingSessions ?? 0 },
-              { label: "Avg Session Duration", value: `${data?.avgDuration ?? 0}s` },
-            ].map(row => (
-              <div key={row.label} className="flex justify-between items-center text-sm border rounded p-2">
-                <span className="text-muted-foreground">{row.label}</span>
-                <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? (row.value ?? 0).toLocaleString() : row.value}</Badge>
+          {data.hasEventData ? (
+            <div className="space-y-2">
+              {[
+                { label: "Outbound Clicks", value: data?.outboundClicks ?? 0 },
+                { label: "Context Expands", value: data?.contextExpands ?? 0 },
+                { label: "Total Sessions", value: data?.totalBriefingSessions ?? 0 },
+                { label: "Avg Session Duration", value: `${data?.avgDuration ?? 0}s` },
+              ].map(row => (
+                <div key={row.label} className="flex justify-between items-center text-sm border rounded p-2">
+                  <span className="text-muted-foreground">{row.label}</span>
+                  <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? (row.value ?? 0).toLocaleString() : row.value}</Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm border rounded p-2">
+                <span className="text-muted-foreground">Total Sessions</span>
+                <Badge variant="secondary" className="font-mono">{(data?.totalBriefingSessions ?? 0).toLocaleString()}</Badge>
               </div>
-            ))}
-          </div>
+              <div className="flex justify-between items-center text-sm border rounded p-2">
+                <span className="text-muted-foreground">Avg Session Duration</span>
+                <Badge variant="secondary" className="font-mono">{data?.avgDuration ?? 0}s</Badge>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

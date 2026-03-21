@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Activity, Users, Zap, BookCheck, Mail, Newspaper,
-  UserPlus, UserCheck, Trophy, Route,
+  UserPlus, UserCheck, Trophy, Route, Globe,
   ChevronDown, BarChart3,
 } from "lucide-react";
 import { subDays, startOfDay } from "date-fns";
@@ -19,6 +19,7 @@ import {
   NavigationSection,
   CTANewsletterSection,
   BriefingSection,
+  AudienceSection,
 } from "@/components/analytics-hub";
 
 type DateRange = "7d" | "30d" | "90d";
@@ -53,9 +54,11 @@ const AnalyticsAll = () => {
           .eq("event_name", "article_read_complete")
           .gte("created_at", startDate) as any,
         supabase
-          .from("newsletter_subscribers" as any)
-          .select("id", { count: "exact", head: true })
-          .eq("status", "active"),
+          .from("newsletter_subscribers")
+          .select("id, confirmed, unsubscribed_at")
+          .eq("confirmed", true)
+          .is("unsubscribed_at", null)
+          .limit(1000),
         supabase
           .from("analytics_sessions")
           .select("duration_seconds, is_bounce")
@@ -74,12 +77,14 @@ const AnalyticsAll = () => {
         ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0) / engagedSessions.length)
         : 0;
 
+      const activeSubscribers = (subscribersRes.data ?? []).length;
+
       return {
         totalSessions: sessionsCountRes.count ?? 0,
         uniqueVisitors: uniqueVisitorsRes.data ?? 0,
         avgEngagement,
         completions: completionsRes.count ?? 0,
-        subscribers: subscribersRes.count ?? 0,
+        subscribers: activeSubscribers,
         activeNow: activeNowRes.count ?? 0,
       };
     },
@@ -98,6 +103,7 @@ const AnalyticsAll = () => {
     { id: "completions", title: "Article & Guide Completions", icon: BookCheck, color: "text-purple-500", component: <CompletionsSection startDate={startDate} range={range} /> },
     { id: "new-users", title: "New Users & Real-time", icon: UserPlus, color: "text-green-500", component: <NewUsersSection startDate={startDate} range={range} /> },
     { id: "returning", title: "Returning Users & Stickiness", icon: UserCheck, color: "text-blue-500", component: <ReturningUsersSection startDate={startDate} range={range} /> },
+    { id: "audience", title: "Audience & Acquisition", icon: Globe, color: "text-teal-500", component: <AudienceSection startDate={startDate} range={range} /> },
     { id: "rankings", title: "Content Rankings", icon: Trophy, color: "text-yellow-500", component: <ContentRankingsSection startDate={startDate} range={range} /> },
     { id: "navigation", title: "Navigation & User Flows", icon: Route, color: "text-orange-500", component: <NavigationSection startDate={startDate} range={range} /> },
     { id: "cta", title: "CTA & Newsletter", icon: Mail, color: "text-pink-500", component: <CTANewsletterSection startDate={startDate} range={range} /> },
