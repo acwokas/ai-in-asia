@@ -11,10 +11,17 @@ import {
   ChevronDown, BarChart3,
 } from "lucide-react";
 import { subDays, startOfDay } from "date-fns";
+import {
+  CompletionsSection,
+  NewUsersSection,
+  ReturningUsersSection,
+  ContentRankingsSection,
+  NavigationSection,
+  CTANewsletterSection,
+  BriefingSection,
+} from "@/components/analytics-hub";
 
 type DateRange = "7d" | "30d" | "90d";
-
-const dateRangeLabel: Record<DateRange, string> = { "7d": "7 days", "30d": "30 days", "90d": "90 days" };
 
 const AnalyticsAll = () => {
   const [range, setRange] = useState<DateRange>("30d");
@@ -45,13 +52,12 @@ const AnalyticsAll = () => {
 
       const sessions = sessionsRes.data || [];
       const events = eventsRes.data || [];
-      const uniqueVisitors = new Set(sessions.map(s => s.user_id || s.session_id)).size;
-      const completions = events.filter(e => e.event_name === "article_read_complete").length;
+      const uniqueVisitors = new Set(sessions.map((s: any) => s.user_id || s.session_id)).size;
+      const completions = events.filter((e: any) => e.event_name === "article_read_complete").length;
 
-      // Avg engagement: approximate from non-bounce sessions with duration
-      const engagedSessions = sessions.filter(s => !s.is_bounce && s.duration_seconds && s.duration_seconds > 0);
+      const engagedSessions = sessions.filter((s: any) => !s.is_bounce && s.duration_seconds && s.duration_seconds > 0);
       const avgEngagement = engagedSessions.length > 0
-        ? Math.round(engagedSessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / engagedSessions.length)
+        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds || 0), 0) / engagedSessions.length)
         : 0;
 
       return {
@@ -60,10 +66,6 @@ const AnalyticsAll = () => {
         avgEngagement,
         completions,
         subscribers: subscribersRes.count || 0,
-        activeNow: sessions.filter(s => {
-          const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-          return s.duration_seconds === null && (sessionsRes.data || []).length > 0;
-        }).length,
       };
     },
   });
@@ -77,19 +79,18 @@ const AnalyticsAll = () => {
     { label: "Active Now", value: "—", icon: BarChart3, color: "text-cyan-500" },
   ];
 
-  const sections = [
-    { id: "completions", title: "Article & Guide Completions", icon: BookCheck, color: "text-purple-500" },
-    { id: "new-users", title: "New Users & Real-time", icon: UserPlus, color: "text-green-500" },
-    { id: "returning", title: "Returning Users & Stickiness", icon: UserCheck, color: "text-blue-500" },
-    { id: "rankings", title: "Content Rankings", icon: Trophy, color: "text-yellow-500" },
-    { id: "navigation", title: "Navigation & User Flows", icon: Route, color: "text-orange-500" },
-    { id: "cta", title: "CTA & Newsletter", icon: Mail, color: "text-pink-500" },
-    { id: "briefing", title: "3 Before 9 Performance", icon: Newspaper, color: "text-cyan-500" },
+  const sections: { id: string; title: string; icon: React.ElementType; color: string; component: React.ReactNode }[] = [
+    { id: "completions", title: "Article & Guide Completions", icon: BookCheck, color: "text-purple-500", component: <CompletionsSection startDate={startDate} range={range} /> },
+    { id: "new-users", title: "New Users & Real-time", icon: UserPlus, color: "text-green-500", component: <NewUsersSection startDate={startDate} range={range} /> },
+    { id: "returning", title: "Returning Users & Stickiness", icon: UserCheck, color: "text-blue-500", component: <ReturningUsersSection startDate={startDate} range={range} /> },
+    { id: "rankings", title: "Content Rankings", icon: Trophy, color: "text-yellow-500", component: <ContentRankingsSection startDate={startDate} range={range} /> },
+    { id: "navigation", title: "Navigation & User Flows", icon: Route, color: "text-orange-500", component: <NavigationSection startDate={startDate} range={range} /> },
+    { id: "cta", title: "CTA & Newsletter", icon: Mail, color: "text-pink-500", component: <CTANewsletterSection startDate={startDate} range={range} /> },
+    { id: "briefing", title: "3 Before 9 Performance", icon: Newspaper, color: "text-cyan-500", component: <BriefingSection startDate={startDate} range={range} /> },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics Hub</h1>
@@ -97,38 +98,26 @@ const AnalyticsAll = () => {
         </div>
         <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
           {(["7d", "30d", "90d"] as DateRange[]).map((r) => (
-            <Button
-              key={r}
-              variant={range === r ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setRange(r)}
-              className="text-xs px-3"
-            >
+            <Button key={r} variant={range === r ? "default" : "ghost"} size="sm" onClick={() => setRange(r)} className="text-xs px-3">
               {r}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {statCards.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
               {statsLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-8 w-16" />
-                </div>
+                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-8 w-16" /></div>
               ) : (
                 <>
                   <div className="flex items-center gap-2 mb-1">
                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                     <span className="text-xs text-muted-foreground truncate">{stat.label}</span>
                   </div>
-                  <p className="text-2xl font-bold">
-                    {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
-                  </p>
+                  <p className="text-2xl font-bold">{typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}</p>
                 </>
               )}
             </CardContent>
@@ -136,45 +125,19 @@ const AnalyticsAll = () => {
         ))}
       </div>
 
-      {/* Collapsible Sections */}
       <div className="space-y-4">
         {sections.map((section) => (
-          <CollapsibleSection
-            key={section.id}
-            title={section.title}
-            icon={section.icon}
-            iconColor={section.color}
-            range={range}
-            startDate={startDate}
-            sectionId={section.id}
-          />
+          <CollapsibleSection key={section.id} title={section.title} icon={section.icon} iconColor={section.color}>
+            {section.component}
+          </CollapsibleSection>
         ))}
       </div>
     </div>
   );
 };
 
-interface CollapsibleSectionProps {
-  title: string;
-  icon: React.ElementType;
-  iconColor: string;
-  range: DateRange;
-  startDate: string;
-  sectionId: string;
-}
-
-const CollapsibleSection = ({ title, icon: Icon, iconColor, range, startDate, sectionId }: CollapsibleSectionProps) => {
+const CollapsibleSection = ({ title, icon: Icon, iconColor, children }: { title: string; icon: React.ElementType; iconColor: string; children: React.ReactNode }) => {
   const [open, setOpen] = useState(true);
-
-  // Each section has its own independent query — placeholder for now
-  const { isLoading } = useQuery({
-    queryKey: ["analytics-hub-section", sectionId, range],
-    queryFn: async () => {
-      // Placeholder: return empty data — will be filled in follow-up prompts
-      return { ready: false };
-    },
-    staleTime: 5 * 60 * 1000,
-  });
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -191,19 +154,7 @@ const CollapsibleSection = ({ title, icon: Icon, iconColor, range, startDate, se
           </CardHeader>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="pt-0">
-            {isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-32 w-full" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-32 text-muted-foreground text-sm border border-dashed rounded-lg">
-                Content for "{title}" will be added in follow-up prompts
-              </div>
-            )}
-          </CardContent>
+          <CardContent className="pt-0">{children}</CardContent>
         </CollapsibleContent>
       </Card>
     </Collapsible>
