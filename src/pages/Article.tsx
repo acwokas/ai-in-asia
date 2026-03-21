@@ -166,9 +166,104 @@ const Article = () => {
     }
   }, [article?.id]);
 
-  // GA4 scroll depth, engagement score, newsletter CTA tracking
-  console.log("[GA4] Article component mounting tracking for:", article?.id);
-  useGA4ContentTracking(article);
+  // ── GA4 inline tracking (inlined to survive Vite tree-shaking) ──
+  const ga4MaxDepth = useRef(0);
+  const ga4FiredDepths = useRef(new Set<number>());
+  const ga4StartTime = useRef(Date.now());
+
+  const ga4ArticleId = article?.id;
+  const ga4Title = article?.title;
+  const ga4Category = (article as any)?.categories?.name;
+
+  // useEffect #1 — Scroll depth milestones
+  useEffect(() => {
+    console.log("[GA4-INLINE] Scroll tracking active for:", ga4Title);
+    if (!ga4ArticleId) return;
+    ga4StartTime.current = Date.now();
+    ga4MaxDepth.current = 0;
+    ga4FiredDepths.current.clear();
+
+    const contentEl = document.querySelector(".article-content");
+    if (!contentEl) return;
+
+    const MILESTONES = [25, 50, 75, 90] as const;
+
+    const handleScroll = () => {
+      const rect = contentEl.getBoundingClientRect();
+      const scrolled = -rect.top;
+      const total = rect.height - window.innerHeight;
+      if (total <= 0) return;
+      const pct = Math.min(100, Math.round((scrolled / total) * 100));
+      if (pct > ga4MaxDepth.current) ga4MaxDepth.current = pct;
+
+      for (const m of MILESTONES) {
+        if (pct >= m && !ga4FiredDepths.current.has(m)) {
+          ga4FiredDepths.current.add(m);
+          if (m === 90) {
+            const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
+            if (seconds >= 60) {
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({ event: "article_read_complete", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category, time_on_page: seconds });
+            }
+          } else {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: `article_read_${m}`, article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [ga4ArticleId, ga4Title, ga4Category]);
+
+  // useEffect #2 — Engagement score on exit
+  useEffect(() => {
+    if (!ga4ArticleId) return;
+    const handleVis = () => {
+      if (document.visibilityState === "hidden") {
+        const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: "article_engagement_score", article_title: ga4Title, article_category: ga4Category, scroll_depth: ga4MaxDepth.current, time_on_page: seconds });
+      }
+    };
+    document.addEventListener("visibilitychange", handleVis);
+    return () => document.removeEventListener("visibilitychange", handleVis);
+  }, [ga4ArticleId, ga4Title, ga4Category]);
+
+  // useEffect #3 — Newsletter CTA tracking
+  useEffect(() => {
+    if (!ga4ArticleId) return;
+    const targets = document.querySelectorAll(".newsletter-cta, [data-newsletter]");
+    if (!targets.length) return;
+
+    const viewedSet = new WeakSet<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && !viewedSet.has(entry.target)) {
+          viewedSet.add(entry.target);
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ event: "newsletter_cta_view", article_id: ga4ArticleId, article_title: ga4Title });
+        }
+      }
+    }, { threshold: 0.5 });
+
+    targets.forEach((el) => observer.observe(el));
+
+    const handleClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button") || target.tagName === "BUTTON") {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: "newsletter_cta_click", article_id: ga4ArticleId, article_title: ga4Title });
+      }
+    };
+    targets.forEach((el) => el.addEventListener("click", handleClick));
+
+    return () => {
+      observer.disconnect();
+      targets.forEach((el) => el.removeEventListener("click", handleClick));
+    };
+  }, [ga4ArticleId, ga4Title]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
