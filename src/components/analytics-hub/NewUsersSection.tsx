@@ -98,7 +98,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
       <div>
         <h4 className="text-sm font-medium mb-3">Daily Sessions</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
-          <AreaChart data={data.dailySessions}>
+          <AreaChart data={data?.dailySessions ?? []}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
             <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis className="text-xs" />
