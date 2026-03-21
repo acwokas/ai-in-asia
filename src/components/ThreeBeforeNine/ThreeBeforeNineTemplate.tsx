@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useGA4BriefingTracking } from "@/hooks/useGA4BriefingTracking";
 import { Clock, ExternalLink, Edit, Eye, EyeOff, Send, Loader2, ChevronRight, Home } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { ArticleStructuredData, BreadcrumbStructuredData } from "@/components/StructuredData";
