@@ -105,8 +105,8 @@ export const NavigationSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       {/* Clicked elements horizontal bar chart */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data.totalNavEvents} events)</h4>
-        {data.clickedElements.length ? (
+        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data?.totalNavEvents ?? 0} events)</h4>
+        {(data?.clickedElements ?? []).length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
             <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -134,7 +134,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.topPages.map(p => (
+            {(data?.topPages ?? []).map(p => (
               <TableRow key={p.path}>
                 <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
                 <TableCell className="text-right font-mono text-xs">{p.views}</TableCell>
@@ -150,7 +150,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Top Referrers</h4>
           <div className="space-y-1.5">
-            {data.topReferrers.map(r => (
+            {(data?.topReferrers ?? []).map(r => (
               <div key={r.domain} className="flex justify-between text-xs border rounded p-2">
                 <span className="truncate">{r.domain}</span>
                 <Badge variant="secondary" className="text-[10px]">{r.count}</Badge>
@@ -161,7 +161,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Devices</h4>
           <div className="space-y-1.5">
-            {Object.entries(data.deviceCounts).map(([device, count]) => (
+            {Object.entries(data?.deviceCounts ?? {}).map(([device, count]) => (
               <div key={device} className="flex justify-between text-xs border rounded p-2">
                 <span className="capitalize">{device}</span>
                 <Badge variant="outline" className="text-[10px]">{count}</Badge>
@@ -172,7 +172,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Top Exit Pages</h4>
           <div className="space-y-1.5">
-            {data.topExits.map(e => (
+            {(data?.topExits ?? []).map(e => (
               <div key={e.path} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[140px]">{e.path}</span>
                 <Badge variant="secondary" className="text-[10px]">{e.count}</Badge>

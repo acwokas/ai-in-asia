@@ -75,17 +75,17 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
   const funnelData = [
-    { stage: "25%", count: data.milestones["article_read_25"] },
-    { stage: "50%", count: data.milestones["article_read_50"] },
-    { stage: "75%", count: data.milestones["article_read_75"] },
-    { stage: "Complete", count: data.milestones["article_read_complete"] },
+    { stage: "25%", count: data?.milestones?.["article_read_25"] ?? 0 },
+    { stage: "50%", count: data?.milestones?.["article_read_50"] ?? 0 },
+    { stage: "75%", count: data?.milestones?.["article_read_75"] ?? 0 },
+    { stage: "Complete", count: data?.milestones?.["article_read_complete"] ?? 0 },
   ];
 
   return (
     <div className="space-y-6">
       {/* Funnel chart */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data.completionRate}%)</h4>
+        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data?.completionRate ?? 0}%)</h4>
         <ChartContainer config={{ count: { label: "Readers", color: "hsl(var(--primary))" } }} className="h-[200px]">
           <BarChart data={funnelData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -101,10 +101,10 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         {/* Top completed bar chart + table */}
         <div>
           <h4 className="text-sm font-medium mb-3">Top 10 Completed Articles</h4>
-          {data.topCompleted.length ? (
+          {(data?.topCompleted ?? []).length ? (
             <>
               <ChartContainer config={{ count: { label: "Completions", color: "hsl(var(--accent-foreground))" } }} className="h-[250px]">
-                <BarChart data={data.topCompleted} layout="vertical" margin={{ left: 120 }}>
+                <BarChart data={data?.topCompleted ?? []} layout="vertical" margin={{ left: 120 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                   <XAxis type="number" className="text-xs" />
                   <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
@@ -120,7 +120,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.topCompleted.map(row => (
+                  {(data?.topCompleted ?? []).map(row => (
                     <TableRow key={row.fullName}>
                       <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
                       <TableCell className="text-right font-medium">{row.count}</TableCell>
@@ -138,9 +138,9 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
           <div className="space-y-3">
-            <StatRow label="Guide Pageviews" value={data.guideViewCount} />
-            <StatRow label="Avg Scroll Depth" value={`${data.avgGuideScroll}%`} />
-            <StatRow label="Avg Time on Guide" value={`${data.avgGuideTime}s`} />
+            <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
+            <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
+            <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
           </div>
         </div>
       </div>
