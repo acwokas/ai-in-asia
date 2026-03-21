@@ -26,9 +26,9 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
           .limit(500),
         supabase
           .from("newsletter_editions")
-          .select("id, subject, total_sent, total_opened, sent_at")
-          .not("sent_at", "is", null)
-          .order("sent_at", { ascending: false })
+          .select("id, subject_line, total_sent, total_opened, edition_date")
+          .eq("status", "sent")
+          .order("edition_date", { ascending: false })
           .limit(5),
       ]);
 
