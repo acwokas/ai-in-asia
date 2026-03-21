@@ -106,7 +106,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       {/* Clicked elements horizontal bar chart */}
       <div>
         <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data?.totalNavEvents ?? 0} events)</h4>
-        {data.clickedElements.length ? (
+        {(data?.clickedElements ?? []).length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
             <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
