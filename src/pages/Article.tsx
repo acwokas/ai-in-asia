@@ -119,9 +119,6 @@ const Article = () => {
     },
   });
 
-  // GA4 article engagement tracking (scroll depth milestones, time-on-page)
-  const { trackScrollDepth } = useGA4ArticleTracking(article?.id, article?.title, article?.categories?.name);
-
   // Load social embeds
   useSocialEmbeds([article?.content]);
 
