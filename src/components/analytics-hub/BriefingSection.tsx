@@ -27,8 +27,8 @@ export const BriefingSection = ({ startDate, range }: Props) => {
           .limit(200),
         supabase
           .from("newsletter_editions")
-          .select("id, edition_date, subject_line, published_at")
-          .eq("status", "published")
+          .select("id, edition_date, subject_line")
+          .eq("status", "sent")
           .order("edition_date", { ascending: false })
           .limit(5),
       ]);

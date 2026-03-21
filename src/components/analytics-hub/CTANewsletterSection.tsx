@@ -96,9 +96,9 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Recent Newsletter Editions</h4>
           <div className="space-y-1.5">
-            {data?.editions.length ? data.editions.map(e => (
+            {data?.editions.length ? data.editions.map((e: any) => (
               <div key={e.id} className="border rounded p-2 text-xs">
-                <p className="font-medium truncate">{e.subject || "Untitled"}</p>
+                <p className="font-medium truncate">{e.subject_line || "Untitled"}</p>
                 <div className="flex gap-3 mt-1 text-muted-foreground">
                   <span>Sent: {e.total_sent || 0}</span>
                   <span>Opened: {e.total_opened || 0}</span>
