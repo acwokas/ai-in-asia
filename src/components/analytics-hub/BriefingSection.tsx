@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { format, eachWeekOfInterval, parseISO, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, eachWeekOfInterval, parseISO, endOfWeek, isWithinInterval } from "date-fns";
 
 interface Props {
   startDate: string;
@@ -41,36 +41,50 @@ export const BriefingSection = ({ startDate, range }: Props) => {
           .limit(5),
       ]);
 
-      const events = eventsRes.data || [];
-      const sessions = pageviewsRes.data || [];
-      const editions = editionsRes.data || [];
+      const events = eventsRes.data ?? [];
+      const sessions = pageviewsRes.data ?? [];
+      const editions = editionsRes.data ?? [];
 
-      const views = events.filter(e => e.event_name === "briefing_view").length;
-      const storyReads = events.filter(e => e.event_name === "briefing_story_read").length;
-      const completions = events.filter(e => e.event_name === "briefing_complete").length;
-      const outboundClicks = events.filter(e => e.event_name === "briefing_outbound_click").length;
-      const contextExpands = events.filter(e => e.event_name === "briefing_context_expand").length;
+      const views = (events ?? []).filter(e => e?.event_name === "briefing_view").length;
+      const storyReads = (events ?? []).filter(e => e?.event_name === "briefing_story_read").length;
+      const completions = (events ?? []).filter(e => e?.event_name === "briefing_complete").length;
+      const outboundClicks = (events ?? []).filter(e => e?.event_name === "briefing_outbound_click").length;
+      const contextExpands = (events ?? []).filter(e => e?.event_name === "briefing_context_expand").length;
       const completionRate = views > 0 ? Math.round((completions / views) * 100) : 0;
 
       // Weekly sessions LineChart since Dec 2025
-      const start = parseISO(chartStart);
+      const parsedStart = parseISO(chartStart);
+      const start = Number.isNaN(parsedStart.getTime()) ? new Date("2025-12-01T00:00:00.000Z") : parsedStart;
       const end = new Date();
       const weeks = eachWeekOfInterval({ start, end }, { weekStartsOn: 1 });
       const weeklyData = weeks.map(weekStart => {
         const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-        const count = sessions.filter(s => {
+        const count = (sessions ?? []).filter((s) => {
+          if (!s?.started_at) return false;
           const d = parseISO(s.started_at);
+          if (Number.isNaN(d.getTime())) return false;
           return isWithinInterval(d, { start: weekStart, end: weekEnd });
         }).length;
         return { week: format(weekStart, "MMM d"), sessions: count };
       });
 
-      const totalBriefingSessions = sessions.length;
+      const totalBriefingSessions = (sessions ?? []).length;
       const avgDuration = sessions.length > 0
-        ? Math.round(sessions.reduce((s, p) => s + (p.duration_seconds || 0), 0) / sessions.length)
+        ? Math.round((sessions ?? []).reduce((sum, p) => sum + (p?.duration_seconds ?? 0), 0) / sessions.length)
         : 0;
 
-      return { views, storyReads, completions, outboundClicks, contextExpands, completionRate, weeklyData, editions, totalBriefingSessions, avgDuration };
+      return {
+        views,
+        storyReads,
+        completions,
+        outboundClicks,
+        contextExpands,
+        completionRate,
+        weeklyData: weeklyData ?? [],
+        editions: editions ?? [],
+        totalBriefingSessions,
+        avgDuration,
+      };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -82,13 +96,13 @@ export const BriefingSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Briefing Views", value: data.views },
-          { label: "Stories Read", value: data.storyReads },
-          { label: "Completions", value: data.completions },
-          { label: "Completion Rate", value: `${data.completionRate}%` },
+          { label: "Briefing Views", value: data?.views ?? 0 },
+          { label: "Stories Read", value: data?.storyReads ?? 0 },
+          { label: "Completions", value: data?.completions ?? 0 },
+          { label: "Completion Rate", value: `${data?.completionRate ?? 0}%` },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
-            <p className="text-xl font-bold">{typeof s.value === "number" ? s.value.toLocaleString() : s.value}</p>
+            <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
             <p className="text-xs text-muted-foreground">{s.label}</p>
           </div>
         ))}
@@ -98,7 +112,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
       <div>
         <h4 className="text-sm font-medium mb-3">Weekly 3 Before 9 Sessions (since Dec 2025)</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
-          <LineChart data={data.weeklyData}>
+          <LineChart data={data?.weeklyData ?? []}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
             <XAxis dataKey="week" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis className="text-xs" />
@@ -113,14 +127,14 @@ export const BriefingSection = ({ startDate, range }: Props) => {
           <h4 className="text-sm font-medium mb-3">Engagement Breakdown</h4>
           <div className="space-y-2">
             {[
-              { label: "Outbound Clicks", value: data.outboundClicks },
-              { label: "Context Expands", value: data.contextExpands },
-              { label: "Total Sessions", value: data.totalBriefingSessions },
-              { label: "Avg Session Duration", value: `${data.avgDuration}s` },
+              { label: "Outbound Clicks", value: data?.outboundClicks ?? 0 },
+              { label: "Context Expands", value: data?.contextExpands ?? 0 },
+              { label: "Total Sessions", value: data?.totalBriefingSessions ?? 0 },
+              { label: "Avg Session Duration", value: `${data?.avgDuration ?? 0}s` },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center text-sm border rounded p-2">
                 <span className="text-muted-foreground">{row.label}</span>
-                <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? row.value.toLocaleString() : row.value}</Badge>
+                <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? (row.value ?? 0).toLocaleString() : row.value}</Badge>
               </div>
             ))}
           </div>
@@ -129,7 +143,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-3">Recent Editions</h4>
           <div className="space-y-1.5">
-            {data.editions.length ? data.editions.map(e => (
+            {(data?.editions ?? []).length ? (data?.editions ?? []).map((e) => (
               <div key={e.id} className="border rounded p-2 text-xs">
                 <p className="font-medium truncate">{e.subject_line || "Untitled"}</p>
                 <p className="text-muted-foreground mt-0.5">{e.edition_date}</p>

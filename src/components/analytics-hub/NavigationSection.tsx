@@ -34,13 +34,13 @@ export const NavigationSection = ({ startDate, range }: Props) => {
           .limit(1000),
       ]);
 
-      const events = eventsRes.data || [];
-      const pageviews = pageviewsRes.data || [];
-      const sessions = sessionsRes.data || [];
+      const events = eventsRes.data ?? [];
+      const pageviews = pageviewsRes.data ?? [];
+      const sessions = sessionsRes.data ?? [];
 
       // Clicked elements for horizontal bar chart
       const elementCounts: Record<string, number> = {};
-      events.forEach(e => {
+      (events ?? []).forEach((e) => {
         const ed = e.event_data as any;
         const label = ed?.label || ed?.element || ed?.category || ed?.platform || e.event_name;
         elementCounts[label] = (elementCounts[label] || 0) + 1;
@@ -52,12 +52,12 @@ export const NavigationSection = ({ startDate, range }: Props) => {
 
       // Top pages
       const pageCounts: Record<string, { views: number; avgTime: number; avgScroll: number }> = {};
-      pageviews.forEach(pv => {
-        const p = pv.page_path;
+      (pageviews ?? []).forEach((pv) => {
+        const p = pv?.page_path || "/";
         if (!pageCounts[p]) pageCounts[p] = { views: 0, avgTime: 0, avgScroll: 0 };
         pageCounts[p].views++;
-        pageCounts[p].avgTime += pv.time_on_page_seconds || 0;
-        pageCounts[p].avgScroll += pv.scroll_depth_percent || 0;
+        pageCounts[p].avgTime += pv?.time_on_page_seconds ?? 0;
+        pageCounts[p].avgScroll += pv?.scroll_depth_percent ?? 0;
       });
       const topPages = Object.entries(pageCounts)
         .map(([path, d]) => ({
@@ -70,8 +70,8 @@ export const NavigationSection = ({ startDate, range }: Props) => {
 
       // Referrers
       const refCounts: Record<string, number> = {};
-      sessions.forEach(s => {
-        const r = s.referrer_domain || "direct";
+      (sessions ?? []).forEach((s) => {
+        const r = s?.referrer_domain || "direct";
         refCounts[r] = (refCounts[r] || 0) + 1;
       });
       const topReferrers = Object.entries(refCounts)
@@ -81,19 +81,27 @@ export const NavigationSection = ({ startDate, range }: Props) => {
 
       // Devices
       const deviceCounts: Record<string, number> = {};
-      sessions.forEach(s => {
-        const d = s.device_type || "unknown";
+      (sessions ?? []).forEach((s) => {
+        const d = s?.device_type || "unknown";
         deviceCounts[d] = (deviceCounts[d] || 0) + 1;
       });
 
       // Exits
       const exitCounts: Record<string, number> = {};
-      pageviews.filter(pv => pv.is_exit).forEach(pv => {
-        exitCounts[pv.page_path] = (exitCounts[pv.page_path] || 0) + 1;
+      (pageviews ?? []).filter((pv) => Boolean(pv?.is_exit)).forEach((pv) => {
+        const path = pv?.page_path || "/";
+        exitCounts[path] = (exitCounts[path] || 0) + 1;
       });
       const topExits = Object.entries(exitCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([path, count]) => ({ path, count }));
 
-      return { clickedElements, topPages, topReferrers, deviceCounts, topExits, totalNavEvents: events.length };
+      return {
+        clickedElements: clickedElements ?? [],
+        topPages: topPages ?? [],
+        topReferrers: topReferrers ?? [],
+        deviceCounts: deviceCounts ?? {},
+        topExits: topExits ?? [],
+        totalNavEvents: (events ?? []).length,
+      };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -108,7 +116,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data?.totalNavEvents ?? 0} events)</h4>
         {(data?.clickedElements ?? []).length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
-            <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
+            <BarChart data={data?.clickedElements ?? []} layout="vertical" margin={{ left: 120 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis type="number" className="text-xs" />
               <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
@@ -137,9 +145,9 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {(data?.topPages ?? []).map(p => (
               <TableRow key={p.path}>
                 <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
-                <TableCell className="text-right font-mono text-xs">{p.views}</TableCell>
-                <TableCell className="text-right text-xs">{p.avgTime}s</TableCell>
-                <TableCell className="text-right text-xs">{p.avgScroll}%</TableCell>
+                <TableCell className="text-right font-mono text-xs">{(p?.views ?? 0).toLocaleString()}</TableCell>
+                <TableCell className="text-right text-xs">{(p?.avgTime ?? 0).toLocaleString()}s</TableCell>
+                <TableCell className="text-right text-xs">{(p?.avgScroll ?? 0).toLocaleString()}%</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -153,7 +161,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {(data?.topReferrers ?? []).map(r => (
               <div key={r.domain} className="flex justify-between text-xs border rounded p-2">
                 <span className="truncate">{r.domain}</span>
-                <Badge variant="secondary" className="text-[10px]">{r.count}</Badge>
+                <Badge variant="secondary" className="text-[10px]">{(r?.count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
@@ -164,7 +172,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {Object.entries(data?.deviceCounts ?? {}).map(([device, count]) => (
               <div key={device} className="flex justify-between text-xs border rounded p-2">
                 <span className="capitalize">{device}</span>
-                <Badge variant="outline" className="text-[10px]">{count}</Badge>
+                <Badge variant="outline" className="text-[10px]">{(count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
@@ -175,7 +183,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {(data?.topExits ?? []).map(e => (
               <div key={e.path} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[140px]">{e.path}</span>
-                <Badge variant="secondary" className="text-[10px]">{e.count}</Badge>
+                <Badge variant="secondary" className="text-[10px]">{(e?.count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>

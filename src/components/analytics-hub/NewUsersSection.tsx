@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
-import { format, parseISO, eachDayOfInterval, startOfDay } from "date-fns";
+import { format, parseISO, eachDayOfInterval } from "date-fns";
 
 interface Props {
   startDate: string;
@@ -37,18 +37,24 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .limit(1000),
       ]);
 
-      const sessions = sessionsRes.data || [];
-      const recentSessions = recentSessionsRes.data || [];
-      const landings = landingRes.data || [];
+      const sessions = sessionsRes.data ?? [];
+      const recentSessions = recentSessionsRes.data ?? [];
+      const landings = landingRes.data ?? [];
 
       // Daily sessions for AreaChart
       const dailyCounts: Record<string, number> = {};
-      sessions.forEach(s => {
-        const day = format(parseISO(s.started_at), "yyyy-MM-dd");
+      (sessions ?? []).forEach((s) => {
+        if (!s?.started_at) return;
+        const parsed = parseISO(s.started_at);
+        if (Number.isNaN(parsed.getTime())) return;
+        const day = format(parsed, "yyyy-MM-dd");
         dailyCounts[day] = (dailyCounts[day] || 0) + 1;
       });
 
-      const start = parseISO(startDate);
+      const parsedStart = parseISO(startDate);
+      const start = Number.isNaN(parsedStart.getTime())
+        ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        : parsedStart;
       const end = new Date();
       const allDays = eachDayOfInterval({ start, end });
       const dailySessions = allDays.map(d => {
@@ -58,8 +64,8 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
 
       // Top entry pages
       const landingCounts: Record<string, number> = {};
-      landings.forEach(l => {
-        const p = l.landing_page || "/";
+      (landings ?? []).forEach((l) => {
+        const p = l?.landing_page || "/";
         landingCounts[p] = (landingCounts[p] || 0) + 1;
       });
       const topEntryPages = Object.entries(landingCounts)
@@ -68,11 +74,11 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         .map(([page, count]) => ({ page, count }));
 
       return {
-        totalSessions: sessions.length,
-        activeNow: recentSessions.length,
-        dailySessions,
-        topEntryPages,
-        recentSessions: recentSessions.slice(0, 6),
+        totalSessions: (sessions ?? []).length,
+        activeNow: (recentSessions ?? []).length,
+        dailySessions: dailySessions ?? [],
+        topEntryPages: topEntryPages ?? [],
+        recentSessions: (recentSessions ?? []).slice(0, 6),
       };
     },
     staleTime: 60 * 1000,
@@ -89,7 +95,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{data?.activeNow ?? 0}</p>
+          <p className="text-2xl font-bold">{(data?.activeNow ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Active (15 min)</p>
         </div>
       </div>
@@ -120,10 +126,10 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.topEntryPages.map(p => (
+              {(data?.topEntryPages ?? []).map((p) => (
                 <TableRow key={p.page}>
                   <TableCell className="font-mono text-xs truncate max-w-[300px]">{p.page}</TableCell>
-                  <TableCell className="text-right font-medium">{p.count}</TableCell>
+                  <TableCell className="text-right font-medium">{(p?.count ?? 0).toLocaleString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
