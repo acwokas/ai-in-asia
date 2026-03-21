@@ -76,6 +76,10 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
 
       if (!error && data) {
         setResults(data as unknown as SearchResult[]);
+        trackEvent("search_performed", {
+          search_term: debouncedQuery.trim(),
+          result_count: data.length,
+        });
       }
       setIsLoading(false);
     };
