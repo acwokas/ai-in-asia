@@ -20,6 +20,7 @@ const ExternalRedirect = ({ url }: { url: string }) => {
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import { useEngagementLoop } from "./hooks/useEngagementLoop";
 import { useTrendingAutoRefresh } from "./hooks/useTrendingAutoRefresh";
+import { useGA4NewUserTracking, useGA4ReturningUserTracking } from "./hooks/useGA4UserBehavior";
 
 import { DatabaseErrorBoundary } from "./components/DatabaseErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -218,6 +219,8 @@ const persister = createIDBPersister();
 const EngagementWrapper = () => {
   useEngagementLoop();
   useTrendingAutoRefresh();
+  useGA4NewUserTracking();
+  useGA4ReturningUserTracking();
   return null;
 };
 
