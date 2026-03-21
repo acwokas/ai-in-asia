@@ -163,7 +163,7 @@ export const useGA4GuideTracking = (
     maxDepth.current = 0;
     firedDepths.current.clear();
 
-    trackEvent("content_view", {
+    trackEvent("guide_view", {
       content_type: "guide",
       content_id: guideId,
       content_title: title,
