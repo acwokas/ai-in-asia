@@ -222,6 +222,7 @@ const EngagementWrapper = () => {
   useTrendingAutoRefresh();
   useGA4NewUserTracking();
   useGA4ReturningUserTracking();
+  useGA4NavigationTracking();
   return null;
 };
 
