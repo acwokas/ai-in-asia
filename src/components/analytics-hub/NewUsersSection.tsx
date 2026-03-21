@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { format, parseISO, eachDayOfInterval, startOfDay } from "date-fns";
 
 interface Props {
   startDate: string;
@@ -13,13 +16,13 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-new-users", range],
     queryFn: async () => {
-      const [profilesRes, recentSessionsRes, landingRes] = await Promise.all([
+      const [sessionsRes, recentSessionsRes, landingRes] = await Promise.all([
         supabase
-          .from("profiles")
-          .select("id, username, created_at, avatar_url")
-          .gte("created_at", startDate)
-          .order("created_at", { ascending: false })
-          .limit(20),
+          .from("analytics_sessions")
+          .select("session_id, started_at")
+          .gte("started_at", startDate)
+          .order("started_at", { ascending: true })
+          .limit(1000),
         supabase
           .from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
@@ -34,86 +37,100 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .limit(1000),
       ]);
 
-      const profiles = profilesRes.data || [];
+      const sessions = sessionsRes.data || [];
       const recentSessions = recentSessionsRes.data || [];
       const landings = landingRes.data || [];
 
-      // Top landing pages
+      // Daily sessions for AreaChart
+      const dailyCounts: Record<string, number> = {};
+      sessions.forEach(s => {
+        const day = format(parseISO(s.started_at), "yyyy-MM-dd");
+        dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+      });
+
+      const start = parseISO(startDate);
+      const end = new Date();
+      const allDays = eachDayOfInterval({ start, end });
+      const dailySessions = allDays.map(d => {
+        const key = format(d, "yyyy-MM-dd");
+        return { date: format(d, "MMM d"), sessions: dailyCounts[key] || 0 };
+      });
+
+      // Top entry pages
       const landingCounts: Record<string, number> = {};
       landings.forEach(l => {
         const p = l.landing_page || "/";
         landingCounts[p] = (landingCounts[p] || 0) + 1;
       });
-      const topLandings = Object.entries(landingCounts)
+      const topEntryPages = Object.entries(landingCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
+        .slice(0, 10)
         .map(([page, count]) => ({ page, count }));
 
       return {
-        newUserCount: profiles.length,
-        recentProfiles: profiles.slice(0, 8),
+        totalSessions: sessions.length,
         activeNow: recentSessions.length,
-        recentSessions: recentSessions.slice(0, 8),
-        topLandings,
+        dailySessions,
+        topEntryPages,
+        recentSessions: recentSessions.slice(0, 6),
       };
     },
-    staleTime: 60 * 1000, // refresh more often for real-time feel
+    staleTime: 60 * 1000,
   });
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
+  if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="rounded-lg border p-4 text-center">
-          <p className="text-3xl font-bold text-green-500">{data?.newUserCount ?? 0}</p>
-          <p className="text-xs text-muted-foreground mt-1">New Signups</p>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-2 max-w-sm">
+        <div className="rounded-lg border p-3 text-center">
+          <p className="text-2xl font-bold">{data.totalSessions.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
-        <div className="rounded-lg border p-4 text-center">
-          <p className="text-3xl font-bold text-cyan-500">{data?.activeNow ?? 0}</p>
-          <p className="text-xs text-muted-foreground mt-1">Sessions (last 15 min)</p>
-        </div>
-        <div className="rounded-lg border p-4">
-          <p className="text-xs font-medium mb-2">Top Landing Pages</p>
-          {data?.topLandings.map(l => (
-            <div key={l.page} className="flex justify-between text-xs py-0.5">
-              <span className="truncate max-w-[180px] font-mono">{l.page}</span>
-              <Badge variant="outline" className="text-[10px] h-5">{l.count}</Badge>
-            </div>
-          ))}
+        <div className="rounded-lg border p-3 text-center">
+          <p className="text-2xl font-bold">{data.activeNow}</p>
+          <p className="text-xs text-muted-foreground">Active (15 min)</p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <h4 className="text-sm font-medium mb-2">Recent Signups</h4>
-          <div className="space-y-1.5">
-            {data?.recentProfiles.length ? data.recentProfiles.map(p => (
-              <div key={p.id} className="flex items-center gap-2 text-xs border rounded p-2">
-                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-                  {(p.username || "?")[0]?.toUpperCase()}
-                </div>
-                <span className="truncate flex-1">{p.username || "—"}</span>
-                <span className="text-muted-foreground">{format(new Date(p.created_at), "MMM d")}</span>
-              </div>
-            )) : <p className="text-xs text-muted-foreground">No signups in this period</p>}
-          </div>
-        </div>
+      {/* Daily sessions AreaChart */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Daily Sessions</h4>
+        <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
+          <AreaChart data={data.dailySessions}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+            <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+            <YAxis className="text-xs" />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Area type="monotone" dataKey="sessions" fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={2} />
+          </AreaChart>
+        </ChartContainer>
+      </div>
 
-        <div>
-          <h4 className="text-sm font-medium mb-2">Live Sessions</h4>
-          <div className="space-y-1.5">
-            {data?.recentSessions.length ? data.recentSessions.map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-xs border rounded p-2">
-                <span className="font-mono truncate max-w-[140px]">{s.landing_page || "/"}</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[10px] h-5">{s.device_type || "?"}</Badge>
-                  <span className="text-muted-foreground">{s.referrer_domain || "direct"}</span>
-                </div>
-              </div>
-            )) : <p className="text-xs text-muted-foreground">No active sessions</p>}
-          </div>
-        </div>
+      {/* Top entry pages table */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Top Entry Pages</h4>
+        {data.topEntryPages.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Page</TableHead>
+                <TableHead className="text-right">Sessions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.topEntryPages.map(p => (
+                <TableRow key={p.page}>
+                  <TableCell className="font-mono text-xs truncate max-w-[300px]">{p.page}</TableCell>
+                  <TableCell className="text-right font-medium">{p.count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-sm text-muted-foreground">No entry page data</p>
+        )}
       </div>
     </div>
   );

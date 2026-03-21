@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 interface Props {
   startDate: string;
@@ -39,20 +41,20 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         "article_read_complete": events.filter(e => e.event_name === "article_read_complete").length,
       };
 
-      // Top completed articles by path
-      const pathCounts: Record<string, number> = {};
+      // Top completed articles by title from event_data, fallback to path
+      const titleCounts: Record<string, number> = {};
       events
         .filter(e => e.event_name === "article_read_complete")
         .forEach(e => {
-          const p = e.page_path || "unknown";
-          pathCounts[p] = (pathCounts[p] || 0) + 1;
+          const ed = e.event_data as any;
+          const label = ed?.article_title || ed?.title || e.page_path || "unknown";
+          titleCounts[label] = (titleCounts[label] || 0) + 1;
         });
-      const topCompleted = Object.entries(pathCounts)
+      const topCompleted = Object.entries(titleCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
-        .map(([path, count]) => ({ path, count }));
+        .map(([name, count]) => ({ name: name.length > 40 ? name.slice(0, 37) + "…" : name, fullName: name, count }));
 
-      // Guide engagement
       const avgGuideScroll = guideViews.length > 0
         ? Math.round(guideViews.reduce((s, g) => s + (g.scroll_depth_percent || 0), 0) / guideViews.length)
         : 0;
@@ -70,50 +72,63 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
   });
 
   if (isLoading) return <SectionSkeleton />;
+  if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
+
+  const funnelData = [
+    { stage: "25%", count: data.milestones["article_read_25"] },
+    { stage: "50%", count: data.milestones["article_read_50"] },
+    { stage: "75%", count: data.milestones["article_read_75"] },
+    { stage: "Complete", count: data.milestones["article_read_complete"] },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Funnel */}
+      {/* Funnel chart */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Article Read Funnel</h4>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {[
-            { label: "25%", value: data?.milestones["article_read_25"] ?? 0, color: "bg-yellow-500" },
-            { label: "50%", value: data?.milestones["article_read_50"] ?? 0, color: "bg-orange-500" },
-            { label: "75%", value: data?.milestones["article_read_75"] ?? 0, color: "bg-blue-500" },
-            { label: "Complete", value: data?.milestones["article_read_complete"] ?? 0, color: "bg-green-500" },
-            { label: "Rate", value: `${data?.completionRate ?? 0}%`, color: "bg-purple-500" },
-          ].map(item => (
-            <div key={item.label} className="rounded-lg border p-3 text-center">
-              <div className={`h-1.5 w-8 mx-auto rounded-full mb-2 ${item.color}`} />
-              <p className="text-lg font-bold">{typeof item.value === "number" ? item.value.toLocaleString() : item.value}</p>
-              <p className="text-xs text-muted-foreground">{item.label}</p>
-            </div>
-          ))}
-        </div>
+        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data.completionRate}%)</h4>
+        <ChartContainer config={{ count: { label: "Readers", color: "hsl(var(--primary))" } }} className="h-[200px]">
+          <BarChart data={funnelData}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+            <XAxis dataKey="stage" className="text-xs" />
+            <YAxis className="text-xs" />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ChartContainer>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Top completed */}
+        {/* Top completed bar chart + table */}
         <div>
-          <h4 className="text-sm font-medium mb-3">Top Completed Articles</h4>
-          {data?.topCompleted.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Path</TableHead>
-                  <TableHead className="text-right">Completions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.topCompleted.map(row => (
-                  <TableRow key={row.path}>
-                    <TableCell className="font-mono text-xs truncate max-w-[200px]">{row.path}</TableCell>
-                    <TableCell className="text-right font-medium">{row.count}</TableCell>
+          <h4 className="text-sm font-medium mb-3">Top 10 Completed Articles</h4>
+          {data.topCompleted.length ? (
+            <>
+              <ChartContainer config={{ count: { label: "Completions", color: "hsl(var(--accent-foreground))" } }} className="h-[250px]">
+                <BarChart data={data.topCompleted} layout="vertical" margin={{ left: 120 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis type="number" className="text-xs" />
+                  <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ChartContainer>
+              <Table className="mt-3">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Article</TableHead>
+                    <TableHead className="text-right">Completions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {data.topCompleted.map(row => (
+                    <TableRow key={row.fullName}>
+                      <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
+                      <TableCell className="text-right font-medium">{row.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">No completions recorded yet</p>
           )}
@@ -123,9 +138,9 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
           <div className="space-y-3">
-            <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
-            <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
-            <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
+            <StatRow label="Guide Pageviews" value={data.guideViewCount} />
+            <StatRow label="Avg Scroll Depth" value={`${data.avgGuideScroll}%`} />
+            <StatRow label="Avg Time on Guide" value={`${data.avgGuideTime}s`} />
           </div>
         </div>
       </div>
@@ -143,9 +158,7 @@ const StatRow = ({ label, value }: { label: string; value: string | number }) =>
 const SectionSkeleton = () => (
   <div className="space-y-3">
     <Skeleton className="h-4 w-48" />
-    <div className="grid grid-cols-5 gap-3">
-      {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
-    </div>
+    <Skeleton className="h-[200px] w-full" />
     <Skeleton className="h-32 w-full" />
   </div>
 );
