@@ -166,6 +166,9 @@ const Article = () => {
     }
   }, [article?.id]);
 
+  // GA4 scroll depth, engagement score, newsletter CTA tracking
+  useGA4ContentTracking(article);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [article?.id]);
