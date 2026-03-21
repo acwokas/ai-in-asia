@@ -172,7 +172,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Top Exit Pages</h4>
           <div className="space-y-1.5">
-            {data.topExits.map(e => (
+            {(data?.topExits ?? []).map(e => (
               <div key={e.path} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[140px]">{e.path}</span>
                 <Badge variant="secondary" className="text-[10px]">{e.count}</Badge>

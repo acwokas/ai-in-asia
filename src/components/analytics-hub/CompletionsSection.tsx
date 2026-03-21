@@ -137,9 +137,9 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
           <div className="space-y-3">
-            <StatRow label="Guide Pageviews" value={data.guideViewCount} />
-            <StatRow label="Avg Scroll Depth" value={`${data.avgGuideScroll}%`} />
-            <StatRow label="Avg Time on Guide" value={`${data.avgGuideTime}s`} />
+            <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
+            <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
+            <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
           </div>
         </div>
       </div>

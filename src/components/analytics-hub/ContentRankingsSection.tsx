@@ -75,7 +75,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            {data.categories.map(c => (
+            {(data?.categories ?? []).map(c => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
           </SelectContent>
