@@ -32,13 +32,13 @@ const AnalyticsAll = () => {
         supabase
           .from("analytics_sessions")
           .select("session_id, user_id, duration_seconds, is_bounce")
-          .gte("started_at", startDate),
+          .gte("started_at", startDate) as any,
         supabase
           .from("analytics_events")
           .select("event_name")
-          .gte("created_at", startDate),
+          .gte("created_at", startDate) as any,
         supabase
-          .from("newsletter_subscribers")
+          .from("newsletter_subscribers" as any)
           .select("id", { count: "exact", head: true })
           .eq("status", "active"),
       ]);
