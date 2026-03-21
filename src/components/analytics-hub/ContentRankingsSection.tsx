@@ -32,11 +32,14 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
           .limit(50),
       ]);
 
-      const articles = (articlesRes.data || []).map(a => ({
+      const articles = (articlesRes.data ?? []).map((a) => ({
         ...a,
-        engagement: (a.view_count || 0) + (a.like_count || 0) * 3 + (a.comment_count || 0) * 5,
+        view_count: a?.view_count ?? 0,
+        like_count: a?.like_count ?? 0,
+        comment_count: a?.comment_count ?? 0,
+        engagement: (a?.view_count ?? 0) + (a?.like_count ?? 0) * 3 + (a?.comment_count ?? 0) * 5,
       }));
-      const categories = categoriesRes.data || [];
+      const categories = categoriesRes.data ?? [];
 
       return { articles, categories };
     },
@@ -55,8 +58,8 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
   const bottom10 = sorted.length > 10 ? sorted.slice(-10).reverse() : [];
 
   const chartData = top10.map(a => ({
-    name: a.title.length > 30 ? a.title.slice(0, 27) + "…" : a.title,
-    engagement: a.engagement,
+    name: (a?.title ?? "Untitled").length > 30 ? (a?.title ?? "Untitled").slice(0, 27) + "…" : (a?.title ?? "Untitled"),
+    engagement: a?.engagement ?? 0,
   }));
 
   const getCategoryName = (id: string | null) => {
@@ -80,7 +83,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
             ))}
           </SelectContent>
         </Select>
-        <span className="text-xs text-muted-foreground">{filtered.length} articles</span>
+        <span className="text-xs text-muted-foreground">{(filtered.length ?? 0).toLocaleString()} articles</span>
       </div>
 
       {/* Top 10 bar chart */}
@@ -126,15 +129,15 @@ const RankingTable = ({ title, articles, getCategoryName }: { title: string; art
         </TableRow>
       </TableHeader>
       <TableBody>
-        {articles.map((a, i) => (
+        {(articles ?? []).map((a, i) => (
           <TableRow key={a.id}>
             <TableCell className="font-medium text-muted-foreground">{i + 1}</TableCell>
-            <TableCell className="max-w-[220px] truncate text-xs">{a.title}</TableCell>
+            <TableCell className="max-w-[220px] truncate text-xs">{a?.title ?? "Untitled"}</TableCell>
             <TableCell><Badge variant="outline" className="text-[10px]">{getCategoryName(a.primary_category_id)}</Badge></TableCell>
-            <TableCell className="text-right font-mono text-xs">{(a.view_count || 0).toLocaleString()}</TableCell>
-            <TableCell className="text-right font-mono text-xs">{a.like_count || 0}</TableCell>
-            <TableCell className="text-right font-mono text-xs">{a.comment_count || 0}</TableCell>
-            <TableCell className="text-right font-mono text-xs font-bold">{a.engagement}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.view_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.like_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.comment_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs font-bold">{(a?.engagement ?? 0).toLocaleString()}</TableCell>
           </TableRow>
         ))}
       </TableBody>
