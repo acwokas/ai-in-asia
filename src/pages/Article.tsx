@@ -202,7 +202,6 @@ const Article = () => {
           ga4FiredDepths.current.add(m);
 
           const payload: Record<string, any> = {
-            event: m === 90 ? "article_read_complete" : `article_read_${m}`,
             article_id: ga4ArticleId,
             article_title: ga4Title,
             article_category: ga4Category,
@@ -214,8 +213,8 @@ const Article = () => {
             payload.time_on_page = seconds;
           }
 
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push(payload);
+          // Use dualPush for both dataLayer AND Supabase dual-write
+          dualPush(m === 90 ? "article_read_complete" : `article_read_${m}`, payload);
 
           if (!import.meta.env.PROD) {
             console.log(`[GA4-INLINE] Fired ${payload.event} at ${pct}%`);
