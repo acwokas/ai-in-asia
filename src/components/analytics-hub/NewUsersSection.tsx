@@ -38,8 +38,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         return rows;
       };
 
-      const [sessionsCountRes, sessionStarts, recentSessionsRes, landingRes] = await Promise.all([
-        supabase.from("analytics_sessions").select("*", { count: "exact", head: true }).gte("started_at", startDate),
+      const [sessionStarts, recentSessionsRes, landingRes] = await Promise.all([
         fetchSessionStarts(),
         supabase.from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
