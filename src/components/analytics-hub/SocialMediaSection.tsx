@@ -347,7 +347,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
           comments: typeof p.comments === "number" ? p.comments : Array.isArray(p.comments) ? (p.comments as any[]).length : 0,
           shares: p.shares || p.reposts || p.retweets || 0,
           impressions: p.impressions || 0,
-          engagement: p.engagement || p.total_engagement || ((p.likes || 0) + (p.comments || 0) + (p.shares || 0)),
+          engagement: Number(p.engagement || p.total_engagement) || ((Number(p.likes) || 0) + (typeof p.comments === "number" ? p.comments : 0) + (Number(p.shares) || 0)),
         }));
 
       return { accounts, posts: allPosts as PublerPost[], platformBreakdown, totals, topPosts };
