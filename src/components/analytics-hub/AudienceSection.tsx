@@ -22,15 +22,24 @@ export const AudienceSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-audience", range],
     queryFn: async () => {
-      const [sessionsRes] = await Promise.all([
-        supabase
+      const PAGE_SIZE = 1000;
+      const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
+
+      const rows: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data: batch } = await supabase
           .from("analytics_sessions")
           .select("country, city, device_type, browser, os, referrer_domain, utm_source, utm_medium")
           .gte("started_at", startDate)
-          .limit(1000),
-      ]);
+          .range(from, from + PAGE_SIZE - 1);
+        const safe = batch ?? [];
+        rows.push(...safe);
+        if (safe.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
 
-      const sessions = sessionsRes.data ?? [];
+      const sessions = rows;
 
       // Country breakdown
       const countryCounts: Record<string, number> = {};
