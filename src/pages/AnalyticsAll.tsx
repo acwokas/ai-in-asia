@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   Activity, Users, Zap, BookCheck, Mail, Newspaper,
   UserPlus, UserCheck, Trophy, Route, Globe,
-  ChevronDown, BarChart3,
+  ChevronDown, BarChart3, Share2, DollarSign, Search,
 } from "lucide-react";
 import { subDays, startOfDay } from "date-fns";
 import {
@@ -20,6 +20,9 @@ import {
   CTANewsletterSection,
   BriefingSection,
   AudienceSection,
+  SocialMediaSection,
+  MonetizationSection,
+  SEOPerformanceSection,
 } from "@/components/analytics-hub";
 
 type DateRange = "7d" | "30d" | "90d";
