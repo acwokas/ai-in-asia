@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import { dualPush } from "@/lib/dualTrack";
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
 
