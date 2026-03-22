@@ -147,7 +147,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
                 <div key={cat.name} className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium">{cat.name}</span>
-                    <span className="text-muted-foreground">{cat.value.toLocaleString()} ({cat.pct}%)</span>
+                    <span className="text-muted-foreground">{(cat?.value ?? 0).toLocaleString()} ({cat?.pct ?? 0}%)</span>
                   </div>
                   <Progress value={cat.pct} className="h-2" />
                 </div>
@@ -193,8 +193,8 @@ export const AudienceSection = ({ startDate, range }: Props) => {
                     <TableCell className="text-muted-foreground font-medium">{i + 1}</TableCell>
                     <TableCell className="font-mono text-xs truncate max-w-[180px]">{r.domain}</TableCell>
                     <TableCell><Badge variant="outline" className="text-[10px]">{r.category}</Badge></TableCell>
-                    <TableCell className="text-right font-mono text-xs">{r.count.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">{r.pct}%</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{(r?.count ?? 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{r?.pct ?? 0}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -315,7 +315,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
         const topExtRef = (data?.topReferrers ?? []).find(r => r.domain !== "direct");
         if (topExtRef) {
           const ratio = topExtRef.count > 0 && total > 0 ? Math.round((topExtRef.count / total) * 100) : 0;
-          tips.push(`2. Top external referrer "${topExtRef.domain}" drives ${topExtRef.count.toLocaleString()} sessions (${ratio}% of traffic). ${ratio > 15 ? 'Strong channel — create content specifically for this audience and consider a partnership or guest posting exchange.' : 'Moderate contribution — test sharing more content on this platform to see if traffic scales linearly.'}`);
+          tips.push(`2. Top external referrer "${topExtRef.domain}" drives ${(topExtRef.count ?? 0).toLocaleString()} sessions (${ratio}% of traffic). ${ratio > 15 ? 'Strong channel — create content specifically for this audience and consider a partnership or guest posting exchange.' : 'Moderate contribution — test sharing more content on this platform to see if traffic scales linearly.'}`);
         } else {
           tips.push(`2. No significant external referrers detected. Start building backlinks: submit guest articles to industry publications, get listed on AI tool directories, and share on LinkedIn with a compelling hook (question or surprising stat).`);
         }
@@ -325,7 +325,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
         const mobile = (data?.deviceData ?? []).find(d => d.name === "mobile");
         const mobilePct = mobile && total > 0 ? Math.round((mobile.value / total) * 100) : 0;
         const geoNote = topCountry
-          ? `Top market: ${topCountry.country} (${Math.round((topCountry.count / total) * 100)}%).`
+          ? `Top market: ${topCountry.country} (${Math.round((((topCountry?.count ?? 0)) / total) * 100)}%).`
           : (hasCountryData ? "" : "Geo data populating — check back in 24-48h.");
         const deviceNote = mobilePct > 60
           ? `${mobilePct}% mobile — ensure CTAs, newsletter forms, and article layouts are touch-optimised.`

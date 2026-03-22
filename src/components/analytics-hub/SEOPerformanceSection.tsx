@@ -171,7 +171,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
     tips.push("1. No organic search traffic detected. The prerender fix deployed March 21, 2026 enables Google indexing — expect organic sessions to appear within 2-4 weeks as pages are crawled and indexed.");
     tips.push("2. Submit your sitemap to Google Search Console and Bing Webmaster Tools to accelerate discovery.");
   } else {
-    tips.push(`1. Organic search accounts for ${d.organicPct}% of traffic (${d.totalOrganic.toLocaleString()} sessions). ${parseFloat(d.organicPct) < 30 ? "Industry benchmark for content sites is 40-60% organic — focus on SEO-optimized titles and meta descriptions." : "This is a healthy organic share. Maintain momentum with regular content updates."}`);
+    tips.push(`1. Organic search accounts for ${d.organicPct}% of traffic (${(d.totalOrganic ?? 0).toLocaleString()} sessions). ${Number.parseFloat(d.organicPct ?? "0") < 30 ? "Industry benchmark for content sites is 40-60% organic — focus on SEO-optimized titles and meta descriptions." : "This is a healthy organic share. Maintain momentum with regular content updates."}`);
 
     if (d.recoveryPctChange !== 0) {
       const direction = d.recoveryPctChange > 0 ? "📈" : "📉";
@@ -180,7 +180,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
 
     if (d.topLandingPages.length > 0) {
       const topPage = d.topLandingPages[0];
-      tips.push(`3. Top organic landing page "${topPage.path}" has ${topPage.count} sessions. Strengthen this page with internal links from related articles, and add structured data (FAQ schema, HowTo) to boost SERP visibility.`);
+      tips.push(`3. Top organic landing page "${topPage.path}" has ${(topPage?.count ?? 0).toLocaleString()} sessions. Strengthen this page with internal links from related articles, and add structured data (FAQ schema, HowTo) to boost SERP visibility.`);
     }
   }
 
@@ -190,7 +190,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Organic Sessions</p>
-          <p className="text-2xl font-bold">{d.totalOrganic.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(d.totalOrganic ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">{d.organicPct}% of total</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
@@ -229,7 +229,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
               {pieData.map((entry) => (
                 <div key={entry.name} className="flex items-center gap-1.5 text-xs">
                   <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.fill }} />
-                  <span>{entry.name}: {entry.value.toLocaleString()}</span>
+                  <span>{entry.name}: {(entry?.value ?? 0).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -250,7 +250,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
                 {d.engines.map((e) => (
                   <TableRow key={e.name}>
                     <TableCell className="font-medium">{e.name}</TableCell>
-                    <TableCell className="text-right">{e.count.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{(e?.count ?? 0).toLocaleString()}</TableCell>
                     <TableCell className="text-right">{e.pct}%</TableCell>
                   </TableRow>
                 ))}
@@ -292,7 +292,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
                 {d.topLandingPages.map((p) => (
                   <TableRow key={p.path}>
                     <TableCell className="font-medium text-xs max-w-[300px] truncate">{p.path}</TableCell>
-                    <TableCell className="text-right">{p.count.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{(p?.count ?? 0).toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

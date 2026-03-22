@@ -92,7 +92,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
             { label: "Completion Rate", value: `${data.completionRate}%` },
           ].map(s => (
             <div key={s.label} className="rounded-lg border p-3 text-center">
-              <p className="text-xl font-bold">{typeof s.value === "number" ? s.value.toLocaleString() : s.value}</p>
+              <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
               <p className="text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
@@ -126,7 +126,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
               ].map(row => (
                 <div key={row.label} className="flex justify-between items-center text-sm border rounded p-2">
                   <span className="text-muted-foreground">{row.label}</span>
-                  <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? row.value.toLocaleString() : row.value}</Badge>
+                  <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? (row.value ?? 0).toLocaleString() : row.value}</Badge>
                 </div>
               ))}
             </div>
@@ -138,7 +138,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
               ].map(row => (
                 <div key={row.label} className="flex justify-between items-center text-sm border rounded p-2">
                   <span className="text-muted-foreground">{row.label}</span>
-                  <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? row.value.toLocaleString() : row.value}</Badge>
+                  <Badge variant="secondary" className="font-mono">{typeof row.value === "number" ? (row.value ?? 0).toLocaleString() : row.value}</Badge>
                 </div>
               ))}
             </div>
@@ -181,7 +181,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
             tips.push(`1. Briefing readership stable at ~${thisWeek} sessions/week. To break the plateau, try cross-promoting the briefing at the end of regular articles with a CTA like "Get tomorrow's AI signals at 9am".`);
           }
         } else if (totalSessions > 0) {
-          tips.push(`1. ${totalSessions.toLocaleString()} total briefing sessions tracked. Week-over-week trends will show once 2+ weeks of data accumulate. Current avg session: ${data.avgDuration}s.`);
+          tips.push(`1. ${(totalSessions ?? 0).toLocaleString()} total briefing sessions tracked. Week-over-week trends will show once 2+ weeks of data accumulate. Current avg session: ${data.avgDuration}s.`);
         }
 
         // Completion rate
@@ -189,11 +189,11 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         const views = data.views;
         if (data.hasEventData && views > 0) {
           if (rate < 50) {
-            tips.push(`2. ${rate}% completion rate across ${views.toLocaleString()} views — below the 60-80% benchmark for briefing-style content. Shorten individual signal summaries to under 200 words each, use bold headlines for scannability, and put the most compelling story first to hook readers.`);
+            tips.push(`2. ${rate}% completion rate across ${(views ?? 0).toLocaleString()} views — below the 60-80% benchmark for briefing-style content. Shorten individual signal summaries to under 200 words each, use bold headlines for scannability, and put the most compelling story first to hook readers.`);
           } else if (rate >= 80) {
             tips.push(`2. ${rate}% completion rate — excellent. Readers are consuming the full briefing. ${Number(data.storiesPerView) > 2 ? `They read an avg of ${data.storiesPerView} stories per view, showing strong engagement depth.` : 'Consider adding a 4th story to test appetite for more content.'}`);
           } else {
-            tips.push(`2. ${rate}% completion rate — solid. ${data.storyReads.toLocaleString()} total story reads across ${views.toLocaleString()} views (${data.storiesPerView} stories/view avg). Experiment with story order — put opinion/analysis pieces before straight news to see if completion improves.`);
+            tips.push(`2. ${rate}% completion rate — solid. ${(data.storyReads ?? 0).toLocaleString()} total story reads across ${(views ?? 0).toLocaleString()} views (${data.storiesPerView} stories/view avg). Experiment with story order — put opinion/analysis pieces before straight news to see if completion improves.`);
           }
         }
 
@@ -201,7 +201,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         const outbound = data.outboundClicks;
         if (views > 0 && outbound > 0) {
           const clickRate = Math.round((outbound / views) * 100);
-          tips.push(`3. ${clickRate}% of briefing readers click source links (${outbound.toLocaleString()} clicks). ${clickRate > 20 ? 'Excellent engagement — readers trust your curation. Add sponsored/affiliate links alongside editorial ones to monetise this traffic.' : 'Make source links more prominent with styled "Read the full story →" CTAs and consider opening them in new tabs to preserve the briefing session.'}`);
+          tips.push(`3. ${clickRate}% of briefing readers click source links (${(outbound ?? 0).toLocaleString()} clicks). ${clickRate > 20 ? 'Excellent engagement — readers trust your curation. Add sponsored/affiliate links alongside editorial ones to monetise this traffic.' : 'Make source links more prominent with styled "Read the full story →" CTAs and consider opening them in new tabs to preserve the briefing session.'}`);
         } else if (data.hasEventData && views > 0 && outbound === 0) {
           tips.push("3. No outbound clicks tracked — readers are consuming the summaries but not clicking through. Either the summaries are comprehensive enough (good) or source links aren't prominent enough. Test adding \"Read more →\" buttons with contrasting styling.");
         } else {

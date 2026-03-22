@@ -105,15 +105,15 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
   if (d.totalPageviews === 0) {
     tips.push("1. No pageview data available yet. Revenue estimates will appear once analytics tracking is active.");
   } else {
-    tips.push(`1. At ${d.dailyPageviews.toLocaleString()} daily pageviews with ~${AVG_ADS_PER_PAGE} ad units/page, estimated daily revenue is $${d.dailyRevLow}–$${d.dailyRevHigh} (at $${RPM_LOW}–$${RPM_HIGH} RPM for AI/tech content).`);
+    tips.push(`1. At ${(d.dailyPageviews ?? 0).toLocaleString()} daily pageviews with ~${AVG_ADS_PER_PAGE} ad units/page, estimated daily revenue is $${d.dailyRevLow}–$${d.dailyRevHigh} (at $${RPM_LOW}–$${RPM_HIGH} RPM for AI/tech content).`);
     
     if (d.topPages.length > 0) {
-      const topPath = d.topPages[0].path;
-      const topViews = d.topPages[0].views;
-      tips.push(`2. "${topPath}" is your highest-revenue page with ${topViews.toLocaleString()} views. Ensure optimal ad placement here — consider adding a second ad unit in the sidebar or after the first paragraph.`);
+      const topPath = d?.topPages?.[0]?.path ?? "/";
+      const topViews = d?.topPages?.[0]?.views ?? 0;
+      tips.push(`2. "${topPath}" is your highest-revenue page with ${(topViews ?? 0).toLocaleString()} views. Ensure optimal ad placement here — consider adding a second ad unit in the sidebar or after the first paragraph.`);
     }
 
-    const monthLow = parseFloat(d.monthlyRevLow);
+    const monthLow = Number(d.monthlyRevLow ?? 0);
     if (monthLow < 50) {
       tips.push(`3. Projected monthly revenue ($${d.monthlyRevLow}–$${d.monthlyRevHigh}) is below the AdSense payment threshold of $100. Focus on growing organic traffic before optimizing ad placements.`);
     } else {
@@ -132,11 +132,11 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Total Pageviews</p>
-          <p className="text-2xl font-bold">{d.totalPageviews.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(d.totalPageviews ?? 0).toLocaleString()}</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Est. Ad Impressions</p>
-          <p className="text-2xl font-bold">{d.estImpressions.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(d.estImpressions ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">~{AVG_ADS_PER_PAGE} units/page</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
@@ -187,8 +187,8 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
                   {d.topPages.map((p) => (
                     <TableRow key={p.path}>
                       <TableCell className="font-medium text-xs max-w-[250px] truncate">{p.path}</TableCell>
-                      <TableCell className="text-right">{p.views.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">{p.estImpressions.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{(p?.views ?? 0).toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{(p?.estImpressions ?? 0).toLocaleString()}</TableCell>
                       <TableCell className="text-right">${p.estRevLow}–${p.estRevHigh}</TableCell>
                     </TableRow>
                   ))}

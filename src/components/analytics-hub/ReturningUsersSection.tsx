@@ -131,7 +131,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
           { label: "Returning Visitors", value: data.returning },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
-            <p className="text-xl font-bold">{typeof s.value === "number" ? s.value.toLocaleString() : s.value}</p>
+            <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
             <p className="text-xs text-muted-foreground">{s.label}</p>
             {"sub" in s && s.sub && <p className="text-[10px] text-muted-foreground">{s.sub}</p>}
           </div>
@@ -160,7 +160,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
                 {data.topRevisited.map((p) => (
                   <TableRow key={p.path}>
                     <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
-                    <TableCell className="text-right font-medium">{p.uniqueSessions.toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-medium">{(p?.uniqueSessions ?? 0).toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -206,11 +206,11 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
 
         // Return rate
         if (rate < 15) {
-          tips.push(`1. Only ${returning.toLocaleString()} of ${totalUnique.toLocaleString()} visitors returned (${rate}% — well below the 25-30% benchmark for content sites). Three fixes: (a) add a "Continue Reading" section on the homepage for returning visitors, (b) enable browser push notifications for new articles, (c) launch a weekly email digest summarising the best content.`);
+          tips.push(`1. Only ${(returning ?? 0).toLocaleString()} of ${(totalUnique ?? 0).toLocaleString()} visitors returned (${rate}% — well below the 25-30% benchmark for content sites). Three fixes: (a) add a "Continue Reading" section on the homepage for returning visitors, (b) enable browser push notifications for new articles, (c) launch a weekly email digest summarising the best content.`);
         } else if (rate < 30) {
-          tips.push(`1. ${rate}% return rate (${returning.toLocaleString()} returning visitors) — approaching the 25-30% benchmark. Focus on converting these returners to newsletter subscribers: they've already shown intent, a well-placed inline signup form could capture 5-10% of them.`);
+          tips.push(`1. ${rate}% return rate (${(returning ?? 0).toLocaleString()} returning visitors) — approaching the 25-30% benchmark. Focus on converting these returners to newsletter subscribers: they've already shown intent, a well-placed inline signup form could capture 5-10% of them.`);
         } else {
-          tips.push(`1. Strong ${rate}% return rate with ${returning.toLocaleString()} returning visitors — above the 25-30% content site benchmark. Your audience is developing a reading habit. Consider launching a members-only section or premium newsletter for your most loyal readers.`);
+          tips.push(`1. Strong ${rate}% return rate with ${(returning ?? 0).toLocaleString()} returning visitors — above the 25-30% content site benchmark. Your audience is developing a reading habit. Consider launching a members-only section or premium newsletter for your most loyal readers.`);
         }
 
         // Bounce rate
@@ -223,13 +223,13 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         }
 
         // Power users + streaks
-        const bestStreak = (data.topStreaks[0] as any)?.longest_streak ?? 0;
+        const bestStreak = (data?.topStreaks?.[0] as any)?.longest_streak ?? 0;
         if (power > 0 && bestStreak >= 7) {
-          tips.push(`3. ${power.toLocaleString()} power users (8+ visits) with a top reading streak of ${bestStreak} days. These readers are your most valuable audience — they're ${rate > 20 ? '3-5x' : '2-3x'} more likely to subscribe or share. Create exclusive early-access content or a "Reader of the Week" feature to reward and retain them.`);
+          tips.push(`3. ${(power ?? 0).toLocaleString()} power users (8+ visits) with a top reading streak of ${bestStreak} days. These readers are your most valuable audience — they're ${rate > 20 ? '3-5x' : '2-3x'} more likely to subscribe or share. Create exclusive early-access content or a "Reader of the Week" feature to reward and retain them.`);
         } else if (power > 0) {
-          tips.push(`3. ${power.toLocaleString()} power user${power === 1 ? '' : 's'} (8+ visits), best streak: ${bestStreak} days. Build on this: add streak reminders via push notifications and a visible streak counter on the profile page to gamify daily reading.`);
+          tips.push(`3. ${(power ?? 0).toLocaleString()} power user${power === 1 ? '' : 's'} (8+ visits), best streak: ${bestStreak} days. Build on this: add streak reminders via push notifications and a visible streak counter on the profile page to gamify daily reading.`);
         } else if (totalUnique > 50) {
-          tips.push(`3. No power users (8+ visits) detected yet among ${totalUnique.toLocaleString()} visitors. To build habitual readers: publish on a consistent schedule (same time, same days), add a "Daily Pick" feature, and send push notification reminders.`);
+          tips.push(`3. No power users (8+ visits) detected yet among ${(totalUnique ?? 0).toLocaleString()} visitors. To build habitual readers: publish on a consistent schedule (same time, same days), add a "Daily Pick" feature, and send push notification reminders.`);
         }
 
         return tips;
