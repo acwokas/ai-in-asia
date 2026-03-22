@@ -79,6 +79,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
           <Link
             to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
+            onClick={() => dualPush("related_article_click", { article_title: featuredArticle.title, article_slug: featuredArticle.slug })}
           >
             <div className="relative aspect-[16/10] overflow-hidden">
               <ArticleFallbackImage
