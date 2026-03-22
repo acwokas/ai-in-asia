@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 interface Props {
   startDate: string;
@@ -18,12 +20,11 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
-      const MAX_ROWS = 10000;
 
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (rows.length < MAX_ROWS) {
+        while (true) {
           const { data: batch } = await supabase.from("analytics_sessions")
             .select("user_id, session_id, is_bounce, duration_seconds, page_count")
             .gte("started_at", startDate).range(from, from + PAGE_SIZE - 1);
@@ -38,7 +39,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (rows.length < MAX_ROWS) {
+        while (true) {
           const { data: batch } = await supabase.from("analytics_pageviews")
             .select("page_path, session_id").gte("viewed_at", startDate).range(from, from + PAGE_SIZE - 1);
           const safe = batch ?? [];
@@ -59,19 +60,20 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
 
       const streaks = streaksRes.data ?? [];
 
-      // ── Build per-session pageview counts from the pageviews table ──
-      const pvPerSession: Record<string, number> = {};
+      // ── Build per-session DISTINCT page path counts ──
+      const pvPerSession: Record<string, Set<string>> = {};
       pageviews.forEach((pv) => {
         const sid = pv?.session_id;
-        if (!sid) return;
-        pvPerSession[sid] = (pvPerSession[sid] || 0) + 1;
+        const path = pv?.page_path;
+        if (!sid || !path) return;
+        if (!pvPerSession[sid]) pvPerSession[sid] = new Set();
+        pvPerSession[sid].add(path);
       });
 
-      // Only count sessions that actually have pageview data for accurate metrics
       const sessionsWithPV = Object.keys(pvPerSession);
       const totalSessionsWithPV = sessionsWithPV.length;
 
-      // ── Return rate: based on user/session identity across all sessions ──
+      // ── Return rate ──
       const userSessionCounts: Record<string, number> = {};
       sessions.forEach((s) => {
         const key = s?.user_id || s?.session_id;
@@ -83,15 +85,15 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const returning = Object.values(userSessionCounts).filter(c => c > 1).length;
       const returnRate = totalUnique > 0 ? Math.round((returning / totalUnique) * 100) : 0;
 
-      // ── Bounce rate: ratio of single-pageview sessions (from pageviews table) ──
-      const singlePVSessions = sessionsWithPV.filter(sid => pvPerSession[sid] === 1).length;
+      // ── Bounce rate: sessions with only 1 distinct page ──
+      const singlePVSessions = sessionsWithPV.filter(sid => pvPerSession[sid].size === 1).length;
       const bounceRate = totalSessionsWithPV > 0
         ? Math.round((singlePVSessions / totalSessionsWithPV) * 100) : 0;
 
-      // ── Avg pages/session: from pageviews table ──
-      const totalPVCount = pageviews.length;
+      // ── Avg distinct pages/session ──
+      const totalDistinctPages = sessionsWithPV.reduce((sum, sid) => sum + pvPerSession[sid].size, 0);
       const avgPages = totalSessionsWithPV > 0
-        ? (totalPVCount / totalSessionsWithPV).toFixed(1) : "0";
+        ? (totalDistinctPages / totalSessionsWithPV).toFixed(1) : "0";
 
       const freqBuckets: Record<string, number> = { "1 visit": 0, "2-3 visits": 0, "4-7 visits": 0, "8+ visits": 0 };
       Object.values(userSessionCounts).forEach(c => {
@@ -145,7 +147,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         {[
           { label: "Return Rate", value: `${data.returnRate}%`, sub: `${data.returning}/${data.totalUnique}` },
           { label: "Bounce Rate", value: `${data.bounceRate}%` },
-          { label: "Avg Pages/Session", value: data.avgPages },
+          { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "Distinct paths only — high value may indicate bot traffic" : "Distinct page paths per session" },
           { label: "Returning Visitors", value: data.returning },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
