@@ -33,12 +33,13 @@ export function useGA4NewUserTracking() {
       push("first_session_depth", { pageviews: pageviewCount.current });
     }
 
+    // ── Category loyalty: 5+ articles in same category ──────────────
     const categoryMatch = path.match(/^\/(news|business|life|voices|learn|create|policy)/);
     if (categoryMatch) {
+      const cat = categoryMatch[1];
       const cats = JSON.parse(
         sessionStorage.getItem("ga4_cats_visited") || "[]"
       ) as string[];
-      const cat = categoryMatch[1];
       if (!cats.includes(cat)) {
         cats.push(cat);
         sessionStorage.setItem("ga4_cats_visited", JSON.stringify(cats));
@@ -49,8 +50,49 @@ export function useGA4NewUserTracking() {
           });
         }
       }
+
+      // Category loyalty via localStorage
+      if (isArticlePage) {
+        const loyaltyKey = "ga4_cat_loyalty";
+        const loyalty: Record<string, number> = JSON.parse(
+          localStorage.getItem(loyaltyKey) || "{}"
+        );
+        loyalty[cat] = (loyalty[cat] || 0) + 1;
+        localStorage.setItem(loyaltyKey, JSON.stringify(loyalty));
+
+        if (loyalty[cat] === 5) {
+          push("category_loyalty", {
+            category: cat,
+            article_count: loyalty[cat],
+            page_path: path,
+          });
+        }
+      }
     }
   }, [location.pathname]);
+
+  // ── New user bounce: beforeunload if scroll < 25% ─────────────────
+  useEffect(() => {
+    const isNewUser = !localStorage.getItem("ga4_returning");
+
+    if (!isNewUser) return;
+
+    const handler = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+
+      if (pct < 25 && pageviewCount.current <= 1) {
+        push("new_user_bounce_content", {
+          scroll_depth: pct,
+          page_path: window.location.pathname,
+        });
+      }
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 }
 
 export function useGA4ReturningUserTracking() {
@@ -58,6 +100,10 @@ export function useGA4ReturningUserTracking() {
 
   useEffect(() => {
     if (!user) return;
+
+    // Mark as returning user for future sessions
+    localStorage.setItem("ga4_returning", "1");
+
     if (sessionStorage.getItem("ga4_return_checked")) return;
     sessionStorage.setItem("ga4_return_checked", "1");
 
@@ -89,6 +135,7 @@ export function useGA4ReturningUserTracking() {
     })();
   }, [user]);
 
+  // ── Bookmark click tracking ───────────────────────────────────────
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -104,4 +151,28 @@ export function useGA4ReturningUserTracking() {
     document.addEventListener("click", handler, { capture: true });
     return () => document.removeEventListener("click", handler, { capture: true });
   }, []);
+
+  // ── Saved content return: returning user clicks a bookmarked article ─
+  useEffect(() => {
+    if (!user) return;
+
+    const handler = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const inSaved = anchor.closest(
+        '[data-saved], [class*="SavedArticle"], [class*="bookmark"], [class*="Bookmark"], [class*="ReadingQueue"]'
+      );
+      if (inSaved) {
+        push("saved_content_return", {
+          link_url: anchor.getAttribute("href") || "",
+          link_text: (anchor.textContent || "").trim().slice(0, 80),
+          page_path: window.location.pathname,
+        });
+      }
+    };
+
+    document.addEventListener("click", handler, { capture: true });
+    return () => document.removeEventListener("click", handler, { capture: true });
+  }, [user]);
 }
