@@ -22,7 +22,6 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
       const fetchSessionStarts = async () => {
         const rows: Array<{ started_at: string | null }> = [];
         let from = 0;
-
         while (rows.length < MAX_ROWS) {
           const { data: batch, error } = await supabase
             .from("analytics_sessions")
@@ -30,40 +29,28 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
             .gte("started_at", startDate)
             .order("started_at", { ascending: true })
             .range(from, from + PAGE_SIZE - 1);
-
           if (error) throw error;
-
           const safeBatch = batch ?? [];
           rows.push(...safeBatch);
-
           if (safeBatch.length < PAGE_SIZE) break;
           from += PAGE_SIZE;
         }
-
         return rows;
       };
 
       const [sessionsCountRes, sessionStarts, recentSessionsRes, landingRes] = await Promise.all([
-        supabase
-          .from("analytics_sessions")
-          .select("*", { count: "exact", head: true })
-          .gte("started_at", startDate),
+        supabase.from("analytics_sessions").select("*", { count: "exact", head: true }).gte("started_at", startDate),
         fetchSessionStarts(),
-        supabase
-          .from("analytics_sessions")
+        supabase.from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
           .gte("started_at", new Date(Date.now() - 15 * 60 * 1000).toISOString())
-          .order("started_at", { ascending: false })
-          .limit(50),
+          .order("started_at", { ascending: false }).limit(50),
         (async () => {
           const rows: Array<{ landing_page: string | null }> = [];
           let from = 0;
           while (rows.length < MAX_ROWS) {
-            const { data: batch } = await supabase
-              .from("analytics_sessions")
-              .select("landing_page")
-              .gte("started_at", startDate)
-              .not("landing_page", "is", null)
+            const { data: batch } = await supabase.from("analytics_sessions")
+              .select("landing_page").gte("started_at", startDate).not("landing_page", "is", null)
               .range(from, from + PAGE_SIZE - 1);
             const safeBatch = batch ?? [];
             rows.push(...safeBatch);
@@ -83,55 +70,35 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         if (!s?.started_at) return;
         const parsed = parseISO(s.started_at);
         if (Number.isNaN(parsed.getTime())) return;
-        const day = format(parsed, "yyyy-MM-dd");
-        dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+        dailyCounts[format(parsed, "yyyy-MM-dd")] = (dailyCounts[format(parsed, "yyyy-MM-dd")] || 0) + 1;
       });
 
       const parsedStart = parseISO(startDate);
-      const start = Number.isNaN(parsedStart.getTime())
-        ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        : parsedStart;
-      const end = new Date();
-      const allDays = eachDayOfInterval({ start, end });
+      const start = Number.isNaN(parsedStart.getTime()) ? new Date(Date.now() - 7 * 86400000) : parsedStart;
+      const allDays = eachDayOfInterval({ start, end: new Date() });
       const dailySessions = allDays.map((d) => {
         const key = format(d, "yyyy-MM-dd");
         return { date: format(d, "MMM d"), sessions: dailyCounts[key] || 0 };
       });
 
       const landingCounts: Record<string, number> = {};
-      landings.forEach((l) => {
-        const p = l?.landing_page || "/";
-        landingCounts[p] = (landingCounts[p] || 0) + 1;
-      });
-      const topEntryPages = Object.entries(landingCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([page, count]) => ({ page, count }));
+      landings.forEach((l) => { const p = l?.landing_page || "/"; landingCounts[p] = (landingCounts[p] || 0) + 1; });
+      const topEntryPages = Object.entries(landingCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([page, count]) => ({ page, count }));
 
-      // Compute daily avg for trend
       const dailyValues = Object.values(dailyCounts);
-      const avgDaily = dailyValues.length > 0
-        ? Math.round(dailyValues.reduce((s, v) => s + v, 0) / dailyValues.length)
-        : 0;
-
-      // Recent trend: compare last 7 days to prior 7
+      const avgDaily = dailyValues.length > 0 ? Math.round(dailyValues.reduce((s, v) => s + v, 0) / dailyValues.length) : 0;
       const recentDays = dailySessions.slice(-7);
       const priorDays = dailySessions.slice(-14, -7);
-      const recentAvg = recentDays.length > 0
-        ? Math.round(recentDays.reduce((s, d) => s + d.sessions, 0) / recentDays.length)
-        : 0;
-      const priorAvg = priorDays.length > 0
-        ? Math.round(priorDays.reduce((s, d) => s + d.sessions, 0) / priorDays.length)
-        : 0;
+      const recentAvg = recentDays.length > 0 ? Math.round(recentDays.reduce((s, d) => s + d.sessions, 0) / recentDays.length) : 0;
+      const priorAvg = priorDays.length > 0 ? Math.round(priorDays.reduce((s, d) => s + d.sessions, 0) / priorDays.length) : 0;
+
+      // Peak day
+      const peakDay = dailySessions.reduce((best, d) => d.sessions > best.sessions ? d : best, { date: "", sessions: 0 });
 
       return {
         totalSessions: sessionsCountRes.count ?? 0,
         activeNow: recentSessions.length,
-        dailySessions,
-        topEntryPages,
-        avgDaily,
-        recentAvg,
-        priorAvg,
+        dailySessions, topEntryPages, avgDaily, recentAvg, priorAvg, peakDay,
       };
     },
     staleTime: 60 * 1000,
@@ -144,15 +111,15 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 max-w-md">
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{(data?.totalSessions ?? 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(data.totalSessions).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{(data?.activeNow ?? 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(data.activeNow).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Active (15 min)</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{(data?.avgDaily ?? 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(data.avgDaily).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Avg Daily</p>
         </div>
       </div>
@@ -160,7 +127,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
       <div>
         <h4 className="text-sm font-medium mb-3">Daily Sessions</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
-          <AreaChart data={data?.dailySessions ?? []}>
+          <AreaChart data={data.dailySessions}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
             <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis className="text-xs" />
@@ -172,19 +139,14 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
 
       <div>
         <h4 className="text-sm font-medium mb-3">Top Entry Pages</h4>
-        {data?.topEntryPages?.length ? (
+        {data.topEntryPages.length ? (
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Page</TableHead>
-                <TableHead className="text-right">Sessions</TableHead>
-              </TableRow>
-            </TableHeader>
+            <TableHeader><TableRow><TableHead>Page</TableHead><TableHead className="text-right">Sessions</TableHead></TableRow></TableHeader>
             <TableBody>
-              {(data?.topEntryPages ?? []).map((p) => (
+              {data.topEntryPages.map((p) => (
                 <TableRow key={p.page}>
                   <TableCell className="font-mono text-xs truncate max-w-[300px]">{p.page}</TableCell>
-                  <TableCell className="text-right font-medium">{(p?.count ?? 0).toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-medium">{p.count.toLocaleString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -196,36 +158,47 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const total = data?.totalSessions ?? 0;
-        const recentAvg = data?.recentAvg ?? 0;
-        const priorAvg = data?.priorAvg ?? 0;
+        const total = data.totalSessions;
+        const recentAvg = data.recentAvg;
+        const priorAvg = data.priorAvg;
 
-        // Trend indicator
+        if (total === 0) {
+          tips.push("1. No sessions recorded yet. Verify AnalyticsProvider is wrapping your app and that useAnalyticsTracking creates sessions on page load.");
+          tips.push("2. Once tracking is active, you'll see daily session trends, entry page distribution, and real-time visitor counts.");
+          return tips;
+        }
+
+        // Trend
         if (priorAvg > 0 && recentAvg > 0) {
           const changePct = Math.round(((recentAvg - priorAvg) / priorAvg) * 100);
           if (changePct > 10) {
-            tips.push(`📈 Traffic is trending up: last 7 days average ${recentAvg.toLocaleString()} sessions/day vs ${priorAvg.toLocaleString()} prior (+${changePct}%). Keep publishing to sustain momentum.`);
+            tips.push(`1. 📈 Traffic trending up: ${recentAvg.toLocaleString()} sessions/day this week vs ${priorAvg.toLocaleString()} last week (+${changePct}%). Identify what drove the spike (new article, social share, external mention) and double down on that channel.`);
           } else if (changePct < -10) {
-            tips.push(`📉 Traffic dipped: last 7 days average ${recentAvg.toLocaleString()} sessions/day vs ${priorAvg.toLocaleString()} prior (${changePct}%). Check if publishing frequency dropped or a key referrer changed.`);
+            tips.push(`1. 📉 Traffic down ${Math.abs(changePct)}%: ${recentAvg.toLocaleString()} sessions/day vs ${priorAvg.toLocaleString()} last week. Check: did publishing frequency drop? Did a key referrer stop linking? Review your top entry pages for any 404s or broken redirects.`);
           } else {
-            tips.push(`Traffic is steady at ~${recentAvg.toLocaleString()} sessions/day over the last 2 weeks.`);
+            tips.push(`1. Traffic stable at ~${recentAvg.toLocaleString()} sessions/day (±${Math.abs(changePct)}% week-over-week). To break out of the plateau, try publishing at a different time of day or promoting on a new channel.`);
           }
-        } else if (total > 0) {
-          tips.push(`${total.toLocaleString()} total sessions this period, averaging ${(data?.avgDaily ?? 0).toLocaleString()}/day.`);
+        } else {
+          tips.push(`1. ${total.toLocaleString()} total sessions this period, averaging ${data.avgDaily.toLocaleString()}/day. ${data.peakDay.sessions > data.avgDaily * 1.5 ? `Peak day was ${data.peakDay.date} with ${data.peakDay.sessions} sessions — investigate what drove it.` : ''}`);
         }
 
-        const top = (data?.topEntryPages ?? [])[0];
+        // Entry page concentration
+        const top = data.topEntryPages[0];
         if (top && total > 0) {
           const pct = Math.round((top.count / total) * 100);
           if (pct > 50) {
-            tips.push(`⚠️ ${pct}% of all sessions land on "${top.page}" — heavy reliance on a single entry point. Diversify by optimising SEO on other high-value pages.`);
-          } else if (pct > 25) {
-            tips.push(`${pct}% of sessions enter via "${top.page}". Ensure this page has strong internal links and CTAs to distribute traffic deeper.`);
+            tips.push(`2. ⚠️ ${pct}% of all sessions land on "${top.page}" — single point of failure. If this page drops in search rankings, traffic collapses. Prioritise SEO on 3-5 other high-value pages to reduce concentration risk.`);
+          } else {
+            tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${top.count.toLocaleString()} visits). Ensure it has strong internal links and newsletter CTAs to convert visitors into regulars.`);
           }
         }
 
-        if ((data?.topEntryPages ?? []).length <= 3 && total > 100) {
-          tips.push("Only ${(data?.topEntryPages ?? []).length} entry pages detected. Broaden your SEO strategy to capture traffic across more landing pages.");
+        // Entry page diversity
+        const entryCount = data.topEntryPages.length;
+        if (entryCount <= 3 && total > 100) {
+          tips.push(`3. Only ${entryCount} entry pages detected across ${total.toLocaleString()} sessions. Most healthy sites have 20+ entry points. Invest in long-tail SEO: target specific questions your audience searches for and create dedicated articles.`);
+        } else if (entryCount >= 8) {
+          tips.push(`3. ${entryCount} distinct entry pages — good SEO diversity. Your content ranks for multiple search intents.`);
         }
 
         return tips;
