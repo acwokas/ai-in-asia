@@ -17,12 +17,13 @@ export const NavigationSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-navigation", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
+      const MAX_ROWS = 10000;
       const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
 
       const fetchAllEvents = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_events")
             .select("event_name, event_data")
@@ -40,7 +41,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_pageviews")
             .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
@@ -57,7 +58,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_sessions")
             .select("referrer_domain, device_type")

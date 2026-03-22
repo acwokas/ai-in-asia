@@ -13,16 +13,17 @@ interface Props {
 }
 
 const PAGE_SIZE = 1000;
+const MAX_ROWS = 10000;
 
 export const NewUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-new-users", range],
     queryFn: async () => {
-      const fetchAllSessionStarts = async () => {
+      const fetchSessionStarts = async () => {
         const rows: Array<{ started_at: string | null }> = [];
         let from = 0;
 
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch, error } = await supabase
             .from("analytics_sessions")
             .select("started_at")
@@ -47,18 +48,17 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .from("analytics_sessions")
           .select("*", { count: "exact", head: true })
           .gte("started_at", startDate),
-        fetchAllSessionStarts(),
+        fetchSessionStarts(),
         supabase
           .from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
           .gte("started_at", new Date(Date.now() - 15 * 60 * 1000).toISOString())
           .order("started_at", { ascending: false })
           .limit(50),
-        // Use paginated fetch for landing pages too
         (async () => {
           const rows: Array<{ landing_page: string | null }> = [];
           let from = 0;
-          while (true) {
+          while (rows.length < MAX_ROWS) {
             const { data: batch } = await supabase
               .from("analytics_sessions")
               .select("landing_page")

@@ -22,10 +22,11 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-rankings", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
+      const MAX_ROWS = 10000;
       // Paginated fetch for all published articles
       const allArticles: any[] = [];
       let from = 0;
-      while (true) {
+      while (allArticles.length < MAX_ROWS) {
         const { data: batch } = await supabase
           .from("articles")
           .select("id, title, slug, view_count, like_count, comment_count, trending_score, article_type, primary_category_id, published_at")

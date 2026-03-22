@@ -18,12 +18,13 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
+      const MAX_ROWS = 10000;
 
       // Paginated fetch for sessions
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_sessions")
             .select("user_id, session_id, is_bounce, duration_seconds, page_count")
@@ -41,7 +42,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_pageviews")
             .select("page_path, session_id")
