@@ -15,23 +15,31 @@ export const NavigationSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-navigation", range],
     queryFn: async () => {
-      const [eventsRes, pageviewsRes, sessionsRes] = await Promise.all([
-        supabase
-          .from("analytics_events")
-          .select("event_name, event_data")
-          .in("event_name", ["nav_click", "nav_category_click", "cta_click", "search_performed", "social_share_click"])
-          .gte("created_at", startDate)
-          .limit(500),
-        supabase
-          .from("analytics_pageviews")
-          .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
-          .gte("viewed_at", startDate)
-          .limit(1000),
-        supabase
-          .from("analytics_sessions")
-          .select("referrer_domain, device_type")
-          .gte("started_at", startDate)
-          .limit(1000),
+      const PAGE_SIZE = 1000;
+      const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
+
+      const fetchAll = async (table: string, select: string, filters: (q: any) => any) => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          let q = supabase.from(table).select(select);
+          q = filters(q);
+          const { data: batch } = await q.range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const [events, pageviews, sessions] = await Promise.all([
+        fetchAll("analytics_events", "event_name, event_data",
+          (q: any) => q.in("event_name", ["nav_click", "nav_category_click", "cta_click", "search_performed", "social_share_click"]).gte("created_at", startDate)),
+        fetchAll("analytics_pageviews", "page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit",
+          (q: any) => q.gte("viewed_at", startDate)),
+        fetchAll("analytics_sessions", "referrer_domain, device_type",
+          (q: any) => q.gte("started_at", startDate)),
       ]);
 
       const events = eventsRes.data ?? [];
