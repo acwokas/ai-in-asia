@@ -40,6 +40,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
         }
       } else {
         setIsSubscribed(true);
+        dualPush("newsletter_cta_submit", { signup_source: "inline_article" });
         toast("Successfully subscribed!", {
           description: "Welcome to the AI in ASIA newsletter!",
         });
