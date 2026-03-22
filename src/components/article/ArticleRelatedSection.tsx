@@ -2,6 +2,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
+import { dualPush } from "@/lib/dualTrack";
 
 interface RelatedArticle {
   id: string;
