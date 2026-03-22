@@ -30,7 +30,7 @@ export function useGA4NavigationTracking() {
 
       // ── AI Snapshot expand ───────────────────────────────────────────
       const snapshotToggle = target.closest(
-        '[data-snapshot], .tldr-snapshot summary, [class*="Snapshot"] button, [class*="snapshot"] button, [class*="TldrSnapshot"] button, details.tldr summary'
+        '[data-snapshot], .tldr-snapshot, [class*="Snapshot"] button, [class*="snapshot"] button, details.tldr summary'
       );
       if (snapshotToggle) {
         push("ai_snapshot_expand", {
