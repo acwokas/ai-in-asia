@@ -181,6 +181,56 @@ export const useAnalyticsTracking = () => {
   const scrollDepthRef = useRef<number>(0);
   const sessionDataRef = useRef<SessionData | null>(null);
 
+  // ── Idle detection: track active time, not wall time ──────────────
+  const activeTimeRef = useRef<number>(0);       // accumulated active seconds
+  const lastActiveTickRef = useRef<number>(Date.now());
+  const isIdleRef = useRef<boolean>(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const IDLE_THRESHOLD = 30_000; // 30 seconds
+
+  useEffect(() => {
+    const markActive = () => {
+      const now = Date.now();
+      if (isIdleRef.current) {
+        // Resuming from idle — reset tick without accumulating idle gap
+        isIdleRef.current = false;
+        lastActiveTickRef.current = now;
+      }
+      // Reset idle timer
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        // Accumulate active time before going idle
+        activeTimeRef.current += Math.round((Date.now() - lastActiveTickRef.current) / 1000);
+        isIdleRef.current = true;
+      }, IDLE_THRESHOLD);
+    };
+
+    const events = ['scroll', 'click', 'keypress', 'mousemove', 'touchstart'];
+    events.forEach(evt => window.addEventListener(evt, markActive, { passive: true }));
+    markActive(); // start active
+
+    return () => {
+      events.forEach(evt => window.removeEventListener(evt, markActive));
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, []);
+
+  /** Get total active seconds on current page (excludes idle time) */
+  const getActiveSeconds = useCallback(() => {
+    let total = activeTimeRef.current;
+    if (!isIdleRef.current) {
+      total += Math.round((Date.now() - lastActiveTickRef.current) / 1000);
+    }
+    return total;
+  }, []);
+
+  /** Reset active timer (called on page navigation) */
+  const resetActiveTimer = useCallback(() => {
+    activeTimeRef.current = 0;
+    lastActiveTickRef.current = Date.now();
+    isIdleRef.current = false;
+  }, []);
+
   // Update session in database
   const updateSessionInDb = useCallback(async (sessionId: string, updates: {
     duration_seconds?: number;
