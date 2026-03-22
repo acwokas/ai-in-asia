@@ -254,6 +254,7 @@ export const useAnalyticsTracking = () => {
         // Resuming from idle — reset tick without accumulating idle gap
         isIdleRef.current = false;
         lastActiveTickRef.current = now;
+        if (!import.meta.env.PROD) console.log('[GA4] Timer resumed - active');
       }
       // Reset idle timer
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -261,6 +262,7 @@ export const useAnalyticsTracking = () => {
         // Accumulate active time before going idle
         activeTimeRef.current += Math.round((Date.now() - lastActiveTickRef.current) / 1000);
         isIdleRef.current = true;
+        if (!import.meta.env.PROD) console.log('[GA4] Timer paused - idle');
       }, IDLE_THRESHOLD);
     };
 

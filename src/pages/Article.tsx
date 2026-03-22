@@ -233,8 +233,7 @@ const Article = () => {
     const handleVis = () => {
       if (document.visibilityState === "hidden") {
         const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: "article_engagement_score", article_title: ga4Title, article_category: ga4Category, scroll_depth: ga4MaxDepth.current, time_on_page: seconds });
+        dualPush("article_engagement_score", { article_title: ga4Title, article_category: ga4Category, scroll_depth: ga4MaxDepth.current, time_on_page: seconds });
       }
     };
     document.addEventListener("visibilitychange", handleVis);
