@@ -51,6 +51,15 @@ export const useGA4ContentTracking = (
           if (m === 90) {
             const seconds = Math.round((Date.now() - startTime.current) / 1000);
             if (seconds < 60) continue;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: "article_complete",
+              article_id: articleId,
+              article_title: title,
+              article_category: categoryName,
+              article_slug: typeof window !== "undefined" ? window.location.pathname.split("/").pop() : "",
+              read_time_seconds: seconds,
+            });
             trackEvent("article_complete", {
               article_id: articleId,
               article_title: title,
