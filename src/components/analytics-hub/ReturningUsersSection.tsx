@@ -147,7 +147,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         {[
           { label: "Return Rate", value: `${data.returnRate}%`, sub: `${data.returning}/${data.totalUnique}` },
           { label: "Bounce Rate", value: `${data.bounceRate}%` },
-          { label: "Avg Pages/Session", value: data.avgPages },
+          { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "Distinct paths only — high value may indicate bot traffic" : "Distinct page paths per session" },
           { label: "Returning Visitors", value: data.returning },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
