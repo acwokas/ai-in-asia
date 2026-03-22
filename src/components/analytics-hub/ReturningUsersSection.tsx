@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { InsightCard } from "./InsightCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -207,6 +208,18 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
           )) : <p className="text-xs text-muted-foreground">No streak data yet</p>}
         </div>
       </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const bestStreak = (data?.topStreaks ?? [])[0]?.longest_streak ?? 0;
+        if (bestStreak >= 3) tips.push(`Your best reading streak is ${bestStreak} days. Users with 3+ day streaks are significantly more likely to subscribe — consider adding streak reminders.`);
+        const rate = data?.returnRate ?? 0;
+        if (rate > 0 && rate < 20) tips.push(`Return rate is ${rate}% — consider adding email digests, push notifications, or a "Continue Reading" feature to bring users back.`);
+        else if (rate >= 20) tips.push(`${rate}% return rate shows healthy audience stickiness. Focus on converting returning visitors to subscribers.`);
+        const bounce = data?.bounceRate ?? 0;
+        if (bounce > 60) tips.push(`Bounce rate of ${bounce}% is high. Ensure article pages have clear next-step CTAs and related content suggestions.`);
+        return tips;
+      })()} />
     </div>
   );
 };

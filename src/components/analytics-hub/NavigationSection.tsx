@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { InsightCard } from "./InsightCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -231,6 +232,19 @@ export const NavigationSection = ({ startDate, range }: Props) => {
           </div>
         </div>
       </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const topEl = (data?.clickedElements ?? [])[0];
+        const totalNav = data?.totalNavEvents ?? 0;
+        if (topEl && totalNav > 0) {
+          const pct = Math.round((topEl.count / totalNav) * 100);
+          tips.push(`${pct}% of navigation clicks go to "${topEl.name}". Consider featuring key content in this area for maximum visibility.`);
+        }
+        const topExit = (data?.topExits ?? [])[0];
+        if (topExit) tips.push(`Top exit page is "${topExit.path}" with ${(topExit.count ?? 0).toLocaleString()} exits. Adding a stronger CTA or related content there could reduce drop-offs.`);
+        return tips;
+      })()} />
     </div>
   );
 };

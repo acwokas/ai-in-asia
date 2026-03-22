@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { format, parseISO, eachDayOfInterval } from "date-fns";
 import { EmptyDataNotice } from "./EmptyDataNotice";
+import { InsightCard } from "./InsightCard";
 
 interface Props {
   startDate: string;
@@ -178,6 +179,21 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
           </div>
         </div>
       </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const conv = data?.ctaConversion ?? 0;
+        if (conv > 0) {
+          tips.push(`Newsletter CTA view-to-click conversion is ${conv}%. Industry average is 2–5%. ${conv < 2 ? 'Consider testing stronger CTA copy or placement.' : conv >= 5 ? 'Great performance — above industry average.' : 'On par with industry benchmarks.'}`);
+        }
+        const active = data?.activeSubs ?? 0;
+        const total = data?.totalSubs ?? 0;
+        if (total > 0 && active < total) {
+          const churnPct = Math.round(((total - active) / total) * 100);
+          tips.push(`${churnPct}% of subscribers have churned (${(total - active).toLocaleString()} unsubscribed/unconfirmed). Consider a re-engagement campaign for lapsed subscribers.`);
+        }
+        return tips;
+      })()} />
     </div>
   );
 };

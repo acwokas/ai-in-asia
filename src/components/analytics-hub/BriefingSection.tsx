@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { format, eachWeekOfInterval, parseISO, endOfWeek, isWithinInterval } from "date-fns";
 import { EmptyDataNotice } from "./EmptyDataNotice";
+import { InsightCard } from "./InsightCard";
 
 interface Props {
   startDate: string;
@@ -167,6 +168,22 @@ export const BriefingSection = ({ startDate, range }: Props) => {
           </div>
         </div>
       </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const rate = data?.completionRate ?? 0;
+        if (rate > 0) tips.push(`Briefing completion rate is ${rate}%. Shorter stories (under 200 words) tend to have higher completion rates — consider tightening signal summaries.`);
+        const avgDur = data?.avgDuration ?? 0;
+        if (avgDur > 0 && avgDur < 60) tips.push(`Average briefing session is ${avgDur}s. Readers are scanning quickly — ensure the most important signal is first.`);
+        else if (avgDur >= 120) tips.push(`Average session of ${avgDur}s shows strong engagement. Readers are spending time with the content.`);
+        const outbound = data?.outboundClicks ?? 0;
+        const views = data?.views ?? 0;
+        if (views > 0 && outbound > 0) {
+          const clickRate = Math.round((outbound / views) * 100);
+          tips.push(`${clickRate}% of briefing viewers click outbound links. ${clickRate > 20 ? 'Strong source engagement.' : 'Consider making source links more prominent.'}`);
+        }
+        return tips;
+      })()} />
     </div>
   );
 };

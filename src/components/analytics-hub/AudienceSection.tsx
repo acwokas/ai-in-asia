@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
+import { InsightCard } from "./InsightCard";
 
 interface Props {
   startDate: string;
@@ -220,6 +221,19 @@ export const AudienceSection = ({ startDate, range }: Props) => {
           </div>
         </div>
       )}
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const topCountry = (data?.topCountries ?? [])[0];
+        const total = data?.totalSessions ?? 0;
+        if (topCountry && total > 0) {
+          const pct = Math.round((topCountry.count / total) * 100);
+          tips.push(`${pct}% of traffic comes from ${topCountry.country}. ${pct > 60 ? 'Consider localising content or expanding reach to other regions.' : 'Healthy geographic diversity.'}`);
+        }
+        const topRef = (data?.topReferrers ?? []).find(r => r.domain !== "direct");
+        if (topRef) tips.push(`Top external referrer is "${topRef.domain}" with ${(topRef.count ?? 0).toLocaleString()} sessions. Strengthen this channel with targeted content or partnerships.`);
+        return tips;
+      })()} />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { InsightCard } from "./InsightCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +121,31 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
       {bottom10.length > 0 && (
         <RankingTable title="Bottom 10" articles={bottom10} getCategoryName={getCategoryName} />
       )}
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        if (top10.length > 0) {
+          // Find top category
+          const catCounts: Record<string, { count: number; totalEng: number }> = {};
+          (data?.articles ?? []).forEach(a => {
+            const cat = getCategoryName(a.primary_category_id);
+            if (cat === "—") return;
+            if (!catCounts[cat]) catCounts[cat] = { count: 0, totalEng: 0 };
+            catCounts[cat].count++;
+            catCounts[cat].totalEng += a.engagement ?? 0;
+          });
+          const topCat = Object.entries(catCounts).sort((a, b) => (b[1].totalEng / b[1].count) - (a[1].totalEng / a[1].count))[0];
+          if (topCat) {
+            const avgEng = Math.round(topCat[1].totalEng / topCat[1].count);
+            tips.push(`Your top-performing category is "${topCat[0]}" with ${avgEng.toLocaleString()} avg engagement score. Consider publishing more in this category.`);
+          }
+        }
+        if (bottom10.length > 0) {
+          const avgBottom = Math.round(bottom10.reduce((s, a) => s + (a.engagement ?? 0), 0) / bottom10.length);
+          tips.push(`Bottom 10 articles average ${avgBottom.toLocaleString()} engagement. Review these for refresh opportunities or consider redirecting to stronger content.`);
+        }
+        return tips;
+      })()} />
     </div>
   );
 };

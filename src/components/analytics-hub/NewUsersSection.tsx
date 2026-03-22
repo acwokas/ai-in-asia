@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { InsightCard } from "./InsightCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -169,6 +170,18 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           <p className="text-sm text-muted-foreground">No entry page data</p>
         )}
       </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const top = (data?.topEntryPages ?? [])[0];
+        if (top && data?.totalSessions) {
+          const pct = Math.round((top.count / data.totalSessions) * 100);
+          tips.push(`${pct}% of sessions land on "${top.page}". Consider optimising this page's above-the-fold content and internal links.`);
+        }
+        const total = data?.totalSessions ?? 0;
+        if (total > 0) tips.push(`${total.toLocaleString()} total sessions in this period. Monitor entry page diversity — relying on a single landing page creates traffic fragility.`);
+        return tips;
+      })()} />
     </div>
   );
 };
