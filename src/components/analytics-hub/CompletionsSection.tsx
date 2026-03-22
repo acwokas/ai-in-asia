@@ -171,8 +171,19 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
             <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking — integration coming soon" />
           )}
         </div>
+        </div>
       </div>
-    </div>
+
+      <InsightCard insights={(() => {
+        const tips: string[] = [];
+        const rate = data?.completionRate ?? 0;
+        if (rate > 0 && rate < 25) tips.push(`Completion rate is ${rate}% — articles with rates below 25% may need shorter formats or better hooks in the first paragraph.`);
+        else if (rate >= 25 && rate < 50) tips.push(`Completion rate of ${rate}% is decent. Consider adding mid-article callouts or visuals to push past 50%.`);
+        else if (rate >= 50) tips.push(`Strong ${rate}% completion rate. Your content is keeping readers engaged to the end.`);
+        const guideScroll = data?.avgGuideScroll ?? 0;
+        if (guideScroll > 0 && guideScroll < 40) tips.push(`Guides average ${guideScroll}% scroll depth — consider adding a table of contents or breaking into shorter sections.`);
+        return tips;
+      })()} />
   );
 };
 

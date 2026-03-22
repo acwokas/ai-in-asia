@@ -5,5 +5,6 @@ export { ContentRankingsSection } from "./ContentRankingsSection";
 export { NavigationSection } from "./NavigationSection";
 export { CTANewsletterSection } from "./CTANewsletterSection";
 export { BriefingSection } from "./BriefingSection";
+export { InsightCard } from "./InsightCard";
 export { AudienceSection } from "./AudienceSection";
 export { EmptyDataNotice } from "./EmptyDataNotice";
