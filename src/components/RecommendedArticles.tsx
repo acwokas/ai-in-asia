@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { dualPush } from "@/lib/dualTrack";
 
 interface RecommendedArticlesProps {
   excludeIds?: string[];
