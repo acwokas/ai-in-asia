@@ -6,6 +6,7 @@ import { Flame, BookOpen } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { dualPush } from "@/lib/dualTrack";
 
 type CombinedItem =
   | { type: "article"; id: string; title: string; slug: string; featured_image_url: string | null; categories: { name: string; slug: string } | null }
