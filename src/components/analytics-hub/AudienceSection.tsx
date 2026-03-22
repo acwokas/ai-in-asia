@@ -29,7 +29,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
 
       const rows: any[] = [];
       let from = 0;
-      while (true) {
+      while (rows.length < MAX_ROWS) {
         const { data: batch } = await supabase
           .from("analytics_sessions")
           .select("country, city, device_type, browser, os, referrer_domain, utm_source, utm_medium")

@@ -55,11 +55,10 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .gte("started_at", new Date(Date.now() - 15 * 60 * 1000).toISOString())
           .order("started_at", { ascending: false })
           .limit(50),
-        // Use paginated fetch for landing pages too
         (async () => {
           const rows: Array<{ landing_page: string | null }> = [];
           let from = 0;
-          while (true) {
+          while (rows.length < MAX_ROWS) {
             const { data: batch } = await supabase
               .from("analytics_sessions")
               .select("landing_page")

@@ -58,7 +58,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_sessions")
             .select("referrer_domain, device_type")

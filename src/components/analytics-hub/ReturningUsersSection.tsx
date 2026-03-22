@@ -42,7 +42,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_pageviews")
             .select("page_path, session_id")
