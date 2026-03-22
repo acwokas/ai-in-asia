@@ -391,7 +391,8 @@ export const useAnalyticsTracking = () => {
     lastPathRef.current = currentPath;
     pageStartTimeRef.current = Date.now();
     scrollDepthRef.current = 0;
-  }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb]);
+    resetActiveTimer();
+  }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb, resetActiveTimer]);
 
   // Track scroll depth
   useEffect(() => {
