@@ -52,13 +52,15 @@ const PLATFORM_COLORS: Record<string, string> = {
   Other: "hsl(var(--muted-foreground))",
 };
 
-async function fetchAll(table: string, startDate: string, select: string, filters?: (q: any) => any) {
+async function fetchAllSessions(startDate: string) {
   const rows: any[] = [];
   let from = 0;
   while (true) {
-    let q = supabase.from(table).select(select).gte("started_at", startDate).range(from, from + 999);
-    if (filters) q = filters(q);
-    const { data } = await q;
+    const { data } = await supabase
+      .from("analytics_sessions")
+      .select("utm_source,utm_medium,utm_campaign,referrer_domain,duration_seconds,is_bounce,page_count")
+      .gte("started_at", startDate)
+      .range(from, from + 999);
     const batch = data ?? [];
     rows.push(...batch);
     if (batch.length < 1000) break;
