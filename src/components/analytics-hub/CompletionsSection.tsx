@@ -171,7 +171,6 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
             <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking — integration coming soon" />
           )}
         </div>
-        </div>
       </div>
 
       <InsightCard insights={(() => {
@@ -184,6 +183,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         if (guideScroll > 0 && guideScroll < 40) tips.push(`Guides average ${guideScroll}% scroll depth — consider adding a table of contents or breaking into shorter sections.`);
         return tips;
       })()} />
+    </div>
   );
 };
 
