@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import { dualPush } from "@/lib/dualTrack";
 
 const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
 
@@ -39,6 +40,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
         }
       } else {
         setIsSubscribed(true);
+        dualPush("newsletter_cta_submit", { signup_source: "inline_article" });
         toast("Successfully subscribed!", {
           description: "Welcome to the AI in ASIA newsletter!",
         });

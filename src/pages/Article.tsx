@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { dualPush } from "@/lib/dualTrack";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -202,7 +203,6 @@ const Article = () => {
           ga4FiredDepths.current.add(m);
 
           const payload: Record<string, any> = {
-            event: m === 90 ? "article_read_complete" : `article_read_${m}`,
             article_id: ga4ArticleId,
             article_title: ga4Title,
             article_category: ga4Category,
@@ -214,8 +214,8 @@ const Article = () => {
             payload.time_on_page = seconds;
           }
 
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push(payload);
+          // Use dualPush for both dataLayer AND Supabase dual-write
+          dualPush(m === 90 ? "article_read_complete" : `article_read_${m}`, payload);
 
           if (!import.meta.env.PROD) {
             console.log(`[GA4-INLINE] Fired ${payload.event} at ${pct}%`);
@@ -234,8 +234,7 @@ const Article = () => {
     const handleVis = () => {
       if (document.visibilityState === "hidden") {
         const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: "article_engagement_score", article_title: ga4Title, article_category: ga4Category, scroll_depth: ga4MaxDepth.current, time_on_page: seconds });
+        dualPush("article_engagement_score", { article_title: ga4Title, article_category: ga4Category, scroll_depth: ga4MaxDepth.current, time_on_page: seconds });
       }
     };
     document.addEventListener("visibilitychange", handleVis);

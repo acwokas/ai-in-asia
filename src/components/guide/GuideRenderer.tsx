@@ -115,7 +115,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       {hasContent(formData.snapshot_bullets) && (() => {
         const bullets = safeParseJSON(formData.snapshot_bullets);
         return bullets.length > 0 ? (
-        <section id="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
+        <section id="ai-snapshot" data-guide-section="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
           <div className="space-y-3">
             {bullets.filter(Boolean).map((b: any, i: number) => {
               const text = typeof b === "string" ? b : (b?.text || b?.bullet || JSON.stringify(b));
@@ -133,7 +133,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* Why This Matters */}
       {hasContent(formData.why_this_matters) && (
-        <section id="why-this-matters" className="mb-12">
+        <section id="why-this-matters" data-guide-section="why-this-matters" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Why This Matters</h2>
           <MarkdownText text={formData.why_this_matters} className="text-lg leading-relaxed text-foreground/90 space-y-4" />
         </section>
@@ -144,7 +144,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const steps = safeParseJSON(formData.steps);
         const filtered = steps.filter((s: any) => s.content?.trim());
         return filtered.length > 0 ? (
-        <section id="how-to-do-it" className="mb-12">
+        <section id="how-to-do-it" data-guide-section="how-to-do-it" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">How to Do It</h2>
           <div>
             {filtered.map((step: any, i: number, arr: any[]) => (
@@ -170,7 +170,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* What This Actually Looks Like */}
       {hasContent(formData.worked_example) && (
-        <section id="what-this-actually-looks-like" className="bg-card/50 rounded-xl p-6 md:p-8 mb-12">
+        <section id="what-this-actually-looks-like" data-guide-section="what-this-actually-looks-like" className="bg-card/50 rounded-xl p-6 md:p-8 mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">What This Actually Looks Like</h2>
 
           {formData.worked_example.prompt && (
@@ -203,7 +203,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const prompts = safeParseJSON(formData.guide_prompts);
         const filtered = prompts.filter((p: any) => p.prompt_text?.trim());
         return filtered.length > 0 ? (
-        <section id="prompts-to-try" className="mb-12">
+        <section id="prompts-to-try" data-guide-section="prompts-to-try" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Prompts to Try</h2>
           <div className="space-y-8">
             {filtered.map((prompt: any, i: number) => (
@@ -225,7 +225,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const mistakes = safeParseJSON(formData.common_mistakes);
         const filtered = mistakes.filter((m: any) => (m.title || m.mistake)?.trim());
         return filtered.length > 0 ? (
-        <section id="common-mistakes" className="mb-12">
+        <section id="common-mistakes" data-guide-section="common-mistakes" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Common Mistakes</h2>
           <div className="space-y-4">
             {filtered.map((mistake: any, i: number) => (
@@ -247,7 +247,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const tools = safeParseJSON(formData.recommended_tools);
         const filtered = tools.filter((t: any) => (t.tool_name || t.name)?.trim());
         return filtered.length > 0 ? (
-        <section id="tools-that-work" className="mb-12">
+        <section id="tools-that-work" data-guide-section="tools-that-work" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Tools That Work for This</h2>
           <div className="divide-y divide-border">
             {filtered.map((tool: any, i: number) => {
@@ -281,7 +281,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* Body Sections (legacy schema) */}
       {formData.body_sections?.length > 0 && formData.body_sections.map((section: any, i: number) => (
-        <section key={i} id={`body-section-${i + 1}`} className="mb-12">
+        <section key={i} id={`body-section-${i + 1}`} data-guide-section={`body-section-${i + 1}`} className="mb-12">
           {section.heading && (
             <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">{section.heading}</h2>
           )}
@@ -296,7 +296,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const faqs = safeParseJSON(formData.faq_items);
         const filtered = faqs.filter((f: any) => f.question?.trim());
         return filtered.length > 0 ? (
-        <section id="faq" className="mb-12">
+        <section id="faq" data-guide-section="faq" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Frequently Asked Questions</h2>
           <div className="divide-y divide-border">
             {filtered.map((faq: any, i: number) => (
