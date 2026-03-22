@@ -24,23 +24,24 @@ export const useGA4ContentTracking = (
 
   // ── Scroll-depth milestones on .article-content ──────────────────────
   useEffect(() => {
-    console.log("[GA4] Content tracking initialized for:", article?.title);
     if (!articleId) return;
     startTime.current = Date.now();
     maxDepth.current = 0;
     firedDepths.current.clear();
 
-    const contentEl = document.querySelector(".article-content");
-    if (!contentEl) return;
-
     const MILESTONES = [25, 50, 75, 90];
 
     const handleScroll = () => {
+      // Re-query on every scroll to avoid stale/detached DOM references
+      const contentEl = document.querySelector(".article-content");
+      if (!contentEl) return;
+
       const rect = contentEl.getBoundingClientRect();
-      const scrolled = -rect.top;
       const total = rect.height - window.innerHeight;
       if (total <= 0) return;
-      const pct = Math.min(100, Math.round((scrolled / total) * 100));
+
+      const scrolled = -rect.top;
+      const pct = Math.max(0, Math.min(100, Math.round((scrolled / total) * 100)));
 
       if (pct > maxDepth.current) maxDepth.current = pct;
 
@@ -49,14 +50,13 @@ export const useGA4ContentTracking = (
           firedDepths.current.add(m);
           if (m === 90) {
             const seconds = Math.round((Date.now() - startTime.current) / 1000);
-            if (seconds >= 60) {
-              trackEvent("article_read_complete", {
-                article_id: articleId,
-                article_title: title,
-                article_category: categoryName,
-                time_on_page: seconds,
-              });
-            }
+            if (seconds < 60) continue;
+            trackEvent("article_read_complete", {
+              article_id: articleId,
+              article_title: title,
+              article_category: categoryName,
+              time_on_page: seconds,
+            });
           } else {
             trackEvent(`article_read_${m}`, {
               article_id: articleId,
