@@ -281,7 +281,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* Body Sections (legacy schema) */}
       {formData.body_sections?.length > 0 && formData.body_sections.map((section: any, i: number) => (
-        <section key={i} id={`body-section-${i + 1}`} className="mb-12">
+        <section key={i} id={`body-section-${i + 1}`} data-guide-section={`body-section-${i + 1}`} className="mb-12">
           {section.heading && (
             <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">{section.heading}</h2>
           )}
