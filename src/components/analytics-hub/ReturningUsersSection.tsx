@@ -18,6 +18,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
+      const MAX_ROWS = 10000;
 
       // Paginated fetch for sessions
       const fetchAllSessions = async () => {
