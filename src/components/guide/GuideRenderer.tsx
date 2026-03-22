@@ -247,7 +247,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const tools = safeParseJSON(formData.recommended_tools);
         const filtered = tools.filter((t: any) => (t.tool_name || t.name)?.trim());
         return filtered.length > 0 ? (
-        <section id="tools-that-work" className="mb-12">
+        <section id="tools-that-work" data-guide-section="tools-that-work" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Tools That Work for This</h2>
           <div className="divide-y divide-border">
             {filtered.map((tool: any, i: number) => {
