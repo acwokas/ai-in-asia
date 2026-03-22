@@ -40,6 +40,7 @@ const ThreeBeforeNineTicker = memo(() => {
   const handleClick = () => {
     dualPush("briefing_ticker_click", {
       briefing_date: data.published_at,
+      headline: bullets.join(" | "),
       ticker_position: "homepage_top",
     });
   };

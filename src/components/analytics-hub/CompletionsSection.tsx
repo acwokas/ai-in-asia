@@ -21,7 +21,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         supabase
           .from("analytics_events")
           .select("event_name, event_data, page_path, created_at")
-          .in("event_name", ["article_read_complete", "article_read_75", "article_read_50", "article_read_25"])
+          .in("event_name", ["article_complete", "article_read_75", "article_read_50", "article_read_25"])
           .gte("created_at", startDate)
           .order("created_at", { ascending: false })
           .limit(500),

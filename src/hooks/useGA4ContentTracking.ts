@@ -51,7 +51,7 @@ export const useGA4ContentTracking = (
           if (m === 90) {
             const seconds = Math.round((Date.now() - startTime.current) / 1000);
             if (seconds < 60) continue;
-            trackEvent("article_read_complete", {
+            trackEvent("article_complete", {
               article_id: articleId,
               article_title: title,
               article_category: categoryName,

@@ -56,6 +56,7 @@ const TrendingStrip = memo(() => {
                 <Link
                   to={`/${a.categories?.slug || "news"}/${a.slug}`}
                   className="text-[14px] text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => dualPush("trending_article_click", { article_title: a.title, position: i % (trending?.length || 1) })}
                 >
                   {truncate(a.title)}
                 </Link>

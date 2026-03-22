@@ -97,6 +97,9 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (query.trim()) {
+      dualPush("search_performed", { search_term: query.trim() });
+    }
     handleSeeAll();
   };
 

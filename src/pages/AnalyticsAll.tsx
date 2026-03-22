@@ -54,7 +54,7 @@ const AnalyticsAll = () => {
         supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
-          .eq("event_name", "article_read_complete")
+          .eq("event_name", "article_complete")
           .gte("created_at", startDate) as any,
         supabase
           .from("newsletter_subscribers")
