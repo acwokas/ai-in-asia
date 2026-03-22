@@ -41,7 +41,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_pageviews")
             .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
