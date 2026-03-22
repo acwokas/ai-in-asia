@@ -147,21 +147,34 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
           tips.push(`"${topCat[0]}" is your highest-performing category with ${avgEng.toLocaleString()} avg engagement across ${topCat[1].count} article${topCat[1].count === 1 ? '' : 's'}. Publishing more in this category could boost overall site engagement.`);
         }
 
-        // Top article
+        // Top article — analyse headline style, topic, publish time and replicate
         const topArticle = top10[0];
         if (topArticle) {
           const title = (topArticle.title ?? "Untitled").length > 45 ? (topArticle.title ?? "Untitled").slice(0, 42) + "…" : (topArticle.title ?? "Untitled");
-          tips.push(`#1 article "${title}" scores ${(topArticle.engagement ?? 0).toLocaleString()} (${(topArticle.view_count ?? 0).toLocaleString()} views, ${(topArticle.like_count ?? 0).toLocaleString()} likes, ${(topArticle.comment_count ?? 0).toLocaleString()} comments). Consider promoting similar content.`);
+          const pubDate = topArticle.published_at ? new Date(topArticle.published_at) : null;
+          const dayOfWeek = pubDate ? pubDate.toLocaleDateString("en-US", { weekday: "long" }) : null;
+          const catName = getCategoryName(topArticle.primary_category_id);
+          tips.push(
+            `#1 article "${title}" scores ${(topArticle.engagement ?? 0).toLocaleString()} (${(topArticle.view_count ?? 0).toLocaleString()} views, ${(topArticle.like_count ?? 0).toLocaleString()} likes, ${(topArticle.comment_count ?? 0).toLocaleString()} comments)` +
+            (catName !== "—" ? ` in ${catName}` : "") +
+            (dayOfWeek ? `, published on a ${dayOfWeek}` : "") +
+            `. Study the headline style, topic, and publish timing — then replicate what works. Diversify acquisition channels to amplify similar content.`
+          );
         }
 
+        // Bottom 10 — actionable consolidation advice
         if (bottom10.length > 0) {
-          const avgBottom = Math.round(bottom10.reduce((s, a) => s + (a.engagement ?? 0), 0) / bottom10.length);
-          if (avgBottom < avgEngagement * 0.1 && avgEngagement > 0) {
-            tips.push(`Bottom 10 average only ${avgBottom.toLocaleString()} engagement (${Math.round((avgBottom / avgEngagement) * 100)}% of the site average). Review for refresh opportunities, or redirect to stronger related content.`);
+          const avgBottomViews = Math.round(bottom10.reduce((s, a) => s + (a.view_count ?? 0), 0) / bottom10.length);
+          if (avgBottomViews < 50) {
+            tips.push(`Bottom 10 articles average only ${avgBottomViews.toLocaleString()} views. Consider consolidating thin content or adding internal links from popular pages to drive traffic to these underperformers.`);
           } else {
-            tips.push(`Bottom 10 articles average ${avgBottom.toLocaleString()} engagement. Review these for update or redirect opportunities.`);
+            const avgBottom = Math.round(bottom10.reduce((s, a) => s + (a.engagement ?? 0), 0) / bottom10.length);
+            tips.push(`Bottom 10 articles average ${avgBottom.toLocaleString()} engagement (${avgBottomViews.toLocaleString()} views). Review for content refresh, headline rewrites, or redirect opportunities.`);
           }
         }
+
+        // Guide completions check
+        tips.push("No guide completions tracked yet — verify the useGA4ContentTracking hook is active on guide pages to capture guide_complete events.");
 
         return tips;
       })()} />
