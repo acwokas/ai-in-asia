@@ -50,31 +50,27 @@ const AnalyticsAll = () => {
       let avgEngagement = 0;
       let activeNow = 0;
 
-      // Total Sessions — paginated count to avoid RLS/count issues
+      // Total Sessions + Unique Visitors — paginated fetch
       try {
-        let sessionCount = 0;
+        const allSessions: { user_id: string | null; session_id: string }[] = [];
         let from = 0;
         while (true) {
           const { data: batch } = await supabase
             .from("analytics_sessions")
-            .select("id")
+            .select("session_id, user_id")
             .gte("started_at", startDate)
             .range(from, from + 999);
           const safe = batch ?? [];
-          sessionCount += safe.length;
+          allSessions.push(...safe);
           if (safe.length < 1000) break;
           from += 1000;
         }
-        totalSessions = sessionCount;
-      } catch (_e) { /* keep 0 */ }
-
-      // Unique Visitors via RPC
-      try {
-        const { data } = await supabase.rpc("get_unique_visitors", {
-          p_start: startDate,
-          p_end: now.toISOString(),
+        totalSessions = allSessions.length;
+        const visitorSet = new Set<string>();
+        allSessions.forEach(s => {
+          visitorSet.add(s.user_id || s.session_id);
         });
-        uniqueVisitors = data ?? 0;
+        uniqueVisitors = visitorSet.size;
       } catch (_e) { /* keep 0 */ }
 
       // Completions
