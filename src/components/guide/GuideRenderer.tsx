@@ -144,7 +144,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const steps = safeParseJSON(formData.steps);
         const filtered = steps.filter((s: any) => s.content?.trim());
         return filtered.length > 0 ? (
-        <section id="how-to-do-it" className="mb-12">
+        <section id="how-to-do-it" data-guide-section="how-to-do-it" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">How to Do It</h2>
           <div>
             {filtered.map((step: any, i: number, arr: any[]) => (
