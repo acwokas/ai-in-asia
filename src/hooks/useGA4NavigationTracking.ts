@@ -13,7 +13,7 @@ export function useGA4NavigationTracking() {
 
       // ── Social share click ───────────────────────────────────────────
       const shareBtn = target.closest(
-        '[data-share], .share-btn, [aria-label*="share" i], [aria-label*="Share" i]'
+        '[data-share], [data-share-bar] button, .share-btn, [aria-label*="share" i], [aria-label*="Share" i]'
       );
       if (shareBtn) {
         const platform =
