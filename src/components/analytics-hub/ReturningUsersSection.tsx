@@ -24,7 +24,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch } = await supabase
             .from("analytics_sessions")
             .select("user_id, session_id, is_bounce, duration_seconds, page_count")
