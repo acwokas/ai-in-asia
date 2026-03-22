@@ -18,7 +18,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
     queryFn: async () => {
       const PAGE_SIZE = 1000;
       const MAX_ROWS = 10000;
-      const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
+      const SELF_DOMAINS = ["lovable.app", "lovable.dev", "lovableproject.com", "ai-in-asia.lovable.app", "aiinasia.com", "www.aiinasia.com", "ai-in-asia.com", "www.ai-in-asia.com"];
 
       const fetchAllEvents = async () => {
         const rows: any[] = [];
