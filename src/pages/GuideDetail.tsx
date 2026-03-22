@@ -60,7 +60,21 @@ const GuideDetail = () => {
   });
 
   // GA4 guide engagement tracking
-  useGA4GuideTracking((guide as any)?.id, (guide as any)?.title, (guide as any)?.topic_category);
+  const { trackScrollDepth, trackPromptCopy, trackToolClick } = useGA4GuideTracking((guide as any)?.id, (guide as any)?.title, (guide as any)?.topic_category);
+
+  // Wire scroll depth tracking for guides
+  useEffect(() => {
+    if (!guide) return;
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight <= 0) return;
+      const pct = Math.max(0, Math.min(100, Math.round((scrollTop / docHeight) * 100)));
+      trackScrollDepth(pct);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [guide, trackScrollDepth]);
 
   // Redirect from /guides/:slug to /guides/:category/:slug
   useEffect(() => {
