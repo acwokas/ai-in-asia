@@ -71,6 +71,14 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100)
         : 0;
 
+      // Drop-off between stages
+      const dropoff25to50 = milestones["article_read_25"] > 0
+        ? Math.round(((milestones["article_read_25"] - milestones["article_read_50"]) / milestones["article_read_25"]) * 100)
+        : 0;
+      const dropoff50to75 = milestones["article_read_50"] > 0
+        ? Math.round(((milestones["article_read_50"] - milestones["article_read_75"]) / milestones["article_read_50"]) * 100)
+        : 0;
+
       const hasData = events.length > 0;
 
       return {
@@ -80,6 +88,8 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         avgGuideTime,
         guideViewCount: (guideViews ?? []).length,
         completionRate,
+        dropoff25to50,
+        dropoff50to75,
         hasData,
       };
     },
@@ -94,6 +104,10 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       <div className="space-y-4">
         <EmptyDataNotice message="Article read milestone events (25%, 50%, 75%, complete) will populate within 24–48 hours of tracking setup" />
         <EmptyDataNotice variant="coming-soon" message="Guide completion tracking — integration coming soon" />
+        <InsightCard insights={[
+          "Start tracking: once readers begin visiting articles, scroll-depth milestones will automatically appear here.",
+          "Tip: articles under 800 words with a strong opening hook typically achieve 40%+ completion rates.",
+        ]} />
       </div>
     );
   }
@@ -107,7 +121,6 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* Funnel chart */}
       <div>
         <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data?.completionRate ?? 0}%)</h4>
         <ChartContainer config={{ count: { label: "Readers", color: "hsl(var(--primary))" } }} className="h-[200px]">
@@ -122,7 +135,6 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Top completed bar chart + table */}
         <div>
           <h4 className="text-sm font-medium mb-3">Top 10 Completed Articles</h4>
           {(data?.topCompleted ?? []).length ? (
@@ -158,7 +170,6 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
           )}
         </div>
 
-        {/* Guide stats */}
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
           {data.guideViewCount > 0 ? (
@@ -176,11 +187,29 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       <InsightCard insights={(() => {
         const tips: string[] = [];
         const rate = data?.completionRate ?? 0;
-        if (rate > 0 && rate < 25) tips.push(`Completion rate is ${rate}% — articles with rates below 25% may need shorter formats or better hooks in the first paragraph.`);
-        else if (rate >= 25 && rate < 50) tips.push(`Completion rate of ${rate}% is decent. Consider adding mid-article callouts or visuals to push past 50%.`);
-        else if (rate >= 50) tips.push(`Strong ${rate}% completion rate. Your content is keeping readers engaged to the end.`);
+        const total25 = data?.milestones?.["article_read_25"] ?? 0;
+        const totalComplete = data?.milestones?.["article_read_complete"] ?? 0;
+
+        if (total25 > 0 && rate < 25) {
+          tips.push(`${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers who hit 25% finish the article (${rate}% completion). The biggest drop-off is 25→50% (${data?.dropoff25to50 ?? 0}% lost). Try adding a compelling question or stat in the first 2 paragraphs to hook readers past the fold.`);
+        } else if (rate >= 25 && rate < 50) {
+          tips.push(`${rate}% completion rate across ${total25.toLocaleString()} readers. ${data?.dropoff50to75 ?? 0}% drop off between 50–75% — consider breaking long articles into sections with subheadings or adding mid-article callouts.`);
+        } else if (rate >= 50) {
+          tips.push(`Excellent ${rate}% completion rate — ${totalComplete.toLocaleString()} readers finish out of ${total25.toLocaleString()} who start. Your content is keeping readers engaged to the end.`);
+        }
+
+        const topArticle = (data?.topCompleted ?? [])[0];
+        if (topArticle && topArticle.count >= 3) {
+          tips.push(`"${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions. Analyse what makes this article sticky and replicate the format.`);
+        }
+
         const guideScroll = data?.avgGuideScroll ?? 0;
-        if (guideScroll > 0 && guideScroll < 40) tips.push(`Guides average ${guideScroll}% scroll depth — consider adding a table of contents or breaking into shorter sections.`);
+        if (guideScroll > 0 && guideScroll < 40) {
+          tips.push(`Guides average only ${guideScroll}% scroll depth. Try adding a persistent table of contents or splitting guides into shorter, focused steps.`);
+        } else if (guideScroll >= 70) {
+          tips.push(`Guides are performing well with ${guideScroll}% avg scroll depth — readers are consuming most of the content.`);
+        }
+
         return tips;
       })()} />
     </div>

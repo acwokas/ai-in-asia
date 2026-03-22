@@ -73,6 +73,11 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         ? Math.round((sessions ?? []).reduce((sum, p) => sum + (p?.duration_seconds ?? 0), 0) / sessions.length)
         : 0;
 
+      // Week-over-week trend
+      const recentWeeks = weeklyData.slice(-2);
+      const thisWeek = recentWeeks[recentWeeks.length - 1]?.sessions ?? 0;
+      const lastWeek = recentWeeks.length >= 2 ? recentWeeks[0]?.sessions ?? 0 : 0;
+
       const hasEventData = events.length > 0;
 
       return {
@@ -81,6 +86,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         editions: editions ?? [],
         totalBriefingSessions, avgDuration,
         hasEventData,
+        thisWeek, lastWeek,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -111,7 +117,6 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         </div>
       )}
 
-      {/* Weekly sessions LineChart - always show since this uses session data not custom events */}
       <div>
         <h4 className="text-sm font-medium mb-3">Weekly 3 Before 9 Sessions (since Dec 2025)</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
@@ -171,17 +176,48 @@ export const BriefingSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
+        const totalSessions = data?.totalBriefingSessions ?? 0;
+        const thisWeek = data?.thisWeek ?? 0;
+        const lastWeek = data?.lastWeek ?? 0;
+
+        if (totalSessions === 0) {
+          tips.push("No briefing sessions tracked yet — insights will appear once readers start visiting 3 Before 9 pages.");
+          return tips;
+        }
+
+        // Week-over-week trend
+        if (lastWeek > 0 && thisWeek > 0) {
+          const changePct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+          if (changePct > 10) {
+            tips.push(`📈 Briefing sessions up ${changePct}% this week (${thisWeek} vs ${lastWeek} last week). Growing readership — maintain publishing cadence.`);
+          } else if (changePct < -10) {
+            tips.push(`📉 Briefing sessions down ${Math.abs(changePct)}% this week (${thisWeek} vs ${lastWeek}). Check if a briefing was missed or if subject lines need refreshing.`);
+          } else {
+            tips.push(`Briefing readership steady at ~${thisWeek} sessions/week.`);
+          }
+        } else if (totalSessions > 0) {
+          tips.push(`${totalSessions.toLocaleString()} total briefing sessions tracked. Week-over-week trends will show once 2+ weeks of data accumulate.`);
+        }
+
         const rate = data?.completionRate ?? 0;
-        if (rate > 0) tips.push(`Briefing completion rate is ${rate}%. Shorter stories (under 200 words) tend to have higher completion rates — consider tightening signal summaries.`);
+        if (data.hasEventData && rate > 0) {
+          tips.push(`${rate}% completion rate across ${(data?.views ?? 0).toLocaleString()} views. ${rate < 50 ? 'Shorter signal summaries (under 200 words each) tend to increase completion — tighten the copy.' : `Strong completion — readers are finishing the briefing.`}`);
+        }
+
         const avgDur = data?.avgDuration ?? 0;
-        if (avgDur > 0 && avgDur < 60) tips.push(`Average briefing session is ${avgDur}s. Readers are scanning quickly — ensure the most important signal is first.`);
-        else if (avgDur >= 120) tips.push(`Average session of ${avgDur}s shows strong engagement. Readers are spending time with the content.`);
+        if (avgDur > 0 && avgDur < 60) {
+          tips.push(`Average session: ${avgDur}s — readers are scanning quickly. Put the most important signal first and use bold headlines to aid skimming.`);
+        } else if (avgDur >= 120) {
+          tips.push(`${avgDur}s average session — deep engagement. Readers are spending real time with the content.`);
+        }
+
         const outbound = data?.outboundClicks ?? 0;
         const views = data?.views ?? 0;
         if (views > 0 && outbound > 0) {
           const clickRate = Math.round((outbound / views) * 100);
-          tips.push(`${clickRate}% of briefing viewers click outbound links. ${clickRate > 20 ? 'Strong source engagement.' : 'Consider making source links more prominent.'}`);
+          tips.push(`${clickRate}% of readers click outbound source links (${outbound.toLocaleString()} clicks). ${clickRate > 20 ? 'Excellent source engagement — readers trust your curation.' : 'Make source links more prominent with "Read the full story →" CTAs.'}`);
         }
+
         return tips;
       })()} />
     </div>

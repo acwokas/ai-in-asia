@@ -78,10 +78,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         fetchAllSessions(),
       ]);
 
-
-
-
-      // Clicked elements for horizontal bar chart
+      // Clicked elements
       const elementCounts: Record<string, number> = {};
       (events ?? []).forEach((e) => {
         const ed = e.event_data as any;
@@ -91,7 +88,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const clickedElements = Object.entries(elementCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 12)
-        .map(([name, count]) => ({ name: name.length > 25 ? name.slice(0, 22) + "…" : name, count }));
+        .map(([name, count]) => ({ name: name.length > 25 ? name.slice(0, 22) + "…" : name, fullName: name, count }));
 
       // Top pages
       const pageCounts: Record<string, { views: number; avgTime: number; avgScroll: number }> = {};
@@ -115,7 +112,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const refCounts: Record<string, number> = {};
       (sessions ?? []).forEach((s) => {
         const r = s?.referrer_domain || "direct";
-        if (SELF_DOMAINS.some(d => r.includes(d))) return; // filter self-referrals
+        if (SELF_DOMAINS.some(d => r.includes(d))) return;
         refCounts[r] = (refCounts[r] || 0) + 1;
       });
       const topReferrers = Object.entries(refCounts)
@@ -145,6 +142,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         deviceCounts: deviceCounts ?? {},
         topExits: topExits ?? [],
         totalNavEvents: (events ?? []).length,
+        totalPageviews: (pageviews ?? []).length,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -155,9 +153,8 @@ export const NavigationSection = ({ startDate, range }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* Clicked elements horizontal bar chart */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data?.totalNavEvents ?? 0} events)</h4>
+        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({(data?.totalNavEvents ?? 0).toLocaleString()} events)</h4>
         {(data?.clickedElements ?? []).length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
             <BarChart data={data?.clickedElements ?? []} layout="vertical" margin={{ left: 120 }}>
@@ -169,13 +166,12 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             </BarChart>
           </ChartContainer>
         ) : (
-          <p className="text-sm text-muted-foreground">No navigation events recorded</p>
+          <p className="text-sm text-muted-foreground">No navigation events recorded yet — tracking will populate as visitors interact with the site</p>
         )}
       </div>
 
-      {/* Top Pages */}
       <div>
-        <h4 className="text-sm font-medium mb-3">Top Pages</h4>
+        <h4 className="text-sm font-medium mb-3">Top Pages ({(data?.totalPageviews ?? 0).toLocaleString()} pageviews)</h4>
         <Table>
           <TableHeader>
             <TableRow>
@@ -236,14 +232,29 @@ export const NavigationSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const topEl = (data?.clickedElements ?? [])[0];
         const totalNav = data?.totalNavEvents ?? 0;
+
+        if (totalNav === 0) {
+          tips.push("Navigation tracking events will appear as visitors click nav items, CTAs, and search — check back in 24–48 hours.");
+          return tips;
+        }
+
+        const topEl = (data?.clickedElements ?? [])[0];
         if (topEl && totalNav > 0) {
           const pct = Math.round((topEl.count / totalNav) * 100);
-          tips.push(`${pct}% of navigation clicks go to "${topEl.name}". Consider featuring key content in this area for maximum visibility.`);
+          tips.push(`"${topEl.fullName}" gets ${pct}% of all nav clicks (${topEl.count.toLocaleString()} clicks). Feature your most important content in this position for maximum visibility.`);
         }
+
+        const topPage = (data?.topPages ?? [])[0];
+        if (topPage && topPage.avgScroll < 30 && topPage.views > 50) {
+          tips.push(`⚠️ Top page "${topPage.path}" has only ${topPage.avgScroll}% avg scroll depth across ${topPage.views.toLocaleString()} views. Readers aren't scrolling far — consider restructuring above-the-fold content.`);
+        }
+
         const topExit = (data?.topExits ?? [])[0];
-        if (topExit) tips.push(`Top exit page is "${topExit.path}" with ${(topExit.count ?? 0).toLocaleString()} exits. Adding a stronger CTA or related content there could reduce drop-offs.`);
+        if (topExit) {
+          tips.push(`Top exit page: "${topExit.path}" (${topExit.count.toLocaleString()} exits). Adding a related articles section or newsletter CTA could reduce drop-offs here.`);
+        }
+
         return tips;
       })()} />
     </div>

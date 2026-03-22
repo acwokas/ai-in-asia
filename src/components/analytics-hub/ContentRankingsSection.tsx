@@ -23,7 +23,6 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
     queryFn: async () => {
       const PAGE_SIZE = 1000;
       const MAX_ROWS = 10000;
-      // Paginated fetch for all published articles
       const allArticles: any[] = [];
       let from = 0;
       while (allArticles.length < MAX_ROWS) {
@@ -80,9 +79,14 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
     return data?.categories?.find(c => c.id === id)?.name || "—";
   };
 
+  // Compute avg engagement
+  const totalArticles = filtered.length;
+  const avgEngagement = totalArticles > 0
+    ? Math.round(filtered.reduce((s, a) => s + (a.engagement ?? 0), 0) / totalArticles)
+    : 0;
+
   return (
     <div className="space-y-6">
-      {/* Filter */}
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">Category:</span>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -96,10 +100,9 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
             ))}
           </SelectContent>
         </Select>
-        <span className="text-xs text-muted-foreground">{(filtered.length ?? 0).toLocaleString()} articles</span>
+        <span className="text-xs text-muted-foreground">{(filtered.length ?? 0).toLocaleString()} articles · avg score {avgEngagement.toLocaleString()}</span>
       </div>
 
-      {/* Top 10 bar chart */}
       <div>
         <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
           <TrendingUp className="h-4 w-4" /> Top 10 by Engagement Score
@@ -115,36 +118,51 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
         </ChartContainer>
       </div>
 
-      {/* Top 10 table */}
       <RankingTable title="Top 10" articles={top10} getCategoryName={getCategoryName} />
 
-      {/* Bottom 10 */}
       {bottom10.length > 0 && (
         <RankingTable title="Bottom 10" articles={bottom10} getCategoryName={getCategoryName} />
       )}
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        if (top10.length > 0) {
-          // Find top category
-          const catCounts: Record<string, { count: number; totalEng: number }> = {};
-          (data?.articles ?? []).forEach(a => {
-            const cat = getCategoryName(a.primary_category_id);
-            if (cat === "—") return;
-            if (!catCounts[cat]) catCounts[cat] = { count: 0, totalEng: 0 };
-            catCounts[cat].count++;
-            catCounts[cat].totalEng += a.engagement ?? 0;
-          });
-          const topCat = Object.entries(catCounts).sort((a, b) => (b[1].totalEng / b[1].count) - (a[1].totalEng / a[1].count))[0];
-          if (topCat) {
-            const avgEng = Math.round(topCat[1].totalEng / topCat[1].count);
-            tips.push(`Your top-performing category is "${topCat[0]}" with ${avgEng.toLocaleString()} avg engagement score. Consider publishing more in this category.`);
-          }
+
+        if (totalArticles === 0) {
+          tips.push("No published articles yet — content rankings will appear once articles are live.");
+          return tips;
         }
+
+        // Top category by avg engagement
+        const catCounts: Record<string, { count: number; totalEng: number }> = {};
+        (data?.articles ?? []).forEach(a => {
+          const cat = getCategoryName(a.primary_category_id);
+          if (cat === "—") return;
+          if (!catCounts[cat]) catCounts[cat] = { count: 0, totalEng: 0 };
+          catCounts[cat].count++;
+          catCounts[cat].totalEng += a.engagement ?? 0;
+        });
+        const topCat = Object.entries(catCounts).sort((a, b) => (b[1].totalEng / b[1].count) - (a[1].totalEng / a[1].count))[0];
+        if (topCat) {
+          const avgEng = Math.round(topCat[1].totalEng / topCat[1].count);
+          tips.push(`"${topCat[0]}" is your highest-performing category with ${avgEng.toLocaleString()} avg engagement across ${topCat[1].count} article${topCat[1].count === 1 ? '' : 's'}. Publishing more in this category could boost overall site engagement.`);
+        }
+
+        // Top article
+        const topArticle = top10[0];
+        if (topArticle) {
+          const title = (topArticle.title ?? "Untitled").length > 45 ? (topArticle.title ?? "Untitled").slice(0, 42) + "…" : (topArticle.title ?? "Untitled");
+          tips.push(`#1 article "${title}" scores ${(topArticle.engagement ?? 0).toLocaleString()} (${(topArticle.view_count ?? 0).toLocaleString()} views, ${(topArticle.like_count ?? 0).toLocaleString()} likes, ${(topArticle.comment_count ?? 0).toLocaleString()} comments). Consider promoting similar content.`);
+        }
+
         if (bottom10.length > 0) {
           const avgBottom = Math.round(bottom10.reduce((s, a) => s + (a.engagement ?? 0), 0) / bottom10.length);
-          tips.push(`Bottom 10 articles average ${avgBottom.toLocaleString()} engagement. Review these for refresh opportunities or consider redirecting to stronger content.`);
+          if (avgBottom < avgEngagement * 0.1 && avgEngagement > 0) {
+            tips.push(`Bottom 10 average only ${avgBottom.toLocaleString()} engagement (${Math.round((avgBottom / avgEngagement) * 100)}% of the site average). Review for refresh opportunities, or redirect to stronger related content.`);
+          } else {
+            tips.push(`Bottom 10 articles average ${avgBottom.toLocaleString()} engagement. Review these for update or redirect opportunities.`);
+          }
         }
+
         return tips;
       })()} />
     </div>

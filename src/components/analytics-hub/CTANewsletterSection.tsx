@@ -46,17 +46,18 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
       const submissions = (ctaEvents ?? []).filter(e => ["newsletter_signup", "newsletter_cta_submit"].includes(e?.event_name ?? "")).length;
       const ctaConversion = ctaViews > 0 ? Math.round((ctaClicks / ctaViews) * 100) : 0;
 
-      // Active = confirmed and not unsubscribed
       const activeSubs = (subscribers ?? []).filter(s => s?.confirmed === true && !s?.unsubscribed_at).length;
       const totalSubs = (subscribers ?? []).length;
+      const unsubscribed = (subscribers ?? []).filter(s => !!s?.unsubscribed_at).length;
 
-      // New subscribers within date range
       const newSubs = (subscribers ?? []).filter(s => {
         if (!s?.subscribed_at) return false;
         return s.subscribed_at >= startDate;
       }).length;
 
       const hasCtaEvents = ctaEvents.length > 0;
+      const hasEditions = editions.length > 0;
+      const hasSendData = editions.some((e: any) => (e?.total_sent ?? 0) > 0);
 
       // Submissions over time for LineChart
       const dailySubmissions: Record<string, number> = {};
@@ -96,11 +97,13 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
 
       return {
         ctaViews, ctaClicks, ctaConversion, submissions,
-        activeSubs, totalSubs, newSubs,
+        activeSubs, totalSubs, newSubs, unsubscribed,
         topCtaPages: topCtaPages ?? [],
         editions: editions ?? [],
         submissionTimeline: submissionTimeline ?? [],
         hasCtaEvents,
+        hasEditions,
+        hasSendData,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -116,8 +119,8 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
           { label: "Active Subscribers", value: data?.activeSubs ?? 0 },
           { label: "Total Subscribers", value: data?.totalSubs ?? 0 },
           { label: "New (period)", value: data?.newSubs ?? 0 },
-          { label: "CTA Conversion", value: `${data?.ctaConversion ?? 0}%` },
-          { label: "Submissions", value: data?.submissions ?? 0 },
+          { label: "CTA Conversion", value: data.hasCtaEvents ? `${data?.ctaConversion ?? 0}%` : "—" },
+          { label: "Submissions", value: data.hasCtaEvents ? (data?.submissions ?? 0) : "—" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
             <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
@@ -166,7 +169,7 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Recent Newsletter Editions</h4>
           <div className="space-y-1.5">
-            {(data?.editions ?? []).length ? (data?.editions ?? []).map((e: any) => (
+            {data.hasEditions ? (data?.editions ?? []).map((e: any) => (
               <div key={e.id} className="border rounded p-2 text-xs">
                 <p className="font-medium truncate">{e.subject_line || "Untitled"}</p>
                 <div className="flex gap-3 mt-1 text-muted-foreground">
@@ -175,23 +178,41 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
                   <span>Rate: {(e?.total_sent ?? 0) > 0 ? Math.round((((e?.total_opened ?? 0) / (e?.total_sent ?? 1)) * 100)) : 0}%</span>
                 </div>
               </div>
-            )) : <p className="text-xs text-muted-foreground">No editions sent yet</p>}
+            )) : (
+              <EmptyDataNotice message="No newsletter editions sent yet — metrics will appear after the first send" />
+            )}
           </div>
         </div>
       </div>
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const conv = data?.ctaConversion ?? 0;
-        if (conv > 0) {
-          tips.push(`Newsletter CTA view-to-click conversion is ${conv}%. Industry average is 2–5%. ${conv < 2 ? 'Consider testing stronger CTA copy or placement.' : conv >= 5 ? 'Great performance — above industry average.' : 'On par with industry benchmarks.'}`);
-        }
         const active = data?.activeSubs ?? 0;
         const total = data?.totalSubs ?? 0;
-        if (total > 0 && active < total) {
-          const churnPct = Math.round(((total - active) / total) * 100);
-          tips.push(`${churnPct}% of subscribers have churned (${(total - active).toLocaleString()} unsubscribed/unconfirmed). Consider a re-engagement campaign for lapsed subscribers.`);
+        const unsub = data?.unsubscribed ?? 0;
+
+        // Only show churn insight if there's actual send data
+        if (data.hasSendData && unsub > 0 && total > 0) {
+          const churnPct = Math.round((unsub / total) * 100);
+          tips.push(`${unsub.toLocaleString()} of ${total.toLocaleString()} subscribers (${churnPct}%) have unsubscribed. ${churnPct > 20 ? 'Consider a re-engagement campaign or survey lapsed subscribers to learn why.' : 'Churn is within healthy range — keep monitoring after each send.'}`);
+        } else if (!data.hasSendData && active > 0) {
+          tips.push(`You have ${active.toLocaleString()} active subscriber${active === 1 ? '' : 's'} ready to go. Send your first newsletter edition to start measuring open rates and engagement.`);
+        } else if (total === 0) {
+          tips.push("Start building your subscriber list by adding newsletter CTAs to high-traffic pages — article pages and the homepage are ideal placements.");
         }
+
+        const conv = data?.ctaConversion ?? 0;
+        if (data.hasCtaEvents && conv > 0) {
+          tips.push(`CTA view-to-click conversion is ${conv}%. ${conv < 2 ? 'Below the 2–5% industry average — try repositioning your CTA higher on the page or testing stronger copy like "Get the briefing free".' : conv >= 5 ? `At ${conv}%, you're outperforming the 2–5% industry average. Keep this placement strategy.` : 'On par with the 2–5% industry benchmark.'}`);
+        } else if (data.hasCtaEvents && conv === 0) {
+          tips.push("CTA views are being tracked but no clicks yet. Test more prominent placement, contrasting colours, or a value-driven headline.");
+        }
+
+        const newSubs = data?.newSubs ?? 0;
+        if (newSubs > 0) {
+          tips.push(`${newSubs.toLocaleString()} new subscriber${newSubs === 1 ? '' : 's'} this period. ${newSubs >= 10 ? 'Strong growth — consider adding a welcome email sequence.' : 'Steady trickle — try adding inline signup forms within article content to boost signups.'}`);
+        }
+
         return tips;
       })()} />
     </div>
