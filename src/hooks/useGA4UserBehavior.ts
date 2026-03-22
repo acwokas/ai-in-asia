@@ -2,11 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-
-const push = (event: string, params?: Record<string, any>) => {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event, ...params });
-};
+import { dualPush as push } from "@/lib/dualTrack";
 
 export function useGA4NewUserTracking() {
   const location = useLocation();

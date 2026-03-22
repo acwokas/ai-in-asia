@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 // GA4 is loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
 // Previously, events were also sent via gtag("config"/event") which caused double-counting
@@ -53,6 +55,7 @@ const GoogleAnalytics = () => {
 export default GoogleAnalytics;
 
 // Custom event tracking helper - pushes to dataLayer for GTM → GA4
+// AND writes to Supabase analytics_events for the internal dashboard
 export const trackEvent = (
   eventName: string,
   eventParams?: Record<string, any>
@@ -64,6 +67,29 @@ export const trackEvent = (
     event: eventName,
     ...eventParams,
   });
+
+  // Dual-write to Supabase
+  const SESSION_KEY = "aiia_session_id";
+  let sessionId = "unknown";
+  try {
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (stored) sessionId = JSON.parse(stored).sessionId || "unknown";
+  } catch { /* ignore */ }
+
+  supabase
+    .from("analytics_events")
+    .insert({
+      session_id: sessionId,
+      event_name: eventName,
+      event_category: eventParams?.article_category || eventParams?.content_category || null,
+      event_data: (eventParams || {}) as Json,
+      page_path: window.location.pathname,
+    })
+    .then(({ error }) => {
+      if (error && !import.meta.env.PROD) {
+        console.warn("[trackEvent] Supabase insert error:", error.message);
+      }
+    });
 
   if (!import.meta.env.PROD) {
     console.log("GA4 Event (dev mode):", eventName, eventParams);

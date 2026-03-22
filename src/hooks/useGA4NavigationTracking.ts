@@ -1,9 +1,5 @@
 import { useEffect } from "react";
-
-const push = (event: string, params?: Record<string, any>) => {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event, ...params });
-};
+import { dualPush as push } from "@/lib/dualTrack";
 
 export function useGA4NavigationTracking() {
   useEffect(() => {
