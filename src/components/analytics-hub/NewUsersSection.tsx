@@ -108,11 +108,30 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         .slice(0, 10)
         .map(([page, count]) => ({ page, count }));
 
+      // Compute daily avg for trend
+      const dailyValues = Object.values(dailyCounts);
+      const avgDaily = dailyValues.length > 0
+        ? Math.round(dailyValues.reduce((s, v) => s + v, 0) / dailyValues.length)
+        : 0;
+
+      // Recent trend: compare last 7 days to prior 7
+      const recentDays = dailySessions.slice(-7);
+      const priorDays = dailySessions.slice(-14, -7);
+      const recentAvg = recentDays.length > 0
+        ? Math.round(recentDays.reduce((s, d) => s + d.sessions, 0) / recentDays.length)
+        : 0;
+      const priorAvg = priorDays.length > 0
+        ? Math.round(priorDays.reduce((s, d) => s + d.sessions, 0) / priorDays.length)
+        : 0;
+
       return {
         totalSessions: sessionsCountRes.count ?? 0,
         activeNow: recentSessions.length,
         dailySessions,
         topEntryPages,
+        avgDaily,
+        recentAvg,
+        priorAvg,
       };
     },
     staleTime: 60 * 1000,
@@ -123,7 +142,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-2 max-w-sm">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 max-w-md">
         <div className="rounded-lg border p-3 text-center">
           <p className="text-2xl font-bold">{(data?.totalSessions ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Total Sessions</p>
@@ -131,6 +150,10 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
         <div className="rounded-lg border p-3 text-center">
           <p className="text-2xl font-bold">{(data?.activeNow ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">Active (15 min)</p>
+        </div>
+        <div className="rounded-lg border p-3 text-center">
+          <p className="text-2xl font-bold">{(data?.avgDaily ?? 0).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">Avg Daily</p>
         </div>
       </div>
 
@@ -173,13 +196,38 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const top = (data?.topEntryPages ?? [])[0];
-        if (top && data?.totalSessions) {
-          const pct = Math.round((top.count / data.totalSessions) * 100);
-          tips.push(`${pct}% of sessions land on "${top.page}". Consider optimising this page's above-the-fold content and internal links.`);
-        }
         const total = data?.totalSessions ?? 0;
-        if (total > 0) tips.push(`${total.toLocaleString()} total sessions in this period. Monitor entry page diversity — relying on a single landing page creates traffic fragility.`);
+        const recentAvg = data?.recentAvg ?? 0;
+        const priorAvg = data?.priorAvg ?? 0;
+
+        // Trend indicator
+        if (priorAvg > 0 && recentAvg > 0) {
+          const changePct = Math.round(((recentAvg - priorAvg) / priorAvg) * 100);
+          if (changePct > 10) {
+            tips.push(`📈 Traffic is trending up: last 7 days average ${recentAvg.toLocaleString()} sessions/day vs ${priorAvg.toLocaleString()} prior (+${changePct}%). Keep publishing to sustain momentum.`);
+          } else if (changePct < -10) {
+            tips.push(`📉 Traffic dipped: last 7 days average ${recentAvg.toLocaleString()} sessions/day vs ${priorAvg.toLocaleString()} prior (${changePct}%). Check if publishing frequency dropped or a key referrer changed.`);
+          } else {
+            tips.push(`Traffic is steady at ~${recentAvg.toLocaleString()} sessions/day over the last 2 weeks.`);
+          }
+        } else if (total > 0) {
+          tips.push(`${total.toLocaleString()} total sessions this period, averaging ${(data?.avgDaily ?? 0).toLocaleString()}/day.`);
+        }
+
+        const top = (data?.topEntryPages ?? [])[0];
+        if (top && total > 0) {
+          const pct = Math.round((top.count / total) * 100);
+          if (pct > 50) {
+            tips.push(`⚠️ ${pct}% of all sessions land on "${top.page}" — heavy reliance on a single entry point. Diversify by optimising SEO on other high-value pages.`);
+          } else if (pct > 25) {
+            tips.push(`${pct}% of sessions enter via "${top.page}". Ensure this page has strong internal links and CTAs to distribute traffic deeper.`);
+          }
+        }
+
+        if ((data?.topEntryPages ?? []).length <= 3 && total > 100) {
+          tips.push("Only ${(data?.topEntryPages ?? []).length} entry pages detected. Broaden your SEO strategy to capture traffic across more landing pages.");
+        }
+
         return tips;
       })()} />
     </div>

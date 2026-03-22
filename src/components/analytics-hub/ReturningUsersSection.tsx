@@ -20,7 +20,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const PAGE_SIZE = 1000;
       const MAX_ROWS = 10000;
 
-      // Paginated fetch for sessions
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
@@ -38,7 +37,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         return rows;
       };
 
-      // Paginated fetch for pageviews
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
         let from = 0;
@@ -66,10 +64,8 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         fetchAllPageviews(),
       ]);
 
-
       const streaks = streaksRes.data ?? [];
 
-      // Sessions per user
       const userSessionCounts: Record<string, number> = {};
       (sessions ?? []).forEach((s) => {
         const key = s?.user_id || s?.session_id;
@@ -89,7 +85,16 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         ? (Number(((sessions ?? []).reduce((sum, v) => sum + (v?.page_count ?? 1), 0) / sessions.length) || 0)).toFixed(1)
         : "0";
 
-      // Streak distribution for chart
+      // Frequency distribution
+      const freqBuckets: Record<string, number> = { "1 visit": 0, "2-3 visits": 0, "4-7 visits": 0, "8+ visits": 0 };
+      Object.values(userSessionCounts).forEach(c => {
+        if (c === 1) freqBuckets["1 visit"]++;
+        else if (c <= 3) freqBuckets["2-3 visits"]++;
+        else if (c <= 7) freqBuckets["4-7 visits"]++;
+        else freqBuckets["8+ visits"]++;
+      });
+      const powerUsers = freqBuckets["8+ visits"];
+
       const streakBuckets: Record<string, number> = { "1d": 0, "2-3d": 0, "4-7d": 0, "8-14d": 0, "15-30d": 0, "30d+": 0 };
       (streaks ?? []).forEach((s) => {
         const c = s?.current_streak ?? 0;
@@ -102,7 +107,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       });
       const streakChartData = Object.entries(streakBuckets).map(([bucket, count]) => ({ bucket, count }));
 
-      // Top revisited pages (pages viewed in multiple sessions)
       const pageSessionMap: Record<string, Set<string>> = {};
       (pageviews ?? []).forEach((pv) => {
         const path = pv?.page_path;
@@ -118,7 +122,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         .slice(0, 8);
 
       return {
-        returnRate, bounceRate, avgPages, returning, totalUnique,
+        returnRate, bounceRate, avgPages, returning, totalUnique, powerUsers,
         topStreaks: (streaks ?? []).slice(0, 8),
         streakChartData: streakChartData ?? [],
         topRevisited: topRevisited ?? [],
@@ -148,7 +152,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Streak distribution chart */}
         <div>
           <h4 className="text-sm font-medium mb-3">Streak Distribution</h4>
           <ChartContainer config={{ count: { label: "Users", color: "hsl(var(--primary))" } }} className="h-[200px]">
@@ -162,7 +165,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
           </ChartContainer>
         </div>
 
-        {/* Top revisited pages */}
         <div>
           <h4 className="text-sm font-medium mb-3">Top Revisited Pages</h4>
           {(data?.topRevisited ?? []).length ? (
@@ -188,7 +190,6 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         </div>
       </div>
 
-      {/* Top streaks */}
       <div>
         <h4 className="text-sm font-medium mb-3">Top Reading Streaks</h4>
         <div className="space-y-2">
@@ -212,13 +213,42 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const bestStreak = (data?.topStreaks ?? [])[0]?.longest_streak ?? 0;
-        if (bestStreak >= 3) tips.push(`Your best reading streak is ${bestStreak} days. Users with 3+ day streaks are significantly more likely to subscribe — consider adding streak reminders.`);
         const rate = data?.returnRate ?? 0;
-        if (rate > 0 && rate < 20) tips.push(`Return rate is ${rate}% — consider adding email digests, push notifications, or a "Continue Reading" feature to bring users back.`);
-        else if (rate >= 20) tips.push(`${rate}% return rate shows healthy audience stickiness. Focus on converting returning visitors to subscribers.`);
+        const returning = data?.returning ?? 0;
+        const totalUnique = data?.totalUnique ?? 0;
         const bounce = data?.bounceRate ?? 0;
-        if (bounce > 60) tips.push(`Bounce rate of ${bounce}% is high. Ensure article pages have clear next-step CTAs and related content suggestions.`);
+        const power = data?.powerUsers ?? 0;
+
+        if (totalUnique === 0) {
+          tips.push("No visitor data yet — return rate metrics will populate as sessions are tracked.");
+          return tips;
+        }
+
+        if (rate > 0 && rate < 15) {
+          tips.push(`Only ${returning.toLocaleString()} of ${totalUnique.toLocaleString()} visitors returned (${rate}%). Add email digests, push notifications, or a "Continue Reading" feature to bring users back.`);
+        } else if (rate >= 15 && rate < 30) {
+          tips.push(`${rate}% return rate (${returning.toLocaleString()} returning visitors). Healthy foundation — focus on converting returning visitors to newsletter subscribers.`);
+        } else if (rate >= 30) {
+          tips.push(`Strong ${rate}% return rate with ${returning.toLocaleString()} returning visitors. Your content is building a loyal audience.`);
+        }
+
+        if (power > 0) {
+          tips.push(`${power.toLocaleString()} power user${power === 1 ? '' : 's'} (8+ visits) — these are your most engaged readers. Consider creating exclusive content or early access for them.`);
+        }
+
+        if (bounce > 60) {
+          tips.push(`⚠️ ${bounce}% bounce rate — over half of visitors leave after one page. Add "Related Articles" sections, sticky navigation, or a "Read Next" prompt to keep visitors browsing.`);
+        } else if (bounce > 0 && bounce <= 40) {
+          tips.push(`${bounce}% bounce rate is excellent — visitors are exploring beyond their landing page.`);
+        }
+
+        const bestStreak = (data?.topStreaks ?? [])[0]?.longest_streak ?? 0;
+        if (bestStreak >= 7) {
+          tips.push(`🔥 Your top reading streak is ${bestStreak} days. Users with week-long streaks are your best candidates for paid subscriptions or community membership.`);
+        } else if (bestStreak >= 3) {
+          tips.push(`Best streak is ${bestStreak} days. Consider adding streak reminders via push notifications to help readers build the habit.`);
+        }
+
         return tips;
       })()} />
     </div>
