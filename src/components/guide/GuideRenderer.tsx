@@ -115,7 +115,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
       {hasContent(formData.snapshot_bullets) && (() => {
         const bullets = safeParseJSON(formData.snapshot_bullets);
         return bullets.length > 0 ? (
-        <section id="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
+        <section id="ai-snapshot" data-guide-section="ai-snapshot" className="border-l-4 border-teal-500 bg-card rounded-r-lg p-6 mb-12">
           <div className="space-y-3">
             {bullets.filter(Boolean).map((b: any, i: number) => {
               const text = typeof b === "string" ? b : (b?.text || b?.bullet || JSON.stringify(b));
