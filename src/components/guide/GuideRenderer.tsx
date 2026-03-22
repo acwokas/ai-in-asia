@@ -133,7 +133,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* Why This Matters */}
       {hasContent(formData.why_this_matters) && (
-        <section id="why-this-matters" className="mb-12">
+        <section id="why-this-matters" data-guide-section="why-this-matters" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Why This Matters</h2>
           <MarkdownText text={formData.why_this_matters} className="text-lg leading-relaxed text-foreground/90 space-y-4" />
         </section>
