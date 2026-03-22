@@ -70,7 +70,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
 
   if (variant === "compact") {
     return (
-      <div className="my-6 p-4 rounded-lg bg-muted/50 border border-border">
+      <div data-newsletter="inline-compact" className="newsletter-cta my-6 p-4 rounded-lg bg-muted/50 border border-border">
         <form onSubmit={handleSubmit} className="flex flex-wrap gap-2">
           <Input
             type="email"
