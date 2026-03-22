@@ -76,7 +76,7 @@ const AnalyticsAll = () => {
         ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0) / engagedSessions.length)
         : 0;
 
-      const activeSubscribers = (subscribersRes.data ?? []).length;
+      const activeSubscribers = subscribersRes.count ?? 0;
 
       return {
         totalSessions: sessionsCountRes.count ?? 0,
