@@ -119,7 +119,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                 key={`guide-${item.id}`}
                 to={`/guides/${((item as any).topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${item.slug}`}
                 className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
-                onClick={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
+                onMouseDown={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
                 style={{
                   background: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
@@ -154,7 +154,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
               key={`article-${item.id}`}
               to={`/${catSlug}/${item.slug}`}
               className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
-              onClick={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
+              onMouseDown={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
               style={{
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",

@@ -79,7 +79,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
           <Link
             to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
-            onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: featuredArticle.title, article_slug: featuredArticle.slug }); }}
+            onMouseDown={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: featuredArticle.title, article_slug: featuredArticle.slug }); }}
           >
             <div className="relative aspect-[16/10] overflow-hidden">
               <OptimizedImage
@@ -121,7 +121,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
           {restArticles.map((article: any, idx: number) => (
             <React.Fragment key={article.id}>
-              <div onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
+              <div onMouseDown={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
                 <ArticleCard
                   title={article.title}
                   excerpt={article.excerpt || ""}

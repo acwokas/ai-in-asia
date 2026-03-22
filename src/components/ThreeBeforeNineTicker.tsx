@@ -50,7 +50,7 @@ const ThreeBeforeNineTicker = memo(() => {
   return (
     <Link
       to={articleUrl}
-      onClick={handleClick}
+      onMouseDown={handleClick}
       className="block overflow-hidden border-y group ticker-3b9-strip"
     >
       <div className="container mx-auto px-4 py-[7px] flex flex-col gap-1 md:flex-row md:items-center md:gap-3 min-w-0">
