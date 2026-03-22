@@ -90,6 +90,20 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
+  // Show clean empty state when newsletter hasn't launched
+  const notLaunched = data.totalSubs === 0 && !data.hasEditions && !data.hasCtaEvents;
+  if (notLaunched) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-12 text-center">
+        <Mail className="h-10 w-10 text-muted-foreground/40 mb-4" />
+        <p className="text-sm font-medium text-muted-foreground">Newsletter not yet launched</p>
+        <p className="text-xs text-muted-foreground/70 mt-1 max-w-sm">
+          Subscriber metrics, CTA conversion rates, and edition performance will appear here once a newsletter is configured and subscribers start signing up.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
