@@ -43,7 +43,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
           .limit(50),
       ]);
 
-      const articles = (articlesRes.data ?? []).map((a) => ({
+      const articles = (allArticles).map((a) => ({
         ...a,
         view_count: a?.view_count ?? 0,
         like_count: a?.like_count ?? 0,

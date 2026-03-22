@@ -88,6 +88,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
       const refCounts: Record<string, number> = {};
       (sessions ?? []).forEach((s) => {
         const r = s?.referrer_domain || "direct";
+        if (SELF_DOMAINS.some(d => r.includes(d))) return; // filter self-referrals
         refCounts[r] = (refCounts[r] || 0) + 1;
       });
       const topReferrers = Object.entries(refCounts)
