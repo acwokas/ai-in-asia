@@ -177,50 +177,48 @@ const Article = () => {
 
   // useEffect #1 — Scroll depth milestones
   useEffect(() => {
-    console.log("[GA4-INLINE] Scroll tracking active for:", ga4Title);
     if (!ga4ArticleId) return;
     ga4StartTime.current = Date.now();
     ga4MaxDepth.current = 0;
     ga4FiredDepths.current.clear();
 
-    const contentEl = document.querySelector(".article-content");
-    if (!contentEl) return;
-
     const MILESTONES = [25, 50, 75, 90] as const;
 
     const handleScroll = () => {
+      // Re-query on every scroll to avoid stale/detached DOM references
+      const contentEl = document.querySelector(".article-content");
+      if (!contentEl) return;
+
       const rect = contentEl.getBoundingClientRect();
-      const scrolled = -rect.top;
       const total = rect.height - window.innerHeight;
       if (total <= 0) return;
-      const pct = Math.min(100, Math.round((scrolled / total) * 100));
+
+      const scrolled = -rect.top;
+      const pct = Math.max(0, Math.min(100, Math.round((scrolled / total) * 100)));
       if (pct > ga4MaxDepth.current) ga4MaxDepth.current = pct;
 
       for (const m of MILESTONES) {
         if (pct >= m && !ga4FiredDepths.current.has(m)) {
           ga4FiredDepths.current.add(m);
 
-          if (m === 25) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: "article_read_25", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
-          }
-
-          if (m === 50) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: "article_read_50", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
-          }
-
-          if (m === 75) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: "article_read_75", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category });
-          }
+          const payload: Record<string, any> = {
+            event: m === 90 ? "article_read_complete" : `article_read_${m}`,
+            article_id: ga4ArticleId,
+            article_title: ga4Title,
+            article_category: ga4Category,
+          };
 
           if (m === 90) {
             const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
-            if (seconds >= 60) {
-              window.dataLayer = window.dataLayer || [];
-              window.dataLayer.push({ event: "article_read_complete", article_id: ga4ArticleId, article_title: ga4Title, article_category: ga4Category, time_on_page: seconds });
-            }
+            if (seconds < 60) continue; // skip — too fast to be a real read
+            payload.time_on_page = seconds;
+          }
+
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push(payload);
+
+          if (!import.meta.env.PROD) {
+            console.log(`[GA4-INLINE] Fired ${payload.event} at ${pct}%`);
           }
         }
       }
