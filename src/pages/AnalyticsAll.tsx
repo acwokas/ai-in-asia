@@ -155,7 +155,7 @@ const AnalyticsAll = () => {
                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                     <span className="text-xs text-muted-foreground truncate">{stat.label}</span>
                   </div>
-                  <p className="text-2xl font-bold">{typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}</p>
+                  <p className="text-2xl font-bold">{typeof stat.value === "number" ? (stat.value ?? 0).toLocaleString() : stat.value}</p>
                 </>
               )}
             </CardContent>
