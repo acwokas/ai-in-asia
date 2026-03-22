@@ -19,11 +19,11 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-new-users", range],
     queryFn: async () => {
-      const fetchAllSessionStarts = async () => {
+      const fetchSessionStarts = async () => {
         const rows: Array<{ started_at: string | null }> = [];
         let from = 0;
 
-        while (true) {
+        while (rows.length < MAX_ROWS) {
           const { data: batch, error } = await supabase
             .from("analytics_sessions")
             .select("started_at")
