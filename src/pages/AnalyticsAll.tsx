@@ -87,8 +87,9 @@ const AnalyticsAll = () => {
       ]);
 
       const engagedSessions = avgEngRes.data ?? [];
+      const MAX_ENGAGEMENT_CAP = 1800; // 30 minutes max
       const avgEngagement = engagedSessions.length > 0
-        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0) / engagedSessions.length)
+        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + Math.min(s.duration_seconds ?? 0, MAX_ENGAGEMENT_CAP), 0) / engagedSessions.length)
         : 0;
 
       const activeSubscribers = subscribersRes.count ?? 0;

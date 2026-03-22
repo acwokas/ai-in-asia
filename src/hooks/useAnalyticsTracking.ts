@@ -75,21 +75,40 @@ const getReferrerDomain = (referrer: string) => {
 
 // Fire-and-forget geo lookup — one call per session
 const fetchGeoCountry = async (sessionId: string) => {
-  try {
-    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return;
-    const geo = await res.json();
-    const country = geo?.country_name || null;
-    const city = geo?.city || null;
-    if (country) {
-      await supabase
-        .from('analytics_sessions')
-        .update({ country, city })
-        .eq('session_id', sessionId);
+  const providers = [
+    {
+      url: 'https://ipapi.co/json/',
+      parse: (geo: any) => ({ country: geo?.country_name, city: geo?.city }),
+    },
+    {
+      url: 'https://ip-api.com/json/?fields=country,city',
+      parse: (geo: any) => ({ country: geo?.country, city: geo?.city }),
+    },
+  ];
+
+  for (const provider of providers) {
+    try {
+      const res = await fetch(provider.url, { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) {
+        console.warn(`[geo] ${provider.url} returned ${res.status}`);
+        continue;
+      }
+      const geo = await res.json();
+      const { country, city } = provider.parse(geo);
+      if (country) {
+        console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${country}, ${city ?? 'unknown city'} (via ${new URL(provider.url).hostname})`);
+        await supabase
+          .from('analytics_sessions')
+          .update({ country, city: city || null })
+          .eq('session_id', sessionId);
+        return;
+      }
+      console.warn(`[geo] ${provider.url} returned empty country`);
+    } catch (err) {
+      console.warn(`[geo] ${provider.url} failed:`, err);
     }
-  } catch {
-    // Silent fail — geo is best-effort
   }
+  console.warn(`[geo] All geo providers failed for session ${sessionId.slice(0, 8)}…`);
 };
 
 // Global event tracking function (can be used outside React components)

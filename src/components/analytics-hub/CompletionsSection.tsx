@@ -61,7 +61,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       const avgGuideScroll = guideViews.length > 0
         ? Math.round(guideViews.reduce((s, g) => s + (g?.scroll_depth_percent ?? 0), 0) / guideViews.length) : 0;
       const avgGuideTime = guideViews.length > 0
-        ? Math.round(guideViews.reduce((s, g) => s + (g?.time_on_page_seconds ?? 0), 0) / guideViews.length) : 0;
+        ? Math.round(guideViews.reduce((s, g) => s + Math.min(g?.time_on_page_seconds ?? 0, 1800), 0) / guideViews.length) : 0;
 
       const completionRate = milestones["article_read_25"] > 0
         ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100) : 0;

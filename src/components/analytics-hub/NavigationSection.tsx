@@ -18,7 +18,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
     queryFn: async () => {
       const PAGE_SIZE = 1000;
       const MAX_ROWS = 10000;
-      const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
+      const SELF_DOMAINS = ["lovable.app", "lovable.dev", "lovableproject.com", "ai-in-asia.lovable.app", "aiinasia.com", "www.aiinasia.com", "ai-in-asia.com", "www.ai-in-asia.com"];
 
       const fetchAllEvents = async () => {
         const rows: any[] = [];
@@ -83,7 +83,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         const p = pv?.page_path || "/";
         if (!pageCounts[p]) pageCounts[p] = { views: 0, avgTime: 0, avgScroll: 0 };
         pageCounts[p].views++;
-        pageCounts[p].avgTime += pv?.time_on_page_seconds ?? 0;
+        pageCounts[p].avgTime += Math.min(pv?.time_on_page_seconds ?? 0, 1800);
         pageCounts[p].avgScroll += pv?.scroll_depth_percent ?? 0;
       });
       const topPages = Object.entries(pageCounts)
