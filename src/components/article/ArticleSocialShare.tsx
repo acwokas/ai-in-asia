@@ -77,7 +77,7 @@ export const ArticleShareInline = memo(({ categorySlug, articleSlug, articleTitl
   }, [directUrl]);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" data-share-bar="inline">
       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#25D366] cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp">
         <WhatsAppIcon className="h-4 w-4" />
       </Button>
