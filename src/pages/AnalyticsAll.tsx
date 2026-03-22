@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   Activity, Users, Zap, BookCheck, Mail, Newspaper,
   UserPlus, UserCheck, Trophy, Route, Globe,
-  ChevronDown, BarChart3,
+  ChevronDown, BarChart3, Share2, DollarSign, Search,
 } from "lucide-react";
 import { subDays, startOfDay } from "date-fns";
 import {
@@ -20,6 +20,9 @@ import {
   CTANewsletterSection,
   BriefingSection,
   AudienceSection,
+  SocialMediaSection,
+  MonetizationSection,
+  SEOPerformanceSection,
 } from "@/components/analytics-hub";
 
 type DateRange = "7d" | "30d" | "90d";
@@ -115,6 +118,9 @@ const AnalyticsAll = () => {
     { id: "new-users", title: "New Users & Real-time", icon: UserPlus, color: "text-green-500", component: <NewUsersSection startDate={startDate} range={range} /> },
     { id: "returning", title: "Returning Users & Stickiness", icon: UserCheck, color: "text-blue-500", component: <ReturningUsersSection startDate={startDate} range={range} /> },
     { id: "audience", title: "Audience & Acquisition", icon: Globe, color: "text-teal-500", component: <AudienceSection startDate={startDate} range={range} /> },
+    { id: "social", title: "Social Media Performance", icon: Share2, color: "text-sky-500", component: <SocialMediaSection startDate={startDate} range={range} /> },
+    { id: "monetization", title: "Monetization / AdSense", icon: DollarSign, color: "text-emerald-500", component: <MonetizationSection startDate={startDate} range={range} /> },
+    { id: "seo", title: "SEO / Search Performance", icon: Search, color: "text-indigo-500", component: <SEOPerformanceSection startDate={startDate} range={range} /> },
     { id: "rankings", title: "Content Rankings", icon: Trophy, color: "text-yellow-500", component: <ContentRankingsSection startDate={startDate} range={range} /> },
     { id: "navigation", title: "Navigation & User Flows", icon: Route, color: "text-orange-500", component: <NavigationSection startDate={startDate} range={range} /> },
     { id: "cta", title: "CTA & Newsletter", icon: Mail, color: "text-pink-500", component: <CTANewsletterSection startDate={startDate} range={range} /> },

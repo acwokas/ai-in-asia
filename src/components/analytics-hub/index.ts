@@ -8,3 +8,6 @@ export { BriefingSection } from "./BriefingSection";
 export { InsightCard } from "./InsightCard";
 export { AudienceSection } from "./AudienceSection";
 export { EmptyDataNotice } from "./EmptyDataNotice";
+export { SocialMediaSection } from "./SocialMediaSection";
+export { MonetizationSection } from "./MonetizationSection";
+export { SEOPerformanceSection } from "./SEOPerformanceSection";
