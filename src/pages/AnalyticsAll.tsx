@@ -58,13 +58,25 @@ const AnalyticsAll = () => {
           .select("*", { count: "exact", head: true })
           .eq("confirmed", true)
           .is("unsubscribed_at", null) as any,
-        supabase
-          .from("analytics_sessions")
-          .select("duration_seconds, is_bounce")
-          .gte("started_at", startDate)
-          .eq("is_bounce", false)
-          .gt("duration_seconds", 0)
-          .limit(1000) as any,
+        // Paginated fetch for avg engagement
+        (async () => {
+          const rows: any[] = [];
+          let from = 0;
+          while (true) {
+            const { data: batch } = await supabase
+              .from("analytics_sessions")
+              .select("duration_seconds")
+              .gte("started_at", startDate)
+              .eq("is_bounce", false)
+              .gt("duration_seconds", 0)
+              .range(from, from + 999);
+            const safe = batch ?? [];
+            rows.push(...safe);
+            if (safe.length < 1000) break;
+            from += 1000;
+          }
+          return { data: rows };
+        })() as any,
         supabase
           .from("analytics_sessions")
           .select("*", { count: "exact", head: true })
