@@ -149,8 +149,9 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
   });
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-60 w-full" /></div>;
+  if (!data) return <EmptyDataNotice message="Unable to load SEO data." />;
 
-  const d = data!;
+  const d = data;
 
   const pieData = d.totalSessions > 0
     ? [

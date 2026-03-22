@@ -97,8 +97,9 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
   });
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-60 w-full" /></div>;
+  if (!data) return <EmptyDataNotice message="Unable to load monetization data." />;
 
-  const d = data!;
+  const d = data;
 
   const tips: string[] = [];
   if (d.totalPageviews === 0) {

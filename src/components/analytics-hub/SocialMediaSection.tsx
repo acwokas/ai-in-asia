@@ -161,8 +161,9 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   });
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-60 w-full" /></div>;
+  if (!data) return <EmptyDataNotice message="Unable to load social media data." />;
 
-  const d = data!;
+  const d = data;
   const socialPct = d.totalSessions > 0 ? ((d.totalSocial / d.totalSessions) * 100).toFixed(1) : "0";
 
   const chartConfig: Record<string, { label: string; color: string }> = {};
