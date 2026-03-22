@@ -73,12 +73,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-social-media", range],
     queryFn: async () => {
-      // Fetch sessions with UTM data
-      const sessions = await fetchAll(
-        "analytics_sessions",
-        startDate,
-        "utm_source,utm_medium,utm_campaign,referrer_domain,duration_seconds,is_bounce,page_count"
-      );
+      const sessions = await fetchAllSessions(startDate);
 
       // Identify social sessions: either utm_source matches OR referrer_domain matches
       const socialSessions: { platform: string; campaign: string | null; duration: number; isBounce: boolean; pageCount: number }[] = [];
