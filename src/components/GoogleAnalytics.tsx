@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 // GA4 is loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
 // Previously, events were also sent via gtag("config"/event") which caused double-counting
