@@ -99,7 +99,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
     { stage: "25%", count: data.milestones["article_read_25"] },
     { stage: "50%", count: data.milestones["article_read_50"] },
     { stage: "75%", count: data.milestones["article_read_75"] },
-    { stage: "Complete", count: data.milestones["article_read_complete"] },
+    { stage: "Complete", count: data.milestones["article_complete"] },
   ];
 
   return (
