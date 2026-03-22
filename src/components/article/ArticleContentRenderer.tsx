@@ -318,6 +318,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
           .join('');
         return `<ol>${items}</ol>`;
       }
+      if (/^<(div|blockquote|figure|iframe|table|ul|ol|hr|h[1-6]|section|img|pre)\b/i.test(block)) {
+        return block;
+      }
       return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
     });
     
