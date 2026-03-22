@@ -140,7 +140,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         const tips: string[] = [];
         const rate = data.completionRate;
         const total25 = data.milestones["article_read_25"];
-        const totalComplete = data.milestones["article_read_complete"];
+        const totalComplete = data.milestones["article_complete"];
 
         if (total25 > 0 && rate < 25) {
           tips.push(`1. ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
