@@ -39,6 +39,19 @@ export function useGA4NavigationTracking() {
         return;
       }
 
+      // ── CTA button click ─────────────────────────────────────────────
+      const ctaBtn = target.closest(
+        '[data-cta], .cta-button, [class*="cta-"], button[class*="CTA"]'
+      );
+      if (ctaBtn) {
+        push("cta_click", {
+          cta_text: (ctaBtn.textContent || "").trim().slice(0, 80),
+          cta_type: ctaBtn.getAttribute("data-cta") || "unknown",
+          page_path: window.location.pathname,
+        });
+        return;
+      }
+
       // ── Up Next click ────────────────────────────────────────────────
       const upNext = target.closest(
         '[data-up-next], [class*="NextArticle"], [class*="up-next"], [class*="UpNext"]'
