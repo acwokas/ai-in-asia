@@ -309,6 +309,9 @@ export const useAnalyticsTracking = () => {
       is_bounce: true, // Assume bounce until proven otherwise
     });
 
+    // Geo lookup — once per session, fire-and-forget
+    fetchGeoCountry(sessionId);
+
     return sessionId;
   }, [user?.id, location.pathname, updateSessionInDb]);
 
