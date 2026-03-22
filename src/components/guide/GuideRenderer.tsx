@@ -203,7 +203,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const prompts = safeParseJSON(formData.guide_prompts);
         const filtered = prompts.filter((p: any) => p.prompt_text?.trim());
         return filtered.length > 0 ? (
-        <section id="prompts-to-try" className="mb-12">
+        <section id="prompts-to-try" data-guide-section="prompts-to-try" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Prompts to Try</h2>
           <div className="space-y-8">
             {filtered.map((prompt: any, i: number) => (
