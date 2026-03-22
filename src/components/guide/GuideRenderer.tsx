@@ -296,7 +296,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const faqs = safeParseJSON(formData.faq_items);
         const filtered = faqs.filter((f: any) => f.question?.trim());
         return filtered.length > 0 ? (
-        <section id="faq" className="mb-12">
+        <section id="faq" data-guide-section="faq" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Frequently Asked Questions</h2>
           <div className="divide-y divide-border">
             {filtered.map((faq: any, i: number) => (
