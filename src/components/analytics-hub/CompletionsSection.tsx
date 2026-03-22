@@ -44,7 +44,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       };
 
       const titleCounts: Record<string, number> = {};
-      events.filter(e => e.event_name === "article_read_complete").forEach(e => {
+      events.filter(e => e.event_name === "article_complete").forEach(e => {
         const ed = e.event_data as any;
         const label = ed?.article_title || ed?.title || e.page_path || "unknown";
         titleCounts[label] = (titleCounts[label] || 0) + 1;
