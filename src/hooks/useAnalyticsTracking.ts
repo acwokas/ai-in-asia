@@ -549,7 +549,7 @@ export const useAnalyticsTracking = () => {
           await supabase
             .from('analytics_pageviews')
             .update({
-              time_on_page_seconds: timeSpent,
+              time_on_page_seconds: activeSeconds,
               scroll_depth_percent: scrollDepthRef.current,
             })
             .eq('id', pageViewIdRef.current);
