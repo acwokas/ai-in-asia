@@ -121,4 +121,27 @@ export function useGA4BriefingTracking(
     return () =>
       document.removeEventListener("click", handler, { capture: true });
   }, [articleId]);
+
+  // ── Briefing return visitor: viewed 3B9 on 2+ different days ────────
+  useEffect(() => {
+    if (!articleId) return;
+
+    const key = "ga4_briefing_days";
+    const today = new Date().toISOString().slice(0, 10);
+    const days: string[] = JSON.parse(localStorage.getItem(key) || "[]");
+
+    if (!days.includes(today)) {
+      days.push(today);
+      localStorage.setItem(key, JSON.stringify(days));
+    }
+
+    if (days.length === 2 && !sessionStorage.getItem("ga4_briefing_return")) {
+      sessionStorage.setItem("ga4_briefing_return", "1");
+      push("briefing_return_visitor", {
+        days_visited: days.length,
+        first_visit: days[0],
+        page_path: window.location.pathname,
+      });
+    }
+  }, [articleId]);
 }
