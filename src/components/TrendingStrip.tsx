@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
+import { dualPush } from "@/lib/dualTrack";
 
 const TrendingStrip = memo(() => {
   const { data: trending } = useQuery({
