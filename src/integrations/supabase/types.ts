@@ -4173,6 +4173,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      get_avg_engagement: {
+        Args: { p_end: string; p_start: string }
+        Returns: number
+      }
       get_trending_refresh_timestamp: { Args: never; Returns: string }
       get_unique_visitors: {
         Args: { p_end: string; p_start: string }
