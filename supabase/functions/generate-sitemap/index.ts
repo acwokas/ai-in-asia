@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 const baseUrl = "https://aiinasia.com";
+const sanitizePathSegment = (value: string | null | undefined) =>
+  encodeURIComponent((value || '').trim().replace(/\s+/g, '-'));
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
