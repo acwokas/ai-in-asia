@@ -394,7 +394,7 @@ export const useAnalyticsTracking = () => {
     resetActiveTimer();
   }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb, resetActiveTimer]);
 
-  // Track scroll depth
+  // Track scroll depth + periodic save every 10s while active
   useEffect(() => {
     if (isInternalPath) return;
     const handleScroll = () => {
@@ -405,8 +405,27 @@ export const useAnalyticsTracking = () => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isInternalPath]);
+
+    // Periodic scroll depth + active time save every 10 seconds
+    const intervalId = setInterval(async () => {
+      if (!pageViewIdRef.current || isIdleRef.current) return;
+
+      const activeSeconds = getActiveSeconds();
+
+      await supabase
+        .from('analytics_pageviews')
+        .update({
+          time_on_page_seconds: activeSeconds,
+          scroll_depth_percent: scrollDepthRef.current,
+        })
+        .eq('id', pageViewIdRef.current);
+    }, 10_000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(intervalId);
+    };
+  }, [isInternalPath, getActiveSeconds]);
 
   // Track page views on route change — skip internal pages
   useEffect(() => {
