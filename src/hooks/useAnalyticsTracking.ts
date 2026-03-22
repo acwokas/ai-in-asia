@@ -87,24 +87,39 @@ const fetchGeoCountry = async (sessionId: string) => {
 };
 
 // Global event tracking function (can be used outside React components)
-export const trackAnalyticsEvent = async (
+export const trackAnalyticsEvent = (
   eventName: string, 
   eventCategory?: string, 
   eventData?: Record<string, unknown>
 ) => {
+  // 1. Push to dataLayer for GTM → GA4
+  if (typeof window !== 'undefined') {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      event_category: eventCategory,
+      ...eventData,
+    });
+  }
+
+  // 2. Dual-write to Supabase analytics_events
   const stored = localStorage.getItem(SESSION_KEY);
   if (!stored) return;
 
   try {
     const sessionData: SessionData = JSON.parse(stored);
-    await supabase.from('analytics_events').insert([{
+    supabase.from('analytics_events').insert([{
       session_id: sessionData.sessionId,
       user_id: null,
       event_name: eventName,
       event_category: eventCategory || null,
       event_data: (eventData || {}) as Json,
       page_path: window.location.pathname,
-    }]);
+    }]).then(({ error }) => {
+      if (error && !import.meta.env.PROD) {
+        console.warn('[trackAnalyticsEvent] Supabase insert error:', error.message);
+      }
+    });
   } catch {
     // Silent fail
   }
