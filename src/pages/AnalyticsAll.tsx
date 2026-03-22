@@ -42,66 +42,94 @@ const AnalyticsAll = () => {
       const now = new Date();
       const fifteenMinAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
 
-      const [sessionsCountRes, uniqueVisitorsRes, completionsRes, subscribersRes, avgEngRes, activeNowRes] = await Promise.all([
-        supabase
-          .from("analytics_sessions")
-          .select("*", { count: "exact", head: true })
-          .gte("started_at", startDate) as any,
-        supabase.rpc("get_unique_visitors", {
+      // Use individual try/catch per query so one failure doesn't zero everything
+      let totalSessions = 0;
+      let uniqueVisitors = 0;
+      let completions = 0;
+      let subscribers = 0;
+      let avgEngagement = 0;
+      let activeNow = 0;
+
+      // Total Sessions — paginated count to avoid RLS/count issues
+      try {
+        let sessionCount = 0;
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("id")
+            .gte("started_at", startDate)
+            .range(from, from + 999);
+          const safe = batch ?? [];
+          sessionCount += safe.length;
+          if (safe.length < 1000) break;
+          from += 1000;
+        }
+        totalSessions = sessionCount;
+      } catch (_e) { /* keep 0 */ }
+
+      // Unique Visitors via RPC
+      try {
+        const { data } = await supabase.rpc("get_unique_visitors", {
           p_start: startDate,
           p_end: now.toISOString(),
-        }) as any,
-        supabase
+        });
+        uniqueVisitors = data ?? 0;
+      } catch (_e) { /* keep 0 */ }
+
+      // Completions
+      try {
+        const { count } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_name", "article_complete")
-          .gte("created_at", startDate) as any,
-        supabase
+          .gte("created_at", startDate);
+        completions = count ?? 0;
+      } catch (_e) { /* keep 0 */ }
+
+      // Subscribers
+      try {
+        const { count } = await supabase
           .from("newsletter_subscribers")
           .select("*", { count: "exact", head: true })
           .eq("confirmed", true)
-          .is("unsubscribed_at", null) as any,
-        // Paginated fetch for avg engagement
-        (async () => {
-          const rows: any[] = [];
-          let from = 0;
-          while (true) {
-            const { data: batch } = await supabase
-              .from("analytics_sessions")
-              .select("duration_seconds")
-              .gte("started_at", startDate)
-              .eq("is_bounce", false)
-              .gt("duration_seconds", 0)
-              .range(from, from + 999);
-            const safe = batch ?? [];
-            rows.push(...safe);
-            if (safe.length < 1000) break;
-            from += 1000;
-          }
-          return { data: rows };
-        })() as any,
-        supabase
+          .is("unsubscribed_at", null);
+        subscribers = count ?? 0;
+      } catch (_e) { /* keep 0 */ }
+
+      // Avg engagement (paginated)
+      try {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("duration_seconds")
+            .gte("started_at", startDate)
+            .eq("is_bounce", false)
+            .gt("duration_seconds", 0)
+            .range(from, from + 999);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < 1000) break;
+          from += 1000;
+        }
+        const MAX_ENGAGEMENT_CAP = 1800;
+        avgEngagement = rows.length > 0
+          ? Math.round(rows.reduce((sum: number, s: any) => sum + Math.min(s.duration_seconds ?? 0, MAX_ENGAGEMENT_CAP), 0) / rows.length)
+          : 0;
+      } catch (_e) { /* keep 0 */ }
+
+      // Active now
+      try {
+        const { count } = await supabase
           .from("analytics_sessions")
           .select("*", { count: "exact", head: true })
-          .gte("started_at", fifteenMinAgo) as any,
-      ]);
+          .gte("started_at", fifteenMinAgo);
+        activeNow = count ?? 0;
+      } catch (_e) { /* keep 0 */ }
 
-      const engagedSessions = avgEngRes.data ?? [];
-      const MAX_ENGAGEMENT_CAP = 1800; // 30 minutes max
-      const avgEngagement = engagedSessions.length > 0
-        ? Math.round(engagedSessions.reduce((sum: number, s: any) => sum + Math.min(s.duration_seconds ?? 0, MAX_ENGAGEMENT_CAP), 0) / engagedSessions.length)
-        : 0;
-
-      const activeSubscribers = subscribersRes.count ?? 0;
-
-      return {
-        totalSessions: sessionsCountRes.count ?? 0,
-        uniqueVisitors: uniqueVisitorsRes.data ?? 0,
-        avgEngagement,
-        completions: completionsRes.count ?? 0,
-        subscribers: activeSubscribers,
-        activeNow: activeNowRes.count ?? 0,
-      };
+      return { totalSessions, uniqueVisitors, avgEngagement, completions, subscribers, activeNow };
     },
   });
 
