@@ -33,7 +33,7 @@ export const ArticleRelatedSection = ({
   if (!relatedArticles || relatedArticles.length === 0) return null;
 
   return (
-    <section className="bg-muted/30 py-12 mt-8">
+    <section data-related="related-section" className="bg-muted/30 py-12 mt-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <h2 className="headline text-3xl mb-8">You may also like:</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
