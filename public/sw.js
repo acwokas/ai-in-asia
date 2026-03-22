@@ -109,6 +109,15 @@ self.addEventListener('fetch', (event) => {
       event.respondWith(fetch(request));
       return;
     }
+    // Never cache sitemap/feed endpoints to avoid stale SEO artifacts
+    if (
+      url.origin === self.location.origin &&
+      (url.pathname === '/sitemap.xml' || url.pathname === '/rss.xml' || url.pathname === '/rss' || url.pathname === '/feed')
+    ) {
+      event.respondWith(fetch(request));
+      return;
+    }
+
     // Handle crawler requests for article pages
     if (isCrawler(userAgent) && url.origin === self.location.origin && url.pathname.includes('/')) {
       const pathParts = url.pathname.split('/').filter(p => p);

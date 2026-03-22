@@ -10,6 +10,8 @@ const escapeXml = (str: string): string =>
   str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
 const baseUrl = "https://www.aiinasia.com";
+const sanitizePathSegment = (value: string | null | undefined) =>
+  encodeURIComponent((value || '').trim().replace(/\s+/g, '-'));
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -75,7 +77,7 @@ serve(async (req) => {
       const catSlug = (a.categories as any)?.slug || "news";
       const lastmod = ((a.updated_at || a.published_at) ?? today).split("T")[0];
       xml += "  <url>\n";
-      xml += `    <loc>${escapeXml(`${baseUrl}/${encodeURIComponent(catSlug)}/${encodeURIComponent(a.slug)}`)}</loc>\n`;
+      xml += `    <loc>${escapeXml(`${baseUrl}/${sanitizePathSegment(catSlug)}/${sanitizePathSegment(a.slug)}`)}</loc>\n`;
       xml += `    <lastmod>${lastmod}</lastmod>\n`;
       xml += "    <changefreq>weekly</changefreq>\n";
       xml += "    <priority>0.7</priority>\n";
