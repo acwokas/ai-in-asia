@@ -22,6 +22,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-rankings", range],
     queryFn: async () => {
       const PAGE_SIZE = 1000;
+      const MAX_ROWS = 10000;
       // Paginated fetch for all published articles
       const allArticles: any[] = [];
       let from = 0;
