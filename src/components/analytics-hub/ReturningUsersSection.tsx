@@ -64,9 +64,8 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         fetchAllPageviews(),
       ]);
 
-      const sessions = sessionsRes.data ?? [];
+
       const streaks = streaksRes.data ?? [];
-      const pageviews = pageviewsRes.data ?? [];
 
       // Sessions per user
       const userSessionCounts: Record<string, number> = {};
