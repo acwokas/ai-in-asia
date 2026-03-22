@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { format, eachWeekOfInterval, parseISO, endOfWeek, isWithinInterval } from "date-fns";
 import { EmptyDataNotice } from "./EmptyDataNotice";
+import { InsightCard } from "./InsightCard";
 
 interface Props {
   startDate: string;
