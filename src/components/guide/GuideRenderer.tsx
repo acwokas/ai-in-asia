@@ -225,7 +225,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
         const mistakes = safeParseJSON(formData.common_mistakes);
         const filtered = mistakes.filter((m: any) => (m.title || m.mistake)?.trim());
         return filtered.length > 0 ? (
-        <section id="common-mistakes" className="mb-12">
+        <section id="common-mistakes" data-guide-section="common-mistakes" className="mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">Common Mistakes</h2>
           <div className="space-y-4">
             {filtered.map((mistake: any, i: number) => (
