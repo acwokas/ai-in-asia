@@ -61,23 +61,17 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const streaks = streaksRes.data ?? [];
 
       // ── Build per-session pageview counts ──
-      // pvPerSessionCount = total pageviews per session (for avg pages/session)
-      // pvPerSessionPaths = distinct paths per session (for bounce rate)
       const pvPerSessionCount: Record<string, number> = {};
-      const pvPerSessionPaths: Record<string, Set<string>> = {};
       pageviews.forEach((pv) => {
         const sid = pv?.session_id;
-        const path = pv?.page_path;
-        if (!sid || !path) return;
+        if (!sid) return;
         pvPerSessionCount[sid] = (pvPerSessionCount[sid] || 0) + 1;
-        if (!pvPerSessionPaths[sid]) pvPerSessionPaths[sid] = new Set();
-        pvPerSessionPaths[sid].add(path);
       });
 
-      const sessionsWithPV = Object.keys(pvPerSessionCount);
-      const totalSessionsWithPV = sessionsWithPV.length;
+      const distinctSessions = Object.keys(pvPerSessionCount);
+      const totalSessionsWithPV = distinctSessions.length;
 
-      // ── Return rate ──
+      // ── Return rate: visitors with >1 session ──
       const userSessionCounts: Record<string, number> = {};
       sessions.forEach((s) => {
         const key = s?.user_id || s?.session_id;
@@ -89,12 +83,12 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const returning = Object.values(userSessionCounts).filter(c => c > 1).length;
       const returnRate = totalUnique > 0 ? Math.round((returning / totalUnique) * 100) : 0;
 
-      // ── Bounce rate: sessions with only 1 distinct page path ──
-      const singlePVSessions = sessionsWithPV.filter(sid => pvPerSessionPaths[sid].size === 1).length;
+      // ── Bounce rate: sessions with exactly 1 pageview row ──
+      const singlePVSessions = distinctSessions.filter(sid => pvPerSessionCount[sid] === 1).length;
       const bounceRate = totalSessionsWithPV > 0
         ? Math.round((singlePVSessions / totalSessionsWithPV) * 100) : 0;
 
-      // ── Avg pages/session: total pageviews / total sessions ──
+      // ── Avg pages/session: total pageview rows / distinct sessions ──
       const totalPVCount = pageviews.length;
       const avgPages = totalSessionsWithPV > 0
         ? (totalPVCount / totalSessionsWithPV).toFixed(1) : "0";
