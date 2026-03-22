@@ -16,27 +16,56 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
-      const [sessionsRes, streaksRes, pageviewsRes] = await Promise.all([
-        supabase
-          .from("analytics_sessions")
-          .select("user_id, session_id, is_bounce, duration_seconds, page_count")
-          .gte("started_at", startDate)
-          .limit(1000),
+      const PAGE_SIZE = 1000;
+
+      // Paginated fetch for sessions
+      const fetchAllSessions = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("user_id, session_id, is_bounce, duration_seconds, page_count")
+            .gte("started_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      // Paginated fetch for pageviews
+      const fetchAllPageviews = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_pageviews")
+            .select("page_path, session_id")
+            .gte("viewed_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const [sessions, streaksRes, pageviews] = await Promise.all([
+        fetchAllSessions(),
         supabase
           .from("reading_streaks")
           .select("user_id, current_streak, longest_streak, total_articles_read")
           .order("current_streak", { ascending: false })
           .limit(20),
-        supabase
-          .from("analytics_pageviews")
-          .select("page_path, session_id")
-          .gte("viewed_at", startDate)
-          .limit(1000),
+        fetchAllPageviews(),
       ]);
 
-      const sessions = sessionsRes.data ?? [];
+
       const streaks = streaksRes.data ?? [];
-      const pageviews = pageviewsRes.data ?? [];
 
       // Sessions per user
       const userSessionCounts: Record<string, number> = {};

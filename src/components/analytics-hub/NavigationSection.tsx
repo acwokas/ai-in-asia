@@ -15,28 +15,69 @@ export const NavigationSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-navigation", range],
     queryFn: async () => {
-      const [eventsRes, pageviewsRes, sessionsRes] = await Promise.all([
-        supabase
-          .from("analytics_events")
-          .select("event_name, event_data")
-          .in("event_name", ["nav_click", "nav_category_click", "cta_click", "search_performed", "social_share_click"])
-          .gte("created_at", startDate)
-          .limit(500),
-        supabase
-          .from("analytics_pageviews")
-          .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
-          .gte("viewed_at", startDate)
-          .limit(1000),
-        supabase
-          .from("analytics_sessions")
-          .select("referrer_domain, device_type")
-          .gte("started_at", startDate)
-          .limit(1000),
+      const PAGE_SIZE = 1000;
+      const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com"];
+
+      const fetchAllEvents = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_events")
+            .select("event_name, event_data")
+            .in("event_name", ["nav_click", "nav_category_click", "cta_click", "search_performed", "social_share_click"])
+            .gte("created_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const fetchAllPageviews = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_pageviews")
+            .select("page_path, referrer_path, time_on_page_seconds, scroll_depth_percent, is_exit")
+            .gte("viewed_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const fetchAllSessions = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("referrer_domain, device_type")
+            .gte("started_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const [events, pageviews, sessions] = await Promise.all([
+        fetchAllEvents(),
+        fetchAllPageviews(),
+        fetchAllSessions(),
       ]);
 
-      const events = eventsRes.data ?? [];
-      const pageviews = pageviewsRes.data ?? [];
-      const sessions = sessionsRes.data ?? [];
+
+
 
       // Clicked elements for horizontal bar chart
       const elementCounts: Record<string, number> = {};
@@ -72,6 +113,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       const refCounts: Record<string, number> = {};
       (sessions ?? []).forEach((s) => {
         const r = s?.referrer_domain || "direct";
+        if (SELF_DOMAINS.some(d => r.includes(d))) return; // filter self-referrals
         refCounts[r] = (refCounts[r] || 0) + 1;
       });
       const topReferrers = Object.entries(refCounts)

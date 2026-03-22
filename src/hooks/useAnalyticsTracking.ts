@@ -181,6 +181,56 @@ export const useAnalyticsTracking = () => {
   const scrollDepthRef = useRef<number>(0);
   const sessionDataRef = useRef<SessionData | null>(null);
 
+  // ── Idle detection: track active time, not wall time ──────────────
+  const activeTimeRef = useRef<number>(0);       // accumulated active seconds
+  const lastActiveTickRef = useRef<number>(Date.now());
+  const isIdleRef = useRef<boolean>(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const IDLE_THRESHOLD = 30_000; // 30 seconds
+
+  useEffect(() => {
+    const markActive = () => {
+      const now = Date.now();
+      if (isIdleRef.current) {
+        // Resuming from idle — reset tick without accumulating idle gap
+        isIdleRef.current = false;
+        lastActiveTickRef.current = now;
+      }
+      // Reset idle timer
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        // Accumulate active time before going idle
+        activeTimeRef.current += Math.round((Date.now() - lastActiveTickRef.current) / 1000);
+        isIdleRef.current = true;
+      }, IDLE_THRESHOLD);
+    };
+
+    const events = ['scroll', 'click', 'keypress', 'mousemove', 'touchstart'];
+    events.forEach(evt => window.addEventListener(evt, markActive, { passive: true }));
+    markActive(); // start active
+
+    return () => {
+      events.forEach(evt => window.removeEventListener(evt, markActive));
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, []);
+
+  /** Get total active seconds on current page (excludes idle time) */
+  const getActiveSeconds = useCallback(() => {
+    let total = activeTimeRef.current;
+    if (!isIdleRef.current) {
+      total += Math.round((Date.now() - lastActiveTickRef.current) / 1000);
+    }
+    return total;
+  }, []);
+
+  /** Reset active timer (called on page navigation) */
+  const resetActiveTimer = useCallback(() => {
+    activeTimeRef.current = 0;
+    lastActiveTickRef.current = Date.now();
+    isIdleRef.current = false;
+  }, []);
+
   // Update session in database
   const updateSessionInDb = useCallback(async (sessionId: string, updates: {
     duration_seconds?: number;
@@ -341,9 +391,10 @@ export const useAnalyticsTracking = () => {
     lastPathRef.current = currentPath;
     pageStartTimeRef.current = Date.now();
     scrollDepthRef.current = 0;
-  }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb]);
+    resetActiveTimer();
+  }, [getOrCreateSession, location.pathname, location.search, user?.id, updateSessionInDb, resetActiveTimer]);
 
-  // Track scroll depth
+  // Track scroll depth + periodic save every 10s while active
   useEffect(() => {
     if (isInternalPath) return;
     const handleScroll = () => {
@@ -354,8 +405,27 @@ export const useAnalyticsTracking = () => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isInternalPath]);
+
+    // Periodic scroll depth + active time save every 10 seconds
+    const intervalId = setInterval(async () => {
+      if (!pageViewIdRef.current || isIdleRef.current) return;
+
+      const activeSeconds = getActiveSeconds();
+
+      await supabase
+        .from('analytics_pageviews')
+        .update({
+          time_on_page_seconds: activeSeconds,
+          scroll_depth_percent: scrollDepthRef.current,
+        })
+        .eq('id', pageViewIdRef.current);
+    }, 10_000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(intervalId);
+    };
+  }, [isInternalPath, getActiveSeconds]);
 
   // Track page views on route change — skip internal pages
   useEffect(() => {
@@ -380,7 +450,7 @@ export const useAnalyticsTracking = () => {
 
       try {
         const sessionData: SessionData = JSON.parse(stored);
-        const timeSpent = Math.round((now - pageStartTimeRef.current) / 1000);
+        const timeSpent = getActiveSeconds();
 
         // Only write if the user actually spent meaningful time on the page
         if (timeSpent < 2) return;
@@ -421,8 +491,8 @@ export const useAnalyticsTracking = () => {
 
       try {
         const sessionData: SessionData = JSON.parse(stored);
-        const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
-        const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+        const timeSpent = getActiveSeconds();
+        const durationSeconds = timeSpent; // Use active time, not wall time
 
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -467,8 +537,8 @@ export const useAnalyticsTracking = () => {
       if (stored && pageViewIdRef.current) {
         try {
           const sessionData: SessionData = JSON.parse(stored);
-          const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
-          const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
+          const activeSeconds = getActiveSeconds();
+          const durationSeconds = activeSeconds;
 
           // Update session duration
           await updateSessionInDb(sessionData.sessionId, {
@@ -479,7 +549,7 @@ export const useAnalyticsTracking = () => {
           await supabase
             .from('analytics_pageviews')
             .update({
-              time_on_page_seconds: timeSpent,
+              time_on_page_seconds: activeSeconds,
               scroll_depth_percent: scrollDepthRef.current,
             })
             .eq('id', pageViewIdRef.current);

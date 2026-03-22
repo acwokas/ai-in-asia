@@ -53,12 +53,24 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .gte("started_at", new Date(Date.now() - 15 * 60 * 1000).toISOString())
           .order("started_at", { ascending: false })
           .limit(50),
-        supabase
-          .from("analytics_sessions")
-          .select("landing_page")
-          .gte("started_at", startDate)
-          .not("landing_page", "is", null)
-          .limit(1000),
+        // Use paginated fetch for landing pages too
+        (async () => {
+          const rows: Array<{ landing_page: string | null }> = [];
+          let from = 0;
+          while (true) {
+            const { data: batch } = await supabase
+              .from("analytics_sessions")
+              .select("landing_page")
+              .gte("started_at", startDate)
+              .not("landing_page", "is", null)
+              .range(from, from + PAGE_SIZE - 1);
+            const safeBatch = batch ?? [];
+            rows.push(...safeBatch);
+            if (safeBatch.length < PAGE_SIZE) break;
+            from += PAGE_SIZE;
+          }
+          return { data: rows };
+        })(),
       ]);
 
       const sessionsForChart = sessionStarts ?? [];

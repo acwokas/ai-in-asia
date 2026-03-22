@@ -20,19 +20,30 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-rankings", range],
     queryFn: async () => {
-      const [articlesRes, categoriesRes] = await Promise.all([
-        supabase
+      const PAGE_SIZE = 1000;
+      // Paginated fetch for all published articles
+      const allArticles: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data: batch } = await supabase
           .from("articles")
           .select("id, title, slug, view_count, like_count, comment_count, trending_score, article_type, primary_category_id, published_at")
           .eq("status", "published")
-          .limit(500),
+          .range(from, from + PAGE_SIZE - 1);
+        const safe = batch ?? [];
+        allArticles.push(...safe);
+        if (safe.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+
+      const [categoriesRes] = await Promise.all([
         supabase
           .from("categories")
           .select("id, name, slug")
           .limit(50),
       ]);
 
-      const articles = (articlesRes.data ?? []).map((a) => ({
+      const articles = (allArticles).map((a) => ({
         ...a,
         view_count: a?.view_count ?? 0,
         like_count: a?.like_count ?? 0,
