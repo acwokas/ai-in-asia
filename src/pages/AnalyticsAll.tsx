@@ -55,10 +55,9 @@ const AnalyticsAll = () => {
           .gte("created_at", startDate) as any,
         supabase
           .from("newsletter_subscribers")
-          .select("id, confirmed, unsubscribed_at")
+          .select("*", { count: "exact", head: true })
           .eq("confirmed", true)
-          .is("unsubscribed_at", null)
-          .limit(1000),
+          .is("unsubscribed_at", null) as any,
         supabase
           .from("analytics_sessions")
           .select("duration_seconds, is_bounce")
