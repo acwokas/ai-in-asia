@@ -112,7 +112,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
 
       {/* Cards row — horizontal scroll on mobile */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-6 md:overflow-visible md:pb-0">
-        {combined.map((item) => {
+        {combined.map((item, index) => {
           if (item.type === "guide") {
             return (
               <Link
