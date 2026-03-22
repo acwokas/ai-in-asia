@@ -119,14 +119,8 @@ export function useGA4NavigationTracking() {
         return;
       }
 
-      if (
-        anchor.closest(
-          '[data-trending], .trending-strip, .trending-section, [class*="trending"]'
-        )
-      ) {
-        push("trending_article_click", { link_text: text, link_url: href });
-        return;
-      }
+      // ── Trending clicks are handled directly by TrendingStrip / TrendingVisualStrip ──
+      // (skip here to avoid duplicate dataLayer pushes)
 
       if (
         anchor.closest(
