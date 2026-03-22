@@ -450,7 +450,7 @@ export const useAnalyticsTracking = () => {
 
       try {
         const sessionData: SessionData = JSON.parse(stored);
-        const timeSpent = Math.round((now - pageStartTimeRef.current) / 1000);
+        const timeSpent = getActiveSeconds();
 
         // Only write if the user actually spent meaningful time on the page
         if (timeSpent < 2) return;
