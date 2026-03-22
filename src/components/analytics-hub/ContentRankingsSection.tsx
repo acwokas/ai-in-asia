@@ -85,7 +85,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
             {data.categories.map(c => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
           </SelectContent>
         </Select>
-        <span className="text-xs text-muted-foreground">{totalArticles.toLocaleString()} articles · avg score {avgEngagement.toLocaleString()}</span>
+        <span className="text-xs text-muted-foreground">{(totalArticles ?? 0).toLocaleString()} articles · avg score {(avgEngagement ?? 0).toLocaleString()}</span>
       </div>
 
       <div>
@@ -116,16 +116,17 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
         }
 
         // Top article deep analysis
-        const topArticle = top10[0];
-        const secondArticle = top10[1];
+        const topArticle = top10?.[0];
+        const secondArticle = top10?.[1];
         if (topArticle) {
-          const title = topArticle.title.length > 45 ? topArticle.title.slice(0, 42) + "…" : topArticle.title;
+          const safeTitle = topArticle?.title ?? "Untitled";
+          const title = safeTitle.length > 45 ? safeTitle.slice(0, 42) + "…" : safeTitle;
           const pubDate = topArticle.published_at ? new Date(topArticle.published_at) : null;
           const dayOfWeek = pubDate ? pubDate.toLocaleDateString("en-US", { weekday: "long" }) : null;
           const catName = getCategoryName(topArticle.primary_category_id);
-          const ratio = secondArticle && secondArticle.engagement > 0 ? (topArticle.engagement / secondArticle.engagement).toFixed(1) : null;
+          const ratio = secondArticle && (secondArticle?.engagement ?? 0) > 0 ? ((topArticle?.engagement ?? 0) / (secondArticle?.engagement ?? 1)).toFixed(1) : null;
           tips.push(
-            `1. #1 article "${title}" scores ${topArticle.engagement.toLocaleString()} (${topArticle.view_count.toLocaleString()} views, ${topArticle.like_count.toLocaleString()} likes, ${topArticle.comment_count.toLocaleString()} comments)` +
+            `1. #1 article "${title}" scores ${(topArticle?.engagement ?? 0).toLocaleString()} (${(topArticle?.view_count ?? 0).toLocaleString()} views, ${(topArticle?.like_count ?? 0).toLocaleString()} likes, ${(topArticle?.comment_count ?? 0).toLocaleString()} comments)` +
             (catName !== "—" ? ` in ${catName}` : "") +
             (dayOfWeek ? `, published on a ${dayOfWeek}` : "") +
             (ratio ? `, ${ratio}x more than #2` : "") +
@@ -148,20 +149,20 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
         if (topCat && weakCat && sortedCats.length >= 2) {
           const topAvg = Math.round(topCat[1].totalEng / topCat[1].count);
           const weakAvg = Math.round(weakCat[1].totalEng / weakCat[1].count);
-          tips.push(`2. "${topCat[0]}" is your strongest category (${topAvg.toLocaleString()} avg engagement across ${topCat[1].count} articles). "${weakCat[0]}" is weakest (${weakAvg.toLocaleString()} avg, ${weakCat[1].count} articles). Consider: publish more in ${topCat[0]}, and for ${weakCat[0]} either refresh underperforming articles or consolidate thin content into fewer, stronger pieces.`);
+          tips.push(`2. "${topCat[0]}" is your strongest category (${(topAvg ?? 0).toLocaleString()} avg engagement across ${topCat[1].count} articles). "${weakCat[0]}" is weakest (${(weakAvg ?? 0).toLocaleString()} avg, ${weakCat[1].count} articles). Consider: publish more in ${topCat[0]}, and for ${weakCat[0]} either refresh underperforming articles or consolidate thin content into fewer, stronger pieces.`);
         } else if (topCat) {
           const topAvg = Math.round(topCat[1].totalEng / topCat[1].count);
-          tips.push(`2. "${topCat[0]}" leads with ${topAvg.toLocaleString()} avg engagement across ${topCat[1].count} articles. Publish more in this category to capitalise on proven reader interest.`);
+          tips.push(`2. "${topCat[0]}" leads with ${(topAvg ?? 0).toLocaleString()} avg engagement across ${topCat[1].count} articles. Publish more in this category to capitalise on proven reader interest.`);
         }
 
         // Bottom 10 analysis
         if (bottom10.length > 0) {
           const avgBottomViews = Math.round(bottom10.reduce((s, a) => s + a.view_count, 0) / bottom10.length);
           if (avgBottomViews < 50) {
-            tips.push(`3. Bottom 10 articles average only ${avgBottomViews.toLocaleString()} views. Three options: (a) add internal links from your top 10 articles to drive traffic, (b) consolidate thin articles into comprehensive pillar content, (c) set up 301 redirects from dead content to related high-performers.`);
+            tips.push(`3. Bottom 10 articles average only ${(avgBottomViews ?? 0).toLocaleString()} views. Three options: (a) add internal links from your top 10 articles to drive traffic, (b) consolidate thin articles into comprehensive pillar content, (c) set up 301 redirects from dead content to related high-performers.`);
           } else {
             const avgBottom = Math.round(bottom10.reduce((s, a) => s + a.engagement, 0) / bottom10.length);
-            tips.push(`3. Bottom 10 average ${avgBottom.toLocaleString()} engagement (${avgBottomViews.toLocaleString()} views). They're getting traffic but not sparking interaction — add discussion questions at the end, enable comments, or rewrite headlines to set clearer expectations.`);
+            tips.push(`3. Bottom 10 average ${(avgBottom ?? 0).toLocaleString()} engagement (${(avgBottomViews ?? 0).toLocaleString()} views). They're getting traffic but not sparking interaction — add discussion questions at the end, enable comments, or rewrite headlines to set clearer expectations.`);
           }
         }
 
@@ -192,10 +193,10 @@ const RankingTable = ({ title, articles, getCategoryName }: { title: string; art
             <TableCell className="font-medium text-muted-foreground">{i + 1}</TableCell>
             <TableCell className="max-w-[220px] truncate text-xs">{a.title}</TableCell>
             <TableCell><Badge variant="outline" className="text-[10px]">{getCategoryName(a.primary_category_id)}</Badge></TableCell>
-            <TableCell className="text-right font-mono text-xs">{a.view_count.toLocaleString()}</TableCell>
-            <TableCell className="text-right font-mono text-xs">{a.like_count.toLocaleString()}</TableCell>
-            <TableCell className="text-right font-mono text-xs">{a.comment_count.toLocaleString()}</TableCell>
-            <TableCell className="text-right font-mono text-xs font-bold">{a.engagement.toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.view_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.like_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs">{(a?.comment_count ?? 0).toLocaleString()}</TableCell>
+            <TableCell className="text-right font-mono text-xs font-bold">{(a?.engagement ?? 0).toLocaleString()}</TableCell>
           </TableRow>
         ))}
       </TableBody>

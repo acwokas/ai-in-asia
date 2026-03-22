@@ -176,6 +176,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
     sessions: p.sessions,
     fill: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.Other,
   }));
+  const topCampaignMax = d?.topCampaigns?.[0]?.count ?? 0;
 
   // Build insights
   const tips: string[] = [];
@@ -185,7 +186,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   } else {
     const topPlatform = d.platforms[0];
     if (topPlatform) {
-      tips.push(`1. ${topPlatform.name} drives ${topPlatform.pct}% of social traffic (${topPlatform.sessions} sessions). ${topPlatform.bounceRate > 60 ? `Bounce rate is ${topPlatform.bounceRate}% — consider creating platform-specific landing pages with clearer CTAs.` : `Engagement is solid (${topPlatform.avgDuration}s avg duration). Double down on this channel.`}`);
+      tips.push(`1. ${topPlatform.name} drives ${topPlatform.pct}% of social traffic (${(topPlatform.sessions ?? 0).toLocaleString()} sessions). ${topPlatform.bounceRate > 60 ? `Bounce rate is ${topPlatform.bounceRate}% — consider creating platform-specific landing pages with clearer CTAs.` : `Engagement is solid (${topPlatform.avgDuration}s avg duration). Double down on this channel.`}`);
     }
     const weakPlatforms = d.platforms.filter(p => p.sessions < 5);
     if (weakPlatforms.length > 0) {
@@ -202,7 +203,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Social Sessions</p>
-          <p className="text-2xl font-bold">{d.totalSocial.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{(d.totalSocial ?? 0).toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">{socialPct}% of total</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
@@ -253,7 +254,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
                 {d.platforms.map((p) => (
                   <TableRow key={p.name}>
                     <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell className="text-right">{p.sessions}</TableCell>
+                    <TableCell className="text-right">{(p?.sessions ?? 0).toLocaleString()}</TableCell>
                     <TableCell className="text-right">{p.avgDuration}s</TableCell>
                     <TableCell className="text-right">{p.bounceRate}%</TableCell>
                   </TableRow>
@@ -272,8 +273,8 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
             {d.topCampaigns.slice(0, 5).map((c) => (
               <div key={c.name} className="flex items-center gap-3">
                 <span className="text-sm truncate flex-1 min-w-0">{c.name}</span>
-                <Progress value={(c.count / d.topCampaigns[0].count) * 100} className="w-32 h-2" />
-                <Badge variant="secondary" className="text-xs">{c.count}</Badge>
+                <Progress value={topCampaignMax > 0 ? ((c?.count ?? 0) / topCampaignMax) * 100 : 0} className="w-32 h-2" />
+                <Badge variant="secondary" className="text-xs">{(c?.count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
