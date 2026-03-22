@@ -83,7 +83,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         const p = pv?.page_path || "/";
         if (!pageCounts[p]) pageCounts[p] = { views: 0, avgTime: 0, avgScroll: 0 };
         pageCounts[p].views++;
-        pageCounts[p].avgTime += pv?.time_on_page_seconds ?? 0;
+        pageCounts[p].avgTime += Math.min(pv?.time_on_page_seconds ?? 0, 1800);
         pageCounts[p].avgScroll += pv?.scroll_depth_percent ?? 0;
       });
       const topPages = Object.entries(pageCounts)
