@@ -37,9 +37,17 @@ const ThreeBeforeNineTicker = memo(() => {
   // Double for seamless loop
   const items = [...bullets, ...bullets];
 
+  const handleClick = useCallback(() => {
+    dualPush("briefing_ticker_click", {
+      briefing_date: data.published_at,
+      ticker_position: "homepage_top",
+    });
+  }, [data.published_at]);
+
   return (
     <Link
       to={articleUrl}
+      onClick={handleClick}
       className="block overflow-hidden border-y group ticker-3b9-strip"
     >
       <div className="container mx-auto px-4 py-[7px] flex flex-col gap-1 md:flex-row md:items-center md:gap-3 min-w-0">
