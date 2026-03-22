@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { EmptyDataNotice } from "./EmptyDataNotice";
+import { InsightCard } from "./InsightCard";
 
 interface Props {
   startDate: string;
