@@ -7,14 +7,15 @@ export interface AnalyticsSessionStats {
   avgEngagement: number;
 }
 
-const RPC_TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 10_000;
 
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Query timed out")), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Query timed out")), ms)
+    ),
+  ]);
 }
 
 export const useAnalyticsSessionStats = (startDate: string, range: string) => {
@@ -23,47 +24,32 @@ export const useAnalyticsSessionStats = (startDate: string, range: string) => {
     queryFn: async () => {
       const endDate = new Date().toISOString();
 
-      const sessionsPromise = withTimeout(
-        supabase
-          .from("analytics_sessions")
-          .select("id", { count: "exact", head: true })
-          .gte("started_at", startDate),
-        RPC_TIMEOUT_MS,
-      );
-
-      const uniquePromise = withTimeout(
-        supabase.rpc("get_unique_visitors", {
-          p_start: startDate,
-          p_end: endDate,
-        }),
-        RPC_TIMEOUT_MS,
-      );
-
-      const engagementPromise = withTimeout(
-        supabase.rpc("get_avg_engagement", {
-          p_start: startDate,
-          p_end: endDate,
-        }),
-        RPC_TIMEOUT_MS,
-      );
-
-      const [sessionsRes, uniqueRes, engagementRes] = await Promise.allSettled([
-        sessionsPromise,
-        uniquePromise,
-        engagementPromise,
+      const results = await Promise.allSettled([
+        withTimeout(
+          supabase
+            .from("analytics_sessions")
+            .select("id", { count: "exact", head: true })
+            .gte("started_at", startDate),
+          TIMEOUT_MS,
+        ),
+        withTimeout(
+          supabase.rpc("get_unique_visitors", { p_start: startDate, p_end: endDate }),
+          TIMEOUT_MS,
+        ),
+        withTimeout(
+          supabase.rpc("get_avg_engagement", { p_start: startDate, p_end: endDate }),
+          TIMEOUT_MS,
+        ),
       ]);
 
+      const sessionsRes = results[0].status === "fulfilled" ? results[0].value : null;
+      const uniqueRes = results[1].status === "fulfilled" ? results[1].value : null;
+      const engagementRes = results[2].status === "fulfilled" ? results[2].value : null;
+
       return {
-        totalSessions:
-          sessionsRes.status === "fulfilled" ? (sessionsRes.value.count ?? 0) : 0,
-        uniqueVisitors:
-          uniqueRes.status === "fulfilled"
-            ? ((uniqueRes.value.data as number) ?? 0)
-            : 0,
-        avgEngagement:
-          engagementRes.status === "fulfilled"
-            ? ((engagementRes.value.data as number) ?? 0)
-            : 0,
+        totalSessions: (sessionsRes as any)?.count ?? 0,
+        uniqueVisitors: ((uniqueRes as any)?.data as number) ?? 0,
+        avgEngagement: ((engagementRes as any)?.data as number) ?? 0,
       };
     },
     staleTime: 3 * 60 * 1000,
