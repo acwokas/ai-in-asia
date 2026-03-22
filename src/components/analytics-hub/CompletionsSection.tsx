@@ -143,20 +143,22 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         const totalComplete = data.milestones["article_read_complete"];
 
         if (total25 > 0 && rate < 25) {
-          tips.push(`1. ${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
+          tips.push(`1. ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
         } else if (rate >= 25 && rate < 45) {
-          tips.push(`1. ${rate}% completion rate across ${total25.toLocaleString()} readers — approaching the 35-45% industry benchmark. ${data.dropoff50to75}% drop off between 50-75%. Try breaking long-form content into scannable sections with subheadings, pull quotes, or mid-article "Key Takeaway" callouts.`);
+          tips.push(`1. ${rate}% completion rate across ${(total25 ?? 0).toLocaleString()} readers — approaching the 35-45% industry benchmark. ${data.dropoff50to75}% drop off between 50-75%. Try breaking long-form content into scannable sections with subheadings, pull quotes, or mid-article "Key Takeaway" callouts.`);
         } else if (rate >= 45) {
-          tips.push(`1. Excellent ${rate}% completion rate — ${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers finish, well above the 35-45% industry benchmark. Your content structure is working. Document what's different about your top-completing articles and standardise that format.`);
+          tips.push(`1. Excellent ${rate}% completion rate — ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers finish, well above the 35-45% industry benchmark. Your content structure is working. Document what's different about your top-completing articles and standardise that format.`);
         }
 
-        const topArticle = (data.topCompleted)[0];
-        const secondArticle = (data.topCompleted)[1];
+        const topArticle = data?.topCompleted?.[0];
+        const secondArticle = data?.topCompleted?.[1];
         if (topArticle && secondArticle && secondArticle.count > 0) {
-          const ratio = (topArticle.count / secondArticle.count).toFixed(1);
-          tips.push(`2. "${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions (${ratio}x more than #2). Study what makes it sticky — headline style, topic, length, publish timing — and replicate that formula.`);
+          const ratio = (((topArticle?.count ?? 0) / (secondArticle?.count ?? 1))).toFixed(1);
+          const topName = topArticle?.fullName ?? "Untitled";
+          tips.push(`2. "${topName.length > 50 ? topName.slice(0, 47) + '…' : topName}" leads with ${(topArticle?.count ?? 0).toLocaleString()} completions (${ratio}x more than #2). Study what makes it sticky — headline style, topic, length, publish timing — and replicate that formula.`);
         } else if (topArticle) {
-          tips.push(`2. "${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions. Create more content in this topic/format to capitalise on proven reader interest.`);
+          const topName = topArticle?.fullName ?? "Untitled";
+          tips.push(`2. "${topName.length > 50 ? topName.slice(0, 47) + '…' : topName}" leads with ${(topArticle?.count ?? 0).toLocaleString()} completions. Create more content in this topic/format to capitalise on proven reader interest.`);
         }
 
         if (data.guideViewCount === 0) {
@@ -194,7 +196,7 @@ function topCompletedContent(data: any) {
           {data.topCompleted.map((row: any) => (
             <TableRow key={row.fullName}>
               <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
-              <TableCell className="text-right font-medium">{row.count.toLocaleString()}</TableCell>
+              <TableCell className="text-right font-medium">{(row?.count ?? 0).toLocaleString()}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -206,7 +208,7 @@ function topCompletedContent(data: any) {
 const StatRow = ({ label, value }: { label: string; value: string | number }) => (
   <div className="flex justify-between items-center p-2 rounded border">
     <span className="text-sm text-muted-foreground">{label}</span>
-    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? value.toLocaleString() : value}</Badge>
+    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? (value ?? 0).toLocaleString() : value}</Badge>
   </div>
 );
 

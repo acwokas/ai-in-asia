@@ -126,7 +126,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({data.totalNavEvents.toLocaleString()} events)</h4>
+        <h4 className="text-sm font-medium mb-3">Most Clicked Elements ({(data.totalNavEvents ?? 0).toLocaleString()} events)</h4>
         {data.clickedElements.length ? (
           <ChartContainer config={{ count: { label: "Clicks", color: "hsl(var(--primary))" } }} className="h-[300px]">
             <BarChart data={data.clickedElements} layout="vertical" margin={{ left: 120 }}>
@@ -143,7 +143,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
       </div>
 
       <div>
-        <h4 className="text-sm font-medium mb-3">Top Pages ({data.totalPageviews.toLocaleString()} pageviews)</h4>
+        <h4 className="text-sm font-medium mb-3">Top Pages ({(data.totalPageviews ?? 0).toLocaleString()} pageviews)</h4>
         <Table>
           <TableHeader>
             <TableRow>
@@ -157,9 +157,9 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {data.topPages.map(p => (
               <TableRow key={p.path}>
                 <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
-                <TableCell className="text-right font-mono text-xs">{p.views.toLocaleString()}</TableCell>
-                <TableCell className="text-right text-xs">{p.avgTime.toLocaleString()}s</TableCell>
-                <TableCell className="text-right text-xs">{p.avgScroll.toLocaleString()}%</TableCell>
+                <TableCell className="text-right font-mono text-xs">{(p?.views ?? 0).toLocaleString()}</TableCell>
+                <TableCell className="text-right text-xs">{(p?.avgTime ?? 0).toLocaleString()}s</TableCell>
+                <TableCell className="text-right text-xs">{(p?.avgScroll ?? 0).toLocaleString()}%</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -173,7 +173,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {data.topReferrers.map(r => (
               <div key={r.domain} className="flex justify-between text-xs border rounded p-2">
                 <span className="truncate">{r.domain}</span>
-                <Badge variant="secondary" className="text-[10px]">{r.count.toLocaleString()}</Badge>
+                <Badge variant="secondary" className="text-[10px]">{(r?.count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
@@ -184,7 +184,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {Object.entries(data.deviceCounts).map(([device, count]) => (
               <div key={device} className="flex justify-between text-xs border rounded p-2">
                 <span className="capitalize">{device}</span>
-                <Badge variant="outline" className="text-[10px]">{(count as number).toLocaleString()}</Badge>
+                <Badge variant="outline" className="text-[10px]">{((count as number) ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
@@ -195,7 +195,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
             {data.topExits.map(e => (
               <div key={e.path} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[140px]">{e.path}</span>
-                <Badge variant="secondary" className="text-[10px]">{e.count.toLocaleString()}</Badge>
+                <Badge variant="secondary" className="text-[10px]">{(e?.count ?? 0).toLocaleString()}</Badge>
               </div>
             ))}
           </div>
@@ -217,24 +217,24 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         const topEl = data.clickedElements[0];
         if (topEl && totalNav > 0) {
           const pct = Math.round((topEl.count / totalNav) * 100);
-          tips.push(`1. "${topEl.fullName}" captures ${pct}% of all nav interactions (${topEl.count.toLocaleString()} clicks). This is your most-used navigation element — ensure your highest-priority content (flagship articles, conversion pages) is accessible from this position.`);
+          tips.push(`1. "${topEl.fullName}" captures ${pct}% of all nav interactions (${(topEl?.count ?? 0).toLocaleString()} clicks). This is your most-used navigation element — ensure your highest-priority content (flagship articles, conversion pages) is accessible from this position.`);
         }
 
         // Low scroll depth on top page
         const lowScrollPages = data.topPages.filter(p => p.avgScroll < 30 && p.views > 20);
         if (lowScrollPages.length > 0) {
           const worst = lowScrollPages[0];
-          tips.push(`2. ⚠️ "${worst.path}" gets ${worst.views.toLocaleString()} views but only ${worst.avgScroll}% avg scroll depth. Readers aren't engaging beyond the fold. Restructure: move the key value proposition or most compelling content higher, reduce hero image height, and add a visible "Read more" indicator.`);
+           tips.push(`2. ⚠️ "${worst.path}" gets ${(worst?.views ?? 0).toLocaleString()} views but only ${worst.avgScroll}% avg scroll depth. Readers aren't engaging beyond the fold. Restructure: move the key value proposition or most compelling content higher, reduce hero image height, and add a visible "Read more" indicator.`);
         } else if (data.topPages.length > 0) {
           const bestScroll = data.topPages.reduce((best, p) => p.avgScroll > best.avgScroll ? p : best, data.topPages[0]);
-          tips.push(`2. Best scroll depth: "${bestScroll.path}" at ${bestScroll.avgScroll}% across ${bestScroll.views.toLocaleString()} views. Use this page's content structure as a template for other pages.`);
+           tips.push(`2. Best scroll depth: "${bestScroll.path}" at ${bestScroll.avgScroll}% across ${(bestScroll?.views ?? 0).toLocaleString()} views. Use this page's content structure as a template for other pages.`);
         }
 
         // Exit pages
         const topExit = data.topExits[0];
         if (topExit && totalPV > 0) {
           const exitPct = Math.round((topExit.count / totalPV) * 100);
-          tips.push(`3. Top exit page: "${topExit.path}" accounts for ${topExit.count.toLocaleString()} exits (${exitPct}% of pageviews). Reduce drop-off by adding a "You might also like" section, a newsletter signup CTA, or a sticky "Next Article" bar at the bottom.`);
+          tips.push(`3. Top exit page: "${topExit.path}" accounts for ${(topExit?.count ?? 0).toLocaleString()} exits (${exitPct}% of pageviews). Reduce drop-off by adding a "You might also like" section, a newsletter signup CTA, or a sticky "Next Article" bar at the bottom.`);
         }
 
         return tips;
