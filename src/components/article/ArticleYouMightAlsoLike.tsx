@@ -82,12 +82,10 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
               to={slug}
               className="group block rounded-lg overflow-hidden border border-border/40 hover:-translate-y-0.5 transition-all duration-200"
               style={{ background: "hsl(var(--card))" }}
-              onClick={() =>
-                dualPush("related_article_click", {
-                  article_title: a.title,
-                  article_slug: a.slug,
-                })
-              }
+              onClick={() => {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({ event: "related_article_click", article_title: a.title, article_slug: a.slug });
+              }}
             >
               <div className="aspect-[16/9] overflow-hidden">
                 <ArticleFallbackImage

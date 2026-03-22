@@ -39,7 +39,7 @@ export const ArticleRelatedSection = ({
         <h2 className="headline text-3xl mb-8">You may also like:</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {relatedArticles.map((article) => (
-            <div key={article.id} onClick={() => dualPush("related_article_click", { article_title: article.title, article_slug: article.slug })}>
+            <div key={article.id} onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
               <ArticleCard
                 title={article.title}
                 excerpt={article.excerpt || ""}

@@ -120,7 +120,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         {/* Remaining articles */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
           {restArticles.map((article: any) => (
-            <div key={article.id} onClick={() => dualPush("related_article_click", { article_title: article.title, article_slug: article.slug })}>
+            <div key={article.id} onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
               <ArticleCard
                 title={article.title}
                 excerpt={article.excerpt || ""}
