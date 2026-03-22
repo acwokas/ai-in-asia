@@ -4,6 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Json } from '@/integrations/supabase/types';
 
+declare global {
+  interface Window {
+    dataLayer?: any[];
+  }
+}
+
 const SESSION_KEY = 'aiia_session_id';
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
