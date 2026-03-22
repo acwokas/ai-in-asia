@@ -67,6 +67,25 @@ const getReferrerDomain = (referrer: string) => {
   }
 };
 
+// Fire-and-forget geo lookup — one call per session
+const fetchGeoCountry = async (sessionId: string) => {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return;
+    const geo = await res.json();
+    const country = geo?.country_name || null;
+    const city = geo?.city || null;
+    if (country) {
+      await supabase
+        .from('analytics_sessions')
+        .update({ country, city })
+        .eq('session_id', sessionId);
+    }
+  } catch {
+    // Silent fail — geo is best-effort
+  }
+};
+
 // Global event tracking function (can be used outside React components)
 export const trackAnalyticsEvent = async (
   eventName: string, 
