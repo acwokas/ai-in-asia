@@ -1,0 +1,1 @@
+UPDATE articles SET slug = REPLACE(slug, ' ', '-') WHERE slug LIKE '% %';
