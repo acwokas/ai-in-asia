@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { InsightCard } from "./InsightCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
