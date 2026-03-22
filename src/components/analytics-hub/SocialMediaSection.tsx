@@ -285,41 +285,8 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       const published: PublerPost[] = Array.isArray(publishedRaw) ? publishedRaw : publishedRaw?.posts || [];
       const scheduled: PublerPost[] = Array.isArray(scheduledRaw) ? scheduledRaw : scheduledRaw?.posts || [];
 
-      // 3) Fetch per-account post insights for engagement data
-      const insightsByPostId: Record<string, any> = {};
-      try {
-        const insightPromises = accounts.map(async (acct) => {
-          try {
-            const insights = await callPublerProxy(`analytics/${acct.id}/post_insights`, { per_page: "100" });
-            const posts = Array.isArray(insights) ? insights : insights?.posts || insights?.data || [];
-            for (const post of posts) {
-              if (post?.id || post?.post_id) {
-                insightsByPostId[post.id || post.post_id] = post;
-              }
-            }
-          } catch (_e) {
-            // Individual account insights may fail; continue
-          }
-        });
-        await Promise.all(insightPromises);
-      } catch (_e) {
-        // Non-fatal: insights are supplementary
-      }
-
-      // Merge insights into published posts
-      const enrichedPublished = published.map(p => {
-        const insight = insightsByPostId[p.id || ""];
-        if (!insight) return p;
-        return {
-          ...p,
-          likes: Number(insight.likes ?? insight.reactions ?? p.likes) || 0,
-          comments: typeof insight.comments === "number" ? insight.comments : (typeof p.comments === "number" ? p.comments : 0),
-          shares: Number(insight.shares ?? insight.reposts ?? p.shares) || 0,
-          impressions: Number(insight.impressions ?? insight.reach ?? p.impressions) || 0,
-          clicks: Number(insight.clicks ?? insight.link_clicks ?? p.clicks) || 0,
-          engagement: Number(insight.engagement ?? insight.total_engagement) || 0,
-        };
-      });
+      // Use published posts directly — Publer's post_insights endpoint is not available
+      const enrichedPublished = published;
 
       const allPosts = [...enrichedPublished.map(p => ({ ...p, _state: "published" as const })), ...scheduled.map(p => ({ ...p, _state: "scheduled" as const }))];
 
