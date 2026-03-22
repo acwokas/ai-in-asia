@@ -6,6 +6,7 @@ import { Flame, BookOpen } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { dualPush } from "@/lib/dualTrack";
 
 type CombinedItem =
   | { type: "article"; id: string; title: string; slug: string; featured_image_url: string | null; categories: { name: string; slug: string } | null }
@@ -111,13 +112,14 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
 
       {/* Cards row — horizontal scroll on mobile */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-6 md:overflow-visible md:pb-0">
-        {combined.map((item) => {
+        {combined.map((item, index) => {
           if (item.type === "guide") {
             return (
               <Link
                 key={`guide-${item.id}`}
                 to={`/guides/${((item as any).topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${item.slug}`}
                 className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
+                onClick={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
                 style={{
                   background: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
@@ -156,6 +158,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
               key={`article-${item.id}`}
               to={`/${catSlug}/${item.slug}`}
               className="group flex-shrink-0 w-[160px] md:w-auto snap-start rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1"
+              onClick={() => dualPush("trending_article_click", { article_title: item.title, position: index })}
               style={{
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",

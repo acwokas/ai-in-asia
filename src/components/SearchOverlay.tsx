@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
 import { trackEvent } from "@/components/GoogleAnalytics";
+import { dualPush } from "@/lib/dualTrack";
 
 interface SearchResult {
   id: string;
@@ -96,6 +97,9 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (query.trim()) {
+      dualPush("search_performed", { search_term: query.trim() });
+    }
     handleSeeAll();
   };
 

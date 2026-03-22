@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { TrendingUp } from "lucide-react";
+import { dualPush } from "@/lib/dualTrack";
 
 const TrendingStrip = memo(() => {
   const { data: trending } = useQuery({
@@ -55,6 +56,7 @@ const TrendingStrip = memo(() => {
                 <Link
                   to={`/${a.categories?.slug || "news"}/${a.slug}`}
                   className="text-[14px] text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => dualPush("trending_article_click", { article_title: a.title, position: i % (trending?.length || 1) })}
                 >
                   {truncate(a.title)}
                 </Link>

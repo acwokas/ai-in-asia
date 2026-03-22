@@ -2,6 +2,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
+import { dualPush } from "@/lib/dualTrack";
 
 interface RelatedArticle {
   id: string;
@@ -38,18 +39,19 @@ export const ArticleRelatedSection = ({
         <h2 className="headline text-3xl mb-8">You may also like:</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {relatedArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              title={article.title}
-              excerpt={article.excerpt || ""}
-              category={article.categories?.name || ""}
-              categorySlug={article.categories?.slug || "uncategorized"}
-              author={article.authors?.name || ""}
-              readTime={`${article.reading_time_minutes || 5} min read`}
-              image={article.featured_image_url || ""}
-              slug={article.slug}
-              commentCount={article.comment_count || 0}
-            />
+            <div key={article.id} onClick={() => dualPush("related_article_click", { article_title: article.title, article_slug: article.slug })}>
+              <ArticleCard
+                title={article.title}
+                excerpt={article.excerpt || ""}
+                category={article.categories?.name || ""}
+                categorySlug={article.categories?.slug || "uncategorized"}
+                author={article.authors?.name || ""}
+                readTime={`${article.reading_time_minutes || 5} min read`}
+                image={article.featured_image_url || ""}
+                slug={article.slug}
+                commentCount={article.comment_count || 0}
+              />
+            </div>
           ))}
           
           {/* External Link Card for SEO */}

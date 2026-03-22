@@ -21,7 +21,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         supabase
           .from("analytics_events")
           .select("event_name, event_data, page_path, created_at")
-          .in("event_name", ["article_read_complete", "article_read_75", "article_read_50", "article_read_25"])
+          .in("event_name", ["article_complete", "article_read_75", "article_read_50", "article_read_25"])
           .gte("created_at", startDate)
           .order("created_at", { ascending: false })
           .limit(500),
@@ -40,11 +40,11 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         "article_read_25": events.filter(e => e.event_name === "article_read_25").length,
         "article_read_50": events.filter(e => e.event_name === "article_read_50").length,
         "article_read_75": events.filter(e => e.event_name === "article_read_75").length,
-        "article_read_complete": events.filter(e => e.event_name === "article_read_complete").length,
+        "article_complete": events.filter(e => e.event_name === "article_complete").length,
       };
 
       const titleCounts: Record<string, number> = {};
-      events.filter(e => e.event_name === "article_read_complete").forEach(e => {
+      events.filter(e => e.event_name === "article_complete").forEach(e => {
         const ed = e.event_data as any;
         const label = ed?.article_title || ed?.title || e.page_path || "unknown";
         titleCounts[label] = (titleCounts[label] || 0) + 1;
@@ -64,7 +64,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         ? Math.round(guideViews.reduce((s, g) => s + Math.min(g?.time_on_page_seconds ?? 0, 1800), 0) / guideViews.length) : 0;
 
       const completionRate = milestones["article_read_25"] > 0
-        ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100) : 0;
+        ? Math.round((milestones["article_complete"] / milestones["article_read_25"]) * 100) : 0;
       const dropoff25to50 = milestones["article_read_25"] > 0
         ? Math.round(((milestones["article_read_25"] - milestones["article_read_50"]) / milestones["article_read_25"]) * 100) : 0;
       const dropoff50to75 = milestones["article_read_50"] > 0
@@ -99,7 +99,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
     { stage: "25%", count: data.milestones["article_read_25"] },
     { stage: "50%", count: data.milestones["article_read_50"] },
     { stage: "75%", count: data.milestones["article_read_75"] },
-    { stage: "Complete", count: data.milestones["article_read_complete"] },
+    { stage: "Complete", count: data.milestones["article_complete"] },
   ];
 
   return (
@@ -140,7 +140,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         const tips: string[] = [];
         const rate = data.completionRate;
         const total25 = data.milestones["article_read_25"];
-        const totalComplete = data.milestones["article_read_complete"];
+        const totalComplete = data.milestones["article_complete"];
 
         if (total25 > 0 && rate < 25) {
           tips.push(`1. ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);

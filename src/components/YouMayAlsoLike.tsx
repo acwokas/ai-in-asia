@@ -4,6 +4,7 @@ import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
 import { memo, Fragment } from "react";
 import { MPUAd } from "./GoogleAds";
+import { dualPush } from "@/lib/dualTrack";
 
 interface YouMayAlsoLikeProps {
   excludeIds?: string[];
@@ -74,19 +75,21 @@ const YouMayAlsoLikeComponent = ({ excludeIds = [], skipCount = 0 }: YouMayAlsoL
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {articles.map((article, index) => (
           <Fragment key={article.id}>
-            <ArticleCard
-              title={article.title}
-              excerpt={article.excerpt || ""}
-              category={article.categories?.name || "Uncategorized"}
-              categorySlug={article.categories?.slug || "news"}
-              author={article.authors?.name || "Intelligence Desk"}
-              readTime={`${article.reading_time_minutes || 5} min read`}
-              image={article.featured_image_url || "/placeholder.svg"}
-              slug={article.slug}
-              isTrending={article.is_trending || false}
-              commentCount={article.comment_count || 0}
-              publishedAt={article.published_at}
-            />
+            <div onClick={() => dualPush("related_article_click", { article_title: article.title, article_slug: article.slug })}>
+              <ArticleCard
+                title={article.title}
+                excerpt={article.excerpt || ""}
+                category={article.categories?.name || "Uncategorized"}
+                categorySlug={article.categories?.slug || "news"}
+                author={article.authors?.name || "Intelligence Desk"}
+                readTime={`${article.reading_time_minutes || 5} min read`}
+                image={article.featured_image_url || "/placeholder.svg"}
+                slug={article.slug}
+                isTrending={article.is_trending || false}
+                commentCount={article.comment_count || 0}
+                publishedAt={article.published_at}
+              />
+            </div>
             {index === 6 && (
               <div className="flex items-center justify-center">
                 <MPUAd />

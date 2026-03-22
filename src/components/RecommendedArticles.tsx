@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { dualPush } from "@/lib/dualTrack";
 
 interface RecommendedArticlesProps {
   excludeIds?: string[];
@@ -78,6 +79,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
           <Link
             to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
+            onClick={() => dualPush("related_article_click", { article_title: featuredArticle.title, article_slug: featuredArticle.slug })}
           >
             <div className="relative aspect-[16/10] overflow-hidden">
               <ArticleFallbackImage
@@ -118,20 +120,21 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
         {/* Remaining articles */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
           {restArticles.map((article: any) => (
-            <ArticleCard
-              key={article.id}
-              title={article.title}
-              excerpt={article.excerpt || ""}
-              category={article.categories?.name || ""}
-              categorySlug={article.categories?.slug || "uncategorized"}
-              author={article.authors?.name || "Intelligence Desk"}
-              readTime={`${article.reading_time_minutes || 5} min read`}
-              image={article.featured_image_url || ""}
-              slug={article.slug}
-              isTrending={article.is_trending || false}
-              commentCount={article.comment_count || 0}
-              publishedAt={article.published_at}
-            />
+            <div key={article.id} onClick={() => dualPush("related_article_click", { article_title: article.title, article_slug: article.slug })}>
+              <ArticleCard
+                title={article.title}
+                excerpt={article.excerpt || ""}
+                category={article.categories?.name || ""}
+                categorySlug={article.categories?.slug || "uncategorized"}
+                author={article.authors?.name || "Intelligence Desk"}
+                readTime={`${article.reading_time_minutes || 5} min read`}
+                image={article.featured_image_url || ""}
+                slug={article.slug}
+                isTrending={article.is_trending || false}
+                commentCount={article.comment_count || 0}
+                publishedAt={article.published_at}
+              />
+            </div>
           ))}
           {/* Ad card styled to match grid */}
           <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
