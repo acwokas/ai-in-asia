@@ -37,12 +37,12 @@ const ThreeBeforeNineTicker = memo(() => {
   // Double for seamless loop
   const items = [...bullets, ...bullets];
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     dualPush("briefing_ticker_click", {
       briefing_date: data.published_at,
       ticker_position: "homepage_top",
     });
-  }, [data.published_at]);
+  };
 
   return (
     <Link
