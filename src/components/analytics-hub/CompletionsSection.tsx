@@ -44,53 +44,36 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       };
 
       const titleCounts: Record<string, number> = {};
-      (events ?? [])
-        .filter(e => e.event_name === "article_read_complete")
-        .forEach(e => {
-          const ed = e.event_data as any;
-          const label = ed?.article_title || ed?.title || e.page_path || "unknown";
-          titleCounts[label] = (titleCounts[label] || 0) + 1;
-        });
+      events.filter(e => e.event_name === "article_read_complete").forEach(e => {
+        const ed = e.event_data as any;
+        const label = ed?.article_title || ed?.title || e.page_path || "unknown";
+        titleCounts[label] = (titleCounts[label] || 0) + 1;
+      });
       const topCompleted = Object.entries(titleCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
         .map(([name, count]) => ({
-          name: (name ?? "unknown").length > 40 ? (name ?? "unknown").slice(0, 37) + "…" : (name ?? "unknown"),
-          fullName: name ?? "unknown",
-          count: count ?? 0,
+          name: name.length > 40 ? name.slice(0, 37) + "…" : name,
+          fullName: name,
+          count,
         }));
 
       const avgGuideScroll = guideViews.length > 0
-        ? Math.round((guideViews ?? []).reduce((s, g) => s + (g?.scroll_depth_percent ?? 0), 0) / guideViews.length)
-        : 0;
+        ? Math.round(guideViews.reduce((s, g) => s + (g?.scroll_depth_percent ?? 0), 0) / guideViews.length) : 0;
       const avgGuideTime = guideViews.length > 0
-        ? Math.round((guideViews ?? []).reduce((s, g) => s + (g?.time_on_page_seconds ?? 0), 0) / guideViews.length)
-        : 0;
+        ? Math.round(guideViews.reduce((s, g) => s + (g?.time_on_page_seconds ?? 0), 0) / guideViews.length) : 0;
 
       const completionRate = milestones["article_read_25"] > 0
-        ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100)
-        : 0;
-
-      // Drop-off between stages
+        ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100) : 0;
       const dropoff25to50 = milestones["article_read_25"] > 0
-        ? Math.round(((milestones["article_read_25"] - milestones["article_read_50"]) / milestones["article_read_25"]) * 100)
-        : 0;
+        ? Math.round(((milestones["article_read_25"] - milestones["article_read_50"]) / milestones["article_read_25"]) * 100) : 0;
       const dropoff50to75 = milestones["article_read_50"] > 0
-        ? Math.round(((milestones["article_read_50"] - milestones["article_read_75"]) / milestones["article_read_50"]) * 100)
-        : 0;
-
-      const hasData = events.length > 0;
+        ? Math.round(((milestones["article_read_50"] - milestones["article_read_75"]) / milestones["article_read_50"]) * 100) : 0;
 
       return {
-        milestones,
-        topCompleted: topCompleted ?? [],
-        avgGuideScroll,
-        avgGuideTime,
-        guideViewCount: (guideViews ?? []).length,
-        completionRate,
-        dropoff25to50,
-        dropoff50to75,
-        hasData,
+        milestones, topCompleted, avgGuideScroll, avgGuideTime,
+        guideViewCount: guideViews.length, completionRate, dropoff25to50, dropoff50to75,
+        hasData: events.length > 0,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -103,26 +86,26 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
     return (
       <div className="space-y-4">
         <EmptyDataNotice message="Article read milestone events (25%, 50%, 75%, complete) will populate within 24–48 hours of tracking setup" />
-        <EmptyDataNotice variant="coming-soon" message="Guide completion tracking — integration coming soon" />
         <InsightCard insights={[
-          "Start tracking: once readers begin visiting articles, scroll-depth milestones will automatically appear here.",
-          "Tip: articles under 800 words with a strong opening hook typically achieve 40%+ completion rates.",
+          "1. No read-depth events recorded yet. Verify the useGA4ContentTracking hook is mounted on Article.tsx — it should fire article_read_25 when scroll depth passes 25%.",
+          "2. Once events flow, you'll see a funnel from 25% → 50% → 75% → Complete with drop-off rates at each stage.",
+          "3. Industry benchmark: well-structured articles under 1,200 words typically achieve 35-45% completion rates.",
         ]} />
       </div>
     );
   }
 
   const funnelData = [
-    { stage: "25%", count: data?.milestones?.["article_read_25"] ?? 0 },
-    { stage: "50%", count: data?.milestones?.["article_read_50"] ?? 0 },
-    { stage: "75%", count: data?.milestones?.["article_read_75"] ?? 0 },
-    { stage: "Complete", count: data?.milestones?.["article_read_complete"] ?? 0 },
+    { stage: "25%", count: data.milestones["article_read_25"] },
+    { stage: "50%", count: data.milestones["article_read_50"] },
+    { stage: "75%", count: data.milestones["article_read_75"] },
+    { stage: "Complete", count: data.milestones["article_read_complete"] },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data?.completionRate ?? 0}%)</h4>
+        <h4 className="text-sm font-medium mb-3">Article Read Funnel (completion rate: {data.completionRate}%)</h4>
         <ChartContainer config={{ count: { label: "Readers", color: "hsl(var(--primary))" } }} className="h-[200px]">
           <BarChart data={funnelData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -137,46 +120,15 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h4 className="text-sm font-medium mb-3">Top 10 Completed Articles</h4>
-          {(data?.topCompleted ?? []).length ? (
-            <>
-              <ChartContainer config={{ count: { label: "Completions", color: "hsl(var(--accent-foreground))" } }} className="h-[250px]">
-                <BarChart data={data?.topCompleted ?? []} layout="vertical" margin={{ left: 120 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                  <XAxis type="number" className="text-xs" />
-                  <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-              <Table className="mt-3">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Article</TableHead>
-                    <TableHead className="text-right">Completions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(data?.topCompleted ?? []).map(row => (
-                    <TableRow key={row.fullName}>
-                      <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
-                      <TableCell className="text-right font-medium">{(row?.count ?? 0).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </>
-          ) : (
-            <EmptyDataNotice message="No article completions recorded yet — events will appear as readers finish articles" />
-          )}
+          {topCompletedContent(data)}
         </div>
-
         <div>
           <h4 className="text-sm font-medium mb-3">Guide Engagement</h4>
           {data.guideViewCount > 0 ? (
             <div className="space-y-3">
-              <StatRow label="Guide Pageviews" value={data?.guideViewCount ?? 0} />
-              <StatRow label="Avg Scroll Depth" value={`${data?.avgGuideScroll ?? 0}%`} />
-              <StatRow label="Avg Time on Guide" value={`${data?.avgGuideTime ?? 0}s`} />
+              <StatRow label="Guide Pageviews" value={data.guideViewCount} />
+              <StatRow label="Avg Scroll Depth" value={`${data.avgGuideScroll}%`} />
+              <StatRow label="Avg Time on Guide" value={`${data.avgGuideTime}s`} />
             </div>
           ) : (
             <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking — integration coming soon" />
@@ -186,28 +138,33 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const rate = data?.completionRate ?? 0;
-        const total25 = data?.milestones?.["article_read_25"] ?? 0;
-        const totalComplete = data?.milestones?.["article_read_complete"] ?? 0;
+        const rate = data.completionRate;
+        const total25 = data.milestones["article_read_25"];
+        const totalComplete = data.milestones["article_read_complete"];
 
         if (total25 > 0 && rate < 25) {
-          tips.push(`${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers who hit 25% finish the article (${rate}% completion). The biggest drop-off is 25→50% (${data?.dropoff25to50 ?? 0}% lost). Try adding a compelling question or stat in the first 2 paragraphs to hook readers past the fold.`);
-        } else if (rate >= 25 && rate < 50) {
-          tips.push(`${rate}% completion rate across ${total25.toLocaleString()} readers. ${data?.dropoff50to75 ?? 0}% drop off between 50–75% — consider breaking long articles into sections with subheadings or adding mid-article callouts.`);
-        } else if (rate >= 50) {
-          tips.push(`Excellent ${rate}% completion rate — ${totalComplete.toLocaleString()} readers finish out of ${total25.toLocaleString()} who start. Your content is keeping readers engaged to the end.`);
+          tips.push(`1. ${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
+        } else if (rate >= 25 && rate < 45) {
+          tips.push(`1. ${rate}% completion rate across ${total25.toLocaleString()} readers — approaching the 35-45% industry benchmark. ${data.dropoff50to75}% drop off between 50-75%. Try breaking long-form content into scannable sections with subheadings, pull quotes, or mid-article "Key Takeaway" callouts.`);
+        } else if (rate >= 45) {
+          tips.push(`1. Excellent ${rate}% completion rate — ${totalComplete.toLocaleString()} of ${total25.toLocaleString()} readers finish, well above the 35-45% industry benchmark. Your content structure is working. Document what's different about your top-completing articles and standardise that format.`);
         }
 
-        const topArticle = (data?.topCompleted ?? [])[0];
-        if (topArticle && topArticle.count >= 3) {
-          tips.push(`"${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions. Analyse what makes this article sticky and replicate the format.`);
+        const topArticle = (data.topCompleted)[0];
+        const secondArticle = (data.topCompleted)[1];
+        if (topArticle && secondArticle && secondArticle.count > 0) {
+          const ratio = (topArticle.count / secondArticle.count).toFixed(1);
+          tips.push(`2. "${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions (${ratio}x more than #2). Study what makes it sticky — headline style, topic, length, publish timing — and replicate that formula.`);
+        } else if (topArticle) {
+          tips.push(`2. "${topArticle.fullName.length > 50 ? topArticle.fullName.slice(0, 47) + '…' : topArticle.fullName}" leads with ${topArticle.count.toLocaleString()} completions. Create more content in this topic/format to capitalise on proven reader interest.`);
         }
 
-        const guideScroll = data?.avgGuideScroll ?? 0;
-        if (guideScroll > 0 && guideScroll < 40) {
-          tips.push(`Guides average only ${guideScroll}% scroll depth. Try adding a persistent table of contents or splitting guides into shorter, focused steps.`);
-        } else if (guideScroll >= 70) {
-          tips.push(`Guides are performing well with ${guideScroll}% avg scroll depth — readers are consuming most of the content.`);
+        if (data.guideViewCount === 0) {
+          tips.push("3. No guide completions tracked yet — verify the useGA4ContentTracking hook is active on guide pages to capture guide_section_view and guide_complete events.");
+        } else if (data.avgGuideScroll < 40) {
+          tips.push(`3. Guides average only ${data.avgGuideScroll}% scroll depth across ${data.guideViewCount} views. Add a persistent table of contents sidebar and break guides into shorter, focused steps with clear progress indicators.`);
+        } else {
+          tips.push(`3. Guides performing well: ${data.avgGuideScroll}% avg scroll depth, ${data.avgGuideTime}s avg time across ${data.guideViewCount} views.`);
         }
 
         return tips;
@@ -216,10 +173,40 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
   );
 };
 
+function topCompletedContent(data: any) {
+  if (!(data?.topCompleted ?? []).length) {
+    return <EmptyDataNotice message="No article completions recorded yet — events will appear as readers finish articles" />;
+  }
+  return (
+    <>
+      <ChartContainer config={{ count: { label: "Completions", color: "hsl(var(--accent-foreground))" } }} className="h-[250px]">
+        <BarChart data={data.topCompleted} layout="vertical" margin={{ left: 120 }}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+          <XAxis type="number" className="text-xs" />
+          <YAxis dataKey="name" type="category" className="text-xs" width={115} tick={{ fontSize: 10 }} />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+        </BarChart>
+      </ChartContainer>
+      <Table className="mt-3">
+        <TableHeader><TableRow><TableHead>Article</TableHead><TableHead className="text-right">Completions</TableHead></TableRow></TableHeader>
+        <TableBody>
+          {data.topCompleted.map((row: any) => (
+            <TableRow key={row.fullName}>
+              <TableCell className="text-xs truncate max-w-[250px]">{row.fullName}</TableCell>
+              <TableCell className="text-right font-medium">{row.count.toLocaleString()}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
+  );
+}
+
 const StatRow = ({ label, value }: { label: string; value: string | number }) => (
   <div className="flex justify-between items-center p-2 rounded border">
     <span className="text-sm text-muted-foreground">{label}</span>
-    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? (value ?? 0).toLocaleString() : value}</Badge>
+    <Badge variant="secondary" className="font-mono">{typeof value === "number" ? value.toLocaleString() : value}</Badge>
   </div>
 );
 

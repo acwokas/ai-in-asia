@@ -18,92 +18,69 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
     queryKey: ["analytics-hub-cta", range],
     queryFn: async () => {
       const [ctaEventsRes, subscribersRes, editionsRes] = await Promise.all([
-        supabase
-          .from("analytics_events")
+        supabase.from("analytics_events")
           .select("event_name, event_data, page_path, created_at")
           .in("event_name", ["newsletter_cta_view", "newsletter_cta_click", "newsletter_signup", "newsletter_cta_submit", "cta_click"])
-          .gte("created_at", startDate)
-          .order("created_at", { ascending: true })
-          .limit(500),
-        supabase
-          .from("newsletter_subscribers")
-          .select("id, subscribed_at, confirmed, unsubscribed_at")
-          .limit(1000),
-        supabase
-          .from("newsletter_editions")
+          .gte("created_at", startDate).order("created_at", { ascending: true }).limit(500),
+        supabase.from("newsletter_subscribers")
+          .select("id, subscribed_at, confirmed, unsubscribed_at").limit(1000),
+        supabase.from("newsletter_editions")
           .select("id, subject_line, total_sent, total_opened, edition_date")
-          .eq("status", "sent")
-          .order("edition_date", { ascending: false })
-          .limit(5),
+          .eq("status", "sent").order("edition_date", { ascending: false }).limit(5),
       ]);
 
       const ctaEvents = ctaEventsRes.data ?? [];
       const subscribers = (subscribersRes.data ?? []) as any[];
       const editions = editionsRes.data ?? [];
 
-      const ctaViews = (ctaEvents ?? []).filter(e => e?.event_name === "newsletter_cta_view").length;
-      const ctaClicks = (ctaEvents ?? []).filter(e => e?.event_name === "newsletter_cta_click").length;
-      const submissions = (ctaEvents ?? []).filter(e => ["newsletter_signup", "newsletter_cta_submit"].includes(e?.event_name ?? "")).length;
+      const ctaViews = ctaEvents.filter(e => e.event_name === "newsletter_cta_view").length;
+      const ctaClicks = ctaEvents.filter(e => e.event_name === "newsletter_cta_click").length;
+      const submissions = ctaEvents.filter(e => ["newsletter_signup", "newsletter_cta_submit"].includes(e.event_name)).length;
       const ctaConversion = ctaViews > 0 ? Math.round((ctaClicks / ctaViews) * 100) : 0;
+      const viewToSubmit = ctaViews > 0 ? Math.round((submissions / ctaViews) * 100) : 0;
 
-      const activeSubs = (subscribers ?? []).filter(s => s?.confirmed === true && !s?.unsubscribed_at).length;
-      const totalSubs = (subscribers ?? []).length;
-      const unsubscribed = (subscribers ?? []).filter(s => !!s?.unsubscribed_at).length;
-
-      const newSubs = (subscribers ?? []).filter(s => {
-        if (!s?.subscribed_at) return false;
-        return s.subscribed_at >= startDate;
-      }).length;
+      const activeSubs = subscribers.filter(s => s?.confirmed === true && !s?.unsubscribed_at).length;
+      const totalSubs = subscribers.length;
+      const unsubscribed = subscribers.filter(s => !!s?.unsubscribed_at).length;
+      const newSubs = subscribers.filter(s => s?.subscribed_at && s.subscribed_at >= startDate).length;
 
       const hasCtaEvents = ctaEvents.length > 0;
       const hasEditions = editions.length > 0;
       const hasSendData = editions.some((e: any) => (e?.total_sent ?? 0) > 0);
 
-      // Submissions over time for LineChart
+      // Avg open rate across sent editions
+      const sentEditions = editions.filter((e: any) => (e?.total_sent ?? 0) > 0);
+      const avgOpenRate = sentEditions.length > 0
+        ? Math.round(sentEditions.reduce((s: number, e: any) => s + ((e.total_opened ?? 0) / (e.total_sent ?? 1)) * 100, 0) / sentEditions.length)
+        : 0;
+
       const dailySubmissions: Record<string, number> = {};
-      (ctaEvents ?? [])
-        .filter(e => ["newsletter_signup", "newsletter_cta_submit"].includes(e?.event_name ?? ""))
-        .forEach(e => {
-          if (!e?.created_at) return;
-          const parsed = parseISO(e.created_at);
-          if (Number.isNaN(parsed.getTime())) return;
-          const day = format(parsed, "yyyy-MM-dd");
-          dailySubmissions[day] = (dailySubmissions[day] || 0) + 1;
-        });
+      ctaEvents.filter(e => ["newsletter_signup", "newsletter_cta_submit"].includes(e.event_name)).forEach(e => {
+        if (!e?.created_at) return;
+        const parsed = parseISO(e.created_at);
+        if (Number.isNaN(parsed.getTime())) return;
+        dailySubmissions[format(parsed, "yyyy-MM-dd")] = (dailySubmissions[format(parsed, "yyyy-MM-dd")] || 0) + 1;
+      });
 
       const parsedStart = parseISO(startDate);
-      const start = Number.isNaN(parsedStart.getTime())
-        ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        : parsedStart;
-      const end = new Date();
-      const allDays = eachDayOfInterval({ start, end });
-      const submissionTimeline = allDays.map(d => {
+      const start = Number.isNaN(parsedStart.getTime()) ? new Date(Date.now() - 7 * 86400000) : parsedStart;
+      const submissionTimeline = eachDayOfInterval({ start, end: new Date() }).map(d => {
         const key = format(d, "yyyy-MM-dd");
         return { date: format(d, "MMM d"), submissions: dailySubmissions[key] || 0 };
       });
 
-      // Top CTA pages
       const pageCta: Record<string, number> = {};
-      (ctaEvents ?? [])
-        .filter(e => e?.event_name === "newsletter_cta_click")
-        .forEach(e => {
-          const p = e?.page_path || "/";
-          pageCta[p] = (pageCta[p] || 0) + 1;
-        });
-      const topCtaPages = Object.entries(pageCta)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([page, count]) => ({ page, count }));
+      ctaEvents.filter(e => e.event_name === "newsletter_cta_click").forEach(e => {
+        const p = e?.page_path || "/";
+        pageCta[p] = (pageCta[p] || 0) + 1;
+      });
+      const topCtaPages = Object.entries(pageCta).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([page, count]) => ({ page, count }));
 
       return {
-        ctaViews, ctaClicks, ctaConversion, submissions,
+        ctaViews, ctaClicks, ctaConversion, viewToSubmit, submissions,
         activeSubs, totalSubs, newSubs, unsubscribed,
-        topCtaPages: topCtaPages ?? [],
-        editions: editions ?? [],
-        submissionTimeline: submissionTimeline ?? [],
-        hasCtaEvents,
-        hasEditions,
-        hasSendData,
+        topCtaPages, editions, submissionTimeline,
+        hasCtaEvents, hasEditions, hasSendData, avgOpenRate,
       };
     },
     staleTime: 5 * 60 * 1000,
@@ -116,29 +93,26 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          { label: "Active Subscribers", value: data?.activeSubs ?? 0 },
-          { label: "Total Subscribers", value: data?.totalSubs ?? 0 },
-          { label: "New (period)", value: data?.newSubs ?? 0 },
-          { label: "CTA Conversion", value: data.hasCtaEvents ? `${data?.ctaConversion ?? 0}%` : "—" },
-          { label: "Submissions", value: data.hasCtaEvents ? (data?.submissions ?? 0) : "—" },
+          { label: "Active Subscribers", value: data.activeSubs },
+          { label: "Total Subscribers", value: data.totalSubs },
+          { label: "New (period)", value: data.newSubs },
+          { label: "CTA Conversion", value: data.hasCtaEvents ? `${data.ctaConversion}%` : "—" },
+          { label: "Submissions", value: data.hasCtaEvents ? data.submissions : "—" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
-            <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
+            <p className="text-xl font-bold">{typeof s.value === "number" ? s.value.toLocaleString() : s.value}</p>
             <p className="text-xs text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {!data.hasCtaEvents && (
-        <EmptyDataNotice message="CTA tracking events (view, click, submit) will populate within 24–48 hours" />
-      )}
+      {!data.hasCtaEvents && <EmptyDataNotice message="CTA tracking events (view, click, submit) will populate within 24–48 hours" />}
 
-      {/* Submissions LineChart */}
       {data.hasCtaEvents && (
         <div>
           <h4 className="text-sm font-medium mb-3">Newsletter Submissions Over Time</h4>
           <ChartContainer config={{ submissions: { label: "Submissions", color: "hsl(var(--primary))" } }} className="h-[220px]">
-            <LineChart data={data?.submissionTimeline ?? []}>
+            <LineChart data={data.submissionTimeline}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis className="text-xs" />
@@ -153,10 +127,10 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         <div>
           <h4 className="text-sm font-medium mb-2">Top CTA Conversion Pages</h4>
           <div className="space-y-1.5">
-            {(data?.topCtaPages ?? []).length ? (data?.topCtaPages ?? []).map((p) => (
+            {data.topCtaPages.length ? data.topCtaPages.map((p) => (
               <div key={p.page} className="flex justify-between text-xs border rounded p-2">
                 <span className="font-mono truncate max-w-[200px]">{p.page}</span>
-                <Badge variant="secondary" className="text-[10px]">{(p?.count ?? 0).toLocaleString()} clicks</Badge>
+                <Badge variant="secondary" className="text-[10px]">{p.count.toLocaleString()} clicks</Badge>
               </div>
             )) : (
               data.hasCtaEvents
@@ -165,17 +139,16 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
             )}
           </div>
         </div>
-
         <div>
           <h4 className="text-sm font-medium mb-2">Recent Newsletter Editions</h4>
           <div className="space-y-1.5">
-            {data.hasEditions ? (data?.editions ?? []).map((e: any) => (
+            {data.hasEditions ? data.editions.map((e: any) => (
               <div key={e.id} className="border rounded p-2 text-xs">
                 <p className="font-medium truncate">{e.subject_line || "Untitled"}</p>
                 <div className="flex gap-3 mt-1 text-muted-foreground">
                   <span>Sent: {(e?.total_sent ?? 0).toLocaleString()}</span>
                   <span>Opened: {(e?.total_opened ?? 0).toLocaleString()}</span>
-                  <span>Rate: {(e?.total_sent ?? 0) > 0 ? Math.round((((e?.total_opened ?? 0) / (e?.total_sent ?? 1)) * 100)) : 0}%</span>
+                  <span>Rate: {(e?.total_sent ?? 0) > 0 ? Math.round(((e?.total_opened ?? 0) / (e?.total_sent ?? 1)) * 100) : 0}%</span>
                 </div>
               </div>
             )) : (
@@ -187,30 +160,53 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const active = data?.activeSubs ?? 0;
-        const total = data?.totalSubs ?? 0;
-        const unsub = data?.unsubscribed ?? 0;
+        const active = data.activeSubs;
+        const total = data.totalSubs;
+        const unsub = data.unsubscribed;
 
-        // Only show churn insight if there's actual send data
-        if (data.hasSendData && unsub > 0 && total > 0) {
-          const churnPct = Math.round((unsub / total) * 100);
-          tips.push(`${unsub.toLocaleString()} of ${total.toLocaleString()} subscribers (${churnPct}%) have unsubscribed. ${churnPct > 20 ? 'Consider a re-engagement campaign or survey lapsed subscribers to learn why.' : 'Churn is within healthy range — keep monitoring after each send.'}`);
-        } else if (!data.hasSendData && active > 0) {
-          tips.push(`You have ${active.toLocaleString()} active subscriber${active === 1 ? '' : 's'} ready to go. Send your first newsletter edition to start measuring open rates and engagement.`);
-        } else if (total === 0) {
-          tips.push("Start building your subscriber list by adding newsletter CTAs to high-traffic pages — article pages and the homepage are ideal placements.");
+        if (total === 0 && !data.hasCtaEvents) {
+          tips.push("1. No subscribers and no CTA tracking events yet. Start by adding newsletter signup CTAs to your highest-traffic pages — article pages, homepage, and the 3 Before 9 briefing page are ideal placements.");
+          tips.push("2. Use the EndOfContentNewsletter component at the bottom of articles and the InlineNewsletterSignup component mid-article for maximum visibility.");
+          tips.push("3. Industry benchmark: well-placed CTAs on content sites convert 2-5% of page views to signups.");
+          return tips;
         }
 
-        const conv = data?.ctaConversion ?? 0;
-        if (data.hasCtaEvents && conv > 0) {
-          tips.push(`CTA view-to-click conversion is ${conv}%. ${conv < 2 ? 'Below the 2–5% industry average — try repositioning your CTA higher on the page or testing stronger copy like "Get the briefing free".' : conv >= 5 ? `At ${conv}%, you're outperforming the 2–5% industry average. Keep this placement strategy.` : 'On par with the 2–5% industry benchmark.'}`);
-        } else if (data.hasCtaEvents && conv === 0) {
-          tips.push("CTA views are being tracked but no clicks yet. Test more prominent placement, contrasting colours, or a value-driven headline.");
+        // CTA conversion analysis
+        const conv = data.ctaConversion;
+        const viewToSubmit = data.viewToSubmit;
+        if (data.hasCtaEvents) {
+          if (conv === 0 && data.ctaViews > 0) {
+            tips.push(`1. ${data.ctaViews.toLocaleString()} CTA views but 0 clicks — your CTA is being seen but ignored. Test: (a) change the headline from generic "Subscribe" to value-driven copy like "Get the AI briefing every morning, free", (b) add social proof ("Join 500+ readers"), (c) try a different colour that contrasts with the page background.`);
+          } else if (conv < 2) {
+            tips.push(`1. CTA view-to-click rate is ${conv}% (${data.ctaClicks.toLocaleString()} clicks from ${data.ctaViews.toLocaleString()} views) — below the 2-5% industry average. Reposition CTAs: place one inline at ~40% scroll depth in articles and another as a sticky footer bar on mobile. Test urgency copy like "Today's briefing drops at 9am".`);
+          } else if (conv >= 5) {
+            tips.push(`1. CTA conversion at ${conv}% — above the 2-5% industry average (${data.ctaClicks.toLocaleString()} clicks from ${data.ctaViews.toLocaleString()} views). Your placement and copy are working. Scale by adding CTAs to more pages, especially category landing pages and guide pages.`);
+          } else {
+            tips.push(`1. CTA conversion at ${conv}% — within the 2-5% industry benchmark. View-to-submit rate: ${viewToSubmit}%. To improve: reduce form friction (single email field, no name required) and add an instant confirmation with a preview of what they'll receive.`);
+          }
         }
 
-        const newSubs = data?.newSubs ?? 0;
-        if (newSubs > 0) {
-          tips.push(`${newSubs.toLocaleString()} new subscriber${newSubs === 1 ? '' : 's'} this period. ${newSubs >= 10 ? 'Strong growth — consider adding a welcome email sequence.' : 'Steady trickle — try adding inline signup forms within article content to boost signups.'}`);
+        // Newsletter performance
+        if (data.hasSendData) {
+          const openRate = data.avgOpenRate;
+          if (openRate < 20) {
+            tips.push(`2. Average open rate is ${openRate}% — below the 20-25% industry benchmark. Test subject lines: use numbers, questions, or preview the top story. Send time also matters — test Tuesday/Wednesday mornings vs current schedule.`);
+          } else if (openRate >= 35) {
+            tips.push(`2. ${openRate}% average open rate — excellent, well above the 20-25% industry norm. Your subject lines and send timing are resonating. Consider adding A/B testing on subject lines to push even higher.`);
+          } else {
+            tips.push(`2. ${openRate}% average open rate — solid, at or above the 20-25% industry benchmark. ${unsub > 0 ? `${unsub} unsubscribes (${Math.round((unsub / total) * 100)}% churn) — monitor this after each send.` : 'No unsubscribes yet — great retention.'}`);
+          }
+        } else if (active > 0) {
+          tips.push(`2. You have ${active.toLocaleString()} confirmed subscriber${active === 1 ? '' : 's'} but no editions sent yet. Send your first newsletter to establish a cadence — weekly sends see the best balance of engagement and low unsubscribe rates.`);
+        }
+
+        // Growth
+        const newSubs = data.newSubs;
+        if (newSubs > 0 && active > 0) {
+          const growthPct = Math.round((newSubs / active) * 100);
+          tips.push(`3. ${newSubs.toLocaleString()} new subscriber${newSubs === 1 ? '' : 's'} this period (${growthPct}% growth). ${newSubs >= 10 ? 'Strong growth — set up a 3-email welcome sequence: (1) "Here\'s what to expect", (2) "Our 3 best articles", (3) "Reply and tell us what topics you care about".' : 'Steady trickle — boost signups by adding exit-intent popups on desktop and a floating signup bar on mobile.'}`);
+        } else if (newSubs === 0 && active > 0) {
+          tips.push(`3. No new subscribers this period. Re-audit your CTA placements: are they visible without scrolling? Test adding a full-width signup banner between articles on the homepage and at the end of each 3 Before 9 briefing.`);
         }
 
         return tips;
