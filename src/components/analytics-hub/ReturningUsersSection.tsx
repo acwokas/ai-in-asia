@@ -97,7 +97,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       // ── Avg pages/session: total pageviews / total sessions ──
       const totalPVCount = pageviews.length;
       const avgPages = totalSessionsWithPV > 0
-        ? (totalDistinctPages / totalSessionsWithPV).toFixed(1) : "0";
+        ? (totalPVCount / totalSessionsWithPV).toFixed(1) : "0";
 
       const freqBuckets: Record<string, number> = { "1 visit": 0, "2-3 visits": 0, "4-7 visits": 0, "8+ visits": 0 };
       Object.values(userSessionCounts).forEach(c => {
