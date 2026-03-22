@@ -491,8 +491,8 @@ export const useAnalyticsTracking = () => {
 
       try {
         const sessionData: SessionData = JSON.parse(stored);
-        const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
-        const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
+        const timeSpent = getActiveSeconds();
+        const durationSeconds = timeSpent; // Use active time, not wall time
 
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
