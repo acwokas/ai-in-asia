@@ -4,6 +4,7 @@ import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
 import { memo, Fragment } from "react";
 import { MPUAd } from "./GoogleAds";
+import { dualPush } from "@/lib/dualTrack";
 
 interface YouMayAlsoLikeProps {
   excludeIds?: string[];
