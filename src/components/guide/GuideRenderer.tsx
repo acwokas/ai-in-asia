@@ -170,7 +170,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
       {/* What This Actually Looks Like */}
       {hasContent(formData.worked_example) && (
-        <section id="what-this-actually-looks-like" className="bg-card/50 rounded-xl p-6 md:p-8 mb-12">
+        <section id="what-this-actually-looks-like" data-guide-section="what-this-actually-looks-like" className="bg-card/50 rounded-xl p-6 md:p-8 mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 pb-2 border-b border-border text-foreground">What This Actually Looks Like</h2>
 
           {formData.worked_example.prompt && (
