@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 interface Props {
   startDate: string;
   range: string;
+  totalSessions: number;
 }
 
 const COLORS = [
@@ -34,7 +35,7 @@ function categorizeReferrer(domain: string): "Direct" | "Organic Search" | "Soci
   return "Other Sites";
 }
 
-export const AudienceSection = ({ startDate, range }: Props) => {
+export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSessions }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-audience", range],
     queryFn: async () => {
@@ -56,7 +57,7 @@ export const AudienceSection = ({ startDate, range }: Props) => {
       }
 
       const sessions = rows;
-      const totalSessions = sessions.length;
+      const totalSessions = sharedTotalSessions || sessions.length;
 
       // Country breakdown
       const countryCounts: Record<string, number> = {};

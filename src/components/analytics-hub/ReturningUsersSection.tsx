@@ -7,37 +7,20 @@ import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
 
 interface Props {
   startDate: string;
   range: string;
+  totalSessions: number;
+  uniqueVisitors: number;
 }
 
-export const ReturningUsersSection = ({ startDate, range }: Props) => {
+export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueVisitors }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
-      console.log("ReturningUsersSection v2 loaded");
+      console.log("ReturningUsersSection v3 loaded");
       const PAGE_SIZE = 1000;
-
-      const fetchAllSessions = async () => {
-        const rows: any[] = [];
-        let from = 0;
-        while (true) {
-          const { data: batch } = await supabase
-            .from("analytics_sessions")
-            .select("user_id, session_id")
-            .gte("started_at", startDate)
-            .range(from, from + PAGE_SIZE - 1);
-          const safe = batch ?? [];
-          rows.push(...safe);
-          if (safe.length < PAGE_SIZE) break;
-          from += PAGE_SIZE;
-        }
-        return rows;
-      };
 
       const fetchAllPageviews = async () => {
         const rows: any[] = [];
@@ -56,8 +39,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         return rows;
       };
 
-      const [sessions, streaksRes, pageviews] = await Promise.all([
-        fetchAllSessions(),
+      const [streaksRes, pageviews] = await Promise.all([
         supabase.from("reading_streaks")
           .select("user_id, current_streak, longest_streak, total_articles_read")
           .order("current_streak", { ascending: false }).limit(20),
@@ -66,7 +48,7 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
 
       const streaks = streaksRes.data ?? [];
 
-      // ── Build per-session pageview counts ──
+      // Build per-session pageview counts
       const pvPerSessionCount: Record<string, number> = {};
       pageviews.forEach((pv) => {
         const sid = pv?.session_id;
@@ -77,36 +59,15 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
       const distinctSessions = Object.keys(pvPerSessionCount);
       const totalSessionsWithPV = distinctSessions.length;
 
-      // ── Return rate: visitors with >1 session ──
-      const userSessionCounts: Record<string, number> = {};
-      sessions.forEach((s) => {
-        const key = s?.user_id || s?.session_id;
-        if (!key) return;
-        userSessionCounts[key] = (userSessionCounts[key] || 0) + 1;
-      });
-
-      const totalUnique = Object.keys(userSessionCounts).length;
-      const returning = Object.values(userSessionCounts).filter(c => c > 1).length;
-      const returnRate = totalUnique > 0 ? Math.round((returning / totalUnique) * 100) : 0;
-
-      // ── Bounce rate: sessions with exactly 1 pageview row ──
+      // Bounce rate: sessions with exactly 1 pageview row
       const singlePVSessions = distinctSessions.filter(sid => pvPerSessionCount[sid] === 1).length;
       const bounceRate = totalSessionsWithPV > 0
         ? Math.round((singlePVSessions / totalSessionsWithPV) * 100) : 0;
 
-      // ── Avg pages/session: total pageview rows / distinct sessions ──
+      // Avg pages/session: total pageview rows / distinct sessions with PV
       const totalPVCount = pageviews.length;
       const avgPages = totalSessionsWithPV > 0
         ? (totalPVCount / totalSessionsWithPV).toFixed(1) : "0";
-
-      const freqBuckets: Record<string, number> = { "1 visit": 0, "2-3 visits": 0, "4-7 visits": 0, "8+ visits": 0 };
-      Object.values(userSessionCounts).forEach(c => {
-        if (c === 1) freqBuckets["1 visit"]++;
-        else if (c <= 3) freqBuckets["2-3 visits"]++;
-        else if (c <= 7) freqBuckets["4-7 visits"]++;
-        else freqBuckets["8+ visits"]++;
-      });
-      const powerUsers = freqBuckets["8+ visits"];
 
       const streakBuckets: Record<string, number> = { "1d": 0, "2-3d": 0, "4-7d": 0, "8-14d": 0, "15-30d": 0, "30d+": 0 };
       streaks.forEach((s) => {
@@ -135,12 +96,16 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         .slice(0, 8);
 
       return {
-        returnRate, bounceRate, avgPages, returning, totalUnique, powerUsers,
+        bounceRate, avgPages,
         topStreaks: streaks.slice(0, 8), streakChartData, topRevisited,
       };
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  // Return rate derived from shared session stats
+  const returning = uniqueVisitors > 0 ? Math.max(0, totalSessions - uniqueVisitors) : 0;
+  const returnRate = uniqueVisitors > 0 ? Math.round((returning / totalSessions) * 100) : 0;
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
@@ -149,10 +114,10 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Return Rate", value: `${data.returnRate}%`, sub: `${data.returning}/${data.totalUnique}` },
+          { label: "Return Rate", value: `${returnRate}%`, sub: `${returning.toLocaleString()} repeat / ${totalSessions.toLocaleString()} total` },
           { label: "Bounce Rate", value: `${data.bounceRate}%` },
-          { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "High value — may include bot traffic or auto-refresh" : "Total pageviews ÷ sessions" },
-          { label: "Returning Visitors", value: data.returning },
+          { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "High value — may include bot traffic" : "Total pageviews ÷ sessions with PV" },
+          { label: "Unique Visitors", value: uniqueVisitors },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
             <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
@@ -216,44 +181,36 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const rate = data.returnRate;
-        const returning = data.returning;
-        const totalUnique = data.totalUnique;
+        const rate = returnRate;
         const bounce = data.bounceRate;
-        const power = data.powerUsers;
 
-        if (totalUnique === 0) {
-          tips.push("1. No visitor data yet. Return rate, bounce rate, and reading streaks will populate as sessions are tracked. Ensure useAnalyticsTracking is firing on every page.");
-          tips.push("2. Once data flows, aim for a 20%+ return rate and <50% bounce rate as healthy baselines for a content site.");
+        if (uniqueVisitors === 0) {
+          tips.push("1. No visitor data yet. Return rate, bounce rate, and reading streaks will populate as sessions are tracked.");
+          tips.push("2. Once data flows, aim for a 20%+ return rate and <50% bounce rate as healthy baselines.");
           return tips;
         }
 
-        // Return rate
         if (rate < 15) {
-          tips.push(`1. Only ${(returning ?? 0).toLocaleString()} of ${(totalUnique ?? 0).toLocaleString()} visitors returned (${rate}% — well below the 25-30% benchmark for content sites). Three fixes: (a) add a "Continue Reading" section on the homepage for returning visitors, (b) enable browser push notifications for new articles, (c) launch a weekly email digest summarising the best content.`);
+          tips.push(`1. Only ${returning.toLocaleString()} repeat sessions out of ${totalSessions.toLocaleString()} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
         } else if (rate < 30) {
-          tips.push(`1. ${rate}% return rate (${(returning ?? 0).toLocaleString()} returning visitors) — approaching the 25-30% benchmark. Focus on converting these returners to newsletter subscribers: they've already shown intent, a well-placed inline signup form could capture 5-10% of them.`);
+          tips.push(`1. ${rate}% return rate (${returning.toLocaleString()} repeat sessions) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
         } else {
-          tips.push(`1. Strong ${rate}% return rate with ${(returning ?? 0).toLocaleString()} returning visitors — above the 25-30% content site benchmark. Your audience is developing a reading habit. Consider launching a members-only section or premium newsletter for your most loyal readers.`);
+          tips.push(`1. Strong ${rate}% return rate with ${returning.toLocaleString()} repeat sessions — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
         }
 
-        // Bounce rate
         if (bounce > 60) {
-          tips.push(`2. ⚠️ ${bounce}% bounce rate (industry average for content sites: 40-60%). Over half of visitors leave after one page. Immediate actions: add a "Read Next" recommendation at 75% scroll depth, show related articles in the sidebar, and ensure mobile load time is under 3 seconds.`);
+          tips.push(`2. ⚠️ ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
         } else if (bounce <= 40) {
-          tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring multiple pages per session (${data.avgPages} avg). This indicates strong internal linking and content relevance.`);
+          tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${data.avgPages} pages per session.`);
         } else {
-          tips.push(`2. ${bounce}% bounce rate — within the 40-60% industry norm. To improve: test adding a "Trending Now" sidebar widget or a persistent "Related Articles" strip at article end.`);
+          tips.push(`2. ${bounce}% bounce rate — within the 40-60% industry norm. Test adding a "Trending Now" sidebar widget.`);
         }
 
-        // Power users + streaks
         const bestStreak = (data?.topStreaks?.[0] as any)?.longest_streak ?? 0;
-        if (power > 0 && bestStreak >= 7) {
-          tips.push(`3. ${(power ?? 0).toLocaleString()} power users (8+ visits) with a top reading streak of ${bestStreak} days. These readers are your most valuable audience — they're ${rate > 20 ? '3-5x' : '2-3x'} more likely to subscribe or share. Create exclusive early-access content or a "Reader of the Week" feature to reward and retain them.`);
-        } else if (power > 0) {
-          tips.push(`3. ${(power ?? 0).toLocaleString()} power user${power === 1 ? '' : 's'} (8+ visits), best streak: ${bestStreak} days. Build on this: add streak reminders via push notifications and a visible streak counter on the profile page to gamify daily reading.`);
-        } else if (totalUnique > 50) {
-          tips.push(`3. No power users (8+ visits) detected yet among ${(totalUnique ?? 0).toLocaleString()} visitors. To build habitual readers: publish on a consistent schedule (same time, same days), add a "Daily Pick" feature, and send push notification reminders.`);
+        if (bestStreak >= 7) {
+          tips.push(`3. Top reading streak of ${bestStreak} days. Reward these readers with exclusive early-access content.`);
+        } else if (uniqueVisitors > 50) {
+          tips.push(`3. Best streak: ${bestStreak} days among ${uniqueVisitors.toLocaleString()} visitors. Publish on a consistent schedule and add push notification reminders.`);
         }
 
         return tips;
