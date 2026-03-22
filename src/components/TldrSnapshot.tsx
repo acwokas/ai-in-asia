@@ -11,7 +11,7 @@ const TldrSnapshot = ({ bullets, whoShouldPayAttention, whatChangesNext }: TldrS
   if (!bullets || bullets.length === 0) return null;
 
   return (
-    <Card className="tldr-snapshot my-8 border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-lg">
+    <Card data-snapshot="tldr" className="tldr-snapshot my-8 border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-xl">
           <Zap className="h-5 w-5 text-primary fill-primary" />

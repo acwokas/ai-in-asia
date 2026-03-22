@@ -13,7 +13,7 @@ export function useGA4NavigationTracking() {
 
       // ── Social share click ───────────────────────────────────────────
       const shareBtn = target.closest(
-        '[data-share], .share-btn, [aria-label*="share" i], [aria-label*="Share" i]'
+        '[data-share], [data-share-bar] button, .share-btn, [aria-label*="share" i], [aria-label*="Share" i]'
       );
       if (shareBtn) {
         const platform =
@@ -30,7 +30,7 @@ export function useGA4NavigationTracking() {
 
       // ── AI Snapshot expand ───────────────────────────────────────────
       const snapshotToggle = target.closest(
-        '[data-snapshot], .tldr-snapshot summary, [class*="Snapshot"] button, [class*="snapshot"] button, [class*="TldrSnapshot"] button, details.tldr summary'
+        '[data-snapshot], .tldr-snapshot, [class*="Snapshot"] button, [class*="snapshot"] button, details.tldr summary'
       );
       if (snapshotToggle) {
         push("ai_snapshot_expand", {
