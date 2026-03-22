@@ -86,7 +86,7 @@ serve(async (req) => {
         const days = Math.floor((Date.now() - new Date(a.published_at).getTime()) / 86400000);
         const catSlug = (a as any).categories?.slug || 'uncategorized';
         urls.push({
-          loc: `${baseUrl}/${encodeURIComponent(catSlug)}/${encodeURIComponent(a.slug)}`,
+          loc: `${baseUrl}/${sanitizePathSegment(catSlug)}/${sanitizePathSegment(a.slug)}`,
           lastmod: new Date(a.updated_at).toISOString().split('T')[0],
           changefreq: days <= 7 ? 'daily' : days <= 30 ? 'weekly' : 'monthly',
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
