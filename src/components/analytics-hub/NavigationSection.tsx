@@ -42,9 +42,8 @@ export const NavigationSection = ({ startDate, range }: Props) => {
           (q: any) => q.gte("started_at", startDate)),
       ]);
 
-      const events = eventsRes.data ?? [];
-      const pageviews = pageviewsRes.data ?? [];
-      const sessions = sessionsRes.data ?? [];
+
+
 
       // Clicked elements for horizontal bar chart
       const elementCounts: Record<string, number> = {};
