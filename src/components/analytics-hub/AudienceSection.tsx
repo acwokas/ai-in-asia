@@ -22,7 +22,7 @@ const COLORS = [
   "hsl(var(--primary) / 0.2)",
 ];
 
-const SELF_DOMAINS = ["ai-in-asia.lovable.app", "ai-in-asia.com", "www.ai-in-asia.com", "lovable.app"];
+const SELF_DOMAINS = ["lovable.app", "lovable.dev", "lovableproject.com", "ai-in-asia.lovable.app", "aiinasia.com", "www.aiinasia.com", "ai-in-asia.com", "www.ai-in-asia.com"];
 
 const SOCIAL_DOMAINS = ["t.co", "twitter.com", "x.com", "facebook.com", "linkedin.com", "reddit.com", "threads.net", "instagram.com", "youtube.com", "tiktok.com", "pinterest.com"];
 const SEARCH_DOMAINS = ["google.com", "google.co", "bing.com", "duckduckgo.com", "yahoo.com", "baidu.com", "yandex.com", "ecosia.org", "search.brave.com"];
