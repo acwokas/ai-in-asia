@@ -13,6 +13,7 @@ interface Props {
 }
 
 const PAGE_SIZE = 1000;
+const MAX_ROWS = 10000;
 
 export const NewUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
