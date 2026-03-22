@@ -31,6 +31,7 @@ const TrendingStrip = memo(() => {
 
   return (
     <div
+      data-trending="ticker-strip"
       className="overflow-hidden border-y"
       style={{
         background: "linear-gradient(90deg, hsl(215 40% 9%) 0%, hsl(215 35% 12%) 100%)",

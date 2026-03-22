@@ -66,7 +66,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
   const restArticles = articles.slice(1) as any[];
 
   return (
-    <section className="container mx-auto px-4">
+    <section data-related="recommended" className="container mx-auto px-4">
       <div className="flex items-center gap-2 mb-8">
         <Sparkles className="h-6 w-6 text-primary" />
         <h2 className="text-[28px] md:text-[30px] font-bold">You May Like</h2>

@@ -100,7 +100,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
   }
 
   return (
-    <section className="container mx-auto px-4 py-4">
+    <section data-trending="visual-strip" className="container mx-auto px-4 py-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="flex items-center gap-1.5 font-bold text-[16px] text-primary">
