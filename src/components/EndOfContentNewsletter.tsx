@@ -85,7 +85,7 @@ const EndOfContentNewsletter = () => {
   }
 
   return (
-    <div className="my-12 p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border border-primary/20">
+    <div data-newsletter="end-of-content" className="newsletter-cta my-12 p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border border-primary/20">
       <div className="text-center max-w-xl mx-auto">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4">
           <Mail className="h-8 w-8 text-primary" />

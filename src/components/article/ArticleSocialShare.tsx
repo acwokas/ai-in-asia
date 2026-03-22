@@ -215,7 +215,7 @@ export const ArticleShareMobileBar = memo(({ categorySlug, articleSlug, articleT
   // We place this just above it
   return (
     <div className="fixed bottom-12 inset-x-0 z-30 md:hidden animate-in slide-in-from-bottom duration-200">
-      <div className="h-10 bg-background/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-center gap-4 px-4">
+      <div data-share-bar="mobile" className="h-10 bg-background/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-center gap-4 px-4">
         <button className="text-muted-foreground hover:text-[#25D366] transition-colors cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="WhatsApp">
           <WhatsAppIcon className="h-4 w-4" />
         </button>

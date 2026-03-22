@@ -90,7 +90,7 @@ const InlineNewsletterSignup = ({ variant = "default" }: InlineNewsletterSignupP
   }
 
   return (
-    <div className="my-6 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20">
+    <div data-newsletter="inline" className="newsletter-cta my-6 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-3 flex-1">
           <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 shrink-0">
