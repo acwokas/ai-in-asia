@@ -40,7 +40,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         "article_read_25": events.filter(e => e.event_name === "article_read_25").length,
         "article_read_50": events.filter(e => e.event_name === "article_read_50").length,
         "article_read_75": events.filter(e => e.event_name === "article_read_75").length,
-        "article_read_complete": events.filter(e => e.event_name === "article_read_complete").length,
+        "article_complete": events.filter(e => e.event_name === "article_complete").length,
       };
 
       const titleCounts: Record<string, number> = {};
