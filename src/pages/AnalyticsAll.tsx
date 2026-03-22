@@ -37,7 +37,7 @@ const AnalyticsAll = () => {
   }, [range]);
 
   // Shared session stats — single source of truth
-  const { data: sessionStats, isLoading: sessionStatsLoading } = useAnalyticsSessionStats(startDate, range);
+  const { data: sessionStats, isLoading: sessionStatsLoading, isError: sessionStatsError } = useAnalyticsSessionStats(startDate, range);
 
   // Additional quick stats
   const { data: quickStats, isLoading: extraStatsLoading } = useQuery({
@@ -57,7 +57,7 @@ const AnalyticsAll = () => {
     },
   });
 
-  const statsLoading = sessionStatsLoading || extraStatsLoading;
+  const statsLoading = (sessionStatsLoading && !sessionStatsError) || extraStatsLoading;
   const totalSessions = sessionStats?.totalSessions ?? 0;
   const uniqueVisitors = sessionStats?.uniqueVisitors ?? 0;
 
