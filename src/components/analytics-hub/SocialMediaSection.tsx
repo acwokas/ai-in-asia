@@ -344,7 +344,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
           text: (p.text || p.title || "").substring(0, 120),
           platform: p.platform || acctPlatform[p.account_id || ""] || "unknown",
           likes: p.likes || p.reactions || 0,
-          comments: p.comments || 0,
+          comments: typeof p.comments === "number" ? p.comments : Array.isArray(p.comments) ? (p.comments as any[]).length : 0,
           shares: p.shares || p.reposts || p.retweets || 0,
           impressions: p.impressions || 0,
           engagement: p.engagement || p.total_engagement || ((p.likes || 0) + (p.comments || 0) + (p.shares || 0)),
