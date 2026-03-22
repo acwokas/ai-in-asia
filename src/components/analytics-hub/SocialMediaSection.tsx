@@ -302,11 +302,12 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
         const b = byPlatform[plat];
         if ((p as any)._state === "scheduled") b.scheduled++;
         else b.published++;
-        b.likes += p.likes || p.reactions || 0;
-        b.comments += p.comments || 0;
-        b.shares += p.shares || p.reposts || p.retweets || 0;
-        b.impressions += p.impressions || 0;
-        b.clicks += p.clicks || p.link_clicks || 0;
+        b.likes += Number(p.likes || p.reactions) || 0;
+        // Publer returns comments as an array of objects, not a number
+        b.comments += (typeof p.comments === "number" ? p.comments : Array.isArray(p.comments) ? (p.comments as any[]).length : 0);
+        b.shares += Number(p.shares || p.reposts || p.retweets) || 0;
+        b.impressions += Number(p.impressions) || 0;
+        b.clicks += Number(p.clicks || p.link_clicks) || 0;
       }
 
       const platformBreakdown = Object.entries(byPlatform)
