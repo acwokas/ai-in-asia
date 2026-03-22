@@ -19,15 +19,18 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
+      console.log("ReturningUsersSection v2 loaded");
       const PAGE_SIZE = 1000;
 
       const fetchAllSessions = async () => {
         const rows: any[] = [];
         let from = 0;
         while (true) {
-          const { data: batch } = await supabase.from("analytics_sessions")
-            .select("user_id, session_id, is_bounce, duration_seconds, page_count")
-            .gte("started_at", startDate).range(from, from + PAGE_SIZE - 1);
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("user_id, session_id")
+            .gte("started_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
           const safe = batch ?? [];
           rows.push(...safe);
           if (safe.length < PAGE_SIZE) break;
@@ -40,8 +43,11 @@ export const ReturningUsersSection = ({ startDate, range }: Props) => {
         const rows: any[] = [];
         let from = 0;
         while (true) {
-          const { data: batch } = await supabase.from("analytics_pageviews")
-            .select("page_path, session_id").gte("viewed_at", startDate).range(from, from + PAGE_SIZE - 1);
+          const { data: batch } = await supabase
+            .from("analytics_pageviews")
+            .select("page_path, session_id")
+            .gte("viewed_at", startDate)
+            .range(from, from + PAGE_SIZE - 1);
           const safe = batch ?? [];
           rows.push(...safe);
           if (safe.length < PAGE_SIZE) break;
