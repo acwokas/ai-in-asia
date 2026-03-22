@@ -64,7 +64,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         ? Math.round(guideViews.reduce((s, g) => s + Math.min(g?.time_on_page_seconds ?? 0, 1800), 0) / guideViews.length) : 0;
 
       const completionRate = milestones["article_read_25"] > 0
-        ? Math.round((milestones["article_read_complete"] / milestones["article_read_25"]) * 100) : 0;
+        ? Math.round((milestones["article_complete"] / milestones["article_read_25"]) * 100) : 0;
       const dropoff25to50 = milestones["article_read_25"] > 0
         ? Math.round(((milestones["article_read_25"] - milestones["article_read_50"]) / milestones["article_read_25"]) * 100) : 0;
       const dropoff50to75 = milestones["article_read_50"] > 0
