@@ -48,7 +48,7 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
           .from("analytics_sessions")
           .select("*", { count: "exact", head: true })
           .gte("started_at", startDate),
-        fetchAllSessionStarts(),
+        fetchSessionStarts(),
         supabase
           .from("analytics_sessions")
           .select("session_id, user_id, started_at, landing_page, device_type, referrer_domain")
