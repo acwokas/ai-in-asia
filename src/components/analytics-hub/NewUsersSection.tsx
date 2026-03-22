@@ -94,8 +94,9 @@ export const NewUsersSection = ({ startDate, range }: Props) => {
       // Peak day
       const peakDay = dailySessions.reduce((best, d) => d.sessions > best.sessions ? d : best, { date: "", sessions: 0 });
 
+      const totalSessions = sessionStarts.length;
       return {
-        totalSessions: sessionsCountRes.count ?? 0,
+        totalSessions,
         activeNow: recentSessions.length,
         dailySessions, topEntryPages, avgDaily, recentAvg, priorAvg, peakDay,
       };
