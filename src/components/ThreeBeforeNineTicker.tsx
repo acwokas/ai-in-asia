@@ -1,8 +1,9 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { dualPush } from "@/lib/dualTrack";
 
 const ThreeBeforeNineTicker = memo(() => {
   const { data } = useQuery({
