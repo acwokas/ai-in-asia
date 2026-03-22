@@ -284,7 +284,44 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       ]);
       const published: PublerPost[] = Array.isArray(publishedRaw) ? publishedRaw : publishedRaw?.posts || [];
       const scheduled: PublerPost[] = Array.isArray(scheduledRaw) ? scheduledRaw : scheduledRaw?.posts || [];
-      const allPosts = [...published.map(p => ({ ...p, _state: "published" as const })), ...scheduled.map(p => ({ ...p, _state: "scheduled" as const }))];
+
+      // 3) Fetch per-account post insights for engagement data
+      const insightsByPostId: Record<string, any> = {};
+      try {
+        const insightPromises = accounts.map(async (acct) => {
+          try {
+            const insights = await callPublerProxy(`analytics/${acct.id}/post_insights`, { per_page: "100" });
+            const posts = Array.isArray(insights) ? insights : insights?.posts || insights?.data || [];
+            for (const post of posts) {
+              if (post?.id || post?.post_id) {
+                insightsByPostId[post.id || post.post_id] = post;
+              }
+            }
+          } catch (_e) {
+            // Individual account insights may fail; continue
+          }
+        });
+        await Promise.all(insightPromises);
+      } catch (_e) {
+        // Non-fatal: insights are supplementary
+      }
+
+      // Merge insights into published posts
+      const enrichedPublished = published.map(p => {
+        const insight = insightsByPostId[p.id || ""];
+        if (!insight) return p;
+        return {
+          ...p,
+          likes: Number(insight.likes ?? insight.reactions ?? p.likes) || 0,
+          comments: typeof insight.comments === "number" ? insight.comments : (typeof p.comments === "number" ? p.comments : 0),
+          shares: Number(insight.shares ?? insight.reposts ?? p.shares) || 0,
+          impressions: Number(insight.impressions ?? insight.reach ?? p.impressions) || 0,
+          clicks: Number(insight.clicks ?? insight.link_clicks ?? p.clicks) || 0,
+          engagement: Number(insight.engagement ?? insight.total_engagement) || 0,
+        };
+      });
+
+      const allPosts = [...enrichedPublished.map(p => ({ ...p, _state: "published" as const })), ...scheduled.map(p => ({ ...p, _state: "scheduled" as const }))];
 
       // Build account→platform map
       const acctPlatform: Record<string, string> = {};
@@ -302,11 +339,12 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
         const b = byPlatform[plat];
         if ((p as any)._state === "scheduled") b.scheduled++;
         else b.published++;
-        b.likes += p.likes || p.reactions || 0;
-        b.comments += p.comments || 0;
-        b.shares += p.shares || p.reposts || p.retweets || 0;
-        b.impressions += p.impressions || 0;
-        b.clicks += p.clicks || p.link_clicks || 0;
+        b.likes += Number(p.likes || p.reactions) || 0;
+        // Publer returns comments as an array of objects, not a number
+        b.comments += (typeof p.comments === "number" ? p.comments : Array.isArray(p.comments) ? (p.comments as any[]).length : 0);
+        b.shares += Number(p.shares || p.reposts || p.retweets) || 0;
+        b.impressions += Number(p.impressions) || 0;
+        b.clicks += Number(p.clicks || p.link_clicks) || 0;
       }
 
       const platformBreakdown = Object.entries(byPlatform)
@@ -343,10 +381,10 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
           text: (p.text || p.title || "").substring(0, 120),
           platform: p.platform || acctPlatform[p.account_id || ""] || "unknown",
           likes: p.likes || p.reactions || 0,
-          comments: p.comments || 0,
+          comments: typeof p.comments === "number" ? p.comments : Array.isArray(p.comments) ? (p.comments as any[]).length : 0,
           shares: p.shares || p.reposts || p.retweets || 0,
           impressions: p.impressions || 0,
-          engagement: p.engagement || p.total_engagement || ((p.likes || 0) + (p.comments || 0) + (p.shares || 0)),
+          engagement: Number(p.engagement || p.total_engagement) || ((Number(p.likes) || 0) + (typeof p.comments === "number" ? p.comments : 0) + (Number(p.shares) || 0)),
         }));
 
       return { accounts, posts: allPosts as PublerPost[], platformBreakdown, totals, topPosts };

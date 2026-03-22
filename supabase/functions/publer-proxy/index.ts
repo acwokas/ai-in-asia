@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     const endpoint = url.searchParams.get('endpoint') || 'posts'
 
     // Allowlist to prevent SSRF
-    const ALLOWED = ['posts', 'accounts', 'media', 'analytics']
+    const ALLOWED = ['posts', 'accounts', 'media', 'analytics', 'reports']
     const basePath = endpoint.split('/')[0]
     if (!ALLOWED.includes(basePath)) {
       return new Response(
