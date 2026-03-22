@@ -537,8 +537,8 @@ export const useAnalyticsTracking = () => {
       if (stored && pageViewIdRef.current) {
         try {
           const sessionData: SessionData = JSON.parse(stored);
-          const durationSeconds = Math.round((Date.now() - sessionData.startedAt) / 1000);
-          const timeSpent = Math.round((Date.now() - pageStartTimeRef.current) / 1000);
+          const activeSeconds = getActiveSeconds();
+          const durationSeconds = activeSeconds;
 
           // Update session duration
           await updateSessionInDb(sessionData.sessionId, {
