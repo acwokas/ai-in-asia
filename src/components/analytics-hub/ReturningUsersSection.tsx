@@ -16,6 +16,11 @@ interface Props {
   uniqueVisitors: number;
 }
 
+const formatNumber = (value: unknown, fallback = "0") => {
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num.toLocaleString() : fallback;
+};
+
 // The date tracking started (visitor_id column added)
 const TRACKING_START_DATE = "2026-03-23";
 
@@ -146,7 +151,14 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
-  const { totalUniqueVisitors, returningVisitors, visitorReturnRate } = data;
+  const totalUniqueVisitors = data?.totalUniqueVisitors ?? 0;
+  const returningVisitors = data?.returningVisitors ?? 0;
+  const visitorReturnRate = data?.visitorReturnRate ?? 0;
+  const bounceRate = data?.bounceRate ?? 0;
+  const avgPages = data?.avgPages ?? "0";
+  const topRevisited = data?.topRevisited ?? [];
+  const topStreaks = data?.topStreaks ?? [];
+  const streakChartData = data?.streakChartData ?? [];
 
   return (
     <div className="space-y-6">
@@ -156,11 +168,11 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
             label: "Return Rate (cookie)",
             value: totalUniqueVisitors > 0 ? `${visitorReturnRate}%` : "N/A",
             sub: totalUniqueVisitors > 0
-              ? `${returningVisitors.toLocaleString()} returning / ${totalUniqueVisitors.toLocaleString()} unique visitors`
+              ? `${formatNumber(returningVisitors)} returning / ${formatNumber(totalUniqueVisitors)} unique visitors`
               : "No visitor_id data yet",
           },
-          { label: "Bounce Rate", value: `${data.bounceRate}%` },
-          { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "High value — may include bot traffic" : "Total pageviews ÷ sessions with PV" },
+          { label: "Bounce Rate", value: `${bounceRate}%` },
+          { label: "Avg Pages/Session", value: avgPages, sub: parseFloat(avgPages) > 10 ? "High value — may include bot traffic" : "Total pageviews ÷ sessions with PV" },
           { label: "Unique Visitors", value: uniqueVisitors },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
@@ -179,7 +191,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         <div>
           <h4 className="text-sm font-medium mb-3">Streak Distribution</h4>
           <ChartContainer config={{ count: { label: "Users", color: "hsl(var(--primary))" } }} className="h-[200px]">
-            <BarChart data={data.streakChartData}>
+            <BarChart data={streakChartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis dataKey="bucket" className="text-xs" />
               <YAxis className="text-xs" />
@@ -190,14 +202,14 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         </div>
         <div>
           <h4 className="text-sm font-medium mb-3">Top Revisited Pages</h4>
-          {data.topRevisited.length ? (
+          {topRevisited.length ? (
             <Table>
               <TableHeader><TableRow><TableHead>Page</TableHead><TableHead className="text-right">Unique Sessions</TableHead></TableRow></TableHeader>
               <TableBody>
-                {data.topRevisited.map((p) => (
+                {topRevisited.map((p) => (
                   <TableRow key={p.path}>
                     <TableCell className="font-mono text-xs truncate max-w-[200px]">{p.path}</TableCell>
-                    <TableCell className="text-right font-medium">{(p?.uniqueSessions ?? 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-medium">{formatNumber(p?.uniqueSessions)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -211,7 +223,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       <div>
         <h4 className="text-sm font-medium mb-3">Top Reading Streaks</h4>
         <div className="space-y-2">
-          {data.topStreaks.length ? data.topStreaks.map((s: any, i: number) => (
+          {topStreaks.length ? topStreaks.map((s: any, i: number) => (
             <div key={i} className="flex items-center gap-3 text-sm border rounded p-2">
               <Badge variant="outline" className="text-xs w-6 h-6 flex items-center justify-center rounded-full p-0">{i + 1}</Badge>
               <div className="flex-1">
@@ -221,7 +233,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
                 </div>
                 <Progress value={Math.min(((s?.current_streak ?? 0) / Math.max(s?.longest_streak ?? 0, 1)) * 100, 100)} className="h-1.5" />
               </div>
-              <span className="text-xs text-muted-foreground">{(s?.total_articles_read ?? 0).toLocaleString()} read</span>
+              <span className="text-xs text-muted-foreground">{formatNumber(s?.total_articles_read)} read</span>
             </div>
           )) : <p className="text-xs text-muted-foreground">No streak data yet</p>}
         </div>
@@ -230,7 +242,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       <InsightCard insights={(() => {
         const tips: string[] = [];
         const rate = visitorReturnRate;
-        const bounce = data.bounceRate;
+        const bounce = bounceRate;
 
         if (totalUniqueVisitors === 0) {
           tips.push("1. No visitor_id data yet. Cookie-based return rate tracking started — results will appear within 24-48 hours.");
@@ -239,26 +251,26 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         }
 
         if (rate < 15) {
-          tips.push(`1. Only ${returningVisitors.toLocaleString()} returning visitors out of ${totalUniqueVisitors.toLocaleString()} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
+          tips.push(`1. Only ${formatNumber(returningVisitors)} returning visitors out of ${formatNumber(totalUniqueVisitors)} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
         } else if (rate < 30) {
-          tips.push(`1. ${rate}% return rate (${returningVisitors.toLocaleString()} returning visitors) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
+          tips.push(`1. ${rate}% return rate (${formatNumber(returningVisitors)} returning visitors) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
         } else {
-          tips.push(`1. Strong ${rate}% return rate with ${returningVisitors.toLocaleString()} returning visitors — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
+          tips.push(`1. Strong ${rate}% return rate with ${formatNumber(returningVisitors)} returning visitors — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
         }
 
         if (bounce > 60) {
           tips.push(`2. ⚠️ ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
         } else if (bounce <= 40) {
-          tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${data.avgPages} pages per session.`);
+          tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${avgPages} pages per session.`);
         } else {
           tips.push(`2. ${bounce}% bounce rate — within the 40-60% industry norm. Test adding a "Trending Now" sidebar widget.`);
         }
 
-        const bestStreak = (data?.topStreaks?.[0] as any)?.longest_streak ?? 0;
+        const bestStreak = (topStreaks?.[0] as any)?.longest_streak ?? 0;
         if (bestStreak >= 7) {
           tips.push(`3. Top reading streak of ${bestStreak} days. Reward these readers with exclusive early-access content.`);
         } else if (totalUniqueVisitors > 50) {
-          tips.push(`3. Best streak: ${bestStreak} days among ${totalUniqueVisitors.toLocaleString()} visitors. Publish on a consistent schedule and add push notification reminders.`);
+          tips.push(`3. Best streak: ${bestStreak} days among ${formatNumber(totalUniqueVisitors)} visitors. Publish on a consistent schedule and add push notification reminders.`);
         }
 
         return tips;

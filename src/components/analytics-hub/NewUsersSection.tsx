@@ -13,6 +13,11 @@ interface Props {
   totalSessions: number;
 }
 
+const formatNumber = (value: unknown, fallback = "0") => {
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num.toLocaleString() : fallback;
+};
+
 export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-new-users", range],
@@ -98,15 +103,22 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
 
+  const avgDaily = data?.avgDaily ?? 0;
+  const dailySessions = data?.dailySessions ?? [];
+  const topEntryPages = data?.topEntryPages ?? [];
+  const recentAvg = data?.recentAvg ?? 0;
+  const priorAvg = data?.priorAvg ?? 0;
+  const peakDay = data?.peakDay ?? { date: "—", sessions: 0 };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 max-w-xs">
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{totalSessions.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{formatNumber(totalSessions)}</p>
           <p className="text-xs text-muted-foreground">Total Sessions</p>
         </div>
         <div className="rounded-lg border p-3 text-center">
-          <p className="text-2xl font-bold">{(data.avgDaily ?? 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold">{formatNumber(avgDaily)}</p>
           <p className="text-xs text-muted-foreground">Avg Daily</p>
         </div>
       </div>
@@ -114,7 +126,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
       <div>
         <h4 className="text-sm font-medium mb-3">Daily Sessions</h4>
         <ChartContainer config={{ sessions: { label: "Sessions", color: "hsl(var(--primary))" } }} className="h-[220px]">
-          <AreaChart data={data.dailySessions}>
+          <AreaChart data={dailySessions}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
             <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis className="text-xs" />
@@ -126,14 +138,14 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
 
       <div>
         <h4 className="text-sm font-medium mb-3">Top Entry Pages</h4>
-        {data.topEntryPages.length ? (
+        {topEntryPages.length ? (
           <Table>
             <TableHeader><TableRow><TableHead>Page</TableHead><TableHead className="text-right">Sessions</TableHead></TableRow></TableHeader>
             <TableBody>
-              {data.topEntryPages.map((p) => (
+              {topEntryPages.map((p) => (
                 <TableRow key={p.page}>
                   <TableCell className="font-mono text-xs truncate max-w-[300px]">{p.page}</TableCell>
-                  <TableCell className="text-right font-medium">{(p?.count ?? 0).toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-medium">{formatNumber(p?.count)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -146,8 +158,6 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
       <InsightCard insights={(() => {
         const tips: string[] = [];
         const total = totalSessions;
-        const recentAvg = data.recentAvg;
-        const priorAvg = data.priorAvg;
 
         if (total === 0) {
           tips.push("1. No sessions recorded yet. Verify AnalyticsProvider is wrapping your app.");
@@ -158,29 +168,29 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
         if (priorAvg > 0 && recentAvg > 0) {
           const changePct = Math.round(((recentAvg - priorAvg) / priorAvg) * 100);
           if (changePct > 10) {
-            tips.push(`1. 📈 Traffic trending up: ${(recentAvg ?? 0).toLocaleString()} sessions/day this week vs ${(priorAvg ?? 0).toLocaleString()} last week (+${changePct}%). Identify what drove the spike and double down.`);
+            tips.push(`1. 📈 Traffic trending up: ${formatNumber(recentAvg)} sessions/day this week vs ${formatNumber(priorAvg)} last week (+${changePct}%). Identify what drove the spike and double down.`);
           } else if (changePct < -10) {
-            tips.push(`1. 📉 Traffic down ${Math.abs(changePct)}%: ${(recentAvg ?? 0).toLocaleString()} sessions/day vs ${(priorAvg ?? 0).toLocaleString()} last week. Check publishing frequency and top entry pages for 404s.`);
+            tips.push(`1. 📉 Traffic down ${Math.abs(changePct)}%: ${formatNumber(recentAvg)} sessions/day vs ${formatNumber(priorAvg)} last week. Check publishing frequency and top entry pages for 404s.`);
           } else {
-            tips.push(`1. Traffic stable at ~${(recentAvg ?? 0).toLocaleString()} sessions/day (±${Math.abs(changePct)}% week-over-week).`);
+            tips.push(`1. Traffic stable at ~${formatNumber(recentAvg)} sessions/day (±${Math.abs(changePct)}% week-over-week).`);
           }
         } else {
-          tips.push(`1. ${(total ?? 0).toLocaleString()} total sessions this period, averaging ${(data.avgDaily ?? 0).toLocaleString()}/day. ${(data.peakDay?.sessions ?? 0) > ((data.avgDaily ?? 0) * 1.5) ? `Peak day was ${data.peakDay?.date ?? '—'} with ${data.peakDay?.sessions ?? 0} sessions.` : ''}`);
+          tips.push(`1. ${formatNumber(total)} total sessions this period, averaging ${formatNumber(avgDaily)}/day. ${(peakDay?.sessions ?? 0) > (avgDaily * 1.5) ? `Peak day was ${peakDay?.date ?? "—"} with ${formatNumber(peakDay?.sessions)} sessions.` : ""}`);
         }
 
-        const top = data?.topEntryPages?.[0];
+        const top = topEntryPages[0];
         if (top && total > 0) {
           const pct = Math.round((top.count / total) * 100);
           if (pct > 50) {
             tips.push(`2. ⚠️ ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
           } else {
-            tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${(top.count ?? 0).toLocaleString()} visits).`);
+            tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${formatNumber(top.count)} visits).`);
           }
         }
 
-        const entryCount = data?.topEntryPages?.length ?? 0;
+        const entryCount = topEntryPages.length;
         if (entryCount <= 3 && total > 100) {
-          tips.push(`3. Only ${entryCount} entry pages across ${(total ?? 0).toLocaleString()} sessions. Invest in long-tail SEO for more entry points.`);
+          tips.push(`3. Only ${entryCount} entry pages across ${formatNumber(total)} sessions. Invest in long-tail SEO for more entry points.`);
         } else if (entryCount >= 8) {
           tips.push(`3. ${entryCount} distinct entry pages — good SEO diversity.`);
         }
