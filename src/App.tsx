@@ -338,6 +338,7 @@ const router = createBrowserRouter([
           { path: "site-analytics", element: <SiteAnalytics /> },
           { path: "content-insights", element: <ContentInsights /> },
           { path: "analytics/all", element: <AnalyticsAll /> },
+          { path: "analytics/oauth-callback", element: <OAuthCallback /> },
           { path: "guide-editor", element: <GuideEditor /> },
           { path: "guide-editor/:id", element: <GuideEditor /> },
           { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
