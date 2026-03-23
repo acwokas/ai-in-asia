@@ -126,6 +126,7 @@ const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
 const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 const ThreeBeforeNineArchive = lazy(() => import("./pages/ThreeBeforeNineArchive"));
@@ -337,6 +338,7 @@ const router = createBrowserRouter([
           { path: "site-analytics", element: <SiteAnalytics /> },
           { path: "content-insights", element: <ContentInsights /> },
           { path: "analytics/all", element: <AnalyticsAll /> },
+          { path: "analytics/oauth-callback", element: <OAuthCallback /> },
           { path: "guide-editor", element: <GuideEditor /> },
           { path: "guide-editor/:id", element: <GuideEditor /> },
           { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
