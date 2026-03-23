@@ -78,7 +78,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
       });
 
       const landingCounts: Record<string, number> = {};
-      landings.forEach((l) => { const p = l?.landing_page || "/"; landingCounts[p] = (landingCounts[p] || 0) + 1; });
+      landings.forEach((l) => { const p = l?.landing_page || "/"; if (p.includes("__lovable")) return; landingCounts[p] = (landingCounts[p] || 0) + 1; });
       const topEntryPages = Object.entries(landingCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([page, count]) => ({ page, count }));
 
       const dailyValues = Object.values(dailyCounts);

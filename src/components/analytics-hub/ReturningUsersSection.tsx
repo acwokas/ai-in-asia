@@ -85,7 +85,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       pageviews.forEach((pv) => {
         const path = pv?.page_path;
         const sessionId = pv?.session_id;
-        if (!path || !sessionId) return;
+        if (!path || !sessionId || path.includes("__lovable")) return;
         if (!pageSessionMap[path]) pageSessionMap[path] = new Set();
         pageSessionMap[path].add(sessionId);
       });
