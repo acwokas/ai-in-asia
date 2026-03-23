@@ -74,6 +74,10 @@ async function fetchSearchConsoleData(startDate: string, endDate: string, dimens
   return res.json();
 }
 
+  const safeNum = (v: any): number => (typeof v === "number" && isFinite(v) ? v : 0);
+  const fmt = (v: any): string => safeNum(v).toLocaleString();
+  const fmtPct = (v: any, decimals = 1): string => safeNum(v).toFixed(decimals);
+
 export const SEOPerformanceSection = ({ startDate, range }: Props) => {
   const { data: oauthStatus } = useGoogleOAuthStatus();
   const isGSCConnected = oauthStatus?.connected?.search_console === true;
