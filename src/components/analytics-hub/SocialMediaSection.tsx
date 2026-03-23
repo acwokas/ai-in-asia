@@ -205,7 +205,12 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-social-media", range],
     queryFn: async () => {
-      const sessions = await fetchAllSessions(startDate);
+      const endDate = new Date().toISOString();
+      const [sessions, totalSessionsRes] = await Promise.all([
+        fetchAllSessions(startDate),
+        supabase.rpc("get_total_sessions", { p_start: startDate, p_end: endDate }),
+      ]);
+      const rpcTotalSessions = (totalSessionsRes.error ? null : totalSessionsRes.data) ?? sessions.length;
       const socialSessions: { platform: string; campaign: string | null; duration: number; isBounce: boolean; pageCount: number }[] = [];
       let directSessions = 0;
 
