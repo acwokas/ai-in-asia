@@ -133,8 +133,8 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
 
   const tips: string[] = [];
   if (hasRealData) {
-    const totalEarnings = adsenseData.totals?.ESTIMATED_EARNINGS ?? 0;
-    tips.push(`1. Real AdSense earnings for this period: $${totalEarnings.toFixed(2)} from account "${adsenseData.account}".`);
+    const totalEarnings = safeNum(adsenseData?.totals?.ESTIMATED_EARNINGS);
+    tips.push(`1. Real AdSense earnings for this period: $${fmtD(totalEarnings)} from account "${adsenseData?.account ?? "unknown"}".`);
   } else if (d.totalPageviews === 0) {
     tips.push("1. No pageview data available yet. Revenue estimates will appear once analytics tracking is active.");
   } else {
