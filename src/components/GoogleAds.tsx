@@ -13,7 +13,7 @@ interface GoogleAdProps {
 }
 
 // Google Ads Publisher ID
-const GOOGLE_ADS_CLIENT = "ca-pub-4181437297386228";
+const GOOGLE_ADS_CLIENT = "ca-pub-2128915180930973";
 
 const GoogleAd = ({
   slot,
