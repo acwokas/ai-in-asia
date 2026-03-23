@@ -61,13 +61,15 @@ const AnalyticsAll = () => {
   const totalSessions = sessionStats?.totalSessions ?? 0;
   const uniqueVisitors = sessionStats?.uniqueVisitors ?? 0;
 
+  const fmt = (v: number | null | undefined): string => v == null ? "N/A" : v.toLocaleString();
+
   const statCards = [
-    { label: "Total Sessions", value: totalSessions, icon: Activity, color: "text-blue-500" },
-    { label: "Unique Visitors", value: uniqueVisitors, icon: Users, color: "text-green-500" },
-    { label: "Avg Engagement (s)", value: sessionStats?.avgEngagement ?? 0, icon: Zap, color: "text-yellow-500" },
-    { label: "Article Completions", value: quickStats?.completions ?? 0, icon: BookCheck, color: "text-purple-500" },
-    { label: "Newsletter Subscribers", value: quickStats?.subscribers ?? 0, icon: Mail, color: "text-pink-500" },
-    { label: "Active Now", value: quickStats?.activeNow ?? 0, icon: Activity, color: "text-cyan-500" },
+    { label: "Total Sessions", value: fmt(sessionStats?.totalSessions), icon: Activity, color: "text-blue-500" },
+    { label: "Unique Visitors", value: fmt(sessionStats?.uniqueVisitors), icon: Users, color: "text-green-500" },
+    { label: "Avg Engagement (s)", value: fmt(sessionStats?.avgEngagement), icon: Zap, color: "text-yellow-500" },
+    { label: "Article Completions", value: fmt(quickStats?.completions), icon: BookCheck, color: "text-purple-500" },
+    { label: "Newsletter Subscribers", value: fmt(quickStats?.subscribers), icon: Mail, color: "text-pink-500" },
+    { label: "Active Now", value: fmt(quickStats?.activeNow), icon: Activity, color: "text-cyan-500" },
   ];
 
   const sections: { id: string; title: string; icon: React.ElementType; color: string; component: React.ReactNode }[] = [
@@ -112,7 +114,7 @@ const AnalyticsAll = () => {
                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                     <span className="text-xs text-muted-foreground truncate">{stat.label}</span>
                   </div>
-                  <p className="text-2xl font-bold">{typeof stat.value === "number" ? (stat.value ?? 0).toLocaleString() : stat.value}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
                 </>
               )}
             </CardContent>

@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AnalyticsSessionStats {
-  totalSessions: number;
-  uniqueVisitors: number;
-  avgEngagement: number;
+  totalSessions: number | null;
+  uniqueVisitors: number | null;
+  avgEngagement: number | null;
 }
 
 const TIMEOUT_MS = 10_000;
@@ -26,10 +26,7 @@ export const useAnalyticsSessionStats = (startDate: string, range: string) => {
 
       const results = await Promise.allSettled([
         withTimeout(
-          supabase
-            .from("analytics_sessions")
-            .select("id", { count: "exact", head: true })
-            .gte("started_at", startDate),
+          supabase.rpc("get_total_sessions", { p_start: startDate, p_end: endDate }),
           TIMEOUT_MS,
         ),
         withTimeout(
@@ -42,14 +39,17 @@ export const useAnalyticsSessionStats = (startDate: string, range: string) => {
         ),
       ]);
 
-      const sessionsRes = results[0].status === "fulfilled" ? results[0].value : null;
-      const uniqueRes = results[1].status === "fulfilled" ? results[1].value : null;
-      const engagementRes = results[2].status === "fulfilled" ? results[2].value : null;
+      const extract = (r: PromiseSettledResult<any>): number | null => {
+        if (r.status !== "fulfilled") return null;
+        const { data, error } = r.value ?? {};
+        if (error || data == null) return null;
+        return Number(data);
+      };
 
       return {
-        totalSessions: (sessionsRes as any)?.count ?? 0,
-        uniqueVisitors: ((uniqueRes as any)?.data as number) ?? 0,
-        avgEngagement: ((engagementRes as any)?.data as number) ?? 0,
+        totalSessions: extract(results[0]),
+        uniqueVisitors: extract(results[1]),
+        avgEngagement: extract(results[2]),
       };
     },
     staleTime: 3 * 60 * 1000,
