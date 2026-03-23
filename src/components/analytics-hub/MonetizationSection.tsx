@@ -185,7 +185,7 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Revenue</p>
-              <p className="text-2xl font-bold">${(adsenseData.totals?.ESTIMATED_EARNINGS ?? 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${fmtD(adsenseData?.totals?.ESTIMATED_EARNINGS)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Impressions</p>
