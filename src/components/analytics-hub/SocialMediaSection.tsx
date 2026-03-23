@@ -227,7 +227,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
           }
         }
         if (platform) {
-          socialSessions.push({ platform, campaign: s.utm_campaign || null, duration: s.duration_seconds ?? 0, isBounce: s.is_bounce ?? true, pageCount: s.page_count ?? 1 });
+          socialSessions.push({ platform, campaign: s.utm_campaign || null, duration: Math.min(s.duration_seconds ?? 0, 1800), isBounce: s.is_bounce ?? true, pageCount: s.page_count ?? 1 });
         } else if (!ref || ref === "direct") {
           directSessions++;
         }
