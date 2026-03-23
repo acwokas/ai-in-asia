@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { subDays, startOfDay } from "date-fns";
 import { useAnalyticsSessionStats } from "@/hooks/useAnalyticsSessionStats";
+import React from "react";
 import {
   CompletionsSection,
   NewUsersSection,
@@ -133,6 +134,33 @@ const AnalyticsAll = () => {
   );
 };
 
+class SectionErrorBoundary extends React.Component<
+  { title: string; children: React.ReactNode },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: "" };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error?.message ?? "Unknown error" };
+  }
+  componentDidCatch(error: Error) {
+    console.error(`[AnalyticsHub] "${this.props.title}" crashed:`, error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <p className="font-medium text-destructive">⚠ "{this.props.title}" failed to render</p>
+          <p className="text-xs text-muted-foreground mt-1">{this.state.error}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const CollapsibleSection = ({ title, icon: Icon, iconColor, children }: { title: string; icon: React.ElementType; iconColor: string; children: React.ReactNode }) => {
   const [open, setOpen] = useState(true);
 
@@ -151,7 +179,9 @@ const CollapsibleSection = ({ title, icon: Icon, iconColor, children }: { title:
           </CardHeader>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="pt-0">{children}</CardContent>
+          <CardContent className="pt-0">
+            <SectionErrorBoundary title={title}>{children}</SectionErrorBoundary>
+          </CardContent>
         </CollapsibleContent>
       </Card>
     </Collapsible>
