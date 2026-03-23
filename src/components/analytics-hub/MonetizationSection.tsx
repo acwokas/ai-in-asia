@@ -51,6 +51,10 @@ async function fetchAdSenseData(startDate: string, endDate: string) {
   return res.json();
 }
 
+const safeNum = (v: any): number => (typeof v === "number" && isFinite(v) ? v : 0);
+const fmtN = (v: any): string => safeNum(v).toLocaleString();
+const fmtD = (v: any, d = 2): string => safeNum(v).toFixed(d);
+
 export const MonetizationSection = ({ startDate, range }: Props) => {
   const { data: oauthStatus } = useGoogleOAuthStatus();
   const isAdSenseConnected = oauthStatus?.connected?.adsense === true;
