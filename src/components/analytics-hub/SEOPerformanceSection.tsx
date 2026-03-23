@@ -336,11 +336,11 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
                   <TableBody>
                     {gscPages.rows.map((r: any) => (
                       <TableRow key={r.key}>
-                        <TableCell className="font-medium text-xs max-w-[250px] truncate">{r.key.replace("https://aiinasia.com", "")}</TableCell>
-                        <TableCell className="text-right">{r.clicks.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.impressions.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.ctr}%</TableCell>
-                        <TableCell className="text-right">{r.position}</TableCell>
+                        <TableCell className="font-medium text-xs max-w-[250px] truncate">{(r?.key ?? "").replace("https://aiinasia.com", "")}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.clicks)}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.impressions)}</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.ctr)}%</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.position)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
