@@ -71,8 +71,12 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-seo-performance", range],
     queryFn: async () => {
-      const sessions = await fetchAllSessions(startDate);
-      const totalSessions = sessions.length;
+      const endDate = new Date().toISOString();
+      const [sessions, totalSessionsRes] = await Promise.all([
+        fetchAllSessions(startDate),
+        supabase.rpc("get_total_sessions", { p_start: startDate, p_end: endDate }),
+      ]);
+      const totalSessions = (totalSessionsRes.error ? null : totalSessionsRes.data) ?? sessions.length;
       const days = differenceInDays(new Date(), new Date(startDate)) || 1;
 
       const organicSessions: typeof sessions = [];
