@@ -352,9 +352,11 @@ export const useAnalyticsTracking = () => {
     sessionDataRef.current = newSession;
 
     // Insert session to database
+    const visitorId = getOrCreateVisitorId();
     await supabase.from('analytics_sessions').insert({
       session_id: sessionId,
       user_id: user?.id || null,
+      visitor_id: visitorId,
       referrer: referrer || null,
       referrer_domain: getReferrerDomain(referrer),
       utm_source: utmParams.utm_source,
@@ -369,7 +371,7 @@ export const useAnalyticsTracking = () => {
       duration_seconds: 0,
       page_count: 0,
       is_bounce: true, // Assume bounce until proven otherwise
-    });
+    } as any);
 
     // Geo lookup — once per session, fire-and-forget
     fetchGeoCountry(sessionId);
