@@ -51,6 +51,10 @@ async function fetchAdSenseData(startDate: string, endDate: string) {
   return res.json();
 }
 
+const safeNum = (v: any): number => (typeof v === "number" && isFinite(v) ? v : 0);
+const fmtN = (v: any): string => safeNum(v).toLocaleString();
+const fmtD = (v: any, d = 2): string => safeNum(v).toFixed(d);
+
 export const MonetizationSection = ({ startDate, range }: Props) => {
   const { data: oauthStatus } = useGoogleOAuthStatus();
   const isAdSenseConnected = oauthStatus?.connected?.adsense === true;
@@ -129,8 +133,8 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
 
   const tips: string[] = [];
   if (hasRealData) {
-    const totalEarnings = adsenseData.totals?.ESTIMATED_EARNINGS ?? 0;
-    tips.push(`1. Real AdSense earnings for this period: $${totalEarnings.toFixed(2)} from account "${adsenseData.account}".`);
+    const totalEarnings = safeNum(adsenseData?.totals?.ESTIMATED_EARNINGS);
+    tips.push(`1. Real AdSense earnings for this period: $${fmtD(totalEarnings)} from account "${adsenseData?.account ?? "unknown"}".`);
   } else if (d.totalPageviews === 0) {
     tips.push("1. No pageview data available yet. Revenue estimates will appear once analytics tracking is active.");
   } else {
@@ -181,23 +185,23 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Revenue</p>
-              <p className="text-2xl font-bold">${(adsenseData.totals?.ESTIMATED_EARNINGS ?? 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${fmtD(adsenseData?.totals?.ESTIMATED_EARNINGS)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Impressions</p>
-              <p className="text-2xl font-bold">{(adsenseData.totals?.IMPRESSIONS ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmtN(adsenseData?.totals?.IMPRESSIONS)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Clicks</p>
-              <p className="text-2xl font-bold">{(adsenseData.totals?.CLICKS ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmtN(adsenseData?.totals?.CLICKS)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Page RPM</p>
-              <p className="text-2xl font-bold">${(adsenseData.totals?.PAGE_VIEWS_RPM ?? 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${fmtD(adsenseData?.totals?.PAGE_VIEWS_RPM)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">CPC</p>
-              <p className="text-2xl font-bold">${(adsenseData.totals?.COST_PER_CLICK ?? 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${fmtD(adsenseData?.totals?.COST_PER_CLICK)}</p>
             </div>
           </div>
 

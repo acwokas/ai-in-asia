@@ -74,6 +74,10 @@ async function fetchSearchConsoleData(startDate: string, endDate: string, dimens
   return res.json();
 }
 
+const safeNum = (v: any): number => (typeof v === "number" && isFinite(v) ? v : 0);
+const fmt = (v: any): string => safeNum(v).toLocaleString();
+const fmtPct = (v: any, decimals = 1): string => safeNum(v).toFixed(decimals);
+
 export const SEOPerformanceSection = ({ startDate, range }: Props) => {
   const { data: oauthStatus } = useGoogleOAuthStatus();
   const isGSCConnected = oauthStatus?.connected?.search_console === true;
@@ -242,25 +246,25 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">GSC Total Clicks</p>
-              <p className="text-2xl font-bold">{(gscQueries.totals?.clicks ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmt(gscQueries?.totals?.clicks)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">GSC Total Impressions</p>
-              <p className="text-2xl font-bold">{(gscQueries.totals?.impressions ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmt(gscQueries?.totals?.impressions)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Avg CTR</p>
               <p className="text-2xl font-bold">
-                {gscQueries.totals?.impressions > 0
-                  ? ((gscQueries.totals.clicks / gscQueries.totals.impressions) * 100).toFixed(1)
+                {safeNum(gscQueries?.totals?.impressions) > 0
+                  ? fmtPct((safeNum(gscQueries?.totals?.clicks) / safeNum(gscQueries?.totals?.impressions)) * 100)
                   : "0"}%
               </p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Avg Position</p>
               <p className="text-2xl font-bold">
-                {gscQueries.rows.length > 0
-                  ? (gscQueries.rows.reduce((s: number, r: any) => s + r.position, 0) / gscQueries.rows.length).toFixed(1)
+                {(gscQueries?.rows?.length ?? 0) > 0
+                  ? fmtPct(gscQueries.rows.reduce((s: number, r: any) => s + safeNum(r?.position), 0) / gscQueries.rows.length)
                   : "N/A"}
               </p>
             </div>
@@ -302,10 +306,10 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
                     {gscQueries.rows.map((r: any) => (
                       <TableRow key={r.key}>
                         <TableCell className="font-medium text-xs max-w-[200px] truncate">{r.key}</TableCell>
-                        <TableCell className="text-right">{r.clicks.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.impressions.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.ctr}%</TableCell>
-                        <TableCell className="text-right">{r.position}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.clicks)}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.impressions)}</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.ctr)}%</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.position)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -332,11 +336,11 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
                   <TableBody>
                     {gscPages.rows.map((r: any) => (
                       <TableRow key={r.key}>
-                        <TableCell className="font-medium text-xs max-w-[250px] truncate">{r.key.replace("https://aiinasia.com", "")}</TableCell>
-                        <TableCell className="text-right">{r.clicks.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.impressions.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{r.ctr}%</TableCell>
-                        <TableCell className="text-right">{r.position}</TableCell>
+                        <TableCell className="font-medium text-xs max-w-[250px] truncate">{(r?.key ?? "").replace("https://aiinasia.com", "")}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.clicks)}</TableCell>
+                        <TableCell className="text-right">{fmt(r?.impressions)}</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.ctr)}%</TableCell>
+                        <TableCell className="text-right">{fmtPct(r?.position)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
