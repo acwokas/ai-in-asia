@@ -495,10 +495,21 @@ export const useAnalyticsTracking = () => {
   }, [isInternalPath, getActiveSeconds]);
 
   // Track page views on route change — skip internal pages
+  // Deduplication: skip if the same path fires within 2 seconds
+  const lastTrackedPathRef = useRef<string>('');
+  const lastTrackedTimeRef = useRef<number>(0);
+
   useEffect(() => {
-    if (!isInternalPath) {
-      trackPageView();
+    if (isInternalPath) return;
+    const currentPath = location.pathname + location.search;
+    const now = Date.now();
+    if (currentPath === lastTrackedPathRef.current && now - lastTrackedTimeRef.current < 2000) {
+      if (!import.meta.env.PROD) console.log('[analytics] Skipping duplicate pageview for', currentPath);
+      return;
     }
+    lastTrackedPathRef.current = currentPath;
+    lastTrackedTimeRef.current = now;
+    trackPageView();
   }, [location.pathname, location.search, isInternalPath]);
 
   // Handle page visibility changes (tab switching, minimizing)
