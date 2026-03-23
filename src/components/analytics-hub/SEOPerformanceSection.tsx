@@ -263,8 +263,8 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Avg Position</p>
               <p className="text-2xl font-bold">
-                {gscQueries.rows.length > 0
-                  ? (gscQueries.rows.reduce((s: number, r: any) => s + r.position, 0) / gscQueries.rows.length).toFixed(1)
+                {(gscQueries?.rows?.length ?? 0) > 0
+                  ? fmtPct(gscQueries.rows.reduce((s: number, r: any) => s + safeNum(r?.position), 0) / gscQueries.rows.length)
                   : "N/A"}
               </p>
             </div>
