@@ -193,7 +193,7 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Clicks</p>
-              <p className="text-2xl font-bold">{(adsenseData.totals?.CLICKS ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmtN(adsenseData?.totals?.CLICKS)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Page RPM</p>
