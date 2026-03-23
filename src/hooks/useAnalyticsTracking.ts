@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Json } from '@/integrations/supabase/types';
+import { getOrCreateVisitorId } from '@/lib/visitorId';
 
 declare global {
   interface Window {
@@ -351,9 +352,11 @@ export const useAnalyticsTracking = () => {
     sessionDataRef.current = newSession;
 
     // Insert session to database
+    const visitorId = getOrCreateVisitorId();
     await supabase.from('analytics_sessions').insert({
       session_id: sessionId,
       user_id: user?.id || null,
+      visitor_id: visitorId,
       referrer: referrer || null,
       referrer_domain: getReferrerDomain(referrer),
       utm_source: utmParams.utm_source,
@@ -368,7 +371,7 @@ export const useAnalyticsTracking = () => {
       duration_seconds: 0,
       page_count: 0,
       is_bounce: true, // Assume bounce until proven otherwise
-    });
+    } as any);
 
     // Geo lookup — once per session, fire-and-forget
     fetchGeoCountry(sessionId);
@@ -492,10 +495,21 @@ export const useAnalyticsTracking = () => {
   }, [isInternalPath, getActiveSeconds]);
 
   // Track page views on route change — skip internal pages
+  // Deduplication: skip if the same path fires within 2 seconds
+  const lastTrackedPathRef = useRef<string>('');
+  const lastTrackedTimeRef = useRef<number>(0);
+
   useEffect(() => {
-    if (!isInternalPath) {
-      trackPageView();
+    if (isInternalPath) return;
+    const currentPath = location.pathname + location.search;
+    const now = Date.now();
+    if (currentPath === lastTrackedPathRef.current && now - lastTrackedTimeRef.current < 2000) {
+      if (!import.meta.env.PROD) console.log('[analytics] Skipping duplicate pageview for', currentPath);
+      return;
     }
+    lastTrackedPathRef.current = currentPath;
+    lastTrackedTimeRef.current = now;
+    trackPageView();
   }, [location.pathname, location.search, isInternalPath]);
 
   // Handle page visibility changes (tab switching, minimizing)

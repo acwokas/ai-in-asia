@@ -1,0 +1,1 @@
+ALTER TABLE public.analytics_sessions ADD COLUMN IF NOT EXISTS visitor_id TEXT;

@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format } from "date-fns";
 
 interface Props {
   startDate: string;
@@ -15,11 +16,14 @@ interface Props {
   uniqueVisitors: number;
 }
 
+// The date tracking started (visitor_id column added)
+const TRACKING_START_DATE = "2026-03-23";
+
 export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueVisitors }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
-      console.log("ReturningUsersSection v3 loaded");
+      console.log("ReturningUsersSection v4 loaded");
       const PAGE_SIZE = 1000;
 
       const fetchAllPageviews = async () => {
@@ -39,14 +43,49 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         return rows;
       };
 
-      const [streaksRes, pageviews] = await Promise.all([
+      // Fetch visitor_id data for return rate
+      const fetchVisitorSessions = async () => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data: batch } = await supabase
+            .from("analytics_sessions")
+            .select("visitor_id, started_at")
+            .gte("started_at", startDate)
+            .not("visitor_id", "is", null)
+            .range(from, from + PAGE_SIZE - 1);
+          const safe = batch ?? [];
+          rows.push(...safe);
+          if (safe.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        return rows;
+      };
+
+      const [streaksRes, pageviews, visitorSessions] = await Promise.all([
         supabase.from("reading_streaks")
           .select("user_id, current_streak, longest_streak, total_articles_read")
           .order("current_streak", { ascending: false }).limit(20),
         fetchAllPageviews(),
+        fetchVisitorSessions(),
       ]);
 
       const streaks = streaksRes.data ?? [];
+
+      // --- Visitor-based return rate ---
+      const visitorDates: Record<string, Set<string>> = {};
+      visitorSessions.forEach((s: any) => {
+        const vid = s?.visitor_id;
+        if (!vid) return;
+        const day = (s.started_at ?? "").slice(0, 10);
+        if (!day) return;
+        if (!visitorDates[vid]) visitorDates[vid] = new Set();
+        visitorDates[vid].add(day);
+      });
+      const totalUniqueVisitors = Object.keys(visitorDates).length;
+      const returningVisitors = Object.values(visitorDates).filter(dates => dates.size >= 2).length;
+      const visitorReturnRate = totalUniqueVisitors > 0
+        ? Math.round((returningVisitors / totalUniqueVisitors) * 100) : 0;
 
       // Build per-session pageview counts
       const pvPerSessionCount: Record<string, number> = {};
@@ -98,23 +137,28 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       return {
         bounceRate, avgPages,
         topStreaks: streaks.slice(0, 8), streakChartData, topRevisited,
+        totalUniqueVisitors, returningVisitors, visitorReturnRate,
       };
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // Return rate derived from shared session stats
-  const returning = uniqueVisitors > 0 ? Math.max(0, totalSessions - uniqueVisitors) : 0;
-  const returnRate = uniqueVisitors > 0 ? Math.round((returning / totalSessions) * 100) : 0;
-
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data) return <p className="text-sm text-muted-foreground">No data available</p>;
+
+  const { totalUniqueVisitors, returningVisitors, visitorReturnRate } = data;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Return Rate", value: `${returnRate}%`, sub: `${returning.toLocaleString()} repeat / ${totalSessions.toLocaleString()} total` },
+          {
+            label: "Return Rate (cookie)",
+            value: totalUniqueVisitors > 0 ? `${visitorReturnRate}%` : "N/A",
+            sub: totalUniqueVisitors > 0
+              ? `${returningVisitors.toLocaleString()} returning / ${totalUniqueVisitors.toLocaleString()} unique visitors`
+              : "No visitor_id data yet",
+          },
           { label: "Bounce Rate", value: `${data.bounceRate}%` },
           { label: "Avg Pages/Session", value: data.avgPages, sub: parseFloat(data.avgPages) > 10 ? "High value — may include bot traffic" : "Total pageviews ÷ sessions with PV" },
           { label: "Unique Visitors", value: uniqueVisitors },
@@ -126,6 +170,10 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
           </div>
         ))}
       </div>
+
+      <p className="text-xs text-muted-foreground bg-muted/50 rounded p-2">
+        📊 Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
+      </p>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div>
@@ -181,21 +229,21 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
 
       <InsightCard insights={(() => {
         const tips: string[] = [];
-        const rate = returnRate;
+        const rate = visitorReturnRate;
         const bounce = data.bounceRate;
 
-        if (uniqueVisitors === 0) {
-          tips.push("1. No visitor data yet. Return rate, bounce rate, and reading streaks will populate as sessions are tracked.");
+        if (totalUniqueVisitors === 0) {
+          tips.push("1. No visitor_id data yet. Cookie-based return rate tracking started — results will appear within 24-48 hours.");
           tips.push("2. Once data flows, aim for a 20%+ return rate and <50% bounce rate as healthy baselines.");
           return tips;
         }
 
         if (rate < 15) {
-          tips.push(`1. Only ${returning.toLocaleString()} repeat sessions out of ${totalSessions.toLocaleString()} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
+          tips.push(`1. Only ${returningVisitors.toLocaleString()} returning visitors out of ${totalUniqueVisitors.toLocaleString()} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
         } else if (rate < 30) {
-          tips.push(`1. ${rate}% return rate (${returning.toLocaleString()} repeat sessions) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
+          tips.push(`1. ${rate}% return rate (${returningVisitors.toLocaleString()} returning visitors) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
         } else {
-          tips.push(`1. Strong ${rate}% return rate with ${returning.toLocaleString()} repeat sessions — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
+          tips.push(`1. Strong ${rate}% return rate with ${returningVisitors.toLocaleString()} returning visitors — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
         }
 
         if (bounce > 60) {
@@ -209,8 +257,8 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         const bestStreak = (data?.topStreaks?.[0] as any)?.longest_streak ?? 0;
         if (bestStreak >= 7) {
           tips.push(`3. Top reading streak of ${bestStreak} days. Reward these readers with exclusive early-access content.`);
-        } else if (uniqueVisitors > 50) {
-          tips.push(`3. Best streak: ${bestStreak} days among ${uniqueVisitors.toLocaleString()} visitors. Publish on a consistent schedule and add push notification reminders.`);
+        } else if (totalUniqueVisitors > 50) {
+          tips.push(`3. Best streak: ${bestStreak} days among ${totalUniqueVisitors.toLocaleString()} visitors. Publish on a consistent schedule and add push notification reminders.`);
         }
 
         return tips;
