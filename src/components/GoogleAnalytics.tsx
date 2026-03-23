@@ -16,6 +16,7 @@ declare global {
 const GoogleAnalytics = () => {
   const location = useLocation();
   const prevPathRef = useRef<string>('');
+  const lastPushTimeRef = useRef<number>(0);
 
   // Track page views on route change via dataLayer for GTM
   useEffect(() => {
