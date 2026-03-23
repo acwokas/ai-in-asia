@@ -55,6 +55,7 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
       const pageCounts: Record<string, number> = {};
       for (const pv of pageviews) {
         const path = pv.page_path || "/";
+        if (path.includes("__lovable")) continue;
         pageCounts[path] = (pageCounts[path] || 0) + 1;
       }
       const topPages = Object.entries(pageCounts)

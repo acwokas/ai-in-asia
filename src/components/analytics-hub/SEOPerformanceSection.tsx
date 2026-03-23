@@ -95,7 +95,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
           engineCounts[engine] = (engineCounts[engine] || 0) + 1;
           dailyOrganic[day] = (dailyOrganic[day] || 0) + 1;
           const lp = s.landing_page || "/";
-          landingPageCounts[lp] = (landingPageCounts[lp] || 0) + 1;
+          if (!lp.includes("__lovable")) landingPageCounts[lp] = (landingPageCounts[lp] || 0) + 1;
         }
       }
 
