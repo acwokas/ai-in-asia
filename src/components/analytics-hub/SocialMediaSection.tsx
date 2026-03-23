@@ -205,7 +205,12 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-social-media", range],
     queryFn: async () => {
-      const sessions = await fetchAllSessions(startDate);
+      const endDate = new Date().toISOString();
+      const [sessions, totalSessionsRes] = await Promise.all([
+        fetchAllSessions(startDate),
+        supabase.rpc("get_total_sessions", { p_start: startDate, p_end: endDate }),
+      ]);
+      const rpcTotalSessions = (totalSessionsRes.error ? null : totalSessionsRes.data) ?? sessions.length;
       const socialSessions: { platform: string; campaign: string | null; duration: number; isBounce: boolean; pageCount: number }[] = [];
       let directSessions = 0;
 
@@ -222,7 +227,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
           }
         }
         if (platform) {
-          socialSessions.push({ platform, campaign: s.utm_campaign || null, duration: s.duration_seconds ?? 0, isBounce: s.is_bounce ?? true, pageCount: s.page_count ?? 1 });
+          socialSessions.push({ platform, campaign: s.utm_campaign || null, duration: Math.min(s.duration_seconds ?? 0, 1800), isBounce: s.is_bounce ?? true, pageCount: s.page_count ?? 1 });
         } else if (!ref || ref === "direct") {
           directSessions++;
         }
@@ -260,7 +265,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       const socialAvgDuration = totalSocial > 0 ? Math.round(socialSessions.reduce((s, x) => s + x.duration, 0) / totalSocial) : 0;
       const socialBounceRate = totalSocial > 0 ? Math.round((socialSessions.filter(x => x.isBounce).length / totalSocial) * 100) : 0;
 
-      return { totalSessions: sessions.length, totalSocial, directSessions, platforms, topCampaigns, socialAvgDuration, socialBounceRate };
+      return { totalSessions: rpcTotalSessions, totalSocial, directSessions, platforms, topCampaigns, socialAvgDuration, socialBounceRate };
     },
   });
 

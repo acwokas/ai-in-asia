@@ -61,7 +61,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
 
       const totalBriefingSessions = sessions.length;
       const avgDuration = sessions.length > 0
-        ? Math.round(sessions.reduce((sum, p) => sum + (p?.duration_seconds ?? 0), 0) / sessions.length) : 0;
+        ? Math.round(sessions.reduce((sum, p) => sum + Math.min(p?.duration_seconds ?? 0, 1800), 0) / sessions.length) : 0;
 
       const recentWeeks = weeklyData.slice(-2);
       const thisWeek = recentWeeks[recentWeeks.length - 1]?.sessions ?? 0;

@@ -71,8 +71,12 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-seo-performance", range],
     queryFn: async () => {
-      const sessions = await fetchAllSessions(startDate);
-      const totalSessions = sessions.length;
+      const endDate = new Date().toISOString();
+      const [sessions, totalSessionsRes] = await Promise.all([
+        fetchAllSessions(startDate),
+        supabase.rpc("get_total_sessions", { p_start: startDate, p_end: endDate }),
+      ]);
+      const totalSessions = (totalSessionsRes.error ? null : totalSessionsRes.data) ?? sessions.length;
       const days = differenceInDays(new Date(), new Date(startDate)) || 1;
 
       const organicSessions: typeof sessions = [];
@@ -98,7 +102,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
       const totalOrganic = organicSessions.length;
       const organicPct = totalSessions > 0 ? ((totalOrganic / totalSessions) * 100).toFixed(1) : "0";
       const organicAvgDuration = totalOrganic > 0
-        ? Math.round(organicSessions.reduce((s, x) => s + (x.duration_seconds ?? 0), 0) / totalOrganic)
+        ? Math.round(organicSessions.reduce((s, x) => s + Math.min(x.duration_seconds ?? 0, 1800), 0) / totalOrganic)
         : 0;
       const organicBounceRate = totalOrganic > 0
         ? Math.round((organicSessions.filter(x => x.is_bounce).length / totalOrganic) * 100)
