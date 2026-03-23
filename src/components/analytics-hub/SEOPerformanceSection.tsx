@@ -255,8 +255,8 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Avg CTR</p>
               <p className="text-2xl font-bold">
-                {gscQueries.totals?.impressions > 0
-                  ? ((gscQueries.totals.clicks / gscQueries.totals.impressions) * 100).toFixed(1)
+                {safeNum(gscQueries?.totals?.impressions) > 0
+                  ? fmtPct((safeNum(gscQueries?.totals?.clicks) / safeNum(gscQueries?.totals?.impressions)) * 100)
                   : "0"}%
               </p>
             </div>
