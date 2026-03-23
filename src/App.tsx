@@ -126,6 +126,7 @@ const SavedArticles = lazy(() => import("./pages/SavedArticles"));
 const EditorialStandards = lazy(() => import("./pages/EditorialStandards"));
 const Contribute = lazy(() => import("./pages/Contribute"));
 const MediaAndPartners = lazy(() => import("./pages/MediaAndPartners"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 const ThreeBeforeNineArchive = lazy(() => import("./pages/ThreeBeforeNineArchive"));
