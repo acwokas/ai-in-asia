@@ -197,7 +197,7 @@ export const MonetizationSection = ({ startDate, range }: Props) => {
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">Page RPM</p>
-              <p className="text-2xl font-bold">${(adsenseData.totals?.PAGE_VIEWS_RPM ?? 0).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${fmtD(adsenseData?.totals?.PAGE_VIEWS_RPM)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">CPC</p>
