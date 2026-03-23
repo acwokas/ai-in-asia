@@ -34,6 +34,12 @@ const GoogleAnalytics = () => {
 
     // Delay to allow react-helmet-async to update document.title before we read it
     const timer = setTimeout(() => {
+      // Deduplicate: skip if the same path was pushed within 2 seconds
+      const now = Date.now();
+      if (currentPath === prevPathRef.current && now - lastPushTimeRef.current < 2000) {
+        return;
+      }
+
       const pageTitle = document.title;
 
       window.dataLayer = window.dataLayer || [];
@@ -45,6 +51,7 @@ const GoogleAnalytics = () => {
       });
 
       prevPathRef.current = currentPath;
+      lastPushTimeRef.current = now;
     }, 300);
 
     return () => clearTimeout(timer);
