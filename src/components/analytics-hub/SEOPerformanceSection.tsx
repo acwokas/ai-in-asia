@@ -246,7 +246,7 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">GSC Total Clicks</p>
-              <p className="text-2xl font-bold">{(gscQueries.totals?.clicks ?? 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold">{fmt(gscQueries?.totals?.clicks)}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-xs text-muted-foreground">GSC Total Impressions</p>
