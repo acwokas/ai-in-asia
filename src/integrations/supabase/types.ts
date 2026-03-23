@@ -4177,6 +4177,10 @@ export type Database = {
         Args: { p_end: string; p_start: string }
         Returns: number
       }
+      get_total_sessions: {
+        Args: { p_end: string; p_start: string }
+        Returns: number
+      }
       get_trending_refresh_timestamp: { Args: never; Returns: string }
       get_unique_visitors: {
         Args: { p_end: string; p_start: string }
