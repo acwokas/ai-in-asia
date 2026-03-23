@@ -265,7 +265,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       const socialAvgDuration = totalSocial > 0 ? Math.round(socialSessions.reduce((s, x) => s + x.duration, 0) / totalSocial) : 0;
       const socialBounceRate = totalSocial > 0 ? Math.round((socialSessions.filter(x => x.isBounce).length / totalSocial) * 100) : 0;
 
-      return { totalSessions: sessions.length, totalSocial, directSessions, platforms, topCampaigns, socialAvgDuration, socialBounceRate };
+      return { totalSessions: rpcTotalSessions, totalSocial, directSessions, platforms, topCampaigns, socialAvgDuration, socialBounceRate };
     },
   });
 
