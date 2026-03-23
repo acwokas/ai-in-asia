@@ -54,6 +54,11 @@ const PUBLER_LABEL: Record<string, string> = {
   instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube",
 };
 
+const formatNumber = (value: unknown, fallback = "0") => {
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num.toLocaleString() : fallback;
+};
+
 /* ------------------------------------------------------------------ */
 /*  Publer types                                                        */
 /* ------------------------------------------------------------------ */
@@ -549,13 +554,13 @@ function PublerSection({ data: p, onRefresh }: { data: PublerSummary; onRefresh:
               {p.platformBreakdown.map(row => (
                 <TableRow key={row.platform}>
                   <TableCell className="font-medium">{row.label}</TableCell>
-                  <TableCell className="text-right">{row.published.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.scheduled.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.likes.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.comments.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.shares.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.impressions.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{row.clicks.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.published)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.scheduled)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.likes)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.comments)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.shares)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.impressions)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(row.clicks)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -576,10 +581,10 @@ function PublerSection({ data: p, onRefresh }: { data: PublerSummary; onRefresh:
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{post.text || "Untitled post"}</p>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>❤️ {post.likes.toLocaleString()}</span>
-                    <span>💬 {post.comments.toLocaleString()}</span>
-                    <span>🔗 {post.shares.toLocaleString()}</span>
-                    {post.impressions > 0 && <span>👁 {post.impressions.toLocaleString()}</span>}
+                    <span>❤️ {formatNumber(post.likes)}</span>
+                    <span>💬 {formatNumber(post.comments)}</span>
+                    <span>🔗 {formatNumber(post.shares)}</span>
+                    {(Number(post.impressions) || 0) > 0 && <span>👁 {formatNumber(post.impressions)}</span>}
                   </div>
                 </div>
               </div>
@@ -599,7 +604,7 @@ function MiniStat({ label, value, icon }: { label: string; value: number; icon?:
           {icon}
           <p className="text-xs text-muted-foreground">{label}</p>
         </div>
-        <p className="text-lg font-bold">{(value ?? 0).toLocaleString()}</p>
+        <p className="text-lg font-bold">{formatNumber(value)}</p>
       </CardContent>
     </Card>
   );
