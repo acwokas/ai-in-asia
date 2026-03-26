@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
-import { SidebarAd } from "@/components/GoogleAds";
+import { SidebarAd, InArticleAd } from "@/components/GoogleAds";
 import { ArticleStructuredData, BreadcrumbStructuredData, FAQPageStructuredData } from "@/components/StructuredData";
 import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
@@ -758,6 +758,8 @@ const Article = () => {
                   whoShouldPayAttention={(article.tldr_snapshot as any).whoShouldPayAttention}
                   whatChangesNext={(article.tldr_snapshot as any).whatChangesNext}
                 />
+                {/* Ad after AI Snapshot */}
+                <InArticleAd />
               </div>
             )}
 

@@ -262,28 +262,36 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
     
+    // Track which blocks are headings for ad injection
+    const isHeadingBlock: boolean[] = [];
+    
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
           block.includes('tiktok-embed') ||
           block.includes('youtube.com/embed')) {
+        isHeadingBlock.push(false);
         return block;
       }
       if (block.startsWith('### ')) {
         const text = block.substring(4);
         const id = generateHeadingId(text);
+        isHeadingBlock.push(true);
         return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('## ')) {
         const text = block.substring(3);
         const id = generateHeadingId(text);
+        isHeadingBlock.push(true);
         return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
       }
       if (block.startsWith('# ')) {
         const text = block.substring(2);
         const id = generateHeadingId(text);
+        isHeadingBlock.push(true);
         return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
+      isHeadingBlock.push(false);
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteLines = block.split('\n')
           .map(line => line.replace(/^>\s?/, '').trim())
@@ -324,9 +332,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
     });
     
-    // Inject ad after certain blocks
     const totalBlocks = htmlBlocks.length;
-    const adPosition = Math.floor(totalBlocks * 0.7);
 
     // Join, sanitize, and post-process as a single string for cross-block patterns
     let joinedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
@@ -344,7 +350,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
 
     // Split back into blocks for ad injection
     const sanitizedBlocks = htmlBlocks.map((_, index) => {
-      // Re-sanitize individual blocks for keying
       return DOMPurify.sanitize(htmlBlocks[index], {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
@@ -353,23 +358,38 @@ export const renderArticleContent = (content: any): React.ReactNode => {
 
     // Check if by-the-numbers wrapper was applied — if so, use joined version
     if (joinedHtml.includes('by-the-numbers')) {
-      const finalBlocks: React.ReactNode[] = [
-        <div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} />
-      ];
-      if (totalBlocks > 8) {
-        // Ad injection not feasible with joined HTML, skip
-      }
-      return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
+      return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
     }
 
+    // Build ad insertion points: inject an ad before every 3rd heading (after 8+ blocks)
+    const adInsertAfter = new Set<number>();
+    if (totalBlocks > 8) {
+      let headingCount = 0;
+      for (let i = 0; i < sanitizedBlocks.length; i++) {
+        if (isHeadingBlock[i]) {
+          headingCount++;
+          // Insert ad before the 4th, 7th, 10th… heading (i.e. every 3 headings)
+          if (headingCount > 0 && headingCount % 3 === 0) {
+            // Place the ad before this heading (after the previous block)
+            if (i > 0) adInsertAfter.add(i - 1);
+          }
+        }
+      }
+      // Guarantee at least one ad if there are enough blocks but few headings
+      if (adInsertAfter.size === 0) {
+        adInsertAfter.add(Math.floor(totalBlocks * 0.7));
+      }
+    }
+
+    let adCount = 0;
     const finalBlocks: React.ReactNode[] = [];
     sanitizedBlocks.forEach((sanitizedBlock, index) => {
       finalBlocks.push(
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
 
-      if (index === adPosition && totalBlocks > 8) {
-        finalBlocks.push(<InArticleAd key="ad-inline" />);
+      if (adInsertAfter.has(index)) {
+        finalBlocks.push(<InArticleAd key={`ad-inline-${adCount++}`} />);
       }
     });
     
