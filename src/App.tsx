@@ -247,6 +247,7 @@ const RootLayout = () => (
       <Suspense fallback={<HomepageSkeleton />}>
         <Outlet />
       </Suspense>
+      <MobileAnchorAd />
     </AnalyticsProvider>
   </>
 );
