@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ArticleCard from "./ArticleCard";
 import { Loader2 } from "lucide-react";
 import { memo, Fragment } from "react";
-import { MPUAd } from "./GoogleAds";
+
 import { dualPush } from "@/lib/dualTrack";
 
 interface YouMayAlsoLikeProps {
@@ -90,11 +90,6 @@ const YouMayAlsoLikeComponent = ({ excludeIds = [], skipCount = 0 }: YouMayAlsoL
                 publishedAt={article.published_at}
               />
             </div>
-            {index === 6 && (
-              <div className="flex items-center justify-center">
-                <MPUAd />
-              </div>
-            )}
           </Fragment>
         ))}
       </div>

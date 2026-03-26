@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp, Users, Loader2, BookOpen } from "lucide-react";
-import { FooterAd, MPUAd } from "@/components/GoogleAds";
+
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -897,17 +897,6 @@ const Index = () => {
                         : renderArticleCard(item.data, large)}
                     </div>
                   );
-                  // Insert an ad after every 4th card (positions 3, 7, ...)
-                  if ((i + 1) % 4 === 0 && i < mixedItems.length - 1) {
-                    nodes.push(
-                      <div key={`ad-latest-${i}`} className="flex items-center justify-center border border-border rounded-lg bg-card p-4">
-                        <div className="text-center">
-                          <span className="text-[11px] text-muted-foreground uppercase tracking-wider mb-2 block">Advertisement</span>
-                          <MPUAd />
-                        </div>
-                      </div>
-                    );
-                  }
                   return nodes;
                 })}
               </div>
