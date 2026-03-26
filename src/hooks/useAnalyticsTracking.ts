@@ -80,7 +80,7 @@ const fetchGeoCountry = async (sessionId: string) => {
     // Primary: Cloudflare Worker injects <meta name="cf-country" content="SG">
     const cfCountry = document.querySelector('meta[name="cf-country"]')?.getAttribute('content') || 'unknown';
 
-    if (cfCountry) {
+    if (cfCountry && cfCountry !== 'unknown') {
       console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${cfCountry} (via CF meta tag)`);
       await supabase
         .from('analytics_sessions')
