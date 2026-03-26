@@ -876,6 +876,7 @@ const Article = () => {
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
+                  <SidebarAd />
                   {article.categories?.id && (
                     <ArticleRailRelatedReading
                       categoryId={article.categories.id}
@@ -887,6 +888,11 @@ const Article = () => {
                 </div>
               </aside>
             </div>
+          </div>
+
+          {/* Multiplex ad below article content */}
+          <div className="container mx-auto px-4 max-w-[720px]">
+            <MultiplexAd />
           </div>
 
           {/* You Might Also Like */}
