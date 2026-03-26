@@ -76,23 +76,6 @@ const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
   </button>
 );
 
-const InlineMPU = () => (
-  <div className="flex flex-col items-center py-6">
-    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Advertisement</span>
-    <div className="rounded-xl border border-border bg-card overflow-hidden flex items-center justify-center p-4 min-h-[250px] w-full max-w-[336px]">
-      <MPUAd />
-    </div>
-  </div>
-);
-
-const AdCard = () => (
-  <div className="flex flex-col items-center">
-    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Advertisement</span>
-    <div className="rounded-xl border border-border bg-card overflow-hidden flex items-center justify-center w-[300px] h-[250px]">
-      <MPUAd />
-    </div>
-  </div>
-);
 
 /* ── Card variants for magazine-style layouts ── */
 
@@ -928,8 +911,6 @@ const Guides = () => {
                                   </Link>
                                 )}
                               </section>
-                              {/* MPU ad after 2nd and 5th sections */}
-                              {(sectionIndex === 1 || sectionIndex === 4) && <InlineMPU />}
                             </div>
                           );
                         })}
@@ -984,12 +965,11 @@ const Guides = () => {
                         </div>
                       )}
 
-                      <AdCard />
                     </div>
                   </div>
                 </div>
 
-                <div className="lg:hidden mt-8"><AdCard /></div>
+                
               </>
             ) : (
               <div className="text-center py-16 text-muted-foreground">
