@@ -18,7 +18,7 @@ function base64UrlToUint8Array(base64url: string): Uint8Array {
 
 async function importVapidKey(base64Key: string): Promise<CryptoKey> {
   const raw = base64UrlToUint8Array(base64Key)
-  return crypto.subtle.importKey('pkcs8', raw, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
+  return crypto.subtle.importKey('pkcs8', raw.buffer as ArrayBuffer, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
 }
 
 function uint8ToBase64Url(arr: Uint8Array): string {
