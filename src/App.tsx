@@ -44,6 +44,7 @@ const Index = lazy(() => import("./pages/Index").catch(() => { safeReloadOnce();
 const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() => { safeReloadOnce(); return import("./components/ConsentBanner"); }));
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
 const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => { safeReloadOnce(); return import("./components/ScoutChatbot"); }));
+const MobileAnchorAd = lazy(() => import("./components/MobileAnchorAd"));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
@@ -247,6 +248,7 @@ const RootLayout = () => (
       <Suspense fallback={<HomepageSkeleton />}>
         <Outlet />
       </Suspense>
+      <MobileAnchorAd />
     </AnalyticsProvider>
   </>
 );
