@@ -77,11 +77,10 @@ const getReferrerDomain = (referrer: string) => {
 // Read country from Cloudflare Worker-injected meta tag, fall back to timezone
 const fetchGeoCountry = async (sessionId: string) => {
   try {
-    // Primary: Cloudflare Worker injects <meta name="x-country" content="SG">
-    const meta = document.querySelector('meta[name="x-country"]');
-    const cfCountry = meta?.getAttribute('content')?.trim() || null;
+    // Primary: Cloudflare Worker injects <meta name="cf-country" content="SG">
+    const cfCountry = document.querySelector('meta[name="cf-country"]')?.getAttribute('content') || 'unknown';
 
-    if (cfCountry) {
+    if (cfCountry && cfCountry !== 'unknown') {
       console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${cfCountry} (via CF meta tag)`);
       await supabase
         .from('analytics_sessions')
