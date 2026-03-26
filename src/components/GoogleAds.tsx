@@ -1,126 +1,44 @@
-import { useEffect, useState, useRef } from "react";
-import { BusinessInAByteAd } from "./BusinessInAByteAd";
-import { PromptAndGoBanner } from "./PromptAndGoBanner";
-import { trackSponsorImpression, SponsorPlacement } from "@/hooks/useSponsorTracking";
+import { useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
+
+const GOOGLE_ADS_CLIENT = "ca-pub-4181437297386228";
 
 interface GoogleAdProps {
   slot: string;
   format?: "auto" | "rectangle" | "horizontal" | "vertical";
   responsive?: boolean;
   className?: string;
-  houseAdType?: "mpu" | "banner" | "none";
-  placement?: SponsorPlacement;
 }
 
-// Google Ads Publisher ID
-const GOOGLE_ADS_CLIENT = "ca-pub-4181437297386228";
-
-const GoogleAd = ({
-  slot,
-  format = "auto",
-  responsive = true,
-  className = "",
-  houseAdType = "mpu",
-  placement,
-}: GoogleAdProps) => {
-  const [showHouseAd, setShowHouseAd] = useState(false);
-  const adRef = useRef<HTMLElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const impressionTracked = useRef(false);
-
-  // Track Google Ad impression when ad loads successfully
-  useEffect(() => {
-    if (!showHouseAd && placement && !impressionTracked.current) {
-      impressionTracked.current = true;
-      trackSponsorImpression(placement, 'Google AdSense', { slot });
-    }
-  }, [showHouseAd, placement, slot]);
+const GoogleAd = ({ slot, format = "auto", responsive = true, className }: GoogleAdProps) => {
+  const adRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
 
   useEffect(() => {
-    // Only load in production
-    if (import.meta.env.PROD) {
-      try {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        
-        // Check if ad loaded after 2 seconds
-        timeoutRef.current = setTimeout(() => {
-          if (adRef.current) {
-            const adElement = adRef.current;
-            const hasContent = adElement.innerHTML.length > 0;
-            const hasHeight = adElement.offsetHeight > 0;
-            
-            // If ad has no content or height, show house ad
-            if (!hasContent || !hasHeight) {
-              setShowHouseAd(true);
-            }
-          }
-        }, 2000);
-      } catch (err) {
-        console.error("AdSense error:", err);
-        setShowHouseAd(true);
-      }
+    if (!import.meta.env.PROD || pushed.current) return;
+    pushed.current = true;
+    try {
+      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+    } catch (err) {
+      console.error("AdSense push error:", err);
     }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
   }, []);
 
-  // Don't render ads in development - show house ads
-  if (import.meta.env.DEV) {
-    if (houseAdType === "banner") {
-      return (
-        <div className={className}>
-          <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
-          <PromptAndGoBanner />
-        </div>
-      );
-    }
-    if (houseAdType === "mpu") {
-      return (
-        <div className={className}>
-          <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
-          <BusinessInAByteAd />
-        </div>
-      );
-    }
+  if (!import.meta.env.PROD) {
     return (
       <div
-        className={`bg-muted border border-border rounded-lg flex items-center justify-center text-muted-foreground text-sm ${className}`}
-        style={{ minHeight: "280px" }}
+        className={cn("bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs", className)}
+        style={{ minHeight: format === "vertical" ? "400px" : "90px" }}
       >
-        Ad Placeholder ({format})
+        Ad: {slot} ({format})
       </div>
     );
   }
 
-  // Show house ad if Google Ad failed to load
-  if (showHouseAd) {
-    if (houseAdType === "banner") {
-      return (
-        <div className={className}>
-          <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
-          <PromptAndGoBanner />
-        </div>
-      );
-    }
-    if (houseAdType === "mpu") {
-      return (
-        <div className={className}>
-          <p className="text-xs text-muted-foreground mb-2 text-center">Advertisement</p>
-          <BusinessInAByteAd />
-        </div>
-      );
-    }
-    return null;
-  }
-
   return (
     <ins
-      ref={adRef as any}
-      className={`adsbygoogle ${className}`}
+      ref={adRef}
+      className={cn("adsbygoogle block", className)}
       style={{ display: "block" }}
       data-ad-client={GOOGLE_ADS_CLIENT}
       data-ad-slot={slot}
@@ -132,63 +50,26 @@ const GoogleAd = ({
 
 export default GoogleAd;
 
-// Pre-configured ad components for common placements
-export const SidebarAd = ({ className = "" }: { className?: string }) => (
-  <div className={className}>
-    <GoogleAd
-      slot="1044321413"
-      format="vertical"
-      houseAdType="mpu"
-      placement="google_ad_sidebar"
-    />
+/** In-article ad — between content sections */
+export const InArticleAd = ({ className }: { className?: string }) => (
+  <div className={cn("my-8 max-w-full overflow-hidden", className)}>
+    <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>
+    <GoogleAd slot="3478913062" format="rectangle" />
   </div>
 );
 
-export const InArticleAd = () => (
-  <div className="my-8">
-    <GoogleAd
-      slot="3478913062"
-      format="rectangle"
-      houseAdType="mpu"
-      placement="google_ad_in_article"
-    />
+/** Sidebar ad — desktop article rail */
+export const SidebarAd = ({ className }: { className?: string }) => (
+  <div className={cn("w-full overflow-hidden", className)}>
+    <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>
+    <GoogleAd slot="1044321413" format="vertical" />
   </div>
 );
 
-export const FooterAd = () => (
-  <div className="container mx-auto px-4 py-6" style={{ minHeight: '120px', overflow: 'visible' }}>
-    <GoogleAd
-      slot="8539668053"
-      format="horizontal"
-      houseAdType="banner"
-      placement="google_ad_footer"
-    />
+/** Multiplex ad — below article content */
+export const MultiplexAd = ({ className }: { className?: string }) => (
+  <div className={cn("my-8 max-w-full overflow-hidden", className)}>
+    <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>
+    <GoogleAd slot="8539668053" format="auto" />
   </div>
 );
-
-// MPU Ad for Category pages (300x250)
-export const MPUAd = ({ className = "" }: { className?: string }) => (
-  <div className={className}>
-    <GoogleAd
-      slot="1044321413"
-      format="rectangle"
-      responsive={false}
-      houseAdType="mpu"
-      placement="google_ad_mpu"
-    />
-  </div>
-);
-
-// Load Google AdSense script
-export const loadGoogleAdsScript = () => {
-  if (
-    import.meta.env.PROD &&
-    !document.querySelector('script[src*="adsbygoogle"]')
-  ) {
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADS_CLIENT}`;
-    script.crossOrigin = "anonymous";
-    document.head.appendChild(script);
-  }
-};
