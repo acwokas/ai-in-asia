@@ -74,43 +74,41 @@ const getReferrerDomain = (referrer: string) => {
   }
 };
 
-// Timezone → country mapping (covers major IANA zones)
-const TZ_COUNTRY: Record<string, string> = {
-  'Asia/Tokyo': 'Japan', 'Asia/Seoul': 'South Korea', 'Asia/Shanghai': 'China',
-  'Asia/Hong_Kong': 'Hong Kong', 'Asia/Taipei': 'Taiwan', 'Asia/Singapore': 'Singapore',
-  'Asia/Kuala_Lumpur': 'Malaysia', 'Asia/Bangkok': 'Thailand', 'Asia/Jakarta': 'Indonesia',
-  'Asia/Ho_Chi_Minh': 'Vietnam', 'Asia/Manila': 'Philippines', 'Asia/Kolkata': 'India',
-  'Asia/Calcutta': 'India', 'Asia/Colombo': 'Sri Lanka', 'Asia/Dhaka': 'Bangladesh',
-  'Asia/Karachi': 'Pakistan', 'Asia/Dubai': 'United Arab Emirates', 'Asia/Riyadh': 'Saudi Arabia',
-  'Asia/Qatar': 'Qatar', 'Asia/Beirut': 'Lebanon', 'Asia/Jerusalem': 'Israel',
-  'Asia/Almaty': 'Kazakhstan', 'Asia/Tashkent': 'Uzbekistan',
-  'Europe/London': 'United Kingdom', 'Europe/Dublin': 'Ireland',
-  'Europe/Paris': 'France', 'Europe/Berlin': 'Germany', 'Europe/Amsterdam': 'Netherlands',
-  'Europe/Brussels': 'Belgium', 'Europe/Zurich': 'Switzerland', 'Europe/Vienna': 'Austria',
-  'Europe/Rome': 'Italy', 'Europe/Madrid': 'Spain', 'Europe/Lisbon': 'Portugal',
-  'Europe/Stockholm': 'Sweden', 'Europe/Oslo': 'Norway', 'Europe/Copenhagen': 'Denmark',
-  'Europe/Helsinki': 'Finland', 'Europe/Warsaw': 'Poland', 'Europe/Prague': 'Czech Republic',
-  'Europe/Budapest': 'Hungary', 'Europe/Bucharest': 'Romania', 'Europe/Athens': 'Greece',
-  'Europe/Istanbul': 'Turkey', 'Europe/Moscow': 'Russia', 'Europe/Kiev': 'Ukraine',
-  'Europe/Kyiv': 'Ukraine',
-  'America/New_York': 'United States', 'America/Chicago': 'United States',
-  'America/Denver': 'United States', 'America/Los_Angeles': 'United States',
-  'America/Phoenix': 'United States', 'America/Anchorage': 'United States',
-  'Pacific/Honolulu': 'United States', 'America/Toronto': 'Canada',
-  'America/Vancouver': 'Canada', 'America/Edmonton': 'Canada',
-  'America/Mexico_City': 'Mexico', 'America/Sao_Paulo': 'Brazil',
-  'America/Argentina/Buenos_Aires': 'Argentina', 'America/Bogota': 'Colombia',
-  'America/Lima': 'Peru', 'America/Santiago': 'Chile',
-  'Australia/Sydney': 'Australia', 'Australia/Melbourne': 'Australia',
-  'Australia/Brisbane': 'Australia', 'Australia/Perth': 'Australia',
-  'Pacific/Auckland': 'New Zealand', 'Africa/Cairo': 'Egypt',
-  'Africa/Lagos': 'Nigeria', 'Africa/Nairobi': 'Kenya',
-  'Africa/Johannesburg': 'South Africa', 'Africa/Casablanca': 'Morocco',
-};
-
-// Detect country from browser timezone — free, instant, no API calls
+// Read country from Cloudflare Worker-injected meta tag, fall back to timezone
 const fetchGeoCountry = async (sessionId: string) => {
   try {
+    // Primary: Cloudflare Worker injects <meta name="x-country" content="SG">
+    const meta = document.querySelector('meta[name="x-country"]');
+    const cfCountry = meta?.getAttribute('content')?.trim() || null;
+
+    if (cfCountry) {
+      console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${cfCountry} (via CF meta tag)`);
+      await supabase
+        .from('analytics_sessions')
+        .update({ country: cfCountry, city: null })
+        .eq('session_id', sessionId);
+      return;
+    }
+
+    // Fallback: timezone-based detection
+    const TZ_COUNTRY: Record<string, string> = {
+      'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Shanghai': 'CN',
+      'Asia/Hong_Kong': 'HK', 'Asia/Taipei': 'TW', 'Asia/Singapore': 'SG',
+      'Asia/Kuala_Lumpur': 'MY', 'Asia/Bangkok': 'TH', 'Asia/Jakarta': 'ID',
+      'Asia/Ho_Chi_Minh': 'VN', 'Asia/Manila': 'PH', 'Asia/Kolkata': 'IN',
+      'Asia/Calcutta': 'IN', 'Asia/Colombo': 'LK', 'Asia/Dhaka': 'BD',
+      'Asia/Karachi': 'PK', 'Asia/Dubai': 'AE', 'Asia/Riyadh': 'SA',
+      'Europe/London': 'GB', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE',
+      'Europe/Rome': 'IT', 'Europe/Madrid': 'ES', 'Europe/Amsterdam': 'NL',
+      'Europe/Istanbul': 'TR', 'Europe/Moscow': 'RU',
+      'America/New_York': 'US', 'America/Chicago': 'US',
+      'America/Denver': 'US', 'America/Los_Angeles': 'US',
+      'America/Toronto': 'CA', 'America/Vancouver': 'CA',
+      'America/Sao_Paulo': 'BR', 'America/Mexico_City': 'MX',
+      'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU',
+      'Pacific/Auckland': 'NZ', 'Africa/Lagos': 'NG',
+      'Africa/Johannesburg': 'ZA', 'Africa/Cairo': 'EG',
+    };
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const country = TZ_COUNTRY[tz] || null;
     if (country) {
@@ -120,10 +118,10 @@ const fetchGeoCountry = async (sessionId: string) => {
         .update({ country, city: null })
         .eq('session_id', sessionId);
     } else {
-      console.warn(`[geo] Unknown timezone "${tz}" — no country mapped`);
+      console.warn(`[geo] No CF meta tag and unknown timezone "${tz}"`);
     }
   } catch (err) {
-    console.warn(`[geo] Timezone detection failed:`, err);
+    console.warn(`[geo] Geo detection failed:`, err);
   }
 };
 
