@@ -72,7 +72,7 @@ serve(async (req) => {
           }
         }
       } catch (e) {
-        console.warn('JWT recovery failed:', e.message);
+        console.warn('JWT recovery failed:', (e as Error).message);
       }
     }
 
