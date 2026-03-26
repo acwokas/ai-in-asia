@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X, Rocket, Layers } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { MPUAd } from "@/components/GoogleAds";
+
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 
 const guideHref = (slug: string, topicCategory?: string | null) => {

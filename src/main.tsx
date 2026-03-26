@@ -4,7 +4,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { del } from "idb-keyval";
 import App from "./App.tsx";
 import "./index.css";
-import { loadGoogleAdsScript } from "./components/GoogleAds";
+
 // Auto-reload on stale chunk errors after deployment
 window.addEventListener("vite:preloadError", (event) => {
     event.preventDefault();
@@ -57,8 +57,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// Load Google AdSense script
-loadGoogleAdsScript();
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

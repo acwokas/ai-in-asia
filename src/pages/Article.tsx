@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
-import { SidebarAd, InArticleAd } from "@/components/GoogleAds";
+
 import { ArticleStructuredData, BreadcrumbStructuredData, FAQPageStructuredData } from "@/components/StructuredData";
 import { HowToStructuredData, parseHowToSteps, isHowToArticle } from "@/components/HowToStructuredData";
 import PolicyArticleContent from "@/components/PolicyArticleContent";
@@ -758,8 +758,6 @@ const Article = () => {
                   whoShouldPayAttention={(article.tldr_snapshot as any).whoShouldPayAttention}
                   whatChangesNext={(article.tldr_snapshot as any).whatChangesNext}
                 />
-                {/* Ad after AI Snapshot */}
-                <InArticleAd />
               </div>
             )}
 
@@ -878,11 +876,6 @@ const Article = () => {
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
                 <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
-                  <div className="w-[300px] max-w-[300px] overflow-hidden pt-0">
-                    <div style={{ border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", borderRadius: "4px" }}>
-                      <SidebarAd />
-                    </div>
-                  </div>
                   {article.categories?.id && (
                     <ArticleRailRelatedReading
                       categoryId={article.categories.id}
@@ -912,10 +905,6 @@ const Article = () => {
             <LearningPathCallout article={article} />
           </div>
 
-          {/* Ad between article end and Related Guides */}
-          <div className="container mx-auto px-4 max-w-[720px] my-8">
-            <InArticleAd />
-          </div>
 
           {/* Recommended Guides — cross-link to long-form content */}
           {article.article_type !== 'policy_article' && (

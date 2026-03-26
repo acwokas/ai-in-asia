@@ -6,7 +6,7 @@
 
 import DOMPurify from "dompurify";
 
-import { InArticleAd } from "@/components/GoogleAds";
+
 import { fixEncoding } from "@/lib/textUtils";
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
@@ -388,9 +388,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
         <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
       );
 
-      if (adInsertAfter.has(index)) {
-        finalBlocks.push(<InArticleAd key={`ad-inline-${adCount++}`} />);
-      }
     });
     
     return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;

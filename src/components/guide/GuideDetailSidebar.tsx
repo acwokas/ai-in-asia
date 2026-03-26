@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { SidebarAd } from "@/components/GoogleAds";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -84,10 +84,6 @@ export default function GuideDetailSidebar({ sections, currentGuideId, topicCate
           </ul>
         </nav>
 
-        {/* Ad slot */}
-        <div className="mt-8">
-          <SidebarAd />
-        </div>
 
         {/* Related Guides */}
         <RelatedGuides currentGuideId={currentGuideId} topicCategory={topicCategory} />
