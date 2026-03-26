@@ -889,13 +889,26 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 {mixedItems.map((item, i) => {
                   const large = isFeatured(i);
-                  return (
+                  const nodes = [];
+                  nodes.push(
                     <div key={item.kind === "guide" ? `guide-${item.data.id}` : item.data.id} className={large ? 'md:col-span-2' : ''}>
                       {item.kind === "guide"
                         ? renderGuideCard(item.data, large)
                         : renderArticleCard(item.data, large)}
                     </div>
                   );
+                  // Insert an ad after every 4th card (positions 3, 7, ...)
+                  if ((i + 1) % 4 === 0 && i < mixedItems.length - 1) {
+                    nodes.push(
+                      <div key={`ad-latest-${i}`} className="flex items-center justify-center border border-border rounded-lg bg-card p-4">
+                        <div className="text-center">
+                          <span className="text-[11px] text-muted-foreground uppercase tracking-wider mb-2 block">Advertisement</span>
+                          <MPUAd />
+                        </div>
+                      </div>
+                    );
+                  }
+                  return nodes;
                 })}
               </div>
             );
