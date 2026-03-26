@@ -6,7 +6,7 @@
 
 import DOMPurify from "dompurify";
 
-
+import { InArticleAd } from "@/components/GoogleAds";
 import { fixEncoding } from "@/lib/textUtils";
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
@@ -361,9 +361,25 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
     }
 
-    const finalBlocks: React.ReactNode[] = sanitizedBlocks.map((sanitizedBlock, index) => (
-      <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
-    ));
+    // Insert in-article ad after the 3rd heading (if article is long enough)
+    let headingCount = 0;
+    const adInsertAfterIndex = (() => {
+      for (let i = 0; i < isHeadingBlock.length; i++) {
+        if (isHeadingBlock[i]) {
+          headingCount++;
+          if (headingCount === 3) return i;
+        }
+      }
+      return -1;
+    })();
+
+    const finalBlocks: React.ReactNode[] = [];
+    sanitizedBlocks.forEach((sanitizedBlock, index) => {
+      finalBlocks.push(<div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />);
+      if (index === adInsertAfterIndex && totalBlocks > 8) {
+        finalBlocks.push(<InArticleAd key="in-article-ad" />);
+      }
+    });
     
     return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
   }
