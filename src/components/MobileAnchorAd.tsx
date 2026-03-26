@@ -22,7 +22,6 @@ const MobileAnchorAd = () => {
           slot="8539668053"
           format="horizontal"
           houseAdType="banner"
-          placement="google_ad_mobile_anchor"
         />
       </div>
     </div>
