@@ -348,9 +348,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
-    // Split back into blocks for ad injection
-    const sanitizedBlocks = htmlBlocks.map((_, index) => {
-      return DOMPurify.sanitize(htmlBlocks[index], {
+    // Split back into blocks for rendering
+    const sanitizedBlocks = htmlBlocks.map((block) => {
+      return DOMPurify.sanitize(block, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
         ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
       });
@@ -361,34 +361,9 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
     }
 
-    // Build ad insertion points: inject an ad before every 3rd heading (after 8+ blocks)
-    const adInsertAfter = new Set<number>();
-    if (totalBlocks > 8) {
-      let headingCount = 0;
-      for (let i = 0; i < sanitizedBlocks.length; i++) {
-        if (isHeadingBlock[i]) {
-          headingCount++;
-          // Insert ad before the 4th, 7th, 10th… heading (i.e. every 3 headings)
-          if (headingCount > 0 && headingCount % 3 === 0) {
-            // Place the ad before this heading (after the previous block)
-            if (i > 0) adInsertAfter.add(i - 1);
-          }
-        }
-      }
-      // Guarantee at least one ad if there are enough blocks but few headings
-      if (adInsertAfter.size === 0) {
-        adInsertAfter.add(Math.floor(totalBlocks * 0.7));
-      }
-    }
-
-    let adCount = 0;
-    const finalBlocks: React.ReactNode[] = [];
-    sanitizedBlocks.forEach((sanitizedBlock, index) => {
-      finalBlocks.push(
-        <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
-      );
-
-    });
+    const finalBlocks: React.ReactNode[] = sanitizedBlocks.map((sanitizedBlock, index) => (
+      <div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />
+    ));
     
     return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
   }
