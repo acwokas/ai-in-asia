@@ -1,3 +1,4 @@
+// Redeploy trigger March 26 2026
 // Performance pass completed: 2026-02-21 - lazy loading, code splitting, image optimization, font loading, animation cleanup
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
