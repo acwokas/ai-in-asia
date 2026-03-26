@@ -1,4 +1,4 @@
-import { memo } from "react";
+import React, { memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ArticleCard from "./ArticleCard";
@@ -119,22 +119,30 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
 
         {/* Remaining articles */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
-          {restArticles.map((article: any) => (
-            <div key={article.id} onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
-              <ArticleCard
-                title={article.title}
-                excerpt={article.excerpt || ""}
-                category={article.categories?.name || ""}
-                categorySlug={article.categories?.slug || "uncategorized"}
-                author={article.authors?.name || "Intelligence Desk"}
-                readTime={`${article.reading_time_minutes || 5} min read`}
-                image={article.featured_image_url || ""}
-                slug={article.slug}
-                isTrending={article.is_trending || false}
-                commentCount={article.comment_count || 0}
-                publishedAt={article.published_at}
-              />
-            </div>
+          {restArticles.map((article: any, idx: number) => (
+            <React.Fragment key={article.id}>
+              <div onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: article.title, article_slug: article.slug }); }}>
+                <ArticleCard
+                  title={article.title}
+                  excerpt={article.excerpt || ""}
+                  category={article.categories?.name || ""}
+                  categorySlug={article.categories?.slug || "uncategorized"}
+                  author={article.authors?.name || "Intelligence Desk"}
+                  readTime={`${article.reading_time_minutes || 5} min read`}
+                  image={article.featured_image_url || ""}
+                  slug={article.slug}
+                  isTrending={article.is_trending || false}
+                  commentCount={article.comment_count || 0}
+                  publishedAt={article.published_at}
+                />
+              </div>
+              {idx === 1 && (
+                <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
+                  <span className="text-[11px] text-muted-foreground uppercase tracking-wider mb-3">Advertisement</span>
+                  <BusinessInAByteAd />
+                </div>
+              )}
+            </React.Fragment>
           ))}
           {/* Ad card styled to match grid */}
           <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
