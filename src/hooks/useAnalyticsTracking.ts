@@ -74,42 +74,57 @@ const getReferrerDomain = (referrer: string) => {
   }
 };
 
-// Fire-and-forget geo lookup — one call per session
-const fetchGeoCountry = async (sessionId: string) => {
-  const providers = [
-    {
-      url: 'https://ipapi.co/json/',
-      parse: (geo: any) => ({ country: geo?.country_name, city: geo?.city }),
-    },
-    {
-      url: 'https://ip-api.com/json/?fields=country,city',
-      parse: (geo: any) => ({ country: geo?.country, city: geo?.city }),
-    },
-  ];
+// Timezone → country mapping (covers major IANA zones)
+const TZ_COUNTRY: Record<string, string> = {
+  'Asia/Tokyo': 'Japan', 'Asia/Seoul': 'South Korea', 'Asia/Shanghai': 'China',
+  'Asia/Hong_Kong': 'Hong Kong', 'Asia/Taipei': 'Taiwan', 'Asia/Singapore': 'Singapore',
+  'Asia/Kuala_Lumpur': 'Malaysia', 'Asia/Bangkok': 'Thailand', 'Asia/Jakarta': 'Indonesia',
+  'Asia/Ho_Chi_Minh': 'Vietnam', 'Asia/Manila': 'Philippines', 'Asia/Kolkata': 'India',
+  'Asia/Calcutta': 'India', 'Asia/Colombo': 'Sri Lanka', 'Asia/Dhaka': 'Bangladesh',
+  'Asia/Karachi': 'Pakistan', 'Asia/Dubai': 'United Arab Emirates', 'Asia/Riyadh': 'Saudi Arabia',
+  'Asia/Qatar': 'Qatar', 'Asia/Beirut': 'Lebanon', 'Asia/Jerusalem': 'Israel',
+  'Asia/Almaty': 'Kazakhstan', 'Asia/Tashkent': 'Uzbekistan',
+  'Europe/London': 'United Kingdom', 'Europe/Dublin': 'Ireland',
+  'Europe/Paris': 'France', 'Europe/Berlin': 'Germany', 'Europe/Amsterdam': 'Netherlands',
+  'Europe/Brussels': 'Belgium', 'Europe/Zurich': 'Switzerland', 'Europe/Vienna': 'Austria',
+  'Europe/Rome': 'Italy', 'Europe/Madrid': 'Spain', 'Europe/Lisbon': 'Portugal',
+  'Europe/Stockholm': 'Sweden', 'Europe/Oslo': 'Norway', 'Europe/Copenhagen': 'Denmark',
+  'Europe/Helsinki': 'Finland', 'Europe/Warsaw': 'Poland', 'Europe/Prague': 'Czech Republic',
+  'Europe/Budapest': 'Hungary', 'Europe/Bucharest': 'Romania', 'Europe/Athens': 'Greece',
+  'Europe/Istanbul': 'Turkey', 'Europe/Moscow': 'Russia', 'Europe/Kiev': 'Ukraine',
+  'Europe/Kyiv': 'Ukraine',
+  'America/New_York': 'United States', 'America/Chicago': 'United States',
+  'America/Denver': 'United States', 'America/Los_Angeles': 'United States',
+  'America/Phoenix': 'United States', 'America/Anchorage': 'United States',
+  'Pacific/Honolulu': 'United States', 'America/Toronto': 'Canada',
+  'America/Vancouver': 'Canada', 'America/Edmonton': 'Canada',
+  'America/Mexico_City': 'Mexico', 'America/Sao_Paulo': 'Brazil',
+  'America/Argentina/Buenos_Aires': 'Argentina', 'America/Bogota': 'Colombia',
+  'America/Lima': 'Peru', 'America/Santiago': 'Chile',
+  'Australia/Sydney': 'Australia', 'Australia/Melbourne': 'Australia',
+  'Australia/Brisbane': 'Australia', 'Australia/Perth': 'Australia',
+  'Pacific/Auckland': 'New Zealand', 'Africa/Cairo': 'Egypt',
+  'Africa/Lagos': 'Nigeria', 'Africa/Nairobi': 'Kenya',
+  'Africa/Johannesburg': 'South Africa', 'Africa/Casablanca': 'Morocco',
+};
 
-  for (const provider of providers) {
-    try {
-      const res = await fetch(provider.url, { signal: AbortSignal.timeout(5000) });
-      if (!res.ok) {
-        console.warn(`[geo] ${provider.url} returned ${res.status}`);
-        continue;
-      }
-      const geo = await res.json();
-      const { country, city } = provider.parse(geo);
-      if (country) {
-        console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${country}, ${city ?? 'unknown city'} (via ${new URL(provider.url).hostname})`);
-        await supabase
-          .from('analytics_sessions')
-          .update({ country, city: city || null })
-          .eq('session_id', sessionId);
-        return;
-      }
-      console.warn(`[geo] ${provider.url} returned empty country`);
-    } catch (err) {
-      console.warn(`[geo] ${provider.url} failed:`, err);
+// Detect country from browser timezone — free, instant, no API calls
+const fetchGeoCountry = async (sessionId: string) => {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const country = TZ_COUNTRY[tz] || null;
+    if (country) {
+      console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${country} (via timezone ${tz})`);
+      await supabase
+        .from('analytics_sessions')
+        .update({ country, city: null })
+        .eq('session_id', sessionId);
+    } else {
+      console.warn(`[geo] Unknown timezone "${tz}" — no country mapped`);
     }
+  } catch (err) {
+    console.warn(`[geo] Timezone detection failed:`, err);
   }
-  console.warn(`[geo] All geo providers failed for session ${sessionId.slice(0, 8)}…`);
 };
 
 // Global event tracking function (can be used outside React components)
