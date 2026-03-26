@@ -758,6 +758,8 @@ const Article = () => {
                   whoShouldPayAttention={(article.tldr_snapshot as any).whoShouldPayAttention}
                   whatChangesNext={(article.tldr_snapshot as any).whatChangesNext}
                 />
+                {/* Ad after AI Snapshot */}
+                <InArticleAd />
               </div>
             )}
 
