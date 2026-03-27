@@ -20,6 +20,7 @@ import { subDays } from "date-fns";
 import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
 import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
 import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
+import { RealtimeDashboard } from "@/components/admin/RealtimeDashboard";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
