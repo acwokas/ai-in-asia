@@ -22,6 +22,7 @@ import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePer
 import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
 import { RealtimeDashboard } from "@/components/admin/RealtimeDashboard";
 import { PeriodAnalyticsDashboard } from "@/components/admin/PeriodAnalyticsDashboard";
+import { QuarterComparisonDashboard } from "@/components/admin/QuarterComparisonDashboard";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
@@ -387,6 +388,8 @@ const Admin = () => {
         <RealtimeDashboard />
       ) : tp.period === "24h" || tp.period === "7d" ? (
         <PeriodAnalyticsDashboard period={tp.period} />
+      ) : tp.period === "compare" ? (
+        <QuarterComparisonDashboard currentQuarter={tp.currentQuarter} comparisonQuarter={tp.comparisonQuarter} />
       ) : (
         <>
           {/* ── Top stat cards ──────────────────────────────────── */}
