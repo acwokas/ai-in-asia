@@ -41,6 +41,7 @@ const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLa
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import AdUnit from "@/components/AdUnit";
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -730,6 +731,11 @@ const Index = () => {
           <Suspense fallback={null}>
             <TrendingVisualStrip excludeIds={trendingExcludeIds} />
           </Suspense>
+        </div>
+
+        {/* Homepage ad between trending and latest stories */}
+        <div className="container mx-auto px-4 my-6" style={{ minHeight: '100px' }}>
+          <AdUnit slot="1044321413" format="auto" responsive={true} />
         </div>
 
         {/* More Stories grid */}

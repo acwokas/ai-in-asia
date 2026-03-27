@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
-import { SidebarAd, MultiplexAd } from "@/components/GoogleAds";
+import { SidebarAd, MultiplexAd, InArticleAd } from "@/components/GoogleAds";
 import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
@@ -761,6 +761,11 @@ const Article = () => {
                 />
               </div>
             )}
+
+            {/* In-article ad — after TLDR / first major section */}
+            <div className="max-w-[720px]" style={{ minHeight: '100px' }}>
+              <InArticleAd />
+            </div>
 
             {/* Mobile TOC */}
             <div className="max-w-[720px]">
