@@ -385,6 +385,8 @@ const Admin = () => {
 
       {tp.period === "30m" ? (
         <RealtimeDashboard />
+      ) : tp.period === "24h" || tp.period === "7d" ? (
+        <PeriodAnalyticsDashboard period={tp.period} />
       ) : (
         <>
           {/* ── Top stat cards ──────────────────────────────────── */}
