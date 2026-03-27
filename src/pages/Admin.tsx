@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 import { useAdminActions } from "@/hooks/useAdminActions";
-import { subDays, startOfDay, endOfDay } from "date-fns";
+import { subDays } from "date-fns";
 import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
 import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
 import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
