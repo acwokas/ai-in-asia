@@ -39,6 +39,7 @@ const Admin = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const adminActions = useAdminActions();
+  const tp = useDashboardTimePeriod();
 
   // Dialog state
   const [authorsDialogOpen, setAuthorsDialogOpen] = useState(false);
