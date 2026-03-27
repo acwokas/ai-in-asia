@@ -639,13 +639,30 @@ function StatCard({ label, value, icon: Icon, loading, onClick, pulse }: {
   );
 }
 
-function AnalyticsMiniRow({ icon: Icon, label, value }: { icon: any; label: string; value: number | undefined }) {
+function AnalyticsCompareRow({ icon: Icon, label, value, comparison, isComparing }: {
+  icon: any; label: string; value: number | undefined; comparison?: number | null; isComparing: boolean;
+}) {
+  const pctChange = isComparing && comparison != null && comparison > 0
+    ? Math.round(((value ?? 0) - comparison) / comparison * 100)
+    : null;
+
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Icon className="h-4 w-4" /> {label}
       </div>
-      <p className="text-lg font-bold">{(value ?? 0).toLocaleString()}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-lg font-bold">{(value ?? 0).toLocaleString()}</p>
+        {isComparing && pctChange !== null && (
+          <span className={`flex items-center gap-0.5 text-xs font-medium ${pctChange >= 0 ? "text-green-500" : "text-red-500"}`}>
+            {pctChange >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+            {Math.abs(pctChange)}%
+          </span>
+        )}
+        {isComparing && comparison != null && (
+          <span className="text-xs text-muted-foreground">vs {comparison.toLocaleString()}</span>
+        )}
+      </div>
     </div>
   );
 }
