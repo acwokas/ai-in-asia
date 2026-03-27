@@ -191,10 +191,11 @@ const GuideDetail = () => {
   };
 
   // JSON-LD schemas
-  const faqSchema = formData.faq_items.length > 0 ? {
+  const validFaqItems = formData.faq_items.filter((q: any) => q.question && q.answer);
+  const faqSchema = validFaqItems.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: formData.faq_items.map((f: any) => ({
+    mainEntity: validFaqItems.map((f: any) => ({
       "@type": "Question", name: f.question,
       acceptedAnswer: { "@type": "Answer", text: f.answer },
     })),
