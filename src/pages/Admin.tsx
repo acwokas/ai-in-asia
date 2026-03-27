@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Users, Mail, Activity, Eye, TrendingUp, BarChart3,
   MessageSquare, RefreshCw, Loader2, CalendarCheck, Megaphone,
-  BookOpen, Bell, Newspaper,
+  BookOpen, Bell, Newspaper, ArrowUp, ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 import { useAdminActions } from "@/hooks/useAdminActions";
-import { subDays, startOfDay, endOfDay } from "date-fns";
+import { subDays } from "date-fns";
+import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
+import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
+import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
@@ -36,6 +39,7 @@ const Admin = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const adminActions = useAdminActions();
+  const tp = useDashboardTimePeriod();
 
   // Dialog state
   const [authorsDialogOpen, setAuthorsDialogOpen] = useState(false);
@@ -75,25 +79,36 @@ const Admin = () => {
     },
   });
 
-  // Site analytics (7d)
-  const startDate = startOfDay(subDays(new Date(), 7));
-  const endDate = endOfDay(new Date());
+  // Site analytics (filtered by time period)
+  const startDate = tp.dateRange.start;
+  const endDate = tp.dateRange.end;
 
   const { data: analyticsStats, isLoading: isLoadingAnalytics } = useQuery({
-    queryKey: ["admin-analytics-stats"],
+    queryKey: ["admin-analytics-stats", tp.period, tp.compareOffset],
     queryFn: async () => {
-      const [sessions, pageviews, uniqueVisitors] = await Promise.all([
-        supabase.from("analytics_sessions").select("*", { count: "exact", head: true })
-          .gte("started_at", startDate.toISOString()).lte("started_at", endDate.toISOString()),
-        supabase.from("analytics_pageviews").select("*", { count: "exact", head: true })
-          .gte("viewed_at", startDate.toISOString()).lte("viewed_at", endDate.toISOString()),
-        supabase.rpc("get_unique_visitors", { p_start: startDate.toISOString(), p_end: endDate.toISOString() }),
-      ]);
-      return {
-        sessions: sessions.count || 0,
-        pageviews: pageviews.count || 0,
-        uniqueVisitors: uniqueVisitors.data || 0,
+      const fetchRange = async (s: Date, e: Date) => {
+        const [sessions, pageviews, uniqueVisitors] = await Promise.all([
+          supabase.from("analytics_sessions").select("*", { count: "exact", head: true })
+            .gte("started_at", s.toISOString()).lte("started_at", e.toISOString()),
+          supabase.from("analytics_pageviews").select("*", { count: "exact", head: true })
+            .gte("viewed_at", s.toISOString()).lte("viewed_at", e.toISOString()),
+          supabase.rpc("get_unique_visitors", { p_start: s.toISOString(), p_end: e.toISOString() }),
+        ]);
+        return {
+          sessions: sessions.count || 0,
+          pageviews: pageviews.count || 0,
+          uniqueVisitors: uniqueVisitors.data || 0,
+        };
       };
+
+      const current = await fetchRange(startDate, endDate);
+
+      let comparison = null;
+      if (tp.isComparing) {
+        comparison = await fetchRange(tp.comparisonQuarter.start, tp.comparisonQuarter.end);
+      }
+
+      return { current, comparison };
     },
   });
 
@@ -356,6 +371,16 @@ const Admin = () => {
         </div>
       </div>
 
+      {/* ── Time Period Selector ─────────────────────────── */}
+      <DashboardTimePeriodSelector
+        period={tp.period}
+        onPeriodChange={tp.setPeriod}
+        pastQuarters={tp.pastQuarters}
+        compareOffset={tp.compareOffset}
+        onCompareOffsetChange={tp.setCompareOffset}
+        currentQuarter={tp.currentQuarter}
+      />
+
       {/* ── Top stat cards ──────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
@@ -450,7 +475,7 @@ const Admin = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Site Analytics (7d)</CardTitle>
+                <CardTitle className="text-base">Site Analytics</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -460,9 +485,24 @@ const Admin = () => {
                 </div>
               ) : (
                 <>
-                  <AnalyticsMiniRow icon={Users} label="Unique Visitors" value={analyticsStats?.uniqueVisitors} />
-                  <AnalyticsMiniRow icon={Eye} label="Page Views" value={analyticsStats?.pageviews} />
-                  <AnalyticsMiniRow icon={TrendingUp} label="Sessions" value={analyticsStats?.sessions} />
+                  <AnalyticsCompareRow
+                    icon={Users} label="Unique Visitors"
+                    value={analyticsStats?.current.uniqueVisitors}
+                    comparison={analyticsStats?.comparison?.uniqueVisitors}
+                    isComparing={tp.isComparing}
+                  />
+                  <AnalyticsCompareRow
+                    icon={Eye} label="Page Views"
+                    value={analyticsStats?.current.pageviews}
+                    comparison={analyticsStats?.comparison?.pageviews}
+                    isComparing={tp.isComparing}
+                  />
+                  <AnalyticsCompareRow
+                    icon={TrendingUp} label="Sessions"
+                    value={analyticsStats?.current.sessions}
+                    comparison={analyticsStats?.comparison?.sessions}
+                    isComparing={tp.isComparing}
+                  />
                 </>
               )}
               <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate("/admin/site-analytics")}>
@@ -470,6 +510,12 @@ const Admin = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Visitors by Location */}
+          <VisitorsByLocation
+            startDate={startDate.toISOString()}
+            endDate={endDate.toISOString()}
+          />
 
           {/* Recent comments feed */}
           <Card>
@@ -593,13 +639,30 @@ function StatCard({ label, value, icon: Icon, loading, onClick, pulse }: {
   );
 }
 
-function AnalyticsMiniRow({ icon: Icon, label, value }: { icon: any; label: string; value: number | undefined }) {
+function AnalyticsCompareRow({ icon: Icon, label, value, comparison, isComparing }: {
+  icon: any; label: string; value: number | undefined; comparison?: number | null; isComparing: boolean;
+}) {
+  const pctChange = isComparing && comparison != null && comparison > 0
+    ? Math.round(((value ?? 0) - comparison) / comparison * 100)
+    : null;
+
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Icon className="h-4 w-4" /> {label}
       </div>
-      <p className="text-lg font-bold">{(value ?? 0).toLocaleString()}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-lg font-bold">{(value ?? 0).toLocaleString()}</p>
+        {isComparing && pctChange !== null && (
+          <span className={`flex items-center gap-0.5 text-xs font-medium ${pctChange >= 0 ? "text-green-500" : "text-red-500"}`}>
+            {pctChange >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+            {Math.abs(pctChange)}%
+          </span>
+        )}
+        {isComparing && comparison != null && (
+          <span className="text-xs text-muted-foreground">vs {comparison.toLocaleString()}</span>
+        )}
+      </div>
     </div>
   );
 }
