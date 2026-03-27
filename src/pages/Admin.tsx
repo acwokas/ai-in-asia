@@ -371,6 +371,16 @@ const Admin = () => {
         </div>
       </div>
 
+      {/* ── Time Period Selector ─────────────────────────── */}
+      <DashboardTimePeriodSelector
+        period={tp.period}
+        onPeriodChange={tp.setPeriod}
+        pastQuarters={tp.pastQuarters}
+        compareOffset={tp.compareOffset}
+        onCompareOffsetChange={tp.setCompareOffset}
+        currentQuarter={tp.currentQuarter}
+      />
+
       {/* ── Top stat cards ──────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
