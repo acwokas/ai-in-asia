@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Users, Mail, Activity, Eye, TrendingUp, BarChart3,
   MessageSquare, RefreshCw, Loader2, CalendarCheck, Megaphone,
-  BookOpen, Bell, Newspaper,
+  BookOpen, Bell, Newspaper, ArrowUp, ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/imageCompression";
 import { useAdminActions } from "@/hooks/useAdminActions";
 import { subDays, startOfDay, endOfDay } from "date-fns";
+import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
+import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
+import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
