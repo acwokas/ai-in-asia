@@ -21,6 +21,7 @@ import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
 import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
 import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
 import { RealtimeDashboard } from "@/components/admin/RealtimeDashboard";
+import { PeriodAnalyticsDashboard } from "@/components/admin/PeriodAnalyticsDashboard";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
@@ -384,6 +385,8 @@ const Admin = () => {
 
       {tp.period === "30m" ? (
         <RealtimeDashboard />
+      ) : tp.period === "24h" || tp.period === "7d" ? (
+        <PeriodAnalyticsDashboard period={tp.period} />
       ) : (
         <>
           {/* ── Top stat cards ──────────────────────────────────── */}
