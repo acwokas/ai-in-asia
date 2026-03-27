@@ -20,6 +20,7 @@ import { subDays } from "date-fns";
 import { useDashboardTimePeriod } from "@/hooks/useDashboardTimePeriod";
 import { DashboardTimePeriodSelector } from "@/components/admin/DashboardTimePeriodSelector";
 import { VisitorsByLocation } from "@/components/admin/VisitorsByLocation";
+import { RealtimeDashboard } from "@/components/admin/RealtimeDashboard";
 import {
   AdminQuickActions,
   AdminRecentArticlesTab,
@@ -381,218 +382,224 @@ const Admin = () => {
         currentQuarter={tp.currentQuarter}
       />
 
-      {/* ── Top stat cards ──────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          label="Articles" value={stats?.articles} icon={FileText}
-          loading={statsLoading} onClick={() => navigate("/admin/articles")}
-        />
-        <StatCard
-          label="Subscribers" value={stats?.subscribers} icon={Mail}
-          loading={statsLoading} onClick={() => navigate("/admin/newsletter-manager")}
-        />
-        <StatCard
-          label="Active Now" value={activeVisitors} icon={Activity}
-          loading={false} pulse
-        />
-        <Card className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => popularArticle?.slug && navigate(`/article/${popularArticle.slug}`)}>
-          <CardHeader className="pb-1">
-            <CardDescription className="flex items-center gap-1.5 text-xs">
-              <TrendingUp className="h-3.5 w-3.5" /> Most Popular (7d)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingPopular ? (
-              <Skeleton className="h-5 w-full" />
-            ) : popularArticle ? (
-              <>
-                <p className="text-sm font-semibold line-clamp-1">{popularArticle.title}</p>
-                <p className="text-xs text-muted-foreground">{popularArticle.view_count?.toLocaleString()} views</p>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">No data</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ── Quick Actions ───────────────────────────────────── */}
-      <AdminQuickActions
-        scrapingEvents={adminActions.scrapingEvents}
-        refreshingContent={adminActions.refreshingContent}
-        refreshingTrending={adminActions.refreshingTrending}
-        onScrapeEvents={adminActions.handleScrapeEvents}
-        onRefreshContent={adminActions.handleRefreshFeaturedContent}
-        onRefreshTrending={adminActions.handleRefreshTrending}
-      />
-
-      {/* ── Two-column layout ───────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column (2/3) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Recent articles */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Recent Articles</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <AdminRecentArticlesTab articles={recentArticles as any} />
-            </CardContent>
-          </Card>
-
-          {/* Pending comments */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Pending Comments</CardTitle>
-                </div>
-                {pendingComments && pendingComments.length > 0 && (
-                  <span className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
-                    {pendingComments.length} pending
-                  </span>
+      {tp.period === "30m" ? (
+        <RealtimeDashboard />
+      ) : (
+        <>
+          {/* ── Top stat cards ──────────────────────────────────── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              label="Articles" value={stats?.articles} icon={FileText}
+              loading={statsLoading} onClick={() => navigate("/admin/articles")}
+            />
+            <StatCard
+              label="Subscribers" value={stats?.subscribers} icon={Mail}
+              loading={statsLoading} onClick={() => navigate("/admin/newsletter-manager")}
+            />
+            <StatCard
+              label="Active Now" value={activeVisitors} icon={Activity}
+              loading={false} pulse
+            />
+            <Card className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => popularArticle?.slug && navigate(`/article/${popularArticle.slug}`)}>
+              <CardHeader className="pb-1">
+                <CardDescription className="flex items-center gap-1.5 text-xs">
+                  <TrendingUp className="h-3.5 w-3.5" /> Most Popular (7d)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingPopular ? (
+                  <Skeleton className="h-5 w-full" />
+                ) : popularArticle ? (
+                  <>
+                    <p className="text-sm font-semibold line-clamp-1">{popularArticle.title}</p>
+                    <p className="text-xs text-muted-foreground">{popularArticle.view_count?.toLocaleString()} views</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No data</p>
                 )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <AdminPendingCommentsTab
-                comments={pendingComments as any}
-                onApprove={adminActions.approveComment}
-                onDelete={adminActions.deleteComment}
-              />
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Right column (1/3) */}
-        <div className="space-y-6">
-          {/* Site analytics summary */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Site Analytics</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {isLoadingAnalytics ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
-                </div>
-              ) : (
-                <>
-                  <AnalyticsCompareRow
-                    icon={Users} label="Unique Visitors"
-                    value={analyticsStats?.current.uniqueVisitors}
-                    comparison={analyticsStats?.comparison?.uniqueVisitors}
-                    isComparing={tp.isComparing}
-                  />
-                  <AnalyticsCompareRow
-                    icon={Eye} label="Page Views"
-                    value={analyticsStats?.current.pageviews}
-                    comparison={analyticsStats?.comparison?.pageviews}
-                    isComparing={tp.isComparing}
-                  />
-                  <AnalyticsCompareRow
-                    icon={TrendingUp} label="Sessions"
-                    value={analyticsStats?.current.sessions}
-                    comparison={analyticsStats?.comparison?.sessions}
-                    isComparing={tp.isComparing}
-                  />
-                </>
-              )}
-              <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate("/admin/site-analytics")}>
-                View full analytics →
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Visitors by Location */}
-          <VisitorsByLocation
-            startDate={startDate.toISOString()}
-            endDate={endDate.toISOString()}
+          {/* ── Quick Actions ───────────────────────────────────── */}
+          <AdminQuickActions
+            scrapingEvents={adminActions.scrapingEvents}
+            refreshingContent={adminActions.refreshingContent}
+            refreshingTrending={adminActions.refreshingTrending}
+            onScrapeEvents={adminActions.handleScrapeEvents}
+            onRefreshContent={adminActions.handleRefreshFeaturedContent}
+            onRefreshTrending={adminActions.handleRefreshTrending}
           />
 
-          {/* Recent comments feed */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Recent Comments</CardTitle>
-              </div>
-              <CardDescription>User &amp; AI comments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoadingComments ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 w-full" />)}
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                  {recentComments?.map((comment) => (
-                    <div key={`${comment.type}-${comment.id}`} className="p-2.5 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-medium text-xs">{comment.author}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                          comment.type === "ai"
-                            ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                            : comment.approved
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                              : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
-                        }`}>
-                          {comment.type === "ai" ? "AI" : comment.approved ? "✓" : "Pending"}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{comment.content}</p>
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
-                        {comment.articleSlug ? (
-                          <Link to={`/article/${comment.articleSlug}`} className="hover:text-primary truncate max-w-[160px]">
-                            {comment.articleTitle}
-                          </Link>
-                        ) : <span>Unknown article</span>}
-                        <span>{new Date(comment.date).toLocaleDateString()}</span>
-                      </div>
+          {/* ── Two-column layout ───────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column (2/3) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Recent articles */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Recent Articles</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <AdminRecentArticlesTab articles={recentArticles as any} />
+                </CardContent>
+              </Card>
+
+              {/* Pending comments */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-base">Pending Comments</CardTitle>
                     </div>
-                  ))}
-                  {(!recentComments || recentComments.length === 0) && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
+                    {pendingComments && pendingComments.length > 0 && (
+                      <span className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
+                        {pendingComments.length} pending
+                      </span>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <AdminPendingCommentsTab
+                    comments={pendingComments as any}
+                    onApprove={adminActions.approveComment}
+                    onDelete={adminActions.deleteComment}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right column (1/3) */}
+            <div className="space-y-6">
+              {/* Site analytics summary */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Site Analytics</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {isLoadingAnalytics ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                  ) : (
+                    <>
+                      <AnalyticsCompareRow
+                        icon={Users} label="Unique Visitors"
+                        value={analyticsStats?.current.uniqueVisitors}
+                        comparison={analyticsStats?.comparison?.uniqueVisitors}
+                        isComparing={tp.isComparing}
+                      />
+                      <AnalyticsCompareRow
+                        icon={Eye} label="Page Views"
+                        value={analyticsStats?.current.pageviews}
+                        comparison={analyticsStats?.comparison?.pageviews}
+                        isComparing={tp.isComparing}
+                      />
+                      <AnalyticsCompareRow
+                        icon={TrendingUp} label="Sessions"
+                        value={analyticsStats?.current.sessions}
+                        comparison={analyticsStats?.comparison?.sessions}
+                        isComparing={tp.isComparing}
+                      />
+                    </>
                   )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                  <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate("/admin/site-analytics")}>
+                    View full analytics →
+                  </Button>
+                </CardContent>
+              </Card>
 
-      {/* ── Tabs for remaining sections ─────────────────────── */}
-      <Tabs defaultValue="engagement" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
-          <TabsTrigger value="event-submissions" className="flex items-center gap-1.5">
-            <CalendarCheck className="h-3.5 w-3.5" /> Events
-          </TabsTrigger>
-          <TabsTrigger value="ad-management" className="flex items-center gap-1.5">
-            <Megaphone className="h-3.5 w-3.5" /> Ads
-          </TabsTrigger>
-          <TabsTrigger value="tools">AI Tools</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+              {/* Visitors by Location */}
+              <VisitorsByLocation
+                startDate={startDate.toISOString()}
+                endDate={endDate.toISOString()}
+              />
 
-        <TabsContent value="engagement"><AdminEngagementTab /></TabsContent>
-        <TabsContent value="event-submissions"><AdminEventSubmissions /></TabsContent>
-        <TabsContent value="ad-management"><AdminEventAds /></TabsContent>
-        <TabsContent value="tools"><AdminToolsTab /></TabsContent>
-        <TabsContent value="settings">
-          <AdminSettingsTab
-            onOpenGoogleAds={() => setGoogleAdsDialogOpen(true)}
-            onOpenNewsletter={() => setNewsletterDialogOpen(true)}
-          />
-        </TabsContent>
-      </Tabs>
+              {/* Recent comments feed */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Recent Comments</CardTitle>
+                  </div>
+                  <CardDescription>User &amp; AI comments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingComments ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 w-full" />)}
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                      {recentComments?.map((comment) => (
+                        <div key={`${comment.type}-${comment.id}`} className="p-2.5 rounded-lg border border-border hover:bg-accent/50 transition-colors">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="font-medium text-xs">{comment.author}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              comment.type === "ai"
+                                ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                                : comment.approved
+                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                  : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                            }`}>
+                              {comment.type === "ai" ? "AI" : comment.approved ? "✓" : "Pending"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{comment.content}</p>
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
+                            {comment.articleSlug ? (
+                              <Link to={`/article/${comment.articleSlug}`} className="hover:text-primary truncate max-w-[160px]">
+                                {comment.articleTitle}
+                              </Link>
+                            ) : <span>Unknown article</span>}
+                            <span>{new Date(comment.date).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {(!recentComments || recentComments.length === 0) && (
+                        <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* ── Tabs for remaining sections ─────────────────────── */}
+          <Tabs defaultValue="engagement" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="engagement">Engagement</TabsTrigger>
+              <TabsTrigger value="event-submissions" className="flex items-center gap-1.5">
+                <CalendarCheck className="h-3.5 w-3.5" /> Events
+              </TabsTrigger>
+              <TabsTrigger value="ad-management" className="flex items-center gap-1.5">
+                <Megaphone className="h-3.5 w-3.5" /> Ads
+              </TabsTrigger>
+              <TabsTrigger value="tools">AI Tools</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="engagement"><AdminEngagementTab /></TabsContent>
+            <TabsContent value="event-submissions"><AdminEventSubmissions /></TabsContent>
+            <TabsContent value="ad-management"><AdminEventAds /></TabsContent>
+            <TabsContent value="tools"><AdminToolsTab /></TabsContent>
+            <TabsContent value="settings">
+              <AdminSettingsTab
+                onOpenGoogleAds={() => setGoogleAdsDialogOpen(true)}
+                onOpenNewsletter={() => setNewsletterDialogOpen(true)}
+              />
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
 
       {/* Dialogs */}
       <GoogleAdsDialog
