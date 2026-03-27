@@ -79,25 +79,36 @@ const Admin = () => {
     },
   });
 
-  // Site analytics (7d)
-  const startDate = startOfDay(subDays(new Date(), 7));
-  const endDate = endOfDay(new Date());
+  // Site analytics (filtered by time period)
+  const startDate = tp.dateRange.start;
+  const endDate = tp.dateRange.end;
 
   const { data: analyticsStats, isLoading: isLoadingAnalytics } = useQuery({
-    queryKey: ["admin-analytics-stats"],
+    queryKey: ["admin-analytics-stats", tp.period, tp.compareOffset],
     queryFn: async () => {
-      const [sessions, pageviews, uniqueVisitors] = await Promise.all([
-        supabase.from("analytics_sessions").select("*", { count: "exact", head: true })
-          .gte("started_at", startDate.toISOString()).lte("started_at", endDate.toISOString()),
-        supabase.from("analytics_pageviews").select("*", { count: "exact", head: true })
-          .gte("viewed_at", startDate.toISOString()).lte("viewed_at", endDate.toISOString()),
-        supabase.rpc("get_unique_visitors", { p_start: startDate.toISOString(), p_end: endDate.toISOString() }),
-      ]);
-      return {
-        sessions: sessions.count || 0,
-        pageviews: pageviews.count || 0,
-        uniqueVisitors: uniqueVisitors.data || 0,
+      const fetchRange = async (s: Date, e: Date) => {
+        const [sessions, pageviews, uniqueVisitors] = await Promise.all([
+          supabase.from("analytics_sessions").select("*", { count: "exact", head: true })
+            .gte("started_at", s.toISOString()).lte("started_at", e.toISOString()),
+          supabase.from("analytics_pageviews").select("*", { count: "exact", head: true })
+            .gte("viewed_at", s.toISOString()).lte("viewed_at", e.toISOString()),
+          supabase.rpc("get_unique_visitors", { p_start: s.toISOString(), p_end: e.toISOString() }),
+        ]);
+        return {
+          sessions: sessions.count || 0,
+          pageviews: pageviews.count || 0,
+          uniqueVisitors: uniqueVisitors.data || 0,
+        };
       };
+
+      const current = await fetchRange(startDate, endDate);
+
+      let comparison = null;
+      if (tp.isComparing) {
+        comparison = await fetchRange(tp.comparisonQuarter.start, tp.comparisonQuarter.end);
+      }
+
+      return { current, comparison };
     },
   });
 
