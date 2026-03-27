@@ -732,6 +732,11 @@ const Index = () => {
           </Suspense>
         </div>
 
+        {/* Homepage ad between trending and latest stories */}
+        <div className="container mx-auto px-4 my-6" style={{ minHeight: '100px' }}>
+          <AdUnit slot="1044321413" format="auto" responsive={true} />
+        </div>
+
         {/* More Stories grid */}
         <section className="container mx-auto px-4 py-8 md:py-10">
           <div className="flex items-center justify-between mb-6">
