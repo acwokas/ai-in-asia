@@ -475,7 +475,7 @@ const Admin = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Site Analytics (7d)</CardTitle>
+                <CardTitle className="text-base">Site Analytics</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -485,9 +485,24 @@ const Admin = () => {
                 </div>
               ) : (
                 <>
-                  <AnalyticsMiniRow icon={Users} label="Unique Visitors" value={analyticsStats?.uniqueVisitors} />
-                  <AnalyticsMiniRow icon={Eye} label="Page Views" value={analyticsStats?.pageviews} />
-                  <AnalyticsMiniRow icon={TrendingUp} label="Sessions" value={analyticsStats?.sessions} />
+                  <AnalyticsCompareRow
+                    icon={Users} label="Unique Visitors"
+                    value={analyticsStats?.current.uniqueVisitors}
+                    comparison={analyticsStats?.comparison?.uniqueVisitors}
+                    isComparing={tp.isComparing}
+                  />
+                  <AnalyticsCompareRow
+                    icon={Eye} label="Page Views"
+                    value={analyticsStats?.current.pageviews}
+                    comparison={analyticsStats?.comparison?.pageviews}
+                    isComparing={tp.isComparing}
+                  />
+                  <AnalyticsCompareRow
+                    icon={TrendingUp} label="Sessions"
+                    value={analyticsStats?.current.sessions}
+                    comparison={analyticsStats?.comparison?.sessions}
+                    isComparing={tp.isComparing}
+                  />
                 </>
               )}
               <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => navigate("/admin/site-analytics")}>
@@ -495,6 +510,12 @@ const Admin = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Visitors by Location */}
+          <VisitorsByLocation
+            startDate={startDate.toISOString()}
+            endDate={endDate.toISOString()}
+          />
 
           {/* Recent comments feed */}
           <Card>
