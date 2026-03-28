@@ -1,6 +1,6 @@
 import { useState, useEffect, ImgHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { getCategoryGradient } from "@/lib/categoryColors";
+import { getCategoryFallbackImage } from "@/lib/categoryColors";
 
 const FALLBACK_IMAGE_URL =
   "https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/defaults/aiinasia-favicon.png";
@@ -22,7 +22,7 @@ function isBannedOrEmpty(src?: string | null): boolean {
 interface ArticleFallbackImageProps
   extends Omit<ImgHTMLAttributes<HTMLImageElement>, "onError"> {
   src?: string | null;
-  /** Pass category slug to show a colour-coded gradient instead of the generic favicon fallback */
+  /** Pass category slug to show a category-specific gradient image from Storage */
   categorySlug?: string | null;
 }
 
@@ -45,34 +45,13 @@ export function ArticleFallbackImage({
     setUseFallback(true);
   };
 
-  // When falling back AND a category slug is provided, render a gradient div
-  if (useFallback && categorySlug) {
-    const gradient = getCategoryGradient(categorySlug);
-    return (
-      <div
-        role="img"
-        aria-label={alt || ""}
-        className={cn("flex items-center justify-center", className)}
-        style={{
-          background: gradient,
-          width: rest.width ? `${rest.width}px` : undefined,
-          height: rest.height ? `${rest.height}px` : undefined,
-          ...style,
-        }}
-      >
-        <span
-          className="text-white/70 font-semibold uppercase tracking-wider select-none"
-          style={{ fontSize: "clamp(0.55rem, 1.2vw, 0.85rem)" }}
-        >
-          {categorySlug}
-        </span>
-      </div>
-    );
-  }
+  // Pick fallback: category gradient image from Storage if slug provided, else generic favicon
+  const imgSrc = useFallback
+    ? (categorySlug ? getCategoryFallbackImage(categorySlug) : FALLBACK_IMAGE_URL)
+    : (src as string);
 
-  const imgSrc = useFallback ? FALLBACK_IMAGE_URL : (src as string);
-
-  const fallbackStyle: React.CSSProperties = useFallback
+  // Only apply special contain styling for the generic favicon fallback (no categorySlug)
+  const fallbackStyle: React.CSSProperties = useFallback && !categorySlug
     ? { objectFit: "contain", background: "#1a1a2e", padding: "1rem" }
     : { objectFit: "cover" };
 
