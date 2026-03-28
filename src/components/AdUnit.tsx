@@ -23,10 +23,18 @@ const AdUnit = ({
   label = "Advertisement",
 }: AdUnitProps) => {
   const pushed = useRef(false);
+  const insRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
-    if (!import.meta.env.PROD || pushed.current) return;
+    if (!import.meta.env.PROD || pushed.current || !insRef.current) return;
     pushed.current = true;
+    const el = insRef.current;
+    el.setAttribute('data-ad-client', GOOGLE_ADS_CLIENT);
+    el.setAttribute('data-ad-slot', slot);
+    el.setAttribute('data-ad-format', format);
+    if (layout) el.setAttribute('data-ad-layout', layout);
+    if (responsive) el.setAttribute('data-full-width-responsive', 'true');
+    el.style.display = 'block';
     try {
       ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
     } catch (err) {
