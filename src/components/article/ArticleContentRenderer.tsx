@@ -33,7 +33,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
 
     removeInjectedAds();
 
-    const paragraphs = Array.from(proseElement.querySelectorAll(":scope > p"));
+    const paragraphs = Array.from(proseElement.querySelectorAll("p"));
     if (paragraphs.length < MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
       return removeInjectedAds;
     }
@@ -89,7 +89,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
     cleanup();
 
     // Find h2 containing "Frequently Asked Questions"
-    const headings = Array.from(prose.querySelectorAll(":scope > h2, :scope > h3"));
+    const headings = Array.from(prose.querySelectorAll("h2, h3"));
     const faqHeading = headings.find((h) =>
       /frequently\s+asked\s+questions/i.test(h.textContent || "")
     );
