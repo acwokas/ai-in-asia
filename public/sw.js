@@ -1,5 +1,5 @@
-const CACHE_NAME = 'aiinasia-v6';
-const IMAGE_CACHE = 'aiinasia-images-v5';
+const CACHE_NAME = 'aiinasia-v7';
+const IMAGE_CACHE = 'aiinasia-images-v6';
 const MAX_IMAGE_CACHE_SIZE = 100;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
