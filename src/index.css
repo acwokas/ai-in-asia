@@ -814,9 +814,13 @@ All colors MUST be HSL.
 /* Article hero overlay — outside @layer for z-index reliability */
 .article-hero {
   position: relative;
-  height: 50vh;
-  min-height: 40vh;
-  max-height: 55vh;
+  min-height: 50vh;
+  border-radius: 0.5rem;
+  overflow: visible;
+}
+
+.article-hero > img,
+.article-hero-gradient {
   overflow: hidden;
   border-radius: 0.5rem;
 }
