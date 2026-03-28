@@ -814,18 +814,16 @@ All colors MUST be HSL.
 /* Article hero overlay — outside @layer for z-index reliability */
 .article-hero {
   position: relative;
-  height: 50vh;
-  min-height: 40vh;
-  max-height: 55vh;
-  overflow: hidden;
+  min-height: 50vh;
   border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
 }
 
 @media (max-width: 768px) {
   .article-hero {
-    height: auto;
     min-height: 60vh;
-    max-height: none;
   }
 }
 
@@ -852,12 +850,10 @@ All colors MUST be HSL.
 }
 
 .article-hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 2;
   padding: 2rem;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
