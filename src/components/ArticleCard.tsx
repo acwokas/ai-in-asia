@@ -6,7 +6,7 @@ import { getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOpti
 import { ProgressiveImage } from "@/components/ProgressiveImage";
 import { FALLBACK_IMAGE_URL } from "@/components/ui/ArticleFallbackImage";
 import { ReadingTimeIndicator } from "@/components/ReadingTimeIndicator";
-import { getCategoryColor, getCategoryGradient } from "@/lib/categoryColors";
+import { getCategoryColor, getCategoryFallbackImage } from "@/lib/categoryColors";
 
 interface ArticleCardProps {
   title: string;
@@ -61,27 +61,16 @@ const ArticleCard = ({
     <article className={`article-card group hover:-translate-y-px hover:border-b-primary/50 transition-all duration-300 ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
       <Link to={`/${categorySlug}/${slug}`} className="flex flex-col h-full">
         <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-          {missing ? (
-            <div
-              className="w-full h-full flex items-center justify-center"
-              style={{ background: getCategoryGradient(categorySlug) }}
-            >
-              <span className="text-white/70 font-semibold uppercase tracking-wider text-xs select-none">
-                {category || categorySlug}
-              </span>
-            </div>
-          ) : (
-            <ProgressiveImage
-              src={getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 450 : 225)}
-              srcSet={image.includes('supabase.co/storage') ? generateResponsiveSrcSet(image, featured ? [400, 800, 1200] : [200, 400, 600]) : undefined}
-              sizes={featured ? "(max-width: 768px) 100vw, 800px" : "(max-width: 768px) 100vw, 400px"}
-              alt={fixEncoding(title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
-              className="transition-transform duration-700 group-hover:scale-[1.03]"
-              loading="lazy"
-              width={featured ? 800 : 450}
-              height={featured ? 450 : 253}
-            />
-          )}
+          <ProgressiveImage
+            src={missing ? getCategoryFallbackImage(categorySlug) : getOptimizedThumbnail(image, featured ? 800 : 400, featured ? 450 : 225)}
+            srcSet={!missing && image.includes('supabase.co/storage') ? generateResponsiveSrcSet(image, featured ? [400, 800, 1200] : [200, 400, 600]) : undefined}
+            sizes={featured ? "(max-width: 768px) 100vw, 800px" : "(max-width: 768px) 100vw, 400px"}
+            alt={fixEncoding(title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
+            className="transition-transform duration-700 group-hover:scale-[1.03]"
+            loading="lazy"
+            width={featured ? 800 : 450}
+            height={featured ? 450 : 253}
+          />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
         
