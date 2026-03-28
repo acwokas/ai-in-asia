@@ -322,7 +322,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
-      return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      return <ProseHtml className="prose" html={sanitizedHtml} injectInArticleAds={true} />;
     }
     
     // Standard content processing (no prompt boxes)
@@ -391,8 +391,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
     });
     
-    const totalBlocks = htmlBlocks.length;
-
     // Join, sanitize, and post-process as a single string for cross-block patterns
     let joinedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'],
@@ -407,46 +405,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
-    // Split back into blocks for rendering
-    const sanitizedBlocks = htmlBlocks.map((block) => {
-      return DOMPurify.sanitize(block, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
-        ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
-      });
-    });
-
-    // Check if by-the-numbers wrapper was applied — if so, use joined version
-    if (joinedHtml.includes('by-the-numbers')) {
-      return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
-    }
-
-    // Count paragraph blocks for ad insertion
-    const isParagraphBlock = sanitizedBlocks.map((block) =>
-      /^<p[\s>]/i.test(block.trim())
-    );
-    const totalParagraphs = isParagraphBlock.filter(Boolean).length;
-    const shouldInsertAds = totalParagraphs >= 8;
-
-    const finalBlocks: React.ReactNode[] = [];
-    let paragraphCount = 0;
-    let adIndex = 0;
-    sanitizedBlocks.forEach((sanitizedBlock, index) => {
-      finalBlocks.push(<div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />);
-      if (isParagraphBlock[index]) {
-        paragraphCount++;
-        if (shouldInsertAds && paragraphCount > 0 && paragraphCount % 4 === 0) {
-          adIndex++;
-          finalBlocks.push(
-            <div key={`in-article-ad-${adIndex}`} className="my-6 max-w-full overflow-hidden text-center">
-              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
-              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
-            </div>
-          );
-        }
-      }
-    });
-    
-    return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
+    return <ProseHtml className="prose prose-lg max-w-none" html={joinedHtml} injectInArticleAds={true} />;
   }
   
   // Handle JSON content (legacy format)
