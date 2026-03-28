@@ -3,7 +3,7 @@ import SEOHead from "@/components/SEOHead";
 
 const SitemapRedirect = () => {
   useEffect(() => {
-    window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sitemap`;
+    window.location.href = '/sitemap.xml';
   }, []);
 
   return (
