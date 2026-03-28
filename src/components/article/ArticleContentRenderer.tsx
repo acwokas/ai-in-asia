@@ -72,6 +72,125 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
     return removeInjectedAds;
   }, [html, injectInArticleAds]);
 
+  // FAQ visual styling via DOM manipulation
+  useEffect(() => {
+    if (!proseRef.current) return;
+    const prose = proseRef.current;
+
+    // Clean up previous FAQ styling
+    const cleanup = () => {
+      prose.querySelectorAll(".faq-styled-item").forEach((node) => node.remove());
+      // Restore hidden originals
+      prose.querySelectorAll("[data-faq-hidden]").forEach((el) => {
+        (el as HTMLElement).style.display = "";
+        el.removeAttribute("data-faq-hidden");
+      });
+    };
+    cleanup();
+
+    // Find h2 containing "Frequently Asked Questions"
+    const headings = Array.from(prose.querySelectorAll(":scope > h2, :scope > h3"));
+    const faqHeading = headings.find((h) =>
+      /frequently\s+asked\s+questions/i.test(h.textContent || "")
+    );
+    if (!faqHeading) return cleanup;
+
+    // Collect h4+p pairs after the FAQ heading
+    const pairs: { q: Element; a: Element }[] = [];
+    let sibling = faqHeading.nextElementSibling;
+    while (sibling) {
+      const tag = sibling.tagName;
+      // Stop if we hit another h2/h3 (new section)
+      if (tag === "H2" || tag === "H3") break;
+      if (tag === "H4") {
+        const answer = sibling.nextElementSibling;
+        if (answer && answer.tagName === "P") {
+          pairs.push({ q: sibling, a: answer });
+          sibling = answer.nextElementSibling;
+          continue;
+        }
+      }
+      sibling = sibling.nextElementSibling;
+    }
+
+    if (pairs.length === 0) return cleanup;
+
+    pairs.forEach(({ q, a }, i) => {
+      // Hide originals
+      (q as HTMLElement).style.display = "none";
+      q.setAttribute("data-faq-hidden", "true");
+      (a as HTMLElement).style.display = "none";
+      a.setAttribute("data-faq-hidden", "true");
+
+      const item = document.createElement("div");
+      item.className = "faq-styled-item";
+      item.style.cssText = `
+        display: flex;
+        gap: 1rem;
+        padding: 1.25rem 0;
+        ${i < pairs.length - 1 ? "border-bottom: 1px solid rgba(255,255,255,0.1);" : ""}
+      `;
+
+      const numEl = document.createElement("span");
+      numEl.textContent = String(i + 1).padStart(2, "0");
+      numEl.style.cssText = `
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        color: rgb(82, 205, 224);
+        flex-shrink: 0;
+        min-width: 2.5rem;
+      `;
+
+      const textCol = document.createElement("div");
+      textCol.style.cssText = "flex: 1; min-width: 0;";
+
+      const qEl = document.createElement("h4");
+      qEl.textContent = q.textContent || "";
+      qEl.style.cssText = `
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: hsl(var(--foreground));
+        margin: 0 0 0.5rem 0;
+      `;
+
+      const aEl = document.createElement("p");
+      aEl.innerHTML = (a as HTMLElement).innerHTML;
+      aEl.style.cssText = `
+        color: hsl(var(--muted-foreground));
+        margin: 0;
+        line-height: 1.7;
+      `;
+
+      textCol.append(qEl, aEl);
+      item.append(numEl, textCol);
+
+      // Insert styled item after the last original element of this pair
+      a.parentNode?.insertBefore(item, a.nextSibling);
+    });
+
+    // Add mobile responsive styles
+    const styleId = "faq-responsive-styles";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        @media (max-width: 640px) {
+          .faq-styled-item {
+            flex-direction: column !important;
+            gap: 0.25rem !important;
+          }
+          .faq-styled-item > span:first-child {
+            font-size: 1.25rem !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    return cleanup;
+  }, [html]);
+
   return <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
