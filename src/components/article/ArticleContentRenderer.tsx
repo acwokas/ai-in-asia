@@ -262,36 +262,29 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
     
-    // Track which blocks are headings for ad injection
-    const isHeadingBlock: boolean[] = [];
     
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
           block.includes('tiktok-embed') ||
           block.includes('youtube.com/embed')) {
-        isHeadingBlock.push(false);
         return block;
       }
       if (block.startsWith('### ')) {
         const text = block.substring(4);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('## ')) {
         const text = block.substring(3);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
       }
       if (block.startsWith('# ')) {
         const text = block.substring(2);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
-      isHeadingBlock.push(false);
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteLines = block.split('\n')
           .map(line => line.replace(/^>\s?/, '').trim())
