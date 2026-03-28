@@ -46,6 +46,8 @@ const NotFound = () => {
   // ── 2. Log 404 + fire GA (only once redirect check is done and no rule found) ─
   useEffect(() => {
     if (checkingRedirect || redirectRule) return;
+    // Signal prerenderer to return 404 status code
+    (window as any).__PRERENDER_STATUS_CODE = 404;
     if (!isBotPath(location.pathname)) {
       track404Error(location.pathname, "page_not_found");
       const log = async () => {

@@ -9,7 +9,7 @@ const corsHeaders = {
 const escapeXml = (str: string): string =>
   str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
-const baseUrl = "https://www.aiinasia.com";
+const baseUrl = "https://aiinasia.com";
 const sanitizePathSegment = (value: string | null | undefined) =>
   encodeURIComponent((value || '').trim().replace(/\s+/g, '-'));
 

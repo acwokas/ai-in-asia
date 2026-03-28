@@ -82,9 +82,6 @@ Allow: /
 
 # Sitemaps for fast indexing
 Sitemap: https://aiinasia.com/sitemap.xml
-Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap
-Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?type=news
-Sitemap: https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/sitemap
 
 # Polite crawl rate
 Crawl-delay: 1

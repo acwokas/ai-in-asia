@@ -11,6 +11,8 @@ export const ArticleNotFound = () => {
   useEffect(() => {
     // Signal prerenderer that this page is ready (even for 404s)
     (window as any).prerenderReady = true;
+    // Signal prerenderer to return 404 status code
+    (window as any).__PRERENDER_STATUS_CODE = 404;
 
     track404Error(window.location.pathname, "article_not_found");
 

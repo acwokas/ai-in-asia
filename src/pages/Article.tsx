@@ -312,18 +312,18 @@ const Article = () => {
       author: {
         "@type": "Organization",
         name: "AI in Asia",
-        url: "https://www.aiinasia.com",
+        url: "https://aiinasia.com",
       },
       publisher: {
         "@type": "NewsMediaOrganization",
         name: "AI in Asia",
-        url: "https://www.aiinasia.com",
+        url: "https://aiinasia.com",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.aiinasia.com/og-image.png",
+          url: "https://aiinasia.com/og-image.png",
         },
       },
-      url: `https://www.aiinasia.com/${categorySlugVal}/${articleSlugVal}`,
+      url: `https://aiinasia.com/${categorySlugVal}/${articleSlugVal}`,
       description: article.excerpt || article.meta_description || "",
       ...(article.featured_image_url && { image: article.featured_image_url }),
       ...(article.categories?.name && { articleSection: article.categories.name }),
