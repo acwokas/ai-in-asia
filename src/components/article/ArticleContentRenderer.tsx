@@ -4,10 +4,76 @@
  * Extracted from Article.tsx for maintainability
  */
 
+import { useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 
-import AdUnit from "@/components/AdUnit";
 import { fixEncoding } from "@/lib/textUtils";
+
+const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
+const IN_ARTICLE_AD_SLOT = "3478913062";
+const MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS = 8;
+const PARAGRAPH_AD_INTERVAL = 4;
+
+interface ProseHtmlProps {
+  html: string;
+  className: string;
+  injectInArticleAds?: boolean;
+}
+
+const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlProps) => {
+  const proseRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!injectInArticleAds || !proseRef.current) return;
+
+    const proseElement = proseRef.current;
+    const removeInjectedAds = () => {
+      proseElement.querySelectorAll(".in-article-ad-wrapper").forEach((node) => node.remove());
+    };
+
+    removeInjectedAds();
+
+    const paragraphs = Array.from(proseElement.querySelectorAll(":scope > p"));
+    if (paragraphs.length < MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
+      return removeInjectedAds;
+    }
+
+    paragraphs.forEach((paragraph, index) => {
+      const paragraphNumber = index + 1;
+      if (paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "in-article-ad-wrapper my-6 text-center";
+
+      const label = document.createElement("p");
+      label.className = "text-xs text-muted-foreground text-center uppercase";
+      label.textContent = "ADVERTISEMENT";
+
+      const adIns = document.createElement("ins");
+      adIns.className = "adsbygoogle";
+      adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
+      adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
+      adIns.setAttribute("data-ad-format", "rectangle");
+      adIns.setAttribute("data-full-width-responsive", "true");
+      adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
+
+      wrapper.append(label, adIns);
+      paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
+
+      if (import.meta.env.PROD) {
+        try {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } catch (err) {
+          console.error("AdSense push error:", err);
+        }
+      }
+    });
+
+    return removeInjectedAds;
+  }, [html, injectInArticleAds]);
+
+  return <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+};
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
 const stripWrappingQuotes = (text: string): string =>
