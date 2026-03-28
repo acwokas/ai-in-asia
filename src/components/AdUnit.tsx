@@ -55,15 +55,7 @@ const AdUnit = ({
       <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">
         {label}
       </p>
-      <ins
-        className="adsbygoogle block"
-        style={{ display: "block" }}
-        data-ad-client={GOOGLE_ADS_CLIENT}
-        data-ad-slot={slot}
-        data-ad-format={format}
-        {...(layout ? { "data-ad-layout": layout } : {})}
-        data-full-width-responsive={responsive.toString()}
-      />
+      <ins ref={insRef} className="adsbygoogle" />
     </div>
   );
 };
