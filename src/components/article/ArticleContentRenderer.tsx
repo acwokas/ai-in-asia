@@ -4,10 +4,76 @@
  * Extracted from Article.tsx for maintainability
  */
 
+import { useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
 
-import AdUnit from "@/components/AdUnit";
 import { fixEncoding } from "@/lib/textUtils";
+
+const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
+const IN_ARTICLE_AD_SLOT = "3478913062";
+const MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS = 8;
+const PARAGRAPH_AD_INTERVAL = 4;
+
+interface ProseHtmlProps {
+  html: string;
+  className: string;
+  injectInArticleAds?: boolean;
+}
+
+const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlProps) => {
+  const proseRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!injectInArticleAds || !proseRef.current) return;
+
+    const proseElement = proseRef.current;
+    const removeInjectedAds = () => {
+      proseElement.querySelectorAll(".in-article-ad-wrapper").forEach((node) => node.remove());
+    };
+
+    removeInjectedAds();
+
+    const paragraphs = Array.from(proseElement.querySelectorAll(":scope > p"));
+    if (paragraphs.length < MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
+      return removeInjectedAds;
+    }
+
+    paragraphs.forEach((paragraph, index) => {
+      const paragraphNumber = index + 1;
+      if (paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "in-article-ad-wrapper my-6 text-center";
+
+      const label = document.createElement("p");
+      label.className = "text-xs text-muted-foreground text-center uppercase";
+      label.textContent = "ADVERTISEMENT";
+
+      const adIns = document.createElement("ins");
+      adIns.className = "adsbygoogle";
+      adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
+      adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
+      adIns.setAttribute("data-ad-format", "rectangle");
+      adIns.setAttribute("data-full-width-responsive", "true");
+      adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
+
+      wrapper.append(label, adIns);
+      paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
+
+      if (import.meta.env.PROD) {
+        try {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } catch (err) {
+          console.error("AdSense push error:", err);
+        }
+      }
+    });
+
+    return removeInjectedAds;
+  }, [html, injectInArticleAds]);
+
+  return <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+};
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
 const stripWrappingQuotes = (text: string): string =>
@@ -256,7 +322,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
-      return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+      return <ProseHtml className="prose" html={sanitizedHtml} injectInArticleAds={true} />;
     }
     
     // Standard content processing (no prompt boxes)
@@ -325,8 +391,6 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return `<p class="leading-relaxed mb-6">${block.replace(/\n/g, ' ')}</p>`;
     });
     
-    const totalBlocks = htmlBlocks.length;
-
     // Join, sanitize, and post-process as a single string for cross-block patterns
     let joinedHtml = DOMPurify.sanitize(htmlBlocks.join('\n'), {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'],
@@ -341,46 +405,7 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
-    // Split back into blocks for rendering
-    const sanitizedBlocks = htmlBlocks.map((block) => {
-      return DOMPurify.sanitize(block, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'footer', 'code', 'pre', 'div', 'span', 'iframe', 'img', 'figure', 'figcaption', 'button', 'svg', 'path', 'section', 'time', 'hr'],
-        ALLOWED_ATTR: ['id', 'href', 'target', 'rel', 'class', 'src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'style', 'alt', 'title', 'loading', 'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'cite', 'data-video-id', 'datetime']
-      });
-    });
-
-    // Check if by-the-numbers wrapper was applied — if so, use joined version
-    if (joinedHtml.includes('by-the-numbers')) {
-      return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
-    }
-
-    // Count paragraph blocks for ad insertion
-    const isParagraphBlock = sanitizedBlocks.map((block) =>
-      /^<p[\s>]/i.test(block.trim())
-    );
-    const totalParagraphs = isParagraphBlock.filter(Boolean).length;
-    const shouldInsertAds = totalParagraphs >= 8;
-
-    const finalBlocks: React.ReactNode[] = [];
-    let paragraphCount = 0;
-    let adIndex = 0;
-    sanitizedBlocks.forEach((sanitizedBlock, index) => {
-      finalBlocks.push(<div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />);
-      if (isParagraphBlock[index]) {
-        paragraphCount++;
-        if (shouldInsertAds && paragraphCount > 0 && paragraphCount % 4 === 0) {
-          adIndex++;
-          finalBlocks.push(
-            <div key={`in-article-ad-${adIndex}`} className="my-6 max-w-full overflow-hidden text-center">
-              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
-              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
-            </div>
-          );
-        }
-      }
-    });
-    
-    return <div className="prose prose-lg max-w-none">{finalBlocks}</div>;
+    return <ProseHtml className="prose prose-lg max-w-none" html={joinedHtml} injectInArticleAds={true} />;
   }
   
   // Handle JSON content (legacy format)
