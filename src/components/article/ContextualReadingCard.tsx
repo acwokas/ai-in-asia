@@ -32,6 +32,7 @@ export function ContextualReadingCard({ article }: { article: ContextualArticle 
         <ArticleFallbackImage
           src={article.featured_image_url}
           alt={article.title}
+          categorySlug={cat?.slug}
           className="w-[100px] h-[70px] rounded flex-shrink-0"
           loading="lazy"
         />

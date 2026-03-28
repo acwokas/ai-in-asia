@@ -1,5 +1,6 @@
 import { useState, useEffect, ImgHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { getCategoryGradient } from "@/lib/categoryColors";
 
 const FALLBACK_IMAGE_URL =
   "https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/defaults/aiinasia-favicon.png";
@@ -21,6 +22,8 @@ function isBannedOrEmpty(src?: string | null): boolean {
 interface ArticleFallbackImageProps
   extends Omit<ImgHTMLAttributes<HTMLImageElement>, "onError"> {
   src?: string | null;
+  /** Pass category slug to show a colour-coded gradient instead of the generic favicon fallback */
+  categorySlug?: string | null;
 }
 
 export function ArticleFallbackImage({
@@ -28,6 +31,7 @@ export function ArticleFallbackImage({
   alt,
   className,
   style,
+  categorySlug,
   ...rest
 }: ArticleFallbackImageProps) {
   const [useFallback, setUseFallback] = useState(() => isBannedOrEmpty(src));
@@ -40,6 +44,31 @@ export function ArticleFallbackImage({
   const handleError = () => {
     setUseFallback(true);
   };
+
+  // When falling back AND a category slug is provided, render a gradient div
+  if (useFallback && categorySlug) {
+    const gradient = getCategoryGradient(categorySlug);
+    return (
+      <div
+        role="img"
+        aria-label={alt || ""}
+        className={cn("flex items-center justify-center", className)}
+        style={{
+          background: gradient,
+          width: rest.width ? `${rest.width}px` : undefined,
+          height: rest.height ? `${rest.height}px` : undefined,
+          ...style,
+        }}
+      >
+        <span
+          className="text-white/70 font-semibold uppercase tracking-wider select-none"
+          style={{ fontSize: "clamp(0.55rem, 1.2vw, 0.85rem)" }}
+        >
+          {categorySlug}
+        </span>
+      </div>
+    );
+  }
 
   const imgSrc = useFallback ? FALLBACK_IMAGE_URL : (src as string);
 

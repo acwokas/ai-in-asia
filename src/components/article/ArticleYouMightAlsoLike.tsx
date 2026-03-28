@@ -91,6 +91,7 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
                 <ArticleFallbackImage
                   src={a.featured_image_url}
                   alt={a.title}
+                  categorySlug={cat?.slug}
                   className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                   loading="lazy"
                 />

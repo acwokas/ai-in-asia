@@ -129,6 +129,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                   <ArticleFallbackImage
                     src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
                     alt={item.title}
+                    categorySlug="learn"
                     width={320}
                     height={200}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -168,6 +169,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                 <ArticleFallbackImage
                   src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
                   alt={item.title}
+                  categorySlug={catSlug}
                   width={320}
                   height={200}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

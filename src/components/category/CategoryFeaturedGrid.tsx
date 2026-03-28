@@ -99,6 +99,7 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
         <ArticleFallbackImage
           src={article.featured_image_url ? getOptimizedThumbnail(article.featured_image_url, 400, imageHeight) : null}
           alt={article.featured_image_alt || article.title}
+          categorySlug={article.categories?.slug || slug}
           width={400}
           height={imageHeight}
           loading="lazy"

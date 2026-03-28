@@ -85,6 +85,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
               <ArticleFallbackImage
                 src={featuredArticle.featured_image_url ? getOptimizedThumbnail(featuredArticle.featured_image_url, 640, 400) : null}
                 alt={featuredArticle.title}
+                categorySlug={featuredArticle.categories?.slug}
                 loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
               />

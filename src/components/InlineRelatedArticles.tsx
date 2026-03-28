@@ -65,6 +65,7 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
                 <ArticleFallbackImage
                   src={article.featured_image_url}
                   alt={article.title}
+                  categorySlug={article.categories?.slug || categorySlug}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                   width={400}

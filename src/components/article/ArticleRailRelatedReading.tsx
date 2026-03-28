@@ -54,6 +54,7 @@ export function ArticleRailRelatedReading({ categoryId, categoryName, categorySl
               <ArticleFallbackImage
                 src={a.featured_image_url}
                 alt={a.title}
+                categorySlug={cat?.slug || categorySlug}
                 className="w-[80px] h-[60px] rounded flex-shrink-0"
                 loading="lazy"
               />
