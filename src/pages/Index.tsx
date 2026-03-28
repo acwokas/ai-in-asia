@@ -468,9 +468,9 @@ const Index = () => {
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
         ogImageAlt="AI in ASIA - AI News from Asia"
       >
-        <link rel="alternate" type="application/rss+xml" title="AI in Asia RSS Feed" href="https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/rss-feed" />
-        <link rel="preconnect" href="https://pbmtnvxywplgpldmlygv.supabase.co" />
-        <link rel="dns-prefetch" href="https://pbmtnvxywplgpldmlygv.supabase.co" />
+        <link rel="alternate" type="application/rss+xml" title="AI in Asia RSS Feed" href="/rss.xml" />
+        <link rel="preconnect" href={import.meta.env.VITE_SUPABASE_URL} />
+        <link rel="dns-prefetch" href={import.meta.env.VITE_SUPABASE_URL} />
         {featuredArticle?.featured_image_url && (
           <link 
             rel="preload" as="image" 
