@@ -6,7 +6,7 @@
 
 import DOMPurify from "dompurify";
 
-import { InArticleAd } from "@/components/GoogleAds";
+import AdUnit from "@/components/AdUnit";
 import { fixEncoding } from "@/lib/textUtils";
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
@@ -262,36 +262,29 @@ export const renderArticleContent = (content: any): React.ReactNode => {
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
     
-    // Track which blocks are headings for ad injection
-    const isHeadingBlock: boolean[] = [];
     
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
           block.includes('tiktok-embed') ||
           block.includes('youtube.com/embed')) {
-        isHeadingBlock.push(false);
         return block;
       }
       if (block.startsWith('### ')) {
         const text = block.substring(4);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('## ')) {
         const text = block.substring(3);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h3 id="${id}" class="text-2xl font-semibold mt-8 mb-4">${text}</h3>`;
       }
       if (block.startsWith('# ')) {
         const text = block.substring(2);
         const id = generateHeadingId(text);
-        isHeadingBlock.push(true);
         return `<h2 id="${id}" class="text-3xl font-bold mt-12 mb-6 text-foreground">${text}</h2>`;
       }
-      isHeadingBlock.push(false);
       if (block.startsWith('> ') && !block.includes('twitter-tweet')) {
         const quoteLines = block.split('\n')
           .map(line => line.replace(/^>\s?/, '').trim())
@@ -361,23 +354,29 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
     }
 
-    // Insert in-article ad after the 3rd heading (if article is long enough)
-    let headingCount = 0;
-    const adInsertAfterIndex = (() => {
-      for (let i = 0; i < isHeadingBlock.length; i++) {
-        if (isHeadingBlock[i]) {
-          headingCount++;
-          if (headingCount === 3) return i;
-        }
-      }
-      return -1;
-    })();
+    // Count paragraph blocks for ad insertion
+    const isParagraphBlock = sanitizedBlocks.map((block) =>
+      /^<p[\s>]/i.test(block.trim())
+    );
+    const totalParagraphs = isParagraphBlock.filter(Boolean).length;
+    const shouldInsertAds = totalParagraphs >= 8;
 
     const finalBlocks: React.ReactNode[] = [];
+    let paragraphCount = 0;
+    let adIndex = 0;
     sanitizedBlocks.forEach((sanitizedBlock, index) => {
       finalBlocks.push(<div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />);
-      if (index === adInsertAfterIndex && totalBlocks > 8) {
-        finalBlocks.push(<InArticleAd key="in-article-ad" />);
+      if (isParagraphBlock[index]) {
+        paragraphCount++;
+        if (shouldInsertAds && paragraphCount > 0 && paragraphCount % 4 === 0) {
+          adIndex++;
+          finalBlocks.push(
+            <div key={`in-article-ad-${adIndex}`} className="my-6 max-w-full overflow-hidden text-center">
+              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
+              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
+            </div>
+          );
+        }
       }
     });
     

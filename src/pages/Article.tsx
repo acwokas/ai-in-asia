@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
-import { SidebarAd, MultiplexAd, InArticleAd } from "@/components/GoogleAds";
+import { SidebarAd } from "@/components/GoogleAds";
+import AdUnit from "@/components/AdUnit";
 import Footer from "@/components/Footer";
 import TldrSnapshot from "@/components/TldrSnapshot";
 import SeriesNavigation from "@/components/SeriesNavigation";
@@ -763,8 +764,9 @@ const Article = () => {
             )}
 
             {/* In-article ad — after TLDR / first major section */}
-            <div className="max-w-[720px]" style={{ minHeight: '100px' }}>
-              <InArticleAd />
+            <div className="max-w-[720px] my-6 overflow-hidden text-center" style={{ minHeight: '100px' }}>
+              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
+              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
             </div>
 
             {/* Mobile TOC */}
@@ -896,9 +898,10 @@ const Article = () => {
             </div>
           </div>
 
-          {/* Multiplex ad below article content */}
-          <div className="container mx-auto px-4 max-w-[720px]">
-            <MultiplexAd />
+          {/* End-of-article ad */}
+          <div className="container mx-auto px-4 max-w-[720px] my-6 overflow-hidden text-center">
+            <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
+            <AdUnit slot="8539668053" format="rectangle" responsive={true} />
           </div>
 
           {/* You Might Also Like */}
