@@ -816,20 +816,14 @@ All colors MUST be HSL.
   position: relative;
   min-height: 50vh;
   border-radius: 0.5rem;
-  overflow: visible;
-}
-
-.article-hero > img,
-.article-hero-gradient {
   overflow: hidden;
-  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-end;
 }
 
 @media (max-width: 768px) {
   .article-hero {
-    height: auto;
     min-height: 60vh;
-    max-height: none;
   }
 }
 
@@ -856,12 +850,10 @@ All colors MUST be HSL.
 }
 
 .article-hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 2;
   padding: 2rem;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
