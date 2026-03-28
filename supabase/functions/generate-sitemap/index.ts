@@ -7,8 +7,23 @@ const corsHeaders = {
 };
 
 const baseUrl = "https://aiinasia.com";
+const storagePrefix = "https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/";
+const imageProxyPrefix = "https://aiinasia.com/images/";
+
 const sanitizePathSegment = (value: string | null | undefined) =>
   encodeURIComponent((value || '').trim().replace(/\s+/g, '-'));
+
+const rewriteImageUrl = (url: string): string => {
+  if (!url) return '';
+  if (url.startsWith(storagePrefix)) {
+    return imageProxyPrefix + url.slice(storagePrefix.length);
+  }
+  if (url.startsWith('/')) return `${baseUrl}${url}`;
+  return url;
+};
+
+const escapeXml = (str: string): string =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -59,11 +74,12 @@ serve(async (req) => {
       { loc: `${baseUrl}/news/3-before-9`, lastmod: today, changefreq: 'daily', priority: 0.7 },
     ];
 
-    // Category landing pages
+    // Category landing pages (exclude 'innovation')
     const { data: categories } = await supabase
       .from("categories")
       .select("slug")
-      .neq("slug", "uncategorized");
+      .neq("slug", "uncategorized")
+      .neq("slug", "innovation");
 
     for (const c of (categories || [])) {
       urls.push({ loc: `${baseUrl}/category/${c.slug}`, lastmod: today, changefreq: 'daily', priority: 0.8 });
@@ -92,7 +108,7 @@ serve(async (req) => {
           priority: days <= 7 ? 0.9 : days <= 30 ? 0.8 : days <= 90 ? 0.7 : 0.6,
           title: (a as any).title || '',
           publishedAt: a.published_at,
-          imageUrl: (a as any).featured_image_url || '',
+          imageUrl: rewriteImageUrl((a as any).featured_image_url || ''),
           isNews: days <= 2,
         });
       }
@@ -146,22 +162,44 @@ serve(async (req) => {
       });
     }
 
-    // Tags
-    let allTags: { slug: string }[] = [];
+    // Tags — only include tags with 3+ published articles
+    let qualifiedTags: { slug: string }[] = [];
     let tagFrom = 0;
     while (true) {
       const { data: tagBatch } = await supabase
         .from("tags")
-        .select("slug")
+        .select("id, slug")
         .order("slug")
         .range(tagFrom, tagFrom + 999);
       if (!tagBatch || tagBatch.length === 0) break;
-      allTags = allTags.concat(tagBatch);
+
+      // For each batch, check article counts via article_tags junction
+      const tagIds = tagBatch.map(t => (t as any).id);
+      // Query article_tags joined with articles to count published articles per tag
+      const { data: tagCounts } = await supabase
+        .from("article_tags")
+        .select("tag_id, articles!inner(status)")
+        .in("tag_id", tagIds)
+        .eq("articles.status", "published");
+
+      // Count articles per tag
+      const countMap: Record<string, number> = {};
+      for (const row of (tagCounts || [])) {
+        const tid = (row as any).tag_id;
+        countMap[tid] = (countMap[tid] || 0) + 1;
+      }
+
+      for (const t of tagBatch) {
+        if ((countMap[(t as any).id] || 0) >= 3) {
+          qualifiedTags.push({ slug: t.slug });
+        }
+      }
+
       if (tagBatch.length < 1000) break;
       tagFrom += 1000;
     }
 
-    for (const t of allTags) {
+    for (const t of qualifiedTags) {
       urls.push({
         loc: `${baseUrl}/tag/${t.slug}`,
         lastmod: today,
@@ -170,7 +208,7 @@ serve(async (req) => {
       });
     }
 
-    // Learning paths (hardcoded in frontend constants)
+    // Learning paths
     const learningPathsByCategory: Record<string, string[]> = {
       news: ['this-week-in-asian-ai', 'ai-policy-tracker', 'funding-and-deals', 'research-radar'],
       business: ['ai-roi-playbook', 'enterprise-ai-101', 'ai-in-asean-markets', 'governance-essentials'],
@@ -227,34 +265,30 @@ serve(async (req) => {
     let xml: string;
 
     if (isNewsSitemap) {
-      // Google News sitemap â articles published within last 2 days only
       const newsArticles = urls.filter((u: any) => u.isNews);
       xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n';
       for (const u of newsArticles as any[]) {
         xml += `  <url>\n`;
-        xml += `    <loc>${u.loc}</loc>\n`;
+        xml += `    <loc>${escapeXml(u.loc)}</loc>\n`;
         xml += `    <news:news>\n`;
         xml += `      <news:publication>\n`;
         xml += `        <news:name>AI in Asia</news:name>\n`;
         xml += `        <news:language>en</news:language>\n`;
         xml += `      </news:publication>\n`;
         xml += `      <news:publication_date>${new Date(u.publishedAt).toISOString()}</news:publication_date>\n`;
-        xml += `      <news:title>${u.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</news:title>\n`;
+        xml += `      <news:title>${escapeXml(u.title)}</news:title>\n`;
         xml += `    </news:news>\n`;
         xml += `  </url>\n`;
       }
       xml += '</urlset>';
     } else {
-      // Main sitemap
       xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
       for (const u of urls) {
-        const rawImageUrl = (u as any).imageUrl || '';
-        const absoluteImageUrl = rawImageUrl.startsWith('/') ? `${baseUrl}${rawImageUrl}` : rawImageUrl;
-        const imageUrl = absoluteImageUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const title = ((u as any).title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        xml += `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n`;
+        const imageUrl = escapeXml((u as any).imageUrl || '');
+        const title = escapeXml((u as any).title || '');
+        xml += `  <url>\n    <loc>${escapeXml(u.loc)}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n`;
         if (imageUrl) {
           xml += `    <image:image>\n      <image:loc>${imageUrl}</image:loc>\n      <image:title>${title}</image:title>\n    </image:image>\n`;
         }
@@ -263,7 +297,7 @@ serve(async (req) => {
       xml += '</urlset>';
     }
 
-    console.log(`Generated sitemap with ${urls.length} URLs`);
+    console.log(`Generated sitemap with ${urls.length} URLs (${qualifiedTags.length} qualified tags out of total tags)`);
 
     return new Response(xml, {
       headers: {
