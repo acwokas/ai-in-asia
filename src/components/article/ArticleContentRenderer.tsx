@@ -6,7 +6,7 @@
 
 import DOMPurify from "dompurify";
 
-import { InArticleAd } from "@/components/GoogleAds";
+import AdUnit from "@/components/AdUnit";
 import { fixEncoding } from "@/lib/textUtils";
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
@@ -361,23 +361,29 @@ export const renderArticleContent = (content: any): React.ReactNode => {
       return <div className="prose prose-lg max-w-none"><div key="content" dangerouslySetInnerHTML={{ __html: joinedHtml }} /></div>;
     }
 
-    // Insert in-article ad after the 3rd heading (if article is long enough)
-    let headingCount = 0;
-    const adInsertAfterIndex = (() => {
-      for (let i = 0; i < isHeadingBlock.length; i++) {
-        if (isHeadingBlock[i]) {
-          headingCount++;
-          if (headingCount === 3) return i;
-        }
-      }
-      return -1;
-    })();
+    // Count paragraph blocks for ad insertion
+    const isParagraphBlock = sanitizedBlocks.map((block) =>
+      /^<p[\s>]/i.test(block.trim())
+    );
+    const totalParagraphs = isParagraphBlock.filter(Boolean).length;
+    const shouldInsertAds = totalParagraphs >= 8;
 
     const finalBlocks: React.ReactNode[] = [];
+    let paragraphCount = 0;
+    let adIndex = 0;
     sanitizedBlocks.forEach((sanitizedBlock, index) => {
       finalBlocks.push(<div key={index} dangerouslySetInnerHTML={{ __html: sanitizedBlock }} />);
-      if (index === adInsertAfterIndex && totalBlocks > 8) {
-        finalBlocks.push(<InArticleAd key="in-article-ad" />);
+      if (isParagraphBlock[index]) {
+        paragraphCount++;
+        if (shouldInsertAds && paragraphCount > 0 && paragraphCount % 4 === 0) {
+          adIndex++;
+          finalBlocks.push(
+            <div key={`in-article-ad-${adIndex}`} className="my-6 max-w-full overflow-hidden text-center">
+              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
+              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
+            </div>
+          );
+        }
       }
     });
     

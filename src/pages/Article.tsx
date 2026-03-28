@@ -896,9 +896,10 @@ const Article = () => {
             </div>
           </div>
 
-          {/* Multiplex ad below article content */}
-          <div className="container mx-auto px-4 max-w-[720px]">
-            <MultiplexAd />
+          {/* End-of-article ad */}
+          <div className="container mx-auto px-4 max-w-[720px] my-6 overflow-hidden text-center">
+            <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
+            <AdUnit slot="8539668053" format="rectangle" responsive={true} />
           </div>
 
           {/* You Might Also Like */}
