@@ -732,7 +732,6 @@ const Index = () => {
                       className="group rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-200 flex flex-col"
                       style={{ borderTop: `3px solid ${catColor}` }}
                     >
-                    >
                       <div className="relative w-full h-[150px] overflow-hidden">
                         <img
                           src={getOptimizedThumbnail(article.featured_image_url || "/placeholder.svg", 400, 220)}
