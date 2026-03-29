@@ -755,17 +755,21 @@ ${content}`;
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image',
           messages: [
-            { role: 'user', content: `Editorial magazine cover photograph. ${description}
+            { role: 'user', content: `Generate an eye-catching editorial hero image for an article about: ${description}
 
-COMPOSITION: Wide establishing shot. Strong visual hierarchy. Subject positioned right-of-centre or upper third, leaving clear negative space on the left for a title overlay. Foreground element to add depth.
+COMPOSITION: Wide establishing shot or epic-scale scene. Strong visual hierarchy with the subject positioned using the rule of thirds. Leave breathing room — generous negative space on one side for potential title overlay. Use foreground elements to add depth and draw the eye inward.
 
-LIGHTING: Cinematic. Either soft directional window light with gentle shadows, warm golden-hour outdoor light, or dramatic studio lighting with clear key and fill. Rich contrast without crushing blacks.
+STYLE DIRECTION: Rotate between these approaches based on the subject's tone — cinematic photography, stylised illustration (lo-fi anime or concept art), 3D Pixar/cartoon, surreal photo-manipulation, macro/close-up tactile shots, or epic-scale conceptual scenes. Commit fully to one style per image.
 
-STYLE: Photorealistic, shot on full-frame camera, 35mm lens equivalent. Shallow depth of field with sharp subject and softly blurred background. Color grading: warm, slightly desaturated mid-tones with rich saturated highlights. The mood should feel premium, considered, and human.
+COLOUR & LIGHTING: Bold, saturated palettes — teal & orange, blue & gold, neon pink & cyan, or warm amber & deep shadow. Lighting must be dramatic: rim lighting, volumetric haze, neon glows, golden hour, or chiaroscuro. Never flat, evenly lit, or muted.
 
-PEOPLE: Where the topic involves people, show real human subjects. Diverse, Asian representation prioritised for Asia-Pacific topics. Candid or lightly directed poses, never stiff stock-photo poses.
+VISUAL METAPHOR: Build the image around a CONCRETE VISUAL METAPHOR directly tied to the article's specific subject (e.g. a puppet dissolving into particles for AI replacing jobs, clockwork gears for precision engineering, a book with a skyline emerging for knowledge). Never use generic tech imagery.
 
-HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot hands, glowing brains, neural networks, binary code, circuit boards, or any AI visual cliches. No flat design or illustration. No dark or black backgrounds. ABSOLUTELY NO people sitting at computers, looking at screens, or typing on laptops - this is the most important rule. No generic office or tech scenes. No stock-photo poses. The image must show the specific real-world subject of this article: a place, an industry, a moment, an object, or people doing something directly related to the story. If in doubt, show an environment rather than a person.` }
+HUMAN ELEMENTS: Include human-scale elements where possible — hands, silhouettes, characters, cultural objects. These create emotional connection and scale.
+
+CULTURAL DETAILS: When the article involves an Asian country or culture, weave in recognisable cultural details — architecture, clothing, food, landscapes, ceremonies — tastefully, not as stereotypes.
+
+STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, generic "AI brain" imagery. Dark/muted colour schemes that look like stock photos. Text, words, logos, typography, UI elements, screens, or diagrams. Brand names and copyrighted characters. People sitting at computers, looking at screens, or typing on laptops. Anything that could be described as "vague nebulous lights" or "abstract tech". No flat design or illustration unless that IS the chosen style direction.` }
           ],
           modalities: ['image', 'text'],
         }),
@@ -803,17 +807,21 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash-image',
           messages: [
-            { role: 'user', content: `Editorial in-article photograph. ${description}
+            { role: 'user', content: `Generate a compelling mid-article image for an article about: ${description}
 
-COMPOSITION: Tighter than a cover shot, medium or close-up framing. Centred or symmetrical composition is fine here. Can focus on a specific detail, object, moment, or person that supports the article narrative. Does NOT need to leave space for text overlay.
+COMPOSITION: Tighter than a hero shot — medium or close-up framing. Centred or symmetrical composition works well. Focus on a specific detail, object, moment, texture, or character that supports the article narrative. Does NOT need space for text overlay. Use close-ups, split-screen contrasts, or environmental storytelling.
 
-LIGHTING: Natural and authentic. Soft diffused light, overcast outdoor, or warm interior ambient. Avoid dramatic studio lighting, this image should feel like a documentary or reportage photograph.
+STYLE DIRECTION: Choose a DIFFERENT style from what a hero image would use. Rotate between: intimate documentary photography, detailed macro/close-up tactile shots, stylised illustration (concept art, lo-fi anime), 3D cartoon close-up, or surreal photo-manipulation detail shot. Commit fully to the chosen style.
 
-STYLE: Photorealistic, 50-85mm lens equivalent. Can have slightly more depth of field than the hero (more context in frame). Color grading: natural, slightly cooler tones than the hero to create visual contrast between the two images. The mood should feel informative and grounded.
+COLOUR & LIGHTING: Bold and saturated but with a slightly different palette than a typical hero — try complementary or analogous colours. Lighting should be dramatic but intimate: warm tungsten glow, neon rim lighting, shallow depth-of-field bokeh, or chiaroscuro close-up. Never flat or evenly lit.
 
-PEOPLE: Where relevant, show people in action or mid-task, working, talking, interacting with technology or environment. Real and candid, not posed.
+VISUAL METAPHOR: Build around a CONCRETE VISUAL METAPHOR that is meaningfully different from the hero image but still directly tied to the article's theme. Show a different facet, angle, or dimension of the story.
 
-HARD RULES: No text, logos, watermarks, or UI elements. No AI visual cliches (robot hands, glowing brains, circuit boards, binary code). No flat design or illustration. No black backgrounds. Must be clearly related to the specific topic described, not a generic visual.` }
+HUMAN ELEMENTS: Where relevant, show hands interacting with objects, characters mid-action, or cultural artefacts that tell a story. Candid and authentic, never posed.
+
+CULTURAL DETAILS: When the article involves Asian countries or cultures, include recognisable details — street scenes, traditional objects, local textures, architectural elements — woven in naturally.
+
+STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, generic "AI brain" imagery. Dark/muted colour schemes that look like stock photos. Text, words, logos, typography, UI elements, screens, or diagrams. Brand names and copyrighted characters. People looking at screens or typing. Anything described as "vague nebulous lights" or "abstract tech".` }
           ],
           modalities: ['image', 'text'],
         }),
