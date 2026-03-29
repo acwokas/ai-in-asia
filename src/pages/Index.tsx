@@ -40,6 +40,16 @@ const ForYouSection = lazy(() => import("@/components/ForYouSection").catch(() =
 const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding").catch(() => { safeReloadOnce(); return import("@/components/ThreeBeforeNineLanding"); }));
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
+
+/** Accent colour for guide pillar values */
+const getGuidePillarColor = (pillar: string | null | undefined): string => {
+  switch ((pillar || '').toLowerCase()) {
+    case 'learn': return '#5F72FF';   // blue
+    case 'prompts': return '#D97706'; // amber
+    case 'toolbox': return '#0D9488'; // teal
+    default: return '#5F72FF';
+  }
+};
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import AdUnit from "@/components/AdUnit";
 
@@ -152,29 +162,64 @@ const Index = () => {
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
       const oneMonthAgoISO = oneMonthAgo.toISOString();
 
-      const { data: articles, error } = await supabase
-        .from("articles")
-        .select(`
-          id, title, slug, excerpt, featured_image_url, reading_time_minutes,
-          published_at, updated_at, cornerstone, sticky, primary_category_id,
-          comment_count, is_trending,
-          authors:author_id (name, slug),
-          categories:primary_category_id (name, slug)
-        `)
-        .eq("status", "published")
-        .eq("featured_on_homepage", true)
-        .gte("published_at", oneMonthAgoISO)
-        .order("sticky", { ascending: false })
-        .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(18);
+      // Fetch articles and guides in parallel
+      const [articlesResult, guidesResult] = await Promise.all([
+        supabase
+          .from("articles")
+          .select(`
+            id, title, slug, excerpt, featured_image_url, reading_time_minutes,
+            published_at, updated_at, cornerstone, sticky, primary_category_id,
+            comment_count, is_trending,
+            authors:author_id (name, slug),
+            categories:primary_category_id (name, slug)
+          `)
+          .eq("status", "published")
+          .eq("featured_on_homepage", true)
+          .gte("published_at", oneMonthAgoISO)
+          .order("sticky", { ascending: false })
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .limit(18),
+        supabase
+          .from("ai_guides")
+          .select("id, title, slug, excerpt, featured_image_url, read_time_minutes, published_at, pillar, guide_category")
+          .eq("status", "published")
+          .not("featured_image_url", "is", null)
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .limit(10),
+      ]);
 
-      if (error) throw error;
-      if (!articles || articles.length === 0) return { featured: null, latest: [], trending: [] };
+      if (articlesResult.error) throw articlesResult.error;
+      const articles = articlesResult.data || [];
+      const guides = guidesResult.data || [];
 
-      const featured = articles[0];
-      const latest = articles.slice(1, 16);
+      // Tag and normalise both types
+      const taggedArticles = articles.map((a: any) => ({ ...a, content_type: 'article' as const }));
+      const taggedGuides = guides.map((g: any) => ({
+        ...g,
+        content_type: 'guide' as const,
+        reading_time_minutes: g.read_time_minutes,
+        categories: { name: g.guide_category || 'Guide', slug: g.pillar || 'learn' },
+        authors: null,
+        comment_count: 0,
+        is_trending: false,
+        cornerstone: false,
+        updated_at: g.published_at,
+        sticky: false,
+      }));
 
-      const { data: trendingData, error: trendingError } = await supabase
+      // Merge and sort by published_at descending
+      const merged = [...taggedArticles, ...taggedGuides].sort((a, b) => {
+        const da = a.published_at ? new Date(a.published_at).getTime() : 0;
+        const db = b.published_at ? new Date(b.published_at).getTime() : 0;
+        return db - da;
+      });
+
+      if (merged.length === 0) return { featured: null, latest: [], trending: [] };
+
+      const featured = merged[0];
+      const latest = merged.slice(1, 16);
+
+      const { data: trendingData } = await supabase
         .from("articles")
         .select(`
           id, title, slug, excerpt, featured_image_url, reading_time_minutes,
@@ -187,8 +232,6 @@ const Index = () => {
         .eq("homepage_trending", true)
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5);
-
-
 
       return { featured, latest, trending: trendingData || [] };
     },
@@ -556,8 +599,15 @@ const Index = () => {
                     </div>
                   </div>
                 </Link>
-              ) : featuredArticle && featuredArticle.slug ? (
-                <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
+              ) : featuredArticle && featuredArticle.slug ? (() => {
+                const heroLink = featuredArticle.content_type === 'guide'
+                  ? `/guides/${featuredArticle.categories?.slug || 'learn'}/${featuredArticle.slug}`
+                  : `/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`;
+                const heroCatColor = featuredArticle.content_type === 'guide'
+                  ? getGuidePillarColor(featuredArticle.categories?.slug)
+                  : getCategoryColor(featuredArticle.categories?.slug);
+                return (
+                <Link to={heroLink} className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
@@ -571,7 +621,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: getCategoryColor(featuredArticle.categories?.slug), padding: '6px 14px' }}>{featuredArticle.categories?.name || "Uncategorized"}</Badge>
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: heroCatColor, padding: '6px 14px' }}>{featuredArticle.content_type === 'guide' ? `📘 ${featuredArticle.categories?.name || 'Guide'}` : (featuredArticle.categories?.name || "Uncategorized")}</Badge>
                         {featuredArticle.is_trending && (
                           <Badge className="text-white flex items-center gap-1 text-xs backdrop-blur-sm" style={{ backgroundColor: '#E06050', padding: '6px 14px' }}><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
@@ -605,7 +655,8 @@ const Index = () => {
                     </div>
                   </div>
                 </Link>
-              ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
+                );
+              })() : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
                 <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
@@ -668,12 +719,16 @@ const Index = () => {
                 ).slice(0, 4) || [];
 
                 return secondaryArticles.map((article: any) => {
-                  const categorySlug = article.categories?.slug || 'news';
-                  const catColor = getCategoryColor(categorySlug);
+                  const isGuide = article.content_type === 'guide';
+                  const categorySlug = article.categories?.slug || (isGuide ? 'learn' : 'news');
+                  const catColor = isGuide ? getGuidePillarColor(categorySlug) : getCategoryColor(categorySlug);
+                  const itemLink = isGuide
+                    ? `/guides/${categorySlug}/${article.slug}`
+                    : `/${categorySlug}/${article.slug}`;
                   return (
                     <Link
                       key={article.id}
-                      to={`/${categorySlug}/${article.slug}`}
+                      to={itemLink}
                       className="group rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-200 flex flex-col"
                       style={{ borderTop: `3px solid ${catColor}` }}
                     >
@@ -689,7 +744,7 @@ const Index = () => {
                       </div>
                       <div className="p-2.5 flex flex-col flex-1">
                         <span className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: catColor }}>
-                          {article.categories?.name || "Uncategorized"}
+                          {isGuide ? `📘 ${article.categories?.name || 'Guide'}` : (article.categories?.name || "Uncategorized")}
                         </span>
                         <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
