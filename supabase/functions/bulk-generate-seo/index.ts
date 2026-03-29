@@ -14,15 +14,24 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
 
-    if (!googleApiKey) {
-      throw new Error("GOOGLE_AI_API_KEY not configured");
+    const gatewayUrl = LOVABLE_API_KEY
+      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+      : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    const gatewayKey = LOVABLE_API_KEY || googleApiKey;
+
+    if (!gatewayKey) {
+      throw new Error("No AI API key configured (LOVABLE_API_KEY or GOOGLE_AI_API_KEY)");
     }
+
+    const modelName = LOVABLE_API_KEY ? "google/gemini-2.5-flash" : "gemini-2.5-flash";
+
+    console.log("Bulk SEO generation via", LOVABLE_API_KEY ? "Lovable AI Gateway" : "Google direct API");
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get all published articles with missing SEO data
     const { data: articles, error: fetchError } = await supabase
       .from("articles")
       .select("id, title, content, excerpt, meta_title, seo_title, focus_keyphrase, keyphrase_synonyms")
@@ -43,7 +52,6 @@ serve(async (req) => {
 
     for (const article of articles) {
       try {
-        // Extract text content
         let textContent = "";
         if (typeof article.content === "string") {
           textContent = article.content;
@@ -53,15 +61,14 @@ serve(async (req) => {
 
         const fullText = `${article.title}\n\n${article.excerpt || ""}\n\n${textContent}`.substring(0, 3000);
 
-        // Generate SEO metadata
-        const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+        const aiResponse = await fetch(gatewayUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${googleApiKey}`,
+            Authorization: `Bearer ${gatewayKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "gemini-2.5-flash",
+            model: modelName,
             messages: [
               {
                 role: "system",
@@ -71,7 +78,7 @@ serve(async (req) => {
   "seo_title": "60 character optimized title with main keyword",
   "focus_keyphrase": "main keyword phrase (2-4 words)",
   "keyphrase_synonyms": "synonym1, synonym2, synonym3",
-  "meta_description": "155 character compelling description with keyword"
+  "meta_description": "Write a COMPLETE sentence under 155 characters. Never end mid-sentence."
 }`,
               },
               {
@@ -107,7 +114,6 @@ serve(async (req) => {
 
         const seoData = JSON.parse(jsonMatch[0]);
 
-        // Update article
         const { error: updateError } = await supabase
           .from("articles")
           .update({
@@ -126,7 +132,6 @@ serve(async (req) => {
           processed++;
         }
 
-        // Rate limiting delay
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`Error processing article ${article.id}:`, error);
@@ -135,12 +140,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processed, 
-        failed,
-        total: articles.length 
-      }),
+      JSON.stringify({ success: true, processed, failed, total: articles.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
