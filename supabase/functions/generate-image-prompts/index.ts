@@ -62,20 +62,20 @@ serve(async (req) => {
     const contentPreview = contentText.substring(0, 1800);
 
     const systemPrompt =
-      `You are a world-class Midjourney prompt engineer and editorial art director. Generate exactly TWO distinct, cinematic image generation prompts for the SAME article.
+      `You are a senior editorial photo director at a premium Asia-Pacific technology publication. You write detailed photographic briefs as if directing a real photographer on location. Generate exactly TWO distinct image-generation prompts for the SAME article.
 
 Rules:
-- Write prompts in Midjourney v6 style: vivid, descriptive, with specific camera angles, lighting setups, colour palettes, textures, and atmosphere.
-- Each prompt should be 2-4 sentences of rich visual description — NOT short generic descriptions.
-- Include technical photographic/cinematic terms: lens type (e.g. 85mm, wide-angle), lighting (e.g. volumetric, golden hour, neon-lit), mood (e.g. moody, ethereal, dramatic chiaroscuro), and composition (e.g. rule of thirds, bird's-eye, close-up macro).
-- Use conceptual digital art illustration style with bold colours on dark backgrounds for article imagery.
-- Prompts must be meaningfully different (different composition, subject framing, environment, or metaphor), not paraphrases.
-- Strictly NO text, words, logos, typography, UI elements, screens, or diagrams in the image.
-- Avoid brand names and copyrighted characters.
-- End each prompt with style suffixes like: --ar 16:9 --style raw --v 6
+- Write prompts as photorealistic editorial photography briefs — describe the scene, subject, environment, lighting, and mood as a real-world photograph.
+- Each prompt should be 2-4 sentences of rich visual description with specific photographic direction.
+- Include technical terms: lens (e.g. 85mm f/1.4, 35mm wide-angle, 24-70mm zoom), lighting (e.g. soft window light, golden hour, overcast diffused, warm tungsten), composition (e.g. shallow depth of field, rule of thirds, environmental portrait, bird's-eye).
+- Prioritise warm, human tones. Feature diverse APAC subjects and real-world environments (offices, streets, factories, labs, classrooms, markets, co-working spaces).
+- Prompts must be meaningfully different — different composition, subject, environment, or narrative angle. Never paraphrase.
+- STRICTLY BANNED: robot hands, glowing brains, circuit boards, floating holograms, people staring at screens or using computers/phones, generic "AI concept" imagery, text/logos/UI overlays, brand names, copyrighted characters.
+- Focus on the HUMAN IMPACT of the story — show real people, workplaces, cityscapes, or tangible objects related to the topic.
+- End each prompt with style suffixes: --ar 16:9 --style raw --v 6
 - Output must be structured via the provided tool.`;
 
-    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: A striking, conceptual digital art illustration for the featured image above the fold. Strong focal point, dramatic lighting, bold colour palette against a dark background, clean negative space. Think editorial magazine cover quality. Include Midjourney-style parameters.\n2) BODY: A rich, atmospheric in-article supporting image with a completely different composition and metaphor from HERO. More textural, detailed, and contextual. Cinematic lighting and depth of field. Include Midjourney-style parameters.`;
+    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: A striking editorial photograph suitable as a magazine cover image. Strong focal point, cinematic lighting, warm colour palette, clean negative space for headline overlay. Think of directing a photographer for a feature story in Nikkei Asia or MIT Technology Review. The subject should represent the real-world impact of the story — a person, place, or object — never an abstract concept. Include Midjourney-style parameters.\n2) BODY: A rich, atmospheric documentary-style photograph for use mid-article. Completely different composition and narrative angle from HERO. More textural, contextual, and intimate — as if captured by a photojournalist embedded in the story. Show environment, detail, or human interaction. Cinematic lighting and shallow depth of field. Include Midjourney-style parameters.`;
 
     const tools = [
       {
