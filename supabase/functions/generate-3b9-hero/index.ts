@@ -24,7 +24,7 @@ serve(async (req) => {
     const response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${gatewayKey}`,
+        Authorization: `Bearer ${googleApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

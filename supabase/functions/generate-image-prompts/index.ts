@@ -123,7 +123,7 @@ serve(async (req) => {
     let response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${gatewayKey}`,
+         Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
@@ -222,7 +222,7 @@ serve(async (req) => {
       response = await fetch(gatewayUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${gatewayKey}`,
+          Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(retryBody),

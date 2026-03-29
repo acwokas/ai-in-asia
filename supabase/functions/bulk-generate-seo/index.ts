@@ -59,7 +59,7 @@ serve(async (req) => {
         const aiResponse = await fetch(gatewayUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${gatewayKey}`,
+            Authorization: `Bearer ${googleApiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
