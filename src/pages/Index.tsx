@@ -719,14 +719,19 @@ const Index = () => {
                 ).slice(0, 4) || [];
 
                 return secondaryArticles.map((article: any) => {
-                  const categorySlug = article.categories?.slug || 'news';
-                  const catColor = getCategoryColor(categorySlug);
+                  const isGuide = article.content_type === 'guide';
+                  const categorySlug = article.categories?.slug || (isGuide ? 'learn' : 'news');
+                  const catColor = isGuide ? getGuidePillarColor(categorySlug) : getCategoryColor(categorySlug);
+                  const itemLink = isGuide
+                    ? `/guides/${categorySlug}/${article.slug}`
+                    : `/${categorySlug}/${article.slug}`;
                   return (
                     <Link
                       key={article.id}
-                      to={`/${categorySlug}/${article.slug}`}
+                      to={itemLink}
                       className="group rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-200 flex flex-col"
                       style={{ borderTop: `3px solid ${catColor}` }}
+                    >
                     >
                       <div className="relative w-full h-[150px] overflow-hidden">
                         <img
