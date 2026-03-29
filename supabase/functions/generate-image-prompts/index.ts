@@ -134,10 +134,10 @@ Rules:
     };
 
     // First attempt
-    let response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    let response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
+        Authorization: `Bearer ${gatewayKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
