@@ -40,6 +40,16 @@ const ForYouSection = lazy(() => import("@/components/ForYouSection").catch(() =
 const ThreeBeforeNineLanding = lazy(() => import("@/components/ThreeBeforeNineLanding").catch(() => { safeReloadOnce(); return import("@/components/ThreeBeforeNineLanding"); }));
 import { getOptimizedAvatar, getOptimizedHeroImage, getOptimizedThumbnail, generateResponsiveSrcSet } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
+
+/** Accent colour for guide pillar values */
+const getGuidePillarColor = (pillar: string | null | undefined): string => {
+  switch ((pillar || '').toLowerCase()) {
+    case 'learn': return '#5F72FF';   // blue
+    case 'prompts': return '#D97706'; // amber
+    case 'toolbox': return '#0D9488'; // teal
+    default: return '#5F72FF';
+  }
+};
 import ExploreMoreButton from "@/components/ExploreMoreButton";
 import AdUnit from "@/components/AdUnit";
 
