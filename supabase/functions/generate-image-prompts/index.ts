@@ -123,7 +123,7 @@ Rules:
     ];
 
     const body: Record<string, unknown> = {
-      model: "gemini-3-flash-preview",
+      model: LOVABLE_API_KEY ? "google/gemini-3-flash-preview" : "gemini-3-flash-preview",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
