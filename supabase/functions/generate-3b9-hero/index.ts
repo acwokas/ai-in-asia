@@ -28,7 +28,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "gemini-2.5-flash-image",
         messages: [{ role: "user", content: imagePrompt }],
         modalities: ["image", "text"],
       }),
