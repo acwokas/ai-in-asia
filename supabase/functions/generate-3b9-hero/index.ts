@@ -14,19 +14,24 @@ serve(async (req) => {
 
     const imagePrompt = `A sophisticated, modern editorial header image for a daily AI intelligence briefing called "3 Before 9". Abstract tech-inspired composition with warm amber and gold accent tones against a deep dark background. Incorporate subtle visual elements suggesting artificial intelligence, data flows, neural networks, or digital connectivity. The mood should be premium, editorial, and forward-looking. Style: clean, minimal, high-contrast. Do NOT include any text, numbers, letters, or words in the image. Date context: ${displayDate}. Ultra high resolution, 16:9 aspect ratio hero image.`;
 
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
-    if (!googleApiKey) throw new Error("GOOGLE_AI_API_KEY not configured");
+    const gatewayUrl = LOVABLE_API_KEY
+      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+      : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    const gatewayKey = LOVABLE_API_KEY || googleApiKey;
+    if (!gatewayKey) throw new Error("No AI API key configured");
 
-    console.log("Generating 3B9 hero image via Lovable AI gateway...");
+    console.log("Generating 3B9 hero image via", LOVABLE_API_KEY ? "Lovable AI Gateway" : "Google direct API");
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${googleApiKey}`,
+        Authorization: `Bearer ${gatewayKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-2.5-flash-image",
+        model: "google/gemini-2.5-flash-image",
         messages: [{ role: "user", content: imagePrompt }],
         modalities: ["image", "text"],
       }),
@@ -51,7 +56,20 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    // Try Lovable gateway format first, then Google direct API format
+    let imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imageDataUrl) {
+      const parts = data.choices?.[0]?.message?.content;
+      if (Array.isArray(parts)) {
+        for (const part of parts) {
+          if (part?.type === 'image_url' && part?.image_url?.url) { imageDataUrl = part.image_url.url; break; }
+          if (part?.inline_data?.data && part?.inline_data?.mime_type) {
+            imageDataUrl = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+            break;
+          }
+        }
+      }
+    }
 
     if (!imageDataUrl) throw new Error("No image generated");
 
