@@ -14,21 +14,16 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
 
-    const gatewayUrl = LOVABLE_API_KEY
-      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
-      : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-    const gatewayKey = LOVABLE_API_KEY || googleApiKey;
-
-    if (!gatewayKey) {
-      throw new Error("No AI API key configured (LOVABLE_API_KEY or GOOGLE_AI_API_KEY)");
+    if (!googleApiKey) {
+      throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
 
-    const modelName = LOVABLE_API_KEY ? "google/gemini-2.5-flash" : "gemini-2.5-flash";
+    const gatewayUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    const modelName = "gemini-2.5-flash";
 
-    console.log("Bulk SEO generation via", LOVABLE_API_KEY ? "Lovable AI Gateway" : "Google direct API");
+    console.log("Bulk SEO generation via Google Gemini API");
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -64,7 +59,7 @@ serve(async (req) => {
         const aiResponse = await fetch(gatewayUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${gatewayKey}`,
+            Authorization: `Bearer ${googleApiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({

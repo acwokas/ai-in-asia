@@ -14,24 +14,21 @@ serve(async (req) => {
 
     const imagePrompt = `A sophisticated, modern editorial header image for a daily AI intelligence briefing called "3 Before 9". Abstract tech-inspired composition with warm amber and gold accent tones against a deep dark background. Incorporate subtle visual elements suggesting artificial intelligence, data flows, neural networks, or digital connectivity. The mood should be premium, editorial, and forward-looking. Style: clean, minimal, high-contrast. Do NOT include any text, numbers, letters, or words in the image. Date context: ${displayDate}. Ultra high resolution, 16:9 aspect ratio hero image.`;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
-    const gatewayUrl = LOVABLE_API_KEY
-      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
-      : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-    const gatewayKey = LOVABLE_API_KEY || googleApiKey;
-    if (!gatewayKey) throw new Error("No AI API key configured");
+    if (!googleApiKey) throw new Error("GOOGLE_AI_API_KEY is not configured");
 
-    console.log("Generating 3B9 hero image via", LOVABLE_API_KEY ? "Lovable AI Gateway" : "Google direct API");
+    const gatewayUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+    console.log("Generating 3B9 hero image via Google Gemini API");
 
     const response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${gatewayKey}`,
+        Authorization: `Bearer ${googleApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "gemini-2.5-flash-image",
         messages: [{ role: "user", content: imagePrompt }],
         modalities: ["image", "text"],
       }),

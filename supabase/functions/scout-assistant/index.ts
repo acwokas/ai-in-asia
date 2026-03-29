@@ -718,11 +718,8 @@ ${content}`;
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const imageGatewayUrl = LOVABLE_API_KEY
-      ? 'https://ai.gateway.lovable.dev/v1/chat/completions'
-      : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-    const imageGatewayKey = LOVABLE_API_KEY || apiKey;
+    const imageGatewayUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const imageGatewayKey = apiKey;
 
     const extractBase64FromResponse = (data: any): string | null => {
       // Format 1: Lovable AI Gateway — images array
@@ -745,7 +742,7 @@ ${content}`;
 
     const generateHeroImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      console.log('Generating hero image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      console.log('Generating hero image via Google Gemini API');
       const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
@@ -753,7 +750,7 @@ ${content}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Generate an eye-catching editorial hero image for an article about: ${description}
 
@@ -797,7 +794,7 @@ STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, 
 
     const generateMidImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      console.log('Generating mid-article image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      console.log('Generating mid-article image via Google Gemini API');
       const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
@@ -805,7 +802,7 @@ STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Generate a compelling mid-article image for an article about: ${description}
 
