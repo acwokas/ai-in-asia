@@ -718,11 +718,8 @@ ${content}`;
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const imageGatewayUrl = LOVABLE_API_KEY
-      ? 'https://ai.gateway.lovable.dev/v1/chat/completions'
-      : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-    const imageGatewayKey = LOVABLE_API_KEY || apiKey;
+    const imageGatewayUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const imageGatewayKey = apiKey;
 
     const extractBase64FromResponse = (data: any): string | null => {
       // Format 1: Lovable AI Gateway — images array
