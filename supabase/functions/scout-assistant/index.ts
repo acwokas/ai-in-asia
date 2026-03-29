@@ -793,14 +793,15 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
 
     const generateMidImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      const imgResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      console.log('Generating mid-article image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${imageGatewayKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gemini-2.5-flash-image',
+          model: 'google/gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Editorial in-article photograph. ${description}
 
@@ -817,16 +818,24 @@ HARD RULES: No text, logos, watermarks, or UI elements. No AI visual cliches (ro
           modalities: ['image', 'text'],
         }),
       });
-      if (!imgResponse.ok) throw new Error(`Mid image generation failed [${imgResponse.status}]`);
+      if (!imgResponse.ok) {
+        const errBody = await imgResponse.text();
+        console.error('Mid image API error:', imgResponse.status, errBody);
+        throw new Error(`Mid image generation failed [${imgResponse.status}]`);
+      }
       const imgData = await imgResponse.json();
-      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!base64Url) throw new Error('No image in response');
+      const base64Url = extractBase64FromResponse(imgData);
+      if (!base64Url) {
+        console.error('Mid image: no image in response. Keys:', JSON.stringify(Object.keys(imgData?.choices?.[0]?.message || {})));
+        throw new Error('No image in response');
+      }
       const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
       const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
       const filePath = `content/${slugifiedKeyphrase}-mid-${timestamp}.png`;
       const { error: uploadError } = await supabase.storage.from('article-images').upload(filePath, binaryData, { contentType: 'image/png' });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('article-images').getPublicUrl(filePath);
+      console.log('Mid image generated:', publicUrl);
       return { url: publicUrl };
     };
 
