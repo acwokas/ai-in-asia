@@ -742,7 +742,7 @@ ${content}`;
 
     const generateHeroImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      console.log('Generating hero image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      console.log('Generating hero image via Google Gemini API');
       const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
@@ -750,7 +750,7 @@ ${content}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Generate an eye-catching editorial hero image for an article about: ${description}
 
@@ -794,7 +794,7 @@ STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, 
 
     const generateMidImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      console.log('Generating mid-article image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      console.log('Generating mid-article image via Google Gemini API');
       const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
@@ -802,7 +802,7 @@ STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image',
+          model: 'gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Generate a compelling mid-article image for an article about: ${description}
 
