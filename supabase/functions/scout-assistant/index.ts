@@ -494,7 +494,7 @@ Return your response as a single JSON object with these fields. Every field is r
   "category": "Exactly one of: News, Business, Life, Learn, Create, Voices, Policy",
   "seoTitle": "SEO display title under 60 chars. Include focus keyphrase.",
   "metaTitle": "HTML meta title under 60 chars with primary keyword near the start",
-  "metaDescription": "Under 155 chars. Include the focus keyphrase. Make it compelling enough to click.",
+  "metaDescription": "Write a COMPLETE sentence under 155 characters. Never end mid-sentence. Include the focus keyphrase. Make it compelling enough to click.",
   "focusKeyphrase": "Primary keyword phrase, 2-4 words",
   "keyphraseSynonyms": "3-5 comma-separated synonym phrases",
   "aiTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -718,16 +718,42 @@ ${content}`;
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const imageGatewayUrl = LOVABLE_API_KEY
+      ? 'https://ai.gateway.lovable.dev/v1/chat/completions'
+      : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const imageGatewayKey = LOVABLE_API_KEY || apiKey;
+
+    const extractBase64FromResponse = (data: any): string | null => {
+      // Format 1: Lovable AI Gateway — images array
+      const gatewayUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (gatewayUrl) return gatewayUrl;
+
+      // Format 2: Google direct API — content parts with inline_data
+      const parts = data.choices?.[0]?.message?.content;
+      if (Array.isArray(parts)) {
+        for (const part of parts) {
+          if (part?.type === 'image_url' && part?.image_url?.url) return part.image_url.url;
+          if (part?.inline_data?.data && part?.inline_data?.mime_type) {
+            return `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+          }
+        }
+      }
+
+      return null;
+    };
+
     const generateHeroImage = async (description: string): Promise<{ url: string }> => {
       const timestamp = Date.now();
-      const imgResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      console.log('Generating hero image via', LOVABLE_API_KEY ? 'Lovable AI Gateway' : 'Google direct API');
+      const imgResponse = await fetch(imageGatewayUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${imageGatewayKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gemini-2.5-flash-image',
+          model: 'google/gemini-2.5-flash-image',
           messages: [
             { role: 'user', content: `Editorial magazine cover photograph. ${description}
 
@@ -744,16 +770,24 @@ HARD RULES: No text, logos, watermarks, or UI elements in the image. No robot ha
           modalities: ['image', 'text'],
         }),
       });
-      if (!imgResponse.ok) throw new Error(`Hero image generation failed [${imgResponse.status}]`);
+      if (!imgResponse.ok) {
+        const errBody = await imgResponse.text();
+        console.error('Hero image API error:', imgResponse.status, errBody);
+        throw new Error(`Hero image generation failed [${imgResponse.status}]`);
+      }
       const imgData = await imgResponse.json();
-      const base64Url = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-      if (!base64Url) throw new Error('No image in response');
+      const base64Url = extractBase64FromResponse(imgData);
+      if (!base64Url) {
+        console.error('Hero image: no image in response. Keys:', JSON.stringify(Object.keys(imgData?.choices?.[0]?.message || {})));
+        throw new Error('No image in response');
+      }
       const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
       const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
       const filePath = `content/${slugifiedKeyphrase}-hero-${timestamp}.png`;
       const { error: uploadError } = await supabase.storage.from('article-images').upload(filePath, binaryData, { contentType: 'image/png' });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('article-images').getPublicUrl(filePath);
+      console.log('Hero image generated:', publicUrl);
       return { url: publicUrl };
     };
 
