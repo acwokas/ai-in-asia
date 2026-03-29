@@ -599,8 +599,15 @@ const Index = () => {
                     </div>
                   </div>
                 </Link>
-              ) : featuredArticle && featuredArticle.slug ? (
-                <Link to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`} className="block group">
+              ) : featuredArticle && featuredArticle.slug ? (() => {
+                const heroLink = featuredArticle.content_type === 'guide'
+                  ? `/guides/${featuredArticle.categories?.slug || 'learn'}/${featuredArticle.slug}`
+                  : `/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`;
+                const heroCatColor = featuredArticle.content_type === 'guide'
+                  ? getGuidePillarColor(featuredArticle.categories?.slug)
+                  : getCategoryColor(featuredArticle.categories?.slug);
+                return (
+                <Link to={heroLink} className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
                       src={getOptimizedHeroImage(featuredArticle.featured_image_url || "/placeholder.svg", 1280)}
