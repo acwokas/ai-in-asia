@@ -655,7 +655,8 @@ const Index = () => {
                     </div>
                   </div>
                 </Link>
-              ) : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
+                );
+              })() : trendingArticles.length > 0 && trendingArticles[0]?.slug ? (
                 <Link to={`/${trendingArticles[0].categories?.slug || 'news'}/${trendingArticles[0].slug}`} className="block group">
                   <div className="relative h-[400px] md:h-[480px] overflow-hidden rounded-lg">
                     <img
