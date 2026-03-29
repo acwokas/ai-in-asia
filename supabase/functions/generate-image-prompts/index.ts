@@ -43,13 +43,20 @@ serve(async (req) => {
       });
     }
 
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
-    if (!GOOGLE_AI_API_KEY) {
-      return new Response(JSON.stringify({ error: "GOOGLE_AI_API_KEY not configured" }), {
+    const gatewayUrl = LOVABLE_API_KEY
+      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+      : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    const gatewayKey = LOVABLE_API_KEY || GOOGLE_AI_API_KEY;
+    if (!gatewayKey) {
+      return new Response(JSON.stringify({ error: "No AI API key configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log("Generating image prompts via", LOVABLE_API_KEY ? "Lovable AI Gateway" : "Google direct API");
 
     const contentText = asText(content);
     const contentPreview = contentText.substring(0, 1800);
@@ -116,7 +123,7 @@ Rules:
     ];
 
     const body: Record<string, unknown> = {
-      model: "gemini-3-flash-preview",
+      model: LOVABLE_API_KEY ? "google/gemini-3-flash-preview" : "gemini-3-flash-preview",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -127,10 +134,10 @@ Rules:
     };
 
     // First attempt
-    let response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    let response = await fetch(gatewayUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
+        Authorization: `Bearer ${gatewayKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
@@ -226,10 +233,10 @@ Rules:
         ],
       };
 
-      response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+      response = await fetch(gatewayUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
+          Authorization: `Bearer ${gatewayKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(retryBody),
