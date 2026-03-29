@@ -162,29 +162,64 @@ const Index = () => {
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
       const oneMonthAgoISO = oneMonthAgo.toISOString();
 
-      const { data: articles, error } = await supabase
-        .from("articles")
-        .select(`
-          id, title, slug, excerpt, featured_image_url, reading_time_minutes,
-          published_at, updated_at, cornerstone, sticky, primary_category_id,
-          comment_count, is_trending,
-          authors:author_id (name, slug),
-          categories:primary_category_id (name, slug)
-        `)
-        .eq("status", "published")
-        .eq("featured_on_homepage", true)
-        .gte("published_at", oneMonthAgoISO)
-        .order("sticky", { ascending: false })
-        .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(18);
+      // Fetch articles and guides in parallel
+      const [articlesResult, guidesResult] = await Promise.all([
+        supabase
+          .from("articles")
+          .select(`
+            id, title, slug, excerpt, featured_image_url, reading_time_minutes,
+            published_at, updated_at, cornerstone, sticky, primary_category_id,
+            comment_count, is_trending,
+            authors:author_id (name, slug),
+            categories:primary_category_id (name, slug)
+          `)
+          .eq("status", "published")
+          .eq("featured_on_homepage", true)
+          .gte("published_at", oneMonthAgoISO)
+          .order("sticky", { ascending: false })
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .limit(18),
+        supabase
+          .from("ai_guides")
+          .select("id, title, slug, excerpt, featured_image_url, read_time_minutes, published_at, pillar, guide_category")
+          .eq("status", "published")
+          .not("featured_image_url", "is", null)
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .limit(10),
+      ]);
 
-      if (error) throw error;
-      if (!articles || articles.length === 0) return { featured: null, latest: [], trending: [] };
+      if (articlesResult.error) throw articlesResult.error;
+      const articles = articlesResult.data || [];
+      const guides = guidesResult.data || [];
 
-      const featured = articles[0];
-      const latest = articles.slice(1, 16);
+      // Tag and normalise both types
+      const taggedArticles = articles.map((a: any) => ({ ...a, content_type: 'article' as const }));
+      const taggedGuides = guides.map((g: any) => ({
+        ...g,
+        content_type: 'guide' as const,
+        reading_time_minutes: g.read_time_minutes,
+        categories: { name: g.guide_category || 'Guide', slug: g.pillar || 'learn' },
+        authors: null,
+        comment_count: 0,
+        is_trending: false,
+        cornerstone: false,
+        updated_at: g.published_at,
+        sticky: false,
+      }));
 
-      const { data: trendingData, error: trendingError } = await supabase
+      // Merge and sort by published_at descending
+      const merged = [...taggedArticles, ...taggedGuides].sort((a, b) => {
+        const da = a.published_at ? new Date(a.published_at).getTime() : 0;
+        const db = b.published_at ? new Date(b.published_at).getTime() : 0;
+        return db - da;
+      });
+
+      if (merged.length === 0) return { featured: null, latest: [], trending: [] };
+
+      const featured = merged[0];
+      const latest = merged.slice(1, 16);
+
+      const { data: trendingData } = await supabase
         .from("articles")
         .select(`
           id, title, slug, excerpt, featured_image_url, reading_time_minutes,
@@ -197,8 +232,6 @@ const Index = () => {
         .eq("homepage_trending", true)
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5);
-
-
 
       return { featured, latest, trending: trendingData || [] };
     },
