@@ -6,69 +6,92 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Extract a base64 data-URL from the Gemini image-generation response.
+ * Handles multiple response formats (Lovable gateway, Google direct, inline_data).
+ */
+function extractBase64FromResponse(data: any): string | null {
+  // Format 1: Lovable AI Gateway â images array
+  const gatewayUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  if (gatewayUrl) return gatewayUrl;
+
+  // Format 2: Google direct API â content parts
+  const parts = data.choices?.[0]?.message?.content;
+  if (Array.isArray(parts)) {
+    for (const part of parts) {
+      if (part?.type === "image_url" && part?.image_url?.url) return part.image_url.url;
+      if (part?.inline_data?.data && part?.inline_data?.mime_type) {
+        return `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+      }
+    }
+  }
+
+  return null;
+}
+
 async function generateAndUploadSignalImages(
   imagePrompts: string[],
   supabase: any,
   googleApiKey: string
 ): Promise<string[]> {
   const signalImages: string[] = [];
+  const imageGatewayUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
   for (let i = 0; i < Math.min(imagePrompts.length, 3); i++) {
     try {
+      // Enhance the prompt with vibrant style directions
+      const enhancedPrompt = `Generate a vivid editorial signal image: ${imagePrompts[i]}
+
+STYLE DIRECTION: Choose from cinematic photography, stylised illustration (lo-fi anime or concept art), 3D cartoon, surreal photo-manipulation, or macro/close-up tactile shots. Commit fully to one style.
+
+COLOUR & LIGHTING: Bold, saturated palettes â teal & orange, blue & gold, neon pink & cyan, warm amber & deep shadow. Lighting must be dramatic: rim lighting, volumetric haze, neon glows, golden hour, or chiaroscuro. Never flat, evenly lit, or muted.
+
+COMPOSITION: Medium or close-up framing. Centred or symmetrical. Focus on a specific detail, object, moment, or texture that captures the signal's essence.
+
+CULTURAL DETAILS: When the topic involves Asian countries or cultures, weave in recognisable cultural details naturally.
+
+STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, generic "AI brain" imagery. Dark/muted colour schemes. Text, words, logos, typography, UI elements, screens. Brand names and copyrighted characters. People at computers.`;
+
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-        method: 'POST',
+      const response = await fetch(imageGatewayUrl, {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${googleApiKey}`,
-          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${googleApiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: 'gemini-2.5-flash-image',
+          model: "gemini-2.5-flash-image",
           messages: [
-            { role: 'user', content: imagePrompts[i] }
+            { role: "user", content: enhancedPrompt }
           ],
-          modalities: ['image', 'text'],
+          modalities: ["image", "text"],
         }),
       });
 
       if (!response.ok) {
-        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`);
+        const errText = await response.text();
+        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`, errText);
         signalImages.push("");
         continue;
       }
 
       const data = await response.json();
-      const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const base64Url = extractBase64FromResponse(data);
 
-      if (!imageDataUrl) {
-        console.log(`No image returned for signal ${i + 1}`);
+      if (!base64Url) {
+        console.error(`No image in response for signal ${i + 1}. Message keys:`, JSON.stringify(Object.keys(data?.choices?.[0]?.message || {})));
         signalImages.push("");
         continue;
       }
 
-      const base64Match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (!base64Match) {
-        console.error(`Invalid data URL format for signal ${i + 1}`);
-        signalImages.push("");
-        continue;
-      }
-
-      const mimeType = base64Match[1];
-      const base64Data = base64Match[2];
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let j = 0; j < binaryString.length; j++) {
-        bytes[j] = binaryString.charCodeAt(j);
-      }
-      const blob = new Blob([bytes], { type: mimeType });
-
-      const ext = mimeType.includes('png') ? 'png' : 'jpg';
-      const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.${ext}`;
+      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
+      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+      const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.png`;
 
       const { error: uploadError } = await supabase.storage
-        .from('article-images')
-        .upload(filePath, blob, { contentType: mimeType });
+        .from("article-images")
+        .upload(filePath, binaryData, { contentType: "image/png" });
 
       if (uploadError) {
         console.error(`Upload failed for signal ${i + 1}:`, uploadError);
@@ -77,7 +100,7 @@ async function generateAndUploadSignalImages(
       }
 
       const { data: urlData } = supabase.storage
-        .from('article-images')
+        .from("article-images")
         .getPublicUrl(filePath);
 
       signalImages.push(urlData.publicUrl);
@@ -172,7 +195,7 @@ serve(async (req) => {
 
     const systemPrompt = `You are creating a TL;DR Snapshot for an article. 
 CRITICAL RULES:
-- NEVER use em dashes (—)
+- NEVER use em dashes (â)
 - AVOID AI phrases like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift"
 - Create EXACTLY 3 bullet points
 - Each bullet point must be ONE sentence maximum
