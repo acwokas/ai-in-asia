@@ -3,11 +3,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
 
   try {
     const { displayDate, bullets } = await req.json();
@@ -18,17 +20,16 @@ serve(async (req) => {
     const PROMPT_WRITER_SYSTEM = `You are an expert AI art director specializing in cinematic editorial imagery for Asian technology media. Your job is to write a single, vivid image generation prompt for the hero image of a daily AI/tech briefing called "3 Before 9".
 
 STYLE GUIDE:
-- Always anchor the image in culturally specific Asian imagery (architecture, landscapes, transportation, mythology, ceremonies, craft traditions â e.g. temple gates, longtail boats, pagodas, rice terraces, bullet trains, night markets)
+- Always anchor the image in culturally specific Asian imagery (architecture, landscapes, transportation, mythology, ceremonies, craft traditions Ã¢ e.g. temple gates, longtail boats, pagodas, rice terraces, bullet trains, night markets)
 - Pair it with a tech/AI metaphor tied to the day's actual news (data flows, neural networks, regulation filters, digital transformation, AI decision-making, model training)
 - Cinematic composition: wide-angle or dramatic perspective, strong foreground/background depth, sense of epic scale
 - Color palette: neon cyan and magenta energy/light + golden warm tones + deep dark backgrounds (midnight blue, charcoal, obsidian black)
 - Include specific style direction: lo-fi anime, volumetric haze, rim lighting, crystalline surfaces, bioluminescent glow, etc.
-- Make it feel epic, premium, and editorial â never generic or corporate
+- Make it feel epic, premium, and editorial Ã¢ never generic or corporate
 - NO text, words, letters, numbers, or logos in the image
-- Output ONLY the image prompt text â no preamble, no explanation
+- Output ONLY the image prompt text Ã¢ no preamble, no explanation
 
 FEW-SHOT EXAMPLES (match this quality bar exactly):
-
 Example 1: "An epic-scale conceptual illustration of a traditional Thai longtail boat navigating a digital storm of swirling, dark monsoon clouds and fragmented paper reports. From the center of the boat, a brilliant pulse of neon cyan light cuts through the chaos, turning the turbulent grey waves into a calm, glowing crystalline path of golden light. High-contrast lo-fi anime style, vibrant pink and cyan highlights, volumetric haze, wide-angle perspective."
 
 Example 2: "A cinematic wide-angle shot of a massive, glowing traditional Korean palace gate standing as a monumental filter. Streams of neon cyan and magenta liquid energy, representing global AI data, attempt to pass through the gate but are refined into orderly golden geometric patterns. Dramatic midnight blue atmosphere with volumetric golden mist and sharp rim lighting on the intricate wooden architecture."
@@ -41,6 +42,7 @@ Given the day's news signals below, write ONE cinematic hero image prompt (2-4 s
 
     if (bullets && Array.isArray(bullets) && bullets.length > 0) {
       console.log("Generating cinematic prompt from today's signals via gemini-2.5-flash...");
+
       const bulletSummaries = bullets.map((b: string, i: number) => `Signal ${i + 1}: ${b}`).join("\n");
 
       const promptGenResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
@@ -72,27 +74,30 @@ Given the day's news signals below, write ONE cinematic hero image prompt (2-4 s
         console.warn("Prompt writer failed, using fallback. Status:", promptGenResponse.status, errText.substring(0, 200));
       }
     } else {
-      console.log("No bullets provided â using fallback cinematic prompt");
+      console.log("No bullets provided Ã¢ using fallback cinematic prompt");
     }
 
-    console.log("Generating 3B9 hero image via Gemini image model...");
+    console.log("Generating 3B9 hero image via Gemini native image API...");
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    // Use native Gemini generateContent API for image generation
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${googleApiKey}`,
+        "x-goog-api-key": googleApiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-3.1-flash-image-preview",
-        messages: [{ role: "user", content: imagePrompt }],
-        modalities: ["image", "text"],
+        contents: [{ parts: [{ text: imagePrompt }] }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+        },
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
       console.error("AI gateway error:", response.status, errText);
+
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited, please try again later." }), {
           status: 429,
@@ -109,15 +114,14 @@ Given the day's news signals below, write ONE cinematic hero image prompt (2-4 s
     }
 
     const data = await response.json();
-    const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    if (!imageDataUrl) throw new Error("No image generated");
+    // Native Gemini API returns images as inline_data in candidates[].content.parts[]
+    const imagePart = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inline_data);
+    if (!imagePart?.inline_data) throw new Error("No image generated");
 
-    const base64Match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (!base64Match) throw new Error("Invalid image data format");
+    const mimeType = imagePart.inline_data.mime_type || "image/png";
+    const base64Data = imagePart.inline_data.data;
 
-    const mimeType = base64Match[1];
-    const base64Data = base64Match[2];
     const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
     const timestamp = Date.now();
     const filePath = `3b9/hero-${timestamp}.${ext}`;
