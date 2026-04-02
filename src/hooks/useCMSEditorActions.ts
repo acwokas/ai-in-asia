@@ -8,7 +8,7 @@ import { generateSlug } from "@/lib/markdownConversion";
 import type { CMSEditorState } from "./useCMSEditorState";
 
 interface UseCMSEditorActionsProps {
-  state: CMSEditorState;
+  state: CMSEditorState
   initialData?: any;
   authors?: any[];
 }
@@ -130,7 +130,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
 
       const { error: uploadError } = await supabase.storage
         .from('article-images')
-        .upload(filePath, compressedFile);
+        .upload(filePath, compressedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 
