@@ -6,92 +6,69 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-/**
- * Extract a base64 data-URL from the Gemini image-generation response.
- * Handles multiple response formats (Lovable gateway, Google direct, inline_data).
- */
-function extractBase64FromResponse(data: any): string | null {
-  // Format 1: Lovable AI Gateway â images array
-  const gatewayUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-  if (gatewayUrl) return gatewayUrl;
-
-  // Format 2: Google direct API â content parts
-  const parts = data.choices?.[0]?.message?.content;
-  if (Array.isArray(parts)) {
-    for (const part of parts) {
-      if (part?.type === "image_url" && part?.image_url?.url) return part.image_url.url;
-      if (part?.inline_data?.data && part?.inline_data?.mime_type) {
-        return `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
-      }
-    }
-  }
-
-  return null;
-}
-
 async function generateAndUploadSignalImages(
   imagePrompts: string[],
   supabase: any,
   googleApiKey: string
 ): Promise<string[]> {
   const signalImages: string[] = [];
-  const imageGatewayUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
   for (let i = 0; i < Math.min(imagePrompts.length, 3); i++) {
     try {
-      // Enhance the prompt with vibrant style directions
-      const enhancedPrompt = `Generate a vivid editorial signal image: ${imagePrompts[i]}
-
-STYLE DIRECTION: Choose from cinematic photography, stylised illustration (lo-fi anime or concept art), 3D cartoon, surreal photo-manipulation, or macro/close-up tactile shots. Commit fully to one style.
-
-COLOUR & LIGHTING: Bold, saturated palettes â teal & orange, blue & gold, neon pink & cyan, warm amber & deep shadow. Lighting must be dramatic: rim lighting, volumetric haze, neon glows, golden hour, or chiaroscuro. Never flat, evenly lit, or muted.
-
-COMPOSITION: Medium or close-up framing. Centred or symmetrical. Focus on a specific detail, object, moment, or texture that captures the signal's essence.
-
-CULTURAL DETAILS: When the topic involves Asian countries or cultures, weave in recognisable cultural details naturally.
-
-STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, generic "AI brain" imagery. Dark/muted colour schemes. Text, words, logos, typography, UI elements, screens. Brand names and copyrighted characters. People at computers.`;
-
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch(imageGatewayUrl, {
-        method: "POST",
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+        method: 'POST',
         headers: {
-          "Authorization": `Bearer ${googleApiKey}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${googleApiKey}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "gemini-2.5-flash-image",
+          model: 'gemini-3.1-flash-image-preview',
           messages: [
-            { role: "user", content: enhancedPrompt }
+            { role: 'user', content: imagePrompts[i] }
           ],
-          modalities: ["image", "text"],
+          modalities: ['image', 'text'],
         }),
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`, errText);
+        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`);
         signalImages.push("");
         continue;
       }
 
       const data = await response.json();
-      const base64Url = extractBase64FromResponse(data);
+      const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-      if (!base64Url) {
-        console.error(`No image in response for signal ${i + 1}. Message keys:`, JSON.stringify(Object.keys(data?.choices?.[0]?.message || {})));
+      if (!imageDataUrl) {
+        console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
         continue;
       }
 
-      const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-      const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.png`;
+      const base64Match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (!base64Match) {
+        console.error(`Invalid data URL format for signal ${i + 1}`);
+        signalImages.push("");
+        continue;
+      }
+
+      const mimeType = base64Match[1];
+      const base64Data = base64Match[2];
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let j = 0; j < binaryString.length; j++) {
+        bytes[j] = binaryString.charCodeAt(j);
+      }
+      const blob = new Blob([bytes], { type: mimeType });
+
+      const ext = mimeType.includes('png') ? 'png' : 'jpg';
+      const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("article-images")
-        .upload(filePath, binaryData, { contentType: "image/png" });
+        .from('article-images')
+        .upload(filePath, blob, { contentType: mimeType });
 
       if (uploadError) {
         console.error(`Upload failed for signal ${i + 1}:`, uploadError);
@@ -100,7 +77,7 @@ STRICTLY AVOID: Abstract glowing nodes, neural networks, floating data streams, 
       }
 
       const { data: urlData } = supabase.storage
-        .from("article-images")
+        .from('article-images')
         .getPublicUrl(filePath);
 
       signalImages.push(urlData.publicUrl);
@@ -140,7 +117,7 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
+
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
@@ -180,7 +157,7 @@ serve(async (req) => {
     }
 
     console.log("Starting TL;DR generation...");
-    
+
     const seoExtras = is3B9 ? `
 4. "metaTitle": An SEO-optimised page title under 60 characters. Include "3 Before 9" and the date or key theme.
 5. "seoTitle": A slightly longer browser tab title under 70 characters.
@@ -193,7 +170,7 @@ serve(async (req) => {
       ? ["metaTitle", "seoTitle", "metaDescription", "focusKeyphrase", "keyphraseSynonyms", "featuredImageAlt"]
       : [];
 
-    const systemPrompt = `You are creating a TL;DR Snapshot for an article. 
+    const systemPrompt = `You are creating a TL;DR Snapshot for an article.
 CRITICAL RULES:
 - NEVER use em dashes (â)
 - AVOID AI phrases like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift"
@@ -207,7 +184,21 @@ CRITICAL RULES:
 ALSO GENERATE:
 1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
 2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
-3. "imagePrompts": For each bullet, provide a 1-2 sentence editorial image generation prompt. Be visually specific - describe composition, lighting, subject matter. No text/words/logos in the image. Avoid brand names and copyrighted characters.
+3. "imagePrompts": For each bullet point, write a Midjourney-quality cinematic image prompt. Each of the 3 prompts must be VISUALLY DISTINCT from the others (different cultural anchors, different compositions, different settings). Each prompt must be tied directly to the specific content and theme of its corresponding bullet point.
+
+STYLE GUIDE for each prompt:
+- Anchor in culturally specific Asian imagery (temple gates, longtail boats, pagodas, rice terraces, bullet trains, night markets, calligraphy studios, bamboo forests, etc.)
+- Pair with a tech/AI metaphor that reflects the bullet's specific story
+- Cinematic composition: wide-angle or dramatic perspective, strong depth, epic scale
+- Color palette: neon cyan and magenta energy + golden warm tones + deep dark backgrounds (midnight blue, charcoal, obsidian)
+- Include specific style direction (lo-fi anime, volumetric haze, rim lighting, crystalline surfaces, bioluminescent glow, etc.)
+- 2-4 sentences long and highly specific
+- NO text, words, letters, numbers, logos, or brand names in the image
+
+FEW-SHOT EXAMPLES (match this quality):
+"An epic-scale conceptual illustration of a traditional Thai longtail boat navigating a digital storm of swirling, dark monsoon clouds and fragmented paper reports. From the center of the boat, a brilliant pulse of neon cyan light cuts through the chaos, turning the turbulent grey waves into a calm, glowing crystalline path of golden light. High-contrast lo-fi anime style, vibrant pink and cyan highlights, volumetric haze, wide-angle perspective."
+
+"A cinematic wide-angle shot of a massive, glowing traditional Korean palace gate standing as a monumental filter. Streams of neon cyan and magenta liquid energy, representing global AI data, attempt to pass through the gate but are refined into orderly golden geometric patterns. Dramatic midnight blue atmosphere with volumetric golden mist and sharp rim lighting on the intricate wooden architecture."
 ${seoExtras}
 
 Article: "${title}"
@@ -260,7 +251,7 @@ Content: ${contentText.substring(0, 2000)}`;
                   imagePrompts: {
                     type: "array",
                     items: { type: "string" },
-                    description: "For each bullet point, generate a 1-2 sentence editorial image generation prompt. Be specific about composition, lighting, and subject. No text/words/logos. Array must have exactly 3 items.",
+                    description: "For each bullet point, a Midjourney-quality cinematic image prompt (2-4 sentences). Each prompt must be visually distinct from the others, tied to its specific bullet content, anchored in Asian cultural imagery paired with a tech/AI metaphor, using neon cyan/magenta/golden palette on deep dark backgrounds, with specific style direction (lo-fi anime, volumetric haze, rim lighting, etc.). No text, logos, or brand names. Array must have exactly 3 items.",
                     minItems: 3,
                     maxItems: 3
                   },
@@ -287,7 +278,7 @@ Content: ${contentText.substring(0, 2000)}`;
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text();
         console.error("AI API error:", aiResponse.status, errorText);
-        
+
         if (aiResponse.status === 429) {
           throw new Error("Rate limit exceeded. Please try again in a moment.");
         }
@@ -300,7 +291,7 @@ Content: ${contentText.substring(0, 2000)}`;
       console.log("AI response received, parsing...");
       const aiData = await aiResponse.json();
       const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
-      
+
       if (!toolCall) {
         console.error("No tool call in response:", JSON.stringify(aiData));
         throw new Error("No tool call in AI response");
@@ -311,7 +302,7 @@ Content: ${contentText.substring(0, 2000)}`;
       whoShouldPayAttention = parsedArgs.whoShouldPayAttention || "";
       whatChangesNext = parsedArgs.whatChangesNext || "";
       const imagePrompts: string[] = parsedArgs.imagePrompts || [];
-      
+
       // Extract SEO fields for 3B9
       seoFields = is3B9 ? {
         metaTitle: parsedArgs.metaTitle || "",
@@ -323,7 +314,7 @@ Content: ${contentText.substring(0, 2000)}`;
       } : {};
 
       console.log("TL;DR generated successfully:", tldrBullets.length, "bullets");
-      
+
       if (tldrBullets.length < 3) {
         throw new Error(`Only ${tldrBullets.length} bullets generated, expected 3`);
       }
@@ -352,7 +343,7 @@ Content: ${contentText.substring(0, 2000)}`;
       cleanedContent = content.filter((block: any) => {
         if (block.type === "heading" && block.content) {
           const headingLower = block.content.toLowerCase();
-          return !headingLower.includes("tl;dr") && 
+          return !headingLower.includes("tl;dr") &&
                  !headingLower.includes("tldr") &&
                  !headingLower.includes("tl dr");
         }
@@ -369,7 +360,7 @@ Content: ${contentText.substring(0, 2000)}`;
         }
         if (block.type === "heading" && block.content) {
           const headingLower = block.content.toLowerCase();
-          if (headingLower.includes("tl;dr") || 
+          if (headingLower.includes("tl;dr") ||
               headingLower.includes("tldr") ||
               headingLower.includes("tl dr")) {
             skipNext = true;
@@ -389,7 +380,7 @@ Content: ${contentText.substring(0, 2000)}`;
 
     if (articleId) {
       console.log("Updating article in database...");
-      
+
       const { error: tldrError } = await supabase
         .from("articles")
         .update({ tldr_snapshot: tldrSnapshotData })
@@ -403,8 +394,8 @@ Content: ${contentText.substring(0, 2000)}`;
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         tldr_snapshot: tldrSnapshotData,
         content: cleanedContent,
         ...seoFields,
@@ -416,7 +407,7 @@ Content: ${contentText.substring(0, 2000)}`;
     console.error("Error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { 
+      {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
