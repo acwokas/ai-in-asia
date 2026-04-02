@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 async function generateAndUploadSignalImages(
@@ -17,18 +18,18 @@ async function generateAndUploadSignalImages(
     try {
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      // Use native Gemini generateContent API for image generation
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${googleApiKey}`,
+          'x-goog-api-key': googleApiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gemini-3.1-flash-image-preview',
-          messages: [
-            { role: 'user', content: imagePrompts[i] }
-          ],
-          modalities: ['image', 'text'],
+          contents: [{ parts: [{ text: imagePrompts[i] }] }],
+          generationConfig: {
+            responseModalities: ['TEXT', 'IMAGE'],
+          },
         }),
       });
 
@@ -39,30 +40,25 @@ async function generateAndUploadSignalImages(
       }
 
       const data = await response.json();
-      const imageDataUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-      if (!imageDataUrl) {
+      // Native Gemini API returns images as inline_data in candidates[].content.parts[]
+      const imagePart = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inline_data);
+      if (!imagePart?.inline_data) {
         console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
         continue;
       }
 
-      const base64Match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (!base64Match) {
-        console.error(`Invalid data URL format for signal ${i + 1}`);
-        signalImages.push("");
-        continue;
-      }
+      const mimeType = imagePart.inline_data.mime_type || "image/png";
+      const base64Data = imagePart.inline_data.data;
 
-      const mimeType = base64Match[1];
-      const base64Data = base64Match[2];
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
       for (let j = 0; j < binaryString.length; j++) {
         bytes[j] = binaryString.charCodeAt(j);
       }
-      const blob = new Blob([bytes], { type: mimeType });
 
+      const blob = new Blob([bytes], { type: mimeType });
       const ext = mimeType.includes('png') ? 'png' : 'jpg';
       const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.${ext}`;
 
@@ -166,13 +162,12 @@ serve(async (req) => {
 8. "keyphraseSynonyms": Comma-separated synonyms or related phrases.
 9. "featuredImageAlt": Short descriptive alt text for the hero image.` : '';
 
-    const seoRequiredFields = is3B9
-      ? ["metaTitle", "seoTitle", "metaDescription", "focusKeyphrase", "keyphraseSynonyms", "featuredImageAlt"]
-      : [];
+    const seoRequiredFields = is3B9 ? ["metaTitle", "seoTitle", "metaDescription", "focusKeyphrase", "keyphraseSynonyms", "featuredImageAlt"] : [];
 
     const systemPrompt = `You are creating a TL;DR Snapshot for an article.
+
 CRITICAL RULES:
-- NEVER use em dashes (â)
+- NEVER use em dashes (Ã¢)
 - AVOID AI phrases like: "rapidly evolving", "game changer", "cutting-edge", "revolutionize", "paradigm shift"
 - Create EXACTLY 3 bullet points
 - Each bullet point must be ONE sentence maximum
@@ -199,6 +194,7 @@ FEW-SHOT EXAMPLES (match this quality):
 "An epic-scale conceptual illustration of a traditional Thai longtail boat navigating a digital storm of swirling, dark monsoon clouds and fragmented paper reports. From the center of the boat, a brilliant pulse of neon cyan light cuts through the chaos, turning the turbulent grey waves into a calm, glowing crystalline path of golden light. High-contrast lo-fi anime style, vibrant pink and cyan highlights, volumetric haze, wide-angle perspective."
 
 "A cinematic wide-angle shot of a massive, glowing traditional Korean palace gate standing as a monumental filter. Streams of neon cyan and magenta liquid energy, representing global AI data, attempt to pass through the gate but are refined into orderly golden geometric patterns. Dramatic midnight blue atmosphere with volumetric golden mist and sharp rim lighting on the intricate wooden architecture."
+
 ${seoExtras}
 
 Article: "${title}"
@@ -206,11 +202,13 @@ Content: ${contentText.substring(0, 2000)}`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     let tldrBullets: string[] = [];
     let whoShouldPayAttention = "";
     let whatChangesNext = "";
     let signalImages: string[] = [];
     let seoFields: Record<string, string> = {};
+
     try {
       const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
@@ -278,7 +276,6 @@ Content: ${contentText.substring(0, 2000)}`;
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text();
         console.error("AI API error:", aiResponse.status, errorText);
-
         if (aiResponse.status === 429) {
           throw new Error("Rate limit exceeded. Please try again in a moment.");
         }
@@ -289,6 +286,7 @@ Content: ${contentText.substring(0, 2000)}`;
       }
 
       console.log("AI response received, parsing...");
+
       const aiData = await aiResponse.json();
       const toolCall = aiData.choices[0]?.message?.tool_calls?.[0];
 
@@ -298,6 +296,7 @@ Content: ${contentText.substring(0, 2000)}`;
       }
 
       const parsedArgs = JSON.parse(toolCall.function.arguments);
+
       tldrBullets = parsedArgs.bullets.slice(0, 3);
       whoShouldPayAttention = parsedArgs.whoShouldPayAttention || "";
       whatChangesNext = parsedArgs.whatChangesNext || "";
@@ -319,7 +318,7 @@ Content: ${contentText.substring(0, 2000)}`;
         throw new Error(`Only ${tldrBullets.length} bullets generated, expected 3`);
       }
 
-      // Generate signal images using Gemini image model
+      // Generate signal images using Gemini native image API
       if (imagePrompts.length > 0) {
         try {
           signalImages = await generateAndUploadSignalImages(imagePrompts, supabase, googleApiKey);
@@ -343,9 +342,7 @@ Content: ${contentText.substring(0, 2000)}`;
       cleanedContent = content.filter((block: any) => {
         if (block.type === "heading" && block.content) {
           const headingLower = block.content.toLowerCase();
-          return !headingLower.includes("tl;dr") &&
-                 !headingLower.includes("tldr") &&
-                 !headingLower.includes("tl dr");
+          return !headingLower.includes("tl;dr") && !headingLower.includes("tldr") && !headingLower.includes("tl dr");
         }
         return true;
       });
@@ -360,9 +357,7 @@ Content: ${contentText.substring(0, 2000)}`;
         }
         if (block.type === "heading" && block.content) {
           const headingLower = block.content.toLowerCase();
-          if (headingLower.includes("tl;dr") ||
-              headingLower.includes("tldr") ||
-              headingLower.includes("tl dr")) {
+          if (headingLower.includes("tl;dr") || headingLower.includes("tldr") || headingLower.includes("tl dr")) {
             skipNext = true;
             return false;
           }
@@ -380,7 +375,6 @@ Content: ${contentText.substring(0, 2000)}`;
 
     if (articleId) {
       console.log("Updating article in database...");
-
       const { error: tldrError } = await supabase
         .from("articles")
         .update({ tldr_snapshot: tldrSnapshotData })
@@ -402,15 +396,11 @@ Content: ${contentText.substring(0, 2000)}`;
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error) {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
