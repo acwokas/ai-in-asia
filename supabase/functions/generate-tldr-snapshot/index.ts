@@ -6,7 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
 async function generateAndUploadSignalImages(
   imagePrompts: string[],
   supabase: any,
@@ -18,31 +17,34 @@ async function generateAndUploadSignalImages(
     try {
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      // Use native Gemini generateContent API for image generation
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': googleApiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: imagePrompts[i] }] }],
-          generationConfig: {
-            responseModalities: ['TEXT', 'IMAGE'],
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-image-generation:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": googleApiKey,
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: imagePrompts[i] }] }],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"],
+            },
+          }),
+        }
+      );
 
       if (!response.ok) {
-        console.error(`Image generation failed for signal ${i + 1}: ${response.status}`);
+        const errBody = await response.text();
+        console.error(`Image generation failed for signal ${i + 1}: ${response.status} ${errBody}`);
         signalImages.push("");
         continue;
       }
 
       const data = await response.json();
+      const parts = data.candidates?.[0]?.content?.parts || [];
+      const imagePart = parts.find((p) => p.inline_data);
 
-      // Native Gemini API returns images as inline_data in candidates[].content.parts[]
-      const imagePart = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inline_data);
       if (!imagePart?.inline_data) {
         console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
@@ -51,19 +53,18 @@ async function generateAndUploadSignalImages(
 
       const mimeType = imagePart.inline_data.mime_type || "image/png";
       const base64Data = imagePart.inline_data.data;
-
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
       for (let j = 0; j < binaryString.length; j++) {
         bytes[j] = binaryString.charCodeAt(j);
       }
-
       const blob = new Blob([bytes], { type: mimeType });
-      const ext = mimeType.includes('png') ? 'png' : 'jpg';
+
+      const ext = mimeType.includes("png") ? "png" : "jpg";
       const filePath = `3b9/signal-${i + 1}-${Date.now()}-gemini.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('article-images')
+        .from("article-images")
         .upload(filePath, blob, { contentType: mimeType });
 
       if (uploadError) {
@@ -73,7 +74,7 @@ async function generateAndUploadSignalImages(
       }
 
       const { data: urlData } = supabase.storage
-        .from('article-images')
+        .from("article-images")
         .getPublicUrl(filePath);
 
       signalImages.push(urlData.publicUrl);
@@ -87,9 +88,6 @@ async function generateAndUploadSignalImages(
   return signalImages;
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
   }
 
   try {
