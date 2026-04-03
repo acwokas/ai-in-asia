@@ -91,6 +91,7 @@ const Events = lazy(() => import("./pages/Events"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 
 const AskScout = lazy(() => import("./pages/AskScout"));
+const AIJobImpact = lazy(() => import("./pages/AIJobImpact"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterAdmin = lazy(() => import("./pages/NewsletterAdmin"));
