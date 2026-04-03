@@ -47,46 +47,54 @@ serve(async (req) => {
     const matched = palettes.find(p => p.keys.some(k => lower.includes(k)));
     const palette = matched || { color: 'warm golden and amber', accent: 'rich gold' };
 
-    const prompt = `Cinematic dark still-life photograph related to ${topic}. Moody ambient lighting with ${palette.color} accents on a near-black background, with subtle ${palette.accent} highlights. Realistic objects arranged as an elegant composition - think vintage desk items, professional tools, or symbolic objects that represent the topic. Rich textures like leather, wood, brushed metal, aged paper, glass. Photorealistic quality, shallow depth of field, no people, no text, no screens, no UI elements, no diagrams. Shot on medium format camera, 16:9 aspect ratio.`;
+    const prompt = `Extreme close-up macro photograph of symbolic objects related to ${topic}. Shallow depth of field, dramatic product photography lighting with ${palette.color} side light and subtle ${palette.accent} accent glow. The objects subtly incorporate glowing neural network circuit patterns or data particle elements, suggesting AI and technology. Rich textures like leather, wood, brushed metal, aged paper, glass. Dark background, premium editorial quality. No people, no text, no words, no logos, no screens, no UI elements, no diagrams. 16:9 aspect ratio.`;
 
     console.log(`Generating image for guide "${slug}" with topic: ${topic}`);
 
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GOOGLE_AI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gemini-2.5-flash-image',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
-        modalities: ['image', 'text'],
-      }),
-    });
+    const geminiResp = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": GOOGLE_AI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+            imageConfig: { aspectRatio: "16:9" },
+          },
+        }),
+      }
+    );
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!geminiResp.ok) {
+      if (geminiResp.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limited. Please try again later.' }), {
           status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      if (response.status === 402) {
+      if (geminiResp.status === 402) {
         return new Response(JSON.stringify({ error: 'AI credits required. Please check your Google AI API quota.' }), {
           status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const text = await response.text();
-      throw new Error(`AI gateway error: ${response.status} ${text}`);
+      const text = await geminiResp.text();
+      throw new Error(`Gemini API error: ${geminiResp.status} ${text}`);
     }
 
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const data = await geminiResp.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const imagePart = parts.find((p: any) => p.inlineData);
 
-    if (!imageUrl) {
-      throw new Error('No image generated from AI gateway');
+    if (!imagePart) {
+      throw new Error('No image generated from Gemini API');
     }
+
+    const mimeType = imagePart.inlineData.mimeType || "image/png";
+    const base64Data = imagePart.inlineData.data;
+    const imageUrl = `data:${mimeType};base64,${base64Data}`;
 
     console.log(`Image generated successfully for guide "${slug}"`);
 

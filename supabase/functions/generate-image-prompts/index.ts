@@ -59,9 +59,29 @@ serve(async (req) => {
     const contentPreview = contentText.substring(0, 1800);
 
     const systemPrompt =
-      `You are a world-class Midjourney prompt engineer and editorial art director for AI in ASIA (aiinasia.com), a publication covering AI, technology, business, and culture across Asia.\n\nGenerate exactly TWO distinct image prompts that are SPECIFIC to the article's subject matter. Each prompt must tell a visual story — never produce generic tech imagery.\n\nSTYLE DIRECTION:\n- Rotate between these proven styles based on article tone: cinematic photography, stylised illustration (lo-fi anime, concept art), 3D Pixar/cartoon, surreal photo-manipulation, macro/close-up tactile shots, epic-scale conceptual scenes\n- Colour palettes should be bold and saturated: teal & orange, blue & gold, neon pink & cyan, warm amber & deep shadow. Avoid muted, washed-out, or corporate-bland palettes\n- Lighting should be dramatic: rim lighting, volumetric haze, neon glows, golden hour, or chiaroscuro — never flat or evenly lit\n\nCOMPOSITION RULES:\n- Build each prompt around a CONCRETE VISUAL METAPHOR drawn from the article's specific subject (e.g. a puppet dissolving into code for AI replacing jobs, a book with a city skyline emerging for knowledge/Asia, clockwork gears for precision/engineering)\n- Include human-scale elements where possible: hands, silhouettes, characters, cultural objects — these create emotional connection\n- When the article involves an Asian country or culture, weave in recognisable cultural details (architecture, clothing, food, landscapes, ceremonies) — but tastefully, not as stereotypes\n- Vary composition: use close-ups, aerial/high-angle, split-screen contrasts, environmental storytelling — not just centred subjects\n\nPROMPT STRUCTURE:\n- Each prompt should be 2-4 sentences of rich, specific visual description\n- Include technical terms: lens type (85mm, wide-angle, macro), lighting setup, depth of field, colour grading\n- End each prompt with: --ar 16:9 --style raw --v 6\n\nSTRICTLY AVOID:\n- Abstract glowing nodes, neural networks, floating data streams, or generic \"AI brain\" imagery\n- Dark/muted colour schemes that look like stock photos\n- Text, words, logos, typography, UI elements, screens, or diagrams\n- Brand names and copyrighted characters\n- Anything that could be described as \"vague nebulous lights\" or \"abstract tech\"\n\nThe two prompts must be meaningfully different in style, composition, and visual metaphor. Output must be structured via the provided tool.`;
+      `You are a world-class editorial image prompt engineer. Generate exactly TWO distinct image generation prompts for the SAME article. Each prompt will be sent to a Gemini image generation model.
 
-    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nBased on the specific subject matter above, generate two distinct Midjourney v6 prompts. Each must use a concrete visual metaphor directly tied to the article's theme — not generic tech imagery. Make them eye-catching, colourful, and provocative.`;
+VISUAL STYLE SYSTEM — assign one style per prompt, never the same style twice:
+
+Style A "Macro Symbolic": Extreme close-up of a symbolic object relevant to the article's subject. Shallow depth of field, dramatic product photography lighting with warm amber side light and cool blue accent. The object subtly incorporates glowing neural network circuit patterns or data particle elements.
+
+Style B "Street Documentary": Street-level or environmental photograph of a real location relevant to the article. Golden hour or blue hour lighting, shot on medium format film aesthetic with slight grain. Subtle translucent holographic data visualisation overlay suggesting AI/digital transformation.
+
+Style C "Cinematic Wide": Cinematic ultra-wide aerial or panoramic shot of a location or scene relevant to the article. Moody teal-and-amber colour palette, premium editorial atmosphere. Thin luminous data streams or particles suggesting AI flowing through the scene.
+
+RULES:
+- Each prompt must be 3-4 sentences of rich visual description.
+- Choose visual subjects (objects, landmarks, cultural elements, locations) that are SPECIFIC to the article content — not generic tech imagery.
+- For articles about specific countries or cities, include recognisable local elements (architecture, cultural objects, landscapes).
+- The two prompts MUST use different styles and different visual subjects/compositions.
+- Include technical photographic terms: lens type, lighting setup, colour palette, mood, composition.
+- Strictly NO text, words, logos, typography, UI elements, screens, or diagrams in the image.
+- Avoid brand names and copyrighted characters.
+- ALWAYS end each prompt with: "No text, no words, no logos, no letters. 16:9 aspect ratio."
+- Do NOT include Midjourney parameters (--ar, --v, --style). These prompts go to Gemini, not Midjourney.
+- Output must be structured via the provided tool.`;
+
+    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: A striking editorial image for the featured image above the fold. Pick one of the three visual styles (Macro Symbolic, Street Documentary, or Cinematic Wide) and describe the scene in detail with subjects drawn from the article content.\n2) BODY: A rich, atmospheric mid-article supporting image using a DIFFERENT visual style from the hero. Completely different composition, subject, and metaphor.`;
 
     const tools = [
       {
@@ -88,7 +108,7 @@ serve(async (req) => {
                     prompt: {
                       type: "string",
                       description:
-                        "1-2 sentence editorial image generation prompt. No text in image.",
+                        "3-4 sentence editorial image generation prompt using one of the three visual styles. Subjects must be specific to the article content. End with 'No text, no words, no logos, no letters. 16:9 aspect ratio.'",
                     },
                     explanation: {
                       type: "string",

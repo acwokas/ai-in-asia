@@ -17,7 +17,7 @@ async function generateAndUploadSignalImages(
     try {
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch(
+      const geminiResp = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
         {
           method: "POST",
@@ -29,23 +29,23 @@ async function generateAndUploadSignalImages(
             contents: [{ parts: [{ text: imagePrompts[i] }] }],
             generationConfig: {
               responseModalities: ["TEXT", "IMAGE"],
+              imageConfig: { aspectRatio: "16:9" },
             },
           }),
         }
       );
 
-      if (!response.ok) {
-        const errBody = await response.text();
-        console.error(`Image generation failed for signal ${i + 1}: ${response.status} ${errBody}`);
+      if (!geminiResp.ok) {
+        console.error(`Image generation failed for signal ${i + 1}: ${geminiResp.status}`);
         signalImages.push("");
         continue;
       }
 
-      const data = await response.json();
+      const data = await geminiResp.json();
       const parts = data.candidates?.[0]?.content?.parts || [];
       const imagePart = parts.find((p: any) => p.inlineData);
 
-      if (!imagePart?.inlineData) {
+      if (!imagePart) {
         console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
         continue;
@@ -180,21 +180,15 @@ CRITICAL RULES:
 ALSO GENERATE:
 1. "whoShouldPayAttention": A short list of relevant audiences separated by vertical bars (|). Example: "Founders | Platform trust teams | Regulators". Keep under 20 words.
 2. "whatChangesNext": One short sentence describing what to watch next or likely implications. Keep under 20 words. If you cannot confidently determine this, return an empty string. For opinion/commentary pieces, use "Debate is likely to intensify" if appropriate.
-3. "imagePrompts": For each bullet point, write a Midjourney-quality cinematic image prompt. Each of the 3 prompts must be VISUALLY DISTINCT from the others (different cultural anchors, different compositions, different settings). Each prompt must be tied directly to the specific content and theme of its corresponding bullet point.
-
-STYLE GUIDE for each prompt:
-- Anchor in culturally specific Asian imagery (temple gates, longtail boats, pagodas, rice terraces, bullet trains, night markets, calligraphy studios, bamboo forests, etc.)
-- Pair with a tech/AI metaphor that reflects the bullet's specific story
-- Cinematic composition: wide-angle or dramatic perspective, strong depth, epic scale
-- Color palette: neon cyan and magenta energy + golden warm tones + deep dark backgrounds (midnight blue, charcoal, obsidian)
-- Include specific style direction (lo-fi anime, volumetric haze, rim lighting, crystalline surfaces, bioluminescent glow, etc.)
-- 2-4 sentences long and highly specific
-- NO text, words, letters, numbers, logos, or brand names in the image
-
-FEW-SHOT EXAMPLES (match this quality):
-"An epic-scale conceptual illustration of a traditional Thai longtail boat navigating a digital storm of swirling, dark monsoon clouds and fragmented paper reports. From the center of the boat, a brilliant pulse of neon cyan light cuts through the chaos, turning the turbulent grey waves into a calm, glowing crystalline path of golden light. High-contrast lo-fi anime style, vibrant pink and cyan highlights, volumetric haze, wide-angle perspective."
-
-"A cinematic wide-angle shot of a massive, glowing traditional Korean palace gate standing as a monumental filter. Streams of neon cyan and magenta liquid energy, representing global AI data, attempt to pass through the gate but are refined into orderly golden geometric patterns. Dramatic midnight blue atmosphere with volumetric golden mist and sharp rim lighting on the intricate wooden architecture."
+3. "imagePrompts": For each bullet, generate a detailed editorial image prompt (3-4 sentences). IMPORTANT RULES:
+   - Rotate between these three visual styles across the 3 images (use each style once):
+     Style A "Macro Symbolic": Extreme close-up of a symbolic object relevant to the bullet's subject. Shallow depth of field, product photography lighting. The object should morph into or incorporate subtle tech/AI elements (circuit patterns, data particles, neural network nodes).
+     Style B "Street Documentary": Street-level or environmental photograph of a real location relevant to the bullet. Golden hour or blue hour lighting, shot on medium format film aesthetic. Subtle holographic data overlay suggesting AI/digital transformation.
+     Style C "Cinematic Wide": Cinematic ultra-wide aerial or panoramic shot of a location or scene relevant to the bullet. Moody teal-and-amber colour palette, premium editorial atmosphere. Thin luminous data streams or particles suggesting AI flowing through the scene.
+   - Choose visual subjects (objects, landmarks, cultural elements, locations) that are SPECIFIC to the article content — not generic tech imagery
+   - For articles about specific countries/cities, include recognisable local elements (architecture, landscapes, cultural objects)
+   - ALWAYS end each prompt with: "No text, no words, no logos, no letters. 16:9 aspect ratio."
+   - Never mention brand names or copyrighted characters
 
 ${seoExtras}
 
@@ -250,7 +244,7 @@ Content: ${contentText.substring(0, 2000)}`;
                   imagePrompts: {
                     type: "array",
                     items: { type: "string" },
-                    description: "For each bullet point, a Midjourney-quality cinematic image prompt (2-4 sentences). Each prompt must be visually distinct from the others, tied to its specific bullet content, anchored in Asian cultural imagery paired with a tech/AI metaphor, using neon cyan/magenta/golden palette on deep dark backgrounds, with specific style direction (lo-fi anime, volumetric haze, rim lighting, etc.). No text, logos, or brand names. Array must have exactly 3 items.",
+                    description: "For each bullet point, a 3-4 sentence editorial image prompt. Rotate across three styles (one per image): Macro Symbolic (extreme close-up of symbolic object with AI elements), Street Documentary (street-level golden/blue hour with holographic overlay), Cinematic Wide (panoramic teal-amber with luminous data streams). Subjects must be specific to the bullet content. End each with 'No text, no words, no logos, no letters. 16:9 aspect ratio.' Array must have exactly 3 items.",
                     minItems: 3,
                     maxItems: 3
                   },
