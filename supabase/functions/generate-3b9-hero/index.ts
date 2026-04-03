@@ -80,7 +80,7 @@ Given the day's news signals below, write ONE cinematic hero image prompt (2-4 s
     console.log("Generating 3B9 hero image via Gemini native API...");
 
     const geminiResp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,`,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
       {
         method: "POST",
         headers: {
