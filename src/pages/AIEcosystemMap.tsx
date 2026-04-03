@@ -210,7 +210,7 @@ const AIEcosystemMap = () => {
       <SEOHead
         title="AI Ecosystem Map: Asia-Pacific — Companies, Startups & Labs | AI in Asia"
         description="Explore the companies, labs, and investors shaping AI across the Asia-Pacific region. Interactive map of 100+ AI organisations."
-        canonicalPath="/ai-ecosystem-map"
+        canonical="/ai-ecosystem-map"
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <Header />
