@@ -1108,7 +1108,47 @@ const Index = () => {
           </>
         )}
 
-        {/* 10. Newsletter CTA */}
+        {/* 10. Free AI Tools */}
+        <section className="py-14 md:py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="headline text-[22px] md:text-[28px] font-bold">Free AI Tools</h2>
+              <p className="text-muted-foreground text-sm md:text-base mt-2">Try our interactive tools — no signup required</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+              <Link
+                to="/tools/ai-job-impact"
+                className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 overflow-hidden"
+              >
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 60%)' }} />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="14" height="10" x="5" y="3" rx="2"/><path d="M9 21h6"/><path d="M12 13v8"/><path d="M19 7l-2 2"/><path d="M17 5l2 2"/></svg>
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Will AI Take My Job?</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Get a personalised AI impact score for your role and country</p>
+                </div>
+              </Link>
+              <Link
+                to="/tools/jargon-translator"
+                className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 overflow-hidden"
+              >
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 60%)' }} />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="m9 8 2 4 2-4"/><path d="M9 16h.01"/></svg>
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">AI Jargon Translator</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Decode corporate AI buzzwords into plain English</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <div className="border-t border-border/30" />
+
+        {/* 11. Newsletter CTA */}
         <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-20 md:py-28">
           <div className="container mx-auto px-4 text-center">
             <h2 className="font-display text-4xl font-bold mb-4">Never Miss an AI Breakthrough</h2>
