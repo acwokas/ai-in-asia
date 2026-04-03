@@ -153,7 +153,7 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[70] bg-background/95 backdrop-blur-xl animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] bg-background backdrop-blur-xl animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div className="container mx-auto px-4 pt-8 md:pt-16 max-w-2xl">
