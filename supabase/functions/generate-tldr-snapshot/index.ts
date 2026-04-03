@@ -17,7 +17,7 @@ async function generateAndUploadSignalImages(
     try {
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
-      const response = await fetch(
+      const geminiResp = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
         {
           method: "POST",
@@ -29,23 +29,23 @@ async function generateAndUploadSignalImages(
             contents: [{ parts: [{ text: imagePrompts[i] }] }],
             generationConfig: {
               responseModalities: ["TEXT", "IMAGE"],
+              imageConfig: { aspectRatio: "16:9" },
             },
           }),
         }
       );
 
-      if (!response.ok) {
-        const errBody = await response.text();
-        console.error(`Image generation failed for signal ${i + 1}: ${response.status} ${errBody}`);
+      if (!geminiResp.ok) {
+        console.error(`Image generation failed for signal ${i + 1}: ${geminiResp.status}`);
         signalImages.push("");
         continue;
       }
 
-      const data = await response.json();
+      const data = await geminiResp.json();
       const parts = data.candidates?.[0]?.content?.parts || [];
       const imagePart = parts.find((p: any) => p.inlineData);
 
-      if (!imagePart?.inlineData) {
+      if (!imagePart) {
         console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
         continue;
