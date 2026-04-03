@@ -39,25 +39,32 @@ const Newsletter = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    const formData = new FormData(e.currentTarget);
-    const rawData = {
-      email: formData.get('email') as string,
-      firstName: formData.get('firstName') as string,
-    };
 
     try {
-      const validatedData = newsletterSchema.parse(rawData);
+      const validatedData = newsletterSchema.parse({ email, firstName });
 
-      // Check if already subscribed
-      const { data: existing } = await supabase
+      // Check if already subscribed or previously unsubscribed
+      const { data: existing, error: checkError } = await supabase
         .from("newsletter_subscribers")
-        .select("id")
+        .select("id, unsubscribed_at")
         .eq("email", validatedData.email)
         .maybeSingle();
 
+      if (checkError) throw checkError;
+
       if (existing) {
-        toast("Already subscribed", { description: "This email is already subscribed to our newsletter." });
+        if (existing.unsubscribed_at === null) {
+          toast.info("Already subscribed", { description: "This email is already on our newsletter list." });
+        } else {
+          // Re-activate
+          const { error: updateError } = await supabase
+            .from("newsletter_subscribers")
+            .update({ unsubscribed_at: null })
+            .eq("id", existing.id);
+          if (updateError) throw updateError;
+          setIsSubscribed(true);
+          toast.success("Welcome back!", { description: "You have been re-subscribed." });
+        }
         setIsSubmitting(false);
         return;
       }
@@ -67,14 +74,14 @@ const Newsletter = () => {
         .insert({ 
           email: validatedData.email,
           first_name: validatedData.firstName,
+          signup_source: "newsletter_page",
         });
 
       if (error) throw error;
 
       setIsSubscribed(true);
-      toast("Successfully subscribed!", { description: "Welcome aboard! Check your inbox for our latest insights." });
-      
-      (e.target as HTMLFormElement).reset();
+      localStorage.setItem("newsletter-subscribed", "true");
+      toast.success("Successfully subscribed!", { description: "Welcome aboard! Check your inbox for our latest insights." });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error("Validation Error", { description: error.errors[0].message });
@@ -162,7 +169,10 @@ const Newsletter = () => {
                       type="text" 
                       required 
                       maxLength={100}
-                      placeholder="First Name" 
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isSubmitting}
                     />
                     <Input 
                       id="email" 
@@ -170,7 +180,10 @@ const Newsletter = () => {
                       type="email" 
                       required 
                       maxLength={255}
-                      placeholder="your@email.com" 
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
                     />
                     <Button type="submit" disabled={isSubmitting} className="w-full">
                       {isSubmitting ? "Subscribing..." : "Subscribe"}
