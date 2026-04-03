@@ -40,7 +40,8 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
 
     paragraphs.forEach((paragraph, index) => {
       const paragraphNumber = index + 1;
-      if (paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
+      // First ad after paragraph 1, then every PARAGRAPH_AD_INTERVAL thereafter
+      if (paragraphNumber !== 1 && paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
 
       const wrapper = document.createElement("div");
       wrapper.className = "in-article-ad-wrapper my-6 text-center";
