@@ -1324,6 +1324,7 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          preferred_timezone: string
           subscribed_at: string
           unsubscribed_at: string | null
           user_id: string | null
@@ -1333,6 +1334,7 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean
+          preferred_timezone?: string
           subscribed_at?: string
           unsubscribed_at?: string | null
           user_id?: string | null
@@ -1342,6 +1344,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean
+          preferred_timezone?: string
           subscribed_at?: string
           unsubscribed_at?: string | null
           user_id?: string | null
