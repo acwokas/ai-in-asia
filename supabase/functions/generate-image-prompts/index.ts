@@ -108,7 +108,7 @@ RULES:
                     prompt: {
                       type: "string",
                       description:
-                        "1-2 sentence editorial image generation prompt. No text in image.",
+                        "3-4 sentence editorial image generation prompt using one of the three visual styles. Subjects must be specific to the article content. End with 'No text, no words, no logos, no letters. 16:9 aspect ratio.'",
                     },
                     explanation: {
                       type: "string",
