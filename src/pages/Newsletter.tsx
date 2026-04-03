@@ -169,7 +169,10 @@ const Newsletter = () => {
                       type="text" 
                       required 
                       maxLength={100}
-                      placeholder="First Name" 
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isSubmitting}
                     />
                     <Input 
                       id="email" 
@@ -177,7 +180,10 @@ const Newsletter = () => {
                       type="email" 
                       required 
                       maxLength={255}
-                      placeholder="your@email.com" 
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
                     />
                     <Button type="submit" disabled={isSubmitting} className="w-full">
                       {isSubmitting ? "Subscribing..." : "Subscribe"}
