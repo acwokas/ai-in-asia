@@ -132,6 +132,7 @@ const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 
 const ThreeBeforeNineLatest = lazy(() => import("./pages/ThreeBeforeNineLatest"));
 const ThreeBeforeNineArchive = lazy(() => import("./pages/ThreeBeforeNineArchive"));
+const ThreeBeforeNineBriefing = lazy(() => import("./pages/ThreeBeforeNineBriefing"));
 const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -348,8 +349,10 @@ const router = createBrowserRouter([
           { path: "settings", element: <AdminSettings /> },
         ],
       },
+      { path: "/3-before-9-briefing", element: <ThreeBeforeNineBriefing /> },
       { path: "/news/3-before-9", element: <ThreeBeforeNineLatest /> },
       { path: "/news/3-before-9/editions", element: <ThreeBeforeNineArchive /> },
+      { path: "/3-before-9", element: <ThreeBeforeNineLatest /> },
       { path: "/3-before-9", element: <ThreeBeforeNineLatest /> },
       { path: "/guides", element: <Guides /> },
       { path: "/guides/:category/:slug", element: <GuideDetail /> },
