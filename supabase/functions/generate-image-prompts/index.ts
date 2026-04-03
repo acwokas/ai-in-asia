@@ -81,7 +81,7 @@ RULES:
 - Do NOT include Midjourney parameters (--ar, --v, --style). These prompts go to Gemini, not Midjourney.
 - Output must be structured via the provided tool.`;
 
-    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nBased on the specific subject matter above, generate two distinct Midjourney v6 prompts. Each must use a concrete visual metaphor directly tied to the article's theme — not generic tech imagery. Make them eye-catching, colourful, and provocative.`;
+    const userPrompt = `Article Title: ${title}\n\nArticle Content (preview):\n${contentPreview}\n\nReturn two prompts:\n1) HERO: A striking editorial image for the featured image above the fold. Pick one of the three visual styles (Macro Symbolic, Street Documentary, or Cinematic Wide) and describe the scene in detail with subjects drawn from the article content.\n2) BODY: A rich, atmospheric mid-article supporting image using a DIFFERENT visual style from the hero. Completely different composition, subject, and metaphor.`;
 
     const tools = [
       {
