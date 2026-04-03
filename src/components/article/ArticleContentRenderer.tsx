@@ -67,7 +67,6 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
         wrapper.append(label, placeholder);
       }
 
-      wrapper.append(label, adIns);
       paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
 
       if (import.meta.env.PROD) {
