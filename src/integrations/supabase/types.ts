@@ -2251,6 +2251,27 @@ export type Database = {
           },
         ]
       }
+      jargon_submissions: {
+        Row: {
+          id: string
+          submitted_at: string
+          text: string
+          votes: number
+        }
+        Insert: {
+          id?: string
+          submitted_at?: string
+          text: string
+          votes?: number
+        }
+        Update: {
+          id?: string
+          submitted_at?: string
+          text?: string
+          votes?: number
+        }
+        Relationships: []
+      }
       migration_logs: {
         Row: {
           batch_id: string
