@@ -244,7 +244,7 @@ Content: ${contentText.substring(0, 2000)}`;
                   imagePrompts: {
                     type: "array",
                     items: { type: "string" },
-                    description: "For each bullet point, a Midjourney-quality cinematic image prompt (2-4 sentences). Each prompt must be visually distinct from the others, tied to its specific bullet content, anchored in Asian cultural imagery paired with a tech/AI metaphor, using neon cyan/magenta/golden palette on deep dark backgrounds, with specific style direction (lo-fi anime, volumetric haze, rim lighting, etc.). No text, logos, or brand names. Array must have exactly 3 items.",
+                    description: "For each bullet point, a 3-4 sentence editorial image prompt. Rotate across three styles (one per image): Macro Symbolic (extreme close-up of symbolic object with AI elements), Street Documentary (street-level golden/blue hour with holographic overlay), Cinematic Wide (panoramic teal-amber with luminous data streams). Subjects must be specific to the bullet content. End each with 'No text, no words, no logos, no letters. 16:9 aspect ratio.' Array must have exactly 3 items.",
                     minItems: 3,
                     maxItems: 3
                   },
