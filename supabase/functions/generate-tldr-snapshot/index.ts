@@ -18,7 +18,7 @@ async function generateAndUploadSignalImages(
       console.log(`Generating signal image ${i + 1}: ${imagePrompts[i].substring(0, 80)}...`);
 
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
         {
           method: "POST",
           headers: {
