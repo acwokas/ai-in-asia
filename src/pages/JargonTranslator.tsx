@@ -112,18 +112,19 @@ export default function JargonTranslator() {
   }, [matches, translatedInput]);
 
   const translatedSegments = useMemo(() => {
-    if (!matches.length) return hasTranslated && translatedInput ? [{ type: "text" as const, content: translatedInput }] : [];
-    const segments: { type: "text" | "jargon"; content: string; entry?: JargonEntry }[] = [];
+    if (!matches.length) return hasTranslated && translatedInput ? [{ type: "text" as const, content: translatedInput, original: "" }] : [];
+    const segments: { type: "text" | "jargon"; content: string; original: string; entry?: JargonEntry }[] = [];
     let lastIndex = 0;
     for (const match of matches) {
       if (match.startIndex > lastIndex) {
-        segments.push({ type: "text", content: translatedInput.substring(lastIndex, match.startIndex) });
+        segments.push({ type: "text", content: translatedInput.substring(lastIndex, match.startIndex), original: "" });
       }
-      segments.push({ type: "jargon", content: translatedInput.substring(match.startIndex, match.endIndex), entry: match.entry });
+      const original = translatedInput.substring(match.startIndex, match.endIndex);
+      segments.push({ type: "jargon", content: original, original, entry: match.entry });
       lastIndex = match.endIndex;
     }
     if (lastIndex < translatedInput.length) {
-      segments.push({ type: "text", content: translatedInput.substring(lastIndex) });
+      segments.push({ type: "text", content: translatedInput.substring(lastIndex), original: "" });
     }
     return segments;
   }, [matches, translatedInput, hasTranslated]);
