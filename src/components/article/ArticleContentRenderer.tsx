@@ -50,13 +50,22 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
       label.className = "text-xs text-muted-foreground text-center uppercase";
       label.textContent = "ADVERTISEMENT";
 
-      const adIns = document.createElement("ins");
-      adIns.className = "adsbygoogle";
-      adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
-      adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
-      adIns.setAttribute("data-ad-format", "rectangle");
-      adIns.setAttribute("data-full-width-responsive", "true");
-      adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
+      if (import.meta.env.PROD) {
+        const adIns = document.createElement("ins");
+        adIns.className = "adsbygoogle";
+        adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
+        adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
+        adIns.setAttribute("data-ad-format", "rectangle");
+        adIns.setAttribute("data-full-width-responsive", "true");
+        adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
+        wrapper.append(label, adIns);
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs";
+        placeholder.style.minHeight = "250px";
+        placeholder.textContent = `Ad: ${IN_ARTICLE_AD_SLOT} (rectangle)`;
+        wrapper.append(label, placeholder);
+      }
 
       wrapper.append(label, adIns);
       paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
