@@ -285,6 +285,7 @@ const router = createBrowserRouter([
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
       { path: "/tools", element: <ExternalRedirect url="https://adrianwatkins.com/tools" /> },
+      { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/ask-scout", element: <AskScout /> },
       { path: "/newsletter", element: <Newsletter /> },
       { path: "/newsletter/archive", element: <NewsletterArchive /> },
