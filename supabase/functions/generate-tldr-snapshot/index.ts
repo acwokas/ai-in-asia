@@ -43,16 +43,16 @@ async function generateAndUploadSignalImages(
 
       const data = await response.json();
       const parts = data.candidates?.[0]?.content?.parts || [];
-      const imagePart = parts.find((p) => p.inline_data);
+      const imagePart = parts.find((p: any) => p.inlineData);
 
-      if (!imagePart?.inline_data) {
+      if (!imagePart?.inlineData) {
         console.log(`No image returned for signal ${i + 1}`);
         signalImages.push("");
         continue;
       }
 
-      const mimeType = imagePart.inline_data.mime_type || "image/png";
-      const base64Data = imagePart.inline_data.data;
+      const mimeType = imagePart.inlineData.mimeType || "image/png";
+      const base64Data = imagePart.inlineData.data;
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
       for (let j = 0; j < binaryString.length; j++) {

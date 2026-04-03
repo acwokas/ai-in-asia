@@ -118,12 +118,12 @@ Given the day's news signals below, write ONE cinematic hero image prompt (2-4 s
     const data = await geminiResp.json();
     console.log("Gemini response structure:", JSON.stringify(data).substring(0, 2000));
     const parts = data.candidates?.[0]?.content?.parts || [];
-    const imagePart = parts.find((p: any) => p.inline_data);
+    const imagePart = parts.find((p: any) => p.inlineData);
 
-    if (!imagePart?.inline_data) throw new Error("No image generated from Gemini. Response: " + JSON.stringify(data).substring(0, 500));
+    if (!imagePart?.inlineData) throw new Error("No image generated from Gemini. Response: " + JSON.stringify(data).substring(0, 500));
 
-    const mimeType = imagePart.inline_data.mime_type || "image/png";
-    const base64Data = imagePart.inline_data.data;
+    const mimeType = imagePart.inlineData.mimeType || "image/png";
+    const base64Data = imagePart.inlineData.data;
     const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
     const timestamp = Date.now();
     const filePath = `3b9/hero-${timestamp}.${ext}`;
