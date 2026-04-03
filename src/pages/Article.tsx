@@ -763,11 +763,6 @@ const Article = () => {
               </div>
             )}
 
-            {/* In-article ad — after TLDR / first major section */}
-            <div className="max-w-[720px] my-6 overflow-hidden text-center" style={{ minHeight: '100px' }}>
-              <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-1">Advertisement</p>
-              <AdUnit slot="3478913062" format="rectangle" responsive={true} />
-            </div>
 
             {/* Mobile TOC */}
             <div className="max-w-[720px]">
