@@ -571,7 +571,7 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
-    return <ProseHtml className="prose prose-lg max-w-none" html={joinedHtml} injectInArticleAds={true} />;
+    return <ProseHtml className="prose prose-lg max-w-none" html={joinedHtml} injectInArticleAds={true} midArticleNode={midArticleNode} />;
   }
   
   // Handle JSON content (legacy format)
