@@ -588,9 +588,9 @@ const Article = () => {
             <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
               <figure className="article-hero rounded-lg">
                 <OptimizedImage
-                  src={getOptimizedHeroImage(article.featured_image_url, 1080)}
+                  src={getOptimizedHeroImage(article.featured_image_url, 1080, 607)}
                   alt={article.featured_image_alt || article.title}
-                  responsiveWidths={[400, 800, 1200]}
+                  responsiveWidths={[320, 640, 960, 1280, 1920]}
                   sizes="(max-width: 768px) 100vw, 1080px"
                   loading="eager"
                   fetchPriority="high"

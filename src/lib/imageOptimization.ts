@@ -57,7 +57,12 @@ export function generateResponsiveSrcSet(
 
   return widths
     .map((width) => {
-      const optimizedUrl = getOptimizedSupabaseImage(url, { width, quality: 80 });
+      const optimizedUrl = getOptimizedSupabaseImage(url, {
+        width,
+        quality: 85,
+        format: 'webp',
+        resize: 'cover',
+      });
       return `${optimizedUrl} ${width}w`;
     })
     .join(', ');
