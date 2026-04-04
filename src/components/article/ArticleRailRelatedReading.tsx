@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface Props {
   categoryId: string;
