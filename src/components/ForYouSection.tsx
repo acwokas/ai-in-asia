@@ -98,7 +98,28 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
       if (!data) return [];
 
       const allExclude = new Set([...excludeIds, ...(readArticleIds || [])]);
-      return data.filter(a => !allExclude.has(a.id)).slice(0, 6);
+      const filtered = data.filter(a => !allExclude.has(a.id)).slice(0, 6);
+
+      if (filtered.length >= 3) return filtered;
+
+      // Backfill with recent articles if interest-based results are too few
+      const shownIds = [...Array.from(allExclude), ...filtered.map(a => a.id)];
+      const { data: backfill } = await supabase
+        .from("articles")
+        .select(`
+          id, title, slug, excerpt, featured_image_url,
+          reading_time_minutes, published_at, comment_count,
+          ai_tags,
+          authors:author_id (name, slug),
+          categories:primary_category_id (name, slug)
+        `)
+        .eq("status", "published")
+        .not("id", "in", `(${shownIds.join(",")})`)
+        .order("published_at", { ascending: false })
+        .limit(12);
+
+      const merged = [...filtered, ...(backfill || [])];
+      return merged.slice(0, 6);
     },
   });
 

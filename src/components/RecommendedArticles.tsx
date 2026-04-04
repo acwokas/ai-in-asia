@@ -145,11 +145,6 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
               )}
             </React.Fragment>
           ))}
-          {/* Ad card styled to match grid */}
-          <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
-            <span className="text-[11px] text-[hsl(210,12%,50%)] uppercase tracking-wider mb-3">Advertisement</span>
-            <BusinessInAByteAd />
-          </div>
         </div>
       </div>
     </section>
