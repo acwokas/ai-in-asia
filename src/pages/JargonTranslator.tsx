@@ -566,5 +566,6 @@ export default function JargonTranslator() {
         </div>
         <Footer />
       </div>
+    </>
   );
 }
