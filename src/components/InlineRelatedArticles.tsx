@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Card } from "./ui/card";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface InlineRelatedArticlesProps {
   currentArticleId: string;
@@ -61,17 +61,13 @@ const InlineRelatedArticles = ({ currentArticleId, categoryId, categorySlug }: I
             className="group"
           >
             <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow">
-              <div className="aspect-video overflow-hidden">
-                <ArticleFallbackImage
-                  src={article.featured_image_url}
-                  alt={article.title}
-                  categorySlug={article.categories?.slug || categorySlug}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  width={400}
-                  height={225}
-                />
-              </div>
+              <OptimizedImage
+                src={article.featured_image_url}
+                alt={article.title}
+                categorySlug={article.categories?.slug || categorySlug}
+                aspectRatio="16/9"
+                className="w-full group-hover:scale-105 transition-transform duration-300"
+              />
               <div className="p-4">
                 <h4 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {article.title}

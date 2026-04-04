@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { dualPush } from "@/lib/dualTrack";
 
 interface RecommendedArticlesProps {
@@ -82,12 +82,11 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
             onClick={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: featuredArticle.title, article_slug: featuredArticle.slug }); }}
           >
             <div className="relative aspect-[16/10] overflow-hidden">
-              <ArticleFallbackImage
+              <OptimizedImage
                 src={featuredArticle.featured_image_url ? getOptimizedThumbnail(featuredArticle.featured_image_url, 640, 400) : null}
                 alt={featuredArticle.title}
                 categorySlug={featuredArticle.categories?.slug}
-                loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                className="w-full h-full transition-transform duration-700 group-hover:scale-[1.03]"
               />
               <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold">
                 Recommended

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Clock, Calendar } from "lucide-react";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { memo } from "react";
 import { useRelatedArticles } from "@/hooks/useRelatedArticles";
@@ -47,15 +47,13 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
                 window.dataLayer.push({ event: "related_article_click", article_title: a.title, article_slug: a.slug });
               }}
             >
-              <div className="aspect-[16/9] overflow-hidden">
-                <ArticleFallbackImage
-                  src={a.featured_image_url}
-                  alt={a.title}
-                  categorySlug={cat?.slug}
-                  className="w-full h-full object-cover rounded-t-lg group-hover:scale-[1.03] transition-transform duration-500"
-                  loading="lazy"
-                />
-              </div>
+              <OptimizedImage
+                src={a.featured_image_url}
+                alt={a.title}
+                categorySlug={cat?.slug}
+                aspectRatio="16/9"
+                className="w-full rounded-t-lg group-hover:scale-[1.03] transition-transform duration-500"
+              />
               <div className="p-4">
                 <span
                   className="inline-block px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider rounded-full mb-2"

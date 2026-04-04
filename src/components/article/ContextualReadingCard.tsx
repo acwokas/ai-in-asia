@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { fixEncoding } from "@/lib/textUtils";
 
 interface ContextualArticle {
@@ -29,12 +29,11 @@ export function ContextualReadingCard({ article }: { article: ContextualArticle 
       }}
     >
       <div className="flex gap-3">
-        <ArticleFallbackImage
+        <OptimizedImage
           src={article.featured_image_url}
           alt={article.title}
           categorySlug={cat?.slug}
           className="w-[100px] h-[70px] rounded flex-shrink-0"
-          loading="lazy"
         />
         <div className="min-w-0 flex-1">
           <p

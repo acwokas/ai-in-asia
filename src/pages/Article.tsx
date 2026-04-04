@@ -52,7 +52,7 @@ import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from 
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 import ResumeReading from "@/components/article/ResumeReading";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Lazy-load Comments (below the fold)
 const Comments = lazy(() => import("@/components/Comments"));
@@ -638,15 +638,14 @@ const Article = () => {
           {article.featured_image_url ? (
             <div className="container mx-auto max-w-[1080px] mt-4 px-4 md:px-4">
               <figure className="article-hero rounded-lg">
-                <ArticleFallbackImage
+                <OptimizedImage
                   src={getOptimizedHeroImage(article.featured_image_url, 1080)}
-                  srcSet={generateResponsiveSrcSet(article.featured_image_url)}
-                  sizes="(max-width: 768px) 100vw, 1080px"
                   alt={article.featured_image_alt || article.title}
-                  width={1080}
-                  height={607}
+                  responsiveWidths={[400, 800, 1200]}
+                  sizes="(max-width: 768px) 100vw, 1080px"
                   loading="eager"
                   fetchPriority="high"
+                  className="w-full"
                 />
                 <div className="article-hero-gradient" />
                 <div className="article-hero-content max-w-[1080px]">

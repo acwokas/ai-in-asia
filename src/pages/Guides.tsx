@@ -11,6 +11,7 @@ import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal,
 import { useDebounce } from "@/hooks/useDebounce";
 
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const guideHref = (slug: string, topicCategory?: string | null) => {
   const cat = (topicCategory || "general").toLowerCase().replace(/\s+/g, "-");
@@ -94,7 +95,7 @@ const GuideCard = ({ g }: { g: any }) => (
     >
       {g.featured_image_url && (
         <div className="aspect-video overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="16/9" className="w-full group-hover:scale-105 transition-transform duration-300" />
         </div>
       )}
       <div className="p-5 space-y-3">
@@ -132,7 +133,7 @@ const GuideFeaturedCard = ({ g }: { g: any }) => (
     >
       {g.featured_image_url && (
         <div className="aspect-[4/3] overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="4/3" className="w-full group-hover:scale-105 transition-transform duration-300" />
         </div>
       )}
       <div className="p-5 space-y-3">
@@ -165,7 +166,7 @@ const GuideListCard = ({ g }: { g: any }) => (
       onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
     >
       {g.featured_image_url ? (
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-24 h-24 md:w-28 md:h-28 object-cover shrink-0" />
+        <OptimizedImage src={g.featured_image_url} alt={g.title} className="w-24 h-24 md:w-28 md:h-28 shrink-0" />
       ) : (
         <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
       )}
@@ -196,7 +197,7 @@ const GuideLandscapeCard = ({ g }: { g: any }) => (
     >
       {g.featured_image_url && (
         <div className="aspect-[2/1] overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="2/1" className="w-full group-hover:scale-105 transition-transform duration-300" />
         </div>
       )}
       <div className="p-4 space-y-2">
