@@ -299,7 +299,7 @@ const router = createBrowserRouter([
       { path: "/cookie-policy", element: <CookiePolicy /> },
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
-      { path: "/tools", element: <ExternalRedirect url="https://adrianwatkins.com/tools" /> },
+      { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
       { path: "/tools/ai-readiness", element: <AIReadiness /> },
