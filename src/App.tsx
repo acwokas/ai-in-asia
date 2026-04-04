@@ -97,6 +97,7 @@ const AIJobImpact = lazy(() => import("./pages/AIJobImpact"));
 const JargonTranslator = lazy(() => import("./pages/JargonTranslator"));
 const AIReadiness = lazy(() => import("./pages/AIReadiness"));
 const AIBingo = lazy(() => import("./pages/AIBingo"));
+const ToolsIndex = lazy(() => import("./pages/ToolsIndex"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
@@ -298,7 +299,7 @@ const router = createBrowserRouter([
       { path: "/cookie-policy", element: <CookiePolicy /> },
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
-      { path: "/tools", element: <ExternalRedirect url="https://adrianwatkins.com/tools" /> },
+      { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
       { path: "/tools/ai-readiness", element: <AIReadiness /> },

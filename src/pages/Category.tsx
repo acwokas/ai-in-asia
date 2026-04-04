@@ -474,10 +474,12 @@ const Category = () => {
                 accent={cfg.accent}
               />
 
-              {/* 7. INTERACTIVE TOOL — compact pill */}
+              {/* 7. INTERACTIVE TOOL — compact pills */}
               {ToolComponent && (() => {
                 const meta = TOOL_META[slug || "news"];
                 const ToolIcon = meta ? iconMap[meta.emoji] : null;
+                const ReadinessIcon = iconMap["zap"];
+                const BingoIcon = iconMap["grid-3x3"];
                 return (
                   <section ref={revealTool.ref} style={{ marginBottom: 40, ...revealTool.style }}>
                     <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Try an interactive tool" />
@@ -493,6 +495,22 @@ const Category = () => {
                         {ToolIcon && <ToolIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
                         <span className="transition-colors group-hover:text-amber-500">{meta?.name || "Tool"}</span>
                       </button>
+                      <Link
+                        to="/tools/ai-readiness"
+                        className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm snap-start whitespace-nowrap shrink-0"
+                        style={{ color: "hsl(var(--muted-foreground))", textDecoration: "none" }}
+                      >
+                        {ReadinessIcon && <ReadinessIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
+                        <span className="transition-colors group-hover:text-amber-500">AI Readiness</span>
+                      </Link>
+                      <Link
+                        to="/tools/ai-bingo"
+                        className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm snap-start whitespace-nowrap shrink-0"
+                        style={{ color: "hsl(var(--muted-foreground))", textDecoration: "none" }}
+                      >
+                        {BingoIcon && <BingoIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
+                        <span className="transition-colors group-hover:text-amber-500">Jargon Bingo</span>
+                      </Link>
                     </div>
                     <div id="category-tool-embed" className="mt-4">
                       <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
