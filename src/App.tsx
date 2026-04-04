@@ -308,6 +308,8 @@ const router = createBrowserRouter([
       { path: "/tools/ai-readiness", element: <AIReadiness /> },
       { path: "/tools/ai-bingo", element: <AIBingo /> },
       { path: "/tools/ai-headlines", element: <AIHeadlines /> },
+      { path: "/tools/ai-meeting-bingo", element: <AIMeetingBingo /> },
+      { path: "/tools/ai-policy-tracker", element: <AIPolicyTracker /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },

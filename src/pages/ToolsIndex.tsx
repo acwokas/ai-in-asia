@@ -72,10 +72,16 @@ const TOOLS = [
     to: "/category/news",
   },
   {
-    name: "Policy Tracker",
-    desc: "Track AI regulation developments across Asia-Pacific governments.",
+    name: "AI Policy Tracker",
+    desc: "Explore AI regulations across 16 Asia-Pacific countries.",
     icon: Shield,
-    to: "/category/policy",
+    to: "/tools/ai-policy-tracker",
+  },
+  {
+    name: "Pulse Tracker",
+    desc: "Real-time sentiment tracking of AI news across Asia.",
+    icon: Activity,
+    to: "/category/news",
   },
 ];
 
