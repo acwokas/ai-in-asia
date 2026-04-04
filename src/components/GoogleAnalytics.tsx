@@ -72,11 +72,14 @@ export const trackEvent = (
 ) => {
   if (typeof window === 'undefined') return;
 
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: eventName,
-    ...eventParams,
-  });
+  // Only push to GTM/GA4 if consent was given
+  if (getConsent() === 'accepted') {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      ...eventParams,
+    });
+  }
 
   // Dual-write to Supabase
   const SESSION_KEY = "aiia_session_id";
