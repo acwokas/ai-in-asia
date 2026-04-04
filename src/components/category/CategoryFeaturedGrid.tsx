@@ -96,16 +96,12 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
       }}
     >
       <div style={{ width: "100%", height: imageHeight, overflow: "hidden" }}>
-        <ArticleFallbackImage
+        <OptimizedImage
           src={article.featured_image_url ? getOptimizedThumbnail(article.featured_image_url, 400, imageHeight) : null}
           alt={article.featured_image_alt || article.title}
           categorySlug={article.categories?.slug || slug}
-          width={400}
-          height={imageHeight}
-          loading="lazy"
+          className="w-full h-full"
           style={{
-            width: "100%",
-            height: "100%",
             transform: hovered ? "scale(1.03)" : "scale(1)",
             transition: "transform 0.3s ease",
           }}
