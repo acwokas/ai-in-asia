@@ -786,7 +786,16 @@ const Article = () => {
                   ) : article.article_type === 'editors_note' ? (
                     <EditorNoteContent article={article} renderContent={renderArticleContent} />
                   ) : (
-                    renderArticleContent(article.content)
+                    renderArticleContent(
+                      article.content,
+                      article.primary_category_id ? (
+                        <MidArticleRelated
+                          currentArticleId={article.id}
+                          categoryId={article.primary_category_id}
+                          categorySlug={article.categories?.slug || 'news'}
+                        />
+                      ) : undefined
+                    )
                   )}
                 </div>
 
