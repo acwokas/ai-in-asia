@@ -33,20 +33,17 @@ const EditorsPickComponent = ({ article }: EditorsPickProps) => {
             <Star className="h-4 w-4 fill-current" />
             <span className="text-xs font-bold uppercase">Editor's Pick</span>
           </div>
-          <div className="aspect-[21/9] overflow-hidden">
-            <ArticleFallbackImage 
-              src={getOptimizedHeroImage(article.featured_image_url || "", 1280)} 
-              srcSet={article.featured_image_url?.includes('supabase.co/storage') ? generateResponsiveSrcSet(article.featured_image_url, [640, 960, 1280]) : undefined}
-              sizes="(max-width: 768px) 100vw, 1280px"
-              alt={article.title}
-              categorySlug={categorySlug}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="eager"
-              fetchPriority="high"
-              width={1280}
-              height={549}
-            />
-          </div>
+          <OptimizedImage
+            src={getOptimizedHeroImage(article.featured_image_url || "", 1280)}
+            alt={article.title}
+            categorySlug={categorySlug}
+            aspectRatio="21/9"
+            responsiveWidths={[640, 960, 1280]}
+            sizes="(max-width: 768px) 100vw, 1280px"
+            loading="eager"
+            fetchPriority="high"
+            className="w-full transition-transform duration-500 group-hover:scale-105"
+          />
         </div>
         <div className="p-6">
           <div className="flex items-center gap-2 mb-3">

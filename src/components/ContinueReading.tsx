@@ -85,13 +85,10 @@ const ContinueReading = ({ currentArticleId, categoryId, categorySlug }: Continu
       
       <Link to={articleUrl} className="group block">
         <div className="flex gap-4">
-          <ArticleFallbackImage
+          <OptimizedImage
             src={nextArticle.featured_image_url}
             alt={nextArticle.title}
             className="w-24 h-24 rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform"
-            loading="lazy"
-            width={96}
-            height={96}
           />
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg group-hover:text-primary transition-colors line-clamp-2 mb-2">

@@ -51,12 +51,11 @@ export function ArticleRailRelatedReading({ categoryId, categoryName, categorySl
               to={`/${cat?.slug || categorySlug}/${a.slug}`}
               className="flex gap-3 group"
             >
-              <ArticleFallbackImage
+              <OptimizedImage
                 src={a.featured_image_url}
                 alt={a.title}
                 categorySlug={cat?.slug || categorySlug}
                 className="w-[80px] h-[60px] rounded flex-shrink-0"
-                loading="lazy"
               />
               <div className="min-w-0 flex-1">
                 <p
