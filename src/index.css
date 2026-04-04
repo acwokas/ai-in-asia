@@ -853,6 +853,12 @@ All colors MUST be HSL.
   z-index: 0;
 }
 
+.article-hero > div:first-child {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 /* ─── Glossary tooltip term styling ─── */
 .glossary-term {
   text-decoration: underline;
