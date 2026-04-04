@@ -71,13 +71,13 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          id, title, slug, excerpt, featured_image_url, published_at,
+          id, title, slug, excerpt, featured_image_url, published_at, reading_time_minutes,
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
         .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
         .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(5);
+        .limit(8);
 
       if (!error && data) {
         setResults(data as unknown as SearchResult[]);
