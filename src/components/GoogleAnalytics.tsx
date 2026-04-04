@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getConsent } from "@/lib/cookieConsent";
 import type { Json } from "@/integrations/supabase/types";
 
 // GA4 is loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
@@ -21,6 +22,7 @@ const GoogleAnalytics = () => {
   // Track page views on route change via dataLayer for GTM
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (getConsent() !== 'accepted') return;
 
     const prevPath = prevPathRef.current;
     const currentPath = location.pathname + location.search;
@@ -70,11 +72,14 @@ export const trackEvent = (
 ) => {
   if (typeof window === 'undefined') return;
 
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: eventName,
-    ...eventParams,
-  });
+  // Only push to GTM/GA4 if consent was given
+  if (getConsent() === 'accepted') {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      ...eventParams,
+    });
+  }
 
   // Dual-write to Supabase
   const SESSION_KEY = "aiia_session_id";

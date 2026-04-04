@@ -1,62 +1,73 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { getConsent, setConsent, loadTrackingScripts, removeTrackingScripts } from "@/lib/cookieConsent";
 
 const ConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent");
-    if (!consent) {
-      // Show banner after 2 seconds
-      const timer = setTimeout(() => setIsVisible(true), 2000);
+    const consent = getConsent();
+    if (consent === "accepted") {
+      loadTrackingScripts();
+      return;
+    }
+    if (consent === null) {
+      const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
+    // declined — do nothing
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem("cookie-consent", "accepted");
+    setConsent("accepted");
     setIsVisible(false);
+    loadTrackingScripts();
   };
 
   const handleDecline = () => {
-    localStorage.setItem("cookie-consent", "declined");
+    setConsent("declined");
     setIsVisible(false);
+    removeTrackingScripts();
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div data-nosnippet className="fixed inset-x-0 bottom-0 z-[60] bg-card border-t border-border shadow-lg pb-[env(safe-area-inset-bottom)] max-h-[50vh] overflow-y-auto">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex flex-col gap-3">
-          {/* Header with close button on mobile */}
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Cookie Consent</h3>
-            <button
-              type="button"
-              onClick={handleDecline}
-              className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground md:hidden"
-              aria-label="Dismiss cookie banner"
+    <div
+      data-nosnippet
+      className={`fixed inset-x-0 bottom-0 z-[60] flex justify-center p-4 transition-all duration-500 ease-out ${
+        isVisible
+          ? "translate-y-0 opacity-100"
+          : "translate-y-full opacity-0 pointer-events-none"
+      }`}
+    >
+      <div className="w-full max-w-4xl bg-card border-t border-border shadow-lg rounded-t-xl p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <p className="text-sm text-muted-foreground flex-1">
+            We use cookies to enhance your experience. By continuing to visit
+            this site you agree to our use of cookies.{" "}
+            <Link
+              to="/cookie-policy"
+              className="text-primary hover:underline font-medium"
             >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          
-          <p className="text-sm text-muted-foreground">
-            We use cookies to enhance your browsing experience, serve personalised
-            ads or content, and analyse our traffic.{" "}
-            <a href="/cookie-policy" className="text-primary hover:underline">
-              Learn more
-            </a>
+              Cookie Policy
+            </Link>
           </p>
-          
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleDecline} size="sm">
+
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDecline}
+              className="min-w-[80px]"
+            >
               Decline
             </Button>
-            <Button onClick={handleAccept} size="sm">
-              Accept All
+            <Button
+              size="sm"
+              onClick={handleAccept}
+              className="min-w-[80px] bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              Accept
             </Button>
           </div>
         </div>
