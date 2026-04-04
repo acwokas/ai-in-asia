@@ -98,6 +98,7 @@ const JargonTranslator = lazy(() => import("./pages/JargonTranslator"));
 const AIReadiness = lazy(() => import("./pages/AIReadiness"));
 const AIBingo = lazy(() => import("./pages/AIBingo"));
 const ToolsIndex = lazy(() => import("./pages/ToolsIndex"));
+const AIHeadlines = lazy(() => import("./pages/AIHeadlines"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
@@ -304,6 +305,7 @@ const router = createBrowserRouter([
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
       { path: "/tools/ai-readiness", element: <AIReadiness /> },
       { path: "/tools/ai-bingo", element: <AIBingo /> },
+      { path: "/tools/ai-headlines", element: <AIHeadlines /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },

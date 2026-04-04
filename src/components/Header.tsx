@@ -65,6 +65,9 @@ const POLICY_ITEMS: NavDropdownItem[] = [
 ];
 
 const TOOLS_ITEMS: NavDropdownItem[] = [
+  { to: "/tools/ai-readiness", label: "AI Readiness Score", description: "Quiz: how AI-ready is your career?", icon: Zap },
+  { to: "/tools/ai-bingo", label: "AI Jargon Bingo", description: "Play buzzword bingo in your next meeting", icon: Globe },
+  { to: "/tools/ai-headlines", label: "AI Headline Generator", description: "Generate funny satirical AI headlines", icon: Newspaper },
   { to: "/guides", label: "Guides", description: "Step-by-step AI guides for every skill level", icon: BookOpen },
   { to: "/prompts", label: "Prompts", description: "Ready-to-use prompts for every platform", icon: Sparkles },
   { to: "/events", label: "Events", description: "AI conferences and meetups in Asia", icon: Calendar },
@@ -209,8 +212,47 @@ const Header = memo(() => {
               {/* Policy dropdown */}
               {renderDropdown("Policy", POLICY_ITEMS)}
 
-              {/* Tools dropdown */}
-              {renderDropdown("Tools", TOOLS_ITEMS)}
+              {/* Tools — main link goes to /tools, dropdown has sub-items */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 ${
+                      isActiveRoute("/tools") ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                    }`}
+                  >
+                    Tools <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
+                >
+                  <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
+                    <Link to="/tools" className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                        <Wrench className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-foreground">All Tools</span>
+                        <span className="text-xs text-muted-foreground leading-snug">Browse all interactive AI tools</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                  {TOOLS_ITEMS.map(({ to, label: itemLabel, description, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
+                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-foreground">{itemLabel}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{description}</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
           </div>
 
