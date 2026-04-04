@@ -75,7 +75,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Featured recommended pick — wider first card */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 lg:sticky lg:top-20 lg:self-start">
           <Link
             to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
