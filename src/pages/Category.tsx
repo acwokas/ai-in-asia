@@ -418,26 +418,7 @@ const Category = () => {
 
           {!articlesLoading && (
             <>
-              {/* 4. LEARNING PATHS */}
-              <CategoryLearningPaths
-                paths={paths}
-                categorySlug={slug || "news"}
-                revealProps={revealPaths}
-                accent={cfg.accent}
-              />
-
-              {/* 5. INTERACTIVE TOOL */}
-              {ToolComponent && (
-                <section ref={revealTool.ref} style={{ marginBottom: 48, ...revealTool.style }}>
-                  <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Interactive tools for this category" />
-                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
-                    <ToolComponent />
-                  </Suspense>
-                </section>
-              )}
-
-
-              {/* 6. FEATURED ARTICLES */}
+              {/* 4. FEATURED ARTICLES */}
               <CategoryFeaturedGrid
                 articles={featuredGridArticles}
                 cfg={cfg}
@@ -447,7 +428,7 @@ const Category = () => {
                 totalCount={allCategoryArticles?.length || 0}
               />
 
-              {/* 7. DEEP CUTS */}
+              {/* 5. DEEP CUTS */}
               <CategoryDeepCuts
                 articles={filteredDeepCuts}
                 cfg={cfg}
@@ -455,6 +436,24 @@ const Category = () => {
                 revealProps={revealDeep}
                 selectedFilter={selectedFilter}
               />
+
+              {/* 6. LEARNING PATHS */}
+              <CategoryLearningPaths
+                paths={paths}
+                categorySlug={slug || "news"}
+                revealProps={revealPaths}
+                accent={cfg.accent}
+              />
+
+              {/* 7. INTERACTIVE TOOL */}
+              {ToolComponent && (
+                <section ref={revealTool.ref} style={{ marginBottom: 48, ...revealTool.style }}>
+                  <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Interactive tools for this category" />
+                  <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+                    <ToolComponent />
+                  </Suspense>
+                </section>
+              )}
 
               {/* 8. CROSS-CATEGORY NAVIGATION */}
               <CategoryCrossNav
