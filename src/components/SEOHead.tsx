@@ -16,7 +16,9 @@ const TWITTER_HANDLE = "@AI_in_Asia";
  * always receive a valid, reachable URL instead of a 404.
  */
 const getOgImageUrl = (url: string): string => {
-  return url;
+  if (!url) return DEFAULT_OG_IMAGE;
+  if (url.startsWith('http')) return url;
+  return `${SITE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
 interface SEOHeadProps {
