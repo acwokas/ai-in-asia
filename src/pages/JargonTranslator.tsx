@@ -1,11 +1,22 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import SEOHead from "@/components/SEOHead";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import { findJargonInText, SAMPLE_TEXTS, type JargonEntry } from "@/lib/jargonDictionary";
 import { Copy, Check, Share2, Sparkles, BookOpen, Zap, Baby, Send, ArrowDown } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -234,7 +245,26 @@ export default function JargonTranslator() {
         schemaJson={schemaJson}
       />
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        {/* Breadcrumb */}
+        <div className="container max-w-6xl mx-auto px-4 pt-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild><Link to="/tools">Tools</Link></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>AI Jargon Translator</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         {/* Hero */}
         <div className="border-b border-border bg-muted/30">
           <div className="container max-w-6xl mx-auto px-4 py-12 md:py-16 text-center">
@@ -534,6 +564,7 @@ export default function JargonTranslator() {
             <InlineNewsletterSignup variant="default" />
           </section>
         </div>
+        <Footer />
       </div>
     </>
   );
