@@ -51,6 +51,7 @@ import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from 
 // GA4 content tracking is inlined below to survive Vite tree-shaking
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
+import ResumeReading from "@/components/article/ResumeReading";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 // Lazy-load Comments (below the fold)
@@ -529,6 +530,7 @@ const Article = () => {
   return (
     <>
       <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} />
+      <ResumeReading slug={article.slug} />
       
       <SEOHead
         title={fixEncoding(((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
