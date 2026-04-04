@@ -102,7 +102,7 @@ export function getOptimizedHeroImage(
 ): string {
   return getOptimizedSupabaseImage(url, {
     width,
-    quality: 85,
+    quality: 80,
     format: 'webp',
   });
 }

@@ -57,6 +57,7 @@ export function ArticleFallbackImage({
 
   return (
     <img
+      loading="lazy"
       {...rest}
       src={imgSrc}
       alt={alt}
