@@ -321,7 +321,7 @@ interface RenderContentProps {
   content: any;
 }
 
-export const renderArticleContent = (content: any): React.ReactNode => {
+export const renderArticleContent = (content: any, midArticleNode?: ReactNode): React.ReactNode => {
   if (!content) return null;
 
   // Handle string content (markdown or raw HTML from the editor)
