@@ -36,22 +36,36 @@ export function SelectionQuotePopup({
 
   return (
     <>
-      {/* Floating popup */}
+      {/* Floating popup above selection */}
       {selection.visible && !modalOpen && (
-        <button
-          onClick={handleClick}
-          className="fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg border border-border/60 text-xs font-medium transition-all duration-200 animate-in fade-in-0 zoom-in-95"
+        <div
+          className="fixed z-50 animate-in fade-in-0 zoom-in-95 duration-150"
           style={{
-            left: Math.max(20, Math.min(selection.x - 70, window.innerWidth - 180)),
-            top: Math.max(10, selection.y + window.scrollY - 44),
+            left: Math.max(20, Math.min(selection.x - 80, window.innerWidth - 200)),
+            top: Math.max(10, selection.y + window.scrollY - 48),
             position: "absolute",
-            backgroundColor: categoryColor,
-            color: "#fff",
           }}
         >
-          <ImageIcon className="h-3.5 w-3.5" />
-          Share as Quote Card
-        </button>
+          <button
+            onClick={handleClick}
+            className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full px-3 py-1 text-sm font-medium shadow-lg transition-colors duration-150"
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            Share as Quote
+          </button>
+          {/* Arrow pointing down */}
+          <div
+            className="mx-auto w-0 h-0"
+            style={{
+              borderLeft: "6px solid transparent",
+              borderRight: "6px solid transparent",
+              borderTop: "6px solid rgb(245 158 11)",
+              width: 0,
+              marginTop: 0,
+              marginLeft: "calc(50% - 6px)",
+            }}
+          />
+        </div>
       )}
 
       {/* Quote card modal */}
