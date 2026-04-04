@@ -96,6 +96,7 @@ export default function JargonTranslator() {
   const [translationKey, setTranslationKey] = useState(0);
   const [submissionText, setSubmissionText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCleanVersion, setShowCleanVersion] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scoreRef = useRef<HTMLDivElement>(null);
 
