@@ -17,10 +17,11 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps)
       return;
     }
     const rect = content.getBoundingClientRect();
-    const contentTop = rect.top + window.scrollY;
-    const contentHeight = rect.height;
-    const scrolled = window.scrollY - contentTop + window.innerHeight * 0.5;
-    const percent = Math.min(Math.max((scrolled / contentHeight) * 100, 0), 100);
+    // 0% when top of article-content reaches bottom of viewport
+    // 100% when bottom of article-content reaches bottom of viewport
+    const scrollableDistance = rect.height;
+    const scrolled = window.innerHeight - rect.top;
+    const percent = Math.min(Math.max((scrolled / scrollableDistance) * 100, 0), 100);
     setProgress(percent);
     setShowRemaining(percent > 5 && percent < 95);
   }, []);
