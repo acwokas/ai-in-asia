@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper, Wrench } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper, Wrench, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
@@ -26,6 +26,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Bookmark } from "lucide-react";
 import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { LucideIcon } from "lucide-react";
 
 type NavDropdownItem = { to: string; label: string; description: string; icon: LucideIcon };
@@ -82,6 +83,7 @@ const Header = memo(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
 
@@ -228,6 +230,26 @@ const Header = memo(() => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Search</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleTheme}
+                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    className="flex h-10 w-10"
+                  >
+                    <span
+                      className="inline-flex transition-transform duration-300"
+                      style={{ transform: theme === "dark" ? "rotate(0deg)" : "rotate(180deg)" }}
+                    >
+                      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{theme === "dark" ? "Light mode" : "Dark mode"}</TooltipContent>
               </Tooltip>
 
               <div className="hidden md:flex items-center gap-1">

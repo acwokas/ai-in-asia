@@ -16,8 +16,8 @@
     </script>
     <script>
       (function() {
-        var stored = localStorage.getItem('theme');
-        var isDark = stored ? stored === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
+        var stored = localStorage.getItem('aiia_theme') || localStorage.getItem('theme');
+        var isDark = stored ? stored !== 'light' : true;
         if (isDark) document.documentElement.classList.add('dark');
       })();
     </script>

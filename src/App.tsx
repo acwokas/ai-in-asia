@@ -8,6 +8,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createIDBPersister } from "@/lib/queryPersister";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -380,19 +381,21 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => (
-  <PersistQueryClientProvider
-    client={queryClient}
-    persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000 }}
-  >
-    <AuthProvider>
-      <TooltipProvider>
-        <DatabaseErrorBoundary>
-          <Sonner />
-          <RouterProvider router={router} />
-        </DatabaseErrorBoundary>
-      </TooltipProvider>
-    </AuthProvider>
-  </PersistQueryClientProvider>
+  <ThemeProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000 }}
+    >
+      <AuthProvider>
+        <TooltipProvider>
+          <DatabaseErrorBoundary>
+            <Sonner />
+            <RouterProvider router={router} />
+          </DatabaseErrorBoundary>
+        </TooltipProvider>
+      </AuthProvider>
+    </PersistQueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
