@@ -143,30 +143,33 @@ export const ArticleShareFloating = memo(({ categorySlug, articleSlug, articleTi
   if (!visible) return null;
 
   return (
-    <div className="hidden xl:flex fixed left-[max(1rem,calc(50%-600px))] top-1/3 z-30 flex-col gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp" aria-label="Share on WhatsApp">
+    <div className="hidden xl:flex fixed left-[max(1rem,calc(50%-600px))] top-1/2 -translate-y-1/2 z-30 flex-col gap-1.5 p-2 bg-card/80 backdrop-blur-md border border-border/50 rounded-full shadow-lg animate-in fade-in slide-in-from-left-4 duration-300">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#25D366] hover:bg-[#25D366]/10 cursor-pointer" onClick={() => shareHandlers.whatsapp(directUrl, articleTitle)} title="Share on WhatsApp" aria-label="Share on WhatsApp">
         <WhatsAppIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="Share on LinkedIn" aria-label="Share on LinkedIn">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer" onClick={() => shareHandlers.linkedin(directUrl)} title="Share on LinkedIn" aria-label="Share on LinkedIn">
         <Linkedin className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram" aria-label="Share on Telegram">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#1877F2] hover:bg-[#1877F2]/10 cursor-pointer" onClick={() => shareHandlers.facebook(shareUrl)} title="Share on Facebook" aria-label="Share on Facebook">
+        <FacebookIcon className="h-[18px] w-[18px]" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#229ED9] hover:bg-[#229ED9]/10 cursor-pointer" onClick={() => shareHandlers.telegram(directUrl, articleTitle)} title="Share on Telegram" aria-label="Share on Telegram">
         <TelegramIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#00B900] hover:bg-[#00B900]/10 cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE" aria-label="Share on LINE">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#00B900] hover:bg-[#00B900]/10 cursor-pointer" onClick={() => shareHandlers.line(directUrl)} title="Share on LINE" aria-label="Share on LINE">
         <LineIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X" aria-label="Share on X">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => shareHandlers.twitter(shareUrl, articleTitle)} title="Share on X" aria-label="Share on X">
         <XIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok" aria-label="Share on TikTok">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on TikTok" aria-label="Share on TikTok">
         <TikTokIcon className="h-[18px] w-[18px]" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat" aria-label="Share on WeChat">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-[#07C160] hover:bg-[#07C160]/10 cursor-pointer" onClick={() => nativeShareOrCopy(directUrl, articleTitle).then(ok => { if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); } })} title="Share on WeChat" aria-label="Share on WeChat">
         <WeChatIcon className="h-[18px] w-[18px]" />
       </Button>
       <div className="relative">
-        <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-teal-500 hover:bg-teal-500/10 cursor-pointer" onClick={handleCopy} title="Copy link" aria-label="Copy link">
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-teal-500 hover:bg-teal-500/10 cursor-pointer" onClick={handleCopy} title="Copy link" aria-label="Copy link">
           {copied ? <Check className="h-[18px] w-[18px] text-teal-500" /> : <Link2 className="h-[18px] w-[18px]" />}
         </Button>
         {copied && (
