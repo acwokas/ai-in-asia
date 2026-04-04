@@ -149,27 +149,36 @@ const NotFound = () => {
 
       <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">
         <div className="text-center mb-12">
-          <h1 className="text-9xl font-bold text-primary/20 mb-2">404</h1>
-          <h2 className="headline text-4xl md:text-5xl mb-4">Page Not Found</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            This page doesn't exist or has been moved.
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-amber-500/10 mb-6">
+            <Compass className="h-12 w-12 text-amber-500" />
+          </div>
+          <h1 className="font-display text-7xl md:text-9xl font-black text-amber-500/20 mb-2">404</h1>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">Lost in Transit</h2>
+          <p className="text-lg text-muted-foreground mb-2 max-w-md mx-auto">
+            This page got lost somewhere between Tokyo and Singapore.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg">
+          <p className="text-sm text-muted-foreground/60 mb-8">
+            Maybe the AI took it. We're looking into it.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild size="lg" className="bg-amber-500 hover:bg-amber-600 text-black font-bold">
               <Link to="/"><Home className="mr-2 h-5 w-5" />Back to Home</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link to="/tools"><Compass className="mr-2 h-5 w-5" />Explore Tools</Link>
             </Button>
             {!reported ? (
               <Button
                 size="lg"
-                variant="outline"
+                variant="ghost"
                 onClick={handleReport}
                 disabled={reporting}
               >
                 <Flag className="mr-2 h-4 w-4" />
-                {reporting ? "Reporting..." : "Report this broken link"}
+                {reporting ? "Reporting..." : "Report broken link"}
               </Button>
             ) : (
-              <Button size="lg" variant="outline" disabled>
+              <Button size="lg" variant="ghost" disabled>
                 <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
                 Thanks — we'll fix it
               </Button>

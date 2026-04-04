@@ -116,10 +116,19 @@ const Header = memo(() => {
         e.preventDefault();
         setIsSearchOpen(true);
       }
+      // "/" opens search when not typing in an input
+      if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+      // Escape closes search
+      if (e.key === "Escape" && isSearchOpen) {
+        setIsSearchOpen(false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isSearchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

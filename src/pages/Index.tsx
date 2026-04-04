@@ -629,7 +629,7 @@ const Index = () => {
                           <Badge className="bg-emerald-600 text-white text-xs backdrop-blur-sm" style={{ padding: '6px 14px' }}>{getFreshnessLabel(featuredArticle.published_at, featuredArticle.updated_at, featuredArticle.cornerstone)}</Badge>
                         )}
                       </div>
-                      <h2 className="text-white font-bold text-[28px] sm:text-[34px] md:text-[42px] leading-[1.15] mb-2 line-clamp-3 group-hover:text-primary transition-colors" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+                      <h2 className="hero-shimmer-text font-bold text-[28px] sm:text-[34px] md:text-[42px] leading-[1.15] mb-2 line-clamp-3 group-hover:text-primary transition-colors" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
                         {featuredArticle.title}
                       </h2>
                       <p className="text-[16px] leading-[1.5] line-clamp-2 mb-2 max-w-2xl hidden md:block" style={{ color: '#B0BEC5' }}>{featuredArticle.excerpt}</p>
