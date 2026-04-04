@@ -70,6 +70,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     removeInjectedAds();
 
     const paragraphs = Array.from(proseElement.querySelectorAll("p"));
+    console.log("[AD-DEBUG] injectInArticleAds:", injectInArticleAds, "paragraphs found:", paragraphs.length, "proseRef:", proseElement.className);
 
     // Always inject a horizontal ad after the first paragraph if there are at least 2 paragraphs
     if (paragraphs.length >= MIN_PARAGRAPHS_FOR_FIRST_AD) {
