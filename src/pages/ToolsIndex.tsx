@@ -18,6 +18,12 @@ const TOOLS = [
     to: "/tools/ai-bingo",
   },
   {
+    name: "AI Meeting Bingo",
+    desc: "Spot meeting clichés and get 5 in a row to win — confetti included!",
+    icon: Users,
+    to: "/tools/ai-meeting-bingo",
+  },
+  {
     name: "AI Headline Generator",
     desc: "Generate hilarious satirical AI news headlines about Asia.",
     icon: Newspaper,
