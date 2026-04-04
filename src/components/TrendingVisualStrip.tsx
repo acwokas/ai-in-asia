@@ -125,18 +125,13 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                   border: "1px solid hsl(var(--border))",
                 }}
               >
-                <div className="aspect-[16/10] overflow-hidden">
-                  <ArticleFallbackImage
-                    src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
-                    alt={item.title}
-                    categorySlug="learn"
-                    width={320}
-                    height={200}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-
-                </div>
+                <OptimizedImage
+                  src={getOptimizedThumbnail(item.featured_image_url || "", 320, 200)}
+                  alt={item.title}
+                  categorySlug="learn"
+                  aspectRatio="16/10"
+                  className="w-full transition-transform duration-500 group-hover:scale-105"
+                />
                 <div className="p-2.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider block mb-1 text-emerald-400 flex items-center gap-1">
                     <BookOpen className="h-3 w-3" />
