@@ -204,9 +204,9 @@ const CategoryAll = () => {
       {category && (
         <BreadcrumbStructuredData
           items={[
-            { name: "Home", url: "https://aiinasia.com" },
-            { name: category.name, url: `https://aiinasia.com/category/${category.slug}` },
-            { name: "All Articles", url: `https://aiinasia.com/category/${category.slug}/all` },
+            { name: "Home", url: "/" },
+            { name: category.name, url: `/category/${category.slug}` },
+            { name: "All Articles", url: `/category/${category.slug}/all` },
           ]}
         />
       )}

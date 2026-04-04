@@ -120,7 +120,7 @@ export const BreadcrumbStructuredData = ({ items }: { items: BreadcrumbItem[] })
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `https://aiinasia.com${item.url}`,
+      item: item.url.startsWith('http') ? item.url : `https://aiinasia.com${item.url}`,
     })),
   };
 
