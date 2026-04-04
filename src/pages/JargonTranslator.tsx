@@ -96,6 +96,7 @@ export default function JargonTranslator() {
   const [translationKey, setTranslationKey] = useState(0);
   const [submissionText, setSubmissionText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCleanVersion, setShowCleanVersion] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scoreRef = useRef<HTMLDivElement>(null);
 
@@ -310,19 +311,32 @@ export default function JargonTranslator() {
             <Card className="bg-card border-border">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-foreground">What They Actually Mean</h2>
-                  <div className="flex items-center gap-2">
-                    {hasTranslated && outputWordCount > 0 && (
-                      <span className="text-xs text-muted-foreground">{outputWordCount} words</span>
-                    )}
-                    {hasTranslated && matches.length > 0 && (
-                      <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-muted-foreground">
-                        {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-                        <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                   <h2 className="font-semibold text-foreground">What They Actually Mean</h2>
+                   <div className="flex items-center gap-2">
+                     {hasTranslated && matches.length > 0 && (
+                       <button
+                         onClick={() => setShowCleanVersion((v) => !v)}
+                         className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md border transition-colors ${
+                           showCleanVersion
+                             ? "bg-primary/15 text-primary border-primary/30"
+                             : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                         }`}
+                       >
+                         <Sparkles className="h-3 w-3" />
+                         {showCleanVersion ? "Clean version" : "Show clean"}
+                       </button>
+                     )}
+                     {hasTranslated && outputWordCount > 0 && (
+                       <span className="text-xs text-muted-foreground">{outputWordCount} words</span>
+                     )}
+                     {hasTranslated && matches.length > 0 && (
+                       <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-muted-foreground">
+                         {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                         <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
+                       </Button>
+                     )}
+                   </div>
+                 </div>
 
                 {isTranslating ? (
                   <div className="min-h-[200px] flex flex-col items-center justify-center gap-3">
@@ -350,42 +364,46 @@ export default function JargonTranslator() {
                       </div>
                     </TypewriterText>
                   </div>
-                ) : (
-                  <div className="min-h-[200px]">
-                    <TypewriterText trigger={translationKey}>
-                      <p className="text-foreground leading-loose whitespace-pre-wrap">
-                        {translatedSegments.map((seg, i) =>
-                          seg.type === "text" ? (
-                            <span key={i}>{seg.content}</span>
-                          ) : (
-                            <span
-                              key={i}
-                              className="relative inline-block cursor-help"
-                              onMouseEnter={() => setHoveredTerm(seg.original + i)}
-                              onMouseLeave={() => setHoveredTerm(null)}
-                              onClick={() => setHoveredTerm(hoveredTerm === seg.original + i ? null : seg.original + i)}
-                            >
-                              <span className={`border-b-2 ${modeColors.underline.replace('decoration-', 'border-')} ${modeColors.highlight} rounded-sm px-0.5 py-0.5`}>
-                                {getTranslation(seg.entry!, mode)}
-                              </span>
-                              {hoveredTerm === seg.original + i && (
-                                <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 rounded-lg bg-popover border border-border shadow-xl text-sm pointer-events-none" style={{ lineHeight: '1.4' }}>
-                                  <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
-                                  <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
-                                  {seg.entry!.asiaContext && (
-                                    <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
-                                  )}
-                                  <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
-                                    {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
-                                  </span>
-                                </span>
-                              )}
-                            </span>
-                          )
-                        )}
-                      </p>
-                    </TypewriterText>
-                  </div>
+                ) : showCleanVersion ? (
+                   <div className="min-h-[200px]">
+                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">{plainTranslatedText}</p>
+                   </div>
+                 ) : (
+                   <div className="min-h-[200px]">
+                     <TypewriterText trigger={translationKey}>
+                       <p className="text-foreground leading-loose whitespace-pre-wrap">
+                         {translatedSegments.map((seg, i) =>
+                           seg.type === "text" ? (
+                             <span key={i}>{seg.content}</span>
+                           ) : (
+                             <span
+                               key={i}
+                               className="relative inline-block cursor-help"
+                               onMouseEnter={() => setHoveredTerm(seg.original + i)}
+                               onMouseLeave={() => setHoveredTerm(null)}
+                               onClick={() => setHoveredTerm(hoveredTerm === seg.original + i ? null : seg.original + i)}
+                             >
+                               <span className={`border-b-2 ${modeColors.underline.replace('decoration-', 'border-')} ${modeColors.highlight} rounded-sm px-0.5 py-0.5`}>
+                                 {getTranslation(seg.entry!, mode)}
+                               </span>
+                               {hoveredTerm === seg.original + i && (
+                                 <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 rounded-lg bg-popover border border-border shadow-xl text-sm pointer-events-none" style={{ lineHeight: '1.4' }}>
+                                   <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
+                                   <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
+                                   {seg.entry!.asiaContext && (
+                                     <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
+                                   )}
+                                   <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
+                                     {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
+                                   </span>
+                                 </span>
+                               )}
+                             </span>
+                           )
+                         )}
+                       </p>
+                     </TypewriterText>
+                   </div>
                 )}
               </CardContent>
             </Card>
