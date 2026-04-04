@@ -104,16 +104,10 @@ export const ProgressiveImage = memo(({
 
   return (
     <div ref={imgRef} className={cn("relative overflow-hidden", className)}>
-      {/* Tiny blurred placeholder */}
-      <img
-        src={placeholderSrc}
-        alt=""
-        aria-hidden="true"
-        className={cn(
-          "absolute inset-0 w-full h-full object-cover blur-xl scale-110 transition-opacity duration-500",
-          isLoaded ? "opacity-0" : "opacity-100"
-        )}
-      />
+      {/* Blurred placeholder – only if image takes >100ms */}
+      {showPlaceholder && !isLoaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
+      )}
       
       {/* Full resolution image */}
       {isInView && (
