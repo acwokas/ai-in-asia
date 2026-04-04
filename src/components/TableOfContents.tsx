@@ -18,6 +18,13 @@ interface TableOfContentsProps {
   categoryColor?: string;
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function useHeadings(contentSelector: string) {
   const [headings, setHeadings] = useState<TocItem[]>([]);
 
@@ -29,9 +36,9 @@ function useHeadings(contentSelector: string) {
       const elements = container.querySelectorAll("h2, h3");
       const items: TocItem[] = [];
 
-      elements.forEach((el, i) => {
+      elements.forEach((el) => {
         if (!el.id) {
-          el.id = `heading-${i}-${el.textContent?.slice(0, 20).replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-]/g, "").toLowerCase() || i}`;
+          el.id = slugify(el.textContent || "") || `heading-${items.length}`;
         }
         items.push({
           id: el.id,
@@ -82,14 +89,30 @@ function useActiveHeading(headings: TocItem[]) {
   return activeId;
 }
 
-/** Shared TOC link list for desktop rail */
-function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem[]; activeId: string; categoryColor?: string }) {
+/** TOC link list with h3 indented under h2, amber active highlight */
+function TocLinks({
+  headings,
+  activeId,
+  onClickItem,
+  showCopyLink = false,
+}: {
+  headings: TocItem[];
+  activeId: string;
+  onClickItem?: () => void;
+  showCopyLink?: boolean;
+}) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const handleClick = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  const handleClick = useCallback(
+    (id: string) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        onClickItem?.();
+      }
+    },
+    [onClickItem]
+  );
 
   const handleCopyLink = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -101,76 +124,38 @@ function RailTocLinks({ headings, activeId, categoryColor }: { headings: TocItem
     });
   }, []);
 
-  const h2Headings = headings.filter(h => h.level === 2);
-
   return (
     <nav aria-label="Table of contents">
-      <ul className="flex flex-col" style={{ gap: "0.6rem" }}>
-        {h2Headings.map(({ id, text }) => (
+      <ul className="flex flex-col gap-0.5">
+        {headings.map(({ id, text, level }) => (
           <li key={id} className="group relative flex items-start gap-1">
             <button
               onClick={() => handleClick(id)}
-              className="text-left flex-1 cursor-pointer transition-colors duration-200"
-              style={{
-                fontSize: "0.9rem",
-                lineHeight: 1.4,
-                paddingLeft: "0.75rem",
-                borderLeft: activeId === id ? `2px solid ${categoryColor || 'hsl(var(--primary))'}` : "2px solid transparent",
-                color: activeId === id ? "hsl(var(--foreground))" : "#BFC0C0",
-              }}
-            >
-              {text}
-            </button>
-            <button
-              onClick={(e) => handleCopyLink(e, id)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground flex-shrink-0 mt-0.5"
-              title="Copy link to section"
-              aria-label="Copy link to section"
-            >
-              {copiedId === id ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              )}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
-
-/** Legacy TocLinks for mobile collapsible (shows H2+H3) */
-function TocLinks({ headings, activeId, onClick }: { headings: TocItem[]; activeId: string; onClick?: () => void }) {
-  const handleClick = useCallback(
-    (id: string) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        onClick?.();
-      }
-    },
-    [onClick]
-  );
-
-  return (
-    <nav aria-label="Table of contents">
-      <ul className="space-y-1">
-        {headings.map(({ id, text, level }) => (
-          <li key={id}>
-            <button
-              onClick={() => handleClick(id)}
               className={cn(
-                "text-left w-full text-sm py-1.5 pr-2 border-l-2 transition-colors duration-200 cursor-pointer",
+                "text-left flex-1 text-sm py-1 pr-2 border-l-2 transition-colors duration-200 cursor-pointer",
                 level === 3 ? "pl-6" : "pl-3",
-                level === 3 ? "text-muted-foreground font-normal" : "font-medium",
+                level === 3 ? "font-normal" : "font-medium",
                 activeId === id
-                  ? "border-primary text-primary"
+                  ? "border-amber-500 text-amber-500"
                   : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
               )}
             >
               {text}
             </button>
+            {showCopyLink && (
+              <button
+                onClick={(e) => handleCopyLink(e, id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground flex-shrink-0 mt-1.5"
+                title="Copy link to section"
+                aria-label="Copy link to section"
+              >
+                {copiedId === id ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                )}
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -179,63 +164,65 @@ function TocLinks({ headings, activeId, onClick }: { headings: TocItem[]; active
 }
 
 /** Desktop: sticky sidebar TOC */
-export function TableOfContentsSidebar({ contentSelector = ".article-content", minHeadings = 3, minReadingTime = 7, readingTime = 0, categoryColor }: TableOfContentsProps) {
+export function TableOfContentsSidebar({
+  contentSelector = ".article-content",
+  minHeadings = 3,
+  minReadingTime = 0,
+  readingTime = 0,
+  categoryColor,
+}: TableOfContentsProps) {
   const headings = useHeadings(contentSelector);
   const activeId = useActiveHeading(headings);
 
-  if (headings.length < minHeadings || readingTime < minReadingTime) return null;
+  if (headings.length < minHeadings || (minReadingTime > 0 && readingTime < minReadingTime)) return null;
 
   return (
-    <div>
-      <h3 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: "0.95rem", color: "hsl(var(--foreground))", marginBottom: "1rem" }}>
-        In this article
+    <div className="bg-card/60 border border-border rounded-lg p-4">
+      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+        <List className="h-4 w-4 text-amber-500" />
+        On this page
       </h3>
       <div
-        className="max-h-[45vh] overflow-y-auto"
-        style={{
-          scrollbarWidth: "thin",
-          scrollbarColor: "rgba(255,255,255,0.3) rgba(255,255,255,0.15)",
-        }}
+        className="max-h-[50vh] overflow-y-auto"
+        style={{ scrollbarWidth: "thin" }}
       >
-        <RailTocLinks headings={headings} activeId={activeId} categoryColor={categoryColor} />
+        <TocLinks headings={headings} activeId={activeId} showCopyLink />
       </div>
     </div>
   );
 }
 
 /** Mobile: collapsible section */
-export function TableOfContentsMobile({ contentSelector = ".article-content", minHeadings = 3, minReadingTime = 7, readingTime = 0 }: TableOfContentsProps) {
+export function TableOfContentsMobile({
+  contentSelector = ".article-content",
+  minHeadings = 3,
+  minReadingTime = 0,
+  readingTime = 0,
+}: TableOfContentsProps) {
   const headings = useHeadings(contentSelector);
   const activeId = useActiveHeading(headings);
   const [open, setOpen] = useState(false);
 
-  if (headings.length < minHeadings || readingTime < minReadingTime) return null;
+  if (headings.length < minHeadings || (minReadingTime > 0 && readingTime < minReadingTime)) return null;
 
   return (
     <div className="min-[1200px]:hidden mb-6">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger
-          className="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold transition-colors"
-          style={{
-            background: "rgba(48,62,83,0.2)",
-            borderRadius: open ? "8px 8px 0 0" : "8px",
-          }}
+          className={cn(
+            "flex items-center justify-between w-full px-4 py-3 text-sm font-semibold bg-card/60 border border-border transition-colors cursor-pointer",
+            open ? "rounded-t-lg border-b-0" : "rounded-lg"
+          )}
         >
           <div className="flex items-center gap-2">
-            <List className="h-4 w-4" />
-            <span>In this article</span>
-            <span className="text-muted-foreground font-normal">({headings.filter(h => h.level === 2).length})</span>
+            <List className="h-4 w-4 text-amber-500" />
+            <span>On this page</span>
+            <span className="text-muted-foreground font-normal">({headings.length})</span>
           </div>
           <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")} />
         </CollapsibleTrigger>
-        <CollapsibleContent
-          style={{
-            background: "rgba(48,62,83,0.2)",
-            borderRadius: "0 0 8px 8px",
-            padding: "0 1rem 1rem 1rem",
-          }}
-        >
-          <TocLinks headings={headings} activeId={activeId} onClick={() => setOpen(false)} />
+        <CollapsibleContent className="bg-card/60 border border-border border-t-0 rounded-b-lg px-4 pb-4">
+          <TocLinks headings={headings} activeId={activeId} onClickItem={() => setOpen(false)} />
         </CollapsibleContent>
       </Collapsible>
     </div>
