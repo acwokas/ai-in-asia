@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe } from "lucide-react";
 
 const TOOLS = [
   {
@@ -16,6 +16,12 @@ const TOOLS = [
     desc: "5×5 bingo card of AI buzzwords — play during your next meeting!",
     icon: Grid3X3,
     to: "/tools/ai-bingo",
+  },
+  {
+    name: "AI Meeting Bingo",
+    desc: "Spot meeting clichés and get 5 in a row to win — confetti included!",
+    icon: Users,
+    to: "/tools/ai-meeting-bingo",
   },
   {
     name: "AI Headline Generator",
@@ -66,10 +72,16 @@ const TOOLS = [
     to: "/category/news",
   },
   {
-    name: "Policy Tracker",
-    desc: "Track AI regulation developments across Asia-Pacific governments.",
+    name: "AI Policy Tracker",
+    desc: "Explore AI regulations across 16 Asia-Pacific countries.",
     icon: Shield,
-    to: "/category/policy",
+    to: "/tools/ai-policy-tracker",
+  },
+  {
+    name: "Pulse Tracker",
+    desc: "Real-time sentiment tracking of AI news across Asia.",
+    icon: Activity,
+    to: "/category/news",
   },
 ];
 
