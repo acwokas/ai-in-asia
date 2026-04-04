@@ -876,8 +876,8 @@ const Article = () => {
               </article>
 
               {/* Right sidebar rail — desktop only */}
-              <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0 overflow-hidden">
-                <div className="sticky top-[80px] w-[300px] overflow-hidden flex flex-col gap-8">
+              <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0">
+                <div className="sticky top-[80px] w-[300px] max-h-[calc(100vh-6rem)] overflow-y-auto flex flex-col gap-8" style={{ scrollbarWidth: "none" }}>
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
                   <SidebarAd />
                   {article.categories?.id && (
