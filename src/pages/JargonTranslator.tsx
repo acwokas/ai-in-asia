@@ -12,9 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
 type TranslationMode = "plain" | "brutal" | "eli5";
 
 const MODE_COLORS: Record<TranslationMode, { highlight: string; underline: string; badge: string }> = {
-  plain: { highlight: "bg-primary/10", underline: "decoration-primary/60", badge: "bg-primary/20 text-primary" },
-  brutal: { highlight: "bg-orange-500/10", underline: "decoration-orange-400/60", badge: "bg-orange-500/20 text-orange-400" },
-  eli5: { highlight: "bg-violet-500/10", underline: "decoration-violet-400/60", badge: "bg-violet-500/20 text-violet-400" },
+  plain: { highlight: "bg-primary/25", underline: "decoration-primary/80", badge: "bg-primary/20 text-primary" },
+  brutal: { highlight: "bg-orange-500/25", underline: "decoration-orange-400/80", badge: "bg-orange-500/20 text-orange-400" },
+  eli5: { highlight: "bg-violet-500/25", underline: "decoration-violet-400/80", badge: "bg-violet-500/20 text-violet-400" },
 };
 
 const MODES: { key: TranslationMode; label: string; icon: React.ReactNode; desc: string }[] = [
