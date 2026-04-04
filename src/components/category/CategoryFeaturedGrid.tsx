@@ -65,9 +65,11 @@ export function CategoryFeaturedGrid({ articles, cfg, slug, revealProps, selecte
             </div>
           ))}
         </div>
-      ) : selectedFilter !== "All" ? (
-        <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", padding: "20px 0" }}>No articles matching "{selectedFilter}" yet</p>
-      ) : null}
+      ) : (
+        <p className="text-sm text-muted-foreground py-5">
+          {selectedFilter !== "All" ? `No articles matching "${selectedFilter}" yet` : "No featured articles yet — check back soon."}
+        </p>
+      )}
     </section>
   );
 }

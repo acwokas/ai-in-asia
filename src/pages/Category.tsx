@@ -474,49 +474,75 @@ const Category = () => {
                 accent={cfg.accent}
               />
 
-              {/* 7. INTERACTIVE TOOL — compact pills */}
-              {ToolComponent && (() => {
+              {/* 7. INTERACTIVE TOOLS — card grid */}
+              {(() => {
                 const meta = TOOL_META[slug || "news"];
-                const ToolIcon = meta ? iconMap[meta.emoji] : null;
-                const ReadinessIcon = iconMap["zap"];
-                const BingoIcon = iconMap["grid-3x3"];
+                const fallbackTools = [
+                  { name: "AI Readiness Score", desc: "Find out how AI-ready you are", emoji: "zap", to: "/tools/ai-readiness" },
+                  { name: "AI Jargon Bingo", desc: "Survive your next AI meeting", emoji: "grid-3x3", to: "/tools/ai-bingo" },
+                  { name: "AI Headlines", desc: "Generate satirical AI headlines", emoji: "newspaper", to: "/tools/ai-headlines" },
+                  { name: "ROI Calculator", desc: "Estimate your AI investment returns", emoji: "bar-chart-3", to: "/tools/roi-calculator" },
+                ];
+                const categoryTool = meta && ToolComponent ? { name: meta.name, desc: "Category-specific interactive tool", emoji: meta.emoji, anchor: true } : null;
+                const tools = categoryTool ? [categoryTool, ...fallbackTools] : fallbackTools;
+
                 return (
                   <section ref={revealTool.ref} style={{ marginBottom: 40, ...revealTool.style }}>
-                    <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Try an interactive tool" />
-                    <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible md:flex-wrap">
-                      <button
-                        className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm snap-start whitespace-nowrap shrink-0"
-                        style={{ color: "hsl(var(--muted-foreground))" }}
-                        onClick={() => {
-                          const el = document.getElementById("category-tool-embed");
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }}
-                      >
-                        {ToolIcon && <ToolIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
-                        <span className="transition-colors group-hover:text-amber-500">{meta?.name || "Tool"}</span>
-                      </button>
-                      <Link
-                        to="/tools/ai-readiness"
-                        className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm snap-start whitespace-nowrap shrink-0"
-                        style={{ color: "hsl(var(--muted-foreground))", textDecoration: "none" }}
-                      >
-                        {ReadinessIcon && <ReadinessIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
-                        <span className="transition-colors group-hover:text-amber-500">AI Readiness</span>
-                      </Link>
-                      <Link
-                        to="/tools/ai-bingo"
-                        className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm snap-start whitespace-nowrap shrink-0"
-                        style={{ color: "hsl(var(--muted-foreground))", textDecoration: "none" }}
-                      >
-                        {BingoIcon && <BingoIcon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: cfg.accent }} />}
-                        <span className="transition-colors group-hover:text-amber-500">Jargon Bingo</span>
-                      </Link>
+                    <SectionHeader title={`${cfg.label} Tools`} emoji="wrench" color={cfg.accent} subtitle="Interactive tools to boost your AI journey" />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {tools.map((tool) => {
+                        const ToolIcon = iconMap[tool.emoji];
+                        if ("to" in tool && tool.to) {
+                          return (
+                            <Link
+                              key={tool.name}
+                              to={tool.to}
+                              className="group flex flex-col items-center rounded-xl bg-gray-800/60 p-5 text-center transition-all duration-200 hover:scale-105 hover:bg-gray-700/60 hover:shadow-lg"
+                              style={{ textDecoration: "none" }}
+                            >
+                              {ToolIcon && (
+                                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+                                  <ToolIcon className="h-6 w-6 text-amber-500" />
+                                </div>
+                              )}
+                              <h4 className="text-sm font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">{tool.name}</h4>
+                              <p className="text-xs text-gray-400 mb-3 line-clamp-2">{tool.desc}</p>
+                              <span className="mt-auto inline-flex rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-500 transition-all group-hover:bg-amber-500 group-hover:text-black">
+                                Try it →
+                              </span>
+                            </Link>
+                          );
+                        }
+                        return (
+                          <button
+                            key={tool.name}
+                            className="group flex flex-col items-center rounded-xl bg-gray-800/60 p-5 text-center transition-all duration-200 hover:scale-105 hover:bg-gray-700/60 hover:shadow-lg cursor-pointer border-0"
+                            onClick={() => {
+                              const el = document.getElementById("category-tool-embed");
+                              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                            }}
+                          >
+                            {ToolIcon && (
+                              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+                                <ToolIcon className="h-6 w-6 text-amber-500" />
+                              </div>
+                            )}
+                            <h4 className="text-sm font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">{tool.name}</h4>
+                            <p className="text-xs text-gray-400 mb-3 line-clamp-2">{tool.desc}</p>
+                            <span className="mt-auto inline-flex rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-500 transition-all group-hover:bg-amber-500 group-hover:text-black">
+                              Try it →
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div id="category-tool-embed" className="mt-4">
-                      <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
-                        <ToolComponent />
-                      </Suspense>
-                    </div>
+                    {ToolComponent && (
+                      <div id="category-tool-embed" className="mt-6">
+                        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+                          <ToolComponent />
+                        </Suspense>
+                      </div>
+                    )}
                   </section>
                 );
               })()}
