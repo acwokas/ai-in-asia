@@ -505,7 +505,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="AI in ASIA - AI News, Insights & Innovation Across Asia"
+        title="AI in ASIA — AI Hype to Real-World Impact in Asia"
         description="Your trusted source for AI news, insights, and education across Asia-Pacific. Breaking news, expert analysis, and practical guides on artificial intelligence."
         canonical="https://aiinasia.com/"
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
