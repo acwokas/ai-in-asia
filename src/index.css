@@ -857,21 +857,33 @@ All colors MUST be HSL.
 .glossary-term {
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-color: hsl(var(--primary) / 0.5);
+  text-decoration-color: hsl(38 92% 50% / 0.5);
   text-underline-offset: 3px;
   text-decoration-thickness: 1.5px;
   cursor: help;
   transition: text-decoration-color 0.15s ease, background-color 0.15s ease;
   border-radius: 2px;
+  position: relative;
 }
 .glossary-term:hover,
 .glossary-term:focus-visible {
-  text-decoration-color: hsl(var(--primary));
-  background-color: hsl(var(--primary) / 0.08);
+  text-decoration-color: hsl(38 92% 50%);
+  background-color: hsl(38 92% 50% / 0.08);
   outline: none;
 }
+.glossary-sparkle {
+  color: hsl(38 92% 50% / 0.7);
+  font-size: 0.6em;
+  margin-left: 1px;
+  vertical-align: super;
+  line-height: 1;
+  pointer-events: none;
+}
+.glossary-term:hover .glossary-sparkle {
+  color: hsl(38 92% 50%);
+}
 
-
+.article-hero-gradient {
   position: absolute;
   inset: 0;
   z-index: 1;

@@ -1,14 +1,13 @@
 /**
  * AI Glossary Tooltip System
- * Scans article prose for known AI/tech terms and wraps them with
- * interactive tooltips showing definitions in multiple modes.
+ * Scans article prose for known AI/tech terms and wraps the first occurrence
+ * with an amber dotted-underline span + ✦ superscript indicator.
+ * Hover (desktop) or tap (mobile) shows a tooltip with definition + "AI term" badge.
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { JARGON_DICTIONARY, type JargonEntry } from "@/lib/jargonDictionary";
-import { BookOpen, Zap, Baby, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 /* ─── term lookup map (case-insensitive) ─── */
 const TERM_MAP = new Map<string, JargonEntry>();
@@ -31,10 +30,8 @@ const TERM_REGEX = new RegExp(
 const GLOSSARY_ATTR = "data-glossary-term";
 const GLOSSARY_CLASS = "glossary-term";
 
-type Mode = "plain" | "brutal" | "eli5";
-
-/* ─── Floating tooltip card ─── */
-function TooltipCard({
+/* ─── Floating tooltip with arrow ─── */
+function GlossaryTooltipCard({
   entry,
   anchorRect,
   onClose,
@@ -43,51 +40,60 @@ function TooltipCard({
   anchorRect: DOMRect;
   onClose: () => void;
 }) {
-  const [mode, setMode] = useState<Mode>("plain");
   const cardRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    arrowLeft: number;
+    above: boolean;
+  }>({ top: 0, left: 0, arrowLeft: 0, above: true });
+  const [ready, setReady] = useState(false);
 
-  const text =
-    mode === "brutal" ? entry.brutal : mode === "eli5" ? entry.eli5 : entry.plain;
-
-  /* position the card above or below the term */
-  const [pos, setPos] = useState<{ top: number; left: number; above: boolean }>({
-    top: 0,
-    left: 0,
-    above: false,
-  });
-
+  /* Calculate position */
   useEffect(() => {
     const card = cardRef.current;
     if (!card) return;
     const cw = card.offsetWidth;
     const ch = card.offsetHeight;
     const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const gap = 8;
+    const gap = 10;
 
-    let left = anchorRect.left + anchorRect.width / 2 - cw / 2;
+    // Center horizontally on the term
+    const anchorCenterX = anchorRect.left + anchorRect.width / 2;
+    let left = anchorCenterX - cw / 2;
     left = Math.max(12, Math.min(left, vw - cw - 12));
 
+    // Arrow position relative to card
+    const arrowLeft = Math.max(16, Math.min(anchorCenterX - left, cw - 16));
+
+    // Prefer above; fall below if not enough space
     const above = anchorRect.top - ch - gap > 0;
     const top = above
       ? anchorRect.top + window.scrollY - ch - gap
       : anchorRect.bottom + window.scrollY + gap;
 
-    setPos({ top, left, above });
+    setPos({ top, left, arrowLeft, above });
+    setReady(true);
   }, [anchorRect]);
 
-  /* close on outside click */
+  /* Close on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    // Delay to avoid immediate close on the same tap that opened it
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handler);
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handler);
+    };
   }, [onClose]);
 
-  /* close on Escape */
+  /* Close on Escape */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -96,67 +102,69 @@ function TooltipCard({
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const modeButtons: { key: Mode; icon: typeof BookOpen; label: string }[] = [
-    { key: "plain", icon: BookOpen, label: "Plain English" },
-    { key: "brutal", icon: Zap, label: "Brutally Honest" },
-    { key: "eli5", icon: Baby, label: "ELI5" },
-  ];
-
   return createPortal(
     <div
       ref={cardRef}
       role="tooltip"
-      className="fixed z-[9999] w-[320px] rounded-xl border bg-popover/95 backdrop-blur-lg shadow-xl animate-in fade-in-0 zoom-in-95 duration-150"
-      style={{ top: pos.top, left: pos.left, position: "absolute" }}
+      className="animate-in fade-in-0 zoom-in-95 duration-150"
+      style={{
+        position: "absolute",
+        top: pos.top,
+        left: pos.left,
+        zIndex: 9999,
+        opacity: ready ? 1 : 0,
+        pointerEvents: ready ? "auto" : "none",
+      }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-          {entry.term}
-        </span>
-        <div className="flex items-center gap-1">
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
-            {entry.category}
+      {/* Arrow */}
+      <div
+        style={{
+          position: "absolute",
+          left: pos.arrowLeft,
+          ...(pos.above
+            ? { bottom: -5, transform: "translateX(-50%) rotate(45deg)" }
+            : { top: -5, transform: "translateX(-50%) rotate(45deg)" }),
+          width: 10,
+          height: 10,
+          zIndex: 1,
+        }}
+        className="bg-card border-b border-r border-border"
+      />
+
+      {/* Card body */}
+      <div className="relative bg-card border border-border shadow-lg rounded-lg p-3 max-w-xs z-[2]">
+        {/* Header row */}
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <span className="font-bold text-sm" style={{ color: "hsl(38 92% 50%)" }}>
+            {entry.term}
           </span>
-          <button
-            onClick={onClose}
-            className="ml-1 rounded-md p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Close tooltip"
+          <span
+            className="shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border"
+            style={{
+              color: "hsl(38 92% 50%)",
+              borderColor: "hsl(38 92% 50% / 0.3)",
+              backgroundColor: "hsl(38 92% 50% / 0.08)",
+            }}
           >
-            <X className="h-3.5 w-3.5" />
-          </button>
+            <span className="text-[9px]">✦</span>
+            AI term
+          </span>
         </div>
-      </div>
 
-      {/* Body */}
-      <div className="px-3 py-2.5">
-        <p className="text-sm leading-relaxed text-foreground">{text}</p>
+        {/* Definition */}
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {entry.plain}
+        </p>
 
-        {entry.asiaContext && mode === "plain" && (
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground italic border-l-2 border-primary/40 pl-2">
+        {/* Asia context if available */}
+        {entry.asiaContext && (
+          <p
+            className="mt-2 text-xs leading-relaxed italic border-l-2 pl-2 text-muted-foreground/80"
+            style={{ borderColor: "hsl(38 92% 50% / 0.4)" }}
+          >
             {entry.asiaContext}
           </p>
         )}
-      </div>
-
-      {/* Mode switcher */}
-      <div className="flex border-t px-2 py-1.5 gap-0.5">
-        {modeButtons.map(({ key, icon: Icon, label }) => (
-          <button
-            key={key}
-            onClick={() => setMode(key)}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium transition-colors",
-              mode === key
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            )}
-            aria-label={label}
-          >
-            <Icon className="h-3 w-3" />
-            {label}
-          </button>
-        ))}
       </div>
     </div>,
     document.body
@@ -178,12 +186,10 @@ export function useGlossaryAnnotation(
     if (!el) return;
     matchedTermsRef.current.clear();
 
-    // Walk text nodes inside the prose container
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode: (node) => {
         const parent = node.parentElement;
         if (!parent) return NodeFilter.FILTER_REJECT;
-        // Skip headings, links, code, already-annotated spans, script, style
         const tag = parent.tagName;
         if (
           ["A", "CODE", "PRE", "SCRIPT", "STYLE", "H1", "H2", "H3", "H4"].includes(tag) ||
@@ -208,7 +214,6 @@ export function useGlossaryAnnotation(
 
       while ((m = TERM_REGEX.exec(text))) {
         const termLower = m[1].toLowerCase();
-        // Only annotate first occurrence of each term per article
         if (matchedTermsRef.current.has(termLower)) continue;
         matches.push({ start: m.index, end: m.index + m[0].length, term: m[1] });
         matchedTermsRef.current.add(termLower);
@@ -216,7 +221,6 @@ export function useGlossaryAnnotation(
 
       if (!matches.length) continue;
 
-      // Build replacement fragment
       const frag = document.createDocumentFragment();
       let lastIdx = 0;
 
@@ -224,13 +228,25 @@ export function useGlossaryAnnotation(
         if (match.start > lastIdx) {
           frag.appendChild(document.createTextNode(text.slice(lastIdx, match.start)));
         }
+
+        // Wrapper span
         const span = document.createElement("span");
         span.className = GLOSSARY_CLASS;
         span.setAttribute(GLOSSARY_ATTR, match.term.toLowerCase());
-        span.textContent = text.slice(match.start, match.end);
         span.setAttribute("tabindex", "0");
         span.setAttribute("role", "button");
         span.setAttribute("aria-label", `Define: ${match.term}`);
+
+        // Term text
+        span.appendChild(document.createTextNode(text.slice(match.start, match.end)));
+
+        // Sparkle superscript indicator
+        const sup = document.createElement("sup");
+        sup.className = "glossary-sparkle";
+        sup.textContent = "✦";
+        sup.setAttribute("aria-hidden", "true");
+        span.appendChild(sup);
+
         frag.appendChild(span);
         lastIdx = match.end;
       }
@@ -242,10 +258,10 @@ export function useGlossaryAnnotation(
       textNode.parentNode?.replaceChild(frag, textNode);
     }
 
-    // Event delegation for clicks on glossary terms
-    const handleClick = (e: Event) => {
-      const target = (e.target as HTMLElement).closest(`[${GLOSSARY_ATTR}]`);
-      if (!target) return;
+    /* ── Event delegation: hover on desktop, tap on mobile ── */
+    let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const showTooltip = (target: Element) => {
       const termKey = target.getAttribute(GLOSSARY_ATTR);
       if (!termKey) return;
       const entry = TERM_MAP.get(termKey);
@@ -254,8 +270,37 @@ export function useGlossaryAnnotation(
       setAnchorRect(target.getBoundingClientRect());
     };
 
+    const handleMouseEnter = (e: Event) => {
+      const target = (e.target as HTMLElement).closest(`[${GLOSSARY_ATTR}]`);
+      if (!target) return;
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => showTooltip(target), 200);
+    };
+
+    const handleMouseLeave = (e: Event) => {
+      const target = (e.target as HTMLElement).closest(`[${GLOSSARY_ATTR}]`);
+      if (!target) return;
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+    };
+
+    const handleClick = (e: Event) => {
+      const target = (e.target as HTMLElement).closest(`[${GLOSSARY_ATTR}]`);
+      if (!target) return;
+      e.preventDefault();
+      showTooltip(target);
+    };
+
+    el.addEventListener("mouseover", handleMouseEnter);
+    el.addEventListener("mouseout", handleMouseLeave);
     el.addEventListener("click", handleClick);
+
     return () => {
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+      el.removeEventListener("mouseover", handleMouseEnter);
+      el.removeEventListener("mouseout", handleMouseLeave);
       el.removeEventListener("click", handleClick);
     };
   }, [html]);
@@ -267,7 +312,7 @@ export function useGlossaryAnnotation(
 
   const tooltipNode =
     activeEntry && anchorRect ? (
-      <TooltipCard entry={activeEntry} anchorRect={anchorRect} onClose={close} />
+      <GlossaryTooltipCard entry={activeEntry} anchorRect={anchorRect} onClose={close} />
     ) : null;
 
   return { tooltipNode };
