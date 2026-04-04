@@ -165,7 +165,7 @@ const GuideListCard = ({ g }: { g: any }) => (
       onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
     >
       {g.featured_image_url ? (
-        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-24 h-24 md:w-28 md:h-28 object-cover shrink-0" />
+        <OptimizedImage src={g.featured_image_url} alt={g.title} className="w-24 h-24 md:w-28 md:h-28 shrink-0" />
       ) : (
         <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
       )}
