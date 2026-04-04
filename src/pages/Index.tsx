@@ -1149,10 +1149,16 @@ const Index = () => {
         <div className="border-t border-border/30" />
 
         {/* 11. Newsletter CTA */}
-        <section id="newsletter" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-20 md:py-28">
+        <section id="newsletter" className="bg-gradient-to-r from-amber-500/90 to-amber-600/90 text-black py-20 md:py-28">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="font-display text-4xl font-bold mb-4">Never Miss an AI Breakthrough</h2>
-            <p className="text-lg mb-8 opacity-90">Join 10,000+ professionals getting the AI in ASIA Brief every week.</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">Stay Ahead of Asia's AI Revolution</h2>
+            <p className="text-lg mb-6 opacity-80 max-w-lg mx-auto">Join 10,000+ professionals getting the AI in ASIA Brief every week.</p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm mb-8 max-w-md mx-auto">
+              <span className="flex items-center gap-1.5">✅ Curated AI news from across Asia</span>
+              <span className="flex items-center gap-1.5">✅ Expert analysis & insights</span>
+              <span className="flex items-center gap-1.5">✅ Free tools & guides</span>
+            </div>
             
             {!isNewsletterSubscribed ? (
               <form onSubmit={handleNewsletterSignup} className="max-w-md mx-auto">
@@ -1162,16 +1168,16 @@ const Index = () => {
                     placeholder="your@email.com" className="flex-1 bg-background text-foreground"
                     value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)}
                   />
-                  <Button type="submit" variant="secondary" disabled={isNewsletterSubmitting}>
+                  <Button type="submit" className="bg-black hover:bg-black/80 text-white font-bold" disabled={isNewsletterSubmitting}>
                     {isNewsletterSubmitting ? "Subscribing..." : "Subscribe"}
                   </Button>
                 </div>
-                <p className="text-xs opacity-75 mt-2">No spam. Unsubscribe anytime. We respect your privacy.</p>
+                <p className="text-xs opacity-60 mt-2">No spam. Unsubscribe anytime. We respect your privacy.</p>
               </form>
             ) : (
-              <div className="bg-background/10 border border-primary-foreground/20 rounded-lg p-6 max-w-md mx-auto">
-                <p className="text-lg font-semibold">You're all set!</p>
-                <p className="text-sm opacity-90 mt-2">Check your inbox for our latest insights.</p>
+              <div className="bg-black/10 border border-black/20 rounded-lg p-6 max-w-md mx-auto animate-scale-in">
+                <p className="text-lg font-semibold">🎉 You're all set!</p>
+                <p className="text-sm opacity-80 mt-2">Check your inbox for our latest insights.</p>
               </div>
             )}
           </div>
