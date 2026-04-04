@@ -251,7 +251,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
 
   return (
     <>
-      <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />
+      <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: processedHtml }} />
       {portalContainer && midArticleNode && createPortal(midArticleNode, portalContainer)}
     </>
   );
