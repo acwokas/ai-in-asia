@@ -99,6 +99,18 @@ All colors MUST be HSL.
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
+
+  /* Smooth theme transition */
+  body,
+  header,
+  footer,
+  main,
+  .bg-card,
+  .bg-background,
+  [class*="bg-card"],
+  [class*="bg-background"] {
+    transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+  }
   
   /* Ordered lists with proper sequential numbering */
   .prose ol,
