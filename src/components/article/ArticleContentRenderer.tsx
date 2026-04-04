@@ -485,6 +485,15 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         '<div class="by-the-numbers">$1$2</div>'
       );
 
+      // Merge consecutive blockquotes where the second is an attribution (starts with — or ")
+      sanitizedHtml = sanitizedHtml.replace(
+        /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[-—–][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
+        (_, attr) => {
+          const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[-—–]\s*/, '').trim();
+          return `<footer>${cleanAttr}</footer></blockquote>`;
+        }
+      );
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -566,6 +575,15 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     joinedHtml = joinedHtml.replace(
       /(<h[34][^>]*>[^<]*[Bb]y [Tt]he [Nn]umbers[^<]*<\/h[34]>\s*)(<ul[\s\S]*?<\/ul>)/g,
       '<div class="by-the-numbers">$1$2</div>'
+    );
+
+    // Merge consecutive blockquotes where the second is an attribution (starts with — or ")
+    joinedHtml = joinedHtml.replace(
+      /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[-—–][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
+      (_, attr) => {
+        const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[-—–]\s*/, '').trim();
+        return `<footer>${cleanAttr}</footer></blockquote>`;
+      }
     );
 
     // Clean internal links that were incorrectly marked as external
