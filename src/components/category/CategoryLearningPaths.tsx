@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { SectionHeader } from "@/components/category/SectionHeader";
-import { TOKENS } from "@/constants/categoryTokens";
-import { staggerStyle } from "@/lib/scrollAnimation";
 import { iconMap } from "@/lib/iconMap";
 import type React from "react";
 
@@ -31,21 +29,18 @@ export function CategoryLearningPaths({ paths, categorySlug, revealProps, accent
   if (paths.length === 0) return null;
 
   return (
-    <section ref={revealProps.ref} style={{ marginBottom: 48, ...revealProps.style }}>
+    <section ref={revealProps.ref} style={{ marginBottom: 40, ...revealProps.style }}>
       <SectionHeader title="Learning Paths" emoji="map" color={accent} subtitle="Curated sequences to guide your reading" />
-      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-3.5">
-        {paths.map((p, i) => (
-          <div key={i} style={staggerStyle(revealProps.visible, i)}>
-            <LearningPathCard path={p} categorySlug={categorySlug} />
-          </div>
+      <div className="flex flex-wrap gap-2">
+        {paths.map((p) => (
+          <LearningPathTag key={p.slug} path={p} categorySlug={categorySlug} />
         ))}
       </div>
     </section>
   );
 }
 
-function LearningPathCard({ path, categorySlug }: { path: LearningPath; categorySlug: string }) {
-  const [hovered, setHovered] = useState(false);
+function LearningPathTag({ path, categorySlug }: { path: LearningPath; categorySlug: string }) {
   const [readCount, setReadCount] = useState(0);
 
   useEffect(() => {
@@ -61,88 +56,21 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
   const progressPercent = path.articles > 0 ? Math.min(100, Math.round((readCount / path.articles) * 100)) : 0;
   const isComplete = progressPercent >= 100;
 
+  const Icon = iconMap[path.emoji];
+
   return (
     <Link
       to={`/category/${categorySlug}/learn/${path.slug}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: 24,
-        borderRadius: 14,
-        minHeight: 160,
-        position: "relative",
-        overflow: "hidden",
-        background: TOKENS.CARD_BG,
-        border: `1px solid ${hovered ? path.color + "4d" : TOKENS.BORDER}`,
-        transform: hovered ? "translateY(-3px)" : "translateY(0)",
-        boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.3)" : "none",
-        transition: "all 0.25s ease",
-        cursor: "pointer",
-        textDecoration: "none",
-      }}
+      className="group inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/10 hover:text-amber-500 hover:shadow-sm"
+      style={{ color: "hsl(var(--muted-foreground))" }}
     >
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 10%, ${path.color}${hovered ? "24" : "14"}, transparent 60%)`, transition: "background 0.25s ease", pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 12, background: `${path.color}1f`, border: `1px solid ${path.color}33`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {(() => { const Icon = iconMap[path.emoji]; return Icon ? <Icon style={{ width: 28, height: 28, color: path.color }} /> : null; })()}
-          </div>
-          {isComplete && (
-            <span style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "3px 10px",
-              borderRadius: 8,
-              background: `${path.color}1a`,
-              border: `1px solid ${path.color}40`,
-              fontFamily: "Poppins, sans-serif",
-              fontWeight: 700,
-              fontSize: 10,
-              color: path.color,
-            }}>
-              â Completed
-            </span>
-          )}
-        </div>
-        <h4 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 15, color: "#f3f4f6", margin: "0 0 0 0", lineHeight: 1.3 }}>{path.title}</h4>
-        <p style={{ fontSize: 13, color: "#9ca3af", margin: "6px 0 12px 0", lineHeight: 1.5 }}>{path.desc}</p>
-        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif" }}>
-            {path.articles} articles - {path.time}
-          </span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: path.color, fontFamily: "Poppins, sans-serif", opacity: hovered ? 1 : 0.5, transition: "opacity 0.25s ease", display: "flex", alignItems: "center", gap: 4 }}>
-            {readCount > 0 && !isComplete ? "Continue" : "Start path"}
-            <svg
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={path.color}
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: hovered ? "translateX(3px)" : "translateX(0)", transition: "transform 0.25s ease" }}
-            >
-              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-            </svg>
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ height: 4, borderRadius: 4, background: "#1a1d25", marginTop: 12, overflow: "hidden" }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${progressPercent}%`,
-              background: path.color,
-              borderRadius: 4,
-              transition: "width 0.4s ease",
-            }}
-          />
-        </div>
-        {readCount > 0 && (
-          <span style={{ fontSize: 10, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600, marginTop: 4 }}>
-            {readCount} of {path.articles} completed
-          </span>
-        )}
-      </div>
+      {Icon && <Icon className="h-4 w-4 shrink-0 transition-colors group-hover:text-amber-500" style={{ color: path.color }} />}
+      <span className="transition-colors group-hover:text-amber-500">{path.title}</span>
+      <span className="text-xs opacity-60">{path.articles}</span>
+      {isComplete && <span className="text-[10px]">✓</span>}
+      {readCount > 0 && !isComplete && (
+        <span className="text-[10px] opacity-50">{readCount}/{path.articles}</span>
+      )}
     </Link>
   );
 }
