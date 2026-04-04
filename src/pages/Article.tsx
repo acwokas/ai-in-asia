@@ -51,6 +51,7 @@ import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from 
 // GA4 content tracking is inlined below to survive Vite tree-shaking
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
+import ResumeReading from "@/components/article/ResumeReading";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 
 // Lazy-load Comments (below the fold)
