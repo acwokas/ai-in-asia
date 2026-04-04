@@ -52,6 +52,7 @@ import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from 
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 import ResumeReading from "@/components/article/ResumeReading";
+import { SelectionQuotePopup } from "@/components/article/SelectionQuotePopup";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Lazy-load Comments (below the fold)
@@ -78,6 +79,7 @@ const Article = () => {
   
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
+  const articleContentRef = useRef<HTMLElement>(null);
   
   const cleanSlug = slug?.replace(/\/+$/g, '');
   const urlParams = new URLSearchParams(window.location.search);
@@ -723,7 +725,14 @@ const Article = () => {
             {/* Desktop two-column / Tablet+Mobile single column */}
             <div className="flex gap-10">
               {/* Main reading column */}
-              <article className="min-w-0 flex-1 max-w-[720px]">
+              <article ref={articleContentRef} className="min-w-0 flex-1 max-w-[720px]">
+                <SelectionQuotePopup
+                  containerRef={articleContentRef}
+                  articleTitle={article.title}
+                  articleUrl={shareHandlers.getPublicArticleUrl()}
+                  categoryColor={getCategoryColor(article.categories?.slug)}
+                  authorName={article.authors?.name}
+                />
                 <div className="prose prose-lg max-w-none article-content">
                   {article.article_type === 'policy_article' ? (
                     <PolicyArticleContent article={article} />
