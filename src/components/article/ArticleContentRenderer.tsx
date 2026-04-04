@@ -39,13 +39,25 @@ function injectAdMarkersIntoHtml(html: string, shouldInject: boolean): string {
   const paragraphCount = parts.length - 1; // last part is after the final </p>
   const result: string[] = [];
   let pIndex = 0;
+  let insideBlockquote = false;
 
   for (let i = 0; i < parts.length; i++) {
     result.push(parts[i]);
+
+    // Track whether we're inside a <blockquote> — never inject ads there
+    const segment = parts[i];
+    const bqOpens = (segment.match(/<blockquote[\s>]/gi) || []).length;
+    const bqCloses = (segment.match(/<\/blockquote>/gi) || []).length;
+    if (bqOpens > bqCloses) insideBlockquote = true;
+    if (bqCloses > bqOpens) insideBlockquote = false;
+
     // Only add </p> back if this isn't the last segment
     if (i < parts.length - 1) {
       result.push('</p>');
       pIndex++;
+
+      // Skip ad injection when inside a blockquote
+      if (insideBlockquote) continue;
 
       // After first paragraph: horizontal ad
       if (pIndex === 1) {
