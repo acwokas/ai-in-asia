@@ -26,6 +26,12 @@ import { CategoryDeepCuts } from "@/components/category/CategoryDeepCuts";
 import { CategoryCrossNav } from "@/components/category/CategoryCrossNav";
 import { CategoryNewsletter } from "@/components/category/CategoryNewsletter";
 
+// Voices-specific sections
+import { VoicesFeaturedSpotlight } from "@/components/voices/VoicesFeaturedSpotlight";
+import { VoicesPerspectivesCarousel } from "@/components/voices/VoicesPerspectivesCarousel";
+import { VoicesExpertDirectory } from "@/components/voices/VoicesExpertDirectory";
+import { VoicesSubmitCTA } from "@/components/voices/VoicesSubmitCTA";
+
 // Lazy-load interactive tools — they are below the fold
 const PulseTracker = lazy(() => import("@/components/category/tools/PulseTracker").then(m => ({ default: m.PulseTracker })));
 const ROICalculator = lazy(() => import("@/components/category/tools/ROICalculator").then(m => ({ default: m.ROICalculator })));
