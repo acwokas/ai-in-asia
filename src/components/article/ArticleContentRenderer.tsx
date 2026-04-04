@@ -262,10 +262,11 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     return cleanup;
   }, [html]);
 
-  const { tooltipNode } = useGlossaryAnnotation(proseRef, processedHtml);
+  const { tooltipNode, bannerNode } = useGlossaryAnnotation(proseRef, processedHtml);
 
   return (
     <>
+      {bannerNode}
       <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: processedHtml }} />
       {portalContainer && midArticleNode && createPortal(midArticleNode, portalContainer)}
       {tooltipNode}

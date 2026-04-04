@@ -888,6 +888,13 @@ All colors MUST be HSL.
 .glossary-term:hover .glossary-sparkle {
   color: hsl(38 92% 50%);
 }
+.glossary-term-flash {
+  animation: glossary-flash 1.5s ease;
+}
+@keyframes glossary-flash {
+  0%, 100% { background-color: transparent; }
+  20%, 60% { background-color: hsl(38 92% 50% / 0.15); }
+}
 
 .article-hero-gradient {
   position: absolute;
