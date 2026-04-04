@@ -42,7 +42,7 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5, categorySlug }: ReadingPro
 
   const isComplete = progress >= 100;
   const remainingMinutes = Math.max(1, Math.ceil(readingTimeMinutes * (1 - progress / 100)));
-  const { color } = getReadingCategory(readingTimeMinutes);
+  const catColor = getCategoryColor(categorySlug);
 
   return (
     <>
