@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Clock } from "lucide-react";
+import { Clock, Calendar } from "lucide-react";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { memo } from "react";
-import { dualPush } from "@/lib/dualTrack";
+import { useRelatedArticles } from "@/hooks/useRelatedArticles";
 
 interface Props {
   articleId: string;
@@ -17,70 +15,32 @@ interface Props {
 }
 
 const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tags, topicTags, excludeIds = [] }: Props) => {
-  const allTags = [...(tags || []), ...(topicTags || [])].map(t => t.toLowerCase());
-
-  const { data: articles } = useQuery({
-    queryKey: ["you-might-also-like", articleId, categoryId],
-    staleTime: 5 * 60 * 1000,
-    enabled: !!articleId,
-    queryFn: async () => {
-      // Fetch candidates from same category
-      let query = supabase
-        .from("articles")
-        .select("id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at, ai_tags, topic_tags, categories:primary_category_id(name, slug)")
-        .eq("status", "published")
-        .neq("id", articleId)
-        .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(30);
-
-      if (categoryId) {
-        query = query.eq("primary_category_id", categoryId);
-      }
-
-      const { data, error } = await query;
-      if (error || !data) return [];
-
-      const allExclude = new Set([articleId, ...excludeIds]);
-      const candidates = data.filter(a => !allExclude.has(a.id));
-
-      if (allTags.length === 0) {
-        return candidates.slice(0, 4);
-      }
-
-      // Score by shared tags
-      const scored = candidates.map(a => {
-        const aTags = [...(a.ai_tags || []), ...(a.topic_tags || [])].map(t => t.toLowerCase());
-        const shared = allTags.filter(t => aTags.includes(t)).length;
-        return { ...a, score: shared };
-      });
-
-      scored.sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime();
-      });
-
-      return scored.slice(0, 4);
-    },
-  });
+  const { data: articles } = useRelatedArticles(categoryId, articleId, tags, topicTags, excludeIds);
 
   if (!articles || articles.length === 0) return null;
 
   return (
     <section style={{ marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid hsl(var(--border))" }}>
       <h2 className="text-xl font-semibold mb-5" style={{ fontFamily: "Poppins, sans-serif" }}>
-        You Might Also Like
+        <span className="relative inline-block pb-1">
+          You May Also Like
+          <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-full" />
+        </span>
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {articles.map((a: any) => {
           const cat = a.categories;
           const catColor = getCategoryColor(cat?.slug);
           const slug = `/${cat?.slug || categorySlug || "news"}/${a.slug}`;
+          const publishedDate = a.published_at
+            ? new Date(a.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+            : null;
 
           return (
             <Link
               key={a.id}
               to={slug}
-              className="group block rounded-lg overflow-hidden border border-border/40 hover:-translate-y-0.5 transition-all duration-200"
+              className="group block rounded-lg overflow-hidden border border-border/40 shadow-md hover:scale-[1.02] transition-all duration-200"
               style={{ background: "hsl(var(--card))" }}
               onClick={() => {
                 window.dataLayer = window.dataLayer || [];
@@ -92,7 +52,7 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
                   src={a.featured_image_url}
                   alt={a.title}
                   categorySlug={cat?.slug}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                  className="w-full h-full object-cover rounded-t-lg group-hover:scale-[1.03] transition-transform duration-500"
                   loading="lazy"
                 />
               </div>
@@ -106,12 +66,17 @@ const ArticleYouMightAlsoLike = memo(({ articleId, categoryId, categorySlug, tag
                 <h3 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                   {a.title.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
                 </h3>
-                {a.excerpt && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1.5">{a.excerpt}</p>
-                )}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
-                  <Clock className="h-3 w-3 flex-shrink-0" />
-                  <span>{a.reading_time_minutes || 5} min read</span>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+                  {publishedDate && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      {publishedDate}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 flex-shrink-0" />
+                    {a.reading_time_minutes || 5} min
+                  </span>
                 </div>
               </div>
             </Link>
