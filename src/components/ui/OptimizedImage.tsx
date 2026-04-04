@@ -57,6 +57,7 @@ export const OptimizedImage = memo(({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(loading === "eager");
+  const [showSkeleton, setShowSkeleton] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
