@@ -14,6 +14,7 @@ interface SearchResult {
   excerpt: string | null;
   featured_image_url: string | null;
   published_at: string | null;
+  reading_time_minutes: number | null;
   categories: { name: string; slug: string } | null;
 }
 
