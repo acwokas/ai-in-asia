@@ -725,7 +725,7 @@ const Article = () => {
             {/* Desktop two-column / Tablet+Mobile single column */}
             <div className="flex gap-10">
               {/* Main reading column */}
-              <article className="min-w-0 flex-1 max-w-[720px]">
+              <article ref={articleContentRef} className="min-w-0 flex-1 max-w-[720px]">
                 <div className="prose prose-lg max-w-none article-content">
                   {article.article_type === 'policy_article' ? (
                     <PolicyArticleContent article={article} />
