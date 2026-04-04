@@ -113,7 +113,7 @@ const NewsletterPopup = () => {
 
         markNewsletterSubscribed();
         setIsSubscribed(true);
-        trackEvent("newsletter_popup", "engagement", "subscribed");
+        trackEvent("newsletter_popup", { action: "subscribed" });
 
         setTimeout(() => setVisible(false), 2000);
       } catch (err: any) {
