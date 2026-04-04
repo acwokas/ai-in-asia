@@ -835,18 +835,6 @@ const Article = () => {
                   );
                 })()}
 
-                {/* Compact Author Footer */}
-                <div className="flex items-center gap-3" style={{ marginTop: '3.5rem', paddingTop: '1.5rem', borderTop: '1px solid hsl(var(--border))' }}>
-                  {article.authors?.avatar_url && (
-                    <Link to={`/author/${article.authors.slug}`}>
-                      <img src={getOptimizedAvatar(article.authors.avatar_url, 80)} alt={article.authors.name} className="w-10 h-10 rounded-full object-cover" />
-                    </Link>
-                  )}
-                  <div className="text-sm">
-                    Written by <Link to={`/author/${article.authors?.slug}`} className="font-semibold hover:text-primary">{article.authors?.name}</Link>
-                  </div>
-                  {article.authors && <FollowButton followType="author" followId={article.authors.id} followName={article.authors.name} />}
-                </div>
 
                 {/* Author Bio */}
                 <ArticleAuthorBio authors={article.authors} />
