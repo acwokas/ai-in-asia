@@ -57,7 +57,12 @@ export function generateResponsiveSrcSet(
 
   return widths
     .map((width) => {
-      const optimizedUrl = getOptimizedSupabaseImage(url, { width, quality: 80 });
+      const optimizedUrl = getOptimizedSupabaseImage(url, {
+        width,
+        quality: 85,
+        format: 'webp',
+        resize: 'cover',
+      });
       return `${optimizedUrl} ${width}w`;
     })
     .join(', ');
@@ -98,11 +103,14 @@ export function getOptimizedThumbnail(
  */
 export function getOptimizedHeroImage(
   url: string,
-  width: number = 1280
+  width: number = 1280,
+  height: number = 720
 ): string {
   return getOptimizedSupabaseImage(url, {
     width,
-    quality: 80,
+    height,
+    quality: 85,
     format: 'webp',
+    resize: 'cover',
   });
 }
