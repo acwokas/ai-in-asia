@@ -46,12 +46,13 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps)
     <>
       <div className="fixed top-0 left-0 w-full h-[3px] sm:h-[3px] max-sm:h-1 z-[60]">
         <div
-          className="h-full bg-primary transition-[width] duration-150 ease-out"
+          className="h-full transition-[width] duration-150 ease-out"
           style={{
             width: `${progress}%`,
+            background: 'hsl(var(--editorial-amber, 36 90% 50%))',
             boxShadow: isComplete
-              ? "0 0 8px hsl(var(--primary) / 0.6), 0 0 16px hsl(var(--primary) / 0.3)"
-              : "0 1px 4px hsl(var(--primary) / 0.3)",
+              ? "0 0 8px hsl(var(--editorial-amber, 36 90% 50%) / 0.6), 0 0 16px hsl(var(--editorial-amber, 36 90% 50%) / 0.3)"
+              : "0 1px 4px hsl(var(--editorial-amber, 36 90% 50%) / 0.3)",
           }}
         />
       </div>
