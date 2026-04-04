@@ -305,6 +305,7 @@ const router = createBrowserRouter([
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
       { path: "/tools/ai-readiness", element: <AIReadiness /> },
       { path: "/tools/ai-bingo", element: <AIBingo /> },
+      { path: "/tools/ai-headlines", element: <AIHeadlines /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },
