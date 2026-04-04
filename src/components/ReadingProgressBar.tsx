@@ -59,7 +59,10 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5, categorySlug }: ReadingPro
         />
       </div>
       {showRemaining && !isComplete && (
-        <div className={`fixed top-1 right-3 z-[60] text-xs ${color} bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-border shadow-sm transition-opacity duration-300`}>
+        <div
+          className="fixed top-1 right-3 z-[60] text-xs font-medium bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-border shadow-sm transition-opacity duration-300"
+          style={{ color: catColor }}
+        >
           ~{remainingMinutes} min left
         </div>
       )}
