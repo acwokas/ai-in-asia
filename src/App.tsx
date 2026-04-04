@@ -272,6 +272,7 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: "/", element: <Index /> },
+      { path: "/article/:slug", element: <LegacyArticleRedirect /> },
       { path: "/:category/:slug", element: <Article /> },
       { path: "/category/:slug/all", element: <CategoryAll /> },
       { path: "/category/:slug/learn/:pathSlug", element: <LearningPathDetail /> },
