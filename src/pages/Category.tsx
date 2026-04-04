@@ -503,6 +503,14 @@ const Category = () => {
                 );
               })()}
 
+              {/* VOICES: Expert Directory + Submit CTA */}
+              {slug === "voices" && category?.id && (
+                <>
+                  <VoicesExpertDirectory categoryId={category.id} />
+                  <VoicesSubmitCTA />
+                </>
+              )}
+
               {/* 8. CROSS-CATEGORY NAVIGATION */}
               <CategoryCrossNav
                 categories={otherCategories}
