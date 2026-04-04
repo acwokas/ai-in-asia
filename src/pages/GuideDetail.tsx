@@ -329,7 +329,7 @@ const GuideDetail = () => {
 
       {/* Mobile floating TOC */}
       <GuideMobileToc sections={tocSections} />
-      <GuideBackToTop />
+      
 
       <Footer />
     </>
