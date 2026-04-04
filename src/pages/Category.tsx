@@ -49,6 +49,16 @@ const TOOL_MAP: Record<string, React.FC> = {
   policy: PolicyTracker,
 };
 
+const TOOL_META: Record<string, { name: string; emoji: string }> = {
+  news: { name: "Pulse Tracker", emoji: "activity" },
+  business: { name: "ROI Calculator", emoji: "calculator" },
+  life: { name: "Tool Finder", emoji: "search" },
+  learn: { name: "Prompt Builder", emoji: "terminal" },
+  create: { name: "Prompt Studio", emoji: "wand" },
+  voices: { name: "Opinion Poll", emoji: "bar-chart-2" },
+  policy: { name: "Policy Tracker", emoji: "shield" },
+};
+
 const Category = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
