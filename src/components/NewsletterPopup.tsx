@@ -54,7 +54,7 @@ const NewsletterPopup = () => {
       triggered.current = true;
       markShownThisSession();
       setVisible(true);
-      trackEvent("newsletter_popup", "engagement", "shown");
+      trackEvent("newsletter_popup", { action: "shown" });
     };
 
     const handleScroll = () => {
