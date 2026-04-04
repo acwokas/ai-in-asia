@@ -75,7 +75,7 @@ const NewsletterPopup = () => {
   const handleClose = useCallback(() => {
     setVisible(false);
     markDismissed();
-    trackEvent("newsletter_popup", "engagement", "dismissed");
+    trackEvent("newsletter_popup", { action: "dismissed" });
   }, []);
 
   const handleSubmit = useCallback(
