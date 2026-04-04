@@ -178,6 +178,7 @@ export function useGlossaryAnnotation(
 ) {
   const [activeEntry, setActiveEntry] = useState<JargonEntry | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const [termCount, setTermCount] = useState(0);
   const matchedTermsRef = useRef(new Set<string>());
 
   /* Annotate text nodes */
