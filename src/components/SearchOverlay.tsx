@@ -289,6 +289,9 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
                             {new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </span>
                         )}
+                        {article.reading_time_minutes && (
+                          <span className="text-xs text-muted-foreground">{article.reading_time_minutes} min</span>
+                        )}
                       </div>
                       <p className="font-medium text-sm line-clamp-1 text-foreground" dangerouslySetInnerHTML={{ __html: highlightMatch(article.title, query) }} />
                     </div>
