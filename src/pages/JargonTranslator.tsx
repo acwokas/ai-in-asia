@@ -364,42 +364,46 @@ export default function JargonTranslator() {
                       </div>
                     </TypewriterText>
                   </div>
-                ) : (
-                  <div className="min-h-[200px]">
-                    <TypewriterText trigger={translationKey}>
-                      <p className="text-foreground leading-loose whitespace-pre-wrap">
-                        {translatedSegments.map((seg, i) =>
-                          seg.type === "text" ? (
-                            <span key={i}>{seg.content}</span>
-                          ) : (
-                            <span
-                              key={i}
-                              className="relative inline-block cursor-help"
-                              onMouseEnter={() => setHoveredTerm(seg.original + i)}
-                              onMouseLeave={() => setHoveredTerm(null)}
-                              onClick={() => setHoveredTerm(hoveredTerm === seg.original + i ? null : seg.original + i)}
-                            >
-                              <span className={`border-b-2 ${modeColors.underline.replace('decoration-', 'border-')} ${modeColors.highlight} rounded-sm px-0.5 py-0.5`}>
-                                {getTranslation(seg.entry!, mode)}
-                              </span>
-                              {hoveredTerm === seg.original + i && (
-                                <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 rounded-lg bg-popover border border-border shadow-xl text-sm pointer-events-none" style={{ lineHeight: '1.4' }}>
-                                  <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
-                                  <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
-                                  {seg.entry!.asiaContext && (
-                                    <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
-                                  )}
-                                  <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
-                                    {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
-                                  </span>
-                                </span>
-                              )}
-                            </span>
-                          )
-                        )}
-                      </p>
-                    </TypewriterText>
-                  </div>
+                ) : showCleanVersion ? (
+                   <div className="min-h-[200px]">
+                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">{plainTranslatedText}</p>
+                   </div>
+                 ) : (
+                   <div className="min-h-[200px]">
+                     <TypewriterText trigger={translationKey}>
+                       <p className="text-foreground leading-loose whitespace-pre-wrap">
+                         {translatedSegments.map((seg, i) =>
+                           seg.type === "text" ? (
+                             <span key={i}>{seg.content}</span>
+                           ) : (
+                             <span
+                               key={i}
+                               className="relative inline-block cursor-help"
+                               onMouseEnter={() => setHoveredTerm(seg.original + i)}
+                               onMouseLeave={() => setHoveredTerm(null)}
+                               onClick={() => setHoveredTerm(hoveredTerm === seg.original + i ? null : seg.original + i)}
+                             >
+                               <span className={`border-b-2 ${modeColors.underline.replace('decoration-', 'border-')} ${modeColors.highlight} rounded-sm px-0.5 py-0.5`}>
+                                 {getTranslation(seg.entry!, mode)}
+                               </span>
+                               {hoveredTerm === seg.original + i && (
+                                 <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 rounded-lg bg-popover border border-border shadow-xl text-sm pointer-events-none" style={{ lineHeight: '1.4' }}>
+                                   <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
+                                   <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
+                                   {seg.entry!.asiaContext && (
+                                     <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
+                                   )}
+                                   <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
+                                     {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
+                                   </span>
+                                 </span>
+                               )}
+                             </span>
+                           )
+                         )}
+                       </p>
+                     </TypewriterText>
+                   </div>
                 )}
               </CardContent>
             </Card>
