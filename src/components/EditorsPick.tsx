@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
-import { getOptimizedHeroImage, generateResponsiveSrcSet } from "@/lib/imageOptimization";
+import { getOptimizedHeroImage } from "@/lib/imageOptimization";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface EditorsPickProps {
