@@ -1012,7 +1012,7 @@ blockquote.tiktok-embed {
   animation: subtle-glow 3s ease-in-out infinite;
 }
 
-
+.animate-ticker:hover {
   animation-play-state: paused;
 }
 
