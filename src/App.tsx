@@ -381,19 +381,21 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => (
-  <PersistQueryClientProvider
-    client={queryClient}
-    persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000 }}
-  >
-    <AuthProvider>
-      <TooltipProvider>
-        <DatabaseErrorBoundary>
-          <Sonner />
-          <RouterProvider router={router} />
-        </DatabaseErrorBoundary>
-      </TooltipProvider>
-    </AuthProvider>
-  </PersistQueryClientProvider>
+  <ThemeProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000 }}
+    >
+      <AuthProvider>
+        <TooltipProvider>
+          <DatabaseErrorBoundary>
+            <Sonner />
+            <RouterProvider router={router} />
+          </DatabaseErrorBoundary>
+        </TooltipProvider>
+      </AuthProvider>
+    </PersistQueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
