@@ -488,7 +488,7 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
-      return <ProseHtml className="prose" html={sanitizedHtml} injectInArticleAds={true} />;
+      return <ProseHtml className="prose" html={sanitizedHtml} injectInArticleAds={true} midArticleNode={midArticleNode} />;
     }
     
     // Standard content processing (no prompt boxes)
