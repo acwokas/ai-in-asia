@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ArrowRight, Clock } from "lucide-react";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface ContinueReadingProps {
   currentArticleId: string;
