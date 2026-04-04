@@ -19,8 +19,20 @@ function isBannedOrEmpty(src?: string | null): boolean {
 
 function buildSrcSet(src: string, widths: number[] = [400, 800, 1200]): string | undefined {
   if (!src.includes("supabase.co/storage")) return undefined;
-  const base = src.split("?")[0];
-  return widths.map((w) => `${base}?width=${w}&quality=80 ${w}w`).join(", ");
+
+  try {
+    const baseUrl = new URL(src);
+
+    return widths
+      .map((width) => {
+        const candidateUrl = new URL(baseUrl.toString());
+        candidateUrl.searchParams.set("width", width.toString());
+        return `${candidateUrl.toString()} ${width}w`;
+      })
+      .join(", ");
+  } catch {
+    return undefined;
+  }
 }
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "onError" | "onLoad"> {
