@@ -726,6 +726,13 @@ const Article = () => {
             <div className="flex gap-10">
               {/* Main reading column */}
               <article ref={articleContentRef} className="min-w-0 flex-1 max-w-[720px]">
+                <SelectionQuotePopup
+                  containerRef={articleContentRef}
+                  articleTitle={article.title}
+                  articleUrl={shareHandlers.getPublicArticleUrl()}
+                  categoryColor={getCategoryColor(article.categories?.slug)}
+                  authorName={article.authors?.name}
+                />
                 <div className="prose prose-lg max-w-none article-content">
                   {article.article_type === 'policy_article' ? (
                     <PolicyArticleContent article={article} />
