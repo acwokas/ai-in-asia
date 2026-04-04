@@ -114,13 +114,12 @@ export const OptimizedImage = memo(({
 
   return (
     <div ref={containerRef} className={cn("relative overflow-hidden", className)} style={containerStyle}>
-      {/* Skeleton placeholder */}
-      <div
-        className={cn(
-          "absolute inset-0 bg-muted animate-pulse rounded-lg transition-opacity duration-300",
-          isLoaded ? "opacity-0" : "opacity-100"
-        )}
-      />
+      {/* Skeleton placeholder – only shown if image takes >100ms to load */}
+      {showSkeleton && !isLoaded && (
+        <div
+          className="absolute inset-0 bg-muted animate-pulse rounded-lg"
+        />
+      )}
 
       {/* Actual image */}
       {isInView && (
