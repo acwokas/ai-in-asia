@@ -530,6 +530,7 @@ const Article = () => {
   return (
     <>
       <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} />
+      <ResumeReading slug={article.slug} />
       
       <SEOHead
         title={fixEncoding(((article.meta_title || article.title || 'Article') + '').replace(/%%sep%%/g, '|').replace(/%%sitename%%/g, 'AI in ASIA').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))}
