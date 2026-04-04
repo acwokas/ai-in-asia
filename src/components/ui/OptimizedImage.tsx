@@ -79,6 +79,10 @@ export const OptimizedImage = memo(({
   useEffect(() => {
     setIsLoaded(false);
     setHasError(false);
+    setShowSkeleton(false);
+    // Only show skeleton if image hasn't loaded within 100ms (avoids flash for cached images)
+    const timer = setTimeout(() => setShowSkeleton(true), 100);
+    return () => clearTimeout(timer);
   }, [src]);
 
   const srcSet = buildSrcSet(resolvedSrc, responsiveWidths);
