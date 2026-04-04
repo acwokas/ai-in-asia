@@ -22,6 +22,7 @@ const GoogleAnalytics = () => {
   // Track page views on route change via dataLayer for GTM
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (getConsent() !== 'accepted') return;
 
     const prevPath = prevPathRef.current;
     const currentPath = location.pathname + location.search;
