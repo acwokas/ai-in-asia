@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { fixEncoding } from "@/lib/textUtils";
 
 interface ContextualArticle {
