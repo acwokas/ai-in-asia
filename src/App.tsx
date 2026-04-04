@@ -255,6 +255,9 @@ const RootLayout = () => (
       <Suspense fallback={null}>
         <NewsletterPopup />
       </Suspense>
+      <Suspense fallback={null}>
+        <BackToTopButton />
+      </Suspense>
       <Suspense fallback={<HomepageSkeleton />}>
         <Outlet />
       </Suspense>
