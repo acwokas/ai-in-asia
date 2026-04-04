@@ -318,5 +318,32 @@ export function useGlossaryAnnotation(
       <GlossaryTooltipCard entry={activeEntry} anchorRect={anchorRect} onClose={close} />
     ) : null;
 
-  return { tooltipNode };
+  const scrollToFirst = useCallback(() => {
+    const el = proseRef.current;
+    if (!el) return;
+    const first = el.querySelector(`[${GLOSSARY_ATTR}]`);
+    if (first) {
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Briefly highlight it
+      first.classList.add("glossary-term-flash");
+      setTimeout(() => first.classList.remove("glossary-term-flash"), 1500);
+    }
+  }, [proseRef]);
+
+  const bannerNode = termCount > 0 ? (
+    <button
+      onClick={scrollToFirst}
+      className="group flex items-center gap-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-amber-500/40 transition-all duration-200 mb-4"
+      aria-label={`${termCount} AI terms explained in this article`}
+    >
+      <span className="text-sm">🧠</span>
+      <span>
+        <span className="font-bold" style={{ color: "hsl(38 92% 50%)" }}>{termCount}</span>
+        {" AI terms explained"}
+      </span>
+      <span className="text-muted-foreground/60 group-hover:translate-y-0.5 transition-transform">↓</span>
+    </button>
+  ) : null;
+
+  return { tooltipNode, bannerNode, termCount };
 }
