@@ -434,6 +434,14 @@ const Category = () => {
 
           {!articlesLoading && (
             <>
+              {/* VOICES-SPECIFIC SECTIONS */}
+              {slug === "voices" && category?.id && (
+                <>
+                  <VoicesFeaturedSpotlight categoryId={category.id} />
+                  <VoicesPerspectivesCarousel categoryId={category.id} />
+                </>
+              )}
+
               {/* 4. FEATURED ARTICLES */}
               <CategoryFeaturedGrid
                 articles={featuredGridArticles}
