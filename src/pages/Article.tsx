@@ -296,57 +296,6 @@ const Article = () => {
     }
   }, [article, isLoading]);
 
-  // Inject NewsArticle JSON-LD via useEffect (cleaned up on unmount / navigation)
-  useEffect(() => {
-    if (!article) return;
-
-    const categorySlugVal = article.categories?.slug || category || 'news';
-    const articleSlugVal = article.slug;
-    const datePublished = article.published_at || article.created_at;
-    const dateModified = article.updated_at || datePublished;
-
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "NewsArticle",
-      headline: article.title,
-      datePublished,
-      dateModified,
-      author: {
-        "@type": "Organization",
-        name: "AI in Asia",
-        url: "https://aiinasia.com",
-      },
-      publisher: {
-        "@type": "NewsMediaOrganization",
-        name: "AI in Asia",
-        url: "https://aiinasia.com",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://aiinasia.com/og-image.png",
-        },
-      },
-      url: `https://aiinasia.com/${categorySlugVal}/${articleSlugVal}`,
-      description: article.excerpt || article.meta_description || "",
-      ...(article.featured_image_url && { image: article.featured_image_url }),
-      ...(article.categories?.name && { articleSection: article.categories.name }),
-      inLanguage: "en-GB",
-      isPartOf: {
-        "@type": "NewsMediaOrganization",
-        name: "AI in Asia",
-        url: "https://www.aiinasia.com",
-      },
-    };
-
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.setAttribute("data-jsonld", "news-article");
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, [article?.id, article?.slug, article?.updated_at]);
 
   // Prompt box copy handler
   useEffect(() => {
