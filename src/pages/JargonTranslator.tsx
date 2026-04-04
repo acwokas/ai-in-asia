@@ -564,7 +564,7 @@ export default function JargonTranslator() {
             <InlineNewsletterSignup variant="default" />
           </section>
         </div>
+        <Footer />
       </div>
-    </>
   );
 }
