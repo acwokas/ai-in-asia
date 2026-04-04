@@ -1,4 +1,4 @@
-const SEARCH_HISTORY_KEY = "aiinasia_search_history";
+const SEARCH_HISTORY_KEY = "aiia_recent_searches";
 const MAX_HISTORY = 5;
 
 export function getSearchHistory(): string[] {

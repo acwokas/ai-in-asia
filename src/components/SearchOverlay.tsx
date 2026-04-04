@@ -284,7 +284,7 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
                           </span>
                         )}
                       </div>
-                      <p className="font-medium text-sm line-clamp-1 text-foreground">{article.title}</p>
+                      <p className="font-medium text-sm line-clamp-1 text-foreground" dangerouslySetInnerHTML={{ __html: highlightMatch(article.title, query) }} />
                     </div>
                   </button>
                 </li>
