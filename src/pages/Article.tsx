@@ -18,6 +18,7 @@ import { TopListsContent } from "@/components/TopListsContent";
 import ReturnTriggerBlock from "@/components/ReturnTriggerBlock";
 import EndOfContentNewsletter from "@/components/EndOfContentNewsletter";
 import InlineRelatedArticles from "@/components/InlineRelatedArticles";
+import MidArticleRelated from "@/components/article/MidArticleRelated";
 import RecommendedGuides from "@/components/RecommendedGuides";
 
 import ReadingProgressBar from "@/components/ReadingProgressBar";
