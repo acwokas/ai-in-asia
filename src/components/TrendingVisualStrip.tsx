@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Flame, BookOpen } from "lucide-react";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { getCategoryColor } from "@/lib/categoryColors";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { dualPush } from "@/lib/dualTrack";
 
 type CombinedItem =
