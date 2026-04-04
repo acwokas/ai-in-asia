@@ -142,7 +142,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
                     <BookOpen className="h-3 w-3" />
                     Guide
                   </span>
-                  <h3 className="text-[14px] font-medium leading-snug text-white line-clamp-2 group-hover:text-primary transition-colors">
+                  <h3 className="text-[14px] font-medium leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                     {item.title.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
                   </h3>
                 </div>
