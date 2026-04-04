@@ -26,6 +26,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Bookmark } from "lucide-react";
 import logo from "@/assets/aiinasia-logo.png";
 import SearchOverlay from "@/components/SearchOverlay";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { LucideIcon } from "lucide-react";
 
 type NavDropdownItem = { to: string; label: string; description: string; icon: LucideIcon };
