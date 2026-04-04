@@ -51,10 +51,10 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5, categorySlug }: ReadingPro
           className="h-full transition-[width] duration-150 ease-out"
           style={{
             width: `${progress}%`,
-            background: '#F28C0F',
+            background: catColor,
             boxShadow: isComplete
-              ? "0 0 8px rgba(242, 140, 15, 0.6), 0 0 16px rgba(242, 140, 15, 0.3)"
-              : "0 1px 4px rgba(242, 140, 15, 0.3)",
+              ? `0 0 8px ${catColor}99, 0 0 16px ${catColor}4D`
+              : `0 1px 4px ${catColor}4D`,
           }}
         />
       </div>
