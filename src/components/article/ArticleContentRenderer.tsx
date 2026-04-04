@@ -388,11 +388,13 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       .replace(/(\d+\.\s[^<]*)<\/p>/gi, '$1')
       .replace(/(> [^<]*)<\/p>/gi, '$1');
 
-    // Ensure headings start their own block
-    consolidated = consolidated.replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
-      const safePrefix = prefix || '';
-      return `${safePrefix}\n\n${hashes}`;
-    });
+    // Ensure markdown headings start and end their own block so lists beneath them parse correctly
+    consolidated = consolidated
+      .replace(/(^|\n)(#{1,3}\s+)/g, (match, prefix, hashes) => {
+        const safePrefix = prefix || '';
+        return `${safePrefix}\n\n${hashes}`;
+      })
+      .replace(/^(#{1,3}\s[^\n]+)\n(?!\n)/gm, '$1\n\n');
     
     // Handle content with prompt boxes
     if (consolidated.includes('prompt-box')) {
