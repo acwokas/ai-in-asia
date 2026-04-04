@@ -60,6 +60,14 @@ export const ProgressiveImage = memo(({
     return () => observer.disconnect();
   }, [loading]);
 
+  // Delay placeholder to avoid flash on cached images
+  useEffect(() => {
+    setIsLoaded(false);
+    setShowPlaceholder(false);
+    const timer = setTimeout(() => setShowPlaceholder(true), 100);
+    return () => clearTimeout(timer);
+  }, [src]);
+
   const [hasError, setHasError] = useState(false);
 
   const handleLoad = () => {
