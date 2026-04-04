@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getReadingCategory } from "@/components/ReadingTimeIndicator";
+import { getCategoryColor } from "@/lib/categoryColors";
 
 interface ReadingProgressBarProps {
   readingTimeMinutes?: number;
+  categorySlug?: string;
 }
 
-const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps) => {
+const ReadingProgressBar = ({ readingTimeMinutes = 5, categorySlug }: ReadingProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number>(0);
   const [showRemaining, setShowRemaining] = useState(false);
@@ -41,7 +42,7 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps)
 
   const isComplete = progress >= 100;
   const remainingMinutes = Math.max(1, Math.ceil(readingTimeMinutes * (1 - progress / 100)));
-  const { color } = getReadingCategory(readingTimeMinutes);
+  const catColor = getCategoryColor(categorySlug);
 
   return (
     <>
@@ -58,7 +59,10 @@ const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps)
         />
       </div>
       {showRemaining && !isComplete && (
-        <div className={`fixed top-1 right-3 z-[60] text-xs ${color} bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-border shadow-sm transition-opacity duration-300`}>
+        <div
+          className="fixed top-1 right-3 z-[60] text-xs font-medium bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-border shadow-sm transition-opacity duration-300"
+          style={{ color: catColor }}
+        >
           ~{remainingMinutes} min left
         </div>
       )}
