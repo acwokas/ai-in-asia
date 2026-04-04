@@ -14,14 +14,8 @@ interface QuoteCardGeneratorProps {
   authorName?: string;
 }
 
-const CARD_W = 1200;
-const CARD_H = 675; // 16:9
-
-const THEMES = [
-  { name: "Dark", bg: "#0a0a0b", text: "#f5f5f5", accent: "", quote: "#e0e0e0" },
-  { name: "Light", bg: "#fafafa", text: "#1a1a1a", accent: "", quote: "#333" },
-  { name: "Brand", bg: "#1a1207", text: "#f5f5f5", accent: "", quote: "#fcd9a0" },
-] as const;
+const CARD_SIZE = 640;
+const AMBER = "#F28C0F";
 
 export function QuoteCardGenerator({
   open,
@@ -33,9 +27,7 @@ export function QuoteCardGenerator({
   authorName,
 }: QuoteCardGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [themeIdx, setThemeIdx] = useState(2); // Brand default
   const [copied, setCopied] = useState(false);
-  const theme = { ...THEMES[themeIdx], accent: categoryColor };
 
   const drawCard = useCallback(() => {
     const canvas = canvasRef.current;
@@ -43,97 +35,126 @@ export function QuoteCardGenerator({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = CARD_W;
-    canvas.height = CARD_H;
+    const W = CARD_SIZE;
+    const H = CARD_SIZE;
+    canvas.width = W;
+    canvas.height = H;
 
-    // Background
-    ctx.fillStyle = theme.bg;
-    ctx.fillRect(0, 0, CARD_W, CARD_H);
+    // ── Dark gradient background ──
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#111827");   // gray-900
+    bg.addColorStop(0.5, "#1f2937"); // gray-800
+    bg.addColorStop(1, "#111827");   // gray-900
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
 
-    // Accent stripe (left)
-    ctx.fillStyle = theme.accent;
-    ctx.fillRect(0, 0, 6, CARD_H);
-
-    // Accent glow (top-right)
-    const glow = ctx.createRadialGradient(CARD_W - 100, 80, 10, CARD_W - 100, 80, 350);
-    glow.addColorStop(0, theme.accent + "18");
-    glow.addColorStop(1, "transparent");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, CARD_W, CARD_H);
-
-    // Large opening quote mark
-    ctx.fillStyle = theme.accent + "30";
-    ctx.font = "bold 220px Georgia, serif";
-    ctx.fillText("\u201C", 50, 200);
-
-    // Quote text — word wrap
-    const maxWidth = CARD_W - 160;
-    const fontSize = quote.length > 200 ? 28 : quote.length > 120 ? 32 : 38;
-    const lineHeight = fontSize * 1.55;
-    ctx.font = `500 ${fontSize}px 'Inter', 'Segoe UI', sans-serif`;
-    ctx.fillStyle = theme.quote;
-
-    const words = quote.split(" ");
-    let line = "";
-    let y = 220;
-    const maxY = CARD_H - 140;
-
-    for (const word of words) {
-      const testLine = line + (line ? " " : "") + word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && line) {
-        if (y > maxY) {
-          ctx.fillText(line + "…", 80, y);
-          line = "";
-          break;
-        }
-        ctx.fillText(line, 80, y);
-        line = word;
-        y += lineHeight;
-      } else {
-        line = testLine;
+    // ── Dot grid pattern overlay ──
+    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    const dotSpacing = 20;
+    const dotRadius = 1;
+    for (let x = dotSpacing; x < W; x += dotSpacing) {
+      for (let y = dotSpacing; y < H; y += dotSpacing) {
+        ctx.beginPath();
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
-    if (line) {
-      ctx.fillText(line, 80, y);
-    }
 
-    // Divider
-    const dividerY = CARD_H - 110;
-    ctx.fillStyle = theme.accent + "40";
-    ctx.fillRect(80, dividerY, 80, 2);
-
-    // Article title (truncated)
-    ctx.font = `600 16px 'Inter', sans-serif`;
-    ctx.fillStyle = theme.text + "99";
-    const truncTitle = articleTitle.length > 80 ? articleTitle.slice(0, 77) + "…" : articleTitle;
-    ctx.fillText(truncTitle, 80, dividerY + 28);
-
-    // Author
-    if (authorName) {
-      ctx.font = `400 14px 'Inter', sans-serif`;
-      ctx.fillStyle = theme.accent;
-      ctx.fillText(`— ${authorName}`, 80, dividerY + 52);
-    }
-
-    // Branding
-    ctx.font = `800 18px 'Inter', sans-serif`;
-    ctx.fillStyle = theme.accent;
-    ctx.textAlign = "right";
-    ctx.fillText("AI in ASIA", CARD_W - 80, dividerY + 28);
-    ctx.font = `400 12px 'Inter', sans-serif`;
-    ctx.fillStyle = theme.text + "60";
-    ctx.fillText("aiinasia.com", CARD_W - 80, dividerY + 48);
+    // ── Large opening quotation mark ──
+    ctx.fillStyle = AMBER;
+    ctx.font = "bold 180px Georgia, 'Times New Roman', serif";
     ctx.textAlign = "left";
-  }, [quote, articleTitle, authorName, theme]);
+    ctx.textBaseline = "top";
+    ctx.fillText("\u201C", 36, 24);
+
+    // ── Quote text (auto-sized to fit) ──
+    const trimmedQuote = quote.slice(0, 280);
+    const padX = 56;
+    const maxTextWidth = W - padX * 2;
+    const quoteTopY = 140;
+    const maxQuoteBottomY = H - 160; // leave room for divider + footer
+
+    // Determine font size to fit
+    let fontSize = trimmedQuote.length > 200 ? 22 : trimmedQuote.length > 120 ? 26 : 30;
+    let lineHeight = fontSize * 1.5;
+    let lines: string[] = [];
+
+    const wrapText = (size: number): string[] => {
+      ctx.font = `500 ${size}px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+      const words = trimmedQuote.split(" ");
+      const result: string[] = [];
+      let currentLine = "";
+      for (const word of words) {
+        const test = currentLine ? currentLine + " " + word : word;
+        if (ctx.measureText(test).width > maxTextWidth && currentLine) {
+          result.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = test;
+        }
+      }
+      if (currentLine) result.push(currentLine);
+      return result;
+    };
+
+    // Try to fit, shrink if needed
+    for (let size = fontSize; size >= 16; size -= 2) {
+      lines = wrapText(size);
+      lineHeight = size * 1.5;
+      const totalH = lines.length * lineHeight;
+      if (quoteTopY + totalH <= maxQuoteBottomY) {
+        fontSize = size;
+        break;
+      }
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `500 ${fontSize}px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], padX, quoteTopY + i * lineHeight);
+    }
+
+    // ── Thin amber divider line ──
+    const dividerY = H - 130;
+    ctx.fillStyle = AMBER;
+    ctx.fillRect(padX, dividerY, 60, 2);
+
+    // ── Article title ──
+    ctx.font = `400 14px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+    ctx.fillStyle = "#9ca3af"; // gray-400
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    const truncTitle = articleTitle.length > 70 ? articleTitle.slice(0, 67) + "…" : articleTitle;
+    ctx.fillText(truncTitle, padX, dividerY + 16);
+
+    // ── Author attribution ──
+    if (authorName) {
+      ctx.font = `400 12px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+      ctx.fillStyle = "#6b7280"; // gray-500
+      ctx.fillText(`— ${authorName}`, padX, dividerY + 38);
+    }
+
+    // ── Branding: aiinasia.com ──
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.font = `800 16px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+    ctx.fillStyle = AMBER;
+    ctx.fillText("AI in ASIA", W - padX, dividerY + 14);
+    ctx.font = `400 11px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+    ctx.fillStyle = "#6b7280";
+    ctx.fillText("aiinasia.com", W - padX, dividerY + 36);
+    ctx.textAlign = "left";
+  }, [quote, articleTitle, authorName]);
 
   useEffect(() => {
     if (open) {
-      // Small delay to ensure canvas is mounted
       const t = setTimeout(drawCard, 50);
       return () => clearTimeout(t);
     }
-  }, [open, drawCard, themeIdx]);
+  }, [open, drawCard]);
 
   const downloadImage = () => {
     const canvas = canvasRef.current;
@@ -173,9 +194,9 @@ export function QuoteCardGenerator({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[700px] p-0 gap-0 bg-card border-border overflow-hidden">
+      <DialogContent className="max-w-[520px] p-0 gap-0 bg-card border-border overflow-hidden">
         <DialogHeader className="p-5 pb-3">
-          <DialogTitle className="text-base font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          <DialogTitle className="text-base font-semibold">
             Share as Quote Card
           </DialogTitle>
         </DialogHeader>
@@ -186,36 +207,17 @@ export function QuoteCardGenerator({
             <canvas
               ref={canvasRef}
               className="w-full h-auto"
-              style={{ display: "block", aspectRatio: "16/9" }}
+              style={{ display: "block", aspectRatio: "1/1" }}
             />
           </div>
         </div>
 
-        {/* Theme selector */}
-        <div className="flex items-center gap-2 px-5 pt-3">
-          <span className="text-xs text-muted-foreground mr-1">Theme</span>
-          {THEMES.map((t, i) => (
-            <button
-              key={t.name}
-              onClick={() => setThemeIdx(i)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-all border ${
-                i === themeIdx
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border text-muted-foreground hover:border-primary/40"
-              }`}
-            >
-              {t.name}
-            </button>
-          ))}
-        </div>
-
         {/* Actions */}
-        <div className="flex flex-wrap gap-2 p-5 pt-3">
+        <div className="flex flex-wrap gap-2 p-5 pt-4">
           <Button
             onClick={downloadImage}
             size="sm"
-            className="gap-1.5"
-            style={{ backgroundColor: categoryColor, color: "#fff" }}
+            className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white"
           >
             <Download className="h-3.5 w-3.5" />
             Download
