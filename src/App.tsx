@@ -251,6 +251,10 @@ const RootLayout = () => (
       <Suspense fallback={null}>
         <ScoutChatbot />
       </Suspense>
+      <Suspense fallback={null}>
+        <NewsletterPopup />
+      </Suspense>
+      </Suspense>
       <Suspense fallback={<HomepageSkeleton />}>
         <Outlet />
       </Suspense>
