@@ -4,7 +4,8 @@
  * Extracted from Article.tsx for maintainability
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
 
 import { fixEncoding } from "@/lib/textUtils";
