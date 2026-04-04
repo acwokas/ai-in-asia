@@ -529,7 +529,7 @@ const Article = () => {
 
   return (
     <>
-      <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} />
+      <ReadingProgressBar readingTimeMinutes={article.reading_time_minutes || 5} categorySlug={article.categories?.slug} />
       <ResumeReading slug={article.slug} />
       
       <SEOHead
