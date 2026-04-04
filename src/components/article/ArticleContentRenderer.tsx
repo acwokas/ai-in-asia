@@ -25,9 +25,67 @@ interface ProseHtmlProps {
   midArticleNode?: ReactNode;
 }
 
+/**
+ * Inject ad placeholder HTML into the content string after specific paragraphs.
+ * This avoids DOM manipulation via useEffect which breaks on React re-renders.
+ */
+function injectAdMarkersIntoHtml(html: string, shouldInject: boolean): string {
+  if (!shouldInject) return html;
+
+  // Split on </p> to count and insert after specific paragraphs
+  const parts = html.split('</p>');
+  if (parts.length - 1 < MIN_PARAGRAPHS_FOR_FIRST_AD) return html; // not enough paragraphs
+
+  const paragraphCount = parts.length - 1; // last part is after the final </p>
+  const result: string[] = [];
+  let pIndex = 0;
+
+  for (let i = 0; i < parts.length; i++) {
+    result.push(parts[i]);
+    // Only add </p> back if this isn't the last segment
+    if (i < parts.length - 1) {
+      result.push('</p>');
+      pIndex++;
+
+      // After first paragraph: horizontal ad
+      if (pIndex === 1) {
+        result.push(buildAdPlaceholderHtml('horizontal', IN_ARTICLE_AD_SLOT_HORIZONTAL));
+      }
+
+      // Recurring ads every PARAGRAPH_AD_INTERVAL paragraphs (skip 1st which is handled above)
+      if (paragraphCount >= MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS && pIndex > 1 && pIndex % PARAGRAPH_AD_INTERVAL === 0) {
+        result.push(buildAdPlaceholderHtml('rectangle', IN_ARTICLE_AD_SLOT));
+      }
+    }
+  }
+
+  return result.join('');
+}
+
+function buildAdPlaceholderHtml(format: 'horizontal' | 'rectangle', slot: string): string {
+  const label = '<p class="text-[10px] text-center mb-1 uppercase tracking-wider" style="color: hsl(var(--muted-foreground)); opacity: 0.5;">Advertisement</p>';
+
+  if (import.meta.env.PROD) {
+    const minHeight = format === 'horizontal' ? '90px' : '250px';
+    return `<div class="in-article-ad-wrapper my-6 text-center" data-ad-slot="${slot}" data-ad-format="${format}">
+      ${label}
+      <ins class="adsbygoogle" data-ad-client="${IN_ARTICLE_AD_CLIENT}" data-ad-slot="${slot}" data-ad-format="${format}" data-full-width-responsive="true" style="display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;min-height:${minHeight};"></ins>
+    </div>`;
+  }
+
+  const minHeight = format === 'horizontal' ? '90px' : '250px';
+  return `<div class="in-article-ad-wrapper my-6 text-center">
+    ${label}
+    <div style="min-height:${minHeight};display:flex;align-items:center;justify-content:center;font-size:12px;border:1px dashed hsl(var(--border));border-radius:8px;color:hsl(var(--muted-foreground));">${format === 'horizontal' ? 'Horizontal' : 'Rectangle'} Ad: ${slot}</div>
+  </div>`;
+}
+
 const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode }: ProseHtmlProps) => {
   const proseRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+
+  // Inject ad markers into the HTML string BEFORE rendering
+  const processedHtml = injectAdMarkersIntoHtml(html, injectInArticleAds);
 
   // Inject mid-article related content after the Nth paragraph
   useEffect(() => {
@@ -58,102 +116,19 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     };
   }, [html, !!midArticleNode]);
 
-  // Inject horizontal ad after first paragraph (always), plus recurring ads for longer articles
+  // Activate AdSense on injected ad slots (production only)
   useEffect(() => {
-    if (!injectInArticleAds || !proseRef.current) return;
+    if (!import.meta.env.PROD || !injectInArticleAds || !proseRef.current) return;
 
-    const proseElement = proseRef.current;
-    const removeInjectedAds = () => {
-      proseElement.querySelectorAll(".in-article-ad-wrapper").forEach((node) => node.remove());
-    };
-
-    removeInjectedAds();
-
-    const paragraphs = Array.from(proseElement.querySelectorAll("p"));
-
-    // Always inject a horizontal ad after the first paragraph if there are at least 2 paragraphs
-    if (paragraphs.length >= MIN_PARAGRAPHS_FOR_FIRST_AD) {
-      const firstParagraph = paragraphs[0];
-      const wrapper = document.createElement("div");
-      wrapper.className = "in-article-ad-wrapper my-6 text-center";
-
-      const label = document.createElement("p");
-      label.className = "text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider";
-      label.textContent = "Advertisement";
-
-      if (import.meta.env.PROD) {
-        const adIns = document.createElement("ins");
-        adIns.className = "adsbygoogle";
-        adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
-        adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT_HORIZONTAL);
-        adIns.setAttribute("data-ad-format", "horizontal");
-        adIns.setAttribute("data-full-width-responsive", "true");
-        adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
-        wrapper.append(label, adIns);
-      } else {
-        const placeholder = document.createElement("div");
-        placeholder.className = "bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs";
-        placeholder.style.minHeight = "90px";
-        placeholder.textContent = `Horizontal Ad: ${IN_ARTICLE_AD_SLOT_HORIZONTAL}`;
-        wrapper.append(label, placeholder);
+    const adSlots = proseRef.current.querySelectorAll('.in-article-ad-wrapper ins.adsbygoogle');
+    adSlots.forEach(() => {
+      try {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch (err) {
+        console.error("AdSense push error:", err);
       }
-
-      firstParagraph.parentNode?.insertBefore(wrapper, firstParagraph.nextSibling);
-
-      if (import.meta.env.PROD) {
-        try {
-          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        } catch (err) {
-          console.error("AdSense push error:", err);
-        }
-      }
-    }
-
-    // Additional recurring ads for longer articles (skip paragraph 1 since it's handled above)
-    if (paragraphs.length >= MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
-      paragraphs.forEach((paragraph, index) => {
-        const paragraphNumber = index + 1;
-        if (paragraphNumber === 1) return; // already handled
-        if (paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "in-article-ad-wrapper my-6 text-center";
-
-        const label = document.createElement("p");
-        label.className = "text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider";
-        label.textContent = "Advertisement";
-
-        if (import.meta.env.PROD) {
-          const adIns = document.createElement("ins");
-          adIns.className = "adsbygoogle";
-          adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
-          adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
-          adIns.setAttribute("data-ad-format", "rectangle");
-          adIns.setAttribute("data-full-width-responsive", "true");
-          adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
-          wrapper.append(label, adIns);
-        } else {
-          const placeholder = document.createElement("div");
-          placeholder.className = "bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs";
-          placeholder.style.minHeight = "250px";
-          placeholder.textContent = `Ad: ${IN_ARTICLE_AD_SLOT} (rectangle)`;
-          wrapper.append(label, placeholder);
-        }
-
-        paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
-
-        if (import.meta.env.PROD) {
-          try {
-            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-          } catch (err) {
-            console.error("AdSense push error:", err);
-          }
-        }
-      });
-    }
-
-    return removeInjectedAds;
-  }, [html, injectInArticleAds]);
+    });
+  }, [processedHtml, injectInArticleAds]);
 
   // FAQ visual styling via DOM manipulation
   useEffect(() => {
@@ -276,7 +251,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
 
   return (
     <>
-      <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />
+      <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: processedHtml }} />
       {portalContainer && midArticleNode && createPortal(midArticleNode, portalContainer)}
     </>
   );
