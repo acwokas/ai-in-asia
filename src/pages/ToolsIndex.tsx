@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper } from "lucide-react";
 
 const TOOLS = [
   {
@@ -16,6 +16,12 @@ const TOOLS = [
     desc: "5×5 bingo card of AI buzzwords — play during your next meeting!",
     icon: Grid3X3,
     to: "/tools/ai-bingo",
+  },
+  {
+    name: "AI Headline Generator",
+    desc: "Generate hilarious satirical AI news headlines about Asia.",
+    icon: Newspaper,
+    to: "/tools/ai-headlines",
   },
   {
     name: "AI Jargon Translator",
