@@ -49,7 +49,7 @@ export function getOptimizedSupabaseImage(
  */
 export function generateResponsiveSrcSet(
   url: string,
-  widths: number[] = [320, 640, 960, 1280, 1920]
+  widths: number[] = [400, 800, 1200]
 ): string {
   if (!url.includes('supabase.co/storage')) {
     return '';
@@ -57,7 +57,7 @@ export function generateResponsiveSrcSet(
 
   return widths
     .map((width) => {
-      const optimizedUrl = getOptimizedSupabaseImage(url, { width });
+      const optimizedUrl = getOptimizedSupabaseImage(url, { width, quality: 80 });
       return `${optimizedUrl} ${width}w`;
     })
     .join(', ');
