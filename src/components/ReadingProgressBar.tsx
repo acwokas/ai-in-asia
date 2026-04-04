@@ -6,7 +6,7 @@ interface ReadingProgressBarProps {
   categorySlug?: string;
 }
 
-const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps) => {
+const ReadingProgressBar = ({ readingTimeMinutes = 5, categorySlug }: ReadingProgressBarProps) => {
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number>(0);
   const [showRemaining, setShowRemaining] = useState(false);
