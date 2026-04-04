@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Quote } from "lucide-react";
+import { Quote, Clock, User } from "lucide-react";
 
 export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string }) => {
   const { data: quotes, isLoading } = useQuery({
@@ -11,7 +11,7 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
     queryFn: async () => {
       const { data, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, authors (name), categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, reading_time_minutes, featured_image_url, authors (name, avatar_url), categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
@@ -20,7 +20,7 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
       return (data || [])
         .map((ac: any) => ac.articles)
         .filter((a: any) => a?.authors?.name !== "Intelligence Desk" && a?.excerpt)
-        .sort((a: any, b: any) => Math.random() - 0.5)
+        .sort(() => Math.random() - 0.5)
         .slice(0, 8)
         .map((a: any) => ({
           id: a.id,
@@ -29,6 +29,9 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
           title: a.title,
           quote: a.excerpt.length > 140 ? a.excerpt.slice(0, 137) + "…" : a.excerpt,
           author: a.authors?.name || "Anonymous",
+          authorAvatar: a.authors?.avatar_url || null,
+          readingTime: a.reading_time_minutes || null,
+          image: a.featured_image_url || null,
         }));
     },
   });
@@ -47,14 +50,34 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
           <Link
             key={q.id}
             to={`/${q.categorySlug}/${q.slug}`}
-            className="group snap-start shrink-0 w-72 rounded-xl border-l-[3px] border-amber-500 bg-card/80 p-4 transition-all hover:bg-card hover:shadow-lg hover:shadow-amber-500/5"
+            className="group snap-start shrink-0 w-80 rounded-xl border-l-4 border-amber-500 bg-gray-800/60 overflow-hidden transition-all hover:bg-gray-700/60 hover:shadow-lg hover:shadow-amber-500/5"
           >
-            <p className="text-sm text-foreground/90 italic leading-relaxed line-clamp-4 mb-3">
-              "{q.quote}"
-            </p>
-            <div className="border-t border-border/50 pt-2">
-              <p className="text-xs font-semibold text-amber-500">{q.author}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{q.title}</p>
+            {q.image && (
+              <img src={q.image} alt="" className="w-full h-28 object-cover" />
+            )}
+            <div className="p-5">
+              <p className="text-sm text-white/90 italic leading-relaxed line-clamp-3 mb-4">
+                "{q.quote}"
+              </p>
+              <div className="flex items-center gap-3 border-t border-white/10 pt-3">
+                {q.authorAvatar ? (
+                  <img src={q.authorAvatar} alt={q.author} className="w-8 h-8 rounded-full object-cover border border-amber-500/30" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-amber-500/15 flex items-center justify-center">
+                    <User className="h-4 w-4 text-amber-500" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-amber-500 truncate">{q.author}</p>
+                  <p className="text-xs text-gray-400 line-clamp-1">{q.title}</p>
+                </div>
+                {q.readingTime && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
+                    <Clock className="h-3 w-3" />
+                    {q.readingTime}m
+                  </div>
+                )}
+              </div>
             </div>
           </Link>
         ))}
