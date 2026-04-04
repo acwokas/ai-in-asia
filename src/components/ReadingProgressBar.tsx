@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getReadingCategory } from "@/components/ReadingTimeIndicator";
+import { getCategoryColor } from "@/lib/categoryColors";
 
 interface ReadingProgressBarProps {
   readingTimeMinutes?: number;
+  categorySlug?: string;
 }
 
 const ReadingProgressBar = ({ readingTimeMinutes = 5 }: ReadingProgressBarProps) => {
