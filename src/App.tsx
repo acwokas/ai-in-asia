@@ -46,6 +46,7 @@ const ConsentBanner = lazy(() => import("./components/ConsentBanner").catch(() =
 const InstallAppButton = lazy(() => import("./components/InstallAppButton").then(m => ({ default: m.InstallAppButton })));
 const ScoutChatbot = lazy(() => import("./components/ScoutChatbot").catch(() => { safeReloadOnce(); return import("./components/ScoutChatbot"); }));
 const NewsletterPopup = lazy(() => import("./components/NewsletterPopup"));
+const BackToTopButton = lazy(() => import("./components/BackToTopButton"));
 
 // Lazy load all other pages for better performance
 const Article = lazy(() => import("./pages/Article"));
@@ -253,6 +254,9 @@ const RootLayout = () => (
       </Suspense>
       <Suspense fallback={null}>
         <NewsletterPopup />
+      </Suspense>
+      <Suspense fallback={null}>
+        <BackToTopButton />
       </Suspense>
       <Suspense fallback={<HomepageSkeleton />}>
         <Outlet />
