@@ -104,10 +104,10 @@ const Footer = memo(() => {
           {/* Column 1: Brand */}
           <div>
             <Link to="/">
-              <img src={logo} alt="AI in ASIA" className="h-16 mb-3" width={114} height={64} />
+              <img src={logo} alt="AI in ASIA" className="h-24 -ml-3 mb-3" width={171} height={96} />
             </Link>
             <p className="text-sm text-muted-foreground mb-5">
-              Asia-Pacific's source for AI news and intelligence.
+              AI hype to real-world impact in Asia.
             </p>
             <div className="flex items-center gap-4">
               <a href="https://x.com/AI_in_Asia" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" className="text-muted-foreground hover:text-foreground transition-colors">
