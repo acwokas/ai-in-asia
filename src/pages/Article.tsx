@@ -52,6 +52,7 @@ import { ArticleShareInline, ArticleShareFloating, ArticleShareMobileBar } from 
 import { getOptimizedHeroImage, generateResponsiveSrcSet, getOptimizedAvatar } from "@/lib/imageOptimization";
 import { LearningPathCallout } from "@/components/article/LearningPathCallout";
 import ResumeReading from "@/components/article/ResumeReading";
+import { SelectionQuotePopup } from "@/components/article/SelectionQuotePopup";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Lazy-load Comments (below the fold)
