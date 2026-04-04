@@ -11,6 +11,7 @@ import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal,
 import { useDebounce } from "@/hooks/useDebounce";
 
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const guideHref = (slug: string, topicCategory?: string | null) => {
   const cat = (topicCategory || "general").toLowerCase().replace(/\s+/g, "-");
