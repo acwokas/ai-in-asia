@@ -377,9 +377,9 @@ export default function ThreeBeforeNineTemplate({ article }: ThreeBeforeNineTemp
       />
       <BreadcrumbStructuredData
         items={[
-          { name: "Home", url: "https://aiinasia.com" },
-          { name: "3 Before 9", url: "https://aiinasia.com/3-before-9" },
-          { name: article.title, url: canonicalUrl },
+          { name: "Home", url: "/" },
+          { name: "3 Before 9", url: "/3-before-9" },
+          { name: article.title, url: `/3-before-9/${article.slug}` },
         ]}
       />
 
