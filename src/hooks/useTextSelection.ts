@@ -30,7 +30,7 @@ export function useTextSelection(containerRef: React.RefObject<HTMLElement | nul
       }
 
       const text = sel.toString().trim();
-      if (text.length < 10 || text.length > 500) {
+      if (text.length < 10 || text.length > 280) {
         setSelection((prev) => (prev.visible ? { ...prev, visible: false } : prev));
         return;
       }
