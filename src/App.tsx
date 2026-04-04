@@ -301,6 +301,8 @@ const router = createBrowserRouter([
       { path: "/tools", element: <ExternalRedirect url="https://adrianwatkins.com/tools" /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
+      { path: "/tools/ai-readiness", element: <AIReadiness /> },
+      { path: "/tools/ai-bingo", element: <AIBingo /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },
