@@ -58,6 +58,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     };
   }, [html, !!midArticleNode]);
 
+  // Inject horizontal ad after first paragraph (always), plus recurring ads for longer articles
   useEffect(() => {
     if (!injectInArticleAds || !proseRef.current) return;
 
@@ -69,40 +70,35 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     removeInjectedAds();
 
     const paragraphs = Array.from(proseElement.querySelectorAll("p"));
-    if (paragraphs.length < MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
-      return removeInjectedAds;
-    }
 
-    paragraphs.forEach((paragraph, index) => {
-      const paragraphNumber = index + 1;
-      // First ad after paragraph 1, then every PARAGRAPH_AD_INTERVAL thereafter
-      if (paragraphNumber !== 1 && paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
-
+    // Always inject a horizontal ad after the first paragraph if there are at least 2 paragraphs
+    if (paragraphs.length >= MIN_PARAGRAPHS_FOR_FIRST_AD) {
+      const firstParagraph = paragraphs[0];
       const wrapper = document.createElement("div");
       wrapper.className = "in-article-ad-wrapper my-6 text-center";
 
       const label = document.createElement("p");
-      label.className = "text-xs text-muted-foreground text-center uppercase";
-      label.textContent = "ADVERTISEMENT";
+      label.className = "text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider";
+      label.textContent = "Advertisement";
 
       if (import.meta.env.PROD) {
         const adIns = document.createElement("ins");
         adIns.className = "adsbygoogle";
         adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
-        adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
-        adIns.setAttribute("data-ad-format", "rectangle");
+        adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT_HORIZONTAL);
+        adIns.setAttribute("data-ad-format", "horizontal");
         adIns.setAttribute("data-full-width-responsive", "true");
         adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
         wrapper.append(label, adIns);
       } else {
         const placeholder = document.createElement("div");
         placeholder.className = "bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs";
-        placeholder.style.minHeight = "250px";
-        placeholder.textContent = `Ad: ${IN_ARTICLE_AD_SLOT} (rectangle)`;
+        placeholder.style.minHeight = "90px";
+        placeholder.textContent = `Horizontal Ad: ${IN_ARTICLE_AD_SLOT_HORIZONTAL}`;
         wrapper.append(label, placeholder);
       }
 
-      paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
+      firstParagraph.parentNode?.insertBefore(wrapper, firstParagraph.nextSibling);
 
       if (import.meta.env.PROD) {
         try {
@@ -111,7 +107,50 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
           console.error("AdSense push error:", err);
         }
       }
-    });
+    }
+
+    // Additional recurring ads for longer articles (skip paragraph 1 since it's handled above)
+    if (paragraphs.length >= MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS) {
+      paragraphs.forEach((paragraph, index) => {
+        const paragraphNumber = index + 1;
+        if (paragraphNumber === 1) return; // already handled
+        if (paragraphNumber % PARAGRAPH_AD_INTERVAL !== 0) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "in-article-ad-wrapper my-6 text-center";
+
+        const label = document.createElement("p");
+        label.className = "text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider";
+        label.textContent = "Advertisement";
+
+        if (import.meta.env.PROD) {
+          const adIns = document.createElement("ins");
+          adIns.className = "adsbygoogle";
+          adIns.setAttribute("data-ad-client", IN_ARTICLE_AD_CLIENT);
+          adIns.setAttribute("data-ad-slot", IN_ARTICLE_AD_SLOT);
+          adIns.setAttribute("data-ad-format", "rectangle");
+          adIns.setAttribute("data-full-width-responsive", "true");
+          adIns.style.cssText = "display:block;max-width:100%;overflow:hidden;text-align:center;margin:0 auto;";
+          wrapper.append(label, adIns);
+        } else {
+          const placeholder = document.createElement("div");
+          placeholder.className = "bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs";
+          placeholder.style.minHeight = "250px";
+          placeholder.textContent = `Ad: ${IN_ARTICLE_AD_SLOT} (rectangle)`;
+          wrapper.append(label, placeholder);
+        }
+
+        paragraph.parentNode?.insertBefore(wrapper, paragraph.nextSibling);
+
+        if (import.meta.env.PROD) {
+          try {
+            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+          } catch (err) {
+            console.error("AdSense push error:", err);
+          }
+        }
+      });
+    }
 
     return removeInjectedAds;
   }, [html, injectInArticleAds]);
