@@ -14,15 +14,47 @@ const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS = 8;
 const PARAGRAPH_AD_INTERVAL = 4;
+const MID_ARTICLE_INSERT_AFTER_PARAGRAPH = 4;
 
 interface ProseHtmlProps {
   html: string;
   className: string;
   injectInArticleAds?: boolean;
+  midArticleNode?: ReactNode;
 }
 
-const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlProps) => {
+const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode }: ProseHtmlProps) => {
   const proseRef = useRef<HTMLDivElement>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+
+  // Inject mid-article related content after the Nth paragraph
+  useEffect(() => {
+    if (!midArticleNode || !proseRef.current) {
+      setPortalContainer(null);
+      return;
+    }
+
+    const proseElement = proseRef.current;
+    // Remove previous container
+    proseElement.querySelector(".mid-article-portal")?.remove();
+
+    const paragraphs = Array.from(proseElement.querySelectorAll(":scope > p, :scope > div > p"));
+    if (paragraphs.length < MID_ARTICLE_INSERT_AFTER_PARAGRAPH + 1) {
+      setPortalContainer(null);
+      return;
+    }
+
+    const target = paragraphs[MID_ARTICLE_INSERT_AFTER_PARAGRAPH - 1]; // 0-indexed
+    const container = document.createElement("div");
+    container.className = "mid-article-portal";
+    target.parentNode?.insertBefore(container, target.nextSibling);
+    setPortalContainer(container);
+
+    return () => {
+      container.remove();
+      setPortalContainer(null);
+    };
+  }, [html, !!midArticleNode]);
 
   useEffect(() => {
     if (!injectInArticleAds || !proseRef.current) return;
@@ -201,7 +233,12 @@ const ProseHtml = ({ html, className, injectInArticleAds = false }: ProseHtmlPro
     return cleanup;
   }, [html]);
 
-  return <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <>
+      <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: html }} />
+      {portalContainer && midArticleNode && createPortal(midArticleNode, portalContainer)}
+    </>
+  );
 };
 
 /** Strip leading/trailing quotation marks from blockquote text (they're redundant inside <blockquote>) */
