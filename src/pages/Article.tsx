@@ -79,6 +79,7 @@ const Article = () => {
   
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showAdminView, setShowAdminView] = useState(false);
+  const articleContentRef = useRef<HTMLElement>(null);
   
   const cleanSlug = slug?.replace(/\/+$/g, '');
   const urlParams = new URLSearchParams(window.location.search);
