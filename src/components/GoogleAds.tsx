@@ -13,6 +13,10 @@ interface GoogleAdProps {
 const GoogleAd = ({ slot, format = "auto", responsive = true, className }: GoogleAdProps) => {
   const adRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
+  const isVertical = format === "vertical";
+  const adStyle = isVertical
+    ? { display: "block", width: "300px", minHeight: "600px", margin: "0 auto" }
+    : { display: "block" };
 
   useEffect(() => {
     if (!import.meta.env.PROD || pushed.current) return;
@@ -28,7 +32,7 @@ const GoogleAd = ({ slot, format = "auto", responsive = true, className }: Googl
     return (
       <div
         className={cn("bg-muted/50 border border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground text-xs", className)}
-        style={{ minHeight: format === "vertical" ? "400px" : "90px" }}
+        style={{ width: isVertical ? "300px" : "100%", minHeight: isVertical ? "600px" : "90px", margin: isVertical ? "0 auto" : undefined }}
       >
         Ad: {slot} ({format})
       </div>
@@ -39,11 +43,11 @@ const GoogleAd = ({ slot, format = "auto", responsive = true, className }: Googl
     <ins
       ref={adRef}
       className={cn("adsbygoogle block", className)}
-      style={{ display: "block" }}
+      style={adStyle}
       data-ad-client={GOOGLE_ADS_CLIENT}
       data-ad-slot={slot}
       data-ad-format={format}
-      data-full-width-responsive={responsive.toString()}
+      data-full-width-responsive={(isVertical ? false : responsive).toString()}
     />
   );
 };
