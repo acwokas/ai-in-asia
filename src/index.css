@@ -844,7 +844,7 @@ All colors MUST be HSL.
   }
 }
 
-.article-hero > img {
+.article-hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
