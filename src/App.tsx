@@ -98,7 +98,6 @@ const JargonTranslator = lazy(() => import("./pages/JargonTranslator"));
 const AIReadiness = lazy(() => import("./pages/AIReadiness"));
 const AIBingo = lazy(() => import("./pages/AIBingo"));
 const ToolsIndex = lazy(() => import("./pages/ToolsIndex"));
-const AIBingo = lazy(() => import("./pages/AIBingo"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
