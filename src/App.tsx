@@ -99,6 +99,8 @@ const AIReadiness = lazy(() => import("./pages/AIReadiness"));
 const AIBingo = lazy(() => import("./pages/AIBingo"));
 const ToolsIndex = lazy(() => import("./pages/ToolsIndex"));
 const AIHeadlines = lazy(() => import("./pages/AIHeadlines"));
+const AIMeetingBingo = lazy(() => import("./pages/AIMeetingBingo"));
+const AIPolicyTracker = lazy(() => import("./pages/AIPolicyTracker"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
