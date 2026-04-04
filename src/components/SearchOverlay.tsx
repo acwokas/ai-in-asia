@@ -14,6 +14,7 @@ interface SearchResult {
   excerpt: string | null;
   featured_image_url: string | null;
   published_at: string | null;
+  reading_time_minutes: number | null;
   categories: { name: string; slug: string } | null;
 }
 
@@ -23,6 +24,12 @@ interface SearchOverlayProps {
 }
 
 const POPULAR_SEARCHES = ["ChatGPT", "Singapore AI", "Japan", "Regulation", "Startups", "India"];
+
+function highlightMatch(text: string, query: string): string {
+  if (!query.trim()) return text;
+  const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<span class="text-amber-500 font-semibold">$1</span>');
+}
 
 const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
   const [query, setQuery] = useState("");
@@ -70,13 +77,13 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
       const { data, error } = await supabase
         .from("articles")
         .select(`
-          id, title, slug, excerpt, featured_image_url, published_at,
+          id, title, slug, excerpt, featured_image_url, published_at, reading_time_minutes,
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
         .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
         .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(5);
+        .limit(8);
 
       if (!error && data) {
         setResults(data as unknown as SearchResult[]);
@@ -153,7 +160,7 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[80] bg-background animate-in fade-in duration-200"
+      className="fixed inset-0 z-[80] bg-background/95 backdrop-blur-xl animate-in fade-in duration-200"
       style={{ isolation: 'isolate' }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
@@ -282,8 +289,11 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
                             {new Date(article.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </span>
                         )}
+                        {article.reading_time_minutes && (
+                          <span className="text-xs text-muted-foreground">{article.reading_time_minutes} min</span>
+                        )}
                       </div>
-                      <p className="font-medium text-sm line-clamp-1 text-foreground">{article.title}</p>
+                      <p className="font-medium text-sm line-clamp-1 text-foreground" dangerouslySetInnerHTML={{ __html: highlightMatch(article.title, query) }} />
                     </div>
                   </button>
                 </li>

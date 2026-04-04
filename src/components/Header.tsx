@@ -221,15 +221,17 @@ const Header = memo(() => {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
                     onClick={() => setIsSearchOpen(true)}
                     aria-label="Search"
-                    className="flex h-10 w-10"
+                    className="flex h-10 items-center gap-1.5 px-2"
                   >
                     <Search className="h-5 w-5" />
+                    <kbd className="hidden lg:inline-flex text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5 font-mono">
+                      ⌘K
+                    </kbd>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Search</TooltipContent>
+                <TooltipContent>Search (⌘K)</TooltipContent>
               </Tooltip>
 
               <Tooltip>
