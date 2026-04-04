@@ -311,19 +311,32 @@ export default function JargonTranslator() {
             <Card className="bg-card border-border">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-foreground">What They Actually Mean</h2>
-                  <div className="flex items-center gap-2">
-                    {hasTranslated && outputWordCount > 0 && (
-                      <span className="text-xs text-muted-foreground">{outputWordCount} words</span>
-                    )}
-                    {hasTranslated && matches.length > 0 && (
-                      <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-muted-foreground">
-                        {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-                        <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                   <h2 className="font-semibold text-foreground">What They Actually Mean</h2>
+                   <div className="flex items-center gap-2">
+                     {hasTranslated && matches.length > 0 && (
+                       <button
+                         onClick={() => setShowCleanVersion((v) => !v)}
+                         className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md border transition-colors ${
+                           showCleanVersion
+                             ? "bg-primary/15 text-primary border-primary/30"
+                             : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                         }`}
+                       >
+                         <Sparkles className="h-3 w-3" />
+                         {showCleanVersion ? "Clean version" : "Show clean"}
+                       </button>
+                     )}
+                     {hasTranslated && outputWordCount > 0 && (
+                       <span className="text-xs text-muted-foreground">{outputWordCount} words</span>
+                     )}
+                     {hasTranslated && matches.length > 0 && (
+                       <Button variant="ghost" size="sm" onClick={handleCopy} className="h-7 px-2 text-muted-foreground">
+                         {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                         <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
+                       </Button>
+                     )}
+                   </div>
+                 </div>
 
                 {isTranslating ? (
                   <div className="min-h-[200px] flex flex-col items-center justify-center gap-3">
