@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Clock, Calendar } from "lucide-react";
-import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { memo } from "react";
 import { useRelatedArticles } from "@/hooks/useRelatedArticles";
