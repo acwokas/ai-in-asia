@@ -25,6 +25,12 @@ interface SearchOverlayProps {
 
 const POPULAR_SEARCHES = ["ChatGPT", "Singapore AI", "Japan", "Regulation", "Startups", "India"];
 
+function highlightMatch(text: string, query: string): string {
+  if (!query.trim()) return text;
+  const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<span class="text-amber-500 font-semibold">$1</span>');
+}
+
 const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
