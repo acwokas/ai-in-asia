@@ -853,7 +853,25 @@ All colors MUST be HSL.
   z-index: 0;
 }
 
-.article-hero-gradient {
+/* ─── Glossary tooltip term styling ─── */
+.glossary-term {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: hsl(var(--primary) / 0.5);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  cursor: help;
+  transition: text-decoration-color 0.15s ease, background-color 0.15s ease;
+  border-radius: 2px;
+}
+.glossary-term:hover,
+.glossary-term:focus-visible {
+  text-decoration-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.08);
+  outline: none;
+}
+
+
   position: absolute;
   inset: 0;
   z-index: 1;

@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
+import { useGlossaryAnnotation } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
 
@@ -261,10 +262,13 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     return cleanup;
   }, [html]);
 
+  const { tooltipNode } = useGlossaryAnnotation(proseRef, processedHtml);
+
   return (
     <>
       <div ref={proseRef} className={className} dangerouslySetInnerHTML={{ __html: processedHtml }} />
       {portalContainer && midArticleNode && createPortal(midArticleNode, portalContainer)}
+      {tooltipNode}
     </>
   );
 };
