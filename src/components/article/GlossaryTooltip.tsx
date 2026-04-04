@@ -259,6 +259,8 @@ export function useGlossaryAnnotation(
       textNode.parentNode?.replaceChild(frag, textNode);
     }
 
+    setTermCount(matchedTermsRef.current.size);
+
     /* ── Event delegation: hover on desktop, tap on mobile ── */
     let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
