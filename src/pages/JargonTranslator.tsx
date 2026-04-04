@@ -1,11 +1,22 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import SEOHead from "@/components/SEOHead";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import InlineNewsletterSignup from "@/components/InlineNewsletterSignup";
 import { findJargonInText, SAMPLE_TEXTS, type JargonEntry } from "@/lib/jargonDictionary";
 import { Copy, Check, Share2, Sparkles, BookOpen, Zap, Baby, Send, ArrowDown } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
