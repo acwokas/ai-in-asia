@@ -132,7 +132,7 @@ const GuideFeaturedCard = ({ g }: { g: any }) => (
     >
       {g.featured_image_url && (
         <div className="aspect-[4/3] overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="4/3" className="w-full group-hover:scale-105 transition-transform duration-300" />
         </div>
       )}
       <div className="p-5 space-y-3">
