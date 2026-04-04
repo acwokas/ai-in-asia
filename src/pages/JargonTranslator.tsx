@@ -245,7 +245,26 @@ export default function JargonTranslator() {
         schemaJson={schemaJson}
       />
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        {/* Breadcrumb */}
+        <div className="container max-w-6xl mx-auto px-4 pt-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild><Link to="/tools">Tools</Link></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>AI Jargon Translator</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         {/* Hero */}
         <div className="border-b border-border bg-muted/30">
           <div className="container max-w-6xl mx-auto px-4 py-12 md:py-16 text-center">
