@@ -33,6 +33,7 @@ export const ProgressiveImage = memo(({
 }: ProgressiveImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(loading === "eager");
+  const [showPlaceholder, setShowPlaceholder] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   // Intersection Observer for lazy loading
