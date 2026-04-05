@@ -246,7 +246,7 @@ const AIReadiness = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <span className="text-3xl mb-1 block">{tier.emoji}</span>
+                  <span className="text-3xl mb-1 block font-bold text-amber-500">{tier.name}</span>
                   <h2 className="font-display text-2xl font-black text-foreground mb-1">
                     You're an <span className="text-amber-500">{tier.name}</span>
                   </h2>

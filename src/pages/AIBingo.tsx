@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Share2 } from "lucide-react";
+import { RotateCcw, Share2, PartyPopper } from "lucide-react";
 import { JARGON_DICTIONARY } from "@/lib/jargonDictionary";
 import confetti from "canvas-confetti";
 
