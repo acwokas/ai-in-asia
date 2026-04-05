@@ -78,7 +78,7 @@ const AIBingo = () => {
     setHasBingo(false);
   };
 
-  const shareText = "BINGO! I survived another AI meeting! 🎉 Try AI Jargon Bingo:";
+  const shareText = "BINGO! I survived another AI meeting! Try AI Jargon Bingo:";
   const shareUrl = "https://aiinasia.com/tools/ai-bingo";
 
   return (
