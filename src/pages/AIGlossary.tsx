@@ -139,7 +139,7 @@ const AIGlossary = () => {
             <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-2">
               AI Glossary
             </h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
+            <p className="text-foreground/70 max-w-lg mx-auto text-base">
               {terms.length > 0 ? terms.length : 472} AI and tech terms explained in plain language. No jargon about jargon.
             </p>
           </div>
