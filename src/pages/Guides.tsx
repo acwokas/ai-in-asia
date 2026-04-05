@@ -15,6 +15,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import GuideLearningPaths from "@/components/guide/GuideLearningPaths";
 
 /* ── Helpers ── */
 
@@ -474,6 +475,9 @@ const Guides = () => {
             </div>
           </div>
         </section>
+
+        {/* ── LEARNING PATHS ── */}
+        <GuideLearningPaths />
 
         {/* ── 4. FACETED FILTER BAR + MAIN GRID ── */}
         <section className="py-8">

@@ -17,6 +17,8 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
+import GuideSeriesNav from "@/components/guide/GuideSeriesNav";
+import GuideRelated from "@/components/guide/GuideRelated";
 
 
 /** Safely parse a JSON field that may be double-encoded (string inside jsonb) */
@@ -315,6 +317,21 @@ const GuideDetail = () => {
                   </div>
                 </div>
               )}
+
+              {/* Next in Series */}
+              <GuideSeriesNav
+                currentGuideId={g.id}
+                topicCategory={g.topic_category}
+                showInLearningPaths={!!g.show_in_learning_paths}
+              />
+
+              {/* Related Guides */}
+              <GuideRelated
+                currentGuideId={g.id}
+                topicCategory={g.topic_category}
+                platformTags={formData.platform_tags}
+                topicTags={formData.topic_tags}
+              />
 
               {/* Newsletter & Comments */}
               <EndOfContentNewsletter />
