@@ -125,7 +125,7 @@ export default function AdminGlossary() {
       toast.success("Term deleted");
     },
     onError: (err: any) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error: " + err.message);
     },
   });
 
