@@ -107,7 +107,7 @@ export default function AdminGlossary() {
       setDialogOpen(false);
       setEditingId(null);
       setForm(emptyForm);
-      toast({ title: editingId ? "Term updated" : "Term added" });
+      toast.success(editingId ? "Term updated" : "Term added");
     },
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
