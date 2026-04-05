@@ -453,7 +453,7 @@ const LearningPathDetail = () => {
                                   transition: "all 0.2s ease",
                                 }}
                               >
-                                {isRead ? "✓ Read" : "Mark read"}
+                                {isRead ? "Read" : "Mark read"}
                               </button>
                             </div>
                           </div>
