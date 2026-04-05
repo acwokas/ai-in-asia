@@ -202,6 +202,15 @@ const Header = memo(() => {
               {/* Life dropdown */}
               {renderDropdown("Life", LIFE_ITEMS)}
 
+              {/* Learn dropdown */}
+              {renderDropdown("Learn", LEARN_ITEMS)}
+
+              {/* Create dropdown */}
+              {renderDropdown("Create", CREATE_ITEMS)}
+
+              {/* Policy dropdown */}
+              {renderDropdown("Policy", POLICY_ITEMS)}
+
               {/* Voices plain link */}
               <Link
                 to="/category/voices"
@@ -211,15 +220,6 @@ const Header = memo(() => {
               >
                 Voices
               </Link>
-
-              {/* Learn dropdown */}
-              {renderDropdown("Learn", LEARN_ITEMS)}
-
-              {/* Create dropdown */}
-              {renderDropdown("Create", CREATE_ITEMS)}
-
-              {/* Policy dropdown */}
-              {renderDropdown("Policy", POLICY_ITEMS)}
 
               {/* Tools — main link goes to /tools, dropdown has sub-items */}
               <DropdownMenu>
