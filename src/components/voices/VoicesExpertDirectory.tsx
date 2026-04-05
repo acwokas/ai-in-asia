@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, User, ArrowRight } from "lucide-react";
+import { hydrateArticlesWithPublicAuthors } from "@/lib/publicAuthors";
 
 export const VoicesExpertDirectory = ({ categoryId }: { categoryId: string }) => {
   const { data: experts, isLoading } = useQuery({
@@ -11,15 +12,18 @@ export const VoicesExpertDirectory = ({ categoryId }: { categoryId: string }) =>
     queryFn: async () => {
       const { data, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, authors:authors_public!articles_author_id_fkey!inner (id, name, slug, avatar_url, job_title, bio))`)
+        .select(`articles!inner (id, author_id)`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
       if (error) throw error;
 
+      const articles = await hydrateArticlesWithPublicAuthors(
+        ((data || []).map((ac: any) => ac.articles).filter(Boolean) as any[])
+      );
+
       const authorMap = new Map<string, { author: any; count: number }>();
-      for (const ac of data || []) {
-        const a = ac.articles;
+      for (const a of articles) {
         if (!a?.authors || a.authors.name === "Intelligence Desk") continue;
         const id = a.authors.id;
         if (!authorMap.has(id)) {
@@ -28,8 +32,7 @@ export const VoicesExpertDirectory = ({ categoryId }: { categoryId: string }) =>
         authorMap.get(id)!.count++;
       }
 
-      return [...authorMap.values()]
-        .sort((a, b) => b.count - a.count);
+      return [...authorMap.values()].sort((a, b) => b.count - a.count);
     },
   });
 
