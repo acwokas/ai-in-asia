@@ -147,7 +147,7 @@ function GlossaryTooltipCard({
               backgroundColor: "hsl(38 92% 50% / 0.08)",
             }}
           >
-            <span className="text-[9px]">✦</span>
+            <span className="text-[9px]">*</span>
             AI term
           </span>
         </div>
