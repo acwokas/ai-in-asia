@@ -501,7 +501,7 @@ const RichTextEditor = ({
       <div class="prompt-box-header">
         <span class="prompt-box-icon"></span>
         <span class="prompt-box-title">${promptTitle}</span>
-        <button class="prompt-box-copy" onclick="navigator.clipboard.writeText(this.closest('.prompt-box').dataset.promptContent); this.innerHTML = '✓ Copied!'; setTimeout(() => this.innerHTML = 'Copy', 2000);" type="button">Copy</button>
+        <button class="prompt-box-copy" onclick="navigator.clipboard.writeText(this.closest('.prompt-box').dataset.promptContent); this.innerHTML = 'Copied!'; setTimeout(() => this.innerHTML = 'Copy', 2000);" type="button">Copy</button>
       </div>
       <div class="prompt-box-content">${promptData.content.replace(/\n/g, '<br>')}</div>
     </div><p><br></p>`;
