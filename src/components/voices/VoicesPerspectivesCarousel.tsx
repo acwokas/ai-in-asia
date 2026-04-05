@@ -11,7 +11,7 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
     queryFn: async () => {
       const { data, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, reading_time_minutes, featured_image_url, authors (name, avatar_url), categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, reading_time_minutes, featured_image_url, authors:authors_public!articles_author_id_fkey (name, avatar_url), categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 

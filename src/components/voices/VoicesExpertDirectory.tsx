@@ -11,7 +11,7 @@ export const VoicesExpertDirectory = ({ categoryId }: { categoryId: string }) =>
     queryFn: async () => {
       const { data, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, authors!inner (id, name, slug, avatar_url, job_title, bio))`)
+        .select(`articles!inner (id, authors:authors_public!articles_author_id_fkey!inner (id, name, slug, avatar_url, job_title, bio))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 

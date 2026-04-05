@@ -171,7 +171,7 @@ const Index = () => {
             id, title, slug, excerpt, featured_image_url, reading_time_minutes,
             published_at, updated_at, cornerstone, sticky, primary_category_id,
             comment_count, is_trending,
-            authors:author_id (name, slug),
+            authors:authors_public!articles_author_id_fkey (name, slug),
             categories:primary_category_id (name, slug)
           `)
           .eq("status", "published")
@@ -226,7 +226,7 @@ const Index = () => {
           id, title, slug, excerpt, featured_image_url, reading_time_minutes,
           published_at, updated_at, cornerstone, view_count, primary_category_id,
           comment_count, homepage_trending, is_trending,
-          authors:author_id (name, slug),
+          authors:authors_public!articles_author_id_fkey (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq("status", "published")
@@ -280,7 +280,7 @@ const Index = () => {
         .from("editors_picks")
         .select(`
           location, article_id,
-          articles (*, authors:author_id (name, slug), categories:primary_category_id (name, slug))
+          articles (*, authors:authors_public!articles_author_id_fkey (name, slug), categories:primary_category_id (name, slug))
         `)
         .in("location", ["homepage", "trending-featured"]);
       if (error) throw error;

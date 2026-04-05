@@ -69,7 +69,7 @@ const CategoryAll = () => {
         const { data, error } = await supabase
           .from("article_categories")
           .select(
-            `articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id!inner (name, slug))`
+            `articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors:authors_public!articles_author_id_fkey (name, slug), categories:primary_category_id!inner (name, slug))`
           )
           .eq("category_id", category.id)
           .eq("articles.status", "published");
@@ -87,7 +87,7 @@ const CategoryAll = () => {
       const { data, error } = await supabase
         .from("articles")
         .select(
-          `id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors (name, slug), categories:primary_category_id (name, slug)`
+          `id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, view_count, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors:authors_public!articles_author_id_fkey (name, slug), categories:primary_category_id (name, slug)`
         )
         .eq("primary_category_id", category.id)
         .eq("status", "published")
