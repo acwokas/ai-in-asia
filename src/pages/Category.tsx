@@ -188,7 +188,7 @@ const Category = () => {
         return (data?.map(item => item.articles) || [])
           .filter((a: any) => a && !displayedArticleIds.includes(a.id))
           .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
-          .slice(0, 3);
+          .slice(0, 6);
       }
       const { data, error } = await supabase
         .from("articles")
