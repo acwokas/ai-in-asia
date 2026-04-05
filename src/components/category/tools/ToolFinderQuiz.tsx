@@ -1,37 +1,39 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
 import { GlowBadge } from "@/components/ui/GlowBadge";
+import { Pencil, Search, Palette, ClipboardList, Sprout, Wrench, Zap, Gift, Target, Smile, Rocket } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#a855f7";
 
-const QUESTIONS = [
+const QUESTIONS: { text: string; options: { icon: LucideIcon; label: string; tag: string }[] }[] = [
   {
     text: "What do you mainly want AI to help with?",
     options: [
-      { emoji: "✏️", label: "Writing & communication", tag: "writing" },
-      { emoji: "🔍", label: "Research & learning", tag: "research" },
-      { emoji: "🎨", label: "Images & creative work", tag: "creative" },
-      { emoji: "📋", label: "Productivity & organisation", tag: "productivity" },
+      { icon: Pencil, label: "Writing & communication", tag: "writing" },
+      { icon: Search, label: "Research & learning", tag: "research" },
+      { icon: Palette, label: "Images & creative work", tag: "creative" },
+      { icon: ClipboardList, label: "Productivity & organisation", tag: "productivity" },
     ],
   },
   {
     text: "How comfortable are you with AI?",
     options: [
-      { emoji: "🌱", label: "Brand new to it", tag: "beginner" },
-      { emoji: "🔧", label: "Used ChatGPT a few times", tag: "intermediate" },
-      { emoji: "⚡", label: "I use AI tools daily", tag: "advanced" },
+      { icon: Sprout, label: "Brand new to it", tag: "beginner" },
+      { icon: Wrench, label: "Used ChatGPT a few times", tag: "intermediate" },
+      { icon: Zap, label: "I use AI tools daily", tag: "advanced" },
     ],
   },
   {
     text: "What matters most to you?",
     options: [
-      { emoji: "🆓", label: "It must be free", tag: "free" },
-      { emoji: "🎯", label: "Accuracy and reliability", tag: "accuracy" },
-      { emoji: "😊", label: "Easy to use", tag: "easy" },
-      { emoji: "🚀", label: "Maximum capability", tag: "power" },
+      { icon: Gift, label: "It must be free", tag: "free" },
+      { icon: Target, label: "Accuracy and reliability", tag: "accuracy" },
+      { icon: Smile, label: "Easy to use", tag: "easy" },
+      { icon: Rocket, label: "Maximum capability", tag: "power" },
     ],
   },
-] as const;
+];
 
 interface Rec {
   name: string;
