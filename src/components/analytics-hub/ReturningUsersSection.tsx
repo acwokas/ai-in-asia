@@ -184,7 +184,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       </div>
 
       <p className="text-xs text-muted-foreground bg-muted/50 rounded p-2">
-        📊 Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
+        Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">

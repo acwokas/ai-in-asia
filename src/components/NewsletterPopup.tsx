@@ -162,7 +162,7 @@ const NewsletterPopup = () => {
 
         {isSubscribed ? (
           <div className="text-center space-y-2">
-            <h2 className="text-xl font-bold">You're in! 🎉</h2>
+            <h2 className="text-xl font-bold">You're in!</h2>
             <p className="text-sm text-muted-foreground">
               Check your inbox for the latest AI insights from across Asia.
             </p>

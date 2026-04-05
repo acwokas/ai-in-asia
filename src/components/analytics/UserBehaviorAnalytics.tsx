@@ -379,7 +379,7 @@ export function UserBehaviorAnalytics({ sessionsData, pageviewsData, isLoading }
           {categoryHopping.length > 0 && (
             <div className="mt-4 p-3 bg-muted/50 rounded-lg">
               <p className="text-sm">
-                🔄 Most common category hop: <strong>{categoryHopping[0]?.transition}</strong> ({categoryHopping[0]?.count} times)
+                Most common category hop: <strong>{categoryHopping[0]?.transition}</strong> ({categoryHopping[0]?.count} times)
               </p>
             </div>
           )}

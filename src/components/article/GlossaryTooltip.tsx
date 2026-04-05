@@ -336,7 +336,7 @@ export function useGlossaryAnnotation(
       className="group flex items-center gap-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-amber-500/40 transition-all duration-200 mb-4"
       aria-label={`${termCount} AI terms explained in this article`}
     >
-      <span className="text-sm">🧠</span>
+      <Brain className="h-4 w-4 text-amber-500" />
       <span>
         <span className="font-bold" style={{ color: "hsl(38 92% 50%)" }}>{termCount}</span>
         {" AI terms explained"}

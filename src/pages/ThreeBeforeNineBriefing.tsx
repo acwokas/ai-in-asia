@@ -463,7 +463,7 @@ export default function ThreeBeforeNineBriefing() {
                         {story.body}
                       </p>
                       <p className="text-xs text-muted-foreground/80 italic">
-                        💡 {story.context}
+                        {story.context}
                       </p>
                     </div>
                   ))}

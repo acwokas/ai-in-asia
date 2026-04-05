@@ -216,7 +216,7 @@ export function AdminEngagementTab() {
                   const max = Math.max(...reactionDist.map((d: any) => d.count), 1);
                   return (
                     <div key={r.type} className="flex items-center gap-3">
-                      <span className="text-lg w-6">{reactionEmoji[r.type] || "❓"}</span>
+                      <span className="text-sm w-6 font-medium">{reactionLabels[r.type]?.[0] || "?"}</span>
                       <span className="text-sm capitalize w-24">{r.type.replace("_", " ")}</span>
                       <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                         <div className="h-full rounded-full bg-primary" style={{ width: `${(r.count / max) * 100}%` }} />

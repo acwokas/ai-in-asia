@@ -219,7 +219,7 @@ const Footer = memo(() => {
               </form>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">✓ You're subscribed to the AI in ASIA Brief.</p>
+            <p className="text-sm text-muted-foreground">You're subscribed to the AI in ASIA Brief.</p>
           )}
         </div>
       </div>
