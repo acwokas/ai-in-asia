@@ -1499,8 +1499,8 @@ Please be specific and provide copy-paste-ready content where possible.`;
                         {contentAgePerformance.length > 0 && (
                           <p className="text-muted-foreground">
                             {contentAgePerformance[0].avgViews > contentAgePerformance[contentAgePerformance.length - 1].avgViews
-                              ? "📈 Newer content is performing better - keep publishing fresh articles"
-                              : "📚 Older content has strong evergreen value - consider updating with fresh info"}
+                              ? "Newer content is performing better - keep publishing fresh articles"
+                              : "Older content has strong evergreen value - consider updating with fresh info"}
                           </p>
                         )}
                       </div>
