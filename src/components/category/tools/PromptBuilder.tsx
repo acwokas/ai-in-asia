@@ -99,7 +99,7 @@ export const PromptBuilder = () => {
                 gap: 4,
               }}
             >
-              <span style={{ fontSize: 13 }}>{cat.emoji}</span>
+              <cat.icon size={13} color="currentColor" />
               {cat.label}
             </button>
           ))}

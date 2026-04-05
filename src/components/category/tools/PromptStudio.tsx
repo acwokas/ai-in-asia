@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, Wrench, RefreshCw } from "lucide-react";
+import { Sparkles, Wrench, RefreshCw, Hammer } from "lucide-react";
 import { ToolWrapper, ToolCTA } from "@/components/category/ToolWrapper";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 

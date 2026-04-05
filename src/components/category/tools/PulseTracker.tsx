@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
+import { Radio } from "lucide-react";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 
 const ACCENT = "#3b82f6";
