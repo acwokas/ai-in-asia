@@ -175,7 +175,7 @@ export default function ComposeTab() {
     },
   });
 
-  // ── Smart Auto-Populate ──────────────────────────────────────
+  // ── Auto-Populate Newsletter (data + AI content in one click) ──
   const handleAutoPopulate = async () => {
     setIsAutoPopulating(true);
     try {
@@ -201,6 +201,8 @@ export default function ComposeTab() {
         editionId = newEd.id;
       }
 
+      toast.info("Step 1/2: Populating content from database...");
+
       // 2. Fetch top 4 articles by views from past 7 days
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data: topArticles } = await supabase
@@ -213,13 +215,11 @@ export default function ComposeTab() {
         .limit(4);
 
       if (topArticles && topArticles.length > 0) {
-        // Set hero article
         await supabase
           .from("newsletter_editions")
           .update({ hero_article_id: topArticles[0].id })
           .eq("id", editionId);
 
-        // Clear existing top stories and insert new
         await supabase
           .from("newsletter_top_stories")
           .delete()
@@ -234,7 +234,27 @@ export default function ComposeTab() {
         await supabase.from("newsletter_top_stories").insert(storyInserts);
       }
 
-      toast.success("Auto-populated! Top stories, 3B9, guide, and tool loaded.");
+      // 3. Generate AI editorial content
+      toast.info("Step 2/2: Generating AI editorial content...");
+      const { data: contentData, error: contentError } = await supabase.functions.invoke("generate-newsletter-content", {
+        body: { edition_id: editionId },
+      });
+      if (contentError) {
+        console.error("AI content generation error:", contentError);
+        toast.warning("Content populated but AI generation failed. Use individual Generate buttons.");
+      } else {
+        setEditData(prev => ({
+          ...prev,
+          editorNote: contentData.editor_note || prev.editorNote,
+          worthWatching: contentData.worth_watching || prev.worthWatching,
+          weeklyPromise: contentData.weekly_promise || prev.weeklyPromise,
+          adriansTake: contentData.adrians_take || prev.adriansTake,
+          continuityLine: contentData.continuity_line || prev.continuityLine,
+          collectiveOneLiner: contentData.collective_one_liner || prev.collectiveOneLiner,
+        }));
+      }
+
+      toast.success("Newsletter auto-populated with content + AI editorial!");
       refetch();
       refetchStories();
       refetch3B9();
@@ -541,20 +561,10 @@ export default function ComposeTab() {
             )}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleAutoPopulate} disabled={isAutoPopulating} size="sm" variant="outline" className="border-amber-500/50 text-amber-700 hover:bg-amber-50">
+            <Button onClick={handleAutoPopulate} disabled={isAutoPopulating} size="sm" className="bg-primary hover:bg-primary/90">
               {isAutoPopulating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
-              {isAutoPopulating ? "Populating..." : "Smart Auto-Populate"}
+              {isAutoPopulating ? "Auto-Populating..." : "Auto-Populate Newsletter"}
             </Button>
-            <Button onClick={handleGenerateFullNewsletter} disabled={isGeneratingFull} size="sm">
-              {isGeneratingFull ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              {isGeneratingFull ? "Generating..." : "Generate Full Newsletter"}
-            </Button>
-            {!latestEdition && (
-              <Button onClick={handleGenerate} disabled={isGenerating} variant="outline" size="sm">
-                {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                {isGenerating ? "Generating..." : "Generate Newsletter"}
-              </Button>
-            )}
           </div>
         </div>
 
@@ -822,16 +832,12 @@ export default function ComposeTab() {
                   </div>
                 ) : (
                   <div className="p-6 bg-muted/50 rounded-lg text-center">
-                    <p className="text-muted-foreground text-sm">Click "Generate with AI" to create Worth Watching sections.</p>
+                    <p className="text-muted-foreground text-sm">Use "Auto-Populate Newsletter" or individual Generate buttons to create Worth Watching sections.</p>
                   </div>
                 )}
               </div>
 
               <div className="pt-4 border-t flex gap-3">
-                <Button onClick={handleGenerateAIContent} variant="outline" disabled={isGeneratingContent || !latestEdition} size="sm">
-                  {isGeneratingContent ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  {isGeneratingContent ? "Generating..." : "Generate with AI"}
-                </Button>
                 <Button onClick={handleSaveContent} disabled={updateEditionMutation.isPending} size="sm">
                   {updateEditionMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   {updateEditionMutation.isPending ? "Saving..." : "Save Editorial Content"}
