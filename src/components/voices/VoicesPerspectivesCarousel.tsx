@@ -17,9 +17,14 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
 
       if (error) throw error;
 
-      return (data || [])
+      const articles = (data || [])
         .map((ac: any) => ac.articles)
-        .filter((a: any) => a?.authors?.name !== "Intelligence Desk" && a?.excerpt)
+        .filter((a: any) => {
+          const authorName = a?.authors?.name || '';
+          return authorName && authorName !== 'Intelligence Desk' && a?.excerpt;
+        });
+
+      return articles
         .sort(() => Math.random() - 0.5)
         .slice(0, 8)
         .map((a: any) => ({
@@ -28,7 +33,7 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
           categorySlug: a.categories?.slug || "voices",
           title: a.title,
           quote: a.excerpt.length > 140 ? a.excerpt.slice(0, 137) + "…" : a.excerpt,
-          author: a.authors?.name || "Anonymous",
+          author: a.authors.name,
           authorAvatar: a.authors?.avatar_url || null,
           readingTime: a.reading_time_minutes || null,
           image: a.featured_image_url || null,
