@@ -63,7 +63,7 @@ export const AdminQuickActions = ({
 
       for (let i = 0; i < total; i++) {
         const art = articles[i];
-        setOgProgress(`${i + 1}/${total}  ✓${processed} ✗${failed} ⏭${skipped} — ${art.slug?.slice(0, 30)}`);
+        setOgProgress(`${i + 1}/${total}  OK:${processed} FAIL:${failed} SKIP:${skipped} — ${art.slug?.slice(0, 30)}`);
 
         // Derive OG path
         const marker = "/article-images/";
