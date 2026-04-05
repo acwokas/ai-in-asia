@@ -133,8 +133,8 @@ export const useRelatedArticles = (
         .from("articles")
         .select(`
           *,
-          authors (name, slug),
-          categories:primary_category_id (name, slug)
+          authors:authors_public!articles_author_id_fkey (name, slug),
+            categories:primary_category_id (name, slug)
         `)
         .neq("id", articleId)
         .eq("status", "published")
