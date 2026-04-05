@@ -907,7 +907,7 @@ interface WorthWatching {
                      </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                        <div>
-                         <Label className="text-sm text-green-700">✓ Worth it if...</Label>
+                         <Label className="text-sm text-green-700">Worth it if...</Label>
                          <Textarea
                            rows={2}
                            placeholder="You're interested in..."
