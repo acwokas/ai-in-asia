@@ -11,7 +11,7 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
     queryFn: async () => {
       const { data: articleCats, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, authors!inner (id, name, slug, avatar_url, bio, job_title, article_count), categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, authors:authors_public!articles_author_id_fkey!inner (id, name, slug, avatar_url, bio, job_title, article_count), categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 

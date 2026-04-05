@@ -58,7 +58,7 @@ export const useArticle = (cleanSlug: string | undefined, previewCode: string | 
         .from("articles")
         .select(`
           *,
-          authors!articles_author_id_fkey (id, name, slug, bio, avatar_url, job_title),
+          authors:authors_public!articles_author_id_fkey (id, name, slug, bio, avatar_url, job_title),
           categories!articles_primary_category_id_fkey (name, slug, id)
         `)
         .eq("slug", cleanSlug);
@@ -115,7 +115,7 @@ export const useRelatedArticles = (
           .from("articles")
           .select(`
             *,
-            authors (name, slug),
+            authors:authors_public!articles_author_id_fkey (name, slug),
             categories:primary_category_id (name, slug)
           `)
           .eq("primary_category_id", primaryCategoryId)
@@ -133,8 +133,8 @@ export const useRelatedArticles = (
         .from("articles")
         .select(`
           *,
-          authors (name, slug),
-          categories:primary_category_id (name, slug)
+          authors:authors_public!articles_author_id_fkey (name, slug),
+            categories:primary_category_id (name, slug)
         `)
         .neq("id", articleId)
         .eq("status", "published")

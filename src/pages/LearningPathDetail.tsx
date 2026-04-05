@@ -62,7 +62,7 @@ const LearningPathDetail = () => {
       if (categorySlug === 'voices' || categorySlug === 'policy') {
         const { data, error } = await supabase
           .from("article_categories")
-          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors(name, slug), categories:primary_category_id(name, slug))`)
+          .select(`articles!inner (id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors:authors_public!articles_author_id_fkey(name, slug), categories:primary_category_id(name, slug))`)
           .eq("category_id", category.id)
           .eq("articles.status", "published");
         if (error) throw error;
@@ -70,7 +70,7 @@ const LearningPathDetail = () => {
       } else {
         const { data, error } = await supabase
           .from("articles")
-          .select("id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors(name, slug), categories:primary_category_id(name, slug)")
+          .select("id, slug, title, excerpt, featured_image_url, featured_image_alt, published_at, reading_time_minutes, ai_tags, topic_tags, article_tags(tags(name)), authors:authors_public!articles_author_id_fkey(name, slug), categories:primary_category_id(name, slug)")
           .eq("primary_category_id", category.id)
           .eq("status", "published")
           .order("published_at", { ascending: false });
