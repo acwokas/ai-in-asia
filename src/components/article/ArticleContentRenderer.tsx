@@ -4,7 +4,7 @@
  * Extracted from Article.tsx for maintainability
  */
 
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useRef, useState, useMemo, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
 import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
