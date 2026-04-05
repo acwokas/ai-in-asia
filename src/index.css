@@ -844,9 +844,9 @@ All colors MUST be HSL.
   }
 }
 
-.article-hero > .absolute img,
-.article-hero > img,
-.article-hero > div:first-child img {
+.article-hero .absolute img,
+.article-hero img,
+.article-hero div:first-child img {
   width: 100%;
   height: 100%;
   object-fit: cover;
