@@ -167,8 +167,8 @@ const Category = () => {
   const displayedArticleIds = useMemo(() => {
     const ids: string[] = [];
     if (articles?.[0]?.id) ids.push(articles[0].id);
-    articles?.slice(1, 5).forEach((a: any) => { if (a?.id) ids.push(a.id); });
-    (mostReadArticles || articles?.slice(5, 9) || []).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    articles?.slice(1, 9).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    (mostReadArticles || articles?.slice(9, 13) || []).forEach((a: any) => { if (a?.id) ids.push(a.id); });
     return ids;
   }, [articles, mostReadArticles]);
 
