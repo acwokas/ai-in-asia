@@ -838,10 +838,6 @@ export default function ComposeTab() {
               </div>
 
               <div className="pt-4 border-t flex gap-3">
-                <Button onClick={handleGenerateAIContent} variant="outline" disabled={isGeneratingContent || !latestEdition} size="sm">
-                  {isGeneratingContent ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  {isGeneratingContent ? "Generating..." : "Generate with AI"}
-                </Button>
                 <Button onClick={handleSaveContent} disabled={updateEditionMutation.isPending} size="sm">
                   {updateEditionMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   {updateEditionMutation.isPending ? "Saving..." : "Save Editorial Content"}
