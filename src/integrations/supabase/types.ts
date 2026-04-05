@@ -2134,6 +2134,33 @@ export type Database = {
         }
         Relationships: []
       }
+      glossary_terms: {
+        Row: {
+          category: string
+          created_at: string
+          definition: string
+          id: string
+          related_terms: string[] | null
+          term: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          definition: string
+          id?: string
+          related_terms?: string[] | null
+          term: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          definition?: string
+          id?: string
+          related_terms?: string[] | null
+          term?: string
+        }
+        Relationships: []
+      }
       google_oauth_tokens: {
         Row: {
           access_token: string
