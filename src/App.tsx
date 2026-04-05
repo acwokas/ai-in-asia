@@ -378,6 +378,7 @@ const router = createBrowserRouter([
           { path: "guide-editor/:id", element: <GuideEditor /> },
           { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
           { path: "settings", element: <AdminSettings /> },
+          { path: "glossary", element: <AdminGlossary /> },
         ],
       },
       { path: "/3-before-9-briefing", element: <ThreeBeforeNineBriefing /> },
