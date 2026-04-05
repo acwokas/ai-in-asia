@@ -157,7 +157,14 @@ const Category = () => {
         if (error) throw error;
         return data
           ?.map(item => item.articles)
-          .filter((a) => a && (slug !== 'voices' || a.authors?.name !== 'Intelligence Desk'))
+          .filter((a) => {
+            if (!a) return false;
+            if (slug === 'voices') {
+              const authorName = a.authors?.name || '';
+              if (!authorName || authorName === 'Intelligence Desk') return false;
+            }
+            return true;
+          })
           .sort((a: any, b: any) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()) || [];
       }
       const { data, error } = await supabase

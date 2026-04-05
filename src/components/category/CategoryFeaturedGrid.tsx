@@ -124,6 +124,11 @@ export const FeaturedCard = memo(function FeaturedCard({ article, cfg, slug, ima
         <h3 style={{ fontSize: 14, fontFamily: "Poppins, sans-serif", fontWeight: 700, color: "hsl(var(--foreground))", lineHeight: 1.4, margin: 0 }}>
           {decodeHtml(article.title)}
         </h3>
+        {article.authors?.name && (
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 6, margin: "6px 0 0 0" }}>
+            {article.authors.name}
+          </p>
+        )}
       </div>
     </div>
   );
