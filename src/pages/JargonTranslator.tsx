@@ -390,7 +390,7 @@ export default function JargonTranslator() {
                     <TypewriterText trigger={translationKey}>
                       <p className="text-foreground leading-relaxed">{translatedInput}</p>
                       <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <p className="text-green-400 font-medium text-sm">✨ Refreshingly human — no jargon detected!</p>
+                        <p className="text-green-400 font-medium text-sm">Refreshingly human — no jargon detected!</p>
                       </div>
                     </TypewriterText>
                   </div>
