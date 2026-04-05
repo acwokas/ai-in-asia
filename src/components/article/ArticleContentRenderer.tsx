@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
-import { useGlossaryAnnotation } from "./GlossaryTooltip";
+import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
 
