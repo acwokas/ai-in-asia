@@ -91,9 +91,8 @@ const AIBingo = () => {
       />
       <Header />
       <main className="flex-1 px-4 py-10">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto text-center">
           <ToolBreadcrumb toolName="AI Jargon Bingo" />
-          <div className="text-center">
           <h1 className="font-display text-2xl md:text-3xl font-black text-foreground mb-2">
             AI Jargon Bingo
           </h1>

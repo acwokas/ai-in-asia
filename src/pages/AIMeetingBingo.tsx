@@ -94,9 +94,8 @@ const AIMeetingBingo = () => {
       />
       <Header />
       <main className="flex-1 px-4 py-10">
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-xl mx-auto text-center">
           <ToolBreadcrumb toolName="AI Meeting Bingo" />
-          <div className="text-center">
           <div className="inline-flex items-center gap-2 bg-amber-500/15 text-amber-500 px-4 py-1.5 rounded-full text-xs font-bold mb-4">
             <Trophy className="h-3.5 w-3.5" /> INTERACTIVE TOOL
           </div>
