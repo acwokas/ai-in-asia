@@ -30,6 +30,7 @@ const toolsLinks = [
   { to: "/tools/ai-readiness", label: "AI Readiness Score" },
   { to: "/tools/ai-bingo", label: "AI Jargon Bingo" },
   { to: "/tools/jargon-translator", label: "Jargon Translator" },
+  { to: "/tools/ai-glossary", label: "AI Glossary" },
   { to: "/tools/ai-job-impact", label: "Job Impact Analyser" },
   { to: "/tools", label: "All Tools →" },
 ];

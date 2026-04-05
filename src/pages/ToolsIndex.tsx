@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, type LucideIcon } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, type LucideIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -64,6 +64,13 @@ const TOOLS: Tool[] = [
     desc: "Explore AI regulations across 16 Asia-Pacific countries on an interactive map.",
     icon: Shield,
     to: "/tools/ai-policy-tracker",
+    isNew: true,
+  },
+  {
+    name: "AI Glossary",
+    desc: "472+ AI and tech terms explained in plain language. Search, filter, explore.",
+    icon: BookOpenText,
+    to: "/tools/ai-glossary",
     isNew: true,
   },
   {

@@ -101,6 +101,7 @@ const ToolsIndex = lazy(() => import("./pages/ToolsIndex"));
 const AIHeadlines = lazy(() => import("./pages/AIHeadlines"));
 const AIMeetingBingo = lazy(() => import("./pages/AIMeetingBingo"));
 const AIPolicyTracker = lazy(() => import("./pages/AIPolicyTracker"));
+const AIGlossary = lazy(() => import("./pages/AIGlossary"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
@@ -310,6 +311,7 @@ const router = createBrowserRouter([
       { path: "/tools/ai-headlines", element: <AIHeadlines /> },
       { path: "/tools/ai-meeting-bingo", element: <AIMeetingBingo /> },
       { path: "/tools/ai-policy-tracker", element: <AIPolicyTracker /> },
+      { path: "/tools/ai-glossary", element: <AIGlossary /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },
