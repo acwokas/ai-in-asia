@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Users, Loader2, BookOpen } from "lucide-react";
+import { TrendingUp, Users, Loader2, BookOpen, Check } from "lucide-react";
 
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
