@@ -13,7 +13,7 @@ import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/category
 import { LEARNING_PATHS } from "@/constants/learningPaths";
 import { iconMap } from "@/lib/iconMap";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
-import { useRevealOnScroll } from "@/lib/scrollAnimation";
+import { useRevealOnScroll, staggerStyle } from "@/lib/scrollAnimation";
 
 
 // Sub-components
@@ -65,6 +65,32 @@ const TOOL_META: Record<string, { name: string; emoji: string }> = {
   policy: { name: "Policy Tracker", emoji: "shield" },
 };
 
+// Nav CTA links per category (mirrors primary nav dropdowns minus the category page itself)
+const CATEGORY_NAV_CTAS: Record<string, { label: string; to: string; desc: string }[]> = {
+  news: [
+    { label: "AI Events", to: "/events", desc: "Conferences & meetups across Asia" },
+  ],
+  business: [
+    { label: "Business Guides", to: "/guides/business", desc: "AI guides for business professionals" },
+    { label: "Finance Guides", to: "/guides/finance", desc: "AI guides for finance and fintech" },
+    { label: "Work Guides", to: "/guides/work", desc: "AI guides for the workplace" },
+  ],
+  life: [
+    { label: "Wellness Guides", to: "/guides/wellness", desc: "AI guides for health and wellbeing" },
+    { label: "Creativity Guides", to: "/guides/creativity", desc: "AI guides for creative pursuits" },
+  ],
+  learn: [
+    { label: "AI Guides", to: "/guides", desc: "Step-by-step guides for learning AI" },
+  ],
+  create: [
+    { label: "AI Prompt Library", to: "/prompts", desc: "Ready-to-use prompts for every platform" },
+  ],
+  policy: [
+    { label: "Policy Atlas", to: "/ai-policy-atlas", desc: "Track AI regulation across Asia-Pacific" },
+  ],
+  voices: [],
+};
+
 const Category = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -92,6 +118,7 @@ const Category = () => {
   const revealTool = useRevealOnScroll();
   const revealFeatured = useRevealOnScroll();
   const revealDeep = useRevealOnScroll();
+  const revealNavCtas = useRevealOnScroll();
   const revealCross = useRevealOnScroll();
   const revealNewsletter = useRevealOnScroll();
 
@@ -167,8 +194,8 @@ const Category = () => {
   const displayedArticleIds = useMemo(() => {
     const ids: string[] = [];
     if (articles?.[0]?.id) ids.push(articles[0].id);
-    articles?.slice(1, 5).forEach((a: any) => { if (a?.id) ids.push(a.id); });
-    (mostReadArticles || articles?.slice(5, 9) || []).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    articles?.slice(1, 9).forEach((a: any) => { if (a?.id) ids.push(a.id); });
+    (mostReadArticles || articles?.slice(9, 13) || []).forEach((a: any) => { if (a?.id) ids.push(a.id); });
     return ids;
   }, [articles, mostReadArticles]);
 
@@ -188,7 +215,7 @@ const Category = () => {
         return (data?.map(item => item.articles) || [])
           .filter((a: any) => a && !displayedArticleIds.includes(a.id))
           .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
-          .slice(0, 3);
+          .slice(0, 6);
       }
       const { data, error } = await supabase
         .from("articles")
@@ -197,7 +224,7 @@ const Category = () => {
         .eq("status", "published")
         .not("id", "in", `(${displayedArticleIds.join(",")})`)
         .order("published_at", { ascending: true })
-        .limit(3);
+        .limit(6);
       if (error) throw error;
       return data;
     },
@@ -279,25 +306,25 @@ const Category = () => {
   }, [articles, isFilterActive, filteredAllArticles, featuredArticle]);
 
   const featuredGridArticles = useMemo(() => {
-    if (isFilterActive) return filteredAllArticles.slice(1, 5);
+    if (isFilterActive) return filteredAllArticles.slice(1, 9);
     const excludeIds = new Set([featuredArticle?.id, ...latestArticles.map((a: any) => a.id)].filter(Boolean));
     const remaining = (allCategoryArticles || []).filter((a: any) => !excludeIds.has(a.id));
     // Prefer trending articles sorted by score, backfill with recent
     const trending = remaining
       .filter((a: any) => a.is_trending)
       .sort((a: any, b: any) => (b.trending_score || 0) - (a.trending_score || 0));
-    if (trending.length >= 4) return trending.slice(0, 4);
+    if (trending.length >= 8) return trending.slice(0, 8);
     const nonTrending = remaining.filter((a: any) => !a.is_trending);
-    return [...trending, ...nonTrending].slice(0, 4);
+    return [...trending, ...nonTrending].slice(0, 8);
   }, [allCategoryArticles, isFilterActive, filteredAllArticles, featuredArticle, latestArticles]);
 
   const filteredDeepCuts = useMemo(() => {
     if (isFilterActive) {
-      const heroAndFeaturedIds = new Set(filteredAllArticles.slice(0, 5).map((a: any) => a.id));
+      const heroAndFeaturedIds = new Set(filteredAllArticles.slice(0, 9).map((a: any) => a.id));
       return filteredAllArticles
         .filter((a: any) => !heroAndFeaturedIds.has(a.id))
         .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
-        .slice(0, 3);
+        .slice(0, 6);
     }
     return deepCutsArticles || [];
   }, [deepCutsArticles, isFilterActive, filteredAllArticles]);
@@ -460,6 +487,33 @@ const Category = () => {
                 revealProps={revealDeep}
                 selectedFilter={selectedFilter}
               />
+
+              {/* 5b. NAV CTA CARDS */}
+              {(() => {
+                const navCtas = CATEGORY_NAV_CTAS[slug || "news"] || [];
+                if (navCtas.length === 0) return null;
+                return (
+                  <section ref={revealNavCtas.ref} style={{ marginBottom: 48, ...revealNavCtas.style }}>
+                    <SectionHeader title={`Explore ${cfg.label}`} emoji="compass" color={cfg.accent} subtitle={`Guides and resources for ${cfg.label.toLowerCase()}`} />
+                    <div className={`grid gap-3.5 ${navCtas.length === 1 ? 'grid-cols-1 max-w-md' : navCtas.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'}`}>
+                      {navCtas.map((cta, i) => (
+                        <Link
+                          key={cta.to}
+                          to={cta.to}
+                          className="group flex flex-col rounded-xl bg-gray-800/60 border border-border p-6 transition-all duration-200 hover:scale-[1.02] hover:bg-gray-700/60 hover:shadow-lg"
+                          style={staggerStyle(revealNavCtas.visible, i)}
+                        >
+                          <h4 className="text-base font-bold text-foreground mb-1 group-hover:text-amber-400 transition-colors">{cta.label}</h4>
+                          <p className="text-sm text-muted-foreground mb-4 flex-1">{cta.desc}</p>
+                          <span className="inline-flex self-start rounded-full bg-amber-500/15 px-4 py-1.5 text-xs font-bold text-amber-500 transition-all group-hover:bg-amber-500 group-hover:text-black">
+                            Browse →
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })()}
 
               {/* Divider */}
               <div className="my-8">
