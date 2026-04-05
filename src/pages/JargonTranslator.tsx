@@ -210,7 +210,7 @@ export default function JargonTranslator() {
     try {
       const { error } = await supabase.from("jargon_submissions").insert({ text: trimmed });
       if (error) throw error;
-      toast.success("Thanks! Your jargon has been submitted 🏆");
+      toast.success("Thanks! Your jargon has been submitted");
       setSubmissionText("");
     } catch {
       toast.error("Submission failed — please try again");
