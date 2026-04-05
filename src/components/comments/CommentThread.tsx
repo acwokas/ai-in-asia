@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { User, Reply, CornerDownRight, Loader2, ThumbsUp, Heart, Lightbulb, Sparkles } from "lucide-react";
+import { User, Reply, CornerDownRight, Loader2 } from "lucide-react";
 import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,9 +82,9 @@ interface CommentReactionsBarProps {
 }
 
 const COMMENT_REACTIONS = [
-  { type: "thumbsup", icon: ThumbsUp },
-  { type: "heart", icon: Heart },
-  { type: "lightbulb", icon: Lightbulb },
+  { type: "thumbsup", emoji: "👍" },
+  { type: "heart", emoji: "❤️" },
+  { type: "lightbulb", emoji: "💡" },
 ];
 
 const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
@@ -152,7 +152,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
 
   return (
     <div className="flex items-center gap-1 mt-1.5">
-      {COMMENT_REACTIONS.map(({ type, icon: Icon }) => {
+      {COMMENT_REACTIONS.map(({ type, emoji }) => {
         const count = counts[type] || 0;
         const isActive = userReactions.includes(type);
         return (
@@ -166,7 +166,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
               isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
             )}
           >
-            <Icon className="h-3.5 w-3.5" />
+            <span className="text-sm">{emoji}</span>
             {count > 0 && <span className="text-[10px] font-medium">{count}</span>}
           </button>
         );
