@@ -141,7 +141,7 @@ export default function ArticleReactions({ articleId }: ArticleReactionsProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-4">
-      {REACTIONS.map(({ type, emoji, label }) => {
+      {REACTIONS.map(({ type, icon: Icon, label }) => {
         const count = counts[type] || 0;
         const isActive = userReaction === type;
         return (
@@ -157,12 +157,10 @@ export default function ArticleReactions({ articleId }: ArticleReactionsProps) {
                 : "border-border text-muted-foreground"
             )}
           >
-            <span className={cn(
-              "text-base transition-transform duration-300",
+            <Icon className={cn(
+              "h-4 w-4 transition-transform duration-300",
               animating === type && "scale-125"
-            )}>
-              {emoji}
-            </span>
+            )} />
             <span className="hidden sm:inline">{label}</span>
             {count > 0 && (
               <span className={cn(
