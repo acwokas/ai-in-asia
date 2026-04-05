@@ -1354,7 +1354,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                             if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
                           }}
                         >
-                          <strong>Readers:</strong> 50%+ scroll, 1min+ ✓
+                          <strong>Readers:</strong> 50%+ scroll, 1min+ (engaged)
                         </div>
                         <div 
                           className="p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
