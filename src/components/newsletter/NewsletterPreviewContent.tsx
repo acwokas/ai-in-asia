@@ -3,6 +3,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewsletterEmailPreview, type EmailTemplateData } from "./NewsletterEmailTemplate";
 import { Loader2 } from "lucide-react";
 
+// Re-export for backward compatibility with NewsletterView
+export interface NewsletterEditionData {
+  id: string;
+  edition_date: string;
+  subject_line: string;
+  editor_note?: string;
+  weekly_promise?: string;
+  adrians_take?: string;
+  continuity_line?: string;
+  collective_one_liner?: string;
+  roadmap_body?: string;
+  roadmap_worth_it_if?: string;
+  roadmap_skip_if?: string;
+  worth_watching?: any;
+  heroArticle?: any;
+  newsletter_top_stories?: any[];
+  toolsPrompts?: any[];
+  mysteryLink?: any;
+}
+
 interface NewsletterPreviewContentProps {
   edition: {
     id: string;
