@@ -421,7 +421,7 @@ export default function JargonTranslator() {
                                    <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
                                    <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
                                    {seg.entry!.asiaContext && (
-                                     <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
+                                     <span className="block text-xs text-primary/70 mt-1">{seg.entry!.asiaContext}</span>
                                    )}
                                    <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
                                      {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
