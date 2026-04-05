@@ -1117,33 +1117,31 @@ const Index = () => {
               <h2 className="headline text-[22px] md:text-[28px] font-bold">Free AI Tools</h2>
               <p className="text-muted-foreground text-sm md:text-base mt-2">Try our interactive tools — no signup required</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              <Link
-                to="/tools/ai-job-impact"
-                className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 overflow-hidden"
-              >
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 60%)' }} />
-                <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="14" height="10" x="5" y="3" rx="2"/><path d="M9 21h6"/><path d="M12 13v8"/><path d="M19 7l-2 2"/><path d="M17 5l2 2"/></svg>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {[
+                { to: "/tools/ai-job-impact", icon: "M5 3a2 2 0 0 0-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V5a2 2 0 0 0-2-2H5ZM9 7h6M9 11h6M9 15h4", title: "Will AI Take My Job?", desc: "Get a personalised AI impact score for your role and country" },
+                { to: "/tools/jargon-translator", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", title: "AI Jargon Translator", desc: "Decode corporate AI buzzwords into plain English" },
+                { to: "/tools/ai-meeting-bingo", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 7a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75", title: "AI Meeting Bingo", desc: "Spot meeting clichés and win — confetti included!", isNew: true },
+                { to: "/tools/ai-policy-tracker", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", title: "AI Policy Tracker", desc: "Explore AI regulations across Asia-Pacific", isNew: true },
+              ].map((tool) => (
+                <Link
+                  key={tool.to}
+                  to={tool.to}
+                  className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 overflow-hidden"
+                >
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 60%)' }} />
+                  {tool.isNew && (
+                    <span className="absolute top-3 right-3 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full z-10">New</span>
+                  )}
+                  <div className="relative z-10">
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d={tool.icon}/></svg>
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{tool.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{tool.desc}</p>
                   </div>
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">Will AI Take My Job?</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Get a personalised AI impact score for your role and country</p>
-                </div>
-              </Link>
-              <Link
-                to="/tools/jargon-translator"
-                className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 overflow-hidden"
-              >
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), transparent 60%)' }} />
-                <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="m9 8 2 4 2-4"/><path d="M9 16h.01"/></svg>
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">AI Jargon Translator</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Decode corporate AI buzzwords into plain English</p>
-                </div>
-              </Link>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
