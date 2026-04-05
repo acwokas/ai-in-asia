@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
+import { Clock, DollarSign, UserCheck, Rocket, BarChart3 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#10b981";
 const INDUSTRIES = ["Marketing", "Finance", "Operations", "HR", "Sales", "Legal"] as const;
@@ -20,11 +22,11 @@ export const ROICalculator = () => {
   const fte = annualHours / 1920;
   const weeklyHours = Math.round(team * hours * mult);
 
-  const stats = [
-    { emoji: "⏱️", value: annualHours.toLocaleString(), label: "Hours saved / year" },
-    { emoji: "💰", value: fmt(costSaved), label: "Productivity value" },
-    { emoji: "👤", value: fte.toFixed(1), label: "FTE equivalent" },
-    { emoji: "🚀", value: weeklyHours.toLocaleString(), label: "Weekly hours freed" },
+  const stats: { icon: LucideIcon; value: string; label: string }[] = [
+    { icon: Clock, value: annualHours.toLocaleString(), label: "Hours saved / year" },
+    { icon: DollarSign, value: fmt(costSaved), label: "Productivity value" },
+    { icon: UserCheck, value: fte.toFixed(1), label: "FTE equivalent" },
+    { icon: Rocket, value: weeklyHours.toLocaleString(), label: "Weekly hours freed" },
   ];
 
   const sliderStyle: React.CSSProperties = {
