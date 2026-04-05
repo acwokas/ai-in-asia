@@ -17,6 +17,8 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
+import GuideSeriesNav from "@/components/guide/GuideSeriesNav";
+import GuideRelated from "@/components/guide/GuideRelated";
 
 
 /** Safely parse a JSON field that may be double-encoded (string inside jsonb) */
