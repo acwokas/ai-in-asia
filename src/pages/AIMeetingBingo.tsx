@@ -81,7 +81,7 @@ const AIMeetingBingo = () => {
     setHasWon(false);
   };
 
-  const shareText = encodeURIComponent("BINGO! 🎉 I survived another AI meeting! Try AI Meeting Bingo:");
+  const shareText = encodeURIComponent("BINGO! I survived another AI meeting! Try AI Meeting Bingo:");
   const shareUrl = encodeURIComponent("https://aiinasia.com/tools/ai-meeting-bingo");
 
   return (
