@@ -47,7 +47,6 @@ export default function AdminGlossary() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<TermFormData>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: terms = [], isLoading } = useQuery({
