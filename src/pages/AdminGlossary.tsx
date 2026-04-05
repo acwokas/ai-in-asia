@@ -122,7 +122,7 @@ export default function AdminGlossary() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-glossary-terms"] });
       setDeleteId(null);
-      toast({ title: "Term deleted" });
+      toast.success("Term deleted");
     },
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
