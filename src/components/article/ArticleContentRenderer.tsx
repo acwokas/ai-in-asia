@@ -97,8 +97,10 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
   const proseRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
-  // Inject ad markers into the HTML string BEFORE rendering
-  const processedHtml = injectAdMarkersIntoHtml(html, injectInArticleAds);
+  // Inject ad markers and glossary annotations into the HTML string BEFORE rendering
+  const withAds = injectAdMarkersIntoHtml(html, injectInArticleAds);
+  const glossaryResult = useMemo(() => annotateGlossaryHtml(withAds), [withAds]);
+  const processedHtml = glossaryResult.html;
 
   // Inject mid-article related content after the Nth paragraph
   useEffect(() => {
