@@ -128,7 +128,7 @@ const AIGlossary = () => {
       <Header />
 
       <main className="flex-1 px-4 py-10">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ToolBreadcrumb toolName="AI Glossary" />
 
           {/* Hero */}
@@ -139,7 +139,7 @@ const AIGlossary = () => {
             <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-2">
               AI Glossary
             </h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
+            <p className="text-foreground/70 max-w-lg mx-auto text-base">
               {terms.length > 0 ? terms.length : 472} AI and tech terms explained in plain language. No jargon about jargon.
             </p>
           </div>
@@ -243,7 +243,7 @@ const AIGlossary = () => {
                 className="rounded-xl border border-border bg-card p-5 transition-all duration-300"
               >
                 <div className="flex items-start gap-3 mb-2">
-                  <h2 className="font-display text-lg font-bold text-foreground">
+                  <h2 className="font-display text-xl font-bold text-foreground">
                     {t.term}
                   </h2>
                   <Badge
@@ -253,7 +253,7 @@ const AIGlossary = () => {
                     {t.category}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                <p className="text-[15px] text-foreground/80 leading-relaxed mb-3">
                   {t.definition}
                 </p>
                 {t.related_terms && t.related_terms.length > 0 && (
