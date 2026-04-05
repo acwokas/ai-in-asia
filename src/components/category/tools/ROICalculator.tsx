@@ -43,7 +43,7 @@ export const ROICalculator = () => {
       <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-          <span style={{ fontSize: 20 }}>📊</span>
+          <BarChart3 size={20} color="#fff" />
           <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
             AI ROI Calculator
           </span>
