@@ -152,6 +152,7 @@ function GlossaryTooltipCard({
         pointerEvents: ready ? "auto" : "none",
       }}
     >
+      {/* Arrow / caret */}
       <div
         style={{
           position: "absolute",
@@ -162,31 +163,48 @@ function GlossaryTooltipCard({
           width: 10,
           height: 10,
           zIndex: 1,
+          background: "hsl(220 20% 12%)",
+          borderRight: "1px solid hsl(38 92% 50% / 0.25)",
+          borderBottom: "1px solid hsl(38 92% 50% / 0.25)",
         }}
-        className="bg-card border-b border-r border-border"
       />
-      <div className="relative bg-card border border-border shadow-lg rounded-lg p-3 max-w-xs z-[2]">
+      <div
+        className="relative z-[2]"
+        style={{
+          background: "hsl(220 20% 12% / 0.97)",
+          border: "1px solid hsl(38 92% 50% / 0.25)",
+          borderRadius: "0.75rem",
+          padding: "0.75rem 1rem",
+          maxWidth: "320px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px hsl(38 92% 50% / 0.1)",
+          backdropFilter: "blur(8px)",
+        }}
+      >
         <div className="flex items-center justify-between gap-2 mb-1.5">
-          <span className="font-bold text-sm" style={{ color: "hsl(38 92% 50%)" }}>
+          <span className="font-bold text-sm" style={{ color: "hsl(38 92% 55%)" }}>
             {entry.term}
           </span>
           <span
-            className="shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border"
+            className="shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
             style={{
-              color: "hsl(38 92% 50%)",
+              color: "hsl(38 92% 55%)",
               borderColor: "hsl(38 92% 50% / 0.3)",
-              backgroundColor: "hsl(38 92% 50% / 0.08)",
+              backgroundColor: "hsl(38 92% 50% / 0.12)",
+              border: "1px solid hsl(38 92% 50% / 0.3)",
             }}
           >
-            <span className="text-[9px]">*</span>
+            <span className="text-[9px]">✦</span>
             AI term
           </span>
         </div>
-        <p className="text-sm leading-relaxed text-muted-foreground">{entry.plain}</p>
+        <p className="text-sm leading-relaxed" style={{ color: "hsl(220 10% 85%)" }}>{entry.plain}</p>
         {entry.asiaContext && (
           <p
-            className="mt-2 text-xs leading-relaxed italic border-l-2 pl-2 text-muted-foreground/80"
-            style={{ borderColor: "hsl(38 92% 50% / 0.4)" }}
+            className="mt-2 text-xs leading-relaxed italic pl-2"
+            style={{
+              borderLeft: "2px solid hsl(38 92% 50% / 0.4)",
+              color: "hsl(220 10% 70%)",
+            }}
           >
             {entry.asiaContext}
           </p>
