@@ -318,6 +318,21 @@ const GuideDetail = () => {
                 </div>
               )}
 
+              {/* Next in Series */}
+              <GuideSeriesNav
+                currentGuideId={g.id}
+                topicCategory={g.topic_category}
+                showInLearningPaths={!!g.show_in_learning_paths}
+              />
+
+              {/* Related Guides */}
+              <GuideRelated
+                currentGuideId={g.id}
+                topicCategory={g.topic_category}
+                platformTags={formData.platform_tags}
+                topicTags={formData.topic_tags}
+              />
+
               {/* Newsletter & Comments */}
               <EndOfContentNewsletter />
               <GuideComments guideId={g.id} />

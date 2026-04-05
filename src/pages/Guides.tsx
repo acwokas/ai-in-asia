@@ -476,6 +476,9 @@ const Guides = () => {
           </div>
         </section>
 
+        {/* ── LEARNING PATHS ── */}
+        <GuideLearningPaths />
+
         {/* ── 4. FACETED FILTER BAR + MAIN GRID ── */}
         <section className="py-8">
           <div className="container mx-auto px-4">
