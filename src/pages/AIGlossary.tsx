@@ -243,7 +243,7 @@ const AIGlossary = () => {
                 className="rounded-xl border border-border bg-card p-5 transition-all duration-300"
               >
                 <div className="flex items-start gap-3 mb-2">
-                  <h2 className="font-display text-lg font-bold text-foreground">
+                  <h2 className="font-display text-xl font-bold text-foreground">
                     {t.term}
                   </h2>
                   <Badge
