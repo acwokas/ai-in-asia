@@ -7,10 +7,10 @@ import { awardPoints } from "@/lib/gamification";
 import { Lightbulb, Flame, AlertCircle, HelpCircle, type LucideIcon } from "lucide-react";
 
 const REACTIONS = [
-  { type: "insightful", icon: Lightbulb, label: "Insightful" },
-  { type: "important", icon: Flame, label: "Important" },
-  { type: "surprising", icon: AlertCircle, label: "Surprising" },
-  { type: "outdated", icon: HelpCircle, label: "Needs Update" },
+  { type: "insightful", emoji: "💡", label: "Insightful" },
+  { type: "important", emoji: "🔥", label: "Important" },
+  { type: "surprising", emoji: "😮", label: "Surprising" },
+  { type: "outdated", emoji: "🔄", label: "Needs Update" },
 ] as const;
 
 function getSessionId(): string {
