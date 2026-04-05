@@ -74,7 +74,7 @@ export function annotateGlossaryHtml(html: string): { html: string; termCount: n
 
       matched.add(termLower);
       out += seg.slice(lastIdx, m.index);
-      out += `<span class="${GLOSSARY_CLASS}" ${GLOSSARY_ATTR}="${termLower}" tabindex="0" role="button" aria-label="Define: ${m[1]}">${m[1]}<sup class="glossary-sparkle" aria-hidden="true">*</sup></span>`;
+      out += `<span class="${GLOSSARY_CLASS}" ${GLOSSARY_ATTR}="${termLower}" tabindex="0" role="button" aria-label="Define: ${m[1]}">${m[1]}<sup class="glossary-sparkle" aria-hidden="true">✦</sup></span>`;
       lastIdx = m.index + m[0].length;
     }
 
