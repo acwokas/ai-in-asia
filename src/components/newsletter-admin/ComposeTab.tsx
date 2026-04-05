@@ -14,7 +14,7 @@ import { MysteryLinksManager } from "@/components/newsletter/MysteryLinksManager
 import { SponsorsManager } from "@/components/newsletter/SponsorsManager";
 import { AutomationStatus } from "@/components/newsletter/AutomationStatus";
 import { EditableNewsletterSection } from "@/components/newsletter/EditableNewsletterSection";
-import { Calendar, Send, Eye, Loader2, Sparkles, FileText, ExternalLink, Mail, FlaskConical, Trophy, TrendingUp, Building2, Scale } from "lucide-react";
+import { Calendar, Send, Eye, Loader2, Sparkles, FileText, ExternalLink, Mail, FlaskConical, Trophy, TrendingUp, Building2, Scale, Zap, RefreshCw, BookOpen, Wrench, Coffee } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +48,7 @@ export default function ComposeTab() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState("");
+  const [isAutoPopulating, setIsAutoPopulating] = useState(false);
   const [editData, setEditData] = useState({
     editorNote: "",
     worthWatching: null as WorthWatching | null,
@@ -74,6 +75,74 @@ export default function ComposeTab() {
     },
     staleTime: 0,
     refetchOnMount: "always",
+  });
+
+  // Preview data queries
+  const { data: previewTopStories, refetch: refetchStories } = useQuery({
+    queryKey: ["compose-preview-stories", latestEdition?.id],
+    enabled: !!latestEdition?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("newsletter_top_stories")
+        .select(`position, ai_summary, article_id, articles:article_id (id, title, slug, featured_image_url)`)
+        .eq("edition_id", latestEdition!.id)
+        .order("position", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: preview3B9, refetch: refetch3B9 } = useQuery({
+    queryKey: ["compose-preview-3b9"],
+    queryFn: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, top_list_items, published_at")
+        .eq("article_type", "three_before_nine")
+        .eq("status", "published")
+        .gte("published_at", weekAgo)
+        .order("published_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: previewGuide, refetch: refetchGuide } = useQuery({
+    queryKey: ["compose-preview-guide"],
+    queryFn: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, slug, excerpt")
+        .eq("status", "published")
+        .eq("primary_category_id", "f2be6a0a-219c-4afb-84c7-0264e26cee6c")
+        .gte("published_at", weekAgo)
+        .order("published_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: previewTool, refetch: refetchTool } = useQuery({
+    queryKey: ["compose-preview-tool"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("newsletter_tools_prompts")
+        .select("*")
+        .eq("category", "tool")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
@@ -106,6 +175,80 @@ export default function ComposeTab() {
     },
   });
 
+  // ── Smart Auto-Populate ──────────────────────────────────────
+  const handleAutoPopulate = async () => {
+    setIsAutoPopulating(true);
+    try {
+      const editionDate = new Date().toISOString().split("T")[0];
+
+      // 1. Ensure edition exists
+      let editionId: string;
+      const { data: existing } = await supabase
+        .from("newsletter_editions")
+        .select("id")
+        .eq("edition_date", editionDate)
+        .maybeSingle();
+
+      if (existing?.id) {
+        editionId = existing.id;
+      } else {
+        const { data: newEd, error: edErr } = await supabase
+          .from("newsletter_editions")
+          .insert({ edition_date: editionDate, subject_line: `AiiNASiA Weekly Brief — ${editionDate}`, status: "draft" })
+          .select("id")
+          .single();
+        if (edErr) throw edErr;
+        editionId = newEd.id;
+      }
+
+      // 2. Fetch top 4 articles by views from past 7 days
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data: topArticles } = await supabase
+        .from("articles")
+        .select("id, title, view_count")
+        .eq("status", "published")
+        .gte("published_at", weekAgo)
+        .not("article_type", "eq", "three_before_nine")
+        .order("view_count", { ascending: false, nullsFirst: false })
+        .limit(4);
+
+      if (topArticles && topArticles.length > 0) {
+        // Set hero article
+        await supabase
+          .from("newsletter_editions")
+          .update({ hero_article_id: topArticles[0].id })
+          .eq("id", editionId);
+
+        // Clear existing top stories and insert new
+        await supabase
+          .from("newsletter_top_stories")
+          .delete()
+          .eq("edition_id", editionId);
+
+        const storyInserts = topArticles.map((a, i) => ({
+          edition_id: editionId,
+          article_id: a.id,
+          position: i + 1,
+        }));
+
+        await supabase.from("newsletter_top_stories").insert(storyInserts);
+      }
+
+      toast.success("Auto-populated! Top stories, 3B9, guide, and tool loaded.");
+      refetch();
+      refetchStories();
+      refetch3B9();
+      refetchGuide();
+      refetchTool();
+    } catch (error: any) {
+      console.error("Auto-populate error:", error);
+      toast.error(error.message || "Failed to auto-populate");
+    } finally {
+      setIsAutoPopulating(false);
+    }
+  };
+
+  // ── Existing handlers ────────────────────────────────────────
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
@@ -369,6 +512,11 @@ export default function ComposeTab() {
     }
   };
 
+  // Parse 3B9 items for preview
+  const b9Items = preview3B9?.top_list_items && Array.isArray(preview3B9.top_list_items)
+    ? (preview3B9.top_list_items as any[]).slice(0, 3)
+    : [];
+
   return (
     <>
       {/* Current Edition Overview */}
@@ -393,6 +541,10 @@ export default function ComposeTab() {
             )}
           </div>
           <div className="flex gap-2">
+            <Button onClick={handleAutoPopulate} disabled={isAutoPopulating} size="sm" variant="outline" className="border-amber-500/50 text-amber-700 hover:bg-amber-50">
+              {isAutoPopulating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
+              {isAutoPopulating ? "Populating..." : "Smart Auto-Populate"}
+            </Button>
             <Button onClick={handleGenerateFullNewsletter} disabled={isGeneratingFull} size="sm">
               {isGeneratingFull ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
               {isGeneratingFull ? "Generating..." : "Generate Full Newsletter"}
@@ -408,6 +560,96 @@ export default function ComposeTab() {
 
         {latestEdition && (
           <>
+            {/* Content Preview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {/* Top Stories Card */}
+              <Card className="p-3 border-l-4 border-l-primary">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-semibold">Top Stories</span>
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => refetchStories()}>
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                </div>
+                {previewTopStories && previewTopStories.length > 0 ? (
+                  <div className="space-y-1">
+                    {previewTopStories.slice(0, 3).map((s: any, i: number) => (
+                      <p key={s.article_id} className="text-xs text-muted-foreground truncate">
+                        {i + 1}. {s.articles?.title || "Unknown"}
+                      </p>
+                    ))}
+                    {previewTopStories.length > 3 && (
+                      <p className="text-xs text-muted-foreground/50">+{previewTopStories.length - 3} more</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/50 italic">No stories yet</p>
+                )}
+              </Card>
+
+              {/* 3B9 Card */}
+              <Card className="p-3 border-l-4" style={{ borderLeftColor: "#d4af37" }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Coffee className="h-3.5 w-3.5" style={{ color: "#d4af37" }} />
+                    <span className="text-xs font-semibold">3 Before 9</span>
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => refetch3B9()}>
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                </div>
+                {b9Items.length > 0 ? (
+                  <div className="space-y-1">
+                    {b9Items.map((item: any, i: number) => (
+                      <p key={i} className="text-xs text-muted-foreground truncate">
+                        {item.emoji || "☕"} {item.title || item.headline || "Item"}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/50 italic">No 3B9 this week</p>
+                )}
+              </Card>
+
+              {/* Guide Card */}
+              <Card className="p-3 border-l-4 border-l-accent">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <BookOpen className="h-3.5 w-3.5 text-accent-foreground" />
+                    <span className="text-xs font-semibold">Guide</span>
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => refetchGuide()}>
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                </div>
+                {previewGuide ? (
+                  <p className="text-xs text-muted-foreground truncate">{previewGuide.title}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground/50 italic">No guide this week</p>
+                )}
+              </Card>
+
+              {/* Tool Card */}
+              <Card className="p-3 border-l-4 border-l-green-500">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Wrench className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-xs font-semibold">Tool of the Week</span>
+                  </div>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => refetchTool()}>
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                </div>
+                {previewTool ? (
+                  <p className="text-xs text-muted-foreground truncate">{previewTool.title}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground/50 italic">No active tool</p>
+                )}
+              </Card>
+            </div>
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-semibold">A/B Subject Lines</Label>
