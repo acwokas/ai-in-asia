@@ -115,7 +115,7 @@ export const useRelatedArticles = (
           .from("articles")
           .select(`
             *,
-            authors (name, slug),
+            authors:authors_public!articles_author_id_fkey (name, slug),
             categories:primary_category_id (name, slug)
           `)
           .eq("primary_category_id", primaryCategoryId)
