@@ -175,7 +175,7 @@ export default function ComposeTab() {
     },
   });
 
-  // ── Smart Auto-Populate ──────────────────────────────────────
+  // ── Auto-Populate Newsletter (data + AI content in one click) ──
   const handleAutoPopulate = async () => {
     setIsAutoPopulating(true);
     try {
@@ -201,6 +201,8 @@ export default function ComposeTab() {
         editionId = newEd.id;
       }
 
+      toast.info("Step 1/2: Populating content from database...");
+
       // 2. Fetch top 4 articles by views from past 7 days
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data: topArticles } = await supabase
@@ -213,13 +215,11 @@ export default function ComposeTab() {
         .limit(4);
 
       if (topArticles && topArticles.length > 0) {
-        // Set hero article
         await supabase
           .from("newsletter_editions")
           .update({ hero_article_id: topArticles[0].id })
           .eq("id", editionId);
 
-        // Clear existing top stories and insert new
         await supabase
           .from("newsletter_top_stories")
           .delete()
@@ -234,7 +234,27 @@ export default function ComposeTab() {
         await supabase.from("newsletter_top_stories").insert(storyInserts);
       }
 
-      toast.success("Auto-populated! Top stories, 3B9, guide, and tool loaded.");
+      // 3. Generate AI editorial content
+      toast.info("Step 2/2: Generating AI editorial content...");
+      const { data: contentData, error: contentError } = await supabase.functions.invoke("generate-newsletter-content", {
+        body: { edition_id: editionId },
+      });
+      if (contentError) {
+        console.error("AI content generation error:", contentError);
+        toast.warning("Content populated but AI generation failed. Use individual Generate buttons.");
+      } else {
+        setEditData(prev => ({
+          ...prev,
+          editorNote: contentData.editor_note || prev.editorNote,
+          worthWatching: contentData.worth_watching || prev.worthWatching,
+          weeklyPromise: contentData.weekly_promise || prev.weeklyPromise,
+          adriansTake: contentData.adrians_take || prev.adriansTake,
+          continuityLine: contentData.continuity_line || prev.continuityLine,
+          collectiveOneLiner: contentData.collective_one_liner || prev.collectiveOneLiner,
+        }));
+      }
+
+      toast.success("Newsletter auto-populated with content + AI editorial!");
       refetch();
       refetchStories();
       refetch3B9();
