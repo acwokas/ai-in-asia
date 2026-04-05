@@ -41,33 +41,58 @@ function injectAdMarkersIntoHtml(html: string, shouldInject: boolean): string {
   const paragraphCount = parts.length - 1; // last part is after the final </p>
   const result: string[] = [];
   let pIndex = 0;
-  let insideBlockquote = false;
+  let skipDepth = 0; // depth counter for containers where ads must never appear
+
+  // Tags/classes that define "no-ad zones"
+  const SKIP_OPEN_RE = /<(blockquote|table|thead|tbody|tfoot)[\s>]/gi;
+  const SKIP_CLOSE_RE = /<\/(blockquote|table|thead|tbody|tfoot)>/gi;
+  const SKIP_DIV_OPEN_RE = /<div[^>]*class="[^"]*\b(by-the-numbers|tldr-snapshot|article-pull-quote|ai-view-box|comparison-table|faq-styled-item|prompt-box|mid-article-portal)\b[^"]*"[^>]*>/gi;
+  const DIV_CLOSE_RE = /<\/div>/gi;
+
+  // Track div-based skip zones separately (they nest with generic divs)
+  let insideSkipDiv = 0;
 
   for (let i = 0; i < parts.length; i++) {
     result.push(parts[i]);
 
-    // Track whether we're inside a <blockquote> — never inject ads there
     const segment = parts[i];
-    const bqOpens = (segment.match(/<blockquote[\s>]/gi) || []).length;
-    const bqCloses = (segment.match(/<\/blockquote>/gi) || []).length;
-    if (bqOpens > bqCloses) insideBlockquote = true;
-    if (bqCloses > bqOpens) insideBlockquote = false;
+
+    // Track block-level skip elements (blockquote, table)
+    const blockOpens = (segment.match(SKIP_OPEN_RE) || []).length;
+    const blockCloses = (segment.match(SKIP_CLOSE_RE) || []).length;
+    skipDepth += blockOpens - blockCloses;
+    if (skipDepth < 0) skipDepth = 0;
+
+    // Track div-based skip zones
+    const divSkipOpens = (segment.match(SKIP_DIV_OPEN_RE) || []).length;
+    const divCloses = insideSkipDiv > 0 ? (segment.match(DIV_CLOSE_RE) || []).length : 0;
+    insideSkipDiv += divSkipOpens - divCloses;
+    if (insideSkipDiv < 0) insideSkipDiv = 0;
+
+    // Reset lastIndex on all regex (they use /g flag)
+    SKIP_OPEN_RE.lastIndex = 0;
+    SKIP_CLOSE_RE.lastIndex = 0;
+    SKIP_DIV_OPEN_RE.lastIndex = 0;
+    DIV_CLOSE_RE.lastIndex = 0;
 
     // Only add </p> back if this isn't the last segment
     if (i < parts.length - 1) {
       result.push('</p>');
       pIndex++;
 
-      // Skip ad injection when inside a blockquote
-      if (insideBlockquote) continue;
+      // Never inject ads inside protected containers
+      if (skipDepth > 0 || insideSkipDiv > 0) continue;
 
-      // After first paragraph: horizontal ad
-      if (pIndex === 1) {
+      // First ad placement after FIRST_AD_AFTER_PARAGRAPH
+      if (pIndex === FIRST_AD_AFTER_PARAGRAPH) {
         result.push(buildAdPlaceholderHtml('horizontal', IN_ARTICLE_AD_SLOT_HORIZONTAL));
+        continue;
       }
 
-      // Recurring ads every PARAGRAPH_AD_INTERVAL paragraphs (skip 1st which is handled above)
-      if (paragraphCount >= MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS && pIndex > 1 && pIndex % PARAGRAPH_AD_INTERVAL === 0) {
+      // Recurring ads every PARAGRAPH_AD_INTERVAL paragraphs after the first ad
+      if (paragraphCount >= MIN_PARAGRAPHS_FOR_IN_ARTICLE_ADS &&
+          pIndex > FIRST_AD_AFTER_PARAGRAPH &&
+          (pIndex - FIRST_AD_AFTER_PARAGRAPH) % PARAGRAPH_AD_INTERVAL === 0) {
         result.push(buildAdPlaceholderHtml('rectangle', IN_ARTICLE_AD_SLOT));
       }
     }
