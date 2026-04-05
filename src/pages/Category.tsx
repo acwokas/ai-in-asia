@@ -13,7 +13,7 @@ import { CATEGORY_CONFIG, TOKENS, type CategorySlug } from "@/constants/category
 import { LEARNING_PATHS } from "@/constants/learningPaths";
 import { iconMap } from "@/lib/iconMap";
 import ExploreMoreButton from "@/components/ExploreMoreButton";
-import { useRevealOnScroll } from "@/lib/scrollAnimation";
+import { useRevealOnScroll, staggerStyle } from "@/lib/scrollAnimation";
 
 
 // Sub-components
