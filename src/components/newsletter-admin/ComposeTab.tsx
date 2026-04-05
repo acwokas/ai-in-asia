@@ -832,7 +832,7 @@ export default function ComposeTab() {
                   </div>
                 ) : (
                   <div className="p-6 bg-muted/50 rounded-lg text-center">
-                    <p className="text-muted-foreground text-sm">Click "Generate with AI" to create Worth Watching sections.</p>
+                    <p className="text-muted-foreground text-sm">Use "Auto-Populate Newsletter" or individual Generate buttons to create Worth Watching sections.</p>
                   </div>
                 )}
               </div>
