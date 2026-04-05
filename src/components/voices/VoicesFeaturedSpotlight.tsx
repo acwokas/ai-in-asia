@@ -9,40 +9,41 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
     queryKey: ["voices-featured-spotlight", categoryId],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
+      // Step 1: Find the most prolific author in the voices category
       const { data: articleCats, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, authors:authors_public!articles_author_id_fkey (id, name, slug, avatar_url, bio, job_title, article_count), categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, authors:authors_public!articles_author_id_fkey (id, name, slug, avatar_url, bio, job_title, article_count))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
       if (error) throw error;
 
-      const articles = (articleCats || [])
-        .map((ac: any) => ac.articles)
-        .filter((a: any) => a?.authors?.name && a.authors.name !== "Intelligence Desk");
-
-      const authorMap = new Map<string, { author: any; articles: any[]; count: number }>();
-      for (const a of articles) {
-        const authorId = a.authors?.id;
-        if (!authorId) continue;
-        if (!authorMap.has(authorId)) {
-          authorMap.set(authorId, { author: a.authors, articles: [], count: 0 });
+      const authorCounts = new Map<string, { author: any; count: number }>();
+      for (const ac of articleCats || []) {
+        const a = ac.articles as any;
+        const authorId = a?.authors?.id;
+        if (!authorId || a.authors.name === "Intelligence Desk") continue;
+        if (!authorCounts.has(authorId)) {
+          authorCounts.set(authorId, { author: a.authors, count: 0 });
         }
-        const entry = authorMap.get(authorId)!;
-        entry.count++;
-        entry.articles.push(a);
+        authorCounts.get(authorId)!.count++;
       }
 
-      // Sort each author's articles by published_at descending, keep top 3
-      for (const entry of authorMap.values()) {
-        entry.articles.sort((a: any, b: any) =>
-          new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
-        );
-        entry.articles = entry.articles.slice(0, 3);
-      }
+      const topAuthor = [...authorCounts.values()].sort((a, b) => b.count - a.count)[0];
+      if (!topAuthor) return null;
 
-      const sorted = [...authorMap.values()].sort((a, b) => b.count - a.count);
-      return sorted[0] || null;
+      // Step 2: Fetch this author's 3 latest articles across ALL categories
+      const { data: latestArticles, error: latestError } = await supabase
+        .from("articles")
+        .select("id, slug, title, featured_image_url, published_at, reading_time_minutes, categories:primary_category_id (slug)")
+        .eq("author_id", topAuthor.author.id)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(3);
+
+      if (latestError) throw latestError;
+
+      return { author: topAuthor.author, articles: latestArticles || [], count: topAuthor.count };
     },
   });
 
