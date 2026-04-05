@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, BookOpen, ArrowRight, FileText } from "lucide-react";
+import { hydrateArticlesWithPublicAuthors } from "@/lib/publicAuthors";
 
 export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) => {
   const { data, isLoading } = useQuery({
@@ -11,18 +12,22 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
     queryFn: async () => {
       const { data: articleCats, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, authors:authors_public!articles_author_id_fkey!inner (id, name, slug, avatar_url, bio, job_title, article_count), categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, author_id, categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
       if (error) throw error;
 
-      const articles = (articleCats || [])
-        .map((ac: any) => ac.articles)
-        .filter((a: any) => a?.authors?.name !== "Intelligence Desk");
+      const articles = await hydrateArticlesWithPublicAuthors(
+        ((articleCats || []).map((ac: any) => ac.articles).filter(Boolean) as any[])
+      );
+
+      const filteredArticles = articles.filter(
+        (a: any) => a?.authors?.name && a.authors.name !== "Intelligence Desk"
+      );
 
       const authorMap = new Map<string, { author: any; articles: any[]; count: number }>();
-      for (const a of articles) {
+      for (const a of filteredArticles) {
         const authorId = a.authors?.id;
         if (!authorId) continue;
         if (!authorMap.has(authorId)) {
@@ -52,7 +57,6 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
       </div>
       <div className="rounded-2xl border border-amber-500/30 bg-gray-800/60 overflow-hidden">
         <div className="flex flex-col md:flex-row gap-6 p-6">
-          {/* Author photo & info */}
           <div className="flex flex-col items-center md:items-start gap-3 md:w-60 shrink-0">
             {author.avatar_url ? (
               <img
@@ -95,7 +99,6 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
             </Link>
           </div>
 
-          {/* Latest articles */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-4">
               <BookOpen className="h-4 w-4 text-amber-500" />
