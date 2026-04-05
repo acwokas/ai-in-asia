@@ -13,7 +13,7 @@ interface ToolBreadcrumbProps {
 }
 
 export const ToolBreadcrumb = ({ toolName }: ToolBreadcrumbProps) => (
-  <Breadcrumb className="mb-6">
+  <Breadcrumb className="mb-6 text-left">
     <BreadcrumbList>
       <BreadcrumbItem>
         <BreadcrumbLink asChild>
