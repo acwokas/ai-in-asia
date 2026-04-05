@@ -161,11 +161,9 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
   useEffect(() => {
     if (!import.meta.env.PROD || !injectInArticleAds || !proseRef.current) return;
 
-    // Small delay to let DOM settle after render
-    const timer = setTimeout(() => {
+    const pushAds = () => {
       const adSlots = proseRef.current?.querySelectorAll('.in-article-ad-wrapper ins.adsbygoogle');
       adSlots?.forEach((ins) => {
-        // Skip already-initialized slots
         if (ins.getAttribute('data-adsbygoogle-status')) return;
         try {
           ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
@@ -173,9 +171,14 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
           console.error("AdSense push error:", err);
         }
       });
-    }, 100);
+    };
 
-    return () => clearTimeout(timer);
+    // Try immediately, then retry after AdSense script may have loaded (post-consent)
+    const t1 = setTimeout(pushAds, 100);
+    const t2 = setTimeout(pushAds, 2000);
+    const t3 = setTimeout(pushAds, 5000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [processedHtml, injectInArticleAds]);
 
   // FAQ visual styling via DOM manipulation
