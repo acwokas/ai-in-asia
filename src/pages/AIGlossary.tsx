@@ -128,7 +128,7 @@ const AIGlossary = () => {
       <Header />
 
       <main className="flex-1 px-4 py-10">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ToolBreadcrumb toolName="AI Glossary" />
 
           {/* Hero */}
