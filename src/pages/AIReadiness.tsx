@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { ToolBreadcrumb } from "@/components/ToolBreadcrumb";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -160,7 +161,8 @@ const AIReadiness = () => {
       />
       <Header />
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-xl mx-auto">
+          <ToolBreadcrumb toolName="AI Readiness Score" />
           <AnimatePresence mode="wait">
             {!finished ? (
               <motion.div
