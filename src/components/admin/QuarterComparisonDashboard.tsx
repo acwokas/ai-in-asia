@@ -11,15 +11,15 @@ import { format, eachDayOfInterval, startOfDay } from "date-fns";
 import type { QuarterInfo } from "@/hooks/useDashboardTimePeriod";
 
 const COUNTRY_NAMES: Record<string, string> = {
-  US: "🇺🇸 United States", GB: "🇬🇧 United Kingdom", IN: "🇮🇳 India", SG: "🇸🇬 Singapore",
-  JP: "🇯🇵 Japan", AU: "🇦🇺 Australia", DE: "🇩🇪 Germany", FR: "🇫🇷 France", CA: "🇨🇦 Canada",
-  KR: "🇰🇷 South Korea", CN: "🇨🇳 China", HK: "🇭🇰 Hong Kong", TW: "🇹🇼 Taiwan",
-  TH: "🇹🇭 Thailand", ID: "🇮🇩 Indonesia", MY: "🇲🇾 Malaysia", PH: "🇵🇭 Philippines",
-  VN: "🇻🇳 Vietnam", NL: "🇳🇱 Netherlands", BR: "🇧🇷 Brazil", AE: "🇦🇪 UAE",
+  US: "United States", GB: "United Kingdom", IN: "India", SG: "Singapore",
+  JP: "Japan", AU: "Australia", DE: "Germany", FR: "France", CA: "Canada",
+  KR: "South Korea", CN: "China", HK: "Hong Kong", TW: "Taiwan",
+  TH: "Thailand", ID: "Indonesia", MY: "Malaysia", PH: "Philippines",
+  VN: "Vietnam", NL: "Netherlands", BR: "Brazil", AE: "UAE",
 };
 
 function countryLabel(code: string) {
-  return COUNTRY_NAMES[code] || `🏳️ ${code}`;
+  return COUNTRY_NAMES[code] || code;
 }
 
 function pctChange(current: number, previous: number) {

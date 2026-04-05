@@ -33,7 +33,7 @@ const COUNTRY_FLAGS: Record<string, { name: string; flag: string }> = {
 };
 
 function getCountryInfo(code: string) {
-  return COUNTRY_FLAGS[code?.toUpperCase()] || { name: code || "Unknown", flag: "🌐" };
+  return COUNTRY_FLAGS[code?.toUpperCase()] || { name: code || "Unknown", flag: "" };
 }
 
 function categorizeReferrer(referrer: string | null): string {

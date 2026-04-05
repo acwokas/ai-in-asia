@@ -40,7 +40,7 @@ const COUNTRY_MAP: Record<string, { name: string; flag: string }> = {
 
 function getCountryInfo(code: string) {
   const entry = COUNTRY_MAP[code?.toUpperCase()];
-  return entry || { name: code || "Unknown", flag: "🌐" };
+  return entry || { name: code || "Unknown", flag: "" };
 }
 
 interface CountryRow {
