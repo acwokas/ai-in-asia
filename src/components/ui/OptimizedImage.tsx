@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, ImgHTMLAttributes } from "react";
+import { useState, useEffect, useRef, useCallback, memo, ImgHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { ImageOff } from "lucide-react";
 import { getCategoryFallbackImage } from "@/lib/categoryColors";
@@ -69,8 +69,8 @@ export const OptimizedImage = memo(({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(loading === "eager");
-  const [showSkeleton, setShowSkeleton] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (loading === "eager" || !containerRef.current) return;
@@ -91,11 +91,15 @@ export const OptimizedImage = memo(({
   useEffect(() => {
     setIsLoaded(false);
     setHasError(false);
-    setShowSkeleton(false);
-    // Only show skeleton if image hasn't loaded within 100ms (avoids flash for cached images)
-    const timer = setTimeout(() => setShowSkeleton(true), 100);
-    return () => clearTimeout(timer);
   }, [src]);
+
+  // Check if image is already cached on mount / src change
+  const handleRef = useCallback((el: HTMLImageElement | null) => {
+    (imgRef as React.MutableRefObject<HTMLImageElement | null>).current = el;
+    if (el && el.complete && el.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, []);
 
   const srcSet = buildSrcSet(resolvedSrc, responsiveWidths);
 
@@ -126,16 +130,15 @@ export const OptimizedImage = memo(({
 
   return (
     <div ref={containerRef} className={cn("relative overflow-hidden", className)} style={containerStyle}>
-      {/* Skeleton placeholder – only shown if image takes >100ms to load */}
-      {showSkeleton && !isLoaded && (
-        <div
-          className="absolute inset-0 bg-muted animate-pulse rounded-lg"
-        />
+      {/* Skeleton placeholder – only shown while image is loading */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse rounded-lg" />
       )}
 
       {/* Actual image */}
       {isInView && (
         <img
+          ref={handleRef}
           src={resolvedSrc}
           srcSet={srcSet}
           sizes={sizes}
@@ -146,8 +149,8 @@ export const OptimizedImage = memo(({
           onLoad={() => setIsLoaded(true)}
           onError={() => setHasError(true)}
           className={cn(
-            "w-full h-full transition-opacity duration-300",
-            isLoaded ? "opacity-100" : "opacity-0"
+            "w-full h-full transition-opacity duration-150",
+            isLoaded ? "opacity-100" : "opacity-[0.01]"
           )}
           style={objectStyle}
           {...rest}
