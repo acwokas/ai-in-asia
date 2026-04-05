@@ -1,0 +1,1 @@
+ALTER TABLE public.newsletter_sends ADD COLUMN IF NOT EXISTS resend_email_id text;

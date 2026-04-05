@@ -574,7 +574,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
         const unsubUrl = createUnsubscribeUrl(sendRecord.id, edition.id, subscriber.id);
-        await resend.emails.send({
+        const { data: emailResult, error: emailError } = await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: subjectLine,
@@ -584,6 +584,18 @@ Deno.serve(async (req) => {
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           },
         });
+
+        if (emailError) {
+          throw new Error(`Resend error: ${emailError.message}`);
+        }
+
+        // Store Resend email ID for webhook tracking
+        if (emailResult?.id) {
+          await supabase
+            .from('newsletter_sends')
+            .update({ resend_email_id: emailResult.id })
+            .eq('id', sendRecord.id);
+        }
 
         sentCount++;
         if (variant === 'A') variantASent++;
