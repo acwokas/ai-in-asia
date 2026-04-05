@@ -168,7 +168,7 @@ export const ToolFinderQuiz = () => {
         ) : (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 18 }}>🎯</span>
+              <Target size={18} color="#fff" />
               <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff", margin: 0 }}>
                 Here are your top picks
               </h3>
