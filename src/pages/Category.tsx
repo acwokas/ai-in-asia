@@ -197,7 +197,7 @@ const Category = () => {
         .eq("status", "published")
         .not("id", "in", `(${displayedArticleIds.join(",")})`)
         .order("published_at", { ascending: true })
-        .limit(3);
+        .limit(6);
       if (error) throw error;
       return data;
     },
