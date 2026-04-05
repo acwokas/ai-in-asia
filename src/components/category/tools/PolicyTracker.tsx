@@ -93,7 +93,7 @@ export const PolicyTracker = () => {
       <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 20 }}>⚖️</span>
+          <Scale size={20} color="#fff" />
           <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff", margin: 0 }}>
             AI Regulation Tracker
           </h3>

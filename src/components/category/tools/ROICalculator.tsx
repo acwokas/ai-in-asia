@@ -104,7 +104,7 @@ export const ROICalculator = () => {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 18, marginBottom: 4 }}>{s.emoji}</div>
+                  <div style={{ marginBottom: 4 }}><s.icon size={18} color={ACCENT} /></div>
                   <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 22, color: ACCENT, lineHeight: 1.1 }}>
                     {s.value}
                   </div>

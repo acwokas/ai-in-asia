@@ -247,7 +247,7 @@ export const ToolFinderQuiz = () => {
   );
 };
 
-function OptionButton({ emoji, label, onClick }: { emoji: string; label: string; onClick: () => void }) {
+function OptionButton({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
@@ -267,7 +267,7 @@ function OptionButton({ emoji, label, onClick }: { emoji: string; label: string;
         transition: "all 0.2s ease",
       }}
     >
-      <span style={{ fontSize: 28 }}>{emoji}</span>
+      <Icon size={28} color="#fff" />
       <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", textAlign: "center" }}>
         {label}
       </span>
