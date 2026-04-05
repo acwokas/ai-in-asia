@@ -117,6 +117,7 @@ const navGroups: NavGroup[] = [
       { label: "Sponsors", path: "/admin/category-sponsors", icon: Megaphone },
       { label: "Event Submissions", path: "/admin/event-submissions", icon: CalendarCheck },
       { label: "Redirects", path: "/redirects", icon: ExternalLink, external: true },
+      { label: "Glossary", path: "/admin/glossary", icon: Brain },
     ],
   },
 ];

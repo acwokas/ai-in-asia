@@ -151,6 +151,7 @@ const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
 const AdminEventSubmissionsPage = lazy(() => import("./components/admin/AdminEventSubmissions"));
+const AdminGlossary = lazy(() => import("./pages/AdminGlossary"));
 
 // Lightweight skeleton loader for instant display — matches homepage hero layout
 const HomepageSkeleton = () => (
@@ -377,6 +378,7 @@ const router = createBrowserRouter([
           { path: "guide-editor/:id", element: <GuideEditor /> },
           { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
           { path: "settings", element: <AdminSettings /> },
+          { path: "glossary", element: <AdminGlossary /> },
         ],
       },
       { path: "/3-before-9-briefing", element: <ThreeBeforeNineBriefing /> },
