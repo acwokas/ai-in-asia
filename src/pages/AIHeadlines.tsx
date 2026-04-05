@@ -92,7 +92,7 @@ const AIHeadlines = () => {
             AI Headline Generator
           </h1>
           <p className="text-muted-foreground mb-10">
-            Totally real* AI news headlines from across Asia. <span className="text-xs opacity-60">*not real</span>
+            Totally real* AI news headlines from across Asia. <span className="text-xs opacity-60">*not real... yet!</span>
           </p>
 
           <div className="min-h-[160px] flex items-center justify-center mb-8">
