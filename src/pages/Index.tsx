@@ -1178,7 +1178,7 @@ const Index = () => {
               </form>
             ) : (
               <div className="bg-black/10 border border-black/20 rounded-lg p-6 max-w-md mx-auto animate-scale-in">
-                <p className="text-lg font-semibold">🎉 You're all set!</p>
+                <p className="text-lg font-semibold">You're all set!</p>
                 <p className="text-sm opacity-80 mt-2">Check your inbox for our latest insights.</p>
               </div>
             )}

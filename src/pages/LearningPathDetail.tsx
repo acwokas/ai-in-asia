@@ -249,10 +249,10 @@ const LearningPathDetail = () => {
                 <GlowBadge color={DIFFICULTY_COLORS[path.difficulty] || "#9ca3af"}>{path.difficulty}</GlowBadge>
                 <GlowBadge color={cfg.accent}>{cfg.label}</GlowBadge>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
-                  📖 {displayArticles.length} articles
+                  {displayArticles.length} articles
                 </span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
-                  ⏱️ {path.time}
+                  {path.time}
                 </span>
               </div>
 

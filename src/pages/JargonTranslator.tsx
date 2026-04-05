@@ -528,7 +528,7 @@ export default function JargonTranslator() {
           <section className="mb-12 max-w-2xl mx-auto">
             <Card className="border-border bg-card">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-foreground mb-1">🗳️ Submit Your Own</h3>
+                <h3 className="text-lg font-bold text-foreground mb-1">Submit Your Own</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Found corporate AI jargon in the wild? Paste the worst offender here and help build the Hall of Shame.
                 </p>
