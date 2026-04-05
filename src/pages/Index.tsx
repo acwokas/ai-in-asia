@@ -1157,9 +1157,9 @@ const Index = () => {
             <p className="text-lg mb-6 opacity-80 max-w-lg mx-auto">Join 10,000+ professionals getting the AI in ASIA Brief every week.</p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm mb-8 max-w-md mx-auto">
-              <span className="flex items-center gap-1.5">✅ Curated AI news from across Asia</span>
-              <span className="flex items-center gap-1.5">✅ Expert analysis & insights</span>
-              <span className="flex items-center gap-1.5">✅ Free tools & guides</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Curated AI news from across Asia</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Expert analysis & insights</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Free tools & guides</span>
             </div>
             
             {!isNewsletterSubscribed ? (
