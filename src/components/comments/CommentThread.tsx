@@ -82,9 +82,9 @@ interface CommentReactionsBarProps {
 }
 
 const COMMENT_REACTIONS = [
-  { type: "thumbsup", icon: ThumbsUp },
-  { type: "heart", icon: Heart },
-  { type: "lightbulb", icon: Lightbulb },
+  { type: "thumbsup", emoji: "👍" },
+  { type: "heart", emoji: "❤️" },
+  { type: "lightbulb", emoji: "💡" },
 ];
 
 const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
