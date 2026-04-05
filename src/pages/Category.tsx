@@ -279,16 +279,16 @@ const Category = () => {
   }, [articles, isFilterActive, filteredAllArticles, featuredArticle]);
 
   const featuredGridArticles = useMemo(() => {
-    if (isFilterActive) return filteredAllArticles.slice(1, 5);
+    if (isFilterActive) return filteredAllArticles.slice(1, 9);
     const excludeIds = new Set([featuredArticle?.id, ...latestArticles.map((a: any) => a.id)].filter(Boolean));
     const remaining = (allCategoryArticles || []).filter((a: any) => !excludeIds.has(a.id));
     // Prefer trending articles sorted by score, backfill with recent
     const trending = remaining
       .filter((a: any) => a.is_trending)
       .sort((a: any, b: any) => (b.trending_score || 0) - (a.trending_score || 0));
-    if (trending.length >= 4) return trending.slice(0, 4);
+    if (trending.length >= 8) return trending.slice(0, 8);
     const nonTrending = remaining.filter((a: any) => !a.is_trending);
-    return [...trending, ...nonTrending].slice(0, 4);
+    return [...trending, ...nonTrending].slice(0, 8);
   }, [allCategoryArticles, isFilterActive, filteredAllArticles, featuredArticle, latestArticles]);
 
   const filteredDeepCuts = useMemo(() => {
