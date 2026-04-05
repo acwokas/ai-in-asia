@@ -4,10 +4,10 @@
  * Extracted from Article.tsx for maintainability
  */
 
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useRef, useState, useMemo, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
-import { useGlossaryAnnotation } from "./GlossaryTooltip";
+import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
 
@@ -97,8 +97,10 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
   const proseRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
-  // Inject ad markers into the HTML string BEFORE rendering
-  const processedHtml = injectAdMarkersIntoHtml(html, injectInArticleAds);
+  // Inject ad markers and glossary annotations into the HTML string BEFORE rendering
+  const withAds = injectAdMarkersIntoHtml(html, injectInArticleAds);
+  const glossaryResult = useMemo(() => annotateGlossaryHtml(withAds), [withAds]);
+  const processedHtml = glossaryResult.html;
 
   // Inject mid-article related content after the Nth paragraph
   useEffect(() => {
@@ -262,7 +264,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     return cleanup;
   }, [html]);
 
-  const { tooltipNode, bannerNode } = useGlossaryAnnotation(proseRef, processedHtml);
+  const { tooltipNode, bannerNode } = useGlossaryAnnotation(proseRef, processedHtml, glossaryResult.termCount);
 
   return (
     <>

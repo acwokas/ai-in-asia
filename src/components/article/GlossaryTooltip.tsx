@@ -1,11 +1,10 @@
 /**
  * AI Glossary Tooltip System
- * Scans article prose for known AI/tech terms and wraps the first occurrence
- * with an amber dotted-underline span + ✦ superscript indicator.
+ * Processes article HTML to wrap known AI/tech terms with styled spans.
  * Hover (desktop) or tap (mobile) shows a tooltip with definition + "AI term" badge.
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { JARGON_DICTIONARY, type JargonEntry } from "@/lib/jargonDictionary";
 import { Brain } from "lucide-react";
@@ -31,6 +30,62 @@ const TERM_REGEX = new RegExp(
 const GLOSSARY_ATTR = "data-glossary-term";
 const GLOSSARY_CLASS = "glossary-term";
 
+/* ─── HTML string processor: inject glossary spans into raw HTML ─── */
+export function annotateGlossaryHtml(html: string): { html: string; termCount: number } {
+  if (!html) return { html, termCount: 0 };
+
+  const matched = new Set<string>();
+
+  // Split HTML into tags and text segments to avoid matching inside tags
+  const TAG_RE = /(<[^>]+>)/g;
+  const segments = html.split(TAG_RE);
+
+  // Track which tags we're inside to skip headings, links, code, etc.
+  const skipTags = new Set(["a", "code", "pre", "script", "style", "h1", "h2", "h3", "h4"]);
+  let skipDepth = 0;
+
+  const result = segments.map((seg) => {
+    // HTML tag segment
+    if (seg.startsWith("<")) {
+      const closing = seg.startsWith("</");
+      const tagMatch = seg.match(closing ? /^<\/(\w+)/ : /^<(\w+)/);
+      if (tagMatch) {
+        const tag = tagMatch[1].toLowerCase();
+        if (skipTags.has(tag)) {
+          skipDepth += closing ? -1 : 1;
+          if (skipDepth < 0) skipDepth = 0;
+        }
+      }
+      return seg;
+    }
+
+    // Text segment — skip if inside a tag we don't annotate
+    if (skipDepth > 0) return seg;
+    if (seg.trim().length < 2) return seg;
+
+    TERM_REGEX.lastIndex = 0;
+    let lastIdx = 0;
+    let out = "";
+    let m: RegExpExecArray | null;
+
+    while ((m = TERM_REGEX.exec(seg))) {
+      const termLower = m[1].toLowerCase();
+      if (matched.has(termLower)) continue;
+
+      matched.add(termLower);
+      out += seg.slice(lastIdx, m.index);
+      out += `<span class="${GLOSSARY_CLASS}" ${GLOSSARY_ATTR}="${termLower}" tabindex="0" role="button" aria-label="Define: ${m[1]}">${m[1]}<sup class="glossary-sparkle" aria-hidden="true">*</sup></span>`;
+      lastIdx = m.index + m[0].length;
+    }
+
+    if (lastIdx === 0) return seg; // no matches
+    out += seg.slice(lastIdx);
+    return out;
+  });
+
+  return { html: result.join(""), termCount: matched.size };
+}
+
 /* ─── Floating tooltip with arrow ─── */
 function GlossaryTooltipCard({
   entry,
@@ -50,7 +105,6 @@ function GlossaryTooltipCard({
   }>({ top: 0, left: 0, arrowLeft: 0, above: true });
   const [ready, setReady] = useState(false);
 
-  /* Calculate position */
   useEffect(() => {
     const card = cardRef.current;
     if (!card) return;
@@ -58,47 +112,28 @@ function GlossaryTooltipCard({
     const ch = card.offsetHeight;
     const vw = window.innerWidth;
     const gap = 10;
-
-    // Center horizontally on the term
     const anchorCenterX = anchorRect.left + anchorRect.width / 2;
     let left = anchorCenterX - cw / 2;
     left = Math.max(12, Math.min(left, vw - cw - 12));
-
-    // Arrow position relative to card
     const arrowLeft = Math.max(16, Math.min(anchorCenterX - left, cw - 16));
-
-    // Prefer above; fall below if not enough space
     const above = anchorRect.top - ch - gap > 0;
     const top = above
       ? anchorRect.top + window.scrollY - ch - gap
       : anchorRect.bottom + window.scrollY + gap;
-
     setPos({ top, left, arrowLeft, above });
     setReady(true);
   }, [anchorRect]);
 
-  /* Close on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-        onClose();
-      }
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) onClose();
     };
-    // Delay to avoid immediate close on the same tap that opened it
-    const timer = setTimeout(() => {
-      document.addEventListener("mousedown", handler);
-    }, 10);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("mousedown", handler);
-    };
+    const timer = setTimeout(() => document.addEventListener("mousedown", handler), 10);
+    return () => { clearTimeout(timer); document.removeEventListener("mousedown", handler); };
   }, [onClose]);
 
-  /* Close on Escape */
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
@@ -117,7 +152,6 @@ function GlossaryTooltipCard({
         pointerEvents: ready ? "auto" : "none",
       }}
     >
-      {/* Arrow */}
       <div
         style={{
           position: "absolute",
@@ -131,10 +165,7 @@ function GlossaryTooltipCard({
         }}
         className="bg-card border-b border-r border-border"
       />
-
-      {/* Card body */}
       <div className="relative bg-card border border-border shadow-lg rounded-lg p-3 max-w-xs z-[2]">
-        {/* Header row */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="font-bold text-sm" style={{ color: "hsl(38 92% 50%)" }}>
             {entry.term}
@@ -151,13 +182,7 @@ function GlossaryTooltipCard({
             AI term
           </span>
         </div>
-
-        {/* Definition */}
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {entry.plain}
-        </p>
-
-        {/* Asia context if available */}
+        <p className="text-sm leading-relaxed text-muted-foreground">{entry.plain}</p>
         {entry.asiaContext && (
           <p
             className="mt-2 text-xs leading-relaxed italic border-l-2 pl-2 text-muted-foreground/80"
@@ -172,97 +197,19 @@ function GlossaryTooltipCard({
   );
 }
 
-/* ─── Hook: scan prose DOM and annotate glossary terms ─── */
+/* ─── Hook: event delegation for glossary terms ─── */
 export function useGlossaryAnnotation(
   proseRef: React.RefObject<HTMLDivElement>,
-  html: string
+  _html: string,
+  termCount: number
 ) {
   const [activeEntry, setActiveEntry] = useState<JargonEntry | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const [termCount, setTermCount] = useState(0);
-  const matchedTermsRef = useRef(new Set<string>());
 
-  /* Annotate text nodes */
   useEffect(() => {
     const el = proseRef.current;
-    if (!el) return;
-    matchedTermsRef.current.clear();
+    if (!el || termCount === 0) return;
 
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-      acceptNode: (node) => {
-        const parent = node.parentElement;
-        if (!parent) return NodeFilter.FILTER_REJECT;
-        const tag = parent.tagName;
-        if (
-          ["A", "CODE", "PRE", "SCRIPT", "STYLE", "H1", "H2", "H3", "H4"].includes(tag) ||
-          parent.closest(`[${GLOSSARY_ATTR}], a, code, pre, h1, h2, h3, h4`)
-        )
-          return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      },
-    });
-
-    const textNodes: Text[] = [];
-    let n: Node | null;
-    while ((n = walker.nextNode())) textNodes.push(n as Text);
-
-    for (const textNode of textNodes) {
-      const text = textNode.textContent || "";
-      if (text.trim().length < 2) continue;
-
-      TERM_REGEX.lastIndex = 0;
-      const matches: { start: number; end: number; term: string }[] = [];
-      let m: RegExpExecArray | null;
-
-      while ((m = TERM_REGEX.exec(text))) {
-        const termLower = m[1].toLowerCase();
-        if (matchedTermsRef.current.has(termLower)) continue;
-        matches.push({ start: m.index, end: m.index + m[0].length, term: m[1] });
-        matchedTermsRef.current.add(termLower);
-      }
-
-      if (!matches.length) continue;
-
-      const frag = document.createDocumentFragment();
-      let lastIdx = 0;
-
-      for (const match of matches) {
-        if (match.start > lastIdx) {
-          frag.appendChild(document.createTextNode(text.slice(lastIdx, match.start)));
-        }
-
-        // Wrapper span
-        const span = document.createElement("span");
-        span.className = GLOSSARY_CLASS;
-        span.setAttribute(GLOSSARY_ATTR, match.term.toLowerCase());
-        span.setAttribute("tabindex", "0");
-        span.setAttribute("role", "button");
-        span.setAttribute("aria-label", `Define: ${match.term}`);
-
-        // Term text
-        span.appendChild(document.createTextNode(text.slice(match.start, match.end)));
-
-        // Sparkle superscript indicator
-        const sup = document.createElement("sup");
-        sup.className = "glossary-sparkle";
-        sup.textContent = "*";
-        sup.setAttribute("aria-hidden", "true");
-        span.appendChild(sup);
-
-        frag.appendChild(span);
-        lastIdx = match.end;
-      }
-
-      if (lastIdx < text.length) {
-        frag.appendChild(document.createTextNode(text.slice(lastIdx)));
-      }
-
-      textNode.parentNode?.replaceChild(frag, textNode);
-    }
-
-    setTermCount(matchedTermsRef.current.size);
-
-    /* ── Event delegation: hover on desktop, tap on mobile ── */
     let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const showTooltip = (target: Element) => {
@@ -284,10 +231,7 @@ export function useGlossaryAnnotation(
     const handleMouseLeave = (e: Event) => {
       const target = (e.target as HTMLElement).closest(`[${GLOSSARY_ATTR}]`);
       if (!target) return;
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout);
-        hoverTimeout = null;
-      }
+      if (hoverTimeout) { clearTimeout(hoverTimeout); hoverTimeout = null; }
     };
 
     const handleClick = (e: Event) => {
@@ -307,7 +251,7 @@ export function useGlossaryAnnotation(
       el.removeEventListener("mouseout", handleMouseLeave);
       el.removeEventListener("click", handleClick);
     };
-  }, [html]);
+  }, [_html, termCount]);
 
   const close = useCallback(() => {
     setActiveEntry(null);
@@ -325,7 +269,6 @@ export function useGlossaryAnnotation(
     const first = el.querySelector(`[${GLOSSARY_ATTR}]`);
     if (first) {
       first.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Briefly highlight it
       first.classList.add("glossary-term-flash");
       setTimeout(() => first.classList.remove("glossary-term-flash"), 1500);
     }
