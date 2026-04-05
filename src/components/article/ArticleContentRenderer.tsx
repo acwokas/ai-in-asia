@@ -161,14 +161,21 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
   useEffect(() => {
     if (!import.meta.env.PROD || !injectInArticleAds || !proseRef.current) return;
 
-    const adSlots = proseRef.current.querySelectorAll('.in-article-ad-wrapper ins.adsbygoogle');
-    adSlots.forEach(() => {
-      try {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-      } catch (err) {
-        console.error("AdSense push error:", err);
-      }
-    });
+    // Small delay to let DOM settle after render
+    const timer = setTimeout(() => {
+      const adSlots = proseRef.current?.querySelectorAll('.in-article-ad-wrapper ins.adsbygoogle');
+      adSlots?.forEach((ins) => {
+        // Skip already-initialized slots
+        if (ins.getAttribute('data-adsbygoogle-status')) return;
+        try {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } catch (err) {
+          console.error("AdSense push error:", err);
+        }
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [processedHtml, injectInArticleAds]);
 
   // FAQ visual styling via DOM manipulation
