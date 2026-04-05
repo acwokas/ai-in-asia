@@ -110,7 +110,7 @@ export default function AdminGlossary() {
       toast.success(editingId ? "Term updated" : "Term added");
     },
     onError: (err: any) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error: " + err.message);
     },
   });
 
