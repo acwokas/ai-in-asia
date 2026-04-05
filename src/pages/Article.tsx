@@ -633,7 +633,7 @@ const Article = () => {
                       <Clock className="h-3 w-3" />
                       {article.reading_time_minutes || 5} min read
                     </span>
-                    <div className="flex items-center gap-1 ml-auto">
+                    <div className="flex items-center gap-1 ml-auto [&_button]:text-white/70 [&_button:hover]:text-white [&_button:hover]:bg-white/10">
                       <ArticleShareInline categorySlug={categorySlug} articleSlug={articleSlug} articleTitle={articleTitle} />
                       <Button variant="ghost" size="icon" onClick={handleBookmark} className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/10" aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this article"}>
                         <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} aria-hidden="true" />

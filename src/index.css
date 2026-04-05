@@ -915,6 +915,7 @@ All colors MUST be HSL.
   z-index: 2;
   padding: 2rem;
   width: 100%;
+  pointer-events: auto;
 }
 
 @media (max-width: 768px) {
