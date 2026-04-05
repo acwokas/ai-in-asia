@@ -122,7 +122,7 @@ const AIBingo = () => {
           {/* Bingo result */}
           {hasBingo && (
             <div className="animate-fade-in rounded-2xl border border-amber-500/40 bg-amber-500/10 p-6 mb-6">
-              <p className="text-4xl mb-2">🎉</p>
+              <PartyPopper className="h-10 w-10 text-amber-500 mx-auto mb-2" />
               <h2 className="font-display text-xl font-black text-amber-500 mb-1">
                 BINGO!
               </h2>

@@ -148,7 +148,7 @@ const AIReadiness = () => {
     setFinished(false);
   };
 
-  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz — I'm an "${tier.name}" ${tier.emoji}\n\nHow AI-ready are you?`;
+  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz — I'm an "${tier.name}"\n\nHow AI-ready are you?`;
   const shareUrl = "https://aiinasia.com/tools/ai-readiness";
 
   return (

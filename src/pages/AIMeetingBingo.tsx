@@ -106,7 +106,7 @@ const AIMeetingBingo = () => {
 
           {hasWon && (
             <div className="mb-6 rounded-xl bg-amber-500/15 border border-amber-500/30 p-5 animate-scale-in">
-              <p className="text-xl font-black text-amber-500 mb-2">🎉 BINGO!</p>
+              <p className="text-xl font-black text-amber-500 mb-2">BINGO!</p>
               <p className="text-sm text-foreground mb-4">You survived another AI meeting!</p>
               <div className="flex items-center justify-center gap-3">
                 <a
