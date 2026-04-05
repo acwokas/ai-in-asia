@@ -245,7 +245,7 @@ export const PromptStudio = () => {
                       cursor: "pointer",
                     }}
                   >
-                    {copied ? "✓ Copied!" : "Copy"}
+                    {copied ? "Copied!" : "Copy"}
                   </button>
                 </div>
                 <pre

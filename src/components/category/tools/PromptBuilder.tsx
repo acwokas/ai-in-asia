@@ -149,7 +149,7 @@ export const PromptBuilder = () => {
                   transition: "all 0.2s ease",
                 }}
               >
-                {copied === i ? "✓ Copied!" : "Copy"}
+                {copied === i ? "Copied!" : "Copy"}
               </button>
             </div>
           ))}

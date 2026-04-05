@@ -75,7 +75,7 @@ const DEFAULT_RECS: Rec[] = [
   { name: "Claude", stars: 4, why: "Thoughtful, nuanced responses with strong reasoning abilities." },
 ];
 
-const starStr = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+const starStr = (n: number) => Array(n).fill("*").join("") + Array(5 - n).fill("-").join("");
 
 export const ToolFinderQuiz = () => {
   const [step, setStep] = useState(0);

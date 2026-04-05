@@ -245,7 +245,7 @@ export function useGlossaryAnnotation(
         // Sparkle superscript indicator
         const sup = document.createElement("sup");
         sup.className = "glossary-sparkle";
-        sup.textContent = "✦";
+        sup.textContent = "*";
         sup.setAttribute("aria-hidden", "true");
         span.appendChild(sup);
 
