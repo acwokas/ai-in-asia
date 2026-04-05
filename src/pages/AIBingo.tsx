@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Share2 } from "lucide-react";
+import { RotateCcw, Share2, PartyPopper } from "lucide-react";
 import { JARGON_DICTIONARY } from "@/lib/jargonDictionary";
 import confetti from "canvas-confetti";
 
@@ -78,7 +78,7 @@ const AIBingo = () => {
     setHasBingo(false);
   };
 
-  const shareText = "BINGO! I survived another AI meeting! 🎉 Try AI Jargon Bingo:";
+  const shareText = "BINGO! I survived another AI meeting! Try AI Jargon Bingo:";
   const shareUrl = "https://aiinasia.com/tools/ai-bingo";
 
   return (
@@ -113,7 +113,7 @@ const AIBingo = () => {
                       : "bg-card border-border text-foreground hover:border-amber-500/50 hover:bg-amber-500/5"
                   } ${isFree ? "cursor-default" : "cursor-pointer"}`}
                 >
-                  {isFree ? "⭐ FREE" : term}
+                  {isFree ? "FREE" : term}
                 </button>
               );
             })}
@@ -122,7 +122,7 @@ const AIBingo = () => {
           {/* Bingo result */}
           {hasBingo && (
             <div className="animate-fade-in rounded-2xl border border-amber-500/40 bg-amber-500/10 p-6 mb-6">
-              <p className="text-4xl mb-2">🎉</p>
+              <PartyPopper className="h-10 w-10 text-amber-500 mx-auto mb-2" />
               <h2 className="font-display text-xl font-black text-amber-500 mb-1">
                 BINGO!
               </h2>

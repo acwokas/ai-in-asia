@@ -1,37 +1,39 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
 import { GlowBadge } from "@/components/ui/GlowBadge";
+import { Pencil, Search, Palette, ClipboardList, Sprout, Wrench, Zap, Gift, Target, Smile, Rocket } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#a855f7";
 
-const QUESTIONS = [
+const QUESTIONS: { text: string; options: { icon: LucideIcon; label: string; tag: string }[] }[] = [
   {
     text: "What do you mainly want AI to help with?",
     options: [
-      { emoji: "✏️", label: "Writing & communication", tag: "writing" },
-      { emoji: "🔍", label: "Research & learning", tag: "research" },
-      { emoji: "🎨", label: "Images & creative work", tag: "creative" },
-      { emoji: "📋", label: "Productivity & organisation", tag: "productivity" },
+      { icon: Pencil, label: "Writing & communication", tag: "writing" },
+      { icon: Search, label: "Research & learning", tag: "research" },
+      { icon: Palette, label: "Images & creative work", tag: "creative" },
+      { icon: ClipboardList, label: "Productivity & organisation", tag: "productivity" },
     ],
   },
   {
     text: "How comfortable are you with AI?",
     options: [
-      { emoji: "🌱", label: "Brand new to it", tag: "beginner" },
-      { emoji: "🔧", label: "Used ChatGPT a few times", tag: "intermediate" },
-      { emoji: "⚡", label: "I use AI tools daily", tag: "advanced" },
+      { icon: Sprout, label: "Brand new to it", tag: "beginner" },
+      { icon: Wrench, label: "Used ChatGPT a few times", tag: "intermediate" },
+      { icon: Zap, label: "I use AI tools daily", tag: "advanced" },
     ],
   },
   {
     text: "What matters most to you?",
     options: [
-      { emoji: "🆓", label: "It must be free", tag: "free" },
-      { emoji: "🎯", label: "Accuracy and reliability", tag: "accuracy" },
-      { emoji: "😊", label: "Easy to use", tag: "easy" },
-      { emoji: "🚀", label: "Maximum capability", tag: "power" },
+      { icon: Gift, label: "It must be free", tag: "free" },
+      { icon: Target, label: "Accuracy and reliability", tag: "accuracy" },
+      { icon: Smile, label: "Easy to use", tag: "easy" },
+      { icon: Rocket, label: "Maximum capability", tag: "power" },
     ],
   },
-] as const;
+];
 
 interface Rec {
   name: string;
@@ -73,7 +75,7 @@ const DEFAULT_RECS: Rec[] = [
   { name: "Claude", stars: 4, why: "Thoughtful, nuanced responses with strong reasoning abilities." },
 ];
 
-const starStr = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+const starStr = (n: number) => Array(n).fill("*").join("") + Array(5 - n).fill("-").join("");
 
 export const ToolFinderQuiz = () => {
   const [step, setStep] = useState(0);
@@ -100,7 +102,7 @@ export const ToolFinderQuiz = () => {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🔎</span>
+            <Search size={20} color="#fff" />
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
               AI Tool Finder
             </span>
@@ -159,14 +161,14 @@ export const ToolFinderQuiz = () => {
               }}
             >
               {QUESTIONS[step].options.map((opt) => (
-                <OptionButton key={opt.tag} emoji={opt.emoji} label={opt.label} onClick={() => pick(opt.tag)} />
+                <OptionButton icon={opt.icon} label={opt.label} onClick={() => pick(opt.tag)} />
               ))}
             </div>
           </>
         ) : (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 18 }}>🎯</span>
+              <Target size={18} color="#fff" />
               <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff", margin: 0 }}>
                 Here are your top picks
               </h3>
@@ -245,7 +247,7 @@ export const ToolFinderQuiz = () => {
   );
 };
 
-function OptionButton({ emoji, label, onClick }: { emoji: string; label: string; onClick: () => void }) {
+function OptionButton({ icon: Icon, label, onClick }: { icon: LucideIcon; label: string; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
@@ -265,7 +267,7 @@ function OptionButton({ emoji, label, onClick }: { emoji: string; label: string;
         transition: "all 0.2s ease",
       }}
     >
-      <span style={{ fontSize: 28 }}>{emoji}</span>
+      <Icon size={28} color="#fff" />
       <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", textAlign: "center" }}>
         {label}
       </span>

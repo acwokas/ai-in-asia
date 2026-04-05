@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { User, Reply, CornerDownRight, Loader2 } from "lucide-react";
+import { User, Reply, CornerDownRight, Loader2, ThumbsUp, Heart, Lightbulb, Sparkles } from "lucide-react";
 import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,7 @@ const levelBadgeConfig: Record<string, { className: string; prefix?: string }> =
   'Explorer': { className: 'bg-secondary text-secondary-foreground' },
   'Enthusiast': { className: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/20' },
   'Expert': { className: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/20' },
-  'Thought Leader': { className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20', prefix: '✨ ' },
+  'Thought Leader': { className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/20', prefix: '' },
 };
 
 // Helper to wrap emojis in teal-colored spans with XSS protection
@@ -82,9 +82,9 @@ interface CommentReactionsBarProps {
 }
 
 const COMMENT_REACTIONS = [
-  { type: "thumbsup", emoji: "👍" },
-  { type: "heart", emoji: "❤️" },
-  { type: "lightbulb", emoji: "💡" },
+  { type: "thumbsup", icon: ThumbsUp },
+  { type: "heart", icon: Heart },
+  { type: "lightbulb", icon: Lightbulb },
 ];
 
 const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
@@ -152,7 +152,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
 
   return (
     <div className="flex items-center gap-1 mt-1.5">
-      {COMMENT_REACTIONS.map(({ type, emoji }) => {
+      {COMMENT_REACTIONS.map(({ type, icon: Icon }) => {
         const count = counts[type] || 0;
         const isActive = userReactions.includes(type);
         return (
@@ -166,7 +166,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
               isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
             )}
           >
-            <span className="text-sm">{emoji}</span>
+            <Icon className="h-3.5 w-3.5" />
             {count > 0 && <span className="text-[10px] font-medium">{count}</span>}
           </button>
         );

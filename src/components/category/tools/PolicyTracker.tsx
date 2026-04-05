@@ -4,29 +4,30 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
 import { GlowBadge } from "@/components/ui/GlowBadge";
+import { Scale } from "lucide-react";
 
 const ACCENT = "#eab308";
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  Afghanistan: "🇦🇫", Australia: "🇦🇺", Bangladesh: "🇧🇩", Bhutan: "🇧🇹", Brunei: "🇧🇳",
-  Cambodia: "🇰🇭", China: "🇨🇳", Fiji: "🇫🇯", "Hong Kong": "🇭🇰", India: "🇮🇳",
-  Indonesia: "🇮🇩", Japan: "🇯🇵", Kazakhstan: "🇰🇿", Laos: "🇱🇦", Macau: "🇲🇴",
-  Malaysia: "🇲🇾", Maldives: "🇲🇻", Mongolia: "🇲🇳", Myanmar: "🇲🇲", Nepal: "🇳🇵",
-  "New Zealand": "🇳🇿", "North Korea": "🇰🇵", Pakistan: "🇵🇰", "Papua New Guinea": "🇵🇬",
-  Philippines: "🇵🇭", Singapore: "🇸🇬", "South Korea": "🇰🇷", "Sri Lanka": "🇱🇰",
-  Taiwan: "🇹🇼", Thailand: "🇹🇭", "Timor-Leste": "🇹🇱", Uzbekistan: "🇺🇿", Vietnam: "🇻🇳",
-  "United States": "🇺🇸", "United Kingdom": "🇬🇧", Canada: "🇨🇦", Germany: "🇩🇪",
-  France: "🇫🇷", Italy: "🇮🇹", Spain: "🇪🇸", Netherlands: "🇳🇱", Sweden: "🇸🇪",
-  Switzerland: "🇨🇭", Belgium: "🇧🇪", Ireland: "🇮🇪", Norway: "🇳🇴", Denmark: "🇩🇰",
-  Finland: "🇫🇮", Poland: "🇵🇱", Austria: "🇦🇹", Portugal: "🇵🇹", "Czech Republic": "🇨🇿",
-  Greece: "🇬🇷", Israel: "🇮🇱", UAE: "🇦🇪", "Saudi Arabia": "🇸🇦", Qatar: "🇶🇦",
-  Bahrain: "🇧🇭", Kuwait: "🇰🇼", Oman: "🇴🇲", Turkey: "🇹🇷", Egypt: "🇪🇬",
-  "South Africa": "🇿🇦", Nigeria: "🇳🇬", Kenya: "🇰🇪", Ghana: "🇬🇭", Rwanda: "🇷🇼",
-  Ethiopia: "🇪🇹", Morocco: "🇲🇦", Tunisia: "🇹🇳", Brazil: "🇧🇷", Mexico: "🇲🇽",
-  Argentina: "🇦🇷", Chile: "🇨🇱", Colombia: "🇨🇴", Peru: "🇵🇪", Uruguay: "🇺🇾",
-  "Costa Rica": "🇨🇷", Estonia: "🇪🇪", Latvia: "🇱🇻", Lithuania: "🇱🇹", Romania: "🇷🇴",
-  Hungary: "🇭🇺", Serbia: "🇷🇸", Croatia: "🇭🇷", Bulgaria: "🇧🇬", Russia: "🇷🇺",
-  Ukraine: "🇺🇦", Georgia: "🇬🇪",
+  Afghanistan: "", Australia: "", Bangladesh: "", Bhutan: "", Brunei: "",
+  Cambodia: "", China: "", Fiji: "", "Hong Kong": "", India: "",
+  Indonesia: "", Japan: "", Kazakhstan: "", Laos: "", Macau: "",
+  Malaysia: "", Maldives: "", Mongolia: "", Myanmar: "", Nepal: "",
+  "New Zealand": "", "North Korea": "", Pakistan: "", "Papua New Guinea": "",
+  Philippines: "", Singapore: "", "South Korea": "", "Sri Lanka": "",
+  Taiwan: "", Thailand: "", "Timor-Leste": "", Uzbekistan: "", Vietnam: "",
+  "United States": "", "United Kingdom": "", Canada: "", Germany: "",
+  France: "", Italy: "", Spain: "", Netherlands: "", Sweden: "",
+  Switzerland: "", Belgium: "", Ireland: "", Norway: "", Denmark: "",
+  Finland: "", Poland: "", Austria: "", Portugal: "", "Czech Republic": "",
+  Greece: "", Israel: "", UAE: "", "Saudi Arabia": "", Qatar: "",
+  Bahrain: "", Kuwait: "", Oman: "", Turkey: "", Egypt: "",
+  "South Africa": "", Nigeria: "", Kenya: "", Ghana: "", Rwanda: "",
+  Ethiopia: "", Morocco: "", Tunisia: "", Brazil: "", Mexico: "",
+  Argentina: "", Chile: "", Colombia: "", Peru: "", Uruguay: "",
+  "Costa Rica": "", Estonia: "", Latvia: "", Lithuania: "", Romania: "",
+  Hungary: "", Serbia: "", Croatia: "", Bulgaria: "", Russia: "",
+  Ukraine: "", Georgia: "",
 };
 
 const MATURITY_CONFIG: Record<string, { label: string; color: string }> = {
@@ -93,7 +94,7 @@ export const PolicyTracker = () => {
       <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 20 }}>⚖️</span>
+          <Scale size={20} color="#fff" />
           <h3 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 18, color: "#fff", margin: 0 }}>
             AI Regulation Tracker
           </h3>

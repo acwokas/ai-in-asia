@@ -87,7 +87,7 @@ function LearningPathCard({ path, categorySlug }: { path: LearningPath; category
             <>
               <span>·</span>
               <span className="text-amber-500 font-semibold">
-                {isComplete ? "✓ Complete" : `${readCount}/${path.articles} read`}
+                {isComplete ? "Complete" : `${readCount}/${path.articles} read`}
               </span>
             </>
           )}

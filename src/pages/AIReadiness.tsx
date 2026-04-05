@@ -82,10 +82,10 @@ const QUESTIONS = [
 ];
 
 const TIERS = [
-  { name: "AI Curious", min: 0, max: 6, emoji: "🌱", desc: "You're just getting started — and that's perfectly fine. The best time to explore AI is now." },
-  { name: "AI Explorer", min: 7, max: 12, emoji: "🧭", desc: "You're actively exploring AI and building awareness. Keep experimenting and learning!" },
-  { name: "AI Adopter", min: 13, max: 18, emoji: "🚀", desc: "You're integrating AI into real workflows. You're ahead of most people in the region." },
-  { name: "AI Native", min: 19, max: 24, emoji: "⚡", desc: "AI is woven into everything you do. You're leading the charge in Asia's AI transformation." },
+  { name: "AI Curious", min: 0, max: 6, icon: "Sprout", desc: "You're just getting started — and that's perfectly fine. The best time to explore AI is now." },
+  { name: "AI Explorer", min: 7, max: 12, icon: "Compass", desc: "You're actively exploring AI and building awareness. Keep experimenting and learning!" },
+  { name: "AI Adopter", min: 13, max: 18, icon: "Rocket", desc: "You're integrating AI into real workflows. You're ahead of most people in the region." },
+  { name: "AI Native", min: 19, max: 24, icon: "Zap", desc: "AI is woven into everything you do. You're leading the charge in Asia's AI transformation." },
 ];
 
 const RadialProgress = ({ score, max }: { score: number; max: number }) => {
@@ -148,7 +148,7 @@ const AIReadiness = () => {
     setFinished(false);
   };
 
-  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz — I'm an "${tier.name}" ${tier.emoji}\n\nHow AI-ready are you?`;
+  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz — I'm an "${tier.name}"\n\nHow AI-ready are you?`;
   const shareUrl = "https://aiinasia.com/tools/ai-readiness";
 
   return (
@@ -246,7 +246,7 @@ const AIReadiness = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <span className="text-3xl mb-1 block">{tier.emoji}</span>
+                  <span className="text-3xl mb-1 block font-bold text-amber-500">{tier.name}</span>
                   <h2 className="font-display text-2xl font-black text-foreground mb-1">
                     You're an <span className="text-amber-500">{tier.name}</span>
                   </h2>

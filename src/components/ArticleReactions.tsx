@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { awardPoints } from "@/lib/gamification";
+import { Lightbulb, Flame, AlertCircle, HelpCircle, type LucideIcon } from "lucide-react";
 
 const REACTIONS = [
-  { type: "insightful", emoji: "💡", label: "Insightful" },
-  { type: "important", emoji: "🔥", label: "Important" },
-  { type: "surprising", emoji: "😮", label: "Surprising" },
-  { type: "outdated", emoji: "🤔", label: "Needs Update" },
+  { type: "insightful", icon: Lightbulb, label: "Insightful" },
+  { type: "important", icon: Flame, label: "Important" },
+  { type: "surprising", icon: AlertCircle, label: "Surprising" },
+  { type: "outdated", icon: HelpCircle, label: "Needs Update" },
 ] as const;
 
 function getSessionId(): string {
@@ -140,7 +141,7 @@ export default function ArticleReactions({ articleId }: ArticleReactionsProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-4">
-      {REACTIONS.map(({ type, emoji, label }) => {
+      {REACTIONS.map(({ type, icon: Icon, label }) => {
         const count = counts[type] || 0;
         const isActive = userReaction === type;
         return (
@@ -156,12 +157,10 @@ export default function ArticleReactions({ articleId }: ArticleReactionsProps) {
                 : "border-border text-muted-foreground"
             )}
           >
-            <span className={cn(
-              "text-base transition-transform duration-300",
+            <Icon className={cn(
+              "h-4 w-4 transition-transform duration-300",
               animating === type && "scale-125"
-            )}>
-              {emoji}
-            </span>
+            )} />
             <span className="hidden sm:inline">{label}</span>
             {count > 0 && (
               <span className={cn(

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, Wrench, RefreshCw } from "lucide-react";
+import { Sparkles, Wrench, RefreshCw, Hammer } from "lucide-react";
 import { ToolWrapper, ToolCTA } from "@/components/category/ToolWrapper";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 
@@ -128,7 +128,7 @@ export const PromptStudio = () => {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🔨</span>
+            <Hammer size={20} color="#fff" />
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
               Prompt Studio Lite
             </span>
@@ -245,7 +245,7 @@ export const PromptStudio = () => {
                       cursor: "pointer",
                     }}
                   >
-                    {copied ? "✓ Copied!" : "Copy"}
+                    {copied ? "Copied!" : "Copy"}
                   </button>
                 </div>
                 <pre

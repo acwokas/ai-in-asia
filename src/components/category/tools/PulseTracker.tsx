@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
+import { Radio } from "lucide-react";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 
 const ACCENT = "#3b82f6";
@@ -28,7 +29,7 @@ export const PulseTracker = () => {
       <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 20 }}>📡</span>
+          <Radio size={20} color="#fff" />
           <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
             AI Pulse Tracker
           </span>

@@ -184,7 +184,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       </div>
 
       <p className="text-xs text-muted-foreground bg-muted/50 rounded p-2">
-        📊 Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
+        Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -259,7 +259,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         }
 
         if (bounce > 60) {
-          tips.push(`2. ⚠️ ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
+          tips.push(`2. ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
         } else if (bounce <= 40) {
           tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${avgPages} pages per session.`);
         } else {

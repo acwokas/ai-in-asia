@@ -152,7 +152,7 @@ class SectionErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
-          <p className="font-medium text-destructive">⚠ "{this.props.title}" failed to render</p>
+          <p className="font-medium text-destructive">"{this.props.title}" failed to render</p>
           <p className="text-xs text-muted-foreground mt-1">{this.state.error}</p>
         </div>
       );

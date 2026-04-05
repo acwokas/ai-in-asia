@@ -13,27 +13,27 @@ import { VisitorsByLocation } from "./VisitorsByLocation";
 const REFRESH_INTERVAL = 30_000; // 30 seconds
 
 const COUNTRY_FLAGS: Record<string, { name: string; flag: string }> = {
-  US: { name: "United States", flag: "🇺🇸" }, GB: { name: "United Kingdom", flag: "🇬🇧" },
-  IN: { name: "India", flag: "🇮🇳" }, SG: { name: "Singapore", flag: "🇸🇬" },
-  JP: { name: "Japan", flag: "🇯🇵" }, DE: { name: "Germany", flag: "🇩🇪" },
-  FR: { name: "France", flag: "🇫🇷" }, AU: { name: "Australia", flag: "🇦🇺" },
-  CA: { name: "Canada", flag: "🇨🇦" }, KR: { name: "South Korea", flag: "🇰🇷" },
-  CN: { name: "China", flag: "🇨🇳" }, BR: { name: "Brazil", flag: "🇧🇷" },
-  ID: { name: "Indonesia", flag: "🇮🇩" }, TH: { name: "Thailand", flag: "🇹🇭" },
-  VN: { name: "Vietnam", flag: "🇻🇳" }, MY: { name: "Malaysia", flag: "🇲🇾" },
-  PH: { name: "Philippines", flag: "🇵🇭" }, TW: { name: "Taiwan", flag: "🇹🇼" },
-  HK: { name: "Hong Kong", flag: "🇭🇰" }, NL: { name: "Netherlands", flag: "🇳🇱" },
-  AE: { name: "UAE", flag: "🇦🇪" }, IE: { name: "Ireland", flag: "🇮🇪" },
-  IL: { name: "Israel", flag: "🇮🇱" }, IT: { name: "Italy", flag: "🇮🇹" },
-  ES: { name: "Spain", flag: "🇪🇸" }, SE: { name: "Sweden", flag: "🇸🇪" },
-  CH: { name: "Switzerland", flag: "🇨🇭" }, NZ: { name: "New Zealand", flag: "🇳🇿" },
-  MX: { name: "Mexico", flag: "🇲🇽" }, PK: { name: "Pakistan", flag: "🇵🇰" },
-  NG: { name: "Nigeria", flag: "🇳🇬" }, ZA: { name: "South Africa", flag: "🇿🇦" },
-  TR: { name: "Turkey", flag: "🇹🇷" }, PL: { name: "Poland", flag: "🇵🇱" },
+  US: { name: "United States", flag: "" }, GB: { name: "United Kingdom", flag: "" },
+  IN: { name: "India", flag: "" }, SG: { name: "Singapore", flag: "" },
+  JP: { name: "Japan", flag: "" }, DE: { name: "Germany", flag: "" },
+  FR: { name: "France", flag: "" }, AU: { name: "Australia", flag: "" },
+  CA: { name: "Canada", flag: "" }, KR: { name: "South Korea", flag: "" },
+  CN: { name: "China", flag: "" }, BR: { name: "Brazil", flag: "" },
+  ID: { name: "Indonesia", flag: "" }, TH: { name: "Thailand", flag: "" },
+  VN: { name: "Vietnam", flag: "" }, MY: { name: "Malaysia", flag: "" },
+  PH: { name: "Philippines", flag: "" }, TW: { name: "Taiwan", flag: "" },
+  HK: { name: "Hong Kong", flag: "" }, NL: { name: "Netherlands", flag: "" },
+  AE: { name: "UAE", flag: "" }, IE: { name: "Ireland", flag: "" },
+  IL: { name: "Israel", flag: "" }, IT: { name: "Italy", flag: "" },
+  ES: { name: "Spain", flag: "" }, SE: { name: "Sweden", flag: "" },
+  CH: { name: "Switzerland", flag: "" }, NZ: { name: "New Zealand", flag: "" },
+  MX: { name: "Mexico", flag: "" }, PK: { name: "Pakistan", flag: "" },
+  NG: { name: "Nigeria", flag: "" }, ZA: { name: "South Africa", flag: "" },
+  TR: { name: "Turkey", flag: "" }, PL: { name: "Poland", flag: "" },
 };
 
 function getCountryInfo(code: string) {
-  return COUNTRY_FLAGS[code?.toUpperCase()] || { name: code || "Unknown", flag: "🌐" };
+  return COUNTRY_FLAGS[code?.toUpperCase()] || { name: code || "Unknown", flag: "" };
 }
 
 function categorizeReferrer(referrer: string | null): string {

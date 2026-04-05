@@ -168,9 +168,9 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
         if (priorAvg > 0 && recentAvg > 0) {
           const changePct = Math.round(((recentAvg - priorAvg) / priorAvg) * 100);
           if (changePct > 10) {
-            tips.push(`1. 📈 Traffic trending up: ${formatNumber(recentAvg)} sessions/day this week vs ${formatNumber(priorAvg)} last week (+${changePct}%). Identify what drove the spike and double down.`);
+            tips.push(`1. Traffic trending up: ${formatNumber(recentAvg)} sessions/day this week vs ${formatNumber(priorAvg)} last week (+${changePct}%). Identify what drove the spike and double down.`);
           } else if (changePct < -10) {
-            tips.push(`1. 📉 Traffic down ${Math.abs(changePct)}%: ${formatNumber(recentAvg)} sessions/day vs ${formatNumber(priorAvg)} last week. Check publishing frequency and top entry pages for 404s.`);
+            tips.push(`1. Traffic down ${Math.abs(changePct)}%: ${formatNumber(recentAvg)} sessions/day vs ${formatNumber(priorAvg)} last week. Check publishing frequency and top entry pages for 404s.`);
           } else {
             tips.push(`1. Traffic stable at ~${formatNumber(recentAvg)} sessions/day (±${Math.abs(changePct)}% week-over-week).`);
           }
@@ -182,7 +182,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
         if (top && total > 0) {
           const pct = Math.round((top.count / total) * 100);
           if (pct > 50) {
-            tips.push(`2. ⚠️ ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
+            tips.push(`2. ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
           } else {
             tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${formatNumber(top.count)} visits).`);
           }

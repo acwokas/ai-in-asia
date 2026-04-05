@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { ToolWrapper, ToolCTA } from "@/components/category/ToolWrapper";
+import { Pencil, Search, BarChart3, Palette, Code, BookOpen, Zap } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#10b981";
 const COPY_COLOR = "#f59e0b";
 
-const CATEGORIES = [
-  { emoji: "✏️", label: "Writing & Content", key: "writing" },
-  { emoji: "🔍", label: "Research & Analysis", key: "research" },
-  { emoji: "📊", label: "Business & Strategy", key: "business" },
-  { emoji: "🎨", label: "Creative & Design", key: "creative" },
-  { emoji: "💻", label: "Coding & Technical", key: "coding" },
-  { emoji: "📚", label: "Learning & Education", key: "learning" },
-] as const;
+const CATEGORIES: { icon: LucideIcon; label: string; key: string }[] = [
+  { icon: Pencil, label: "Writing & Content", key: "writing" },
+  { icon: Search, label: "Research & Analysis", key: "research" },
+  { icon: BarChart3, label: "Business & Strategy", key: "business" },
+  { icon: Palette, label: "Creative & Design", key: "creative" },
+  { icon: Code, label: "Coding & Technical", key: "coding" },
+  { icon: BookOpen, label: "Learning & Education", key: "learning" },
+];
 
 const PROMPTS: Record<string, string[]> = {
   writing: [
@@ -62,7 +64,7 @@ export const PromptBuilder = () => {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>⚡</span>
+            <Zap size={20} color="#fff" />
             <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
               Quick Prompt Builder
             </span>
@@ -97,7 +99,7 @@ export const PromptBuilder = () => {
                 gap: 4,
               }}
             >
-              <span style={{ fontSize: 13 }}>{cat.emoji}</span>
+              <cat.icon size={13} color="currentColor" />
               {cat.label}
             </button>
           ))}
@@ -147,7 +149,7 @@ export const PromptBuilder = () => {
                   transition: "all 0.2s ease",
                 }}
               >
-                {copied === i ? "✓ Copied!" : "Copy"}
+                {copied === i ? "Copied!" : "Copy"}
               </button>
             </div>
           ))}

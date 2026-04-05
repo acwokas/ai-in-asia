@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Users, Loader2, BookOpen } from "lucide-react";
+import { TrendingUp, Users, Loader2, BookOpen, Check } from "lucide-react";
 
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -622,7 +622,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: heroCatColor, padding: '6px 14px' }}>{featuredArticle.content_type === 'guide' ? `📘 ${featuredArticle.categories?.name || 'Guide'}` : (featuredArticle.categories?.name || "Uncategorized")}</Badge>
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: heroCatColor, padding: '6px 14px' }}>{featuredArticle.content_type === 'guide' ? `${featuredArticle.categories?.name || 'Guide'}` : (featuredArticle.categories?.name || "Uncategorized")}</Badge>
                         {featuredArticle.is_trending && (
                           <Badge className="text-white flex items-center gap-1 text-xs backdrop-blur-sm" style={{ backgroundColor: '#E06050', padding: '6px 14px' }}><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
@@ -745,7 +745,7 @@ const Index = () => {
                       </div>
                       <div className="p-2.5 flex flex-col flex-1">
                         <span className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: catColor }}>
-                          {isGuide ? `📘 ${article.categories?.name || 'Guide'}` : (article.categories?.name || "Uncategorized")}
+                          {isGuide ? `${article.categories?.name || 'Guide'}` : (article.categories?.name || "Uncategorized")}
                         </span>
                         <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
@@ -1157,9 +1157,9 @@ const Index = () => {
             <p className="text-lg mb-6 opacity-80 max-w-lg mx-auto">Join 10,000+ professionals getting the AI in ASIA Brief every week.</p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm mb-8 max-w-md mx-auto">
-              <span className="flex items-center gap-1.5">✅ Curated AI news from across Asia</span>
-              <span className="flex items-center gap-1.5">✅ Expert analysis & insights</span>
-              <span className="flex items-center gap-1.5">✅ Free tools & guides</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Curated AI news from across Asia</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Expert analysis & insights</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4" /> Free tools & guides</span>
             </div>
             
             {!isNewsletterSubscribed ? (
@@ -1178,7 +1178,7 @@ const Index = () => {
               </form>
             ) : (
               <div className="bg-black/10 border border-black/20 rounded-lg p-6 max-w-md mx-auto animate-scale-in">
-                <p className="text-lg font-semibold">🎉 You're all set!</p>
+                <p className="text-lg font-semibold">You're all set!</p>
                 <p className="text-sm opacity-80 mt-2">Check your inbox for our latest insights.</p>
               </div>
             )}

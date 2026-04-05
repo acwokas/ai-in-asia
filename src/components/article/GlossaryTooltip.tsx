@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { JARGON_DICTIONARY, type JargonEntry } from "@/lib/jargonDictionary";
+import { Brain } from "lucide-react";
 
 /* ─── term lookup map (case-insensitive) ─── */
 const TERM_MAP = new Map<string, JargonEntry>();
@@ -146,7 +147,7 @@ function GlossaryTooltipCard({
               backgroundColor: "hsl(38 92% 50% / 0.08)",
             }}
           >
-            <span className="text-[9px]">✦</span>
+            <span className="text-[9px]">*</span>
             AI term
           </span>
         </div>
@@ -244,7 +245,7 @@ export function useGlossaryAnnotation(
         // Sparkle superscript indicator
         const sup = document.createElement("sup");
         sup.className = "glossary-sparkle";
-        sup.textContent = "✦";
+        sup.textContent = "*";
         sup.setAttribute("aria-hidden", "true");
         span.appendChild(sup);
 
@@ -336,7 +337,7 @@ export function useGlossaryAnnotation(
       className="group flex items-center gap-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-amber-500/40 transition-all duration-200 mb-4"
       aria-label={`${termCount} AI terms explained in this article`}
     >
-      <span className="text-sm">🧠</span>
+      <Brain className="h-4 w-4 text-amber-500" />
       <span>
         <span className="font-bold" style={{ color: "hsl(38 92% 50%)" }}>{termCount}</span>
         {" AI terms explained"}

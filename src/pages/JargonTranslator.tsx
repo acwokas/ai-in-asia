@@ -210,7 +210,7 @@ export default function JargonTranslator() {
     try {
       const { error } = await supabase.from("jargon_submissions").insert({ text: trimmed });
       if (error) throw error;
-      toast.success("Thanks! Your jargon has been submitted 🏆");
+      toast.success("Thanks! Your jargon has been submitted");
       setSubmissionText("");
     } catch {
       toast.error("Submission failed — please try again");
@@ -221,7 +221,7 @@ export default function JargonTranslator() {
 
   const shareUrl = "https://aiinasia.com/tools/jargon-translator";
   const scoreLabel = getScoreLabel(jargonScore);
-  const shareText = `I just translated a press release that scored ${jargonScore}% jargon — "${scoreLabel.label}" 🤖 Try it:`;
+  const shareText = `I just translated a press release that scored ${jargonScore}% jargon — "${scoreLabel.label}" Try it:`;
   const modeColors = MODE_COLORS[mode];
 
   const schemaJson = {
@@ -390,7 +390,7 @@ export default function JargonTranslator() {
                     <TypewriterText trigger={translationKey}>
                       <p className="text-foreground leading-relaxed">{translatedInput}</p>
                       <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <p className="text-green-400 font-medium text-sm">✨ Refreshingly human — no jargon detected!</p>
+                        <p className="text-green-400 font-medium text-sm">Refreshingly human — no jargon detected!</p>
                       </div>
                     </TypewriterText>
                   </div>
@@ -421,7 +421,7 @@ export default function JargonTranslator() {
                                    <span className="block font-semibold text-primary mb-1">"{seg.original}"</span>
                                    <span className="block text-muted-foreground text-xs mb-1">{seg.entry!.plain}</span>
                                    {seg.entry!.asiaContext && (
-                                     <span className="block text-xs text-primary/70 mt-1">🌏 {seg.entry!.asiaContext}</span>
+                                     <span className="block text-xs text-primary/70 mt-1">{seg.entry!.asiaContext}</span>
                                    )}
                                    <span className={`inline-block mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${modeColors.badge}`}>
                                      {mode === "plain" ? "Plain English" : mode === "brutal" ? "Brutally Honest" : "ELI5"}
@@ -506,7 +506,7 @@ export default function JargonTranslator() {
 
           {/* Jargon Hall of Fame */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">🏆 Jargon Hall of Fame</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Jargon Hall of Fame</h2>
             <p className="text-muted-foreground text-center mb-6 text-sm">Real-ish examples of corporate AI word salad. Click any to auto-translate.</p>
             <div className="grid gap-3 max-w-3xl mx-auto">
               {HALL_OF_FAME.map((text, i) => (
@@ -528,7 +528,7 @@ export default function JargonTranslator() {
           <section className="mb-12 max-w-2xl mx-auto">
             <Card className="border-border bg-card">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-foreground mb-1">🗳️ Submit Your Own</h3>
+                <h3 className="text-lg font-bold text-foreground mb-1">Submit Your Own</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Found corporate AI jargon in the wild? Paste the worst offender here and help build the Hall of Shame.
                 </p>

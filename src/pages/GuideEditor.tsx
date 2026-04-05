@@ -605,9 +605,9 @@ const GuideEditor = () => {
     setHasChanges(true);
     setShowImport(false);
     setImportText("");
-    toast.success("Content Parsed ✓", {
+    toast.success("Content Parsed", {
       description: parsed.length > 0
-        ? parsed.map(p => `${p} ✓`).join(" · ")
+        ? parsed.map(p => `${p} - done`).join(" · ")
         : "Fields have been populated from your import.",
     });
   };

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ToolWrapper } from "@/components/category/ToolWrapper";
+import { Clock, DollarSign, UserCheck, Rocket, BarChart3 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#10b981";
 const INDUSTRIES = ["Marketing", "Finance", "Operations", "HR", "Sales", "Legal"] as const;
@@ -20,11 +22,11 @@ export const ROICalculator = () => {
   const fte = annualHours / 1920;
   const weeklyHours = Math.round(team * hours * mult);
 
-  const stats = [
-    { emoji: "⏱️", value: annualHours.toLocaleString(), label: "Hours saved / year" },
-    { emoji: "💰", value: fmt(costSaved), label: "Productivity value" },
-    { emoji: "👤", value: fte.toFixed(1), label: "FTE equivalent" },
-    { emoji: "🚀", value: weeklyHours.toLocaleString(), label: "Weekly hours freed" },
+  const stats: { icon: LucideIcon; value: string; label: string }[] = [
+    { icon: Clock, value: annualHours.toLocaleString(), label: "Hours saved / year" },
+    { icon: DollarSign, value: fmt(costSaved), label: "Productivity value" },
+    { icon: UserCheck, value: fte.toFixed(1), label: "FTE equivalent" },
+    { icon: Rocket, value: weeklyHours.toLocaleString(), label: "Weekly hours freed" },
   ];
 
   const sliderStyle: React.CSSProperties = {
@@ -41,7 +43,7 @@ export const ROICalculator = () => {
       <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-          <span style={{ fontSize: 20 }}>📊</span>
+          <BarChart3 size={20} color="#fff" />
           <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 16, color: "#fff" }}>
             AI ROI Calculator
           </span>
@@ -102,7 +104,7 @@ export const ROICalculator = () => {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 18, marginBottom: 4 }}>{s.emoji}</div>
+                  <div style={{ marginBottom: 4 }}><s.icon size={18} color={ACCENT} /></div>
                   <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 900, fontSize: 22, color: ACCENT, lineHeight: 1.1 }}>
                     {s.value}
                   </div>

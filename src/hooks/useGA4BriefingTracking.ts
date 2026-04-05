@@ -30,7 +30,7 @@ export function useGA4BriefingTracking(
       if (targets.length === 0) {
         const allSections = document.querySelectorAll("h2, h3");
         const signalHeadings = Array.from(allSections).filter((el) =>
-          /^(signal\s+)?[1-4🔵🟡🟠]|^bonus/i.test(el.textContent?.trim() || "")
+          /^(signal\s+)?[1-4]|^bonus/i.test(el.textContent?.trim() || "")
         );
         targets = signalHeadings.map((h) => h.closest("div, section") || h);
       }

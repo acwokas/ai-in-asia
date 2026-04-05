@@ -581,10 +581,10 @@ function PublerSection({ data: p, onRefresh }: { data: PublerSummary; onRefresh:
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{post.text || "Untitled post"}</p>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>❤️ {formatNumber(post.likes)}</span>
-                    <span>💬 {formatNumber(post.comments)}</span>
-                    <span>🔗 {formatNumber(post.shares)}</span>
-                    {(Number(post.impressions) || 0) > 0 && <span>👁 {formatNumber(post.impressions)}</span>}
+                    <span>Likes: {formatNumber(post.likes)}</span>
+                    <span>Comments: {formatNumber(post.comments)}</span>
+                    <span>Shares: {formatNumber(post.shares)}</span>
+                    {(Number(post.impressions) || 0) > 0 && <span>Views: {formatNumber(post.impressions)}</span>}
                   </div>
                 </div>
               </div>

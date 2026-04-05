@@ -1354,7 +1354,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
                             if (segment) { setSelectedEngagementSegment(segment); setEngagementDialogOpen(true); }
                           }}
                         >
-                          <strong>Readers:</strong> 50%+ scroll, 1min+ ✓
+                          <strong>Readers:</strong> 50%+ scroll, 1min+ (engaged)
                         </div>
                         <div 
                           className="p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted transition-colors"
@@ -1499,8 +1499,8 @@ Please be specific and provide copy-paste-ready content where possible.`;
                         {contentAgePerformance.length > 0 && (
                           <p className="text-muted-foreground">
                             {contentAgePerformance[0].avgViews > contentAgePerformance[contentAgePerformance.length - 1].avgViews
-                              ? "📈 Newer content is performing better - keep publishing fresh articles"
-                              : "📚 Older content has strong evergreen value - consider updating with fresh info"}
+                              ? "Newer content is performing better - keep publishing fresh articles"
+                              : "Older content has strong evergreen value - consider updating with fresh info"}
                           </p>
                         )}
                       </div>
@@ -2063,7 +2063,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
               <DialogDescription>
                 {selectedEngagementSegment?.name === 'Scanners' && 'Low scroll depth (<50%), short time (<1min) - users leave quickly'}
                 {selectedEngagementSegment?.name === 'Skimmers' && 'High scroll depth (50%+), short time (<1min) - users scroll fast without reading'}
-                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) - engaged readers ✓'}
+                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) - engaged readers'}
                 {selectedEngagementSegment?.name === 'Lingerers' && 'Low scroll depth (<50%), longer time (1min+) - stuck at top or distracted'}
               </DialogDescription>
             </DialogHeader>

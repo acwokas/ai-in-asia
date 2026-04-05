@@ -249,10 +249,10 @@ const LearningPathDetail = () => {
                 <GlowBadge color={DIFFICULTY_COLORS[path.difficulty] || "#9ca3af"}>{path.difficulty}</GlowBadge>
                 <GlowBadge color={cfg.accent}>{cfg.label}</GlowBadge>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
-                  📖 {displayArticles.length} articles
+                  {displayArticles.length} articles
                 </span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: TOKENS.MUTED, fontFamily: "Poppins, sans-serif", fontWeight: 600 }}>
-                  ⏱️ {path.time}
+                  {path.time}
                 </span>
               </div>
 
@@ -453,7 +453,7 @@ const LearningPathDetail = () => {
                                   transition: "all 0.2s ease",
                                 }}
                               >
-                                {isRead ? "✓ Read" : "Mark read"}
+                                {isRead ? "Read" : "Mark read"}
                               </button>
                             </div>
                           </div>
@@ -496,7 +496,7 @@ const LearningPathDetail = () => {
                         className="hover:bg-white/5"
                       >
                         <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 11, color: readArticles.has(a.id) ? path.color : TOKENS.MUTED, flexShrink: 0, marginTop: 2 }}>
-                          {readArticles.has(a.id) ? "✓" : `${i + 1}.`}
+                          {readArticles.has(a.id) ? "Done" : `${i + 1}.`}
                         </span>
                         <span style={{ fontSize: 12, color: readArticles.has(a.id) ? "#d1d5db" : "#9ca3af", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                           {decodeHtml(a.title)}

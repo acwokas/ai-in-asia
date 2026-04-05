@@ -76,7 +76,7 @@ const AIHeadlines = () => {
   }, [current]);
 
   const headline = HEADLINES[current];
-  const encodedHeadline = encodeURIComponent(`🤖 ${headline}\n\nGenerate your own → https://aiinasia.com/tools/ai-headlines`);
+  const encodedHeadline = encodeURIComponent(`${headline}\n\nGenerate your own → https://aiinasia.com/tools/ai-headlines`);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

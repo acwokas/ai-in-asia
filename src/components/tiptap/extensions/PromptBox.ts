@@ -60,7 +60,7 @@ export const PromptBox = Node.create<PromptBoxOptions>({
             'font-weight: 700; font-size: 14px; color: #10b981; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;',
           contenteditable: 'false',
         },
-        ['span', {}, '✨'],
+        ['span', { style: 'display:inline-flex;width:14px;height:14px;' }, ''],
         ['span', {}, HTMLAttributes.title || 'Prompt'],
       ],
       ['div', { class: 'prompt-box-content' }, 0],
