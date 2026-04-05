@@ -567,6 +567,17 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         }
       );
 
+      // Split single-paragraph blockquotes that contain an inline attribution after — / – / -
+      // e.g. <blockquote><p>"Quote text" — Author Name</p></blockquote>
+      sanitizedHtml = sanitizedHtml.replace(
+        /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)\s+[—–]\s+([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
+        (_, open, quoteText, attribution, close) => {
+          const cleanQuote = stripWrappingQuotes(quoteText.trim());
+          const cleanAttr = attribution.replace(/["\u201d]\s*$/, '').trim();
+          return `${open}<p>${cleanQuote}</p><footer>${cleanAttr}</footer>${close}`;
+        }
+      );
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
