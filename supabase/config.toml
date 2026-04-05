@@ -197,3 +197,6 @@ verify_jwt = true
 
 [functions.publish-to-social]
 verify_jwt = false
+
+[functions.handle-resend-webhook]
+verify_jwt = false

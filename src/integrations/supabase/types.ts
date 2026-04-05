@@ -2721,6 +2721,7 @@ export type Database = {
           edition_id: string
           id: string
           opened_at: string | null
+          resend_email_id: string | null
           sent_at: string
           subscriber_id: string
           unsubscribed_at: string | null
@@ -2733,6 +2734,7 @@ export type Database = {
           edition_id: string
           id?: string
           opened_at?: string | null
+          resend_email_id?: string | null
           sent_at?: string
           subscriber_id: string
           unsubscribed_at?: string | null
@@ -2745,6 +2747,7 @@ export type Database = {
           edition_id?: string
           id?: string
           opened_at?: string | null
+          resend_email_id?: string | null
           sent_at?: string
           subscriber_id?: string
           unsubscribed_at?: string | null

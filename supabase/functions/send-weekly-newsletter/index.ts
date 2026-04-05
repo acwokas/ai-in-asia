@@ -112,7 +112,7 @@ async function generateNewsletterHTML(
           ${featuredStory.articles.featured_image_url ? `
           <tr>
             <td>
-              <a href="${createTrackedLink(`${SITE_URL}/article/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="display: block;">
+              <a href="${createTrackedLink(`${SITE_URL}/news/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="display: block;">
                 <img src="${featuredStory.articles.featured_image_url}" alt="${featuredStory.articles.title}" width="100%" style="display: block; width: 100%; height: auto; max-height: 280px; object-fit: cover;" />
               </a>
             </td>
@@ -128,7 +128,7 @@ async function generateNewsletterHTML(
                 </tr>
                 <tr>
                   <td style="padding-top: 16px;">
-                    <a href="${createTrackedLink(`${SITE_URL}/article/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="color: #0f172a; text-decoration: none; font-size: 24px; font-weight: 800; line-height: 1.25; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${featuredStory.articles.title}</a>
+                    <a href="${createTrackedLink(`${SITE_URL}/news/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="color: #0f172a; text-decoration: none; font-size: 24px; font-weight: 800; line-height: 1.25; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${featuredStory.articles.title}</a>
                   </td>
                 </tr>
                 <tr>
@@ -138,7 +138,7 @@ async function generateNewsletterHTML(
                 </tr>
                 <tr>
                   <td style="padding-top: 20px;">
-                    <a href="${createTrackedLink(`${SITE_URL}/article/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                    <a href="${createTrackedLink(`${SITE_URL}/news/${featuredStory.articles.slug}`, sendId, editionId, subscriberId, 'article', featuredStory.articles.id)}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                       Read Full Signal →
                     </a>
                   </td>
@@ -159,7 +159,7 @@ async function generateNewsletterHTML(
           <tr>
             ${story.articles.featured_image_url ? `
             <td width="140" style="vertical-align: top;">
-              <a href="${createTrackedLink(`${SITE_URL}/article/${story.articles.slug}`, sendId, editionId, subscriberId, 'article', story.articles.id)}" style="display: block;">
+              <a href="${createTrackedLink(`${SITE_URL}/news/${story.articles.slug}`, sendId, editionId, subscriberId, 'article', story.articles.id)}" style="display: block;">
                 <img src="${story.articles.featured_image_url}" alt="" width="140" height="140" style="display: block; width: 140px; height: 140px; object-fit: cover;" />
               </a>
             </td>
@@ -173,7 +173,7 @@ async function generateNewsletterHTML(
                 </tr>
                 <tr>
                   <td style="padding-top: 8px;">
-                    <a href="${createTrackedLink(`${SITE_URL}/article/${story.articles.slug}`, sendId, editionId, subscriberId, 'article', story.articles.id)}" style="color: #0f172a; text-decoration: none; font-size: 17px; font-weight: 700; line-height: 1.3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${story.articles.title}</a>
+                    <a href="${createTrackedLink(`${SITE_URL}/news/${story.articles.slug}`, sendId, editionId, subscriberId, 'article', story.articles.id)}" style="color: #0f172a; text-decoration: none; font-size: 17px; font-weight: 700; line-height: 1.3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${story.articles.title}</a>
                   </td>
                 </tr>
                 <tr>
@@ -369,7 +369,7 @@ async function generateNewsletterHTML(
                 </tr>
                 <tr>
                   <td style="padding-top: 14px;">
-                    <a href="${createTrackedLink(`${SITE_URL}/article/${policyArticle.slug}`, sendId, editionId, subscriberId, 'policy_atlas', policyArticle.id)}" style="color: #ffffff; text-decoration: none; font-size: 20px; font-weight: 700; line-height: 1.35; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${policyArticle.title}</a>
+                    <a href="${createTrackedLink(`${SITE_URL}/news/${policyArticle.slug}`, sendId, editionId, subscriberId, 'policy_atlas', policyArticle.id)}" style="color: #ffffff; text-decoration: none; font-size: 20px; font-weight: 700; line-height: 1.35; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: block;">${policyArticle.title}</a>
                   </td>
                 </tr>
                 ${policyArticle.country || policyArticle.region ? `
@@ -381,7 +381,7 @@ async function generateNewsletterHTML(
                 ` : ''}
                 <tr>
                   <td style="padding-top: 20px;">
-                    <a href="${createTrackedLink(`${SITE_URL}/article/${policyArticle.slug}`, sendId, editionId, subscriberId, 'policy_atlas', policyArticle.id)}" style="display: inline-block; background: #ffffff; color: #312e81; font-size: 13px; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Policy →</a>
+                    <a href="${createTrackedLink(`${SITE_URL}/news/${policyArticle.slug}`, sendId, editionId, subscriberId, 'policy_atlas', policyArticle.id)}" style="display: inline-block; background: #ffffff; color: #312e81; font-size: 13px; font-weight: 700; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Explore Policy →</a>
                   </td>
                 </tr>
               </table>
@@ -574,7 +574,7 @@ Deno.serve(async (req) => {
         const html = await generateNewsletterHTML(edition, subscriber, sendRecord.id, supabase);
 
         const unsubUrl = createUnsubscribeUrl(sendRecord.id, edition.id, subscriber.id);
-        await resend.emails.send({
+        const { data: emailResult, error: emailError } = await resend.emails.send({
           from: 'AI in ASIA <contact@aiinasia.com>',
           to: subscriber.email,
           subject: subjectLine,
@@ -584,6 +584,18 @@ Deno.serve(async (req) => {
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           },
         });
+
+        if (emailError) {
+          throw new Error(`Resend error: ${emailError.message}`);
+        }
+
+        // Store Resend email ID for webhook tracking
+        if (emailResult?.id) {
+          await supabase
+            .from('newsletter_sends')
+            .update({ resend_email_id: emailResult.id })
+            .eq('id', sendRecord.id);
+        }
 
         sentCount++;
         if (variant === 'A') variantASent++;
