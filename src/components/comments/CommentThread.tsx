@@ -152,7 +152,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
 
   return (
     <div className="flex items-center gap-1 mt-1.5">
-      {COMMENT_REACTIONS.map(({ type, icon: Icon }) => {
+      {COMMENT_REACTIONS.map(({ type, emoji }) => {
         const count = counts[type] || 0;
         const isActive = userReactions.includes(type);
         return (
@@ -166,7 +166,7 @@ const CommentReactionsBar = ({ commentId }: CommentReactionsBarProps) => {
               isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
             )}
           >
-            <Icon className="h-3.5 w-3.5" />
+            <span className="text-sm">{emoji}</span>
             {count > 0 && <span className="text-[10px] font-medium">{count}</span>}
           </button>
         );
