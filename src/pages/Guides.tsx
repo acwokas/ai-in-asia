@@ -15,6 +15,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import GuideLearningPaths from "@/components/guide/GuideLearningPaths";
 
 /* ── Helpers ── */
 
