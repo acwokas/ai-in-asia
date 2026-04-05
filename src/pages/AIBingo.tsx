@@ -113,7 +113,7 @@ const AIBingo = () => {
                       : "bg-card border-border text-foreground hover:border-amber-500/50 hover:bg-amber-500/5"
                   } ${isFree ? "cursor-default" : "cursor-pointer"}`}
                 >
-                  {isFree ? "⭐ FREE" : term}
+                  {isFree ? "FREE" : term}
                 </button>
               );
             })}
