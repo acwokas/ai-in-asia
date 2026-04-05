@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { JARGON_DICTIONARY, type JargonEntry } from "@/lib/jargonDictionary";
+import { Brain } from "lucide-react";
 
 /* ─── term lookup map (case-insensitive) ─── */
 const TERM_MAP = new Map<string, JargonEntry>();
