@@ -221,7 +221,7 @@ export default function JargonTranslator() {
 
   const shareUrl = "https://aiinasia.com/tools/jargon-translator";
   const scoreLabel = getScoreLabel(jargonScore);
-  const shareText = `I just translated a press release that scored ${jargonScore}% jargon — "${scoreLabel.label}" 🤖 Try it:`;
+  const shareText = `I just translated a press release that scored ${jargonScore}% jargon — "${scoreLabel.label}" Try it:`;
   const modeColors = MODE_COLORS[mode];
 
   const schemaJson = {
