@@ -67,6 +67,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Glossary",
+    desc: "472+ AI and tech terms explained in plain language. Search, filter, explore.",
+    icon: BookOpenText,
+    to: "/tools/ai-glossary",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,

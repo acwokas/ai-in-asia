@@ -67,6 +67,7 @@ const POLICY_ITEMS: NavDropdownItem[] = [
 const TOOLS_ITEMS: NavDropdownItem[] = [
   { to: "/tools/ai-readiness", label: "AI Readiness Score", description: "Quiz: how AI-ready is your career?", icon: Zap },
   { to: "/tools/ai-bingo", label: "AI Jargon Bingo", description: "Play buzzword bingo in your next meeting", icon: Globe },
+  { to: "/tools/ai-glossary", label: "AI Glossary", description: "472+ AI terms explained in plain language", icon: BookOpen },
   { to: "/tools/ai-headlines", label: "AI Headline Generator", description: "Generate funny satirical AI headlines", icon: Newspaper },
   { to: "/guides", label: "Guides", description: "Step-by-step AI guides for every skill level", icon: BookOpen },
   { to: "/prompts", label: "Prompts", description: "Ready-to-use prompts for every platform", icon: Sparkles },
