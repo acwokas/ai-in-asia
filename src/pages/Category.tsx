@@ -58,6 +58,12 @@ const TOOL_MAP: Record<string, React.FC> = {
 const TOOL_META: Record<string, { name: string; emoji: string }> = {
   news: { name: "Pulse Tracker", emoji: "activity" },
   business: { name: "ROI Calculator", emoji: "calculator" },
+  life: { name: "Tool Finder", emoji: "search" },
+  learn: { name: "Prompt Builder", emoji: "terminal" },
+  create: { name: "Prompt Studio", emoji: "wand" },
+  voices: { name: "Opinion Poll", emoji: "bar-chart-2" },
+  policy: { name: "Policy Tracker", emoji: "shield" },
+};
 
 // Nav CTA links per category (mirrors primary nav dropdowns minus the category page itself)
 const CATEGORY_NAV_CTAS: Record<string, { label: string; to: string; desc: string }[]> = {
@@ -83,12 +89,6 @@ const CATEGORY_NAV_CTAS: Record<string, { label: string; to: string; desc: strin
     { label: "Policy Atlas", to: "/ai-policy-atlas", desc: "Track AI regulation across Asia-Pacific" },
   ],
   voices: [],
-};
-  life: { name: "Tool Finder", emoji: "search" },
-  learn: { name: "Prompt Builder", emoji: "terminal" },
-  create: { name: "Prompt Studio", emoji: "wand" },
-  voices: { name: "Opinion Poll", emoji: "bar-chart-2" },
-  policy: { name: "Policy Tracker", emoji: "shield" },
 };
 
 const Category = () => {
