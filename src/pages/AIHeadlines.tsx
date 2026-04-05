@@ -87,8 +87,10 @@ const AIHeadlines = () => {
         canonical="https://aiinasia.com/tools/ai-headlines"
       />
       <Header />
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="max-w-2xl w-full text-center">
+      <main className="flex-1 px-4 py-16">
+        <div className="max-w-2xl w-full mx-auto">
+          <ToolBreadcrumb toolName="AI Headline Generator" />
+          <div className="text-center flex flex-col items-center justify-center">
           <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-2">
             AI Headline Generator
           </h1>

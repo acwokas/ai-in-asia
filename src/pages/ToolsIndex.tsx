@@ -109,6 +109,19 @@ const ToolsIndex = () => {
       <Header />
       <main className="flex-1 px-4 py-12">
         <div className="max-w-5xl mx-auto">
+          <Breadcrumb className="mb-6">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Tools</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <div className="text-center mb-10">
             <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-3">
               Interactive AI Tools
