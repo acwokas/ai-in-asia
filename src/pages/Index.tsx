@@ -745,7 +745,7 @@ const Index = () => {
                       </div>
                       <div className="p-2.5 flex flex-col flex-1">
                         <span className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: catColor }}>
-                          {isGuide ? `📘 ${article.categories?.name || 'Guide'}` : (article.categories?.name || "Uncategorized")}
+                          {isGuide ? `${article.categories?.name || 'Guide'}` : (article.categories?.name || "Uncategorized")}
                         </span>
                         <h3 className="font-semibold text-[14px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors">
                           {article.title}
