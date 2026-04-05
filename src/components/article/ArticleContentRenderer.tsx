@@ -264,7 +264,7 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     return cleanup;
   }, [html]);
 
-  const { tooltipNode, bannerNode } = useGlossaryAnnotation(proseRef, processedHtml);
+  const { tooltipNode, bannerNode } = useGlossaryAnnotation(proseRef, processedHtml, glossaryResult.termCount);
 
   return (
     <>
