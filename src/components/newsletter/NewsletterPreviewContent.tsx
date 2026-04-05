@@ -286,7 +286,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {edition.roadmap_worth_it_if && (
             <div className="bg-white/10 rounded-lg p-3">
-              <span className="text-green-300 font-semibold text-sm">✓ Worth it if:</span>
+              <span className="text-green-300 font-semibold text-sm">Worth it if:</span>
               <p className="text-sm mt-1 opacity-90">{edition.roadmap_worth_it_if}</p>
             </div>
           )}
