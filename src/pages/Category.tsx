@@ -297,20 +297,26 @@ const Category = () => {
   const featuredArticle = useMemo(() => {
     if (isFilterActive) return filteredAllArticles[0];
     if (!articles || articles.length === 0) return null;
+    // For voices, just use the most recent article (already filtered)
+    if (slug === 'voices') return articles[0];
     // Pick the top trending article by trending_score, fall back to most recent
     const trendingInCategory = articles
       .filter((a: any) => a.is_trending)
       .sort((a: any, b: any) => (b.trending_score || 0) - (a.trending_score || 0));
     if (trendingInCategory.length > 0) return trendingInCategory[0];
     return articles[0];
-  }, [articles, isFilterActive, filteredAllArticles]);
+  }, [articles, slug, isFilterActive, filteredAllArticles]);
 
   const latestArticles = useMemo(() => {
     if (isFilterActive) return filteredAllArticles.slice(1, 5);
+    // For voices, just take next 4 articles (no date restriction)
+    if (slug === 'voices') {
+      return (articles || []).filter((a: any) => a.id !== featuredArticle?.id).slice(0, 4);
+    }
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     return (articles || []).filter((a: any) => a.id !== featuredArticle?.id && new Date(a.published_at) >= oneMonthAgo).slice(0, 4);
-  }, [articles, isFilterActive, filteredAllArticles, featuredArticle]);
+  }, [articles, slug, isFilterActive, filteredAllArticles, featuredArticle]);
 
   const featuredGridArticles = useMemo(() => {
     if (isFilterActive) return filteredAllArticles.slice(1, 9);
