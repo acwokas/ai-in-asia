@@ -622,7 +622,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-50% to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: heroCatColor, padding: '6px 14px' }}>{featuredArticle.content_type === 'guide' ? `📘 ${featuredArticle.categories?.name || 'Guide'}` : (featuredArticle.categories?.name || "Uncategorized")}</Badge>
+                        <Badge className="text-white text-xs backdrop-blur-sm" style={{ backgroundColor: heroCatColor, padding: '6px 14px' }}>{featuredArticle.content_type === 'guide' ? `${featuredArticle.categories?.name || 'Guide'}` : (featuredArticle.categories?.name || "Uncategorized")}</Badge>
                         {featuredArticle.is_trending && (
                           <Badge className="text-white flex items-center gap-1 text-xs backdrop-blur-sm" style={{ backgroundColor: '#E06050', padding: '6px 14px' }}><TrendingUp className="h-3 w-3" />Trending</Badge>
                         )}
