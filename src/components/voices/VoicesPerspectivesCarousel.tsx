@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Quote, Clock, User } from "lucide-react";
-import { hydrateArticlesWithPublicAuthors } from "@/lib/publicAuthors";
 
 export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string }) => {
   const { data: quotes, isLoading } = useQuery({
@@ -12,22 +11,20 @@ export const VoicesPerspectivesCarousel = ({ categoryId }: { categoryId: string 
     queryFn: async () => {
       const { data, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, reading_time_minutes, featured_image_url, author_id, categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, reading_time_minutes, featured_image_url, authors:authors_public!articles_author_id_fkey (name, avatar_url), categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
       if (error) throw error;
 
-      const articles = await hydrateArticlesWithPublicAuthors(
-        ((data || []).map((ac: any) => ac.articles).filter(Boolean) as any[])
-      );
+      const articles = (data || [])
+        .map((ac: any) => ac.articles)
+        .filter((a: any) => {
+          const authorName = a?.authors?.name || '';
+          return authorName && authorName !== 'Intelligence Desk' && a?.excerpt;
+        });
 
-      const filtered = articles.filter((a: any) => {
-        const authorName = a?.authors?.name || "";
-        return authorName && authorName !== "Intelligence Desk" && a?.excerpt;
-      });
-
-      return filtered
+      return articles
         .sort(() => Math.random() - 0.5)
         .slice(0, 8)
         .map((a: any) => ({

@@ -36,7 +36,7 @@ const ContinueReading = ({ currentArticleId, categoryId, categorySlug }: Continu
         .select(`
           id, title, slug, excerpt, featured_image_url, reading_time_minutes,
           ai_tags, topic_tags,
-          authors (name, slug),
+          authors:authors_public!articles_author_id_fkey (name, slug),
           categories:primary_category_id (name, slug)
         `)
         .eq('status', 'published')

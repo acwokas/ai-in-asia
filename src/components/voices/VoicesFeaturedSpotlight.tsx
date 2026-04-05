@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, BookOpen, ArrowRight, FileText } from "lucide-react";
-import { hydrateArticlesWithPublicAuthors } from "@/lib/publicAuthors";
 
 export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) => {
   const { data, isLoading } = useQuery({
@@ -12,22 +11,18 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
     queryFn: async () => {
       const { data: articleCats, error } = await supabase
         .from("article_categories")
-        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, author_id, categories:primary_category_id (slug))`)
+        .select(`articles!inner (id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes, authors:authors_public!articles_author_id_fkey (id, name, slug, avatar_url, bio, job_title, article_count), categories:primary_category_id (slug))`)
         .eq("category_id", categoryId)
         .eq("articles.status", "published");
 
       if (error) throw error;
 
-      const articles = await hydrateArticlesWithPublicAuthors(
-        ((articleCats || []).map((ac: any) => ac.articles).filter(Boolean) as any[])
-      );
-
-      const filteredArticles = articles.filter(
-        (a: any) => a?.authors?.name && a.authors.name !== "Intelligence Desk"
-      );
+      const articles = (articleCats || [])
+        .map((ac: any) => ac.articles)
+        .filter((a: any) => a?.authors?.name && a.authors.name !== "Intelligence Desk");
 
       const authorMap = new Map<string, { author: any; articles: any[]; count: number }>();
-      for (const a of filteredArticles) {
+      for (const a of articles) {
         const authorId = a.authors?.id;
         if (!authorId) continue;
         if (!authorMap.has(authorId)) {
