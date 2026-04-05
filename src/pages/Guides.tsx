@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -7,31 +7,20 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, ArrowRight, Search, ChevronDown, Star, Globe, SlidersHorizontal, X, Rocket, Layers } from "lucide-react";
+import {
+  Clock, ArrowRight, Search, ChevronDown, ChevronLeft, ChevronRight,
+  Star, Globe, X, Eye, Briefcase, Sparkles, Wrench, MapPin, GraduationCap,
+  Palette, Shield, Code, TrendingUp, SlidersHorizontal,
+} from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
-
 import { GuideBookmarkButton } from "@/components/GuideBookmarkButton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+
+/* ── Helpers ── */
 
 const guideHref = (slug: string, topicCategory?: string | null) => {
   const cat = (topicCategory || "general").toLowerCase().replace(/\s+/g, "-");
   return `/guides/${cat}/${slug}`;
-};
-
-const ASIAN_KEYWORDS = ["asia", "singapore", "malaysia", "indonesia", "thailand", "vietnam", "philippines", "japan", "korea", "china", "india", "taiwan", "hong-kong", "bangkok", "manila", "jakarta", "mumbai", "delhi", "tokyo", "seoul", "halal", "lunar", "chinese-new-year", "diwali", "ramadan", "grab", "gojek", "shopee", "lazada", "line", "wechat", "baidu", "cpf", "hdb", "medisave"];
-
-const ASIAN_KEYWORD_LABELS: Record<string, string> = {
-  singapore: "Singapore", malaysia: "Malaysia", indonesia: "Indonesia", thailand: "Thailand",
-  vietnam: "Vietnam", philippines: "Philippines", japan: "Japan", korea: "Korea",
-  china: "China", india: "India", taiwan: "Taiwan", "hong-kong": "Hong Kong",
-  bangkok: "Bangkok", manila: "Manila", jakarta: "Jakarta", mumbai: "Mumbai",
-  delhi: "Delhi", tokyo: "Tokyo", seoul: "Seoul", asia: "Asia",
-};
-
-const pillarColors: Record<string, string> = {
-  learn: "bg-blue-500",
-  prompts: "bg-purple-500",
-  toolbox: "bg-teal-500",
 };
 
 const diffColors: Record<string, string> = {
@@ -40,498 +29,272 @@ const diffColors: Record<string, string> = {
   advanced: "bg-red-500",
 };
 
-const DIFFICULTY_OPTIONS = ["All", "Beginner", "Intermediate", "Advanced"] as const;
-const PLATFORM_OPTIONS = ["All", "ChatGPT", "Claude", "Gemini", "Multi-platform"] as const;
-const TOPIC_OPTIONS = [
-  "All", "Business", "Lifestyle", "Creators", "Work", "Education",
-  "Wellness", "Finance", "Productivity", "Content", "Technology", "Safety",
-] as const;
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "popular", label: "Most popular" },
-  { value: "difficulty", label: "Difficulty" },
-] as const;
-
 const DIFF_ORDER: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 
-const CATEGORY_TILE_COLORS: Record<string, string> = {
-  Business: "bg-blue-600", Lifestyle: "bg-emerald-500", Creators: "bg-purple-500",
-  Work: "bg-amber-500", Education: "bg-rose-500", Wellness: "bg-teal-500",
-  Finance: "bg-indigo-500", Productivity: "bg-orange-500", Content: "bg-pink-500",
-  Technology: "bg-teal-600", Safety: "bg-red-500",
+/* ── 1. Topic tiles config ── */
+// Map display names to actual topic_category DB values
+const TOPIC_TILES = [
+  { label: "AI for Business", icon: Briefcase, dbValues: ["business", "finance"], gradient: "from-blue-600 to-blue-800" },
+  { label: "Prompts & Workflows", icon: Sparkles, dbValues: ["productivity", "work"], gradient: "from-purple-600 to-violet-800" },
+  { label: "AI Tools & Platforms", icon: Wrench, dbValues: ["technology"], gradient: "from-teal-500 to-emerald-700" },
+  { label: "Asia AI Landscape", icon: MapPin, dbValues: ["__asia__"], gradient: "from-cyan-500 to-teal-700" },
+  { label: "Getting Started", icon: GraduationCap, dbValues: ["education"], gradient: "from-amber-500 to-orange-700" },
+  { label: "Creative AI", icon: Palette, dbValues: ["creators", "content"], gradient: "from-pink-500 to-rose-700" },
+  { label: "AI Ethics & Policy", icon: Shield, dbValues: ["safety"], gradient: "from-red-600 to-red-800" },
+  { label: "Lifestyle & Wellness", icon: Code, dbValues: ["lifestyle", "wellness"], gradient: "from-indigo-500 to-indigo-800" },
+] as const;
+
+/* ── 5. Platform hub config ── */
+const PLATFORM_HUB = [
+  { name: "ChatGPT", color: "#10a37f", letter: "C" },
+  { name: "Claude", color: "#d97757", letter: "C" },
+  { name: "Gemini", color: "#4285f4", letter: "G" },
+  { name: "Midjourney", color: "#0f1923", letter: "M" },
+  { name: "Runway", color: "#6366f1", letter: "R" },
+  { name: "ElevenLabs", color: "#000000", letter: "E" },
+  { name: "Cursor", color: "#7c3aed", letter: "C" },
+  { name: "v0", color: "#18181b", letter: "V" },
+  { name: "Lovable", color: "#e11d48", letter: "L" },
+  { name: "NotebookLM", color: "#fbbc04", letter: "N" },
+  { name: "Perplexity", color: "#20808d", letter: "P" },
+  { name: "Suno", color: "#f97316", letter: "S" },
+  { name: "Copilot", color: "#0078d4", letter: "C" },
+  { name: "Stable Diffusion", color: "#a855f7", letter: "S" },
+] as const;
+
+const isAsiaGuide = (g: any) => g.geo && g.geo !== "none" && g.geo !== "global";
+
+const matchesTile = (g: any, dbValues: readonly string[]) => {
+  if (dbValues.includes("__asia__")) return isAsiaGuide(g);
+  return dbValues.includes((g.topic_category || "").toLowerCase());
 };
 
-type FilterPillProps = { label: string; active: boolean; onClick: () => void };
+/* ── Guide card (improved) ── */
+const ImprovedGuideCard = ({ g }: { g: any }) => (
+  <div className="relative group">
+    <GuideBookmarkButton
+      guideId={g.id}
+      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+    />
+    <Link
+      to={guideHref(g.slug, g.topic_category)}
+      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 h-full"
+    >
+      <div className="aspect-video overflow-hidden">
+        {g.featured_image_url ? (
+          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="16/9" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <Sparkles className="h-8 w-8 text-primary/30" />
+          </div>
+        )}
+      </div>
+      <div className="p-4 space-y-2.5 flex flex-col flex-1">
+        <div className="flex flex-wrap gap-1.5">
+          {g.difficulty && (
+            <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>
+          )}
+          {g.primary_platform && g.primary_platform !== "Generic" && (
+            <Badge variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] border-0">{g.primary_platform}</Badge>
+          )}
+          {g.topic_category && (
+            <Badge variant="outline" className="text-[10px] capitalize border-border">{g.topic_category}</Badge>
+          )}
+        </div>
+        <h2 className="text-sm sm:text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
+        {g.one_line_description && <p className="text-xs text-muted-foreground line-clamp-2">{g.one_line_description}</p>}
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-auto mt-auto">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+          {(g.view_count ?? 0) > 0 && (
+            <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{g.view_count >= 1000 ? `${(g.view_count / 1000).toFixed(1)}k` : g.view_count}</span>
+          )}
+        </div>
+      </div>
+    </Link>
+  </div>
+);
 
-const FilterPill = ({ label, active, onClick }: FilterPillProps) => (
-  <button
-    onClick={onClick}
-    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-      active
-        ? "bg-primary text-primary-foreground border-primary"
-        : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-    }`}
+/* ── Trending card (compact horizontal) ── */
+const TrendingCard = ({ g }: { g: any }) => (
+  <Link
+    to={guideHref(g.slug, g.topic_category)}
+    className="snap-start shrink-0 w-[280px] sm:w-[300px] rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 group"
   >
-    {label}
-  </button>
-);
-
-
-/* ── Card variants for magazine-style layouts ── */
-
-const GuideCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {g.featured_image_url && (
-        <div className="aspect-video overflow-hidden">
-          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="16/9" className="w-full group-hover:scale-105 transition-transform duration-300" />
-        </div>
-      )}
-      <div className="p-5 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
-          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-          {g.platform_tags?.length > 0 && g.platform_tags.map((tag: string) => (
-            <Badge key={tag} variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] font-normal border-0">{tag}</Badge>
-          ))}
-        </div>
-        <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-2">{g.one_line_description}</p>}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
-        </div>
-      </div>
-    </Link>
-  </div>
-);
-
-// Large featured card — taller image
-const GuideFeaturedCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {g.featured_image_url && (
-        <div className="aspect-[4/3] overflow-hidden">
-          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="4/3" className="w-full group-hover:scale-105 transition-transform duration-300" />
-        </div>
-      )}
-      <div className="p-5 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
-          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-        </div>
-        <h2 className="text-xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-3">{g.title}</h2>
-        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
-        <div className="flex items-center text-xs text-muted-foreground pt-1">
-          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-        </div>
-      </div>
-    </Link>
-  </div>
-);
-
-// Compact horizontal list card
-const GuideListCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-1 right-1 z-10 h-7 w-7 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="flex gap-3 rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md"
-      style={{ transition: "transform 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
+    <div className="aspect-video overflow-hidden">
       {g.featured_image_url ? (
-        <OptimizedImage src={g.featured_image_url} alt={g.title} className="w-24 h-24 md:w-28 md:h-28 shrink-0" />
+        <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
       ) : (
-        <div className="w-24 h-24 md:w-28 md:h-28 bg-muted shrink-0" />
+        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5" />
       )}
-      <div className="py-3 pr-3 flex flex-col justify-center min-w-0 space-y-1">
-        <div className="flex flex-wrap gap-1">
-          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
-        </div>
-        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-      </div>
-    </Link>
-  </div>
-);
-
-// Landscape wide card
-const GuideLandscapeCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {g.featured_image_url && (
-        <div className="aspect-[2/1] overflow-hidden">
-          <OptimizedImage src={g.featured_image_url} alt={g.title} aspectRatio="2/1" className="w-full group-hover:scale-105 transition-transform duration-300" />
-        </div>
-      )}
-      <div className="p-4 space-y-2">
-        <div className="flex flex-wrap gap-1.5">
-          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-        </div>
-        <h2 className="text-base font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-        </div>
-      </div>
-    </Link>
-  </div>
-);
-
-// Square compact card
-const GuideSquareCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {g.featured_image_url && (
-        <div className="aspect-square overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        </div>
-      )}
-      <div className="p-3 space-y-1.5">
+    </div>
+    <div className="p-3 space-y-1.5">
+      <div className="flex flex-wrap gap-1">
         {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[9px]`}>{g.difficulty}</Badge>}
-        <h2 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
+        {g.primary_platform && g.primary_platform !== "Generic" && (
+          <Badge variant="secondary" className="bg-muted/60 text-[9px] border-0">{g.primary_platform}</Badge>
+        )}
       </div>
-    </Link>
-  </div>
+      <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
+    </div>
+  </Link>
 );
 
-// Wide 2-col card with more description
-const GuideWideCard = ({ g }: { g: any }) => (
-  <div className="relative group">
-    <GuideBookmarkButton
-      guideId={g.id}
-      className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-    />
-    <Link
-      to={guideHref(g.slug, g.topic_category)}
-      className="block rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {g.featured_image_url && (
-        <div className="aspect-video overflow-hidden">
-          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        </div>
-      )}
-      <div className="p-5 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
-          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-        </div>
-        <h2 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h2>
-        {g.one_line_description && <p className="text-sm text-muted-foreground line-clamp-3">{g.one_line_description}</p>}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min read</span>
-          <span className="flex items-center gap-1 text-primary font-medium group-hover:gap-2 transition-all">Read guide <ArrowRight className="h-3 w-3" /></span>
-        </div>
-      </div>
-    </Link>
-  </div>
-);
-
-/* ── Section layout renderers ── */
-
-// "featured" layout: 1 big card left + 2 stacked list cards right
-const FeaturedLayout = ({ guides, mirrored = false }: { guides: any[]; mirrored?: boolean }) => {
-  const big = guides[0];
-  const stacked = guides.slice(1, 3);
-  const rest = guides.slice(3);
-  return (
-    <>
-      <div className={`grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-5 ${mirrored ? "" : ""}`}>
-        <div className={`lg:col-span-3 ${mirrored ? "lg:order-2" : ""}`}>
-          {big && <GuideFeaturedCard g={big} />}
-        </div>
-        <div className={`lg:col-span-2 flex flex-col gap-4 ${mirrored ? "lg:order-1" : ""}`}>
-          {stacked.map((g: any) => <GuideListCard key={g.id} g={g} />)}
-        </div>
-      </div>
-      {rest.length > 0 && (
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6 mt-4">
-          {rest.map((g: any) => <GuideCard key={g.id} g={g} />)}
-        </div>
-      )}
-    </>
-  );
-};
-
-// 3-col landscape
-const LandscapeLayout = ({ guides }: { guides: any[] }) => (
-  <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6">
-    {guides.map((g: any) => <GuideLandscapeCard key={g.id} g={g} />)}
-  </div>
-);
-
-// 4-col square compact
-const SquareLayout = ({ guides }: { guides: any[] }) => (
-  <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
-    {guides.map((g: any) => <GuideSquareCard key={g.id} g={g} />)}
-  </div>
-);
-
-// 2-col wide
-const WideLayout = ({ guides }: { guides: any[] }) => (
-  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 sm:gap-6">
-    {guides.map((g: any) => <GuideWideCard key={g.id} g={g} />)}
-  </div>
-);
-
-// Standard 3-col
-const StandardLayout = ({ guides }: { guides: any[] }) => (
-  <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 sm:gap-6">
-    {guides.map((g: any) => <GuideCard key={g.id} g={g} />)}
-  </div>
-);
-
-const LAYOUT_SEQUENCE = ["featured", "landscape", "square", "wide", "featured-mirror", "standard"] as const;
-
-const renderSectionLayout = (layout: string, guides: any[]) => {
-  switch (layout) {
-    case "featured": return <FeaturedLayout guides={guides} />;
-    case "featured-mirror": return <FeaturedLayout guides={guides} mirrored />;
-    case "landscape": return <LandscapeLayout guides={guides} />;
-    case "square": return <SquareLayout guides={guides} />;
-    case "wide": return <WideLayout guides={guides} />;
-    default: return <StandardLayout guides={guides} />;
-  }
-};
-
-/* ── Main page component ── */
+/* ── Main page ── */
 
 const Guides = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 250);
   const [sortBy, setSortBy] = useState<string>("newest");
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [difficulty, setDifficulty] = useState("All");
-  const [platforms, setPlatforms] = useState<Set<string>>(new Set(["All"]));
-  const [topic, setTopic] = useState("All");
-  const [specialFilter, setSpecialFilter] = useState<"asia" | "startup" | "platform" | null>(null);
-  const [asiaCountries, setAsiaCountries] = useState<Set<string>>(new Set(["All"]));
+  // Filters from URL
+  const activeTile = searchParams.get("topic") || null;
+  const activePlatform = searchParams.get("platform") || null;
+  const activeDifficulty = searchParams.get("difficulty") || null;
 
-  const activeFilterCount = (difficulty !== "All" ? 1 : 0) + (!platforms.has("All") ? 1 : 0) + (topic !== "All" ? 1 : 0);
-
-  const togglePlatform = (p: string) => {
-    if (p === "All") { setPlatforms(new Set(["All"])); return; }
-    setPlatforms((prev) => {
-      const next = new Set(prev);
-      next.delete("All");
-      if (next.has(p)) { next.delete(p); if (next.size === 0) next.add("All"); }
-      else next.add(p);
+  const setFilter = (key: string, value: string | null) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set(key, value);
+      else next.delete(key);
       return next;
-    });
+    }, { replace: true });
   };
+
+  const clearAllFilters = () => {
+    setSearchParams({}, { replace: true });
+    setSearchQuery("");
+  };
+
+  const activeFilterCount =
+    (activeTile ? 1 : 0) + (activePlatform ? 1 : 0) + (activeDifficulty ? 1 : 0) + (debouncedSearch.trim() ? 1 : 0);
+
+  // Trending scroll ref
+  const trendingRef = useRef<HTMLDivElement>(null);
+  const scrollTrending = (dir: "left" | "right") => {
+    if (!trendingRef.current) return;
+    trendingRef.current.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
+  };
+
+  /* ── Queries ── */
 
   const { data: guides, isLoading } = useQuery({
     queryKey: ["guides-index"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ai_guides")
-        .select("id, title, slug, pillar, difficulty, one_line_description, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category, updated_at, view_count, geo, audience_role, guide_category, primary_platform")
+        .select("id, title, slug, pillar, difficulty, one_line_description, excerpt, featured_image_url, read_time_minutes, platform_tags, published_at, topic_category, updated_at, view_count, geo, audience_role, guide_category, primary_platform, is_editors_pick, topic_tags")
         .eq("status", "published")
-        .order("updated_at", { ascending: false });
+        .order("published_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
 
-  const { data: editorsPicks, isLoading: isLoadingPicks } = useQuery({
-    queryKey: ["editors-picks-guides"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ai_guides")
-        .select("id, title, slug, featured_image_url, difficulty, topic_category, updated_at")
-        .eq("status", "published")
-        .eq("is_editors_pick", true)
-        .order("updated_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Guide of the week: editors pick with highest views
+  const guideOfWeek = useMemo(() => {
+    if (!guides) return null;
+    const picks = guides.filter((g) => g.is_editors_pick);
+    if (picks.length === 0) return null;
+    return picks.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))[0];
+  }, [guides]);
 
-  const dailyPicks = useMemo(() => {
-    if (!editorsPicks || editorsPicks.length === 0) return [];
-    const seed = Math.floor(Date.now() / 86400000);
-    const pool = [...editorsPicks];
-    const picks: typeof editorsPicks = [];
-    const count = Math.min(3, pool.length);
-    for (let i = 0; i < count; i++) {
-      const idx = ((seed * (i + 1) * 2654435761) >>> 0) % pool.length;
-      picks.push(pool.splice(idx, 1)[0]);
-    }
-    return picks;
-  }, [editorsPicks]);
+  // Trending: top 6 by views from last 7 days
+  const trendingGuides = useMemo(() => {
+    if (!guides) return [];
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    return guides
+      .filter((g) => g.published_at && g.published_at >= weekAgo)
+      .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+      .slice(0, 6);
+  }, [guides]);
 
-  // Asia spotlight query removed - now uses main guides data filtered by geo field
-
-  const { data: popularGuides } = useQuery({
-    queryKey: ["guides-popular"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ai_guides")
-        .select("id, title, slug, featured_image_url, topic_category, view_count")
-        .eq("status", "published")
-        .order("view_count", { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const topicCounts = useMemo(() => {
+  // Topic tile counts
+  const tileCounts = useMemo(() => {
     if (!guides) return {};
     const counts: Record<string, number> = {};
-    for (const g of guides) {
-      const cat = g.topic_category || "General";
-      counts[cat] = (counts[cat] || 0) + 1;
+    for (const tile of TOPIC_TILES) {
+      counts[tile.label] = guides.filter((g) => matchesTile(g, tile.dbValues)).length;
     }
     return counts;
   }, [guides]);
 
-  const isAsiaGuide = (g: any) => g.geo && g.geo !== "none" && g.geo !== "global";
+  // Platform counts
+  const platformCounts = useMemo(() => {
+    if (!guides) return {};
+    const counts: Record<string, number> = {};
+    for (const p of PLATFORM_HUB) {
+      counts[p.name] = guides.filter((g) => g.primary_platform === p.name).length;
+    }
+    return counts;
+  }, [guides]);
 
+  // Distinct platforms for dropdown
+  const distinctPlatforms = useMemo(() => {
+    if (!guides) return [];
+    const set = new Set<string>();
+    for (const g of guides) {
+      if (g.primary_platform && g.primary_platform !== "Generic") set.add(g.primary_platform);
+    }
+    return Array.from(set).sort();
+  }, [guides]);
+
+  // Editors picks
+  const editorsPicks = useMemo(() => {
+    if (!guides) return [];
+    return guides.filter((g) => g.is_editors_pick && g.id !== guideOfWeek?.id).slice(0, 6);
+  }, [guides, guideOfWeek]);
+
+  // Asia guides
+  const asiaGuides = useMemo(() => {
+    if (!guides) return [];
+    return guides.filter((g) => isAsiaGuide(g)).slice(0, 12);
+  }, [guides]);
+
+  /* ── Filtered guides ── */
   const filteredGuides = useMemo(() => {
     if (!guides) return [];
     let result = guides.filter((g) => {
+      // Search
       if (debouncedSearch.trim()) {
         const q = debouncedSearch.toLowerCase();
-        const matches = g.title?.toLowerCase().includes(q) || g.one_line_description?.toLowerCase().includes(q) || g.pillar?.toLowerCase().includes(q) || g.difficulty?.toLowerCase().includes(q) || g.platform_tags?.some((t: string) => t.toLowerCase().includes(q));
+        const matches = g.title?.toLowerCase().includes(q) ||
+          g.one_line_description?.toLowerCase().includes(q) ||
+          g.topic_category?.toLowerCase().includes(q) ||
+          g.primary_platform?.toLowerCase().includes(q);
         if (!matches) return false;
       }
-      if (difficulty !== "All" && g.difficulty?.toLowerCase() !== difficulty.toLowerCase()) return false;
-      if (!platforms.has("All")) {
-        const gp = (g.platform_tags || []).map((t: string) => t.toLowerCase());
-        if (!Array.from(platforms).some((p) => gp.includes(p.toLowerCase()))) return false;
+      // Topic tile filter
+      if (activeTile) {
+        const tile = TOPIC_TILES.find((t) => t.label === activeTile);
+        if (tile && !matchesTile(g, tile.dbValues)) return false;
       }
-      // Special filters are independent of topic_category
-      if (specialFilter) {
-        if (specialFilter === "asia" && !isAsiaGuide(g)) return false;
-        if (specialFilter === "startup" && g.audience_role !== "Startup Founder") return false;
-        if (specialFilter === "platform" && g.guide_category !== "Platform Guide") return false;
-      } else {
-        if (topic !== "All" && (g.topic_category || "").toLowerCase() !== topic.toLowerCase()) return false;
+      // Platform filter
+      if (activePlatform) {
+        if (g.primary_platform !== activePlatform) return false;
+      }
+      // Difficulty filter
+      if (activeDifficulty) {
+        if (g.difficulty?.toLowerCase() !== activeDifficulty.toLowerCase()) return false;
       }
       return true;
     });
-    if (sortBy === "newest") result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+    if (sortBy === "newest") result.sort((a, b) => new Date(b.published_at || b.updated_at).getTime() - new Date(a.published_at || a.updated_at).getTime());
     else if (sortBy === "popular") result.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
     else if (sortBy === "difficulty") result.sort((a, b) => (DIFF_ORDER[a.difficulty ?? ""] ?? 99) - (DIFF_ORDER[b.difficulty ?? ""] ?? 99));
     return result;
-  }, [guides, debouncedSearch, difficulty, platforms, topic, sortBy, specialFilter]);
-
-  const showGrouped = topic === "All" && !debouncedSearch.trim() && !specialFilter;
-
-  const groupedGuides = useMemo(() => {
-    if (!showGrouped || !filteredGuides.length) return [];
-    const groups: Record<string, typeof filteredGuides> = {};
-    for (const g of filteredGuides) {
-      const cat = g.topic_category || "General";
-      (groups[cat] ??= []).push(g);
-    }
-    return Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
-  }, [filteredGuides, showGrouped]);
+  }, [guides, debouncedSearch, activeTile, activePlatform, activeDifficulty, sortBy]);
 
   const guideCount = guides?.length ?? 0;
-  const hasActiveFilters = difficulty !== "All" || !platforms.has("All") || topic !== "All" || debouncedSearch.trim() || !!specialFilter;
 
-  const specialCounts = useMemo(() => {
-    if (!guides) return { asia: 0, startup: 0, platform: 0 };
-    return {
-      asia: guides.filter((g) => isAsiaGuide(g)).length,
-      startup: guides.filter((g) => g.audience_role === "Startup Founder").length,
-      platform: guides.filter((g) => g.guide_category === "Platform Guide").length,
-    };
-  }, [guides]);
-
-  const asiaGuides = useMemo(() => {
-    if (!guides) return [];
-    let pool = guides.filter((g) => isAsiaGuide(g));
-    if (!asiaCountries.has("All")) {
-      pool = pool.filter((g) => {
-        const geo = (g.geo || "").toLowerCase();
-        return Array.from(asiaCountries).some((c) => geo.includes(c.toLowerCase()));
-      });
-    }
-    return pool;
-  }, [guides, asiaCountries]);
-
-  const startupGuides = useMemo(() => {
-    if (!guides) return [];
-    return guides.filter((g) => g.audience_role === "Startup Founder");
-  }, [guides]);
-
-  const platformGuides = useMemo(() => {
-    if (!guides) return [];
-    return guides.filter((g) => g.guide_category === "Platform Guide");
-  }, [guides]);
-
-  const COUNTRY_OPTIONS = ["All", "China", "Taiwan", "Singapore", "India", "Indonesia", "Philippines", "Thailand", "Vietnam", "Japan", "Korea", "Malaysia"] as const;
-
-  const toggleCountry = (c: string) => {
-    if (c === "All") { setAsiaCountries(new Set(["All"])); return; }
-    setAsiaCountries((prev) => {
-      const next = new Set(prev);
-      next.delete("All");
-      if (next.has(c)) { next.delete(c); if (next.size === 0) next.add("All"); }
-      else next.add(c);
-      return next;
-    });
-  };
-
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  // Sync search to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (debouncedSearch.trim()) params.set("q", debouncedSearch);
+    else params.delete("q");
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch]);
 
   return (
     <>
@@ -560,147 +323,273 @@ const Guides = () => {
       <Header />
 
       <main id="main-content" className="min-h-screen bg-background">
-        {/* ROW 1 — Compact header strip */}
+        {/* Header strip */}
         <section className="border-b border-border" style={{ background: "linear-gradient(135deg, #040405 0%, #0a1a1f 100%)" }}>
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-1">AI in Asia Guides</p>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Master AI with practical guides</h1>
-                <p className="text-sm text-muted-foreground mt-1">{isLoading ? "—" : `${guideCount}+`} step-by-step workflows. Free. No signup.</p>
+                <p className="text-sm text-muted-foreground mt-1">{isLoading ? "\u2014" : `${guideCount}+`} step-by-step workflows. Free. No signup.</p>
               </div>
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <div className="relative flex-1 md:w-72">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search guides..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors bg-card/60 border border-border text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-                <button
-                  onClick={() => setFiltersOpen(!filtersOpen)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm border transition-colors ${
-                    filtersOpen || activeFilterCount > 0
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-card/60 border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span className="hidden sm:inline">Filter</span>
-                  {activeFilterCount > 0 && (
-                    <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{activeFilterCount}</span>
-                  )}
-                </button>
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search guides..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-colors bg-card/60 border border-border text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
+                />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Collapsible Filter Panel */}
-        {filtersOpen && (
-          <section className="border-b border-border bg-card/80 backdrop-blur">
-            <div className="container mx-auto px-4 py-3 space-y-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-foreground">Filters</span>
-                <button onClick={() => setFiltersOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+        {/* ── 2. GUIDE OF THE WEEK SPOTLIGHT ── */}
+        {guideOfWeek && (
+          <section className="border-b border-border">
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="h-4 w-4 text-primary fill-primary" />
+                <h2 className="text-base font-bold text-foreground">Guide of the Week</h2>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
-                {DIFFICULTY_OPTIONS.map((d) => <FilterPill key={d} label={d} active={difficulty === d} onClick={() => setDifficulty(d)} />)}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
-                {PLATFORM_OPTIONS.map((p) => <FilterPill key={p} label={p} active={platforms.has(p)} onClick={() => togglePlatform(p)} />)}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Topic</span>
-                {TOPIC_OPTIONS.map((t) => <FilterPill key={t} label={t} active={topic === t} onClick={() => setTopic(t)} />)}
-              </div>
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => { setDifficulty("All"); setPlatforms(new Set(["All"])); setTopic("All"); setSpecialFilter(null); }}
-                  className="text-xs text-primary hover:underline mt-1"
-                >
-                  Clear all filters
-                </button>
-              )}
+              <Link
+                to={guideHref(guideOfWeek.slug, guideOfWeek.topic_category)}
+                className="group block rounded-2xl border border-border bg-card overflow-hidden transition-all hover:shadow-xl md:flex"
+              >
+                <div className="md:w-1/2 aspect-video md:aspect-auto overflow-hidden">
+                  {guideOfWeek.featured_image_url ? (
+                    <OptimizedImage src={guideOfWeek.featured_image_url} alt={guideOfWeek.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full min-h-[240px] bg-gradient-to-br from-primary/20 to-primary/5" />
+                  )}
+                </div>
+                <div className="p-6 md:p-8 md:w-1/2 flex flex-col justify-center space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {guideOfWeek.difficulty && (
+                      <Badge className={`${diffColors[guideOfWeek.difficulty]} text-white text-xs`}>{guideOfWeek.difficulty}</Badge>
+                    )}
+                    {guideOfWeek.primary_platform && guideOfWeek.primary_platform !== "Generic" && (
+                      <Badge variant="secondary" className="text-xs">{guideOfWeek.primary_platform}</Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" />{guideOfWeek.read_time_minutes || 5} min read
+                    </Badge>
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold leading-tight group-hover:text-primary transition-colors">{guideOfWeek.title}</h3>
+                  {(guideOfWeek.one_line_description || guideOfWeek.excerpt) && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">{guideOfWeek.one_line_description || guideOfWeek.excerpt}</p>
+                  )}
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
+                    Read this guide <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
             </div>
           </section>
         )}
 
-        {/* ROW 2 — Category quick-nav tiles */}
+        {/* ── 1. INTENT-BASED NAVIGATION TILES ── */}
         <section className="border-b border-border" style={{ background: "#080a0f" }}>
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
-              {/* Special pills */}
-              <Link
-                to="/guides/asia"
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "asia" ? "ring-2 ring-white/50" : ""}`}
-                style={{ background: "linear-gradient(135deg, #0891b2 0%, #0f766e 100%)" }}
-              >
-                <span className="flex items-center gap-1 text-xs font-bold text-white"><Globe className="h-3 w-3" />Asia</span>
-                {specialCounts.asia > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.asia} guides</span>}
-              </Link>
-              <Link
-                to="/guides/startup"
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "startup" ? "ring-2 ring-white/50" : ""}`}
-                style={{ background: "linear-gradient(135deg, #e11d48 0%, #f97316 100%)" }}
-              >
-                <span className="flex items-center gap-1 text-xs font-bold text-white"><Rocket className="h-3 w-3" />Startup</span>
-                {specialCounts.startup > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.startup} guides</span>}
-              </Link>
-              <Link
-                to="/guides/platform"
-                className={`snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline ${specialFilter === "platform" ? "ring-2 ring-white/50" : ""}`}
-                style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)" }}
-              >
-                <span className="flex items-center gap-1 text-xs font-bold text-white"><Layers className="h-3 w-3" />Platform</span>
-                {specialCounts.platform > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{specialCounts.platform} guides</span>}
-              </Link>
-              {TOPIC_OPTIONS.filter((t) => t !== "All" && (topicCounts[t] || 0) > 0).map((cat) => {
-                const count = topicCounts[cat] || 0;
-                const colorClass = CATEGORY_TILE_COLORS[cat] || "bg-gray-500";
+          <div className="container mx-auto px-4 py-6">
+            <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Browse by topic</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {TOPIC_TILES.map((tile) => {
+                const count = tileCounts[tile.label] || 0;
+                const isActive = activeTile === tile.label;
+                const Icon = tile.icon;
                 return (
-                  <Link
-                    key={cat}
-                    to={`/guides/${cat.toLowerCase()}`}
-                    className={`${colorClass} snap-start shrink-0 min-w-[100px] rounded-xl px-3 py-2.5 text-left transition-transform hover:scale-105 no-underline`}
+                  <button
+                    key={tile.label}
+                    onClick={() => setFilter("topic", isActive ? null : tile.label)}
+                    className={`relative rounded-xl p-4 text-left transition-all duration-200 hover:scale-[1.02] border ${
+                      isActive
+                        ? "ring-2 ring-primary border-primary/50 bg-gradient-to-br " + tile.gradient
+                        : "border-border/50 bg-gradient-to-br " + tile.gradient + " opacity-80 hover:opacity-100"
+                    }`}
                   >
-                    <span className="block text-xs font-bold text-white">{cat}</span>
-                    {count > 0 && <span className="block text-[10px] text-white/70 mt-0.5">{count} guides</span>}
-                  </Link>
+                    <Icon className="h-5 w-5 text-white/80 mb-2" />
+                    <span className="block text-sm font-bold text-white">{tile.label}</span>
+                    <span className="block text-xs text-white/60 mt-0.5">{count} guides</span>
+                  </button>
                 );
               })}
             </div>
           </div>
         </section>
 
-        {/* Editors' Picks — compact */}
-        {isLoadingPicks ? (
-          <section id="editors-picks" className="pt-6 pb-2" aria-label="Editors' Picks loading">
+        {/* ── 3. TRENDING THIS WEEK ── */}
+        {trendingGuides.length > 0 && (
+          <section className="border-b border-border py-6">
             <div className="container mx-auto px-4">
-              <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[16/9] rounded-xl w-full" />)}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <h2 className="text-base font-bold text-foreground">Trending This Week</h2>
+                </div>
+                <div className="hidden sm:flex gap-1">
+                  <button onClick={() => scrollTrending("left")} className="p-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <button onClick={() => scrollTrending("right")} className="p-1.5 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+              <div ref={trendingRef} className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                {trendingGuides.map((g) => <TrendingCard key={g.id} g={g} />)}
               </div>
             </div>
           </section>
-        ) : dailyPicks.length > 0 ? (
-          <section id="editors-picks" className="pt-6 pb-2" aria-label="Editors' Picks guides">
+        )}
+
+        {/* ── 5. PLATFORM HUB GRID ── */}
+        <section className="border-b border-border py-6">
+          <div className="container mx-auto px-4">
+            <h2 className="text-base font-bold text-foreground mb-4">Platform Deep Dives</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              {PLATFORM_HUB.map((p) => {
+                const count = platformCounts[p.name] || 0;
+                const isActive = activePlatform === p.name;
+                return (
+                  <button
+                    key={p.name}
+                    onClick={() => setFilter("platform", isActive ? null : p.name)}
+                    className={`rounded-xl border p-3 text-center transition-all duration-200 hover:scale-[1.03] ${
+                      isActive
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/40"
+                    }`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: p.color }}
+                    >
+                      {p.letter}
+                    </div>
+                    <span className="block text-xs font-semibold text-foreground truncate">{p.name}</span>
+                    {count > 0 && <span className="block text-[10px] text-muted-foreground">{count} guides</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. FACETED FILTER BAR + MAIN GRID ── */}
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            {/* Filter bar */}
+            <div className="rounded-xl border border-border bg-card/80 backdrop-blur p-4 mb-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-semibold text-foreground">Filters</span>
+                  {activeFilterCount > 0 && (
+                    <Badge className="bg-primary text-primary-foreground text-[10px]">{activeFilterCount} active</Badge>
+                  )}
+                </div>
+                {activeFilterCount > 0 && (
+                  <button onClick={clearAllFilters} className="text-xs text-primary hover:underline flex items-center gap-1">
+                    <X className="h-3 w-3" /> Clear all
+                  </button>
+                )}
+              </div>
+
+              {/* Difficulty chips */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Level</span>
+                {["Beginner", "Intermediate", "Advanced"].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setFilter("difficulty", activeDifficulty === d ? null : d)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      activeDifficulty === d
+                        ? `${diffColors[d.toLowerCase()]} text-white border-transparent`
+                        : "bg-card text-muted-foreground border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              {/* Platform dropdown */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground w-16 shrink-0">Platform</span>
+                <div className="relative">
+                  <select
+                    value={activePlatform || ""}
+                    onChange={(e) => setFilter("platform", e.target.value || null)}
+                    className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="">All platforms</option>
+                    {distinctPlatforms.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            {/* Sort + count */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">
+                {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""}
+                {activeFilterCount > 0 ? " found" : ""}
+              </p>
+              <div className="relative">
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary">
+                  <option value="newest">Sort: Newest</option>
+                  <option value="popular">Sort: Most popular</option>
+                  <option value="difficulty">Sort: Difficulty</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Guide grid */}
+            {isLoading ? (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
+                    <Skeleton className="aspect-video w-full" />
+                    <div className="p-4 space-y-2">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-3 w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredGuides.length > 0 ? (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredGuides.map((g) => <ImprovedGuideCard key={g.id} g={g} />)}
+              </div>
+            ) : (
+              <div className="text-center py-16 text-muted-foreground">
+                <p>No guides match these filters. Try broadening your selection.</p>
+                <button onClick={clearAllFilters} className="mt-3 text-sm text-primary hover:underline">Clear all filters</button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ── Editors' Picks ── */}
+        {editorsPicks.length > 0 && (
+          <section className="border-t border-border py-8">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4">
                 <Star className="h-4 w-4 text-primary fill-primary" />
                 <h2 className="text-base font-bold text-foreground">Editors' Picks</h2>
               </div>
-              <div className="hidden lg:grid gap-4 grid-cols-3">
-                {dailyPicks.map((g) => (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {editorsPicks.map((g) => (
                   <div key={g.id} className="relative group">
                     <GuideBookmarkButton guideId={g.id} className="absolute top-2 left-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
                     <Link to={guideHref(g.slug, g.topic_category)} className="block relative rounded-xl overflow-hidden border border-border">
                       <div className="aspect-[16/9] w-full relative">
                         {g.featured_image_url ? (
                           <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        ) : <div className="w-full h-full bg-muted" />}
+                        ) : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5" />}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                       {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
@@ -711,49 +600,31 @@ const Guides = () => {
                   </div>
                 ))}
               </div>
-              <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
-                {dailyPicks.map((g) => (
-                  <div key={g.id} className="relative group snap-start shrink-0 w-[80vw] max-w-[320px]">
-                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 left-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Link to={guideHref(g.slug, g.topic_category)} className="block relative rounded-xl overflow-hidden border border-border">
-                      <div className="aspect-[16/9] w-full relative">
-                        {g.featured_image_url ? (
-                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
-                        ) : <div className="w-full h-full bg-muted" />}
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                      {g.difficulty && <Badge className={`absolute top-2 right-2 ${diffColors[g.difficulty] || "bg-primary"} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 className="text-sm font-bold leading-snug text-white line-clamp-2">{g.title}</h3>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
             </div>
           </section>
-        ) : null}
+        )}
 
-        {/* Asia Guides - full list with country filters */}
+        {/* ── Local Guides for Asia ── */}
         {asiaGuides.length > 0 && (
-          <section id="asia-spotlight" className="pt-6 pb-2" aria-label="Local guides for Asia">
+          <section className="border-t border-border py-8">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-4">
                 <Globe className="h-4 w-4 text-primary" />
                 <h2 className="text-base font-bold text-foreground">Local Guides for Asia</h2>
                 <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{asiaGuides.length}</Badge>
               </div>
-              <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible">
-                {COUNTRY_OPTIONS.map((c) => (
-                  <FilterPill key={c} label={c} active={asiaCountries.has(c)} onClick={() => toggleCountry(c)} />
-                ))}
-              </div>
               <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
                 {asiaGuides.map((g) => (
-                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
+                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[260px]">
                     <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
+                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg">
+                      {g.featured_image_url ? (
+                        <div className="aspect-video overflow-hidden">
+                          <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                      ) : (
+                        <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5" />
+                      )}
                       <div className="p-3 space-y-1.5">
                         <div className="flex flex-wrap gap-1">
                           {g.geo && <Badge className="bg-primary/15 text-primary text-[10px] border-0">{g.geo}</Badge>}
@@ -770,215 +641,11 @@ const Guides = () => {
                 ))}
               </div>
               <Link to="/guides/asia" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                View all {asiaGuides.length} Asia guides <ArrowRight className="h-3 w-3" />
+                View all Asia guides <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </section>
         )}
-
-        {/* Startup Guides */}
-        {startupGuides.length > 0 && (
-          <section id="startup-guides" className="pt-6 pb-2" aria-label="Startup Guides">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Rocket className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-bold text-foreground">Startup Guides</h2>
-                <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{startupGuides.length}</Badge>
-              </div>
-              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
-                {startupGuides.map((g) => (
-                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
-                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                      <div className="p-3 space-y-1.5">
-                        <div className="flex flex-wrap gap-1">
-                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                          {g.pillar && <Badge className={`${pillarColors[g.pillar] || "bg-primary"} text-white text-[10px]`}>{g.pillar}</Badge>}
-                        </div>
-                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-              <Link to="/guides/startup" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                View all {startupGuides.length} startup guides <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {/* Platform Deep Dives */}
-        {platformGuides.length > 0 && (
-          <section id="platform-guides" className="pt-6 pb-2" aria-label="Platform Deep Dives">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Layers className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-bold text-foreground">Platform Deep Dives</h2>
-                <Badge variant="secondary" className="text-[10px] bg-muted/60 border-0">{platformGuides.length}</Badge>
-              </div>
-              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 scrollbar-hide">
-                {platformGuides.map((g) => (
-                  <div key={g.id} className="relative group snap-start shrink-0 w-[70vw] max-w-[280px] md:w-[240px]">
-                    <GuideBookmarkButton guideId={g.id} className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Link to={guideHref(g.slug, g.topic_category)} className="block rounded-xl border border-border bg-card overflow-hidden" style={{ transition: "transform 200ms ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-                      {g.featured_image_url && <div className="aspect-video overflow-hidden"><img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /></div>}
-                      <div className="p-3 space-y-1.5">
-                        <div className="flex flex-wrap gap-1">
-                          {g.difficulty && <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>}
-                          {g.primary_platform && <Badge className="bg-indigo-500 text-white text-[10px]">{g.primary_platform}</Badge>}
-                        </div>
-                        <h3 className="text-sm font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">{g.title}</h3>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{g.read_time_minutes || "5"} min</span>
-                          <span className="flex items-center gap-1 text-primary font-medium">Read <ArrowRight className="h-3 w-3" /></span>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-              <Link to="/guides/platform" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                View all {platformGuides.length} platform guides <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {/* Guides Grid + Sidebar */}
-        <section className="py-8 md:py-12">
-          <div className="container mx-auto px-4">
-            {isLoading ? (
-              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="rounded-xl border border-border/30 bg-card overflow-hidden">
-                    <Skeleton className="aspect-video w-full" />
-                    <div className="p-5 space-y-2.5">
-                      <Skeleton className="h-3 w-16 rounded-sm" />
-                      <Skeleton className="h-5 w-full" />
-                      <Skeleton className="h-5 w-3/4" />
-                      <Skeleton className="h-3 w-full" />
-                      <div className="flex items-center gap-2 pt-1">
-                        <Skeleton className="h-5 w-16 rounded-full" />
-                        <Skeleton className="h-2.5 w-14" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredGuides.length > 0 ? (
-              <>
-                {/* Sort bar */}
-                <div className="flex items-center justify-between mb-4">
-                  {hasActiveFilters ? (
-                    <p className="text-sm text-muted-foreground">
-                      {filteredGuides.length} guide{filteredGuides.length !== 1 ? "s" : ""} found
-                      {debouncedSearch.trim() ? ` matching "${debouncedSearch}"` : ""}
-                    </p>
-                  ) : <div />}
-                  <div className="relative">
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="appearance-none bg-card border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary">
-                      {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>Sort by: {o.label}</option>)}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex gap-8">
-                  <div className="flex-1 min-w-0">
-                    {showGrouped ? (
-                      <div className="space-y-10">
-                        {groupedGuides.map(([cat, catGuides], sectionIndex) => {
-                          const slug = cat.toLowerCase().replace(/\s+/g, "-");
-                          const visible = catGuides.slice(0, 6);
-                          const layout = LAYOUT_SEQUENCE[sectionIndex % LAYOUT_SEQUENCE.length];
-
-                          return (
-                            <div key={cat}>
-                              <section id={`cat-${slug}`} aria-label={`${cat} guides`}>
-                                <div className="flex items-center gap-2 mb-4">
-                                  <h2 className="text-xl font-bold text-foreground capitalize">{cat}</h2>
-                                  <Badge variant="secondary" className="text-xs bg-muted/60 border-0">{catGuides.length}</Badge>
-                                </div>
-                                {renderSectionLayout(layout, visible)}
-                                {catGuides.length > 6 && (
-                                  <Link to={`/guides/${slug}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                                    View all {catGuides.length} guides <ArrowRight className="h-3 w-3" />
-                                  </Link>
-                                )}
-                              </section>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-                        {filteredGuides.map((g: any) => <GuideCard key={g.id} g={g} />)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right sidebar — desktop only */}
-                  <div className="hidden lg:block w-[300px] shrink-0">
-                    <div className="sticky top-24 space-y-6">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search guides..." className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                      </div>
-
-                      <div className="rounded-xl border border-border bg-card p-4">
-                        <h3 className="text-sm font-semibold text-foreground mb-3">Browse by Topic</h3>
-                        <div className="space-y-1 max-h-[260px] overflow-y-auto">
-                          {Object.entries(topicCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-                            <Link
-                              key={cat}
-                              to={`/guides/${cat.toLowerCase()}`}
-                              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground no-underline"
-                            >
-                              <span className="capitalize">{cat}</span>
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0">{count}</Badge>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-
-                      {popularGuides && popularGuides.length > 0 && (
-                        <div className="rounded-xl border border-border bg-card p-4">
-                          <h3 className="text-sm font-semibold text-foreground mb-3">Popular Guides</h3>
-                          <div className="space-y-3">
-                            {popularGuides.map((g) => (
-                              <Link key={g.id} to={guideHref(g.slug, g.topic_category)} className="flex gap-3 group">
-                                {g.featured_image_url ? (
-                                  <img src={g.featured_image_url} alt={g.title} loading="lazy" decoding="async" className="w-16 h-16 rounded object-cover shrink-0" />
-                                ) : <div className="w-16 h-16 rounded bg-muted shrink-0" />}
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">{g.title}</p>
-                                  {g.topic_category && <Badge variant="secondary" className="mt-1 text-[10px] px-1.5 py-0 h-5 bg-muted/60 border-0 capitalize">{g.topic_category}</Badge>}
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-                </div>
-
-                
-              </>
-            ) : (
-              <div className="text-center py-16 text-muted-foreground">
-                {hasActiveFilters ? <p>No guides match these filters. Try broadening your selection.</p> : <p>No guides published yet. Check back soon!</p>}
-              </div>
-            )}
-          </div>
-        </section>
       </main>
 
       <Footer />
