@@ -161,7 +161,7 @@ export const ToolFinderQuiz = () => {
               }}
             >
               {QUESTIONS[step].options.map((opt) => (
-                <OptionButton key={opt.tag} emoji={opt.emoji} label={opt.label} onClick={() => pick(opt.tag)} />
+                <OptionButton icon={opt.icon} label={opt.label} onClick={() => pick(opt.tag)} />
               ))}
             </div>
           </>
