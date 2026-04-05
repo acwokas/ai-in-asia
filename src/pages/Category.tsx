@@ -118,6 +118,7 @@ const Category = () => {
   const revealTool = useRevealOnScroll();
   const revealFeatured = useRevealOnScroll();
   const revealDeep = useRevealOnScroll();
+  const revealNavCtas = useRevealOnScroll();
   const revealCross = useRevealOnScroll();
   const revealNewsletter = useRevealOnScroll();
 
