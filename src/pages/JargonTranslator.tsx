@@ -506,7 +506,7 @@ export default function JargonTranslator() {
 
           {/* Jargon Hall of Fame */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">🏆 Jargon Hall of Fame</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Jargon Hall of Fame</h2>
             <p className="text-muted-foreground text-center mb-6 text-sm">Real-ish examples of corporate AI word salad. Click any to auto-translate.</p>
             <div className="grid gap-3 max-w-3xl mx-auto">
               {HALL_OF_FAME.map((text, i) => (
