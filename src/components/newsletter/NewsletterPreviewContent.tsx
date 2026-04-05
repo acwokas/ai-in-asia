@@ -292,7 +292,7 @@ import { Mail, Share2, TrendingUp, Calendar, Building2, Scale, Wrench, Sparkles,
           )}
           {edition.roadmap_skip_if && (
             <div className="bg-white/10 rounded-lg p-3">
-              <span className="text-red-300 font-semibold text-sm">✗ Skip if:</span>
+              <span className="text-red-300 font-semibold text-sm">Skip if:</span>
               <p className="text-sm mt-1 opacity-90">{edition.roadmap_skip_if}</p>
             </div>
           )}

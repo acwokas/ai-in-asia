@@ -2063,7 +2063,7 @@ Please be specific and provide copy-paste-ready content where possible.`;
               <DialogDescription>
                 {selectedEngagementSegment?.name === 'Scanners' && 'Low scroll depth (<50%), short time (<1min) - users leave quickly'}
                 {selectedEngagementSegment?.name === 'Skimmers' && 'High scroll depth (50%+), short time (<1min) - users scroll fast without reading'}
-                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) - engaged readers ✓'}
+                {selectedEngagementSegment?.name === 'Readers' && 'High scroll depth (50%+), longer time (1min+) - engaged readers'}
                 {selectedEngagementSegment?.name === 'Lingerers' && 'Low scroll depth (<50%), longer time (1min+) - stuck at top or distracted'}
               </DialogDescription>
             </DialogHeader>

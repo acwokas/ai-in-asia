@@ -555,7 +555,7 @@ const Admin = () => {
                                   ? "bg-green-500/10 text-green-600 dark:text-green-400"
                                   : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
                             }`}>
-                              {comment.type === "ai" ? "AI" : comment.approved ? "✓" : "Pending"}
+                              {comment.type === "ai" ? "AI" : comment.approved ? "OK" : "Pending"}
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">{comment.content}</p>

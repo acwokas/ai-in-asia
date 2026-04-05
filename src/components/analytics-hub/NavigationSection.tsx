@@ -224,7 +224,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         const lowScrollPages = data.topPages.filter(p => p.avgScroll < 30 && p.views > 20);
         if (lowScrollPages.length > 0) {
           const worst = lowScrollPages[0];
-           tips.push(`2. ⚠️ "${worst.path}" gets ${(worst?.views ?? 0).toLocaleString()} views but only ${worst.avgScroll}% avg scroll depth. Readers aren't engaging beyond the fold. Restructure: move the key value proposition or most compelling content higher, reduce hero image height, and add a visible "Read more" indicator.`);
+           tips.push(`2. "${worst.path}" gets ${(worst?.views ?? 0).toLocaleString()} views but only ${worst.avgScroll}% avg scroll depth. Readers aren't engaging beyond the fold. Restructure: move the key value proposition or most compelling content higher, reduce hero image height, and add a visible "Read more" indicator.`);
         } else if (data.topPages.length > 0) {
           const bestScroll = data.topPages.reduce((best, p) => p.avgScroll > best.avgScroll ? p : best, data.topPages[0]);
            tips.push(`2. Best scroll depth: "${bestScroll.path}" at ${bestScroll.avgScroll}% across ${(bestScroll?.views ?? 0).toLocaleString()} views. Use this page's content structure as a template for other pages.`);

@@ -496,7 +496,7 @@ const LearningPathDetail = () => {
                         className="hover:bg-white/5"
                       >
                         <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: 11, color: readArticles.has(a.id) ? path.color : TOKENS.MUTED, flexShrink: 0, marginTop: 2 }}>
-                          {readArticles.has(a.id) ? "✓" : `${i + 1}.`}
+                          {readArticles.has(a.id) ? "Done" : `${i + 1}.`}
                         </span>
                         <span style={{ fontSize: 12, color: readArticles.has(a.id) ? "#d1d5db" : "#9ca3af", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                           {decodeHtml(a.title)}

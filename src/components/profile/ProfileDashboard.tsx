@@ -121,7 +121,7 @@ const ProfileDashboard = ({ stats, achievements, onSwitchToAchievements }: Profi
                 <p className="text-xs font-medium line-clamp-1">{a.name}</p>
                 {isEarned ? (
                   <p className="text-[10px] text-primary mt-0.5">
-                    ✓ {format(new Date(a.earned_at!), 'MMM d')}
+                    Earned {format(new Date(a.earned_at!), 'MMM d')}
                   </p>
                 ) : (
                   <p className="text-[10px] text-muted-foreground mt-0.5">

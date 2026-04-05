@@ -174,9 +174,9 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         if (lastWeek > 0 && thisWeek > 0) {
           const changePct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
           if (changePct > 10) {
-            tips.push(`1. 📈 Briefing sessions up ${changePct}% this week (${thisWeek} vs ${lastWeek} last week). Momentum is building — maintain daily publishing cadence and promote new editions via push notification within 30 minutes of publish.`);
+            tips.push(`1. Briefing sessions up ${changePct}% this week (${thisWeek} vs ${lastWeek} last week). Momentum is building — maintain daily publishing cadence and promote new editions via push notification within 30 minutes of publish.`);
           } else if (changePct < -10) {
-            tips.push(`1. 📉 Briefing sessions dropped ${Math.abs(changePct)}% (${thisWeek} vs ${lastWeek} last week). Check: was an edition missed? Were subject lines less compelling? Review the 3 highest-traffic days and replicate what worked.`);
+            tips.push(`1. Briefing sessions dropped ${Math.abs(changePct)}% (${thisWeek} vs ${lastWeek} last week). Check: was an edition missed? Were subject lines less compelling? Review the 3 highest-traffic days and replicate what worked.`);
           } else {
             tips.push(`1. Briefing readership stable at ~${thisWeek} sessions/week. To break the plateau, try cross-promoting the briefing at the end of regular articles with a CTA like "Get tomorrow's AI signals at 9am".`);
           }

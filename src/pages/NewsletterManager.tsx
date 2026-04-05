@@ -918,7 +918,7 @@ interface WorthWatching {
                          />
                        </div>
                        <div>
-                         <Label className="text-sm text-red-700">✗ Skip if...</Label>
+                         <Label className="text-sm text-red-700">Skip if...</Label>
                          <Textarea
                            rows={2}
                            placeholder="You're looking for..."

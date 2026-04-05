@@ -259,7 +259,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         }
 
         if (bounce > 60) {
-          tips.push(`2. ⚠️ ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
+          tips.push(`2. ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
         } else if (bounce <= 40) {
           tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${avgPages} pages per session.`);
         } else {

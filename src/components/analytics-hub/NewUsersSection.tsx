@@ -182,7 +182,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
         if (top && total > 0) {
           const pct = Math.round((top.count / total) * 100);
           if (pct > 50) {
-            tips.push(`2. ⚠️ ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
+            tips.push(`2. ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
           } else {
             tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${formatNumber(top.count)} visits).`);
           }
