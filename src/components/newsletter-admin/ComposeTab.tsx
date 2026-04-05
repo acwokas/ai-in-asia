@@ -561,20 +561,10 @@ export default function ComposeTab() {
             )}
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleAutoPopulate} disabled={isAutoPopulating} size="sm" variant="outline" className="border-amber-500/50 text-amber-700 hover:bg-amber-50">
+            <Button onClick={handleAutoPopulate} disabled={isAutoPopulating} size="sm" className="bg-primary hover:bg-primary/90">
               {isAutoPopulating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
-              {isAutoPopulating ? "Populating..." : "Smart Auto-Populate"}
+              {isAutoPopulating ? "Auto-Populating..." : "Auto-Populate Newsletter"}
             </Button>
-            <Button onClick={handleGenerateFullNewsletter} disabled={isGeneratingFull} size="sm">
-              {isGeneratingFull ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              {isGeneratingFull ? "Generating..." : "Generate Full Newsletter"}
-            </Button>
-            {!latestEdition && (
-              <Button onClick={handleGenerate} disabled={isGenerating} variant="outline" size="sm">
-                {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                {isGenerating ? "Generating..." : "Generate Newsletter"}
-              </Button>
-            )}
           </div>
         </div>
 
