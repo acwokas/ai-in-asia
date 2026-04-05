@@ -293,11 +293,11 @@ const Category = () => {
 
   const filteredDeepCuts = useMemo(() => {
     if (isFilterActive) {
-      const heroAndFeaturedIds = new Set(filteredAllArticles.slice(0, 5).map((a: any) => a.id));
+      const heroAndFeaturedIds = new Set(filteredAllArticles.slice(0, 9).map((a: any) => a.id));
       return filteredAllArticles
         .filter((a: any) => !heroAndFeaturedIds.has(a.id))
         .sort((a: any, b: any) => new Date(a.published_at).getTime() - new Date(b.published_at).getTime())
-        .slice(0, 3);
+        .slice(0, 6);
     }
     return deepCutsArticles || [];
   }, [deepCutsArticles, isFilterActive, filteredAllArticles]);
