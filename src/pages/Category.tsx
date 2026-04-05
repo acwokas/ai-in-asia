@@ -58,6 +58,32 @@ const TOOL_MAP: Record<string, React.FC> = {
 const TOOL_META: Record<string, { name: string; emoji: string }> = {
   news: { name: "Pulse Tracker", emoji: "activity" },
   business: { name: "ROI Calculator", emoji: "calculator" },
+
+// Nav CTA links per category (mirrors primary nav dropdowns minus the category page itself)
+const CATEGORY_NAV_CTAS: Record<string, { label: string; to: string; desc: string }[]> = {
+  news: [
+    { label: "AI Events", to: "/events", desc: "Conferences & meetups across Asia" },
+  ],
+  business: [
+    { label: "Business Guides", to: "/guides/business", desc: "AI guides for business professionals" },
+    { label: "Finance Guides", to: "/guides/finance", desc: "AI guides for finance and fintech" },
+    { label: "Work Guides", to: "/guides/work", desc: "AI guides for the workplace" },
+  ],
+  life: [
+    { label: "Wellness Guides", to: "/guides/wellness", desc: "AI guides for health and wellbeing" },
+    { label: "Creativity Guides", to: "/guides/creativity", desc: "AI guides for creative pursuits" },
+  ],
+  learn: [
+    { label: "AI Guides", to: "/guides", desc: "Step-by-step guides for learning AI" },
+  ],
+  create: [
+    { label: "AI Prompt Library", to: "/prompts", desc: "Ready-to-use prompts for every platform" },
+  ],
+  policy: [
+    { label: "Policy Atlas", to: "/ai-policy-atlas", desc: "Track AI regulation across Asia-Pacific" },
+  ],
+  voices: [],
+};
   life: { name: "Tool Finder", emoji: "search" },
   learn: { name: "Prompt Builder", emoji: "terminal" },
   create: { name: "Prompt Studio", emoji: "wand" },
