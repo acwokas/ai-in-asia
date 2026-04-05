@@ -30,7 +30,7 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
         }
         const entry = authorMap.get(authorId)!;
         entry.count++;
-        if (entry.articles.length < 3) entry.articles.push(a);
+        entry.articles.push(a);
       }
 
       // Sort each author's articles by published_at descending, keep top 3
