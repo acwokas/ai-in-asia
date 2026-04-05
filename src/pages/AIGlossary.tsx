@@ -253,7 +253,7 @@ const AIGlossary = () => {
                     {t.category}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                <p className="text-[15px] text-foreground/80 leading-relaxed mb-3">
                   {t.definition}
                 </p>
                 {t.related_terms && t.related_terms.length > 0 && (
