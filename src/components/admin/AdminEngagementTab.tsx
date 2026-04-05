@@ -150,11 +150,11 @@ export function AdminEngagementTab() {
     },
   });
 
-  const reactionEmoji: Record<string, string> = {
-    insightful: "💡",
-    important: "🔥",
-    surprising: "😮",
-    needs_update: "🤔",
+  const reactionLabels: Record<string, string> = {
+    insightful: "Insightful",
+    important: "Important",
+    surprising: "Surprising",
+    needs_update: "Needs Update",
   };
 
   return (
