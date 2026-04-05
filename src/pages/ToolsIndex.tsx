@@ -2,9 +2,18 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, type LucideIcon } from "lucide-react";
 
-const TOOLS = [
+interface Tool {
+  name: string;
+  desc: string;
+  icon: LucideIcon;
+  to: string;
+  isNew?: boolean;
+}
+
+const TOOLS: Tool[] = [
   {
     name: "AI Readiness Score",
     desc: "8-question quiz to discover how AI-ready your career or business is.",
@@ -22,6 +31,7 @@ const TOOLS = [
     desc: "Spot meeting clichés and get 5 in a row to win — confetti included!",
     icon: Users,
     to: "/tools/ai-meeting-bingo",
+    isNew: true,
   },
   {
     name: "AI Headline Generator",
@@ -40,6 +50,13 @@ const TOOLS = [
     desc: "Find out how AI will affect your role and what to do about it.",
     icon: BarChart2,
     to: "/tools/ai-job-impact",
+  },
+  {
+    name: "AI Policy Tracker",
+    desc: "Explore AI regulations across 16 Asia-Pacific countries on an interactive map.",
+    icon: Shield,
+    to: "/tools/ai-policy-tracker",
+    isNew: true,
   },
   {
     name: "Prompt Builder",
@@ -64,18 +81,6 @@ const TOOLS = [
     desc: "Answer a few questions and get personalised AI tool recommendations.",
     icon: Search,
     to: "/category/life",
-  },
-  {
-    name: "Pulse Tracker",
-    desc: "Real-time sentiment tracking of AI news across Asia.",
-    icon: Activity,
-    to: "/category/news",
-  },
-  {
-    name: "AI Policy Tracker",
-    desc: "Explore AI regulations across 16 Asia-Pacific countries.",
-    icon: Shield,
-    to: "/tools/ai-policy-tracker",
   },
   {
     name: "Pulse Tracker",
@@ -110,8 +115,13 @@ const ToolsIndex = () => {
               <Link
                 key={tool.name}
                 to={tool.to}
-                className="group rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:border-amber-500/50 hover:bg-amber-500/5 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/5"
+                className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:border-amber-500/50 hover:bg-amber-500/5 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/5"
               >
+                {tool.isNew && (
+                  <Badge className="absolute top-3 right-3 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 hover:bg-amber-500">
+                    New
+                  </Badge>
+                )}
                 <tool.icon className="h-8 w-8 text-amber-500 mb-3 transition-transform group-hover:scale-110" />
                 <h2 className="font-display text-base font-bold text-foreground mb-1 group-hover:text-amber-500 transition-colors">
                   {tool.name}
