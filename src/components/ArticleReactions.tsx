@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { awardPoints } from "@/lib/gamification";
+import { Lightbulb, Flame, AlertCircle, HelpCircle, type LucideIcon } from "lucide-react";
 
 const REACTIONS = [
   { type: "insightful", emoji: "💡", label: "Insightful" },
