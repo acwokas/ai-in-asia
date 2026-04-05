@@ -33,6 +33,14 @@ export const VoicesFeaturedSpotlight = ({ categoryId }: { categoryId: string }) 
         if (entry.articles.length < 3) entry.articles.push(a);
       }
 
+      // Sort each author's articles by published_at descending, keep top 3
+      for (const entry of authorMap.values()) {
+        entry.articles.sort((a: any, b: any) =>
+          new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+        );
+        entry.articles = entry.articles.slice(0, 3);
+      }
+
       const sorted = [...authorMap.values()].sort((a, b) => b.count - a.count);
       return sorted[0] || null;
     },
