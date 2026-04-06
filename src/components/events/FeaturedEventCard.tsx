@@ -7,6 +7,7 @@ import { Calendar, MapPin, ExternalLink, CalendarPlus, Users } from "lucide-reac
 export interface FeaturedEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
