@@ -461,11 +461,25 @@ const Guides = () => {
                         : "border-border bg-card hover:border-primary/40"
                     }`}
                   >
-                    <div
-                      className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: p.color }}
-                    >
-                      {p.letter}
+                    <div className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center bg-muted/30 p-1.5">
+                      <img
+                        src={p.logo}
+                        alt={p.name}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          const fallback = document.createElement('span');
+                          fallback.textContent = p.name[0];
+                          fallback.className = 'text-white font-bold text-lg';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.style.backgroundColor = p.fallbackColor;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
                     </div>
                     <span className="block text-xs font-semibold text-foreground truncate">{p.name}</span>
                     {count > 0 && <span className="block text-[10px] text-muted-foreground">{count} guides</span>}
