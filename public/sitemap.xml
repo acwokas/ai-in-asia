@@ -6,4 +6,7 @@
   <sitemap>
     <loc>https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?type=news</loc>
   </sitemap>
+  <sitemap>
+    <loc>https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-news-sitemap</loc>
+  </sitemap>
 </sitemapindex>
