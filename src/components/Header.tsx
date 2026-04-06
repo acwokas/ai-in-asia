@@ -65,6 +65,7 @@ const POLICY_ITEMS: NavDropdownItem[] = [
 ];
 
 const TOOLS_ITEMS: NavDropdownItem[] = [
+  { to: "/directory", label: "AI Company Directory", description: "Browse AI companies across Asia-Pacific", icon: Building2 },
   { to: "/tools/ai-readiness", label: "AI Readiness Score", description: "Quiz: how AI-ready is your career?", icon: Zap },
   { to: "/tools/ai-bingo", label: "AI Jargon Bingo", description: "Play buzzword bingo in your next meeting", icon: Globe },
   { to: "/tools/ai-glossary", label: "AI Glossary", description: "472+ AI terms explained in plain language", icon: BookOpen },
