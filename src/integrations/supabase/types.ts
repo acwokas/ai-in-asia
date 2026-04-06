@@ -86,6 +86,78 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_companies: {
+        Row: {
+          category: string[] | null
+          city: string | null
+          country: string
+          created_at: string
+          description: string | null
+          employee_count_range: string | null
+          founded_year: number | null
+          funding_stage: string | null
+          funding_total: string | null
+          id: string
+          is_featured: boolean | null
+          is_verified: boolean | null
+          key_people: Json | null
+          logo_url: string | null
+          long_description: string | null
+          name: string
+          slug: string
+          social_links: Json | null
+          subcategories: string[] | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          category?: string[] | null
+          city?: string | null
+          country: string
+          created_at?: string
+          description?: string | null
+          employee_count_range?: string | null
+          founded_year?: number | null
+          funding_stage?: string | null
+          funding_total?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          key_people?: Json | null
+          logo_url?: string | null
+          long_description?: string | null
+          name: string
+          slug: string
+          social_links?: Json | null
+          subcategories?: string[] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          category?: string[] | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          employee_count_range?: string | null
+          founded_year?: number | null
+          funding_stage?: string | null
+          funding_total?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          key_people?: Json | null
+          logo_url?: string | null
+          long_description?: string | null
+          name?: string
+          slug?: string
+          social_links?: Json | null
+          subcategories?: string[] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       ai_generated_comments: {
         Row: {
           article_id: string
@@ -1634,6 +1706,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      company_submissions: {
+        Row: {
+          admin_notes: string | null
+          category: string[] | null
+          company_name: string
+          contact_email: string
+          country: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          reviewed_at: string | null
+          status: string
+          submitted_at: string
+          website: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category?: string[] | null
+          company_name: string
+          contact_email: string
+          country: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+          website: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string[] | null
+          company_name?: string
+          contact_email?: string
+          country?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+          website?: string
+        }
+        Relationships: []
       }
       contact_messages: {
         Row: {
