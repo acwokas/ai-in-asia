@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 interface FinderEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
