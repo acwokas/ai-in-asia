@@ -86,8 +86,7 @@ const PartnershipInquiryForm = forwardRef<HTMLDivElement>((_, formRef) => {
 
   return (
     <section
-      ref={(node) => {
-        // Merge refs
+      ref={(node: HTMLDivElement | null) => {
         if (typeof formRef === "function") formRef(node);
         else if (formRef) (formRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
         (fadeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
