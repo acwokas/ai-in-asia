@@ -57,6 +57,7 @@ const CategoryAll = lazy(() => import("./pages/CategoryAll"));
 const Tag = lazy(() => import("./pages/Tag"));
 const AuthorProfile = lazy(() => import("./pages/AuthorProfile"));
 const SitemapRedirect = lazy(() => import("./pages/SitemapRedirect"));
+const NewsSitemapRedirect = lazy(() => import("./pages/NewsSitemapRedirect"));
 const RssRedirect = lazy(() => import("./pages/RssRedirect"));
 const FeedRedirect = lazy(() => import("./pages/RssRedirect")); // Same as RSS
 const Search = lazy(() => import("./pages/Search"));
