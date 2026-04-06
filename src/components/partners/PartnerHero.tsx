@@ -22,12 +22,12 @@ export default function PartnerHero({ onScrollToContact }: PartnerHeroProps) {
             Reach Asia-Pacific's most engaged AI decision-makers. From enterprise leaders to policymakers, our audience shapes the future of artificial intelligence across the region.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button size="lg" className="gap-2 px-8" asChild>
-              <a href="/media-kit.pdf" target="_blank" rel="noopener noreferrer">
-                <Download className="h-4 w-4" />
-                Download Media Kit
-              </a>
-            </Button>
+                <Button size="lg" className="gap-2 px-8" asChild>
+                  <a href="/AIIA_Media_Kit_2026.pdf" target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4" />
+                    Download Media Kit
+                  </a>
+                </Button>
             <Button
               size="lg"
               variant="outline"
