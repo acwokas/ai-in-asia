@@ -89,7 +89,8 @@ const PartnershipInquiryForm = forwardRef<HTMLDivElement>((_, formRef) => {
       ref={(node: HTMLDivElement | null) => {
         if (typeof formRef === "function") formRef(node);
         else if (formRef) (formRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-        (fadeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        if (typeof fadeRef === "function") fadeRef(node);
+        else if (fadeRef) (fadeRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
       }}
       className={`py-16 md:py-20 border-t border-border/50 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
     >

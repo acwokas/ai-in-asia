@@ -24,7 +24,7 @@ export default function MediaKitDownload() {
                   Download our media kit for detailed audience demographics, traffic data, partnership pricing, and brand guidelines.
                 </p>
                 <Button className="gap-2" asChild>
-                  <a href="/media-kit.pdf" target="_blank" rel="noopener noreferrer">
+                  <a href="/AIIA_Media_Kit_2026.pdf" target="_blank" rel="noopener noreferrer">
                     <Download className="h-4 w-4" />
                     Download PDF
                   </a>

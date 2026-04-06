@@ -1,11 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export function useFadeInOnScroll() {
-  const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [element, setElement] = useState<HTMLElement | null>(null);
+
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    setElement(node);
+  }, []);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!element) return;
+
+    // Respect reduced motion
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -13,11 +24,11 @@ export function useFadeInOnScroll() {
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.05 }
     );
-    observer.observe(ref.current);
+    observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [element]);
 
   return { ref, isVisible };
 }
