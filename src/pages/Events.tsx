@@ -371,10 +371,10 @@ const Events = () => {
 
             <p className="text-base md:text-lg text-muted-foreground mb-8">
               Tracking{" "}
-              <span className="text-primary font-semibold">{eventStats?.totalEvents ?? "—"}</span>
+              <span className="text-primary font-semibold">{eventStats?.totalEvents ?? "..."}</span>
               {" "}events across{" "}
-              <span className="text-primary font-semibold">{eventStats?.totalCountries ?? "—"}</span>
-              {" "}countries — updated daily from 12+ sources
+              <span className="text-primary font-semibold">{eventStats?.totalCountries ?? "..."}</span>
+              {" "}countries, updated daily from 12+ sources
             </p>
 
             <div className="max-w-[600px] mb-5">
