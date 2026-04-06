@@ -380,6 +380,7 @@ const router = createBrowserRouter([
           { path: "event-submissions", element: <AdminEventSubmissionsPage /> },
           { path: "settings", element: <AdminSettings /> },
           { path: "glossary", element: <AdminGlossary /> },
+          { path: "partnerships", element: <AdminPartnerships /> },
         ],
       },
       { path: "/3-before-9-briefing", element: <ThreeBeforeNineBriefing /> },
