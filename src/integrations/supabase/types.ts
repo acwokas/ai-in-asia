@@ -3143,6 +3143,81 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          tier: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          tier?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          tier?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      partnership_inquiries: {
+        Row: {
+          budget_range: string | null
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          notes: string | null
+          partnership_type: string
+          role: string | null
+          status: string
+        }
+        Insert: {
+          budget_range?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          notes?: string | null
+          partnership_type: string
+          role?: string | null
+          status?: string
+        }
+        Update: {
+          budget_range?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          notes?: string | null
+          partnership_type?: string
+          role?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       pending_comments: {
         Row: {
           article_id: string
