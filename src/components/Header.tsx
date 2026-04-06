@@ -1,4 +1,4 @@
-import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper, Wrench, Sun, Moon } from "lucide-react";
+import { Search, Menu, User, LogOut, Shield, Zap, Award, X, ChevronDown, BookOpen, Sparkles, Globe, Calendar, Flame, Briefcase, Heart, Scale, Newspaper, Wrench, Sun, Moon, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReadingQueue from "@/components/ReadingQueue";
 import NotificationPreferences from "@/components/NotificationPreferences";
