@@ -47,20 +47,20 @@ const TOPIC_TILES = [
 
 /* ── 5. Platform hub config ── */
 const PLATFORM_HUB = [
-  { name: "ChatGPT", color: "#10a37f", letter: "C" },
-  { name: "Claude", color: "#d97757", letter: "C" },
-  { name: "Gemini", color: "#4285f4", letter: "G" },
-  { name: "Midjourney", color: "#0f1923", letter: "M" },
-  { name: "Runway", color: "#6366f1", letter: "R" },
-  { name: "ElevenLabs", color: "#000000", letter: "E" },
-  { name: "Cursor", color: "#7c3aed", letter: "C" },
-  { name: "v0", color: "#18181b", letter: "V" },
-  { name: "Lovable", color: "#e11d48", letter: "L" },
-  { name: "NotebookLM", color: "#fbbc04", letter: "N" },
-  { name: "Perplexity", color: "#20808d", letter: "P" },
-  { name: "Suno", color: "#f97316", letter: "S" },
-  { name: "Copilot", color: "#0078d4", letter: "C" },
-  { name: "Stable Diffusion", color: "#a855f7", letter: "S" },
+  { name: "ChatGPT", logo: "https://cdn.worldvectorlogo.com/logos/chatgpt-6.svg", fallbackColor: "#10a37f" },
+  { name: "Claude", logo: "https://claude.ai/images/claude_app_icon.png", fallbackColor: "#d97757" },
+  { name: "Gemini", logo: "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690b6.svg", fallbackColor: "#4285f4" },
+  { name: "Midjourney", logo: "https://cdn.worldvectorlogo.com/logos/midjourney.svg", fallbackColor: "#0f1923" },
+  { name: "Runway", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Runway_AI_logo.svg/1200px-Runway_AI_logo.svg.png", fallbackColor: "#6366f1" },
+  { name: "ElevenLabs", logo: "https://images.seeklogo.com/logo-png/52/2/elevenlabs-logo-png_seeklogo-528369.png", fallbackColor: "#000000" },
+  { name: "Cursor", logo: "https://www.cursor.com/brand/icon.svg", fallbackColor: "#7c3aed" },
+  { name: "v0", logo: "https://v0.dev/assets/icon-dark.svg", fallbackColor: "#18181b" },
+  { name: "Lovable", logo: "https://lovable.dev/icon.svg", fallbackColor: "#e11d48" },
+  { name: "NotebookLM", logo: "https://notebooklm.google.com/favicon.ico", fallbackColor: "#fbbc04" },
+  { name: "Perplexity", logo: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Perplexity_AI_logo.svg", fallbackColor: "#20808d" },
+  { name: "Suno", logo: "https://suno.com/favicon.ico", fallbackColor: "#f97316" },
+  { name: "Copilot", logo: "https://copilot.microsoft.com/rp/ght0NNpTi0drTMi4CfxAGAqXV0A.svg", fallbackColor: "#0078d4" },
+  { name: "Stable Diffusion", logo: "https://upload.wikimedia.org/wikipedia/commons/5/55/Stability_AI_logo.svg", fallbackColor: "#a855f7" },
 ] as const;
 
 const isAsiaGuide = (g: any) => g.geo && g.geo !== "none" && g.geo !== "global";
@@ -95,9 +95,15 @@ const ImprovedGuideCard = ({ g }: { g: any }) => (
           {g.difficulty && (
             <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>
           )}
-          {g.primary_platform && g.primary_platform !== "Generic" && (
-            <Badge variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] border-0">{g.primary_platform}</Badge>
-          )}
+          {g.primary_platform && g.primary_platform !== "Generic" && (() => {
+            const hub = PLATFORM_HUB.find((h) => h.name === g.primary_platform);
+            return (
+              <Badge variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] border-0 flex items-center gap-1">
+                {hub && <img src={hub.logo} alt="" className="w-3 h-3 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                {g.primary_platform}
+              </Badge>
+            );
+          })()}
           {g.topic_category && (
             <Badge variant="outline" className="text-[10px] capitalize border-border">{g.topic_category}</Badge>
           )}
@@ -461,11 +467,25 @@ const Guides = () => {
                         : "border-border bg-card hover:border-primary/40"
                     }`}
                   >
-                    <div
-                      className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: p.color }}
-                    >
-                      {p.letter}
+                    <div className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center bg-muted/30 p-1.5">
+                      <img
+                        src={p.logo}
+                        alt={p.name}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          const fallback = document.createElement('span');
+                          fallback.textContent = p.name[0];
+                          fallback.className = 'text-white font-bold text-lg';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.style.backgroundColor = p.fallbackColor;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
                     </div>
                     <span className="block text-xs font-semibold text-foreground truncate">{p.name}</span>
                     {count > 0 && <span className="block text-[10px] text-muted-foreground">{count} guides</span>}
