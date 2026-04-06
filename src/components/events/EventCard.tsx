@@ -10,6 +10,7 @@ import { toast } from "sonner";
 interface EventCardEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
