@@ -306,6 +306,7 @@ const router = createBrowserRouter([
       { path: "/cookie-policy", element: <CookiePolicy /> },
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
+      { path: "/events/:slug", element: <EventDetail /> },
       { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
