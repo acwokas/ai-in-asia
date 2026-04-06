@@ -36,18 +36,19 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate a unique file path
+    // Generate a unique file path — always save as WebP for smaller sizes
     const timestamp = Date.now();
-    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filePath = `migrated/${timestamp}-${sanitizedFileName}`;
+    const baseName = fileName.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `migrated/${timestamp}-${baseName}.webp`;
 
     console.log(`Uploading to: ${filePath}`);
 
-    // Upload to Supabase storage
+    // Upload to Supabase storage with WebP content type and long cache
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('article-images')
       .upload(filePath, imageBuffer, {
-        contentType: imageBlob.type || 'image/jpeg',
+        contentType: 'image/webp',
+        cacheControl: '31536000',
         upsert: false,
       });
 

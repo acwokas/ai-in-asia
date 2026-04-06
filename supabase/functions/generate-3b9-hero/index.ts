@@ -84,9 +84,8 @@ serve(async (req) => {
 
     const mimeType = imagePart.inlineData.mimeType || "image/png";
     const base64Data = imagePart.inlineData.data;
-    const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
     const timestamp = Date.now();
-    const filePath = `3b9/hero-${timestamp}.${ext}`;
+    const filePath = `3b9/hero-${timestamp}.webp`;
 
     const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
@@ -97,7 +96,10 @@ serve(async (req) => {
 
     const { error: uploadError } = await supabase.storage
       .from("article-images")
-      .upload(filePath, imageBytes, { contentType: mimeType });
+      .upload(filePath, imageBytes, {
+        contentType: "image/webp",
+        cacheControl: "31536000",
+      });
 
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 

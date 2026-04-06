@@ -596,6 +596,8 @@ const Article = () => {
                   sizes="(max-width: 768px) 100vw, 1080px"
                   loading="eager"
                   fetchPriority="high"
+                  width={1200}
+                  height={675}
                   className="absolute inset-0"
                 />
                 <div className="article-hero-gradient" />
