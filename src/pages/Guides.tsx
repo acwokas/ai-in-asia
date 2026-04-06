@@ -95,9 +95,15 @@ const ImprovedGuideCard = ({ g }: { g: any }) => (
           {g.difficulty && (
             <Badge className={`${diffColors[g.difficulty] || ""} text-white text-[10px]`}>{g.difficulty}</Badge>
           )}
-          {g.primary_platform && g.primary_platform !== "Generic" && (
-            <Badge variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] border-0">{g.primary_platform}</Badge>
-          )}
+          {g.primary_platform && g.primary_platform !== "Generic" && (() => {
+            const hub = PLATFORM_HUB.find((h) => h.name === g.primary_platform);
+            return (
+              <Badge variant="secondary" className="bg-muted/60 text-muted-foreground text-[10px] border-0 flex items-center gap-1">
+                {hub && <img src={hub.logo} alt="" className="w-3 h-3 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                {g.primary_platform}
+              </Badge>
+            );
+          })()}
           {g.topic_category && (
             <Badge variant="outline" className="text-[10px] capitalize border-border">{g.topic_category}</Badge>
           )}
