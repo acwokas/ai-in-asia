@@ -467,11 +467,11 @@ const Guides = () => {
                         : "border-border bg-card hover:border-primary/40"
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center bg-muted/30 p-1.5">
+                    <div className="w-11 h-11 rounded-xl mx-auto mb-2 flex items-center justify-center bg-white/10 backdrop-blur-sm p-1.5 ring-1 ring-white/5">
                       <img
                         src={p.logo}
                         alt={p.name}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain drop-shadow-sm"
                         loading="lazy"
                         onError={(e) => {
                           const target = e.currentTarget;
@@ -482,6 +482,7 @@ const Guides = () => {
                           const parent = target.parentElement;
                           if (parent) {
                             parent.style.backgroundColor = p.fallbackColor;
+                            parent.classList.remove('bg-white/10');
                             parent.appendChild(fallback);
                           }
                         }}
