@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_links: {
+        Row: {
+          affiliate_url: string
+          category: string | null
+          commission_info: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          keywords: string[]
+          product_name: string
+          programme: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          affiliate_url: string
+          category?: string | null
+          commission_info?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords: string[]
+          product_name: string
+          programme?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          affiliate_url?: string
+          category?: string | null
+          commission_info?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[]
+          product_name?: string
+          programme?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ai_comment_authors: {
         Row: {
           avatar_url: string | null
@@ -4483,6 +4522,14 @@ export type Database = {
       increment_variant_opens: {
         Args: { edition_uuid: string; variant_letter: string }
         Returns: undefined
+      }
+      match_affiliate_links: {
+        Args: { article_text: string }
+        Returns: {
+          affiliate_url: string
+          matched_keyword: string
+          product_name: string
+        }[]
       }
       rotate_trending_articles: { Args: never; Returns: undefined }
       update_reading_streak: { Args: { p_user_id: string }; Returns: undefined }
