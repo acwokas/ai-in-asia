@@ -107,11 +107,12 @@ async function extractAndOptimizeImages(
       const fileName = `optimized-${articleId}-${imageCount}-${timestamp}.${fileExt}`;
       const filePath = `content/${fileName}`;
       
-      // Upload to Supabase storage
+      // Upload to Supabase storage with long cache
       const { error: uploadError } = await supabase.storage
         .from('article-images')
         .upload(filePath, finalBuffer, {
           contentType: `image/${outputFormat}`,
+          cacheControl: '31536000',
           upsert: false,
         });
       
