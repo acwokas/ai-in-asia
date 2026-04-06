@@ -57,6 +57,7 @@ const CategoryAll = lazy(() => import("./pages/CategoryAll"));
 const Tag = lazy(() => import("./pages/Tag"));
 const AuthorProfile = lazy(() => import("./pages/AuthorProfile"));
 const SitemapRedirect = lazy(() => import("./pages/SitemapRedirect"));
+const NewsSitemapRedirect = lazy(() => import("./pages/NewsSitemapRedirect"));
 const RssRedirect = lazy(() => import("./pages/RssRedirect"));
 const FeedRedirect = lazy(() => import("./pages/RssRedirect")); // Same as RSS
 const Search = lazy(() => import("./pages/Search"));
@@ -294,6 +295,7 @@ const router = createBrowserRouter([
       { path: "/tag/:slug", element: <Tag /> },
       { path: "/author/:slug", element: <AuthorProfile /> },
       { path: "/sitemap.xml", element: <SitemapRedirect /> },
+      { path: "/sitemap-news.xml", element: <NewsSitemapRedirect /> },
       { path: "/rss.xml", element: <RssRedirect /> },
       { path: "/rss", element: <RssRedirect /> },
       { path: "/feed", element: <FeedRedirect /> },

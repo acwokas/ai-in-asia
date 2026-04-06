@@ -34,7 +34,7 @@ export const ArticleStructuredData = ({
 }: ArticleStructuredDataProps) => {
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": categorySlug === "news" ? "NewsArticle" : "Article",
+    "@type": "NewsArticle",
     headline: title,
     description: description,
     image: {

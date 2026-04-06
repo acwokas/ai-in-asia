@@ -82,6 +82,7 @@ Allow: /
 
 # Sitemaps for fast indexing
 Sitemap: https://aiinasia.com/sitemap.xml
+Sitemap: https://aiinasia.com/sitemap-news.xml
 
 # Polite crawl rate
 Crawl-delay: 1
