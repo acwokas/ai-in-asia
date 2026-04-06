@@ -152,6 +152,7 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
 const AdminEventSubmissionsPage = lazy(() => import("./components/admin/AdminEventSubmissions"));
 const AdminGlossary = lazy(() => import("./pages/AdminGlossary"));
+const AdminPartnerships = lazy(() => import("./pages/AdminPartnerships"));
 
 // Lightweight skeleton loader for instant display — matches homepage hero layout
 const HomepageSkeleton = () => (
