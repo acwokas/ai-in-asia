@@ -47,20 +47,20 @@ const TOPIC_TILES = [
 
 /* ── 5. Platform hub config ── */
 const PLATFORM_HUB = [
-  { name: "ChatGPT", logo: "https://cdn.worldvectorlogo.com/logos/chatgpt-6.svg", fallbackColor: "#10a37f" },
-  { name: "Claude", logo: "https://claude.ai/images/claude_app_icon.png", fallbackColor: "#d97757" },
-  { name: "Gemini", logo: "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690b6.svg", fallbackColor: "#4285f4" },
-  { name: "Midjourney", logo: "https://cdn.worldvectorlogo.com/logos/midjourney.svg", fallbackColor: "#0f1923" },
-  { name: "Runway", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Runway_AI_logo.svg/1200px-Runway_AI_logo.svg.png", fallbackColor: "#6366f1" },
-  { name: "ElevenLabs", logo: "https://images.seeklogo.com/logo-png/52/2/elevenlabs-logo-png_seeklogo-528369.png", fallbackColor: "#000000" },
-  { name: "Cursor", logo: "https://www.cursor.com/brand/icon.svg", fallbackColor: "#7c3aed" },
-  { name: "v0", logo: "https://v0.dev/assets/icon-dark.svg", fallbackColor: "#18181b" },
-  { name: "Lovable", logo: "https://lovable.dev/icon.svg", fallbackColor: "#e11d48" },
-  { name: "NotebookLM", logo: "https://notebooklm.google.com/favicon.ico", fallbackColor: "#fbbc04" },
-  { name: "Perplexity", logo: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Perplexity_AI_logo.svg", fallbackColor: "#20808d" },
-  { name: "Suno", logo: "https://suno.com/favicon.ico", fallbackColor: "#f97316" },
-  { name: "Copilot", logo: "https://copilot.microsoft.com/rp/ght0NNpTi0drTMi4CfxAGAqXV0A.svg", fallbackColor: "#0078d4" },
-  { name: "Stable Diffusion", logo: "https://upload.wikimedia.org/wikipedia/commons/5/55/Stability_AI_logo.svg", fallbackColor: "#a855f7" },
+  { name: "ChatGPT", logo: "/logos/chatgpt.svg", fallbackColor: "#10a37f" },
+  { name: "Claude", logo: "/logos/claude.svg", fallbackColor: "#d97757" },
+  { name: "Gemini", logo: "/logos/gemini.svg", fallbackColor: "#4285f4" },
+  { name: "Midjourney", logo: "/logos/midjourney.svg", fallbackColor: "#0f1923" },
+  { name: "Runway", logo: "/logos/runway.svg", fallbackColor: "#6366f1" },
+  { name: "ElevenLabs", logo: "/logos/elevenlabs.svg", fallbackColor: "#000000" },
+  { name: "Cursor", logo: "/logos/cursor.svg", fallbackColor: "#7c3aed" },
+  { name: "v0", logo: "/logos/v0.svg", fallbackColor: "#18181b" },
+  { name: "Lovable", logo: "/logos/lovable.svg", fallbackColor: "#e11d48" },
+  { name: "NotebookLM", logo: "/logos/notebooklm.svg", fallbackColor: "#fbbc04" },
+  { name: "Perplexity", logo: "/logos/perplexity.svg", fallbackColor: "#20808d" },
+  { name: "Suno", logo: "/logos/suno.svg", fallbackColor: "#f97316" },
+  { name: "Copilot", logo: "/logos/copilot.svg", fallbackColor: "#0078d4" },
+  { name: "Stable Diffusion", logo: "/logos/stable-diffusion.svg", fallbackColor: "#a855f7" },
 ] as const;
 
 const isAsiaGuide = (g: any) => g.geo && g.geo !== "none" && g.geo !== "global";
