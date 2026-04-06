@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { format, differenceInCalendarDays, isWithinInterval } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, ExternalLink, CalendarPlus, Users } from "lucide-react";
@@ -6,6 +7,7 @@ import { Calendar, MapPin, ExternalLink, CalendarPlus, Users } from "lucide-reac
 export interface FeaturedEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
@@ -135,18 +137,12 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
 
         {/* Event name — slightly larger than regular cards */}
         <h3 className="text-xl md:text-[1.35rem] font-extrabold mb-3 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {event.website_url ? (
-            <a
-              href={event.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              {event.title}
-            </a>
-          ) : (
-            event.title
-          )}
+          <Link
+            to={`/events/${event.slug}`}
+            className="hover:text-primary transition-colors"
+          >
+            {event.title}
+          </Link>
         </h3>
 
         {/* Metadata row — wider spacing */}

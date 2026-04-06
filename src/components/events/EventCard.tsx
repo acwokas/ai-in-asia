@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { format, differenceInCalendarDays, isWithinInterval } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 interface EventCardEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
@@ -183,18 +185,12 @@ const EventCard = ({ event }: EventCardProps) => {
 
         {/* Row 2: Event Name */}
         <h3 className="text-lg md:text-xl font-bold mb-2 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {event.website_url ? (
-            <a
-              href={event.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              {event.title}
-            </a>
-          ) : (
-            event.title
-          )}
+          <Link
+            to={`/events/${event.slug}`}
+            className="hover:text-primary transition-colors"
+          >
+            {event.title}
+          </Link>
         </h3>
 
         {/* Row 3: Metadata — wider spacing */}

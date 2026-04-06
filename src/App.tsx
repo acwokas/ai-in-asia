@@ -90,6 +90,7 @@ const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
 const EditorsPickManager = lazy(() => import("./pages/EditorsPickManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 
 const AskScout = lazy(() => import("./pages/AskScout"));
@@ -305,6 +306,7 @@ const router = createBrowserRouter([
       { path: "/cookie-policy", element: <CookiePolicy /> },
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
+      { path: "/events/:slug", element: <EventDetail /> },
       { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },

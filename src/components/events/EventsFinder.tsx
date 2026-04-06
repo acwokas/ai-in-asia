@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 interface FinderEvent {
   id: string;
   title: string;
+  slug: string;
   description: string;
   event_type: string;
   start_date: string;
@@ -289,7 +290,7 @@ export default function EventsFinder({ events }: EventsFinderProps) {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">
-                  Step {step + 1} of 4 — {STEPS[step].label}
+                  Step {step + 1} of 4: {STEPS[step].label}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {STEPS[step].multi ? "Select multiple" : "Select one"}
