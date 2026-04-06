@@ -295,6 +295,7 @@ const router = createBrowserRouter([
       { path: "/tag/:slug", element: <Tag /> },
       { path: "/author/:slug", element: <AuthorProfile /> },
       { path: "/sitemap.xml", element: <SitemapRedirect /> },
+      { path: "/sitemap-news.xml", element: <NewsSitemapRedirect /> },
       { path: "/rss.xml", element: <RssRedirect /> },
       { path: "/rss", element: <RssRedirect /> },
       { path: "/feed", element: <FeedRedirect /> },
