@@ -92,6 +92,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Events = lazy(() => import("./pages/Events"));
 const EventDetail = lazy(() => import("./pages/EventDetail"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
+const Directory = lazy(() => import("./pages/Directory"));
+const CompanyProfile = lazy(() => import("./pages/CompanyProfile"));
+const SubmitCompany = lazy(() => import("./pages/SubmitCompany"));
 
 const AskScout = lazy(() => import("./pages/AskScout"));
 const AIJobImpact = lazy(() => import("./pages/AIJobImpact"));
@@ -307,6 +310,9 @@ const router = createBrowserRouter([
       { path: "/events", element: <Events /> },
       { path: "/events/submit", element: <SubmitEvent /> },
       { path: "/events/:slug", element: <EventDetail /> },
+      { path: "/directory", element: <Directory /> },
+      { path: "/directory/submit", element: <SubmitCompany /> },
+      { path: "/directory/:slug", element: <CompanyProfile /> },
       { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },
