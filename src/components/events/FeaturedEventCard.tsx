@@ -137,18 +137,12 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
 
         {/* Event name — slightly larger than regular cards */}
         <h3 className="text-xl md:text-[1.35rem] font-extrabold mb-3 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {event.website_url ? (
-            <a
-              href={event.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              {event.title}
-            </a>
-          ) : (
-            event.title
-          )}
+          <Link
+            to={`/events/${event.slug}`}
+            className="hover:text-primary transition-colors"
+          >
+            {event.title}
+          </Link>
         </h3>
 
         {/* Metadata row — wider spacing */}
