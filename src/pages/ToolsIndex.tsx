@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, Scale, Map, Clock, Building2, type LucideIcon } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, Scale, Map, Clock, Building2, DollarSign, type LucideIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -113,6 +113,13 @@ const TOOLS: Tool[] = [
     desc: "Interactive directory of AI regulations across 15+ Asian countries with side-by-side comparison.",
     icon: Shield,
     to: "/tools/policy-atlas",
+    isNew: true,
+  },
+  {
+    name: "AI Funding Tracker",
+    desc: "Visual dashboard of AI startup funding rounds across Asia with charts, filters, and top investors.",
+    icon: DollarSign,
+    to: "/tools/funding-tracker",
     isNew: true,
   },
   {
