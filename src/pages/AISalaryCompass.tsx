@@ -1,22 +1,10 @@
-import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
 import { ToolBreadcrumb } from "@/components/ToolBreadcrumb";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Compass, ChevronDown, Check, DollarSign, TrendingUp, Globe2, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const LazyBarChart = lazy(() => import("recharts").then(m => ({ default: m.BarChart })));
-const LazyBar = lazy(() => import("recharts").then(m => ({ default: m.Bar })));
-const LazyXAxis = lazy(() => import("recharts").then(m => ({ default: m.XAxis })));
-const LazyYAxis = lazy(() => import("recharts").then(m => ({ default: m.YAxis })));
-const LazyTooltip = lazy(() => import("recharts").then(m => ({ default: m.Tooltip })));
-const LazyResponsiveContainer = lazy(() => import("recharts").then(m => ({ default: m.ResponsiveContainer })));
-const LazyCartesianGrid = lazy(() => import("recharts").then(m => ({ default: m.CartesianGrid })));
-const LazyCell = lazy(() => import("recharts").then(m => ({ default: m.Cell })));
-
-// Recharts needs all components rendered together, so we use a wrapper
-const SalaryChart = lazy(() => Promise.resolve({ default: SalaryChartInner }));
 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip as ReTooltip, ResponsiveContainer, CartesianGrid, Cell,
