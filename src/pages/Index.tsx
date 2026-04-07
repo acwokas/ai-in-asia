@@ -1087,6 +1087,9 @@ const Index = () => {
           <RecommendedGuides />
         </div>
 
+        {/* Featured Tools Carousel */}
+        <FeaturedToolsCarousel />
+
         <div className="border-t border-border/30" />
 
         {/* 8. Free AI Tools */}
