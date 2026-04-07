@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, Scale, Map, Clock, type LucideIcon } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, Scale, Map, Clock, Building2, type LucideIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -99,6 +99,13 @@ const TOOLS: Tool[] = [
     desc: "Scroll through 30+ major AI milestones across Asia-Pacific from 2015 to 2026.",
     icon: Clock,
     to: "/tools/ai-timeline",
+    isNew: true,
+  },
+  {
+    name: "AI Company Radar",
+    desc: "Compare 20 major Asian AI companies across research, innovation, market reach, talent, and investment.",
+    icon: Building2,
+    to: "/tools/company-radar",
     isNew: true,
   },
   {
