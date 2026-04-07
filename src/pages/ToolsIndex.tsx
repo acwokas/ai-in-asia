@@ -102,6 +102,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Company Radar",
+    desc: "Compare 20 major Asian AI companies across research, innovation, market reach, talent, and investment.",
+    icon: Building2,
+    to: "/tools/company-radar",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
