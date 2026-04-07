@@ -335,6 +335,7 @@ const router = createBrowserRouter([
       { path: "/tools/adoption-heatmap", element: <AIAdoptionHeatmap /> },
       { path: "/tools/ai-timeline", element: <AITimelineAsia /> },
       { path: "/tools/company-radar", element: <AICompanyRadar /> },
+      { path: "/tools/policy-atlas", element: <AIPolicyAtlas /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },

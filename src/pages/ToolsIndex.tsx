@@ -109,6 +109,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Policy Atlas",
+    desc: "Interactive directory of AI regulations across 15+ Asian countries with side-by-side comparison.",
+    icon: Shield,
+    to: "/tools/policy-atlas",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
