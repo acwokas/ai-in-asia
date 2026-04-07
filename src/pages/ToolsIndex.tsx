@@ -67,8 +67,8 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
-    name: "AI Glossary",
-    desc: "472+ AI and tech terms explained in plain language. Search, filter, explore.",
+    name: "AI Glossary for Asia",
+    desc: "470+ AI and tech terms explained in plain language with Asia-specific context, difficulty levels, and daily highlights.",
     icon: BookOpenText,
     to: "/tools/ai-glossary",
     isNew: true,
