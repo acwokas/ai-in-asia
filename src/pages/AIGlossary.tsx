@@ -123,6 +123,24 @@ const AIGlossary = () => {
     return result;
   }, [terms, debouncedSearch, activeCategory, activeLetter]);
 
+  // Intersection observer for auto-tracking viewed terms
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute("data-term-id");
+            if (id) markViewed(id);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    const cards = document.querySelectorAll("[data-term-id]");
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [filtered.length, markViewed]);
+
   const scrollToTerm = useCallback((term: string) => {
     const el = cardRefs.current[term.toLowerCase()];
     if (el) {
