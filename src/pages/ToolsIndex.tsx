@@ -95,6 +95,7 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
     to: "/category/learn",
