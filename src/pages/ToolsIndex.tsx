@@ -74,6 +74,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Salary Compass",
+    desc: "Compare AI job salaries across 12 major Asian cities with COL adjustments.",
+    icon: Compass,
+    to: "/tools/salary-compass",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
