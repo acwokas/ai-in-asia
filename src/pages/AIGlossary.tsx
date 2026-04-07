@@ -1,6 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { awardPoints } from "@/lib/gamification";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,8 +11,10 @@ import { ToolBreadcrumb } from "@/components/ToolBreadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Shuffle, BookOpenText } from "lucide-react";
+import { Search, Shuffle, BookOpenText, Trophy, Sparkles, Globe } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface GlossaryTerm {
   id: string;
@@ -18,29 +22,83 @@ interface GlossaryTerm {
   definition: string;
   category: string;
   related_terms: string[] | null;
+  difficulty: string | null;
+  asia_context: string | null;
 }
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
 
+const DIFFICULTY_COLORS: Record<string, string> = {
+  beginner: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  intermediate: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  advanced: "bg-rose-500/15 text-rose-400 border-rose-500/30",
+};
+
 const AIGlossary = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 250);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [viewedTerms, setViewedTerms] = useState<Set<string>>(new Set());
+  const pointsAwarded = useRef(false);
 
   const { data: terms = [], isLoading } = useQuery({
     queryKey: ["glossary-terms"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("glossary_terms")
-        .select("id, term, definition, category, related_terms")
+        .select("id, term, definition, category, related_terms, difficulty, asia_context")
         .order("term", { ascending: true });
       if (error) throw error;
       return (data ?? []) as GlossaryTerm[];
     },
     staleTime: 1000 * 60 * 10,
   });
+
+  // Term of the Day (deterministic by date)
+  const termOfTheDay = useMemo(() => {
+    if (terms.length === 0) return null;
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    return terms[seed % terms.length];
+  }, [terms]);
+
+  // Track viewed terms for gamification
+  const markViewed = useCallback(
+    (termId: string) => {
+      setViewedTerms((prev) => {
+        const next = new Set(prev);
+        next.add(termId);
+        if (next.size >= 15 && !pointsAwarded.current && user) {
+          pointsAwarded.current = true;
+          awardPoints(user.id, 10, "Explored 15+ glossary terms");
+        }
+        return next;
+      });
+    },
+    [user]
+  );
+
+  // Intersection observer for auto-tracking
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute("data-term-id");
+            if (id) markViewed(id);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    const cards = document.querySelectorAll("[data-term-id]");
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [filtered?.length, markViewed]);
 
   // Handle URL hash on load
   useEffect(() => {
@@ -121,8 +179,8 @@ const AIGlossary = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="AI Glossary | 472+ AI Terms Explained | AI in Asia"
-        description="472 AI and tech terms explained in plain language. Search, filter by category, and explore related concepts. No jargon about jargon."
+        title="AI Glossary for Asia | 470+ AI Terms Explained | AI in Asia"
+        description="470+ AI and tech terms explained in plain language with Asia-specific context. Search, filter by category, and explore related concepts."
         canonical="https://aiinasia.com/tools/ai-glossary"
       />
       <Header />
@@ -137,12 +195,66 @@ const AIGlossary = () => {
               Free Tool
             </Badge>
             <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-2">
-              AI Glossary
+              AI Glossary for Asia
             </h1>
             <p className="text-foreground/70 max-w-lg mx-auto text-base">
-              {terms.length > 0 ? terms.length : 472} AI and tech terms explained in plain language. No jargon about jargon.
+              {terms.length > 0 ? terms.length : 470}+ AI and tech terms explained in plain language, with Asia-specific context. No jargon about jargon.
             </p>
           </div>
+
+          {/* Gamification progress */}
+          {viewedTerms.size > 0 && viewedTerms.size < 15 && (
+            <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-card border border-border">
+              <Trophy className="h-4 w-4 text-amber-500 shrink-0" />
+              <div className="flex-1">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min((viewedTerms.size / 15) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground shrink-0">
+                {viewedTerms.size}/15 terms for +10 pts
+              </span>
+            </div>
+          )}
+          {viewedTerms.size >= 15 && (
+            <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <Trophy className="h-4 w-4 text-amber-500" />
+              <span className="text-xs text-amber-400 font-semibold">+10 points earned for exploring 15+ terms!</span>
+            </div>
+          )}
+
+          {/* Term of the Day */}
+          {termOfTheDay && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-card to-card p-5"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Term of the Day</span>
+              </div>
+              <h3
+                className="font-display text-xl font-bold text-foreground mb-1 cursor-pointer hover:text-amber-500 transition-colors"
+                onClick={() => {
+                  window.location.hash = encodeURIComponent(termOfTheDay.term);
+                  scrollToTerm(termOfTheDay.term);
+                }}
+              >
+                {termOfTheDay.term}
+              </h3>
+              <p className="text-sm text-foreground/80 leading-relaxed">{termOfTheDay.definition}</p>
+              {termOfTheDay.asia_context && (
+                <div className="mt-2 flex items-start gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-amber-400/90 italic">{termOfTheDay.asia_context}</p>
+                </div>
+              )}
+            </motion.div>
+          )}
 
           {/* Search + Random */}
           <div className="flex gap-2 mb-5">
@@ -224,7 +336,7 @@ const AIGlossary = () => {
             </div>
           )}
 
-          {/* Term cards */}
+          {/* Empty state */}
           {!isLoading && filtered.length === 0 && (
             <div className="text-center py-20 text-muted-foreground">
               <BookOpenText className="h-10 w-10 mx-auto mb-3 opacity-40" />
@@ -232,30 +344,48 @@ const AIGlossary = () => {
             </div>
           )}
 
+          {/* Term cards */}
           <div className="space-y-3">
             {filtered.map((t) => (
-              <div
+              <motion.div
                 key={t.id}
                 ref={(el) => {
                   cardRefs.current[t.term.toLowerCase()] = el;
                 }}
+                data-term-id={t.id}
                 id={encodeURIComponent(t.term)}
-                className="rounded-xl border border-border bg-card p-5 transition-all duration-300"
+                className="rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/[0.02]"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="flex items-start gap-3 mb-2">
+                <div className="flex items-start gap-3 mb-2 flex-wrap">
                   <h2 className="font-display text-xl font-bold text-foreground">
                     {t.term}
                   </h2>
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 text-[10px] mt-0.5"
-                  >
+                  <Badge variant="outline" className="shrink-0 text-[10px] mt-0.5">
                     {t.category}
                   </Badge>
+                  {t.difficulty && (
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 text-[10px] mt-0.5 ${DIFFICULTY_COLORS[t.difficulty] || DIFFICULTY_COLORS.beginner}`}
+                    >
+                      {t.difficulty.charAt(0).toUpperCase() + t.difficulty.slice(1)}
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-[15px] text-foreground/80 leading-relaxed mb-3">
+                <p className="text-[15px] text-foreground/80 leading-relaxed mb-2">
                   {t.definition}
                 </p>
+                {t.asia_context && (
+                  <div className="flex items-start gap-1.5 mb-3 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/15">
+                    <Globe className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-400/90 leading-relaxed">
+                      <span className="font-semibold text-amber-500">In Asia:</span> {t.asia_context}
+                    </p>
+                  </div>
+                )}
                 {t.related_terms && t.related_terms.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
@@ -272,7 +402,7 @@ const AIGlossary = () => {
                     ))}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
 
