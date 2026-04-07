@@ -116,6 +116,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Funding Tracker",
+    desc: "Visual dashboard of AI startup funding rounds across Asia with charts, filters, and top investors.",
+    icon: DollarSign,
+    to: "/tools/funding-tracker",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
