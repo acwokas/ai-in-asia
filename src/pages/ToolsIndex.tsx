@@ -95,6 +95,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Timeline Asia",
+    desc: "Scroll through 30+ major AI milestones across Asia-Pacific from 2015 to 2026.",
+    icon: Clock,
+    to: "/tools/ai-timeline",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
