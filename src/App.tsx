@@ -71,6 +71,7 @@ const ArticlesFeed = lazy(() => import("./pages/ArticlesFeed"));
 const Editor = lazy(() => import("./pages/Editor"));
 const Profile = lazy(() => import("./pages/Profile"));
 const About = lazy(() => import("./pages/About"));
+const Voices = lazy(() => import("./pages/Voices"));
 const Contact = lazy(() => import("./pages/Contact"));
 const PolicyAtlas = lazy(() => import("./pages/PolicyAtlas"));
 const PolicyRegion = lazy(() => import("./pages/PolicyRegion"));
@@ -313,6 +314,7 @@ const router = createBrowserRouter([
       { path: "/editor/:id", element: <Editor /> },
       { path: "/profile", element: <Profile /> },
       { path: "/about", element: <About /> },
+      { path: "/voices", element: <Voices /> },
       { path: "/contact", element: <Contact /> },
       { path: "/privacy", element: <Privacy /> },
       { path: "/terms", element: <Terms /> },
