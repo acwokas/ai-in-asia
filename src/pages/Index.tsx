@@ -163,23 +163,33 @@ const Index = () => {
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
       const oneMonthAgoISO = oneMonthAgo.toISOString();
 
-      // Fetch articles and guides in parallel
-      const [articlesResult, guidesResult] = await Promise.all([
+      const articleFields = `
+        id, title, slug, excerpt, featured_image_url, reading_time_minutes,
+        published_at, updated_at, cornerstone, sticky, primary_category_id,
+        comment_count, is_trending, article_type,
+        authors:authors_public!articles_author_id_fkey (name, slug),
+        categories:primary_category_id (name, slug)
+      `;
+
+      // Fetch featured articles, latest backfill, and guides in parallel
+      const [featuredResult, backfillResult, guidesResult] = await Promise.all([
         supabase
           .from("articles")
-          .select(`
-            id, title, slug, excerpt, featured_image_url, reading_time_minutes,
-            published_at, updated_at, cornerstone, sticky, primary_category_id,
-            comment_count, is_trending,
-            authors:authors_public!articles_author_id_fkey (name, slug),
-            categories:primary_category_id (name, slug)
-          `)
+          .select(articleFields)
           .eq("status", "published")
           .eq("featured_on_homepage", true)
           .gte("published_at", oneMonthAgoISO)
+          .neq("article_type", "three_before_nine")
           .order("sticky", { ascending: false })
           .order("published_at", { ascending: false, nullsFirst: false })
           .limit(18),
+        supabase
+          .from("articles")
+          .select(articleFields)
+          .eq("status", "published")
+          .neq("article_type", "three_before_nine")
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .limit(24),
         supabase
           .from("ai_guides")
           .select("id, title, slug, excerpt, featured_image_url, read_time_minutes, published_at, pillar, guide_category")
@@ -189,12 +199,23 @@ const Index = () => {
           .limit(10),
       ]);
 
-      if (articlesResult.error) throw articlesResult.error;
-      const articles = articlesResult.data || [];
+      if (featuredResult.error) throw featuredResult.error;
+      const featuredArticles = featuredResult.data || [];
+      const backfillArticles = backfillResult.data || [];
       const guides = guidesResult.data || [];
 
+      // Merge featured + backfill, deduplicating, featured/sticky first
+      const seenIds = new Set<string>();
+      const allArticles: any[] = [];
+      for (const a of featuredArticles) {
+        if (!seenIds.has(a.id)) { seenIds.add(a.id); allArticles.push(a); }
+      }
+      for (const a of backfillArticles) {
+        if (!seenIds.has(a.id)) { seenIds.add(a.id); allArticles.push(a); }
+      }
+
       // Tag and normalise both types
-      const taggedArticles = articles.map((a: any) => ({ ...a, content_type: 'article' as const }));
+      const taggedArticles = allArticles.map((a: any) => ({ ...a, content_type: 'article' as const }));
       const taggedGuides = guides.map((g: any) => ({
         ...g,
         content_type: 'guide' as const,
