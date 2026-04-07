@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { OrganizationStructuredData } from "@/components/StructuredData";
 import Header from "@/components/Header";
@@ -19,7 +21,6 @@ import {
   BookOpen,
   Globe,
   Award,
-  Star,
   Brain,
   CheckCircle2,
   ExternalLink,
@@ -30,30 +31,61 @@ import {
   Palette,
   MessageSquare,
   MapPin,
+  Wrench,
+  Building2,
+  FileText,
+  Target,
+  Eye,
+  Lightbulb,
+  Users,
 } from "lucide-react";
 
 const CATEGORIES = [
-  { name: "News", slug: "news", icon: Newspaper, count: 159, description: "Breaking developments and daily coverage of AI across Asia-Pacific." },
-  { name: "Business", slug: "business", icon: Briefcase, count: 263, description: "Enterprise adoption, investment, and the commercial impact of AI." },
-  { name: "Life", slug: "life", icon: Heart, count: 234, description: "How AI is reshaping healthcare, education, culture, and daily life." },
-  { name: "Learn", slug: "learn", icon: GraduationCap, count: 51, description: "Practical tutorials, explanations, and skill-building resources." },
-  { name: "Create", slug: "create", icon: Palette, count: 251, description: "Tools, prompts, and techniques for building with AI." },
-  { name: "Voices", slug: "voices", icon: MessageSquare, count: 71, description: "Opinion, analysis, and guest perspectives from across the region." },
+  { name: "News", slug: "news", icon: Newspaper, description: "Breaking developments and daily coverage of AI across the Asia-Pacific region." },
+  { name: "Business", slug: "business", icon: Briefcase, description: "Enterprise adoption, investment trends, and the commercial impact of AI across industries." },
+  { name: "Life", slug: "life", icon: Heart, description: "How AI is reshaping healthcare, education, culture, and daily life for billions." },
+  { name: "Learn", slug: "learn", icon: GraduationCap, description: "Practical tutorials, skill-building guides, and explanations for every experience level." },
+  { name: "Create", slug: "create", icon: Palette, description: "Tools, prompts, and techniques for building with AI today." },
+  { name: "Voices", slug: "voices", icon: MessageSquare, description: "Opinion, analysis, and guest perspectives from practitioners across the region." },
 ];
 
 const COVERAGE_REGIONS = [
-  { region: "Southeast Asia", countries: "Singapore, Indonesia, Thailand, Vietnam, Philippines, Malaysia, Myanmar, Cambodia, Laos" },
-  { region: "East Asia", countries: "Japan, South Korea, Taiwan, Hong Kong, Mainland China" },
-  { region: "South Asia", countries: "India, Bangladesh, Sri Lanka, Pakistan" },
-  { region: "Oceania & Middle East", countries: "Australia, New Zealand, UAE, Saudi Arabia" },
+  { region: "Southeast Asia", countries: "Singapore, Indonesia, Thailand, Vietnam, Philippines, Malaysia, Myanmar, Cambodia, Laos", flag: "🌏" },
+  { region: "East Asia", countries: "Japan, South Korea, Taiwan, Hong Kong, Mainland China", flag: "🌏" },
+  { region: "South Asia", countries: "India, Bangladesh, Sri Lanka, Pakistan", flag: "🌍" },
+  { region: "Oceania and Middle East", countries: "Australia, New Zealand, UAE, Saudi Arabia", flag: "🌐" },
+];
+
+const APPROACH_ITEMS = [
+  { icon: Eye, title: "Ground-Level Reporting", text: "We track regulatory frameworks, interview founders, and follow research labs across the region. No rewriting press releases, no aggregating wire copy." },
+  { icon: Target, title: "Regional Specificity", text: "Each country has its own AI trajectory. We cover them individually, from Singapore's governance model to India's scale-first approach to Japan's industrial automation leadership." },
+  { icon: Lightbulb, title: "Practical Intelligence", text: "Beyond headlines, we build interactive tools, publish step-by-step guides, and maintain a living directory of AI companies so professionals can act on what they read." },
+  { icon: Users, title: "Community First", text: "Readers earn points, unlock achievements, and contribute to discussions. Our platform is designed for participation, not passive consumption." },
 ];
 
 const About = () => {
+  const { data: stats } = useQuery({
+    queryKey: ["about-page-stats"],
+    staleTime: 10 * 60 * 1000,
+    queryFn: async () => {
+      const [articlesRes, companiesRes, guidesRes] = await Promise.all([
+        supabase.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
+        supabase.from("ai_companies").select("id", { count: "exact", head: true }),
+        supabase.from("ai_guides").select("id", { count: "exact", head: true }).eq("status", "published"),
+      ]);
+      return {
+        articles: articlesRes.count || 0,
+        companies: companiesRes.count || 0,
+        guides: guidesRes.count || 0,
+      };
+    },
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="About AI in ASIA - The AI Publication Built for Asia-Pacific"
-        description="AI in ASIA covers AI news, policy, and innovation across 15+ Asia-Pacific countries. Learn about our editorial mission and coverage areas."
+        title="About AI in ASIA: Asia's Definitive AI Intelligence Platform"
+        description="AI in ASIA covers artificial intelligence across 20+ Asia-Pacific countries. Hundreds of articles, interactive tools, company profiles, daily briefings, and community engagement."
         canonical="https://aiinasia.com/about"
       />
       <OrganizationStructuredData />
@@ -61,8 +93,9 @@ const About = () => {
       <Header />
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-primary/5 to-transparent py-16 border-b border-border/50">
-        <div className="container mx-auto px-4">
+      <section className="relative overflow-hidden py-20 md:py-28 border-b border-border/50" style={{ background: 'linear-gradient(160deg, hsl(270 40% 8%), hsl(220 50% 10%), hsl(200 40% 8%))' }}>
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--primary) / 0.3) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+        <div className="container mx-auto px-4 relative z-10">
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -74,48 +107,70 @@ const About = () => {
           </Breadcrumb>
 
           <div className="max-w-3xl">
-            <h1 className="headline text-4xl md:text-5xl mb-6">The AI Publication Built for Asia-Pacific</h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              While global tech media treats Asia as an afterthought, we cover it as the main story. From Singapore's AI governance to Japan's robotics breakthroughs to India's startup explosion - this is where the future is being built.
+            <Badge variant="outline" className="mb-4 text-xs font-semibold tracking-wider border-primary/40 text-primary">INDEPENDENT. REGIONAL. ESSENTIAL.</Badge>
+            <h1 className="headline text-4xl md:text-5xl lg:text-6xl mb-6 leading-[1.1]">Asia's Definitive AI Intelligence Platform</h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+              Covering the entire continent's AI ecosystem, from government policy and academic research to startup innovation and enterprise deployment. This is where the future is being built, and we document every dimension of it.
             </p>
+          </div>
+
+          {/* Live stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 max-w-3xl">
+            {[
+              { value: stats?.articles || 0, label: "Articles Published", suffix: "+" },
+              { value: 20, label: "Countries Covered", suffix: "+" },
+              { value: stats?.companies || 0, label: "AI Companies Tracked", suffix: "+" },
+              { value: stats?.guides || 0, label: "Guides and Tutorials", suffix: "+" },
+            ].map((s) => (
+              <div key={s.label}>
+                <p className="text-2xl md:text-3xl font-bold text-[#F28C0F]">{s.value.toLocaleString()}{s.suffix}</p>
+                <p className="text-xs md:text-sm text-muted-foreground mt-1">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       <main id="main-content" className="flex-1">
-        {/* Mission — what makes us different */}
-        <section className="container mx-auto px-4 py-16">
+        {/* Mission */}
+        <section className="container mx-auto px-4 py-16 md:py-20">
           <div className="max-w-3xl mx-auto">
-            <h2 className="headline text-3xl md:text-4xl mb-8">Why We Exist</h2>
+            <h2 className="headline text-3xl md:text-4xl mb-8">Our Mission</h2>
             <div className="space-y-5 text-lg text-muted-foreground leading-relaxed">
               <p>
-                Asia-Pacific is home to more than half the world's population and some of its most ambitious AI programmes. Singapore is writing the rulebook on responsible governance. China and Japan are in an applied-AI arms race across robotics, healthcare, and manufacturing. India is producing more AI engineers than any country outside the United States. Yet the publications most professionals rely on - TechCrunch, The Verge, MIT Technology Review - cover the region in fragments, filtered through a Western lens.
+                Asia-Pacific is home to more than half the world's population and some of its most ambitious AI programmes. Singapore is writing the rulebook on responsible governance. China and Japan are locked in an applied-AI race across robotics, healthcare, and manufacturing. India is producing more AI engineers than any country outside the United States. Yet the publications most professionals rely on cover the region in fragments, filtered through a Western lens.
               </p>
               <p>
-                AI in ASIA was founded in 2022 to close that gap. We are an independent, English-language publication focused exclusively on artificial intelligence across the Asia-Pacific region. Our coverage spans policy, business, research, and practical application - written for the professionals, policymakers, and builders who need regional intelligence they cannot find elsewhere.
+                AI in ASIA was founded in 2022 to close that gap. We are an independent, English-language platform focused exclusively on artificial intelligence across the Asia-Pacific region. Our coverage spans policy, business, research, and practical application, written for the professionals, policymakers, and builders who need regional intelligence they cannot find elsewhere.
               </p>
               <p>
-                We do not aggregate wire copy or rewrite press releases. We track regulatory frameworks country by country through our <Link to="/ai-policy-atlas" className="text-primary hover:underline font-medium">AI Policy Atlas</Link>. We interview founders, regulators, and researchers on the ground. And we publish daily briefings - <Link to="/3-before-9" className="text-primary hover:underline font-medium">3 Before 9</Link> - that give readers a concise picture of what matters before the working day begins.
+                Our goal is simple: to democratise AI knowledge across Asia. Whether you are a startup founder in Jakarta, a policy analyst in New Delhi, a machine learning engineer in Seoul, or a business leader in Sydney, you deserve an information source that treats your region as the main story, not an afterthought.
               </p>
             </div>
           </div>
         </section>
 
-        {/* What We Cover — category grid */}
-        <section className="bg-muted/30 py-16">
+        <div className="border-t border-border/30" />
+
+        {/* What We Cover: categories */}
+        <section className="bg-muted/20 py-16 md:py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
-              <h2 className="headline text-3xl md:text-4xl mb-10 text-center">What We Cover</h2>
+              <div className="text-center mb-12">
+                <h2 className="headline text-3xl md:text-4xl mb-3">What We Cover</h2>
+                <p className="text-muted-foreground max-w-xl mx-auto">Six editorial pillars covering every dimension of the AI landscape, from breaking news to hands-on creation.</p>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {CATEGORIES.map(({ name, slug, icon: Icon, count, description }) => (
+                {CATEGORIES.map(({ name, slug, icon: Icon, description }) => (
                   <Link key={slug} to={`/category/${slug}`} className="group">
-                    <Card className="p-6 h-full hover:shadow-lg transition-all hover:-translate-y-0.5">
+                    <Card className="p-6 h-full hover:shadow-lg transition-all hover:-translate-y-0.5 border-border hover:border-primary/40">
                       <div className="flex items-center gap-3 mb-3">
-                        <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+                        </div>
                         <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{name}</h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{description}</p>
-                      <span className="text-xs font-medium text-primary">{count}+ articles</span>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
                     </Card>
                   </Link>
                 ))}
@@ -125,52 +180,102 @@ const About = () => {
         </section>
 
         {/* Coverage Map */}
-        <section className="container mx-auto px-4 py-16">
+        <section className="container mx-auto px-4 py-16 md:py-20">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-4">
               <MapPin className="h-6 w-6 text-primary flex-shrink-0" />
-              <h2 className="headline text-3xl md:text-4xl">Coverage Map</h2>
+              <h2 className="headline text-3xl md:text-4xl">Where We Cover</h2>
             </div>
-            <p className="text-muted-foreground mb-8 text-lg">
-              We track AI developments across 20+ countries and territories in the Asia-Pacific region.
+            <p className="text-muted-foreground mb-10 text-lg max-w-2xl">
+              We track AI developments across 20+ countries and territories spanning four major subregions. Each country's AI journey is distinct, and we cover them on their own terms.
             </p>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {COVERAGE_REGIONS.map(({ region, countries }) => (
-                <div key={region} className="border border-border rounded-lg p-5">
-                  <h3 className="font-semibold mb-2">{region}</h3>
-                  <p className="text-sm text-muted-foreground">{countries}</p>
-                </div>
+            <div className="grid sm:grid-cols-2 gap-5">
+              {COVERAGE_REGIONS.map(({ region, countries, flag }) => (
+                <Card key={region} className="p-6 border-border hover:border-primary/30 transition-colors">
+                  <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                    <span>{flag}</span> {region}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{countries}</p>
+                </Card>
               ))}
             </div>
           </div>
         </section>
 
+        <div className="border-t border-border/30" />
+
+        {/* Our Approach */}
+        <section className="bg-muted/20 py-16 md:py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="headline text-3xl md:text-4xl mb-3">Our Approach</h2>
+                <p className="text-muted-foreground max-w-xl mx-auto">
+                  We do not aggregate wire copy or rewrite press releases. Everything we publish is built on original reporting, structured data, and regional expertise.
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {APPROACH_ITEMS.map(({ icon: Icon, title, text }) => (
+                  <div key={title} className="flex gap-4">
+                    <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-base mb-1.5">{title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* What we deliver */}
+        <section className="container mx-auto px-4 py-16 md:py-20">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="headline text-3xl md:text-4xl mb-10 text-center">What We Deliver</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                { icon: Newspaper, title: "Daily Briefings", text: "3 Before 9 lands in your inbox every morning with the three stories you need before the working day begins.", link: "/3-before-9" },
+                { icon: FileText, title: "Deep Analysis", text: "Long-form articles on policy shifts, industry trends, and technology breakthroughs across every APAC market.", link: "/articles" },
+                { icon: Wrench, title: "Interactive Tools", text: "15+ free tools including salary comparisons, ethics simulations, adoption heatmaps, and company radar charts.", link: "/tools" },
+                { icon: Building2, title: "Company Directory", text: "A searchable database of AI organisations operating across the region, from startups to enterprise labs.", link: "/directory" },
+                { icon: Globe, title: "Policy Atlas", text: "Country-by-country tracking of AI regulation, governance frameworks, and national strategies.", link: "/ai-policy-atlas" },
+                { icon: BookOpen, title: "Guides Library", text: "Step-by-step tutorials and learning resources for professionals at every stage of their AI journey.", link: "/guides" },
+              ].map((item) => (
+                <Link key={item.title} to={item.link} className="group">
+                  <Card className="p-5 h-full border-border hover:border-primary/40 hover:-translate-y-0.5 transition-all">
+                    <item.icon className="w-6 h-6 text-primary mb-3" />
+                    <h3 className="font-bold mb-1.5 group-hover:text-primary transition-colors">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="border-t border-border/30" />
+
         {/* Team */}
-        <section className="bg-muted/30 py-16">
+        <section className="bg-muted/20 py-16 md:py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <h2 className="headline text-3xl md:text-4xl mb-8">The Team</h2>
               <div className="space-y-8">
                 <div className="flex gap-5 items-start">
-                  <img
-                    src="/temp-avatars/adrian-watkins.jpeg"
-                    alt="Adrian Watkins"
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                  />
+                  <img src="/temp-avatars/adrian-watkins.jpeg" alt="Adrian Watkins" className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                   <div>
                     <h3 className="font-bold text-lg">Adrian Watkins</h3>
-                    <p className="text-sm text-primary mb-2">Founder & Editor-in-Chief</p>
+                    <p className="text-sm text-primary mb-2">Founder and Editor-in-Chief</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Based in Singapore, Adrian has spent over two decades in Asia's technology and media landscape. He founded AI in ASIA to give the region's AI story the dedicated, independent coverage it deserves.
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-5 items-start">
-                  <img
-                    src="/temp-avatars/victoria-watkins.jpeg"
-                    alt="Victoria Watkins"
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                  />
+                  <img src="/temp-avatars/victoria-watkins.jpeg" alt="Victoria Watkins" className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                   <div>
                     <h3 className="font-bold text-lg">Victoria Watkins</h3>
                     <p className="text-sm text-primary mb-2">Managing Editor</p>
@@ -185,7 +290,7 @@ const About = () => {
         </section>
 
         {/* Editorial Standards */}
-        <section className="container mx-auto px-4 py-16">
+        <section className="container mx-auto px-4 py-16 md:py-20">
           <div className="max-w-3xl mx-auto">
             <Card className="p-8 bg-gradient-to-br from-primary/5 to-transparent">
               <div className="flex items-start gap-5">
@@ -208,13 +313,15 @@ const About = () => {
           </div>
         </section>
 
+        <div className="border-t border-border/30" />
+
         {/* LLM-Friendly Information */}
-        <section className="bg-muted/30 py-16">
+        <section className="bg-muted/20 py-16 md:py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10">
                 <Brain className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="headline text-3xl md:text-4xl mb-3">Information for AI Models & Crawlers</h2>
+                <h2 className="headline text-3xl md:text-4xl mb-3">Information for AI Models and Crawlers</h2>
                 <p className="text-muted-foreground">Structured information for language models, search engines, and automated systems.</p>
               </div>
 
@@ -244,7 +351,7 @@ const About = () => {
               <Card className="p-8 bg-primary/5">
                 <h3 className="font-bold text-xl mb-5 flex items-center gap-3">
                   <Award className="h-6 w-6 text-primary" />
-                  Citation & Attribution
+                  Citation and Attribution
                 </h3>
                 <div className="mb-4">
                   <h4 className="font-semibold text-sm mb-2">Recommended Citation Format</h4>
@@ -265,26 +372,29 @@ const About = () => {
           </div>
         </section>
 
-        {/* CTA + Powered by badge */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="headline text-3xl md:text-4xl mb-6">Get In Touch</h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Have a story tip, partnership enquiry, or feedback?
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-              <Button asChild size="lg"><Link to="/contact">Contact Us</Link></Button>
-              <Button asChild variant="outline" size="lg"><Link to="/media-and-partners">Media & Partners</Link></Button>
+        {/* CTA */}
+        <section className="py-16 md:py-20" style={{ background: 'linear-gradient(135deg, hsl(270 40% 10%), hsl(220 50% 12%))' }}>
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="headline text-3xl md:text-4xl mb-4">Join the Conversation</h2>
+              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+                Whether you have a story tip, a partnership enquiry, or an idea for collaboration, we would love to hear from you.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+                <Button asChild size="lg"><Link to="/contact">Contact Us</Link></Button>
+                <Button asChild variant="outline" size="lg"><Link to="/media-and-partners">Media and Partners</Link></Button>
+                <Button asChild variant="outline" size="lg"><Link to="/contribute">Contribute</Link></Button>
+              </div>
+              <a href="https://you.withthepowerof.ai" target="_blank" rel="noopener noreferrer" className="inline-block">
+                <Badge variant="secondary" className="text-sm py-1.5 px-4 hover:bg-secondary/80 transition-colors cursor-pointer flex items-center gap-2">
+                  Powered by you.withthepowerof.ai
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Badge>
+              </a>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Independent tools and resources we build alongside our editorial work.
+              </p>
             </div>
-            <a href="https://you.withthepowerof.ai" target="_blank" rel="noopener noreferrer" className="inline-block">
-              <Badge variant="secondary" className="text-sm py-1.5 px-4 hover:bg-secondary/80 transition-colors cursor-pointer flex items-center gap-2">
-                Powered by you.withthepowerof.ai
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Badge>
-            </a>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Independent tools and resources we build alongside our editorial work.
-            </p>
           </div>
         </section>
       </main>
