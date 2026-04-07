@@ -435,7 +435,7 @@ const Index = () => {
   const gridArticles = useMemo(() => {
     const seen = new Set(aboveGridIds);
     const candidates = [
-      ...(latestArticles?.filter((a: any) => a.slug && !a.title?.includes('3 Before 9')) || []),
+      ...(latestArticles?.filter((a: any) => a.slug && a.article_type !== 'three_before_nine') || []),
       ...(trendingArticles || []),
     ];
     const deduped: any[] = [];
