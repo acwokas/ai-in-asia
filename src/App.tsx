@@ -314,6 +314,7 @@ const router = createBrowserRouter([
       { path: "/editor/:id", element: <Editor /> },
       { path: "/profile", element: <Profile /> },
       { path: "/about", element: <About /> },
+      { path: "/voices", element: <Voices /> },
       { path: "/contact", element: <Contact /> },
       { path: "/privacy", element: <Privacy /> },
       { path: "/terms", element: <Terms /> },
