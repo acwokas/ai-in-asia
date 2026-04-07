@@ -19,6 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import WeeklyStats from "@/components/WeeklyStats";
+import HomepageStatsBar from "@/components/HomepageStatsBar";
+import FeaturedToolsCarousel from "@/components/FeaturedToolsCarousel";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
 import NotificationPrompt from "@/components/NotificationPrompt";
@@ -800,7 +802,37 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Breathing room between hero and trending */}
+        {/* Newsletter CTA below hero */}
+        <section className="py-10 md:py-14" style={{ background: 'linear-gradient(135deg, hsl(270 60% 12%), hsl(220 60% 14%))' }}>
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Stay Ahead of Asia's AI Revolution</h2>
+            <p className="text-muted-foreground text-sm md:text-base mb-6 max-w-lg mx-auto">Get curated AI news, expert analysis, and free tools delivered weekly.</p>
+            {!isNewsletterSubscribed ? (
+              <form onSubmit={handleNewsletterSignup} className="max-w-md mx-auto">
+                <div className="flex gap-2">
+                  <Input
+                    id="hero-newsletter-email" name="email" type="email" required maxLength={255}
+                    placeholder="your@email.com" className="flex-1 bg-background/80 text-foreground border-border/50"
+                    value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)}
+                  />
+                  <Button type="submit" className="bg-[#F28C0F] hover:bg-[#F28C0F]/90 text-black font-bold px-6" disabled={isNewsletterSubmitting}>
+                    {isNewsletterSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground/60 mt-2">No spam. Unsubscribe anytime.</p>
+              </form>
+            ) : (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-md mx-auto">
+                <p className="text-foreground font-semibold">You're subscribed! ✓</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Stats bar */}
+        <HomepageStatsBar />
+
+        {/* Breathing room between stats and trending */}
         <div className="mt-3" />
 
         {/* Trending visual cards */}
@@ -1054,6 +1086,9 @@ const Index = () => {
         <div className="py-14 md:py-20">
           <RecommendedGuides />
         </div>
+
+        {/* Featured Tools Carousel */}
+        <FeaturedToolsCarousel />
 
         <div className="border-t border-border/30" />
 
