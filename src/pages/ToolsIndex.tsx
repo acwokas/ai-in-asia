@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, type LucideIcon } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, Scale, type LucideIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -78,6 +78,13 @@ const TOOLS: Tool[] = [
     desc: "Compare AI job salaries across 12 major Asian cities with COL adjustments.",
     icon: Compass,
     to: "/tools/salary-compass",
+    isNew: true,
+  },
+  {
+    name: "AI Ethics Dilemma",
+    desc: "Navigate 10 real-world ethical AI scenarios from across Asia and discover your ethics profile.",
+    icon: Scale,
+    to: "/tools/ethics-dilemma",
     isNew: true,
   },
   {
