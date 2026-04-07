@@ -81,7 +81,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
-    name: "Prompt Builder",
+    name: "AI Ethics Dilemma",
+    desc: "Navigate 10 real-world ethical AI scenarios from across Asia and discover your ethics profile.",
+    icon: Scale,
+    to: "/tools/ethics-dilemma",
+    isNew: true,
+  },
+  {
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
     to: "/category/learn",
