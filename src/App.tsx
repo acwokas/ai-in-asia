@@ -109,6 +109,7 @@ const AIPolicyTracker = lazy(() => import("./pages/AIPolicyTracker"));
 const AIGlossary = lazy(() => import("./pages/AIGlossary"));
 const AISalaryCompass = lazy(() => import("./pages/AISalaryCompass"));
 const AIEthicsDilemma = lazy(() => import("./pages/AIEthicsDilemma"));
+const AIAdoptionHeatmap = lazy(() => import("./pages/AIAdoptionHeatmap"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
