@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
-import ToolBreadcrumb from "@/components/ToolBreadcrumb";
+import { ToolBreadcrumb } from "@/components/ToolBreadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
