@@ -81,25 +81,6 @@ const AIGlossary = () => {
     [user]
   );
 
-  // Intersection observer for auto-tracking
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute("data-term-id");
-            if (id) markViewed(id);
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    const cards = document.querySelectorAll("[data-term-id]");
-    cards.forEach((card) => observer.observe(card));
-    return () => observer.disconnect();
-  }, [filtered?.length, markViewed]);
-
   // Handle URL hash on load
   useEffect(() => {
     if (terms.length === 0) return;
