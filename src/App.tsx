@@ -113,6 +113,7 @@ const AIAdoptionHeatmap = lazy(() => import("./pages/AIAdoptionHeatmap"));
 const AITimelineAsia = lazy(() => import("./pages/AITimelineAsia"));
 const AIEcosystemMap = lazy(() => import("./pages/AIEcosystemMap"));
 const AICompanyRadar = lazy(() => import("./pages/AICompanyRadar"));
+const AIPolicyAtlas = lazy(() => import("./pages/AIPolicyAtlas"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
@@ -334,6 +335,7 @@ const router = createBrowserRouter([
       { path: "/tools/adoption-heatmap", element: <AIAdoptionHeatmap /> },
       { path: "/tools/ai-timeline", element: <AITimelineAsia /> },
       { path: "/tools/company-radar", element: <AICompanyRadar /> },
+      { path: "/tools/policy-atlas", element: <AIPolicyAtlas /> },
       { path: "/ai-ecosystem-map", element: <AIEcosystemMap /> },
       { path: "/ai-ecosystem-map/:countrySlug", element: <EcosystemCountry /> },
       { path: "/ask-scout", element: <AskScout /> },
