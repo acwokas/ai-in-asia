@@ -123,6 +123,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
+    name: "AI Events Calendar",
+    desc: "30+ AI conferences, summits, and workshops across Asia-Pacific with countdowns and filters.",
+    icon: CalendarDays,
+    to: "/tools/events-calendar",
+    isNew: true,
+  },
+  {
     name: "Prompt Builder",
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
