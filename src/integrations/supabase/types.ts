@@ -2292,25 +2292,31 @@ export type Database = {
       }
       glossary_terms: {
         Row: {
+          asia_context: string | null
           category: string
           created_at: string
           definition: string
+          difficulty: string | null
           id: string
           related_terms: string[] | null
           term: string
         }
         Insert: {
+          asia_context?: string | null
           category?: string
           created_at?: string
           definition: string
+          difficulty?: string | null
           id?: string
           related_terms?: string[] | null
           term: string
         }
         Update: {
+          asia_context?: string | null
           category?: string
           created_at?: string
           definition?: string
+          difficulty?: string | null
           id?: string
           related_terms?: string[] | null
           term?: string
