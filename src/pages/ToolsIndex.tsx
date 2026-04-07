@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, type LucideIcon } from "lucide-react";
+import { Zap, Grid3X3, Calculator, Search, Terminal, Wand2, BarChart2, Shield, Activity, Languages, Newspaper, Users, Globe, BookOpenText, Compass, type LucideIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -71,6 +71,13 @@ const TOOLS: Tool[] = [
     desc: "472+ AI and tech terms explained in plain language. Search, filter, explore.",
     icon: BookOpenText,
     to: "/tools/ai-glossary",
+    isNew: true,
+  },
+  {
+    name: "AI Salary Compass",
+    desc: "Compare AI job salaries across 12 major Asian cities with COL adjustments.",
+    icon: Compass,
+    to: "/tools/salary-compass",
     isNew: true,
   },
   {
