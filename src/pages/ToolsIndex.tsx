@@ -88,7 +88,13 @@ const TOOLS: Tool[] = [
     isNew: true,
   },
   {
-    name: "Prompt Builder",
+    name: "AI Adoption Heatmap",
+    desc: "Explore AI readiness scores and investment across 16 Asia-Pacific countries.",
+    icon: Map,
+    to: "/tools/adoption-heatmap",
+    isNew: true,
+  },
+  {
     desc: "Craft effective AI prompts with guided templates and best practices.",
     icon: Terminal,
     to: "/category/learn",
