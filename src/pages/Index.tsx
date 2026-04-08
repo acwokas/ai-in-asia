@@ -54,6 +54,7 @@ const getGuidePillarColor = (pillar: string | null | undefined): string => {
   }
 };
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import HeroHeadlineBanner from "@/components/HeroHeadlineBanner";
 import AdUnit from "@/components/AdUnit";
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
