@@ -570,8 +570,8 @@ const Index = () => {
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 
-
-        
+        {/* Enhanced hero headline banner */}
+        <HeroHeadlineBanner />
 
         {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
         <section className="container mx-auto px-4 pt-3 pb-3">
