@@ -429,10 +429,19 @@ const Index = () => {
     return picked;
   }, [allPublishedGuides, trendingStripGuideIds]);
 
-  // All IDs shown above the grid (hero + trending strip)
+  // Highlighted article IDs (shown between hero and "View all")
+  const highlightedIds = useMemo(() => {
+    const excludeSet = new Set([...heroSectionIds, ...trendingStripShownIds]);
+    return (latestArticles || [])
+      .filter((a: any) => a.slug && !excludeSet.has(a.id) && a.article_type !== 'three_before_nine')
+      .slice(0, 3)
+      .map((a: any) => a.id);
+  }, [heroSectionIds, trendingStripShownIds, latestArticles]);
+
+  // All IDs shown above the grid (hero + trending strip + highlighted)
   const aboveGridIds = useMemo(() => {
-    return new Set([...heroSectionIds, ...trendingStripShownIds]);
-  }, [heroSectionIds, trendingStripShownIds]);
+    return new Set([...heroSectionIds, ...trendingStripShownIds, ...highlightedIds]);
+  }, [heroSectionIds, trendingStripShownIds, highlightedIds]);
 
   // Grid articles: 5-7 items, deduped against hero + trending strip, category-diverse
   const gridArticles = useMemo(() => {
