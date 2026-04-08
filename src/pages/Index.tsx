@@ -54,6 +54,7 @@ const getGuidePillarColor = (pillar: string | null | undefined): string => {
   }
 };
 import ExploreMoreButton from "@/components/ExploreMoreButton";
+import HeroHeadlineBanner from "@/components/HeroHeadlineBanner";
 import AdUnit from "@/components/AdUnit";
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -569,8 +570,8 @@ const Index = () => {
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 
-
-        
+        {/* Enhanced hero headline banner */}
+        <HeroHeadlineBanner />
 
         {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
         <section className="container mx-auto px-4 pt-3 pb-3">
