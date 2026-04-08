@@ -1093,14 +1093,6 @@ const Index = () => {
 
         {user && <div className="border-t border-border/30" />}
 
-        {/* 4. Most Discussed This Week */}
-        <div className="py-10 md:py-14 bg-muted/10">
-          <Suspense fallback={null}>
-            <MostDiscussedSection excludeIds={heroLatestIds} />
-          </Suspense>
-        </div>
-
-        <div className="border-t border-border/30" />
 
         {/* 5. Editor's Pick */}
         {editorsPick && (
@@ -1149,6 +1141,15 @@ const Index = () => {
 
         {/* Featured Tools Carousel */}
         <FeaturedToolsCarousel />
+
+        <div className="border-t border-border/30" />
+
+        {/* Most Discussed This Week */}
+        <div className="py-10 md:py-14 bg-muted/10">
+          <Suspense fallback={null}>
+            <MostDiscussedSection excludeIds={heroLatestIds} />
+          </Suspense>
+        </div>
 
         <div className="border-t border-border/30" />
 
