@@ -94,7 +94,7 @@ const AIPolicyTracker = () => {
   useEffect(() => {
     if (exploredCountries.size >= 5 && user && !pointsAwarded.current) {
       pointsAwarded.current = true;
-      supabase.rpc("award_points", { _user_id: user.id, _points: 15 }).catch(() => {});
+      supabase.rpc("award_points", { _user_id: user.id, _points: 15 } as any).then(() => {});
     }
   }, [exploredCountries.size, user]);
 
