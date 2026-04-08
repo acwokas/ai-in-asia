@@ -1144,6 +1144,15 @@ const Index = () => {
 
         <div className="border-t border-border/30" />
 
+        {/* Most Discussed This Week */}
+        <div className="py-10 md:py-14 bg-muted/10">
+          <Suspense fallback={null}>
+            <MostDiscussedSection excludeIds={heroLatestIds} />
+          </Suspense>
+        </div>
+
+        <div className="border-t border-border/30" />
+
         {/* 8. Free AI Tools */}
         <section className="py-14 md:py-20">
           <div className="container mx-auto px-4">
