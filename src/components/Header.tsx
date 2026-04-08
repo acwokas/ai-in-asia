@@ -492,6 +492,14 @@ const Header = memo(() => {
               >
                 Voices
               </Link>
+              {/* Newsletter */}
+              <Link
+                to="/newsletter"
+                onClick={() => setIsMenuOpen(false)}
+                className={`font-medium py-1.5 transition-colors ${isActiveRoute("/newsletter") ? 'text-primary' : 'hover:text-primary'}`}
+              >
+                Newsletter
+              </Link>
               {/* Tools */}
               {renderMobileSection("Tools", TOOLS_ITEMS)}
             </div>
