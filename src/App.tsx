@@ -325,6 +325,7 @@ const router = createBrowserRouter([
       { path: "/directory", element: <Directory /> },
       { path: "/directory/submit", element: <SubmitCompany /> },
       { path: "/directory/:slug", element: <CompanyProfile /> },
+      { path: "/tools/company-directory", element: <Directory /> },
       { path: "/tools", element: <ToolsIndex /> },
       { path: "/tools/ai-job-impact", element: <AIJobImpact /> },
       { path: "/tools/jargon-translator", element: <JargonTranslator /> },

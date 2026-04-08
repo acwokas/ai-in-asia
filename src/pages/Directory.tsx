@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, Building2, Globe, MapPin, ArrowRight, Filter, ChevronRight,
-  Star, Users, Briefcase, X,
+  Star, Users, Briefcase, X, ArrowUpDown,
 } from "lucide-react";
 import {
   Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink,
@@ -26,7 +26,7 @@ const CATEGORIES = [
   "AI Infrastructure", "Computer Vision", "NLP/LLM", "Robotics",
   "Healthcare AI", "Fintech AI", "EdTech AI", "AgriTech AI", "Creative AI",
   "Autonomous Vehicles", "AI Chips/Hardware", "AI Consulting", "Enterprise AI",
-  "AI Research Labs",
+  "AI Research Labs", "Foundation Models",
 ];
 
 const COUNTRIES = [
@@ -40,6 +40,14 @@ const FUNDING_STAGES = [
   "Public", "Subsidiary", "Government",
 ];
 
+const SORT_OPTIONS = [
+  { value: "featured", label: "Featured First" },
+  { value: "name-asc", label: "Name (A to Z)" },
+  { value: "name-desc", label: "Name (Z to A)" },
+  { value: "founded-desc", label: "Newest Founded" },
+  { value: "founded-asc", label: "Oldest Founded" },
+];
+
 const ITEMS_PER_PAGE = 24;
 
 const Directory = () => {
@@ -47,6 +55,7 @@ const Directory = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedFunding, setSelectedFunding] = useState("all");
+  const [sortBy, setSortBy] = useState("featured");
   const [page, setPage] = useState(1);
 
   const { data: companies, isLoading } = useQuery({
@@ -90,8 +99,26 @@ const Directory = () => {
       result = result.filter((c) => c.funding_stage === selectedFunding);
     }
 
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "founded-desc":
+          return (b.founded_year || 0) - (a.founded_year || 0);
+        case "founded-asc":
+          return (a.founded_year || 9999) - (b.founded_year || 9999);
+        case "featured":
+        default:
+          if (a.is_featured !== b.is_featured) return a.is_featured ? -1 : 1;
+          return a.name.localeCompare(b.name);
+      }
+    });
+
     return result;
-  }, [companies, searchQuery, selectedCountry, selectedCategory, selectedFunding]);
+  }, [companies, searchQuery, selectedCountry, selectedCategory, selectedFunding, sortBy]);
 
   const paginated = filtered.slice(0, page * ITEMS_PER_PAGE);
   const hasMore = paginated.length < filtered.length;
@@ -115,14 +142,15 @@ const Directory = () => {
     setSelectedCategory("all");
     setSelectedFunding("all");
     setSearchQuery("");
+    setSortBy("featured");
     setPage(1);
   };
 
   return (
     <>
       <SEOHead
-        title="AI Company Directory | Asia-Pacific AI Companies"
-        description="Browse the most comprehensive directory of AI companies across Asia-Pacific. Filter by country, category, and funding stage."
+        title="Asia's AI Company Directory | AI in Asia"
+        description="The most comprehensive database of AI companies operating across Asia-Pacific. Search and filter by country, category, and funding stage."
         canonical="https://aiinasia.com/directory"
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
       />
@@ -134,14 +162,11 @@ const Directory = () => {
         <section
           className="relative overflow-hidden"
           style={{
-            background: `
-              radial-gradient(800px 500px ellipse at 25% 40%, rgba(0, 212, 255, 0.07) 0%, transparent 70%),
-              radial-gradient(600px 400px ellipse at 75% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%),
-              linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)))
-            `,
+            background: "linear-gradient(180deg, hsl(220 20% 6%) 0%, hsl(220 30% 10%) 60%, hsl(220 20% 8%) 100%)",
           }}
         >
-          <div className="container mx-auto px-4 pt-12 pb-16 md:pt-16 md:pb-20">
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
+          <div className="container mx-auto px-4 pt-12 pb-16 md:pt-16 md:pb-20 relative z-10">
             <Breadcrumb className="mb-8">
               <BreadcrumbList>
                 <BreadcrumbItem>
@@ -163,13 +188,19 @@ const Directory = () => {
 
             <h1
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight tracking-tight mb-4 max-w-3xl"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                background: "linear-gradient(135deg, #FFFFFF 30%, #60A5FA 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
             >
-              Asia-Pacific AI Company Directory
+              Asia's AI Company Directory
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground mb-6 max-w-2xl">
-              The definitive database of AI companies shaping the future across the Asia-Pacific region.
+              The most comprehensive database of AI companies operating across Asia-Pacific. Discover innovators, track funding, and explore the ecosystem.
             </p>
 
             {/* Stats bar */}
@@ -197,7 +228,7 @@ const Directory = () => {
                   placeholder="Search companies by name, country, or category..."
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                  className="pl-10 h-12 bg-card border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg"
+                  className="pl-10 h-12 bg-card/60 border-border/50 text-foreground placeholder:text-muted-foreground/60 rounded-lg backdrop-blur-sm"
                 />
               </div>
             </div>
@@ -243,6 +274,18 @@ const Directory = () => {
                 <SelectItem value="all">All Stages</SelectItem>
                 {FUNDING_STAGES.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setPage(1); }}>
+              <SelectTrigger className="w-[170px] h-9 text-sm">
+                <ArrowUpDown className="w-3 h-3 mr-1.5 shrink-0" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -330,7 +373,12 @@ const Directory = () => {
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          {company.founded_year && <span>Founded {company.founded_year}</span>}
+                          <div className="flex items-center gap-3">
+                            {company.founded_year && <span>Founded {company.founded_year}</span>}
+                            {company.funding_total && (
+                              <span className="font-medium text-foreground/70">{company.funding_total}</span>
+                            )}
+                          </div>
                           {company.funding_stage && (
                             <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">{company.funding_stage}</Badge>
                           )}
