@@ -429,10 +429,19 @@ const Index = () => {
     return picked;
   }, [allPublishedGuides, trendingStripGuideIds]);
 
-  // All IDs shown above the grid (hero + trending strip)
+  // Highlighted article IDs (shown between hero and "View all")
+  const highlightedIds = useMemo(() => {
+    const excludeSet = new Set([...heroSectionIds, ...trendingStripShownIds]);
+    return (latestArticles || [])
+      .filter((a: any) => a.slug && !excludeSet.has(a.id) && a.article_type !== 'three_before_nine')
+      .slice(0, 3)
+      .map((a: any) => a.id);
+  }, [heroSectionIds, trendingStripShownIds, latestArticles]);
+
+  // All IDs shown above the grid (hero + trending strip + highlighted)
   const aboveGridIds = useMemo(() => {
-    return new Set([...heroSectionIds, ...trendingStripShownIds]);
-  }, [heroSectionIds, trendingStripShownIds]);
+    return new Set([...heroSectionIds, ...trendingStripShownIds, ...highlightedIds]);
+  }, [heroSectionIds, trendingStripShownIds, highlightedIds]);
 
   // Grid articles: 5-7 items, deduped against hero + trending strip, category-diverse
   const gridArticles = useMemo(() => {
@@ -569,9 +578,6 @@ const Index = () => {
       <main id="main-content" className="flex-1">
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
-
-        {/* Enhanced hero headline banner */}
-        <HeroHeadlineBanner />
 
         {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
         <section className="container mx-auto px-4 pt-3 pb-3">
@@ -793,6 +799,62 @@ const Index = () => {
                 });
               })()}
             </div>
+
+            {/* Highlighted section */}
+            {(() => {
+              const highlightedExcludeIds = new Set([...heroSectionIds, ...trendingStripShownIds]);
+              const highlighted = (latestArticles || [])
+                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine')
+                .slice(0, 3);
+              if (highlighted.length === 0) return null;
+              return (
+                <div className="lg:col-span-12 mt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#F28C0F]">Highlighted</span>
+                    <div className="flex-1 h-px bg-border/40" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {highlighted.map((article: any) => {
+                      const isGuide = article.content_type === 'guide';
+                      const categorySlug = article.categories?.slug || (isGuide ? 'learn' : 'news');
+                      const catColor = isGuide ? getGuidePillarColor(categorySlug) : getCategoryColor(categorySlug);
+                      const link = isGuide
+                        ? `/guides/${categorySlug}/${article.slug}`
+                        : `/${categorySlug}/${article.slug}`;
+                      return (
+                        <Link
+                          key={article.id}
+                          to={link}
+                          className="group flex gap-3 p-3 rounded-lg border border-border/40 bg-card/30 hover:border-border/70 transition-all duration-200"
+                        >
+                          {article.featured_image_url && (
+                            <img
+                              src={getOptimizedThumbnail(article.featured_image_url, 160, 100)}
+                              alt={article.title}
+                              loading="lazy"
+                              className="w-20 h-16 rounded object-cover shrink-0"
+                              width={80}
+                              height={64}
+                            />
+                          )}
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: catColor }}>
+                              {isGuide ? (article.categories?.name || 'Guide') : (article.categories?.name || 'News')}
+                            </span>
+                            <h3 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                              {article.title}
+                            </h3>
+                            <span className="text-[11px] text-muted-foreground mt-auto pt-1">
+                              {article.reading_time_minutes || 5} min read
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* View all latest articles link */}
             <div className="lg:col-span-12 flex justify-end mt-2">
