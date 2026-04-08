@@ -802,6 +802,13 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Trending visual cards */}
+        <div className="bg-muted/40 border-y border-border/40" style={{ padding: "1.5rem 0" }}>
+          <Suspense fallback={null}>
+            <TrendingVisualStrip excludeIds={trendingExcludeIds} />
+          </Suspense>
+        </div>
+
         {/* Newsletter CTA below hero */}
         <section className="py-10 md:py-14" style={{ background: 'linear-gradient(135deg, hsl(270 60% 12%), hsl(220 60% 14%))' }}>
           <div className="container mx-auto px-4 text-center">
@@ -831,16 +838,6 @@ const Index = () => {
 
         {/* Stats bar */}
         <HomepageStatsBar />
-
-        {/* Breathing room between stats and trending */}
-        <div className="mt-3" />
-
-        {/* Trending visual cards */}
-        <div className="bg-muted/40 border-y border-border/40" style={{ padding: "1.5rem 0" }}>
-          <Suspense fallback={null}>
-            <TrendingVisualStrip excludeIds={trendingExcludeIds} />
-          </Suspense>
-        </div>
 
         {/* Homepage ad between trending and latest stories */}
         <div className="container mx-auto px-4 my-6" style={{ minHeight: '100px' }}>
