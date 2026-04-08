@@ -223,6 +223,16 @@ const Header = memo(() => {
                 Voices
               </Link>
 
+              {/* Newsletter plain link */}
+              <Link
+                to="/newsletter"
+                className={`text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary ${
+                  isActiveRoute("/newsletter") ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+                }`}
+              >
+                Newsletter
+              </Link>
+
               {/* Tools — main link goes to /tools, dropdown has sub-items */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
