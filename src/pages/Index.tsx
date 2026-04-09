@@ -573,7 +573,7 @@ const Index = () => {
       <Suspense fallback={null}>
         <ThreeBeforeNineTicker />
       </Suspense>
-      <HeroHeadlineBanner />
+      <HeroHeadlineBanner excludeIds={heroSectionIds} />
       <NotificationPrompt />
       
       <main id="main-content" className="flex-1">
@@ -801,17 +801,17 @@ const Index = () => {
               })()}
             </div>
 
-            {/* Highlighted section */}
+            {/* Latest section (skip first 3 non-hero articles since those appear in the Highlighted banner above) */}
             {(() => {
               const highlightedExcludeIds = new Set([...heroSectionIds, ...trendingStripShownIds]);
-              const highlighted = (latestArticles || [])
-                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine')
-                .slice(0, 3);
+              const allEligible = (latestArticles || [])
+                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine');
+              const highlighted = allEligible.slice(3, 6);
               if (highlighted.length === 0) return null;
               return (
                 <div className="lg:col-span-12 mt-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold uppercase tracking-widest text-[#F28C0F]">Highlighted</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#F28C0F]">Latest</span>
                     <div className="flex-1 h-px bg-border/40" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
