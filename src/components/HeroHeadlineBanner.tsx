@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Globe, Building2, ArrowRight } from "lucide-react";
+import { Search, FileText, Globe, Building2, ArrowRight, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -72,6 +72,7 @@ const useCountUp = (target: number, duration = 1600) => {
 const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("hero_banner_dismissed") === "1");
   const typedText = useTypewriter(ROTATING_PHRASES);
 
   // Live stats
@@ -122,8 +123,23 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
     }
   };
 
+  const handleDismiss = () => {
+    setDismissed(true);
+    sessionStorage.setItem("hero_banner_dismissed", "1");
+  };
+
+  if (dismissed) return null;
+
   return (
     <section className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(220 20% 6%) 0%, hsl(220 25% 10%) 60%, hsl(220 20% 8%) 100%)" }}>
+      {/* Close button */}
+      <button
+        onClick={handleDismiss}
+        className="absolute top-3 right-3 z-20 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+        aria-label="Dismiss banner"
+      >
+        <X className="w-4 h-4" />
+      </button>
       {/* Subtle grid texture */}
       <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
 
