@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const useCountUp = (target: number, duration = 1800) => {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLAnchorElement>(null);
   const animatedTarget = useRef(0);
 
   useEffect(() => {
