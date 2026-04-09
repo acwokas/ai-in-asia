@@ -180,7 +180,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
           </div>
 
           {/* Live stats */}
-          <div ref={articleCount.ref} className="flex items-center justify-center gap-6 md:gap-10 text-sm md:text-base mb-8">
+          <div className="flex items-center justify-center gap-6 md:gap-10 text-sm md:text-base mb-8">
             <div className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{articleCount.count.toLocaleString()}</span>

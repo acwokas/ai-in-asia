@@ -6,41 +6,25 @@ import { Link } from "react-router-dom";
 
 const useCountUp = (target: number, duration = 1800) => {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLAnchorElement>(null);
   const animatedTarget = useRef(0);
 
   useEffect(() => {
     if (!target || target === animatedTarget.current) return;
     animatedTarget.current = target;
 
-    const runAnimation = () => {
-      const start = performance.now();
-      const step = (now: number) => {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setCount(Math.round(eased * target));
-        if (progress < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    const start = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
     };
 
-    if (!ref.current) { runAnimation(); return; }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          runAnimation();
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
+    requestAnimationFrame(step);
   }, [target, duration]);
 
-  return { count, ref };
+  return { count };
 };
 
 const HomepageStatsBar = () => {
@@ -68,11 +52,11 @@ const HomepageStatsBar = () => {
   const companiesCount = useCountUp(stats?.companies || 0);
 
   const items = [
-    { icon: FileText, label: "Articles Published", value: articleCount.count, ref: articleCount.ref, suffix: "+", href: "/articles" },
-    { icon: BookOpen, label: "AI Guides", value: guidesCount.count, ref: guidesCount.ref, suffix: "+", href: "/guides" },
-    { icon: Globe, label: "Countries Covered", value: countriesCount.count, ref: countriesCount.ref, suffix: "+", href: "/about" },
-    { icon: Wrench, label: "Interactive Tools", value: toolsCount.count, ref: toolsCount.ref, suffix: "", href: "/tools" },
-    { icon: Building2, label: "AI Companies Tracked", value: companiesCount.count, ref: companiesCount.ref, suffix: "+", href: "/ai-companies" },
+    { icon: FileText, label: "Articles Published", value: articleCount.count, suffix: "+", href: "/articles" },
+    { icon: BookOpen, label: "AI Guides", value: guidesCount.count, suffix: "+", href: "/guides" },
+    { icon: Globe, label: "Countries Covered", value: countriesCount.count, suffix: "+", href: "/about" },
+    { icon: Wrench, label: "Interactive Tools", value: toolsCount.count, suffix: "", href: "/tools" },
+    { icon: Building2, label: "AI Companies Tracked", value: companiesCount.count, suffix: "+", href: "/directory" },
   ];
 
   return (
@@ -80,7 +64,7 @@ const HomepageStatsBar = () => {
       <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
           {items.map((item) => (
-            <Link key={item.label} to={item.href} ref={item.ref} className="text-center group hover:opacity-80 transition-opacity">
+            <Link key={item.label} to={item.href} className="text-center group hover:opacity-80 transition-opacity">
               <div className="flex items-center justify-center mb-2">
                 <item.icon className="w-5 h-5 text-[hsl(var(--primary))] mr-2" />
                 <span className="text-2xl md:text-3xl font-bold text-[#F28C0F] group-hover:underline">
