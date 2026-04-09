@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Globe, Building2, ArrowRight, X } from "lucide-react";
+import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -87,13 +87,15 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
     queryKey: ["hero-banner-stats"],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const [articlesRes, companiesRes] = await Promise.all([
+      const [articlesRes, companiesRes, guidesRes] = await Promise.all([
         supabase.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
         supabase.from("ai_companies").select("id", { count: "exact", head: true }),
+        supabase.from("ai_guides").select("id", { count: "exact", head: true }).eq("status", "published"),
       ]);
       return {
         articles: articlesRes.count || 0,
         companies: companiesRes.count || 0,
+        guides: guidesRes.count || 0,
       };
     },
   });
@@ -120,6 +122,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   });
 
   const articleCount = useCountUp(stats?.articles || 0);
+  const guidesCount = useCountUp(stats?.guides || 0);
   const countriesCount = useCountUp(12);
   const companiesCount = useCountUp(stats?.companies || 0);
 
@@ -181,6 +184,11 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
               <FileText className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{articleCount.count.toLocaleString()}</span>
               <span className="text-muted-foreground">Articles</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-[#F28C0F]" />
+              <span className="font-bold text-foreground">{guidesCount.count.toLocaleString()}</span>
+              <span className="text-muted-foreground">Guides</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Globe className="w-4 h-4 text-[#F28C0F]" />
