@@ -573,6 +573,7 @@ const Index = () => {
       <Suspense fallback={null}>
         <ThreeBeforeNineTicker />
       </Suspense>
+      <HeroHeadlineBanner />
       <NotificationPrompt />
       
       <main id="main-content" className="flex-1">
