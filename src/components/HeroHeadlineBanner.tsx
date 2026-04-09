@@ -88,14 +88,14 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
       const [articlesRes, companiesRes, guidesRes] = await Promise.all([
-        supabase.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
-        supabase.from("ai_companies").select("id", { count: "exact", head: true }),
-        supabase.from("ai_guides").select("id", { count: "exact", head: true }).eq("status", "published"),
+        supabase.from("articles").select("*", { count: "exact", head: true }).eq("status", "published"),
+        supabase.from("ai_companies").select("*", { count: "exact", head: true }),
+        supabase.from("ai_guides").select("*", { count: "exact", head: true }).eq("status", "published"),
       ]);
       return {
-        articles: articlesRes.count || 0,
-        companies: companiesRes.count || 0,
-        guides: guidesRes.count || 0,
+        articles: articlesRes.count ?? 0,
+        companies: companiesRes.count ?? 0,
+        guides: guidesRes.count ?? 0,
       };
     },
   });
