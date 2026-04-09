@@ -136,7 +136,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
                   publishedAt={article.published_at}
                 />
               </div>
-              {idx === 1 && (
+              {idx === 2 && (
                 <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
                   <span className="text-[11px] text-muted-foreground uppercase tracking-wider mb-3">Advertisement</span>
                   <BusinessInAByteAd />
