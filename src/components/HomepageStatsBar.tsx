@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Globe, Wrench, Building2 } from "lucide-react";
+import { FileText, Globe, Wrench, Building2, BookOpen } from "lucide-react";
 
 const useCountUp = (target: number, duration = 1800) => {
   const [count, setCount] = useState(0);
@@ -40,24 +40,28 @@ const HomepageStatsBar = () => {
     queryKey: ["homepage-stats-bar"],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const [articlesRes, companiesRes] = await Promise.all([
+      const [articlesRes, companiesRes, guidesRes] = await Promise.all([
         supabase.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
         supabase.from("ai_companies").select("id", { count: "exact", head: true }),
+        supabase.from("ai_guides").select("id", { count: "exact", head: true }).eq("status", "published"),
       ]);
       return {
         articles: articlesRes.count || 0,
         companies: companiesRes.count || 0,
+        guides: guidesRes.count || 0,
       };
     },
   });
 
   const articleCount = useCountUp(stats?.articles || 0);
+  const guidesCount = useCountUp(stats?.guides || 0);
   const countriesCount = useCountUp(12);
   const toolsCount = useCountUp(15);
   const companiesCount = useCountUp(stats?.companies || 0);
 
   const items = [
     { icon: FileText, label: "Articles Published", value: articleCount.count, ref: articleCount.ref, suffix: "+" },
+    { icon: BookOpen, label: "AI Guides", value: guidesCount.count, ref: guidesCount.ref, suffix: "+" },
     { icon: Globe, label: "Countries Covered", value: countriesCount.count, ref: countriesCount.ref, suffix: "+" },
     { icon: Wrench, label: "Interactive Tools", value: toolsCount.count, ref: toolsCount.ref, suffix: "" },
     { icon: Building2, label: "AI Companies Tracked", value: companiesCount.count, ref: companiesCount.ref, suffix: "+" },
@@ -66,7 +70,7 @@ const HomepageStatsBar = () => {
   return (
     <section className="border-y border-border/40 bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
           {items.map((item) => (
             <div key={item.label} ref={item.ref} className="text-center">
               <div className="flex items-center justify-center mb-2">
