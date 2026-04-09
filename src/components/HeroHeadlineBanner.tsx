@@ -69,7 +69,7 @@ const useCountUp = (target: number, duration = 1600) => {
   return { count, ref };
 };
 
-const HeroHeadlineBanner = () => {
+const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const typedText = useTypewriter(ROTATING_PHRASES);
