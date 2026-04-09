@@ -146,7 +146,8 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
       <button
         onClick={handleDismiss}
         className="absolute top-3 right-3 z-20 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-        aria-label="Dismiss banner"
+        aria-label="Close for this visit"
+        title="Close for this visit"
       >
         <X className="w-4 h-4" />
       </button>
