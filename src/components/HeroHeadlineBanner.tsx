@@ -122,6 +122,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   });
 
   const articleCount = useCountUp(stats?.articles || 0);
+  const guidesCount = useCountUp(stats?.guides || 0);
   const countriesCount = useCountUp(12);
   const companiesCount = useCountUp(stats?.companies || 0);
 
