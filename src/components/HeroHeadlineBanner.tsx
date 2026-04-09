@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
+import { fetchPublicCount } from "@/lib/publicCounts";
 
 const ROTATING_PHRASES = ["News", "Analysis", "Policy", "Industry Intelligence", "Tools & Data"];
 
@@ -87,15 +88,15 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
     queryKey: ["hero-banner-stats"],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const [articlesRes, companiesRes, guidesRes] = await Promise.all([
-        supabase.from("articles").select("*", { count: "exact", head: true }).eq("status", "published"),
-        supabase.from("ai_companies").select("*", { count: "exact", head: true }),
-        supabase.from("ai_guides").select("*", { count: "exact", head: true }).eq("status", "published"),
+      const [articles, companies, guides] = await Promise.all([
+        fetchPublicCount("articles", { status: "published" }),
+        fetchPublicCount("ai_companies"),
+        fetchPublicCount("ai_guides", { status: "published" }),
       ]);
       return {
-        articles: articlesRes.count ?? 0,
-        companies: companiesRes.count ?? 0,
-        guides: guidesRes.count ?? 0,
+        articles,
+        companies,
+        guides,
       };
     },
   });

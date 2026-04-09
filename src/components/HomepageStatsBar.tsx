@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { FileText, Globe, Wrench, Building2, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import { fetchPublicCount } from "@/lib/publicCounts";
 
 const useCountUp = (target: number, duration = 1800) => {
   const [count, setCount] = useState(0);
@@ -32,15 +32,15 @@ const HomepageStatsBar = () => {
     queryKey: ["homepage-stats-bar"],
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const [articlesRes, companiesRes, guidesRes] = await Promise.all([
-        supabase.from("articles").select("*", { count: "exact", head: true }).eq("status", "published"),
-        supabase.from("ai_companies").select("*", { count: "exact", head: true }),
-        supabase.from("ai_guides").select("*", { count: "exact", head: true }).eq("status", "published"),
+      const [articles, companies, guides] = await Promise.all([
+        fetchPublicCount("articles", { status: "published" }),
+        fetchPublicCount("ai_companies"),
+        fetchPublicCount("ai_guides", { status: "published" }),
       ]);
       return {
-        articles: articlesRes.count ?? 0,
-        companies: companiesRes.count ?? 0,
-        guides: guidesRes.count ?? 0,
+        articles,
+        companies,
+        guides,
       };
     },
   });
