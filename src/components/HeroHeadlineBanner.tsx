@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Globe, Building2, ArrowRight, X } from "lucide-react";
+import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
