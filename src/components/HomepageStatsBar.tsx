@@ -64,7 +64,7 @@ const HomepageStatsBar = () => {
       <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
           {items.map((item) => (
-            <Link key={item.label} to={item.href} ref={item.ref} className="text-center group hover:opacity-80 transition-opacity">
+            <Link key={item.label} to={item.href} className="text-center group hover:opacity-80 transition-opacity">
               <div className="flex items-center justify-center mb-2">
                 <item.icon className="w-5 h-5 text-[hsl(var(--primary))] mr-2" />
                 <span className="text-2xl md:text-3xl font-bold text-[#F28C0F] group-hover:underline">
