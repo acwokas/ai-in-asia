@@ -90,9 +90,10 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
     },
   });
 
-  // Latest 3 articles for "Breaking" row
+  // Latest 3 articles for "Highlighted" row (exclude hero IDs)
+  const excludeSet = useMemo(() => new Set(excludeIds), [excludeIds]);
   const { data: breakingArticles } = useQuery({
-    queryKey: ["hero-breaking-articles"],
+    queryKey: ["hero-breaking-articles", excludeIds],
     staleTime: 3 * 60 * 1000,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -104,9 +105,9 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
         .eq("status", "published")
         .neq("article_type", "three_before_nine")
         .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(3);
+        .limit(20);
       if (error) throw error;
-      return data || [];
+      return (data || []).filter((a: any) => !excludeSet.has(a.id)).slice(0, 3);
     },
   });
 
