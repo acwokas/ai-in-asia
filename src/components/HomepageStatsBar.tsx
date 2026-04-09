@@ -52,11 +52,11 @@ const HomepageStatsBar = () => {
   const companiesCount = useCountUp(stats?.companies || 0);
 
   const items = [
-    { icon: FileText, label: "Articles Published", value: articleCount.count, ref: articleCount.ref, suffix: "+", href: "/articles" },
-    { icon: BookOpen, label: "AI Guides", value: guidesCount.count, ref: guidesCount.ref, suffix: "+", href: "/guides" },
-    { icon: Globe, label: "Countries Covered", value: countriesCount.count, ref: countriesCount.ref, suffix: "+", href: "/about" },
-    { icon: Wrench, label: "Interactive Tools", value: toolsCount.count, ref: toolsCount.ref, suffix: "", href: "/tools" },
-    { icon: Building2, label: "AI Companies Tracked", value: companiesCount.count, ref: companiesCount.ref, suffix: "+", href: "/ai-companies" },
+    { icon: FileText, label: "Articles Published", value: articleCount.count, suffix: "+", href: "/articles" },
+    { icon: BookOpen, label: "AI Guides", value: guidesCount.count, suffix: "+", href: "/guides" },
+    { icon: Globe, label: "Countries Covered", value: countriesCount.count, suffix: "+", href: "/about" },
+    { icon: Wrench, label: "Interactive Tools", value: toolsCount.count, suffix: "", href: "/tools" },
+    { icon: Building2, label: "AI Companies Tracked", value: companiesCount.count, suffix: "+", href: "/directory" },
   ];
 
   return (
