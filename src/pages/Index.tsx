@@ -801,12 +801,12 @@ const Index = () => {
               })()}
             </div>
 
-            {/* Highlighted section */}
+            {/* Latest section (skip first 3 non-hero articles since those appear in the Highlighted banner above) */}
             {(() => {
               const highlightedExcludeIds = new Set([...heroSectionIds, ...trendingStripShownIds]);
-              const highlighted = (latestArticles || [])
-                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine')
-                .slice(0, 3);
+              const allEligible = (latestArticles || [])
+                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine');
+              const highlighted = allEligible.slice(3, 6);
               if (highlighted.length === 0) return null;
               return (
                 <div className="lg:col-span-12 mt-4">
