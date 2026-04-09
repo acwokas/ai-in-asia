@@ -190,7 +190,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
         {breakingArticles && breakingArticles.length > 0 && (
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#F28C0F]">Latest</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#F28C0F]">Highlighted</span>
               <div className="flex-1 h-px bg-border/40" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
