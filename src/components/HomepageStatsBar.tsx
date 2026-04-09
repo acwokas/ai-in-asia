@@ -70,7 +70,7 @@ const HomepageStatsBar = () => {
   return (
     <section className="border-y border-border/40 bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
           {items.map((item) => (
             <div key={item.label} ref={item.ref} className="text-center">
               <div className="flex items-center justify-center mb-2">
