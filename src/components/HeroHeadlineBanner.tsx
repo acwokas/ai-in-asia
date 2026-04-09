@@ -186,6 +186,10 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
               <span className="text-muted-foreground">Articles</span>
             </div>
             <div className="flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-[#F28C0F]" />
+              <span className="font-bold text-foreground">{guidesCount.count.toLocaleString()}</span>
+              <span className="text-muted-foreground">Guides</span>
+            <div className="flex items-center gap-1.5">
               <Globe className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{countriesCount.count}+</span>
               <span className="text-muted-foreground">Countries</span>
