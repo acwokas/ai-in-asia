@@ -333,15 +333,25 @@ const Directory = () => {
                       <CardContent className="p-5">
                         <div className="flex items-start gap-3 mb-3">
                           {/* Logo placeholder */}
-                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <div
+                            className={`w-12 h-12 flex items-center justify-center shrink-0 ${
+                              company.logo_url ? "rounded-full p-1" : "rounded-lg bg-primary/10"
+                            }`}
+                            style={company.logo_url ? {
+                              background: "rgba(255, 255, 255, 0.9)",
+                              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.15)",
+                            } : undefined}
+                          >
                             {company.logo_url ? (
                               <img
                                 src={company.logo_url}
                                 alt={company.name}
                                 className="w-8 h-8 object-contain"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = "none";
-                                  (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-bold text-primary">${company.name[0]}</span>`;
+                                  const parent = (e.target as HTMLImageElement).parentElement!;
+                                  parent.className = "w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0";
+                                  parent.removeAttribute("style");
+                                  parent.innerHTML = `<span class="text-lg font-bold text-primary">${company.name[0]}</span>`;
                                 }}
                               />
                             ) : (
