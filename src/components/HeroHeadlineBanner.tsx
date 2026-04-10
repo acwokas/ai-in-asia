@@ -40,41 +40,24 @@ const useTypewriter = (phrases: string[], typingSpeed = 80, pauseMs = 2200, dele
 
 const useCountUp = (target: number, duration = 1600) => {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
   const animatedTarget = useRef(0);
 
   useEffect(() => {
     if (!target || target === animatedTarget.current) return;
     animatedTarget.current = target;
 
-    const runAnimation = () => {
-      const start = performance.now();
-      const step = (now: number) => {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setCount(Math.round(eased * target));
-        if (progress < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    const start = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
     };
-
-    if (!ref.current) { runAnimation(); return; }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          runAnimation();
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
+    requestAnimationFrame(step);
   }, [target, duration]);
 
-  return { count, ref };
+  return { count };
 };
 
 const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
