@@ -166,31 +166,31 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
 
           {/* Live stats */}
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-sm md:text-base mb-8">
-            <div className="flex items-center gap-1.5">
+            <Link to="/articles" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <FileText className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{articleCount.count.toLocaleString()}</span>
               <span className="text-muted-foreground">Articles</span>
-            </div>
-            <div className="flex items-center gap-1.5">
+            </Link>
+            <Link to="/guides" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <BookOpen className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{guidesCount.count.toLocaleString()}</span>
               <span className="text-muted-foreground">Guides</span>
-            </div>
-            <div className="flex items-center gap-1.5">
+            </Link>
+            <Link to="/ai-policy-atlas" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <Globe className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{countriesCount.count}+</span>
               <span className="text-muted-foreground">Countries</span>
-            </div>
-            <div className="flex items-center gap-1.5">
+            </Link>
+            <Link to="/tools" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <Wrench className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{toolsCount.count}+</span>
               <span className="text-muted-foreground">Interactive Tools</span>
-            </div>
-            <div className="flex items-center gap-1.5">
+            </Link>
+            <Link to="/directory" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <Building2 className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{companiesCount.count.toLocaleString()}</span>
               <span className="text-muted-foreground">AI Companies</span>
-            </div>
+            </Link>
           </div>
 
           {/* Search bar */}
