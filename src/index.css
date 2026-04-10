@@ -901,12 +901,12 @@ All colors MUST be HSL.
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(to top, rgba(4,4,5,0.92) 0%, rgba(4,4,5,0.55) 40%, rgba(4,4,5,0.1) 70%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(4,4,5,0.95) 0%, rgba(4,4,5,0.85) 30%, rgba(4,4,5,0.55) 55%, rgba(4,4,5,0.15) 80%, rgba(0,0,0,0) 100%);
 }
 
 @media (max-width: 768px) {
   .article-hero-gradient {
-    background: linear-gradient(to top, rgba(4,4,5,0.92) 0%, rgba(4,4,5,0.55) 40%, rgba(4,4,5,0.1) 70%, rgba(0,0,0,0) 100%);
+    background: linear-gradient(to top, rgba(4,4,5,0.97) 0%, rgba(4,4,5,0.88) 35%, rgba(4,4,5,0.6) 55%, rgba(4,4,5,0.2) 80%, rgba(0,0,0,0) 100%);
   }
 }
 
