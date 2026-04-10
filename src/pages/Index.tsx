@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import WeeklyStats from "@/components/WeeklyStats";
-import HomepageStatsBar from "@/components/HomepageStatsBar";
+
 import FeaturedToolsCarousel from "@/components/FeaturedToolsCarousel";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
