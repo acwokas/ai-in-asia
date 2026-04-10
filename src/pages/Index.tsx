@@ -900,8 +900,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Stats bar */}
-        <HomepageStatsBar />
 
         {/* Homepage ad between trending and latest stories */}
         <div className="container mx-auto px-4 my-6" style={{ minHeight: '100px' }}>
