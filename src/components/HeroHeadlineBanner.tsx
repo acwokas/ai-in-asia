@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen } from "lucide-react";
+import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen, Wrench } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -108,6 +108,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   const articleCount = useCountUp(stats?.articles || 0);
   const guidesCount = useCountUp(stats?.guides || 0);
   const countriesCount = useCountUp(12);
+  const toolsCount = useCountUp(15);
   const companiesCount = useCountUp(stats?.companies || 0);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -164,7 +165,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
           </div>
 
           {/* Live stats */}
-          <div className="flex items-center justify-center gap-6 md:gap-10 text-sm md:text-base mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-sm md:text-base mb-8">
             <div className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{articleCount.count.toLocaleString()}</span>
@@ -179,6 +180,11 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
               <Globe className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{countriesCount.count}+</span>
               <span className="text-muted-foreground">Countries</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Wrench className="w-4 h-4 text-[#F28C0F]" />
+              <span className="font-bold text-foreground">{toolsCount.count}+</span>
+              <span className="text-muted-foreground">Interactive Tools</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-[#F28C0F]" />
