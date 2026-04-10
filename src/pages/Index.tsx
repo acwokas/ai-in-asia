@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import RecommendedGuides from "@/components/RecommendedGuides";
 import WeeklyStats from "@/components/WeeklyStats";
-import HomepageStatsBar from "@/components/HomepageStatsBar";
+
 import FeaturedToolsCarousel from "@/components/FeaturedToolsCarousel";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isNewsletterSubscribed as checkSubscribed, markNewsletterSubscribed, awardNewsletterPoints } from "@/lib/newsletterUtils";
@@ -900,8 +900,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Stats bar */}
-        <HomepageStatsBar />
 
         {/* Homepage ad between trending and latest stories */}
         <div className="container mx-auto px-4 my-6" style={{ minHeight: '100px' }}>

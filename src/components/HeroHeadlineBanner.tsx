@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen } from "lucide-react";
+import { Search, FileText, Globe, Building2, ArrowRight, X, BookOpen, Wrench } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryColor } from "@/lib/categoryColors";
@@ -40,41 +40,24 @@ const useTypewriter = (phrases: string[], typingSpeed = 80, pauseMs = 2200, dele
 
 const useCountUp = (target: number, duration = 1600) => {
   const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
   const animatedTarget = useRef(0);
 
   useEffect(() => {
     if (!target || target === animatedTarget.current) return;
     animatedTarget.current = target;
 
-    const runAnimation = () => {
-      const start = performance.now();
-      const step = (now: number) => {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setCount(Math.round(eased * target));
-        if (progress < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    const start = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
     };
-
-    if (!ref.current) { runAnimation(); return; }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          runAnimation();
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
+    requestAnimationFrame(step);
   }, [target, duration]);
 
-  return { count, ref };
+  return { count };
 };
 
 const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
@@ -125,6 +108,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
   const articleCount = useCountUp(stats?.articles || 0);
   const guidesCount = useCountUp(stats?.guides || 0);
   const countriesCount = useCountUp(12);
+  const toolsCount = useCountUp(15);
   const companiesCount = useCountUp(stats?.companies || 0);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -181,7 +165,7 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
           </div>
 
           {/* Live stats */}
-          <div className="flex items-center justify-center gap-6 md:gap-10 text-sm md:text-base mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-sm md:text-base mb-8">
             <div className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{articleCount.count.toLocaleString()}</span>
@@ -196,6 +180,11 @@ const HeroHeadlineBanner = ({ excludeIds = [] }: { excludeIds?: string[] }) => {
               <Globe className="w-4 h-4 text-[#F28C0F]" />
               <span className="font-bold text-foreground">{countriesCount.count}+</span>
               <span className="text-muted-foreground">Countries</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Wrench className="w-4 h-4 text-[#F28C0F]" />
+              <span className="font-bold text-foreground">{toolsCount.count}+</span>
+              <span className="text-muted-foreground">Interactive Tools</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-[#F28C0F]" />
