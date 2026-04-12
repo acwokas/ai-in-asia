@@ -289,14 +289,14 @@ const Article = () => {
   // the page is ready to snapshot — i.e. article data has loaded and
   // react-helmet-async has injected the article-specific meta tags.
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && fetchStatus !== 'fetching') {
       // Fires for both successful loads and 404s (article === null).
       // Small delay to ensure Helmet has flushed meta tags into <head>.
       requestAnimationFrame(() => {
         (window as any).prerenderReady = true;
       });
     }
-  }, [article, isLoading]);
+  }, [article, isLoading, fetchStatus]);
 
 
   // Prompt box copy handler
