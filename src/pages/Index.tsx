@@ -1060,20 +1060,46 @@ const Index = () => {
               </Link>
             );
 
+            // Build final grid items with in-feed ads at every 5th position (max 2)
+            const IN_FEED_AD_INTERVAL = 5;
+            const MAX_IN_FEED_ADS = 2;
+            const gridNodes: React.ReactNode[] = [];
+            let adCount = 0;
+            let contentIdx = 0;
+
+            for (let i = 0; contentIdx < mixedItems.length; i++) {
+              // Insert ad at positions 4, 9, etc. (0-indexed: after every 5th item)
+              if (i > 0 && i % IN_FEED_AD_INTERVAL === IN_FEED_AD_INTERVAL - 1 && adCount < MAX_IN_FEED_ADS) {
+                gridNodes.push(
+                  <div key={`infeed-ad-${adCount}`} className="max-w-full overflow-hidden">
+                    <AdUnit
+                      slot="8539668053"
+                      format="fluid"
+                      layoutKey="-6t+ed+2i-1n-4w"
+                      responsive={false}
+                      label="Sponsored"
+                      className="min-h-[250px] rounded-lg border border-border/30 flex items-center justify-center"
+                    />
+                  </div>
+                );
+                adCount++;
+              } else {
+                const item = mixedItems[contentIdx];
+                const large = isFeatured(contentIdx);
+                gridNodes.push(
+                  <div key={item.kind === "guide" ? `guide-${item.data.id}` : item.data.id} className={large ? 'md:col-span-2' : ''}>
+                    {item.kind === "guide"
+                      ? renderGuideCard(item.data, large)
+                      : renderArticleCard(item.data, large)}
+                  </div>
+                );
+                contentIdx++;
+              }
+            }
+
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                {mixedItems.map((item, i) => {
-                  const large = isFeatured(i);
-                  const nodes = [];
-                  nodes.push(
-                    <div key={item.kind === "guide" ? `guide-${item.data.id}` : item.data.id} className={large ? 'md:col-span-2' : ''}>
-                      {item.kind === "guide"
-                        ? renderGuideCard(item.data, large)
-                        : renderArticleCard(item.data, large)}
-                    </div>
-                  );
-                  return nodes;
-                })}
+                {gridNodes}
               </div>
             );
           })()}
