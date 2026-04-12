@@ -10,6 +10,7 @@ interface AdUnitProps {
   className?: string;
   style?: React.CSSProperties;
   layout?: string;
+  layoutKey?: string;
   label?: string;
 }
 
@@ -20,6 +21,7 @@ const AdUnit = ({
   className,
   style,
   layout,
+  layoutKey,
   label = "Advertisement",
 }: AdUnitProps) => {
   const pushed = useRef(false);
@@ -33,6 +35,7 @@ const AdUnit = ({
     el.setAttribute('data-ad-slot', slot);
     el.setAttribute('data-ad-format', format);
     if (layout) el.setAttribute('data-ad-layout', layout);
+    if (layoutKey) el.setAttribute('data-ad-layout-key', layoutKey);
     if (responsive) el.setAttribute('data-full-width-responsive', 'true');
     el.style.display = 'block';
     try {
