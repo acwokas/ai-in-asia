@@ -92,7 +92,7 @@ const Article = () => {
   }, [cleanSlug]);
 
   // Fetch article
-  const { data: article, isLoading } = useQuery({
+  const { data: article, isLoading, fetchStatus } = useQuery({
     queryKey: ["article", cleanSlug, previewCode],
     staleTime: typeof window !== "undefined" &&
       (window.location.hostname.includes("lovableproject.com") ||
@@ -440,8 +440,8 @@ const Article = () => {
     user?.id,
   );
 
-  // Loading state
-  if (isLoading) return <ArticleLoadingSkeleton />;
+  // Loading state — don't show 404 while query could still be in flight
+  if (isLoading || fetchStatus === 'fetching') return <ArticleLoadingSkeleton />;
 
   // 404 state
   if (!article) return <ArticleNotFound />;

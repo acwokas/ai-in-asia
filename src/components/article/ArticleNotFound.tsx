@@ -9,25 +9,30 @@ import { track404Error } from "@/components/GoogleAnalytics";
 
 export const ArticleNotFound = () => {
   useEffect(() => {
-    // Signal prerenderer that this page is ready (even for 404s)
-    (window as any).prerenderReady = true;
-    // Signal prerenderer to return 404 status code
-    (window as any).__PRERENDER_STATUS_CODE = 404;
+    // 2-second grace period to avoid false 404s from race conditions
+    const timer = setTimeout(() => {
+      // Signal prerenderer that this page is ready (even for 404s)
+      (window as any).prerenderReady = true;
+      // Signal prerenderer to return 404 status code
+      (window as any).__PRERENDER_STATUS_CODE = 404;
 
-    track404Error(window.location.pathname, "article_not_found");
+      track404Error(window.location.pathname, "article_not_found");
 
-    const log404 = async () => {
-      try {
-        await supabase.from("page_not_found_log").insert({
-          path: window.location.pathname,
-          referrer: document.referrer || null,
-          user_agent: navigator.userAgent,
-        });
-      } catch (error) {
-        console.error("Failed to log article 404:", error);
-      }
-    };
-    log404();
+      const log404 = async () => {
+        try {
+          await supabase.from("page_not_found_log").insert({
+            path: window.location.pathname,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+          });
+        } catch (error) {
+          console.error("Failed to log article 404:", error);
+        }
+      };
+      log404();
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
