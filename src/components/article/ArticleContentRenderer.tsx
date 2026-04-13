@@ -20,8 +20,8 @@ const extractFaqFromEditorialView = (html: string): string => {
   return html.replace(
     /(<div\s+class="editorial-view"[^>]*>)([\s\S]*?)<\/div>/gi,
     (fullMatch, openTag, innerContent) => {
-      // Look for FAQ heading (h2/h3/h4 containing "FAQ" or "Frequently Asked Questions")
-      const faqHeadingPattern = /(<h[2-4][^>]*>(?:[^<]*(?:FAQ|Frequently\s+Asked\s+Questions)[^<]*)<\/h[2-4]>)/i;
+      // Look for FAQ heading (h2-h6 containing "FAQ" or "Frequently Asked Questions")
+      const faqHeadingPattern = /(<h[2-6][^>]*>(?:[^<]*(?:FAQ|Frequently\s+Asked\s+Questions)[^<]*)<\/h[2-6]>)/i;
       const faqIdx = innerContent.search(faqHeadingPattern);
       if (faqIdx === -1) return fullMatch; // no FAQ found, leave as-is
 
