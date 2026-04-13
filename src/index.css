@@ -12,7 +12,7 @@ All colors MUST be HSL.
     --background: 0 0% 100%;
     --foreground: 220 15% 15%;
     
-    --card: 210 20% 97%;
+    --card: 210 20% 97%
     --card-foreground: 220 15% 15%;
     
     --popover: 0 0% 100%;
@@ -407,9 +407,9 @@ All colors MUST be HSL.
     margin-top: 0.75rem;
   }
 
-  /* Scout editorial view callout — closing section of every rewritten article */
-  .article-content .scout-view,
-  .prose .scout-view {
+  /* Editorial view callout — closing section of every rewritten article */
+  .article-content .editorial-view,
+  .prose .editorial-view {
     background: hsl(var(--primary) / 0.06);
     border: 1px solid hsl(var(--primary) / 0.25);
     border-left: 4px solid #5F72FF;
@@ -422,8 +422,8 @@ All colors MUST be HSL.
     color: hsl(var(--foreground));
   }
 
-  .article-content .scout-view strong,
-  .prose .scout-view strong {
+  .article-content .editorial-view strong,
+  .prose .editorial-view strong {
     display: block;
     font-size: 0.75rem;
     font-weight: 700;
