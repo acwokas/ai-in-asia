@@ -182,7 +182,6 @@ const Index = () => {
           .eq("status", "published")
           .eq("featured_on_homepage", true)
           .gte("published_at", oneMonthAgoISO)
-          .neq("article_type", "three_before_nine")
           .order("sticky", { ascending: false })
           .order("published_at", { ascending: false, nullsFirst: false })
           .limit(18),
@@ -190,7 +189,6 @@ const Index = () => {
           .from("articles")
           .select(articleFields)
           .eq("status", "published")
-          .neq("article_type", "three_before_nine")
           .order("published_at", { ascending: false, nullsFirst: false })
           .limit(24),
         supabase
@@ -433,7 +431,7 @@ const Index = () => {
   const highlightedIds = useMemo(() => {
     const excludeSet = new Set([...heroSectionIds, ...trendingStripShownIds]);
     return (latestArticles || [])
-      .filter((a: any) => a.slug && !excludeSet.has(a.id) && a.article_type !== 'three_before_nine')
+      .filter((a: any) => a.slug && !excludeSet.has(a.id))
       .slice(0, 3)
       .map((a: any) => a.id);
   }, [heroSectionIds, trendingStripShownIds, latestArticles]);
@@ -447,7 +445,7 @@ const Index = () => {
   const gridArticles = useMemo(() => {
     const seen = new Set(aboveGridIds);
     const candidates = [
-      ...(latestArticles?.filter((a: any) => a.slug && a.article_type !== 'three_before_nine') || []),
+      ...(latestArticles?.filter((a: any) => a.slug) || []),
       ...(trendingArticles || []),
     ];
     const deduped: any[] = [];
@@ -805,7 +803,7 @@ const Index = () => {
             {(() => {
               const highlightedExcludeIds = new Set([...heroSectionIds, ...trendingStripShownIds]);
               const allEligible = (latestArticles || [])
-                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id) && a.article_type !== 'three_before_nine');
+                .filter((a: any) => a.slug && !highlightedExcludeIds.has(a.id));
               const highlighted = allEligible.slice(3, 6);
               if (highlighted.length === 0) return null;
               return (
