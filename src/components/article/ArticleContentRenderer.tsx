@@ -11,6 +11,34 @@ import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
 
+/**
+ * Extract FAQ content from inside editorial-view divs so it renders
+ * on the standard page background instead of inside the styled box.
+ */
+const extractFaqFromEditorialView = (html: string): string => {
+  // Match editorial-view divs that contain FAQ headings
+  return html.replace(
+    /(<div\s+class="editorial-view"[^>]*>)([\s\S]*?)<\/div>/gi,
+    (fullMatch, openTag, innerContent) => {
+      // Look for FAQ heading (h2/h3/h4 containing "FAQ" or "Frequently Asked Questions")
+      const faqHeadingPattern = /(<h[2-4][^>]*>(?:[^<]*(?:FAQ|Frequently\s+Asked\s+Questions)[^<]*)<\/h[2-4]>)/i;
+      const faqIdx = innerContent.search(faqHeadingPattern);
+      if (faqIdx === -1) return fullMatch; // no FAQ found, leave as-is
+
+      // Split: everything before FAQ stays in editorial-view, FAQ onwards goes outside
+      const beforeFaq = innerContent.substring(0, faqIdx);
+      const faqAndAfter = innerContent.substring(faqIdx);
+
+      // If there's content before FAQ, keep the editorial-view div for it
+      const editorialPart = beforeFaq.trim()
+        ? `${openTag}${beforeFaq}</div>`
+        : '';
+
+      return `${editorialPart}\n${faqAndAfter}`;
+    }
+  );
+};
+
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const IN_ARTICLE_AD_SLOT_HORIZONTAL = "3478913062";
