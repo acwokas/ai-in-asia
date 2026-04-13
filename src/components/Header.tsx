@@ -297,25 +297,6 @@ const Header = memo(() => {
                 <TooltipContent>Search (⌘K)</TooltipContent>
               </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleTheme}
-                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                    className="flex h-10 w-10"
-                  >
-                    <span
-                      className="inline-flex transition-transform duration-300"
-                      style={{ transform: theme === "dark" ? "rotate(0deg)" : "rotate(180deg)" }}
-                    >
-                      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{theme === "dark" ? "Light mode" : "Dark mode"}</TooltipContent>
-              </Tooltip>
 
               <div className="hidden md:flex items-center gap-1">
                 
