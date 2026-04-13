@@ -473,7 +473,7 @@ FORMATTING RULES (ALL MANDATORY):
 CLOSING SECTION (MANDATORY - two distinct elements, rendered separately):
 
 Element 1 - Scout's editorial position, wrapped in a styled callout div:
-<div class="scout-view"><strong>The AIinASIA View:</strong> 2 sentences expressing AIinASIA's clear, opinionated view on the topic. Confident and specific, not hedged. Scout has a point of view.</div>
+<div class="editorial-view"><strong>The AI in Asia View:</strong> 2 sentences expressing AIinASIA's clear, opinionated view on the topic. Confident and specific, not hedged. Scout has a point of view.</div>
 
 Element 2 - Reader invitation, as a plain <p> tag immediately after the div:
 <p>1 sentence ending with a specific, direct question using "you" or "your", followed by "Drop your take in the comments below."</p>
