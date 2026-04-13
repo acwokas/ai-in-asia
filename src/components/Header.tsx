@@ -191,7 +191,7 @@ const Header = memo(() => {
         <div className="flex h-24 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center cursor-pointer group" aria-label="Go to homepage">
-              <img src={logo} alt="AI in ASIA" className="h-20 md:h-16 w-auto transition-opacity duration-200 group-hover:opacity-80" width={171} height={96} />
+              <img src={logo} alt="AI in ASIA" className="h-10 md:h-10 w-auto object-contain transition-opacity duration-200 group-hover:opacity-80" width={171} height={96} />
             </Link>
             
             <nav className="hidden md:flex items-center space-x-1" aria-label="Main navigation">
