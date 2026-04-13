@@ -88,7 +88,7 @@ const Header = memo(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRole();
 
