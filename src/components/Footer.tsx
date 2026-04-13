@@ -114,7 +114,7 @@ const Footer = memo(() => {
           {/* Column 1-2: Brand (spans 2 on lg) */}
           <div className="col-span-2">
             <Link to="/">
-              <img src={logo} alt="AI in ASIA" className="h-12 w-60 object-cover object-center mb-3" width={240} height={48} />
+              <img src={logo} alt="AI in ASIA" <img src={logo} alt="AI in ASIA" className="h-10 w-auto object-contain mb-3" width={240} height={48} /> width={240} height={48} />
             </Link>
             <p className="text-sm text-muted-foreground mb-5 text-left max-w-xs">
               AI hype to real-world impact in Asia.
