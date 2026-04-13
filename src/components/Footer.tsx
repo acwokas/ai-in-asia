@@ -53,6 +53,7 @@ const companyLinks = [
   { to: "/cookie-policy", label: "Cookie Policy" },
 ];
 
+// footer logo fix
 const Footer = memo(() => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
