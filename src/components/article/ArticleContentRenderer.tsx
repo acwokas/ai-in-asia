@@ -606,6 +606,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         }
       );
 
+      // Extract FAQ from editorial-view boxes
+      sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -707,6 +710,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         return `${open}<p>${cleanQuote}</p><footer>${cleanAttr}</footer>${close}`;
       }
     );
+
+    // Extract FAQ from editorial-view boxes
+    joinedHtml = extractFaqFromEditorialView(joinedHtml);
 
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
