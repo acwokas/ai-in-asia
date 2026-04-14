@@ -645,6 +645,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Wrap Closing Thoughts in styled callout
       sanitizedHtml = wrapClosingThoughts(sanitizedHtml);
 
+      // Strip em dashes (except inside blockquotes)
+      sanitizedHtml = stripEmDashes(sanitizedHtml);
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -653,8 +656,10 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
-    
-    
+
+    // Strip em dashes (except inside blockquotes)
+    joinedHtml = stripEmDashes(joinedHtml);
+
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
