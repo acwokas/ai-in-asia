@@ -410,9 +410,50 @@ All colors MUST be HSL.
   /* Editorial view callout — closing section of every rewritten article */
   .article-content .editorial-view,
   .prose .editorial-view {
-    background: hsl(var(--primary) / 0.06);
-    border: 1px solid hsl(var(--primary) / 0.25);
-    border-left: 4px solid #5F72FF;
+    background: hsl(220 20% 8%);
+    border: 1px solid hsl(220 15% 16%);
+    border-left: 4px solid #14b8a6;
+    border-radius: 0 12px 12px 0;
+    padding: 2rem 2rem;
+    margin: 2.5rem 0 1rem 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: hsl(var(--foreground));
+  }
+
+  /* Title heading inside editorial-view — large bold caps */
+  .article-content .editorial-view > strong:first-child,
+  .prose .editorial-view > strong:first-child {
+    display: block;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground));
+    margin-bottom: 1.25rem;
+  }
+
+  /* Subheadings inside editorial-view — small uppercase teal */
+  .article-content .editorial-view strong,
+  .prose .editorial-view strong {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #14b8a6;
+    margin-bottom: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Closing thoughts callout — same visual language as editorial-view */
+  .article-content .closing-thoughts,
+  .prose .closing-thoughts {
+    background: hsl(220 20% 8%);
+    border: 1px solid hsl(220 15% 16%);
+    border-left: 4px solid #14b8a6;
     border-radius: 0 12px 12px 0;
     padding: 1.25rem 1.5rem;
     margin: 2.5rem 0 1rem 0;
@@ -422,14 +463,14 @@ All colors MUST be HSL.
     color: hsl(var(--foreground));
   }
 
-  .article-content .editorial-view strong,
-  .prose .editorial-view strong {
+  .article-content .closing-thoughts > strong:first-child,
+  .prose .closing-thoughts > strong:first-child {
     display: block;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #5F72FF;
+    color: #14b8a6;
     margin-bottom: 0.5rem;
   }
 
