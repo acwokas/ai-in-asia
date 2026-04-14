@@ -10,7 +10,7 @@ import {
   PendingComments,
   CommentEditDialog,
   Comment,
-} from "@/components/comments";
+} from "@/components/comments/index";
 
 interface CommentsProps {
   articleId: string;
