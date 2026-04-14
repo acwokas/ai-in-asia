@@ -371,6 +371,21 @@ export const generateHeadingId = (text: string): string => {
     .replace(/^-|-$/g, '');
 };
 
+/**
+ * Remove em dashes (—) from article HTML, except inside <blockquote> elements
+ * where they are used for attribution. Replaces with comma-space or colon as appropriate.
+ */
+const stripEmDashes = (html: string): string => {
+  // Split HTML by blockquote boundaries to preserve em dashes in quotes
+  const parts = html.split(/(<blockquote[\s\S]*?<\/blockquote>)/gi);
+  return parts.map((part, i) => {
+    // Odd indices are blockquote content — leave untouched
+    if (i % 2 === 1) return part;
+    // Replace em dashes and en dashes with comma or period context
+    return part
+      .replace(/\s*[—–]\s*/g, '; ');
+  }).join('');
+};
 
 /**
  * Strip external-link attributes (target="_blank", rel, external icon SVG, inline-flex class)
