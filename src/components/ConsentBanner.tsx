@@ -65,7 +65,7 @@ const ConsentBanner = () => {
             <Button
               size="sm"
               onClick={handleAccept}
-              className="min-w-[80px] bg-amber-500 hover:bg-amber-600 text-white"
+              className="min-w-[80px] bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               Accept
             </Button>

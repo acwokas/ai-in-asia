@@ -28,7 +28,7 @@ const POPULAR_SEARCHES = ["ChatGPT", "Singapore AI", "Japan", "Regulation", "Sta
 function highlightMatch(text: string, query: string): string {
   if (!query.trim()) return text;
   const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<span class="text-amber-500 font-semibold">$1</span>');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<span class="text-primary font-semibold">$1</span>');
 }
 
 const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {

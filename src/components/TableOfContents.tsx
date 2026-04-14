@@ -89,7 +89,7 @@ function useActiveHeading(headings: TocItem[]) {
   return activeId;
 }
 
-/** TOC link list with h3 indented under h2, amber active highlight */
+/** TOC link list with h3 indented under h2, primary active highlight */
 function TocLinks({
   headings,
   activeId,
@@ -136,7 +136,7 @@ function TocLinks({
                 level === 3 ? "pl-6" : "pl-3",
                 level === 3 ? "font-normal" : "font-medium",
                 activeId === id
-                  ? "border-amber-500 text-amber-500"
+                  ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
               )}
             >
@@ -179,7 +179,7 @@ export function TableOfContentsSidebar({
   return (
     <div className="bg-card/60 border border-border rounded-lg p-4">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-        <List className="h-4 w-4 text-amber-500" />
+        <List className="h-4 w-4 text-primary" />
         On this page
       </h3>
       <div
@@ -215,7 +215,7 @@ export function TableOfContentsMobile({
           )}
         >
           <div className="flex items-center gap-2">
-            <List className="h-4 w-4 text-amber-500" />
+            <List className="h-4 w-4 text-primary" />
             <span>On this page</span>
             <span className="text-muted-foreground font-normal">({headings.length})</span>
           </div>

@@ -9,7 +9,7 @@ interface ReadingTimeIndicatorProps {
 
 function getReadingCategory(minutes: number) {
   if (minutes < 3) return { label: "Quick read", color: "text-green-600 dark:text-green-400", barColor: "bg-green-500" };
-  if (minutes > 8) return { label: "Long read", color: "text-amber-600 dark:text-amber-400", barColor: "bg-amber-500" };
+  if (minutes > 8) return { label: "Long read", color: "text-primary", barColor: "bg-primary" };
   return { label: `${minutes} min`, color: "text-muted-foreground", barColor: "bg-primary" };
 }
 
