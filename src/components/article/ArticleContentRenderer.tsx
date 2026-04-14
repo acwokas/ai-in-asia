@@ -371,6 +371,21 @@ export const generateHeadingId = (text: string): string => {
     .replace(/^-|-$/g, '');
 };
 
+/**
+ * Remove em dashes (—) from article HTML, except inside <blockquote> elements
+ * where they are used for attribution. Replaces with comma-space or colon as appropriate.
+ */
+const stripEmDashes = (html: string): string => {
+  // Split HTML by blockquote boundaries to preserve em dashes in quotes
+  const parts = html.split(/(<blockquote[\s\S]*?<\/blockquote>)/gi);
+  return parts.map((part, i) => {
+    // Odd indices are blockquote content — leave untouched
+    if (i % 2 === 1) return part;
+    // Replace em dashes and en dashes with comma or period context
+    return part
+      .replace(/\s*[—–]\s*/g, '; ');
+  }).join('');
+};
 
 /**
  * Strip external-link attributes (target="_blank", rel, external icon SVG, inline-flex class)
@@ -630,6 +645,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Wrap Closing Thoughts in styled callout
       sanitizedHtml = wrapClosingThoughts(sanitizedHtml);
 
+      // Strip em dashes (except inside blockquotes)
+      sanitizedHtml = stripEmDashes(sanitizedHtml);
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -638,8 +656,8 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
-    
-    
+
+
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
@@ -740,6 +758,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
 
     // Wrap Closing Thoughts in styled callout
     joinedHtml = wrapClosingThoughts(joinedHtml);
+
+    // Strip em dashes (except inside blockquotes)
+    joinedHtml = stripEmDashes(joinedHtml);
 
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
