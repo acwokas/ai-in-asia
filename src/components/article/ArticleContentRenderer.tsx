@@ -624,6 +624,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Extract FAQ from editorial-view boxes
       sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
 
+      // Wrap Closing Thoughts in styled callout
+      sanitizedHtml = wrapClosingThoughts(sanitizedHtml);
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -728,6 +731,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
 
     // Extract FAQ from editorial-view boxes
     joinedHtml = extractFaqFromEditorialView(joinedHtml);
+
+    // Wrap Closing Thoughts in styled callout
+    joinedHtml = wrapClosingThoughts(joinedHtml);
 
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
