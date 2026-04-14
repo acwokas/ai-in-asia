@@ -551,7 +551,12 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
           return block;
         }
         
-      if (block.startsWith('### ')) {
+      if (block.startsWith('#### ')) {
+          const text = block.substring(5);
+          const id = generateHeadingId(text);
+          return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
+        }
+        if (block.startsWith('### ')) {
           const text = block.substring(4);
           const id = generateHeadingId(text);
           return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
@@ -664,6 +669,11 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
           block.includes('tiktok-embed') ||
           block.includes('youtube.com/embed')) {
         return block;
+      }
+      if (block.startsWith('#### ')) {
+        const text = block.substring(5);
+        const id = generateHeadingId(text);
+        return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('### ')) {
         const text = block.substring(4);
