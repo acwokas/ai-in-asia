@@ -621,6 +621,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         }
       );
 
+      // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
+      sanitizedHtml = sanitizedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
+
       // Extract FAQ from editorial-view boxes
       sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
 
@@ -730,6 +733,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     );
 
     // Extract FAQ from editorial-view boxes
+    // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
+    joinedHtml = joinedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
+
     joinedHtml = extractFaqFromEditorialView(joinedHtml);
 
     // Wrap Closing Thoughts in styled callout
