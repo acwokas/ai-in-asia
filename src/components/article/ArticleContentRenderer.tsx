@@ -199,8 +199,11 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
   const proseRef = useRef<HTMLDivElement>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
+  // Normalise legacy "Scout View" label to current brand name
+  const normalisedHtml = html.replace(/Scout View/g, 'THE AI IN ASIA VIEW');
+
   // Inject ad markers and glossary annotations into the HTML string BEFORE rendering
-  const withAds = injectAdMarkersIntoHtml(html, injectInArticleAds);
+  const withAds = injectAdMarkersIntoHtml(normalisedHtml, injectInArticleAds);
   const glossaryResult = useMemo(() => annotateGlossaryHtml(withAds), [withAds]);
   const processedHtml = glossaryResult.html;
 

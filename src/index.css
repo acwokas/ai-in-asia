@@ -47,7 +47,7 @@ All colors MUST be HSL.
     --turquoise-accent: 188 60% 30%;
     --turquoise-bright: 188 70% 60%;
     
-    --editorial: 24 90% 50%;
+    --editorial: 188 85% 40%;
     --editorial-foreground: 0 0% 100%;
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -92,8 +92,8 @@ All colors MUST be HSL.
     --turquoise-accent: 188 60% 35%;
     --turquoise-bright: 188 70% 65%;
     
-    --editorial: 30 85% 55%;
-    --editorial-foreground: 0 0% 100%;
+    --editorial: 188 80% 50%;
+    --editorial-foreground: 220 15% 10%;
     
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -450,7 +450,7 @@ All colors MUST be HSL.
   .prose .closing-thoughts {
     background: hsl(220 20% 8%);
     border: 1px solid hsl(220 15% 16%);
-    border-left: 4px solid #14b8a6;
+    border-left: 4px solid hsl(var(--primary));
     border-radius: 0 12px 12px 0;
     padding: 1.25rem 1.5rem;
     margin: 2.5rem 0 1rem 0;
@@ -467,7 +467,7 @@ All colors MUST be HSL.
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #14b8a6;
+    color: hsl(var(--primary));
     margin-bottom: 0.5rem;
   }
 
@@ -475,7 +475,7 @@ All colors MUST be HSL.
   .article-content .by-the-numbers,
   .prose .by-the-numbers {
     background: hsl(var(--primary) / 0.08);
-    border-left: 4px solid #5F72FF;
+    border-left: 4px solid hsl(var(--primary));
     border-radius: 0 12px 12px 0;
     padding: 1.25rem 1.5rem;
     margin: 2rem 0;
@@ -485,7 +485,7 @@ All colors MUST be HSL.
   .article-content .by-the-numbers h4,
   .prose .by-the-numbers h3,
   .prose .by-the-numbers h4 {
-    color: #5F72FF;
+    color: hsl(var(--primary));
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.08em;

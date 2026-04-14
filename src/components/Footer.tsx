@@ -105,7 +105,7 @@ const Footer = memo(() => {
   };
 
   const headingClass = "text-xs font-bold uppercase tracking-wider text-foreground mb-4";
-  const linkClass = "text-muted-foreground hover:text-amber-500 transition-colors text-sm";
+  const linkClass = "text-muted-foreground hover:text-primary transition-colors text-sm";
 
   return (
     <footer className="bg-card border-t border-border mt-16 pb-16 md:pb-0">
