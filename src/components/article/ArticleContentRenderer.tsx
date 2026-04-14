@@ -761,6 +761,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Wrap Closing Thoughts in styled callout
     joinedHtml = wrapClosingThoughts(joinedHtml);
 
+    // Strip em dashes (except inside blockquotes)
+    joinedHtml = stripEmDashes(joinedHtml);
+
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
