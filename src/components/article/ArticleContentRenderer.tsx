@@ -657,8 +657,6 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
 
-    // Strip em dashes (except inside blockquotes)
-    joinedHtml = stripEmDashes(joinedHtml);
 
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
