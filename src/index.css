@@ -421,6 +421,11 @@ All colors MUST be HSL.
     color: hsl(var(--foreground));
   }
 
+  .article-content .editorial-view > *:last-child,
+  .prose .editorial-view > *:last-child {
+    margin-bottom: 0;
+  }
+
   /* Title heading inside editorial-view — large bold caps */
   .article-content .editorial-view > strong:first-child,
   .prose .editorial-view > strong:first-child {
