@@ -155,8 +155,8 @@ const NewsletterPopup = () => {
 
         {/* Icon */}
         <div className="flex justify-center mb-4">
-          <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-            <Mail className="h-6 w-6 text-amber-500" />
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Mail className="h-6 w-6 text-primary" />
           </div>
         </div>
 
@@ -191,7 +191,7 @@ const NewsletterPopup = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white font-semibold cursor-pointer"
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold cursor-pointer"
               >
                 {isSubmitting ? "Subscribing…" : "Subscribe — It's Free"}
               </Button>
