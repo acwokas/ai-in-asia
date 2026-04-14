@@ -39,6 +39,21 @@ const extractFaqFromEditorialView = (html: string): string => {
   );
 };
 
+/**
+ * Wrap "Closing Thoughts" headings and their following content in a styled callout box,
+ * mirroring the editorial-view appearance (dark box, teal left border).
+ */
+const wrapClosingThoughts = (html: string): string => {
+  // Match h2-h6 containing "Closing Thoughts" (case-insensitive)
+  return html.replace(
+    /(<h[2-6][^>]*>(?:[^<]*[Cc]losing\s+[Tt]houghts[^<]*)<\/h[2-6]>)([\s\S]*?)(?=<h[2-6]|<div\s+class="editorial-view"|<div\s+class="closing-thoughts"|$)/gi,
+    (fullMatch, heading, content) => {
+      // Replace the heading with a strong label inside the closing-thoughts div
+      return `<div class="closing-thoughts"><strong>Closing Thoughts</strong>${content}</div>`;
+    }
+  );
+};
+
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const IN_ARTICLE_AD_SLOT_HORIZONTAL = "3478913062";
