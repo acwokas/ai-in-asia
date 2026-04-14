@@ -413,7 +413,7 @@ All colors MUST be HSL.
     background: hsl(220 20% 8%);
     border: 1px solid #14b8a6;
     border-radius: 12px;
-    padding: 2rem 2rem;
+    padding: 1.25rem 2rem 2rem 2rem;
     margin: 2.5rem 0 1rem 0;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
