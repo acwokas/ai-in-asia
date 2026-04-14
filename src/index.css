@@ -423,7 +423,8 @@ All colors MUST be HSL.
 
   .article-content .editorial-view > *:last-child,
   .prose .editorial-view > *:last-child {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   /* Title heading inside editorial-view — large bold caps */
