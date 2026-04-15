@@ -407,40 +407,54 @@ All colors MUST be HSL.
     margin-top: 0.75rem;
   }
 
-  /* Editorial view callout — closing section of every rewritten article */
+  /* Editorial view callout — closing section of every rewritten article.
+     !important on structural properties overrides any inline styles from imported content. */
   .article-content .editorial-view,
   .prose .editorial-view {
-    background: hsl(225 22% 8%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 2rem 2.5rem;
-    margin: 2.5rem 0 1rem 0;
+    background: hsl(225 22% 8%) !important;
+    border-left: 4px solid #5F72FF !important;
+    border-right: 4px solid #5F72FF !important;
+    border-top: 1px solid rgba(95, 114, 255, 0.35) !important;
+    border-bottom: 1px solid rgba(95, 114, 255, 0.35) !important;
+    border-radius: 16px !important;
+    padding: 2rem 2.5rem !important;
+    margin: 2.5rem 0 1rem 0 !important;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
     line-height: 1.75;
-    color: hsl(220 15% 82%);
+    color: hsl(220 20% 90%) !important;
   }
 
-  /* Subsection headers inside the callout (e.g. "WHAT TO WATCH:") */
-  .article-content .editorial-view strong,
-  .prose .editorial-view strong {
+  /* Body text inside editorial view — override generic !important rules for high contrast */
+  .article-content .editorial-view p,
+  .article-content .editorial-view li,
+  .article-content .editorial-view span,
+  .prose .editorial-view p,
+  .prose .editorial-view li,
+  .prose .editorial-view span {
+    color: hsl(220 20% 90%) !important;
+  }
+
+  /* Subsection headers inside the callout (e.g. "WHAT TO WATCH:") — direct children only */
+  .article-content .editorial-view > strong,
+  .prose .editorial-view > strong {
     display: block;
     font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #5F72FF;
+    color: #5F72FF !important;
     margin-bottom: 0.25rem;
     margin-top: 1rem;
   }
 
-  /* Title: first <strong> = "THE AI IN ASIA VIEW" — large white */
-  .article-content .editorial-view strong:first-child,
-  .prose .editorial-view strong:first-child {
+  /* Title: first direct-child <strong> = "THE AI IN ASIA VIEW" — large white */
+  .article-content .editorial-view > strong:first-child,
+  .prose .editorial-view > strong:first-child {
     font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: 0.04em;
-    color: #ffffff;
+    color: #ffffff !important;
     margin-top: 0;
     margin-bottom: 1rem;
   }
