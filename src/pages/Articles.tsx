@@ -55,6 +55,7 @@ const Articles = () => {
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [scheduledDateTime, setScheduledDateTime] = useState<{ [key: string]: { date: Date | undefined; time: string } }>({});
+  const [publishingAllDrafts, setPublishingAllDrafts] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
