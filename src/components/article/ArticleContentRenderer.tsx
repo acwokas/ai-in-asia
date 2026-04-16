@@ -233,6 +233,49 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     };
   }, [html, !!midArticleNode]);
 
+  // DOM-level: detect and wrap "THE AI IN ASIA VIEW" into editorial-view box
+  useEffect(() => {
+    if (!proseRef.current) return;
+    const el = proseRef.current;
+    // Find any <strong> containing editorial view text that isn't already inside .editorial-view
+    const strongs = el.querySelectorAll('strong');
+    strongs.forEach((strong) => {
+      const text = (strong.textContent || '').trim();
+      if (!/^THE\s+AI\s*IN\s*ASIA\s+VIEW|^The\s+AI\s+in\s+Asia\s+View/i.test(text)) return;
+      if (strong.closest('.editorial-view')) return;
+      
+      // Find the container (parent div or p)
+      const container = strong.parentElement;
+      if (!container) return;
+      
+      // Create editorial-view wrapper
+      const wrapper = document.createElement('div');
+      wrapper.className = 'editorial-view';
+      
+      // Create heading
+      const heading = document.createElement('strong');
+      heading.textContent = 'The AI in Asia View';
+      wrapper.appendChild(heading);
+      
+      // Move remaining content (after the strong) into a <p>
+      const p = document.createElement('p');
+      p.className = 'leading-relaxed';
+      
+      // Get text/HTML after the strong element
+      const clone = container.cloneNode(true) as HTMLElement;
+      const strongInClone = clone.querySelector('strong');
+      if (strongInClone) {
+        // Remove the strong and get remaining content
+        strongInClone.remove();
+        p.innerHTML = clone.innerHTML.replace(/^\s*:?\s*/, '').trim();
+      }
+      wrapper.appendChild(p);
+      
+      // Replace the container with the wrapper
+      container.parentNode?.replaceChild(wrapper, container);
+    });
+  }, [html]);
+
   // Activate AdSense on injected ad slots (production only)
   useEffect(() => {
     if (!import.meta.env.PROD || !injectInArticleAds || !proseRef.current) return;
