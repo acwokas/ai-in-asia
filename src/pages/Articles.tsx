@@ -233,6 +233,29 @@ const Articles = () => {
     }
   };
 
+  const handlePublishAllDrafts = async () => {
+    try {
+      setPublishingAllDrafts(true);
+      const { data, error } = await supabase
+        .from("articles")
+        .update({ status: "published" as any, published_at: new Date().toISOString() })
+        .eq("status", "draft")
+        .select("id");
+
+      if (error) throw error;
+
+      const count = data?.length || 0;
+      toast.success("Drafts published", {
+        description: `${count} draft article${count !== 1 ? "s" : ""} published successfully.`,
+      });
+      refetch();
+    } catch (error: any) {
+      toast.error("Error", { description: error.message || "Failed to publish drafts" });
+    } finally {
+      setPublishingAllDrafts(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
       published: "default",
