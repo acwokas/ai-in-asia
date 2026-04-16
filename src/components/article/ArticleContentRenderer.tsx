@@ -55,26 +55,36 @@ const wrapClosingThoughts = (html: string): string => {
 };
 
 /**
- * Wrap content that starts with "The AI in Asia View:" into a styled
- * editorial-view container, if not already wrapped.
- * Handles both <p><strong>The AI in Asia View:</strong>...</p> and
- * bare <strong>The AI in Asia View:</strong> text... patterns.
+ * Wrap content that starts with "The AI in Asia View" into our standard
+ * editorial-view container, replacing any inline styling the CMS may have added.
  */
 const wrapEditorialViewParagraphs = (html: string): string => {
-  // Skip if already wrapped
+  // Skip if already using our editorial-view class
   if (html.includes('class="editorial-view"')) return html;
 
-  // Pattern: <strong>The AI in Asia View:</strong> followed by text until next heading/div/blockquote
-  return html.replace(
-    /(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
-    (match) => {
-      // Strip the leading <strong>The AI in Asia View:</strong> and re-add as heading
-      const content = match
-        .replace(/^(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*/i, '')
-        .trim();
-      return `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content}</p></div>`;
+  // Pattern 1: A div with arbitrary classes wrapping a <strong> containing "THE AI IN ASIA VIEW"
+  // Replace the wrapper div's classes with our editorial-view class
+  html = html.replace(
+    /<div\s+class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+    (_, content) => {
+      return `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`;
     }
   );
+
+  // Pattern 2: Bare <strong>The AI in Asia View:</strong> text (not in a styled div)
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
+      (match) => {
+        const content = match
+          .replace(/^(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*/i, '')
+          .trim();
+        return `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content}</p></div>`;
+      }
+    );
+  }
+
+  return html;
 };
 
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
