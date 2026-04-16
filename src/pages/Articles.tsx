@@ -325,8 +325,8 @@ const Articles = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/admin/publish-all")}>
-              <Globe className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={handlePublishAllDrafts} disabled={publishingAllDrafts}>
+              {publishingAllDrafts ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Globe className="h-4 w-4 mr-2" />}
               Publish All Drafts
             </Button>
             <Button onClick={() => navigate("/editor")}>
