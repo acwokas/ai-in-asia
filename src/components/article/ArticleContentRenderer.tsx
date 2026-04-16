@@ -501,21 +501,27 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Consolidate numbered lists
     consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
     
+    // Before stripping divs, convert any editorial-view styled divs to a placeholder
+    // that survives the div-stripping pass
+    const EDITORIAL_PLACEHOLDER_START = '<!--EDITORIAL_VIEW_START-->';
+    const EDITORIAL_PLACEHOLDER_END = '<!--EDITORIAL_VIEW_END-->';
+    consolidated = consolidated.replace(
+      /<div\s+[^>]*class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      (_, content) => `${EDITORIAL_PLACEHOLDER_START}${content}${EDITORIAL_PLACEHOLDER_END}`
+    );
+
     // Clean up div wrappers (only when no prompt boxes)
-    // Preserve divs that contain editorial-view-related content (e.g. "THE AI IN ASIA VIEW")
     if (!hasPromptBoxes) {
       consolidated = consolidated
         .replace(/<div>\s*<\/div>/g, '\n\n')
-        .replace(/<\/div>\s*<div>/g, '\n\n');
-      // Strip bare <div>/<\/div> tags but preserve divs with classes or containing editorial view
-      consolidated = consolidated.replace(/<div\b([^>]*)>/gi, (match, attrs) => {
-        if (attrs && attrs.trim()) return match; // keep divs with attributes (classes, etc.)
-        return '';
-      });
-      consolidated = consolidated.replace(/<\/div>/g, (match) => {
-        return '';
-      });
+        .replace(/<\/div>\s*<div>/g, '\n\n')
+        .replace(/<\/?div>/g, '');
     }
+
+    // Restore editorial view from placeholders
+    consolidated = consolidated
+      .replace(EDITORIAL_PLACEHOLDER_START, '<div class="editorial-view"><strong>The AI in Asia View</strong>')
+      .replace(EDITORIAL_PLACEHOLDER_END, '</div>');
 
     consolidated = consolidated
       .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
