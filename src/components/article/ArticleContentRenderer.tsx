@@ -55,21 +55,24 @@ const wrapClosingThoughts = (html: string): string => {
 };
 
 /**
- * Wrap paragraphs that start with "The AI in Asia View:" (inline, not already
- * inside an editorial-view div) into a styled editorial-view container.
- * Captures the paragraph containing the label and all following sibling
- * paragraphs until the next heading or non-paragraph element.
+ * Wrap content that starts with "The AI in Asia View:" into a styled
+ * editorial-view container, if not already wrapped.
+ * Handles both <p><strong>The AI in Asia View:</strong>...</p> and
+ * bare <strong>The AI in Asia View:</strong> text... patterns.
  */
 const wrapEditorialViewParagraphs = (html: string): string => {
   // Skip if already wrapped
   if (html.includes('class="editorial-view"')) return html;
 
-  // Match a <p> (or <strong>) that contains "The AI in Asia View" followed by
-  // content, then grab all subsequent <p> tags until a heading or other element.
+  // Pattern: <strong>The AI in Asia View:</strong> followed by text until next heading/div/blockquote
   return html.replace(
-    /(<p[^>]*>(?:<strong>)?\s*The AI in Asia View[:\s][\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
+    /(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
     (match) => {
-      return `<div class="editorial-view"><strong>The AI in Asia View</strong>${match.replace(/<p[^>]*>(?:<strong>)?\s*The AI in Asia View[:\s]*(?:<\/strong>)?\s*/i, '<p>')}</div>`;
+      // Strip the leading <strong>The AI in Asia View:</strong> and re-add as heading
+      const content = match
+        .replace(/^(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*/i, '')
+        .trim();
+      return `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content}</p></div>`;
     }
   );
 };
