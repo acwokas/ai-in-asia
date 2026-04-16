@@ -502,11 +502,19 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
     
     // Clean up div wrappers (only when no prompt boxes)
+    // Preserve divs that contain editorial-view-related content (e.g. "THE AI IN ASIA VIEW")
     if (!hasPromptBoxes) {
       consolidated = consolidated
         .replace(/<div>\s*<\/div>/g, '\n\n')
-        .replace(/<\/div>\s*<div>/g, '\n\n')
-        .replace(/<\/?div>/g, '');
+        .replace(/<\/div>\s*<div>/g, '\n\n');
+      // Strip bare <div>/<\/div> tags but preserve divs with classes or containing editorial view
+      consolidated = consolidated.replace(/<div\b([^>]*)>/gi, (match, attrs) => {
+        if (attrs && attrs.trim()) return match; // keep divs with attributes (classes, etc.)
+        return '';
+      });
+      consolidated = consolidated.replace(/<\/div>/g, (match) => {
+        return '';
+      });
     }
 
     consolidated = consolidated
