@@ -644,6 +644,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
       sanitizedHtml = sanitizedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
 
+      // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+      sanitizedHtml = wrapEditorialViewParagraphs(sanitizedHtml);
+
       // Extract FAQ from editorial-view boxes
       sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
 
@@ -760,10 +763,13 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       }
     );
 
-    // Extract FAQ from editorial-view boxes
     // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
     joinedHtml = joinedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
 
+    // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+    joinedHtml = wrapEditorialViewParagraphs(joinedHtml);
+
+    // Extract FAQ from editorial-view boxes
     joinedHtml = extractFaqFromEditorialView(joinedHtml);
 
     // Wrap Closing Thoughts in styled callout
