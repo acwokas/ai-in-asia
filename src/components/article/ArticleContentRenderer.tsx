@@ -853,6 +853,25 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       switch (block.type) {
         case 'paragraph':
           const contentText = fixEncoding(block.content || '');
+          
+          // Detect editorial view content ("THE AI IN ASIA VIEW" or "The AI in Asia View")
+          if (/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)/i.test(contentText)) {
+            // Strip the heading from the content text
+            const editorialBody = contentText
+              .replace(/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*(?:<\/strong>)?\s*/i, '')
+              .trim();
+            const sanitizedBody = DOMPurify.sanitize(processInlineFormatting(editorialBody), {
+              ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
+              ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+            });
+            return (
+              <div key={index} className="editorial-view">
+                <strong>The AI in Asia View</strong>
+                <p className="leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
+              </div>
+            );
+          }
+          
           const sanitizedContent = DOMPurify.sanitize(processInlineFormatting(contentText), {
             ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
             ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
