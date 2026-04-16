@@ -54,6 +54,26 @@ const wrapClosingThoughts = (html: string): string => {
   );
 };
 
+/**
+ * Wrap paragraphs that start with "The AI in Asia View:" (inline, not already
+ * inside an editorial-view div) into a styled editorial-view container.
+ * Captures the paragraph containing the label and all following sibling
+ * paragraphs until the next heading or non-paragraph element.
+ */
+const wrapEditorialViewParagraphs = (html: string): string => {
+  // Skip if already wrapped
+  if (html.includes('class="editorial-view"')) return html;
+
+  // Match a <p> (or <strong>) that contains "The AI in Asia View" followed by
+  // content, then grab all subsequent <p> tags until a heading or other element.
+  return html.replace(
+    /(<p[^>]*>(?:<strong>)?\s*The AI in Asia View[:\s][\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
+    (match) => {
+      return `<div class="editorial-view"><strong>The AI in Asia View</strong>${match.replace(/<p[^>]*>(?:<strong>)?\s*The AI in Asia View[:\s]*(?:<\/strong>)?\s*/i, '<p>')}</div>`;
+    }
+  );
+};
+
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const IN_ARTICLE_AD_SLOT_HORIZONTAL = "3478913062";
