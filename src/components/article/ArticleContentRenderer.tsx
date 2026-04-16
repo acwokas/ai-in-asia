@@ -502,11 +502,11 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
     
     // Before stripping divs, convert any editorial-view styled divs to a placeholder
-    // that survives the div-stripping pass
     const EDITORIAL_PLACEHOLDER_START = '<!--EDITORIAL_VIEW_START-->';
     const EDITORIAL_PLACEHOLDER_END = '<!--EDITORIAL_VIEW_END-->';
+    // Match div (with or without attrs) containing strong with editorial view heading
     consolidated = consolidated.replace(
-      /<div\s+[^>]*class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      /<div[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
       (_, content) => `${EDITORIAL_PLACEHOLDER_START}${content}${EDITORIAL_PLACEHOLDER_END}`
     );
 
@@ -522,6 +522,15 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     consolidated = consolidated
       .replace(EDITORIAL_PLACEHOLDER_START, '<div class="editorial-view"><strong>The AI in Asia View</strong>')
       .replace(EDITORIAL_PLACEHOLDER_END, '</div>');
+
+    // Fallback: if bare <strong>THE AI IN ASIA VIEW</strong> remains after div stripping,
+    // wrap it and following text into editorial-view
+    if (!consolidated.includes('editorial-view')) {
+      consolidated = consolidated.replace(
+        /<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<hr|$)/gi,
+        (_, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content.trim()}</p></div>`
+      );
+    }
 
     consolidated = consolidated
       .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
