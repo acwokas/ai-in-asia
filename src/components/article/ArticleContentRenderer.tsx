@@ -54,6 +54,39 @@ const wrapClosingThoughts = (html: string): string => {
   );
 };
 
+/**
+ * Wrap content that starts with "The AI in Asia View" into our standard
+ * editorial-view container, replacing any inline styling the CMS may have added.
+ */
+const wrapEditorialViewParagraphs = (html: string): string => {
+  // Skip if already using our editorial-view class
+  if (html.includes('class="editorial-view"')) return html;
+
+  // Pattern 1: A div with arbitrary classes wrapping a <strong> containing "THE AI IN ASIA VIEW"
+  // Replace the wrapper div's classes with our editorial-view class
+  html = html.replace(
+    /<div\s+class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+    (_, content) => {
+      return `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`;
+    }
+  );
+
+  // Pattern 2: Bare <strong>The AI in Asia View:</strong> text (not in a styled div)
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
+      (match) => {
+        const content = match
+          .replace(/^(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*/i, '')
+          .trim();
+        return `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content}</p></div>`;
+      }
+    );
+  }
+
+  return html;
+};
+
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const IN_ARTICLE_AD_SLOT_HORIZONTAL = "3478913062";
@@ -199,6 +232,49 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
       setPortalContainer(null);
     };
   }, [html, !!midArticleNode]);
+
+  // DOM-level: detect and wrap "THE AI IN ASIA VIEW" into editorial-view box
+  useEffect(() => {
+    if (!proseRef.current) return;
+    const el = proseRef.current;
+    // Find any <strong> containing editorial view text that isn't already inside .editorial-view
+    const strongs = el.querySelectorAll('strong');
+    strongs.forEach((strong) => {
+      const text = (strong.textContent || '').trim();
+      if (!/^THE\s+AI\s*IN\s*ASIA\s+VIEW|^The\s+AI\s+in\s+Asia\s+View/i.test(text)) return;
+      if (strong.closest('.editorial-view')) return;
+      
+      // Find the container (parent div or p)
+      const container = strong.parentElement;
+      if (!container) return;
+      
+      // Create editorial-view wrapper
+      const wrapper = document.createElement('div');
+      wrapper.className = 'editorial-view';
+      
+      // Create heading
+      const heading = document.createElement('strong');
+      heading.textContent = 'The AI in Asia View';
+      wrapper.appendChild(heading);
+      
+      // Move remaining content (after the strong) into a <p>
+      const p = document.createElement('p');
+      p.className = 'leading-relaxed';
+      
+      // Get text/HTML after the strong element
+      const clone = container.cloneNode(true) as HTMLElement;
+      const strongInClone = clone.querySelector('strong');
+      if (strongInClone) {
+        // Remove the strong and get remaining content
+        strongInClone.remove();
+        p.innerHTML = clone.innerHTML.replace(/^\s*:?\s*/, '').trim();
+      }
+      wrapper.appendChild(p);
+      
+      // Replace the container with the wrapper
+      container.parentNode?.replaceChild(wrapper, container);
+    });
+  }, [html]);
 
   // Activate AdSense on injected ad slots (production only)
   useEffect(() => {
@@ -468,12 +544,35 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Consolidate numbered lists
     consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
     
+    // Before stripping divs, convert any editorial-view styled divs to a placeholder
+    const EDITORIAL_PLACEHOLDER_START = '<!--EDITORIAL_VIEW_START-->';
+    const EDITORIAL_PLACEHOLDER_END = '<!--EDITORIAL_VIEW_END-->';
+    // Match div (with or without attrs) containing strong with editorial view heading
+    consolidated = consolidated.replace(
+      /<div[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      (_, content) => `${EDITORIAL_PLACEHOLDER_START}${content}${EDITORIAL_PLACEHOLDER_END}`
+    );
+
     // Clean up div wrappers (only when no prompt boxes)
     if (!hasPromptBoxes) {
       consolidated = consolidated
         .replace(/<div>\s*<\/div>/g, '\n\n')
         .replace(/<\/div>\s*<div>/g, '\n\n')
         .replace(/<\/?div>/g, '');
+    }
+
+    // Restore editorial view from placeholders
+    consolidated = consolidated
+      .replace(EDITORIAL_PLACEHOLDER_START, '<div class="editorial-view"><strong>The AI in Asia View</strong>')
+      .replace(EDITORIAL_PLACEHOLDER_END, '</div>');
+
+    // Fallback: if bare <strong>THE AI IN ASIA VIEW</strong> remains after div stripping,
+    // wrap it and following text into editorial-view
+    if (!consolidated.includes('editorial-view')) {
+      consolidated = consolidated.replace(
+        /<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<hr|$)/gi,
+        (_, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content.trim()}</p></div>`
+      );
     }
 
     consolidated = consolidated
@@ -644,6 +743,9 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
       sanitizedHtml = sanitizedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
 
+      // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+      sanitizedHtml = wrapEditorialViewParagraphs(sanitizedHtml);
+
       // Extract FAQ from editorial-view boxes
       sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
 
@@ -760,10 +862,13 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       }
     );
 
-    // Extract FAQ from editorial-view boxes
     // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
     joinedHtml = joinedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
 
+    // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+    joinedHtml = wrapEditorialViewParagraphs(joinedHtml);
+
+    // Extract FAQ from editorial-view boxes
     joinedHtml = extractFaqFromEditorialView(joinedHtml);
 
     // Wrap Closing Thoughts in styled callout
@@ -791,6 +896,25 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       switch (block.type) {
         case 'paragraph':
           const contentText = fixEncoding(block.content || '');
+          
+          // Detect editorial view content ("THE AI IN ASIA VIEW" or "The AI in Asia View")
+          if (/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)/i.test(contentText)) {
+            // Strip the heading from the content text
+            const editorialBody = contentText
+              .replace(/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*(?:<\/strong>)?\s*/i, '')
+              .trim();
+            const sanitizedBody = DOMPurify.sanitize(processInlineFormatting(editorialBody), {
+              ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
+              ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+            });
+            return (
+              <div key={index} className="editorial-view">
+                <strong>The AI in Asia View</strong>
+                <p className="leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
+              </div>
+            );
+          }
+          
           const sanitizedContent = DOMPurify.sanitize(processInlineFormatting(contentText), {
             ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
             ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
