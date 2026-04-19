@@ -157,8 +157,6 @@ const GuideEditor = () => {
   // Populate form from existing guide
   useEffect(() => {
     if (!existingGuide) return;
-    console.log("Guide ID from URL/params:", id);
-    console.log("Fetched guide data:", existingGuide);
     const g = existingGuide as any;
     const steps = safeParseJSON(g.steps, []);
     const workedExample = safeParseJSON(g.worked_example, {});
@@ -193,7 +191,6 @@ const GuideEditor = () => {
       author_id: g.author_id || null, is_editors_pick: g.is_editors_pick || false,
       preview_code: g.preview_code || "",
     });
-    console.log("Form state after hydration:", { title: g.title, pillar: g.pillar, topicTags: g.topic_tags, steps: safeParseJSON(g.steps, []) });
   }, [existingGuide]);
 
   // Auto-save every 60s

@@ -78,11 +78,7 @@ export const useArticleShareHandlers = ({
           }
           return;
         } catch (shareErr: any) {
-          if (shareErr.name !== "AbortError") {
-            console.log("Share API unavailable, using clipboard fallback", shareErr);
-          } else {
-            return;
-          }
+          if (shareErr.name === "AbortError") return;
         }
       }
 

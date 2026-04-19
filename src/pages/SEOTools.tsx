@@ -49,7 +49,6 @@ const SEOTools = () => {
       .limit(1);
     
     if (runningJobs && runningJobs.length > 0) {
-      console.log("Found running SEO job:", runningJobs[0].id);
       setQueueJobId(runningJobs[0].id);
       setIsFixingBulk(true);
     }
@@ -148,7 +147,6 @@ const SEOTools = () => {
           filter: `id=eq.${queueJobId}`,
         },
         (payload) => {
-          console.log('Real-time queue update:', payload.new);
           setQueueStatus(payload.new);
         }
       )

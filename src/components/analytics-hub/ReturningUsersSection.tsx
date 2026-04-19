@@ -28,7 +28,6 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
   const { data, isLoading } = useQuery({
     queryKey: ["analytics-hub-returning", range],
     queryFn: async () => {
-      console.log("ReturningUsersSection v4 loaded");
       const PAGE_SIZE = 1000;
 
       const fetchAllPageviews = async () => {

@@ -77,7 +77,6 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
           table: 'bulk_operation_queue'
         },
         (payload: any) => {
-          console.log('Queue update:', payload);
           refetch();
           
           // Show toast notification for completed or failed jobs
@@ -120,10 +119,9 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
       // Guard: don't spam invocations (e.g. during refetch/realtime bursts)
       if (now - lastAutoStartRef.current > 15000) {
         lastAutoStartRef.current = now;
-        console.log("Auto-starting bulk queue processor");
         supabase.functions
           .invoke("process-bulk-queue", { method: "POST" })
-          .catch((err) => console.log("Auto-start error (may be expected):", err));
+          .catch(() => {});
       }
     }
   }, [queueJobs, isResuming]);
@@ -153,10 +151,9 @@ export const BulkOperationQueue = ({ operationType }: BulkOperationQueueProps) =
     // Same processed_items as last poll - consider stalled
     const stalledForMs = now - prev.ts;
     if (processingJob.processed_items < processingJob.total_items && stalledForMs > 10000) {
-      console.log(`Auto-continuing processing for job ${processingJob.id} (stalled ${Math.round(stalledForMs / 1000)}s)`);
       supabase.functions
         .invoke("process-bulk-queue", { method: "POST" })
-        .catch((err) => console.log("Auto-continue error (may be expected):", err));
+        .catch(() => {});
 
       // Reset timer so we don't spam every render
       lastProgressRef.current = { ...prev, ts: now };

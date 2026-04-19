@@ -74,8 +74,7 @@ export default function KnowledgeEngine() {
           schema: 'public',
           table: 'enrichment_queue'
         },
-        (payload) => {
-          console.log('Queue update:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['enrichment-queue-status'] });
           queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
         }

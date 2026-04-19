@@ -82,8 +82,6 @@ const InternalLinksManager = () => {
 
       if (data?.suggestions) {
         toast.success("Link Suggestions Generated", { description: `Found ${data.suggestions.internalLinks?.length || 0} internal and ${data.suggestions.externalLinks?.length || 0} external link suggestions` });
-        
-        console.log("Link suggestions:", data.suggestions);
         navigate(`/editor?id=${articleId}`);
       }
     } catch (error: any) {

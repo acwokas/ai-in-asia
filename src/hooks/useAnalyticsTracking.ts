@@ -81,7 +81,6 @@ const fetchGeoCountry = async (sessionId: string) => {
     const cfCountry = document.querySelector('meta[name="cf-country"]')?.getAttribute('content') || 'unknown';
 
     if (cfCountry && cfCountry !== 'unknown') {
-      console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${cfCountry} (via CF meta tag)`);
       await supabase
         .from('analytics_sessions')
         .update({ country: cfCountry, city: null })
@@ -111,16 +110,13 @@ const fetchGeoCountry = async (sessionId: string) => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const country = TZ_COUNTRY[tz] || null;
     if (country) {
-      console.log(`[geo] Session ${sessionId.slice(0, 8)}… → ${country} (via timezone ${tz})`);
       await supabase
         .from('analytics_sessions')
         .update({ country, city: null })
         .eq('session_id', sessionId);
-    } else {
-      console.warn(`[geo] No CF meta tag and unknown timezone "${tz}"`);
     }
-  } catch (err) {
-    console.warn(`[geo] Geo detection failed:`, err);
+  } catch {
+    // geo detection is best-effort
   }
 };
 

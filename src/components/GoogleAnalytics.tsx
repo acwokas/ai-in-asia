@@ -98,15 +98,7 @@ export const trackEvent = (
       event_data: (eventParams || {}) as Json,
       page_path: window.location.pathname,
     })
-    .then(({ error }) => {
-      if (error && !import.meta.env.PROD) {
-        console.warn("[trackEvent] Supabase insert error:", error.message);
-      }
-    });
-
-  if (!import.meta.env.PROD) {
-    console.log("GA4 Event (dev mode):", eventName, eventParams);
-  }
+    .then(() => {});
 };
 
 // Common events

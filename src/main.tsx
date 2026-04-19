@@ -42,8 +42,8 @@ if ("serviceWorker" in navigator) {
           sessionStorage.setItem("aiinasia_sw_cleaned", "true");
           window.location.reload();
         }
-      } catch (error) {
-        console.log("Service worker cleanup failed:", error);
+      } catch {
+        // non-critical
       }
       return;
     }
@@ -51,9 +51,7 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("/sw.js")
       .then((reg) => reg.update())
-      .catch((error) => {
-        console.log("Service worker registration failed:", error);
-      });
+      .catch(() => {});
   });
 }
 

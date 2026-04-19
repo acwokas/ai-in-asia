@@ -14,12 +14,10 @@ export function useTrendingAutoRefresh() {
         const { data: timestamp } = await supabase.rpc('get_trending_refresh_timestamp');
         const isStale = !timestamp || (Date.now() - new Date(timestamp).getTime()) > STALE_THRESHOLD_MS;
         if (isStale) {
-          supabase.rpc('rotate_trending_articles').then(() => {
-            console.log('Trending articles auto-refreshed');
-          });
+          supabase.rpc('rotate_trending_articles');
         }
-      } catch (e) {
-        console.log('Trending auto-refresh check failed:', e);
+      } catch {
+        // non-critical background refresh
       }
     })();
   }, []);

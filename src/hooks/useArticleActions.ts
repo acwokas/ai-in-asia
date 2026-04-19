@@ -211,7 +211,6 @@ export const createShareHandlers = (
           return;
         } catch (shareErr: any) {
           if (shareErr.name === "AbortError") return;
-          console.log("Share API unavailable, using clipboard fallback", shareErr);
         }
       }
 

@@ -223,9 +223,6 @@ const Article = () => {
           // Use dualPush for both dataLayer AND Supabase dual-write
           dualPush(m === 90 ? "article_complete" : `article_read_${m}`, payload);
 
-          if (!import.meta.env.PROD) {
-            console.log(`[GA4-INLINE] Fired ${payload.event} at ${pct}%`);
-          }
         }
       }
     };
