@@ -30,13 +30,13 @@ const TOOLS: Tool[] = [
   },
   {
     name: "AI Jargon Bingo",
-    desc: "5×5 bingo card of AI buzzwords — play during your next meeting!",
+    desc: "5×5 bingo card of AI buzzwords - play during your next meeting!",
     icon: Grid3X3,
     to: "/tools/ai-bingo",
   },
   {
     name: "AI Meeting Bingo",
-    desc: "Spot meeting clichés and get 5 in a row to win — confetti included!",
+    desc: "Spot meeting clichés and get 5 in a row to win - confetti included!",
     icon: Users,
     to: "/tools/ai-meeting-bingo",
     isNew: true,
@@ -166,7 +166,7 @@ const ToolsIndex = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
         title="Interactive AI Tools | AI in Asia"
-        description="Free interactive tools — AI readiness quiz, jargon bingo, prompt builder, ROI calculator, and more."
+        description="Free interactive tools - AI readiness quiz, jargon bingo, prompt builder, ROI calculator, and more."
         canonical="https://aiinasia.com/tools"
       />
       <Header />

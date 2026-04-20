@@ -174,7 +174,7 @@ const NewsletterPopup = () => {
                 Join 5,000+ AI professionals across Asia
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Get the week's most important AI stories, policy updates, and tool reviews — delivered free every week.
+                Get the week's most important AI stories, policy updates, and tool reviews - delivered free every week.
               </p>
             </div>
 
@@ -193,7 +193,7 @@ const NewsletterPopup = () => {
                 disabled={isSubmitting}
                 className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold cursor-pointer"
               >
-                {isSubmitting ? "Subscribing…" : "Subscribe — It's Free"}
+                {isSubmitting ? "Subscribing…" : "Subscribe - It's Free"}
               </Button>
             </form>
 

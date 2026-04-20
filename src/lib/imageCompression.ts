@@ -33,11 +33,11 @@ export const compressForOG = async (
   const dstRatio = OG_IMAGE_WIDTH / OG_IMAGE_HEIGHT;
   let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
   if (srcRatio > dstRatio) {
-    // Source is wider — crop sides
+    // Source is wider - crop sides
     sw = bitmap.height * dstRatio;
     sx = (bitmap.width - sw) / 2;
   } else {
-    // Source is taller — crop top/bottom
+    // Source is taller - crop top/bottom
     sh = bitmap.width / dstRatio;
     sy = (bitmap.height - sh) / 2;
   }
@@ -123,7 +123,7 @@ export const compressImage = async (
           const tmpCtx = tmpCanvas.getContext('2d', { alpha: true })!;
           tmpCtx.drawImage(img, 0, 0, checkW, checkH);
           const pixels = tmpCtx.getImageData(0, 0, checkW, checkH).data;
-          // Sample every 4th pixel for speed — still catches transparent regions
+          // Sample every 4th pixel for speed - still catches transparent regions
           for (let i = 3; i < pixels.length; i += 16) {
             if (pixels[i] < 250) { hasTransparency = true; break; }
           }

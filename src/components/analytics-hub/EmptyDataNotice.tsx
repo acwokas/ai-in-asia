@@ -18,7 +18,7 @@ export const EmptyDataNotice = ({ variant = "pending", message }: Props) => {
   return (
     <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
       <Info className="h-4 w-4 shrink-0" />
-      <span>{message ?? "Custom tracking events will populate within 24–48 hours"}</span>
+      <span>{message ?? "Custom tracking events will populate within 24-48 hours"}</span>
     </div>
   );
 };

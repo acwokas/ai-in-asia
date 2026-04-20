@@ -100,8 +100,8 @@ function formatDateRange(start: string, end: string) {
   const sMonth = MONTHS[s.getMonth()];
   if (start === end) return `${s.getDate()} ${sMonth} ${s.getFullYear()}`;
   if (s.getMonth() === e.getMonth())
-    return `${s.getDate()}–${e.getDate()} ${sMonth} ${s.getFullYear()}`;
-  return `${s.getDate()} ${sMonth} – ${e.getDate()} ${MONTHS[e.getMonth()]} ${e.getFullYear()}`;
+    return `${s.getDate()}-${e.getDate()} ${sMonth} ${s.getFullYear()}`;
+  return `${s.getDate()} ${sMonth} - ${e.getDate()} ${MONTHS[e.getMonth()]} ${e.getFullYear()}`;
 }
 
 function daysUntil(dateStr: string) {

@@ -169,7 +169,7 @@ const AIMeetingBingo = () => {
             <h2 className="font-display text-lg font-bold text-foreground mb-3">How to play</h2>
             <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
               <li>Open this page during your next AI meeting or webinar</li>
-              <li>Click on phrases as you hear them — they'll light up in amber</li>
+              <li>Click on phrases as you hear them - they'll light up in amber</li>
               <li>Get 5 in a row (horizontal, vertical, or diagonal) to win!</li>
               <li>Share your victory to prove you survived another AI meeting</li>
             </ol>

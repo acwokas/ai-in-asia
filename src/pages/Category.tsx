@@ -32,7 +32,7 @@ import { VoicesPerspectivesCarousel } from "@/components/voices/VoicesPerspectiv
 import { VoicesExpertDirectory } from "@/components/voices/VoicesExpertDirectory";
 import { VoicesSubmitCTA } from "@/components/voices/VoicesSubmitCTA";
 
-// Lazy-load interactive tools — they are below the fold
+// Lazy-load interactive tools - they are below the fold
 const PulseTracker = lazy(() => import("@/components/category/tools/PulseTracker").then(m => ({ default: m.PulseTracker })));
 const ROICalculator = lazy(() => import("@/components/category/tools/ROICalculator").then(m => ({ default: m.ROICalculator })));
 const ToolFinderQuiz = lazy(() => import("@/components/category/tools/ToolFinderQuiz").then(m => ({ default: m.ToolFinderQuiz })));
@@ -541,7 +541,7 @@ const Category = () => {
                 accent={cfg.accent}
               />
 
-              {/* 7. INTERACTIVE TOOLS — card grid */}
+              {/* 7. INTERACTIVE TOOLS - card grid */}
               {(() => {
                 const meta = TOOL_META[slug || "news"];
                 const fallbackTools = [

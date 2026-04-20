@@ -104,7 +104,7 @@ export const ProgressiveImage = memo(({
 
   return (
     <div ref={imgRef} className={cn("relative overflow-hidden", className)}>
-      {/* Blurred placeholder – only if image takes >100ms */}
+      {/* Blurred placeholder - only if image takes >100ms */}
       {showPlaceholder && !isLoaded && (
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}

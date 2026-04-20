@@ -29,7 +29,7 @@ function pctChange(current: number, previous: number) {
 
 function ChangeIndicator({ current, previous }: { current: number; previous: number }) {
   const pct = pctChange(current, previous);
-  if (pct === 0) return <span className="text-xs text-muted-foreground">—</span>;
+  if (pct === 0) return <span className="text-xs text-muted-foreground">-</span>;
   return (
     <span className={`flex items-center gap-0.5 text-xs font-medium ${pct > 0 ? "text-green-500" : "text-red-500"}`}>
       {pct > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}

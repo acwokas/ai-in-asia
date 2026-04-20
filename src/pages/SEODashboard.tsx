@@ -199,7 +199,7 @@ function ArticleSEOHealthTab({ articles, isLoading }: { articles: ArticleSEO[] |
                   <TableCell><FieldBadge ok={a.seo.details.imageAlt} label={a.seo.details.imageAlt ? "Set" : "Missing"} /></TableCell>
                   <TableCell className="text-right"><ScoreBadge pct={a.seo.pct} /></TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground">
-                    {a.published_at ? new Date(a.published_at).toLocaleDateString() : "—"}
+                    {a.published_at ? new Date(a.published_at).toLocaleDateString() : "-"}
                   </TableCell>
                 </TableRow>
                 {expandedId === a.id && (

@@ -108,7 +108,7 @@ function parseSignals(content: any): Signal[] {
   const signals: Signal[] = [];
 
   if (numberPositions.length >= 2) {
-    // We have numbered sections — parse each
+    // We have numbered sections - parse each
     for (let i = 0; i < numberPositions.length; i++) {
       const pos = numberPositions[i];
       const end = i + 1 < numberPositions.length
@@ -119,7 +119,7 @@ function parseSignals(content: any): Signal[] {
       if (parsed) signals.push(parsed);
     }
   } else {
-    // ── Strategy 2: Unnumbered — split by headings (## Title) ──
+    // ── Strategy 2: Unnumbered - split by headings (## Title) ──
     const headingSections = textContent.split(/(?=\n\s*##\s+[^#])/g).filter(s => s.trim());
 
     if (headingSections.length >= 2) {

@@ -57,7 +57,7 @@ const ThreeBeforeNineLanding = memo(() => {
       >
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 px-5 py-4 md:py-0 md:h-[100px]">
 
-          {/* LEFT — Typographic lockup + date */}
+          {/* LEFT - Typographic lockup + date */}
           <div className="shrink-0 md:w-[18%] flex flex-col items-start">
             <div className="flex items-baseline gap-1">
               <span className="font-bold text-[36px] leading-none tracking-tight" style={{ color: AMBER }}>3</span>
@@ -69,7 +69,7 @@ const ThreeBeforeNineLanding = memo(() => {
             </span>
           </div>
 
-          {/* MIDDLE — Three signal headlines */}
+          {/* MIDDLE - Three signal headlines */}
           <div className="flex-1 min-w-0 space-y-0">
             {bullets.slice(0, 3).map((bullet, i) => (
               <div key={i} className="flex items-start gap-2 leading-[1.8]">
@@ -79,7 +79,7 @@ const ThreeBeforeNineLanding = memo(() => {
             ))}
           </div>
 
-          {/* RIGHT — Thumbnails + CTA */}
+          {/* RIGHT - Thumbnails + CTA */}
           <div className="shrink-0 flex flex-col items-end gap-1.5">
             {uniqueThumbs.length > 0 && (
               <div className="flex items-center gap-1.5">

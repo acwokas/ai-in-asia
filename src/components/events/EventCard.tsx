@@ -193,7 +193,7 @@ const EventCard = ({ event }: EventCardProps) => {
           </Link>
         </h3>
 
-        {/* Row 3: Metadata — wider spacing */}
+        {/* Row 3: Metadata - wider spacing */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground mb-2">
           <span className="inline-flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 shrink-0" />

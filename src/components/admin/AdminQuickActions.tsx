@@ -35,7 +35,7 @@ export const AdminQuickActions = ({
    * Batch-generate OG-optimised JPEGs for all existing articles.
    * Processes in batches of BATCH_SIZE with a short pause between batches
    * to avoid browser memory pressure and Supabase rate limits.
-   * Safe to re-run — skips articles that already have an OG image.
+   * Safe to re-run - skips articles that already have an OG image.
    */
   const handleGenerateOgImages = async () => {
     setOgMigrating(true);
@@ -63,7 +63,7 @@ export const AdminQuickActions = ({
 
       for (let i = 0; i < total; i++) {
         const art = articles[i];
-        setOgProgress(`${i + 1}/${total}  OK:${processed} FAIL:${failed} SKIP:${skipped} — ${art.slug?.slice(0, 30)}`);
+        setOgProgress(`${i + 1}/${total}  OK:${processed} FAIL:${failed} SKIP:${skipped} - ${art.slug?.slice(0, 30)}`);
 
         // Derive OG path
         const marker = "/article-images/";
@@ -181,7 +181,7 @@ export const AdminQuickActions = ({
 
       for (let i = 0; i < total; i++) {
         const art = articles[i];
-        setCompressProgress(`${i + 1}/${total}  OK:${compressed} SKIP:${skipped} FAIL:${failed} — ${art.slug?.slice(0, 30)}`);
+        setCompressProgress(`${i + 1}/${total}  OK:${compressed} SKIP:${skipped} FAIL:${failed} - ${art.slug?.slice(0, 30)}`);
 
         const marker = "/article-images/";
         const mIdx = art.featured_image_url.indexOf(marker);

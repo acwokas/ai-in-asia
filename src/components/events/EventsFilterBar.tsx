@@ -238,7 +238,7 @@ export default function EventsFilterBar({
             >
               <CalendarDays className="h-3.5 w-3.5" />
               {filters.dateFrom && filters.dateTo
-                ? `${format(filters.dateFrom, "MMM d")} – ${format(filters.dateTo, "MMM d")}`
+                ? `${format(filters.dateFrom, "MMM d")} - ${format(filters.dateTo, "MMM d")}`
                 : "Pick range"}
             </Button>
           </PopoverTrigger>

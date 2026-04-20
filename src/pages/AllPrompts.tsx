@@ -670,7 +670,7 @@ const AllPrompts = () => {
           </>
         )}
 
-        {/* ═══ INDEX PAGE: Search/filter active — show flat grid ═══ */}
+        {/* ═══ INDEX PAGE: Search/filter active - show flat grid ═══ */}
         {isIndexPage && !isLoading && isSearchActive && (
           <div className="container mx-auto px-4 py-8">
             <div className="flex flex-wrap items-center gap-2 mb-6">

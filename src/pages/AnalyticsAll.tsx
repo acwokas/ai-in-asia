@@ -37,7 +37,7 @@ const AnalyticsAll = () => {
     return startOfDay(subDays(new Date(), days)).toISOString();
   }, [range]);
 
-  // Shared session stats — single source of truth
+  // Shared session stats - single source of truth
   const { data: sessionStats, isLoading: sessionStatsLoading, isError: sessionStatsError } = useAnalyticsSessionStats(startDate, range);
 
   // Additional quick stats

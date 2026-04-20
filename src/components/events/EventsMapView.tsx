@@ -151,7 +151,7 @@ export default function EventsMapView({ events }: Props) {
         if (coords) {
           physical.push({ ...e, coords });
         } else {
-          // Can't geocode — skip from map but include in virtual list as fallback
+          // Can't geocode - skip from map but include in virtual list as fallback
           virtual.push(e);
         }
       }
@@ -465,7 +465,7 @@ export default function EventsMapView({ events }: Props) {
         )}
       </div>
 
-      {/* Mini event list — events in current viewport */}
+      {/* Mini event list - events in current viewport */}
       {visibleEvents.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">

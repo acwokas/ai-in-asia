@@ -204,13 +204,13 @@ export const SEOPerformanceSection = ({ startDate, range }: Props) => {
 
   const tips: string[] = [];
   if (d.totalOrganic === 0) {
-    tips.push("1. No organic search traffic detected. The prerender fix deployed March 21, 2026 enables Google indexing — expect organic sessions to appear within 2-4 weeks as pages are crawled and indexed.");
+    tips.push("1. No organic search traffic detected. The prerender fix deployed March 21, 2026 enables Google indexing - expect organic sessions to appear within 2-4 weeks as pages are crawled and indexed.");
     tips.push("2. Submit your sitemap to Google Search Console and Bing Webmaster Tools to accelerate discovery.");
   } else {
-    tips.push(`1. Organic search accounts for ${d.organicPct}% of traffic (${(d.totalOrganic ?? 0).toLocaleString()} sessions). ${Number.parseFloat(d.organicPct ?? "0") < 30 ? "Industry benchmark for content sites is 40-60% organic — focus on SEO-optimized titles and meta descriptions." : "This is a healthy organic share. Maintain momentum with regular content updates."}`);
+    tips.push(`1. Organic search accounts for ${d.organicPct}% of traffic (${(d.totalOrganic ?? 0).toLocaleString()} sessions). ${Number.parseFloat(d.organicPct ?? "0") < 30 ? "Industry benchmark for content sites is 40-60% organic - focus on SEO-optimized titles and meta descriptions." : "This is a healthy organic share. Maintain momentum with regular content updates."}`);
     if (d.recoveryPctChange !== 0) {
       const direction = d.recoveryPctChange > 0 ? "UP" : "DOWN";
-      tips.push(`2. Post-prerender fix (Mar 21): organic traffic ${d.recoveryPctChange > 0 ? "increased" : "decreased"} ${direction} by ${Math.abs(d.recoveryPctChange)}% (${d.preFixDaily}/day → ${d.postFixDaily}/day). ${d.recoveryPctChange > 0 ? "Recovery is on track — full indexing typically takes 4-8 weeks." : "Allow 4-8 weeks for full re-indexing. Monitor Search Console for crawl errors."}`);
+      tips.push(`2. Post-prerender fix (Mar 21): organic traffic ${d.recoveryPctChange > 0 ? "increased" : "decreased"} ${direction} by ${Math.abs(d.recoveryPctChange)}% (${d.preFixDaily}/day → ${d.postFixDaily}/day). ${d.recoveryPctChange > 0 ? "Recovery is on track - full indexing typically takes 4-8 weeks." : "Allow 4-8 weeks for full re-indexing. Monitor Search Console for crawl errors."}`);
     }
     if (d.topLandingPages.length > 0) {
       const topPage = d.topLandingPages[0];

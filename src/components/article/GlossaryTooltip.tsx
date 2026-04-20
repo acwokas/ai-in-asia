@@ -59,7 +59,7 @@ export function annotateGlossaryHtml(html: string): { html: string; termCount: n
       return seg;
     }
 
-    // Text segment — skip if inside a tag we don't annotate
+    // Text segment - skip if inside a tag we don't annotate
     if (skipDepth > 0) return seg;
     if (seg.trim().length < 2) return seg;
 

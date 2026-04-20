@@ -108,7 +108,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
   const topEntryPages = data?.topEntryPages ?? [];
   const recentAvg = data?.recentAvg ?? 0;
   const priorAvg = data?.priorAvg ?? 0;
-  const peakDay = data?.peakDay ?? { date: "—", sessions: 0 };
+  const peakDay = data?.peakDay ?? { date: "-", sessions: 0 };
 
   return (
     <div className="space-y-6">
@@ -175,14 +175,14 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
             tips.push(`1. Traffic stable at ~${formatNumber(recentAvg)} sessions/day (±${Math.abs(changePct)}% week-over-week).`);
           }
         } else {
-          tips.push(`1. ${formatNumber(total)} total sessions this period, averaging ${formatNumber(avgDaily)}/day. ${(peakDay?.sessions ?? 0) > (avgDaily * 1.5) ? `Peak day was ${peakDay?.date ?? "—"} with ${formatNumber(peakDay?.sessions)} sessions.` : ""}`);
+          tips.push(`1. ${formatNumber(total)} total sessions this period, averaging ${formatNumber(avgDaily)}/day. ${(peakDay?.sessions ?? 0) > (avgDaily * 1.5) ? `Peak day was ${peakDay?.date ?? "-"} with ${formatNumber(peakDay?.sessions)} sessions.` : ""}`);
         }
 
         const top = topEntryPages[0];
         if (top && total > 0) {
           const pct = Math.round((top.count / total) * 100);
           if (pct > 50) {
-            tips.push(`2. ${pct}% of all sessions land on "${top.page}" — single point of failure. Prioritise SEO on other high-value pages.`);
+            tips.push(`2. ${pct}% of all sessions land on "${top.page}" - single point of failure. Prioritise SEO on other high-value pages.`);
           } else {
             tips.push(`2. Top entry page "${top.page}" captures ${pct}% of sessions (${formatNumber(top.count)} visits).`);
           }
@@ -192,7 +192,7 @@ export const NewUsersSection = ({ startDate, range, totalSessions }: Props) => {
         if (entryCount <= 3 && total > 100) {
           tips.push(`3. Only ${entryCount} entry pages across ${formatNumber(total)} sessions. Invest in long-tail SEO for more entry points.`);
         } else if (entryCount >= 8) {
-          tips.push(`3. ${entryCount} distinct entry pages — good SEO diversity.`);
+          tips.push(`3. ${entryCount} distinct entry pages - good SEO diversity.`);
         }
 
         return tips;

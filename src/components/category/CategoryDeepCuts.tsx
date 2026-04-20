@@ -46,7 +46,7 @@ export function CategoryDeepCuts({ articles, cfg, slug, revealProps, selectedFil
         </div>
       ) : (
         <p className="text-sm text-muted-foreground py-5">
-          {selectedFilter !== "All" ? `No articles matching "${selectedFilter}" yet` : "No deep cuts yet — check back soon."}
+          {selectedFilter !== "All" ? `No articles matching "${selectedFilter}" yet` : "No deep cuts yet - check back soon."}
         </p>
       )}
     </section>

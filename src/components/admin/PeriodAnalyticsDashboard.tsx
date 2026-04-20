@@ -203,7 +203,7 @@ export function PeriodAnalyticsDashboard({ period }: Props) {
       {/* ── Trend Chart ──────────────────────────────────────── */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Page Views — {period === "24h" ? "Hourly" : "Daily"}</CardTitle>
+          <CardTitle className="text-base">Page Views - {period === "24h" ? "Hourly" : "Daily"}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (

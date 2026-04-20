@@ -217,7 +217,7 @@ export const NavigationSection = ({ startDate, range }: Props) => {
         const topEl = data.clickedElements[0];
         if (topEl && totalNav > 0) {
           const pct = Math.round((topEl.count / totalNav) * 100);
-          tips.push(`1. "${topEl.fullName}" captures ${pct}% of all nav interactions (${(topEl?.count ?? 0).toLocaleString()} clicks). This is your most-used navigation element — ensure your highest-priority content (flagship articles, conversion pages) is accessible from this position.`);
+          tips.push(`1. "${topEl.fullName}" captures ${pct}% of all nav interactions (${(topEl?.count ?? 0).toLocaleString()} clicks). This is your most-used navigation element - ensure your highest-priority content (flagship articles, conversion pages) is accessible from this position.`);
         }
 
         // Low scroll depth on top page

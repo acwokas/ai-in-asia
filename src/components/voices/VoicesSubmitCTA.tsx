@@ -30,7 +30,7 @@ export const VoicesSubmitCTA = () => {
             </p>
           </div>
           <a
-            href="mailto:me@adrianwatkins.com?subject=Voices%20Submission%20—%20AI%20in%20Asia"
+            href="mailto:me@adrianwatkins.com?subject=Voices%20Submission%20-%20AI%20in%20Asia"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-black text-amber-400 font-bold text-sm hover:bg-black/90 transition-colors shrink-0"
           >
             Get in Touch <ArrowRight className="h-4 w-4" />

@@ -418,7 +418,7 @@ export default function AIJobImpact() {
   return (
     <>
       <SEOHead
-        title="Will AI Take My Job? — AI Career Impact Calculator"
+        title="Will AI Take My Job? - AI Career Impact Calculator"
         description="Discover how artificial intelligence will impact your career in Asia-Pacific. Get personalised insights for your role and country."
         canonical="https://aiinasia.com/tools/ai-job-impact"
         schemaJson={{
@@ -462,7 +462,7 @@ export default function AIJobImpact() {
                 Will AI Take My Job?
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10">
-                Find out how AI might reshape your career in Asia-Pacific. Personalised insights — not scare tactics.
+                Find out how AI might reshape your career in Asia-Pacific. Personalised insights - not scare tactics.
               </p>
 
               {/* Calculator Form */}
@@ -516,7 +516,7 @@ export default function AIJobImpact() {
                     <span>
                       Showing analysis for <strong className="text-foreground">{result.role.title}</strong>
                       {result.role.category !== "General" && ` (${result.role.category})`}
-                       — closest match to your search.
+                       - closest match to your search.
                     </span>
                   </div>
                 )}
@@ -610,7 +610,7 @@ export default function AIJobImpact() {
                         />
                       </div>
                       <span className="text-lg font-bold text-foreground whitespace-nowrap">
-                        {result.role.impactTimelineYears[0]}–{result.role.impactTimelineYears[1]} years
+                        {result.role.impactTimelineYears[0]}-{result.role.impactTimelineYears[1]} years
                       </span>
                     </div>
                   </Card>
@@ -654,8 +654,8 @@ export default function AIJobImpact() {
             <div className="grid gap-4 mb-12">
               {[
                 { title: "How AI Is Reshaping Jobs Across Southeast Asia", slug: "/category/business", desc: "Explore our coverage of AI-driven workforce changes" },
-                { title: "AI Policy Atlas — Regulation by Country", slug: "/ai-policy-atlas", desc: "See how different countries are regulating AI" },
-                { title: "AI Guides — Upskill for the AI Era", slug: "/guides", desc: "Practical guides to using AI tools in your career" },
+                { title: "AI Policy Atlas - Regulation by Country", slug: "/ai-policy-atlas", desc: "See how different countries are regulating AI" },
+                { title: "AI Guides - Upskill for the AI Era", slug: "/guides", desc: "Practical guides to using AI tools in your career" },
               ].map((link) => (
                 <Link key={link.slug} to={link.slug} className="group">
                   <Card className="p-4 hover:shadow-md transition-all hover:-translate-y-0.5 border-border/60 hover:border-primary/30">

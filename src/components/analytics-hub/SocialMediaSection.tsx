@@ -295,7 +295,7 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
       const published: PublerPost[] = Array.isArray(publishedRaw) ? publishedRaw : publishedRaw?.posts || [];
       const scheduled: PublerPost[] = Array.isArray(scheduledRaw) ? scheduledRaw : scheduledRaw?.posts || [];
 
-      // Use published posts directly — Publer's post_insights endpoint is not available
+      // Use published posts directly - Publer's post_insights endpoint is not available
       const enrichedPublished = published;
 
       const allPosts = [...enrichedPublished.map(p => ({ ...p, _state: "published" as const })), ...scheduled.map(p => ({ ...p, _state: "scheduled" as const }))];
@@ -390,11 +390,11 @@ export const SocialMediaSection = ({ startDate, range }: Props) => {
   } else {
     const top = d.platforms[0];
     if (top) {
-      tips.push(`1. ${top.name} drives ${top.pct}% of social traffic (${(top.sessions ?? 0).toLocaleString()} sessions). ${top.bounceRate > 60 ? `Bounce rate is ${top.bounceRate}% — try platform-specific landing pages.` : `Engagement is solid (${top.avgDuration}s avg). Double down.`}`);
+      tips.push(`1. ${top.name} drives ${top.pct}% of social traffic (${(top.sessions ?? 0).toLocaleString()} sessions). ${top.bounceRate > 60 ? `Bounce rate is ${top.bounceRate}% - try platform-specific landing pages.` : `Engagement is solid (${top.avgDuration}s avg). Double down.`}`);
     }
     const weak = d.platforms.filter(p => p.sessions < 5);
     if (weak.length > 0) tips.push(`2. ${weak.map(p => p.name).join(", ")} ${weak.length === 1 ? "has" : "have"} <5 sessions. Invest or reallocate.`);
-    if (parseFloat(socialPct) < 10) tips.push(`3. Social traffic is only ${socialPct}% — benchmark is 15-25% for content sites.`);
+    if (parseFloat(socialPct) < 10) tips.push(`3. Social traffic is only ${socialPct}% - benchmark is 15-25% for content sites.`);
   }
 
   return (

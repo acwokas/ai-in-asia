@@ -180,7 +180,7 @@ const PolicyRegion = () => {
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": REGION_SEO[region || '']?.title || `${regionData?.name || 'Region'} — AI Policy Atlas`,
+          "name": REGION_SEO[region || '']?.title || `${regionData?.name || 'Region'} - AI Policy Atlas`,
           "description": regionData?.description || REGION_SEO[region || '']?.description || `AI policy and regulation coverage for ${regionData?.name || 'this region'}`,
           "url": `https://aiinasia.com/ai-policy-atlas/${region}`,
           "inLanguage": "en-GB",

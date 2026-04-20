@@ -186,7 +186,7 @@ const ArticlesFeed = () => {
             Latest Articles
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
-            Stay up to date with AI developments across Asia — news, business,
+            Stay up to date with AI developments across Asia - news, business,
             lifestyle and more.
           </p>
         </div>

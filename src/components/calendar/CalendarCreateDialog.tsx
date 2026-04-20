@@ -70,7 +70,7 @@ export const CalendarCreateDialog = ({ open, onOpenChange, date, authors, catego
       <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            New Article — {date?.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+            New Article - {date?.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">

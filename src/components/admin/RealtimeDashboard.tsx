@@ -159,7 +159,7 @@ export function RealtimeDashboard() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
-          <span>Live — updated {secondsAgo}s ago</span>
+          <span>Live - updated {secondsAgo}s ago</span>
         </div>
         <Button variant="ghost" size="sm" onClick={handleRefresh} className="text-xs gap-1.5">
           <RefreshCw className="h-3.5 w-3.5" /> Refresh

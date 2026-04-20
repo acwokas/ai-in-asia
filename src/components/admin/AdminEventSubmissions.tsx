@@ -318,7 +318,7 @@ const AdminEventSubmissions = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />
-                        {format(new Date(selectedSubmission.start_date), "MMM dd, yyyy")} — {format(new Date(selectedSubmission.end_date), "MMM dd, yyyy")}
+                        {format(new Date(selectedSubmission.start_date), "MMM dd, yyyy")} - {format(new Date(selectedSubmission.end_date), "MMM dd, yyyy")}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="w-3.5 h-3.5" />

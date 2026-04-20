@@ -537,7 +537,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="AI in ASIA — AI Hype to Real-World Impact in Asia"
+        title="AI in ASIA - AI Hype to Real-World Impact in Asia"
         description="Your trusted source for AI news, insights, and education across Asia-Pacific. Breaking news, expert analysis, and practical guides on artificial intelligence."
         canonical="https://aiinasia.com/"
         ogImage="https://aiinasia.com/icons/aiinasia-512.png?v=3"
@@ -578,7 +578,7 @@ const Index = () => {
         {/* SEO H1 */}
         <h1 className="sr-only">AI News, Insights & Innovation Across Asia-Pacific</h1>
 
-        {/* Hero: Lead Story (65%) + Secondary Stories (35%) — two-column */}
+        {/* Hero: Lead Story (65%) + Secondary Stories (35%) - two-column */}
         <section className="container mx-auto px-4 pt-3 pb-3">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
@@ -721,7 +721,7 @@ const Index = () => {
               ) : null}
             </div>
 
-            {/* SECONDARY STORIES — 4 visual mini-cards with image on top */}
+            {/* SECONDARY STORIES - 4 visual mini-cards with image on top */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-3 lg:h-[480px]">
               {isLoading ? (
                 <>
@@ -1181,13 +1181,13 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="headline text-[22px] md:text-[28px] font-bold">Free AI Tools</h2>
-              <p className="text-muted-foreground text-sm md:text-base mt-2">Try our interactive tools — no signup required</p>
+              <p className="text-muted-foreground text-sm md:text-base mt-2">Try our interactive tools - no signup required</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {[
                 { to: "/tools/ai-job-impact", icon: "M5 3a2 2 0 0 0-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V5a2 2 0 0 0-2-2H5ZM9 7h6M9 11h6M9 15h4", title: "Will AI Take My Job?", desc: "Get a personalised AI impact score for your role and country" },
                 { to: "/tools/jargon-translator", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", title: "AI Jargon Translator", desc: "Decode corporate AI buzzwords into plain English" },
-                { to: "/tools/ai-meeting-bingo", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 7a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75", title: "AI Meeting Bingo", desc: "Spot meeting clichés and win — confetti included!", isNew: true },
+                { to: "/tools/ai-meeting-bingo", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 7a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75", title: "AI Meeting Bingo", desc: "Spot meeting clichés and win - confetti included!", isNew: true },
                 { to: "/tools/ai-policy-tracker", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", title: "AI Policy Tracker", desc: "Explore AI regulations across Asia-Pacific", isNew: true },
               ].map((tool) => (
                 <Link

@@ -171,7 +171,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
               : "No visitor_id data yet",
           },
           { label: "Bounce Rate", value: `${bounceRate}%` },
-          { label: "Avg Pages/Session", value: avgPages, sub: parseFloat(avgPages) > 10 ? "High value — may include bot traffic" : "Total pageviews ÷ sessions with PV" },
+          { label: "Avg Pages/Session", value: avgPages, sub: parseFloat(avgPages) > 10 ? "High value - may include bot traffic" : "Total pageviews ÷ sessions with PV" },
           { label: "Unique Visitors", value: uniqueVisitors },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
@@ -183,7 +183,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
       </div>
 
       <p className="text-xs text-muted-foreground bg-muted/50 rounded p-2">
-        Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} — return rate will become meaningful after 7+ days of data collection.
+        Visitor tracking started {format(new Date(TRACKING_START_DATE), "MMM d, yyyy")} - return rate will become meaningful after 7+ days of data collection.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -244,7 +244,7 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         const bounce = bounceRate;
 
         if (totalUniqueVisitors === 0) {
-          tips.push("1. No visitor_id data yet. Cookie-based return rate tracking started — results will appear within 24-48 hours.");
+          tips.push("1. No visitor_id data yet. Cookie-based return rate tracking started - results will appear within 24-48 hours.");
           tips.push("2. Once data flows, aim for a 20%+ return rate and <50% bounce rate as healthy baselines.");
           return tips;
         }
@@ -252,17 +252,17 @@ export const ReturningUsersSection = ({ startDate, range, totalSessions, uniqueV
         if (rate < 15) {
           tips.push(`1. Only ${formatNumber(returningVisitors)} returning visitors out of ${formatNumber(totalUniqueVisitors)} (${rate}%). Three fixes: (a) add a "Continue Reading" section, (b) enable push notifications, (c) launch a weekly email digest.`);
         } else if (rate < 30) {
-          tips.push(`1. ${rate}% return rate (${formatNumber(returningVisitors)} returning visitors) — approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
+          tips.push(`1. ${rate}% return rate (${formatNumber(returningVisitors)} returning visitors) - approaching the 25-30% benchmark. Focus on converting returners to newsletter subscribers.`);
         } else {
-          tips.push(`1. Strong ${rate}% return rate with ${formatNumber(returningVisitors)} returning visitors — above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
+          tips.push(`1. Strong ${rate}% return rate with ${formatNumber(returningVisitors)} returning visitors - above the 25-30% benchmark. Consider a members-only section for loyal readers.`);
         }
 
         if (bounce > 60) {
           tips.push(`2. ${bounce}% bounce rate (industry average: 40-60%). Add "Read Next" recommendations at 75% scroll depth and related articles in the sidebar.`);
         } else if (bounce <= 40) {
-          tips.push(`2. ${bounce}% bounce rate — excellent, well below the 40-60% industry average. Visitors are exploring ${avgPages} pages per session.`);
+          tips.push(`2. ${bounce}% bounce rate - excellent, well below the 40-60% industry average. Visitors are exploring ${avgPages} pages per session.`);
         } else {
-          tips.push(`2. ${bounce}% bounce rate — within the 40-60% industry norm. Test adding a "Trending Now" sidebar widget.`);
+          tips.push(`2. ${bounce}% bounce rate - within the 40-60% industry norm. Test adding a "Trending Now" sidebar widget.`);
         }
 
         const bestStreak = (topStreaks?.[0] as any)?.longest_streak ?? 0;

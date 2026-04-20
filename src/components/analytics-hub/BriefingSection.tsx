@@ -81,7 +81,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
 
   return (
     <div className="space-y-6">
-      {!data.hasEventData && <EmptyDataNotice message="Briefing tracking events (view, story read, complete) will populate within 24–48 hours" />}
+      {!data.hasEventData && <EmptyDataNotice message="Briefing tracking events (view, story read, complete) will populate within 24-48 hours" />}
 
       {data.hasEventData && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -174,7 +174,7 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         if (lastWeek > 0 && thisWeek > 0) {
           const changePct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
           if (changePct > 10) {
-            tips.push(`1. Briefing sessions up ${changePct}% this week (${thisWeek} vs ${lastWeek} last week). Momentum is building — maintain daily publishing cadence and promote new editions via push notification within 30 minutes of publish.`);
+            tips.push(`1. Briefing sessions up ${changePct}% this week (${thisWeek} vs ${lastWeek} last week). Momentum is building - maintain daily publishing cadence and promote new editions via push notification within 30 minutes of publish.`);
           } else if (changePct < -10) {
             tips.push(`1. Briefing sessions dropped ${Math.abs(changePct)}% (${thisWeek} vs ${lastWeek} last week). Check: was an edition missed? Were subject lines less compelling? Review the 3 highest-traffic days and replicate what worked.`);
           } else {
@@ -189,11 +189,11 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         const views = data.views;
         if (data.hasEventData && views > 0) {
           if (rate < 50) {
-            tips.push(`2. ${rate}% completion rate across ${(views ?? 0).toLocaleString()} views — below the 60-80% benchmark for briefing-style content. Shorten individual signal summaries to under 200 words each, use bold headlines for scannability, and put the most compelling story first to hook readers.`);
+            tips.push(`2. ${rate}% completion rate across ${(views ?? 0).toLocaleString()} views - below the 60-80% benchmark for briefing-style content. Shorten individual signal summaries to under 200 words each, use bold headlines for scannability, and put the most compelling story first to hook readers.`);
           } else if (rate >= 80) {
-            tips.push(`2. ${rate}% completion rate — excellent. Readers are consuming the full briefing. ${Number(data.storiesPerView) > 2 ? `They read an avg of ${data.storiesPerView} stories per view, showing strong engagement depth.` : 'Consider adding a 4th story to test appetite for more content.'}`);
+            tips.push(`2. ${rate}% completion rate - excellent. Readers are consuming the full briefing. ${Number(data.storiesPerView) > 2 ? `They read an avg of ${data.storiesPerView} stories per view, showing strong engagement depth.` : 'Consider adding a 4th story to test appetite for more content.'}`);
           } else {
-            tips.push(`2. ${rate}% completion rate — solid. ${(data.storyReads ?? 0).toLocaleString()} total story reads across ${(views ?? 0).toLocaleString()} views (${data.storiesPerView} stories/view avg). Experiment with story order — put opinion/analysis pieces before straight news to see if completion improves.`);
+            tips.push(`2. ${rate}% completion rate - solid. ${(data.storyReads ?? 0).toLocaleString()} total story reads across ${(views ?? 0).toLocaleString()} views (${data.storiesPerView} stories/view avg). Experiment with story order - put opinion/analysis pieces before straight news to see if completion improves.`);
           }
         }
 
@@ -201,13 +201,13 @@ export const BriefingSection = ({ startDate, range }: Props) => {
         const outbound = data.outboundClicks;
         if (views > 0 && outbound > 0) {
           const clickRate = Math.round((outbound / views) * 100);
-          tips.push(`3. ${clickRate}% of briefing readers click source links (${(outbound ?? 0).toLocaleString()} clicks). ${clickRate > 20 ? 'Excellent engagement — readers trust your curation. Add sponsored/affiliate links alongside editorial ones to monetise this traffic.' : 'Make source links more prominent with styled "Read the full story →" CTAs and consider opening them in new tabs to preserve the briefing session.'}`);
+          tips.push(`3. ${clickRate}% of briefing readers click source links (${(outbound ?? 0).toLocaleString()} clicks). ${clickRate > 20 ? 'Excellent engagement - readers trust your curation. Add sponsored/affiliate links alongside editorial ones to monetise this traffic.' : 'Make source links more prominent with styled "Read the full story →" CTAs and consider opening them in new tabs to preserve the briefing session.'}`);
         } else if (data.hasEventData && views > 0 && outbound === 0) {
-          tips.push("3. No outbound clicks tracked — readers are consuming the summaries but not clicking through. Either the summaries are comprehensive enough (good) or source links aren't prominent enough. Test adding \"Read more →\" buttons with contrasting styling.");
+          tips.push("3. No outbound clicks tracked - readers are consuming the summaries but not clicking through. Either the summaries are comprehensive enough (good) or source links aren't prominent enough. Test adding \"Read more →\" buttons with contrasting styling.");
         } else {
           const dur = data.avgDuration;
           if (dur > 0) {
-            tips.push(`3. Average briefing session: ${dur}s. ${dur < 60 ? 'Readers are scanning quickly — lead with the most newsworthy story and use bullet points for rapid consumption.' : dur > 180 ? 'Deep engagement — readers are spending significant time. This is your stickiest content format.' : 'Healthy read time for a briefing format.'}`);
+            tips.push(`3. Average briefing session: ${dur}s. ${dur < 60 ? 'Readers are scanning quickly - lead with the most newsworthy story and use bullet points for rapid consumption.' : dur > 180 ? 'Deep engagement - readers are spending significant time. This is your stickiest content format.' : 'Healthy read time for a briefing format.'}`);
           }
         }
 

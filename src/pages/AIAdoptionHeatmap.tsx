@@ -315,7 +315,7 @@ export default function AIAdoptionHeatmap() {
                   {/* Score range */}
                   <div>
                     <label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2 block">
-                      Score Range: {scoreRange[0]} – {scoreRange[1]}
+                      Score Range: {scoreRange[0]} - {scoreRange[1]}
                     </label>
                     <div className="flex items-center gap-4">
                       <input

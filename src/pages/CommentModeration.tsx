@@ -389,7 +389,7 @@ const CommentModeration = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+            Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage(p => p - 1)}>

@@ -194,7 +194,7 @@ export default function ComposeTab() {
       } else {
         const { data: newEd, error: edErr } = await supabase
           .from("newsletter_editions")
-          .insert({ edition_date: editionDate, subject_line: `AiiNASiA Weekly Brief — ${editionDate}`, status: "draft" })
+          .insert({ edition_date: editionDate, subject_line: `AiiNASiA Weekly Brief - ${editionDate}`, status: "draft" })
           .select("id")
           .single();
         if (edErr) throw edErr;

@@ -118,7 +118,7 @@ const NotFound = () => {
     { name: "Learn", slug: "learn", icon: Compass },
   ];
 
-  // ── Redirect lookup in progress — show slim progress bar, no flash ─────────
+  // ── Redirect lookup in progress - show slim progress bar, no flash ─────────
   if (checkingRedirect) {
     return (
       <>
@@ -132,7 +132,7 @@ const NotFound = () => {
     );
   }
 
-  // ── Redirect rule found — bounce silently ──────────────────────────────────
+  // ── Redirect rule found - bounce silently ──────────────────────────────────
   if (redirectRule?.to_path) {
     return <Navigate to={redirectRule.to_path} replace />;
   }
@@ -180,7 +180,7 @@ const NotFound = () => {
             ) : (
               <Button size="lg" variant="ghost" disabled>
                 <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                Thanks — we'll fix it
+                Thanks - we'll fix it
               </Button>
             )}
           </div>
@@ -194,7 +194,7 @@ const NotFound = () => {
           )}
         </div>
 
-        {/* Contextual suggestions — shown when slug keywords match articles */}
+        {/* Contextual suggestions - shown when slug keywords match articles */}
         {suggestedArticles && suggestedArticles.length > 0 && (
           <div className="mb-12">
             <h3 className="text-xl font-semibold mb-4 text-center">You might be looking for</h3>
@@ -230,7 +230,7 @@ const NotFound = () => {
           </form>
         </div>
 
-        {/* Fallback categories — only shown when no suggestions */}
+        {/* Fallback categories - only shown when no suggestions */}
         {(!suggestedArticles || suggestedArticles.length === 0) && (
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">

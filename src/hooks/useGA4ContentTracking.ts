@@ -4,7 +4,7 @@ import { trackEvent } from "@/components/GoogleAnalytics";
 /**
  * GA4 content-engagement tracking for articles.
  * Fires scroll-depth milestones, engagement score on exit,
- * and newsletter-CTA impressions / clicks — all via dataLayer only.
+ * and newsletter-CTA impressions / clicks - all via dataLayer only.
  */
 export const useGA4ContentTracking = (
   article: {
@@ -108,7 +108,7 @@ export const useGA4ContentTracking = (
 
     const targets = document.querySelectorAll(".newsletter-cta, [data-newsletter]");
     if (!targets.length) {
-      // Elements may not be mounted yet — retry once after a short delay
+      // Elements may not be mounted yet - retry once after a short delay
       const timer = setTimeout(() => {
         const retryTargets = document.querySelectorAll(".newsletter-cta, [data-newsletter]");
         if (retryTargets.length) observeTargets(retryTargets);

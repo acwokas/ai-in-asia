@@ -202,7 +202,7 @@ const Admin = () => {
     },
   });
 
-  // Authors (lazy — only when dialog open)
+  // Authors (lazy - only when dialog open)
   const { data: authors, refetch: refetchAuthors } = useQuery({
     queryKey: ["all-authors"],
     enabled: authorsDialogOpen,

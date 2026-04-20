@@ -197,7 +197,7 @@ const ProfileDashboard = ({ stats, achievements, onSwitchToAchievements }: Profi
         {(stats?.streak_days || 0) > 0 ? (
           <p className="text-sm mt-3">
             <Flame className="h-4 w-4 inline text-orange-500 mr-1" />
-            {stats!.streak_days} day streak — keep it going!
+            {stats!.streak_days} day streak - keep it going!
           </p>
         ) : (
           <p className="text-sm text-muted-foreground mt-3">Start a new streak by reading today</p>

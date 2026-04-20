@@ -111,8 +111,8 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
           { label: "Active Subscribers", value: data.activeSubs },
           { label: "Total Subscribers", value: data.totalSubs },
           { label: "New (period)", value: data.newSubs },
-          { label: "CTA Conversion", value: data.hasCtaEvents ? `${data.ctaConversion}%` : "—" },
-          { label: "Submissions", value: data.hasCtaEvents ? data.submissions : "—" },
+          { label: "CTA Conversion", value: data.hasCtaEvents ? `${data.ctaConversion}%` : "-" },
+          { label: "Submissions", value: data.hasCtaEvents ? data.submissions : "-" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border p-3 text-center">
             <p className="text-xl font-bold">{typeof s.value === "number" ? (s.value ?? 0).toLocaleString() : s.value}</p>
@@ -121,7 +121,7 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         ))}
       </div>
 
-      {!data.hasCtaEvents && <EmptyDataNotice message="CTA tracking events (view, click, submit) will populate within 24–48 hours" />}
+      {!data.hasCtaEvents && <EmptyDataNotice message="CTA tracking events (view, click, submit) will populate within 24-48 hours" />}
 
       {data.hasCtaEvents && (
         <div>
@@ -167,7 +167,7 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
                 </div>
               </div>
             )) : (
-              <EmptyDataNotice message="No newsletter editions sent yet — metrics will appear after the first send" />
+              <EmptyDataNotice message="No newsletter editions sent yet - metrics will appear after the first send" />
             )}
           </div>
         </div>
@@ -180,7 +180,7 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         const unsub = data.unsubscribed;
 
         if (total === 0 && !data.hasCtaEvents) {
-          tips.push("1. No subscribers and no CTA tracking events yet. Start by adding newsletter signup CTAs to your highest-traffic pages — article pages, homepage, and the 3 Before 9 briefing page are ideal placements.");
+          tips.push("1. No subscribers and no CTA tracking events yet. Start by adding newsletter signup CTAs to your highest-traffic pages - article pages, homepage, and the 3 Before 9 briefing page are ideal placements.");
           tips.push("2. Use the EndOfContentNewsletter component at the bottom of articles and the InlineNewsletterSignup component mid-article for maximum visibility.");
           tips.push("3. Industry benchmark: well-placed CTAs on content sites convert 2-5% of page views to signups.");
           return tips;
@@ -191,13 +191,13 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         const viewToSubmit = data.viewToSubmit;
         if (data.hasCtaEvents) {
           if (conv === 0 && data.ctaViews > 0) {
-            tips.push(`1. ${(data.ctaViews ?? 0).toLocaleString()} CTA views but 0 clicks — your CTA is being seen but ignored. Test: (a) change the headline from generic "Subscribe" to value-driven copy like "Get the AI briefing every morning, free", (b) add social proof ("Join 500+ readers"), (c) try a different colour that contrasts with the page background.`);
+            tips.push(`1. ${(data.ctaViews ?? 0).toLocaleString()} CTA views but 0 clicks - your CTA is being seen but ignored. Test: (a) change the headline from generic "Subscribe" to value-driven copy like "Get the AI briefing every morning, free", (b) add social proof ("Join 500+ readers"), (c) try a different colour that contrasts with the page background.`);
           } else if (conv < 2) {
-            tips.push(`1. CTA view-to-click rate is ${conv}% (${(data.ctaClicks ?? 0).toLocaleString()} clicks from ${(data.ctaViews ?? 0).toLocaleString()} views) — below the 2-5% industry average. Reposition CTAs: place one inline at ~40% scroll depth in articles and another as a sticky footer bar on mobile. Test urgency copy like "Today's briefing drops at 9am".`);
+            tips.push(`1. CTA view-to-click rate is ${conv}% (${(data.ctaClicks ?? 0).toLocaleString()} clicks from ${(data.ctaViews ?? 0).toLocaleString()} views) - below the 2-5% industry average. Reposition CTAs: place one inline at ~40% scroll depth in articles and another as a sticky footer bar on mobile. Test urgency copy like "Today's briefing drops at 9am".`);
           } else if (conv >= 5) {
-            tips.push(`1. CTA conversion at ${conv}% — above the 2-5% industry average (${(data.ctaClicks ?? 0).toLocaleString()} clicks from ${(data.ctaViews ?? 0).toLocaleString()} views). Your placement and copy are working. Scale by adding CTAs to more pages, especially category landing pages and guide pages.`);
+            tips.push(`1. CTA conversion at ${conv}% - above the 2-5% industry average (${(data.ctaClicks ?? 0).toLocaleString()} clicks from ${(data.ctaViews ?? 0).toLocaleString()} views). Your placement and copy are working. Scale by adding CTAs to more pages, especially category landing pages and guide pages.`);
           } else {
-            tips.push(`1. CTA conversion at ${conv}% — within the 2-5% industry benchmark. View-to-submit rate: ${viewToSubmit}%. To improve: reduce form friction (single email field, no name required) and add an instant confirmation with a preview of what they'll receive.`);
+            tips.push(`1. CTA conversion at ${conv}% - within the 2-5% industry benchmark. View-to-submit rate: ${viewToSubmit}%. To improve: reduce form friction (single email field, no name required) and add an instant confirmation with a preview of what they'll receive.`);
           }
         }
 
@@ -205,21 +205,21 @@ export const CTANewsletterSection = ({ startDate, range }: Props) => {
         if (data.hasSendData) {
           const openRate = data.avgOpenRate;
           if (openRate < 20) {
-            tips.push(`2. Average open rate is ${openRate}% — below the 20-25% industry benchmark. Test subject lines: use numbers, questions, or preview the top story. Send time also matters — test Tuesday/Wednesday mornings vs current schedule.`);
+            tips.push(`2. Average open rate is ${openRate}% - below the 20-25% industry benchmark. Test subject lines: use numbers, questions, or preview the top story. Send time also matters - test Tuesday/Wednesday mornings vs current schedule.`);
           } else if (openRate >= 35) {
-            tips.push(`2. ${openRate}% average open rate — excellent, well above the 20-25% industry norm. Your subject lines and send timing are resonating. Consider adding A/B testing on subject lines to push even higher.`);
+            tips.push(`2. ${openRate}% average open rate - excellent, well above the 20-25% industry norm. Your subject lines and send timing are resonating. Consider adding A/B testing on subject lines to push even higher.`);
           } else {
-            tips.push(`2. ${openRate}% average open rate — solid, at or above the 20-25% industry benchmark. ${unsub > 0 ? `${unsub} unsubscribes (${Math.round((unsub / Math.max(total, 1)) * 100)}% churn) — monitor this after each send.` : 'No unsubscribes yet — great retention.'}`);
+            tips.push(`2. ${openRate}% average open rate - solid, at or above the 20-25% industry benchmark. ${unsub > 0 ? `${unsub} unsubscribes (${Math.round((unsub / Math.max(total, 1)) * 100)}% churn) - monitor this after each send.` : 'No unsubscribes yet - great retention.'}`);
           }
         } else if (active > 0) {
-          tips.push(`2. You have ${(active ?? 0).toLocaleString()} confirmed subscriber${active === 1 ? '' : 's'} but no editions sent yet. Send your first newsletter to establish a cadence — weekly sends see the best balance of engagement and low unsubscribe rates.`);
+          tips.push(`2. You have ${(active ?? 0).toLocaleString()} confirmed subscriber${active === 1 ? '' : 's'} but no editions sent yet. Send your first newsletter to establish a cadence - weekly sends see the best balance of engagement and low unsubscribe rates.`);
         }
 
         // Growth
         const newSubs = data.newSubs;
         if (newSubs > 0 && active > 0) {
           const growthPct = Math.round((newSubs / active) * 100);
-          tips.push(`3. ${(newSubs ?? 0).toLocaleString()} new subscriber${newSubs === 1 ? '' : 's'} this period (${growthPct}% growth). ${newSubs >= 10 ? 'Strong growth — set up a 3-email welcome sequence: (1) "Here\'s what to expect", (2) "Our 3 best articles", (3) "Reply and tell us what topics you care about".' : 'Steady trickle — boost signups by adding exit-intent popups on desktop and a floating signup bar on mobile.'}`);
+          tips.push(`3. ${(newSubs ?? 0).toLocaleString()} new subscriber${newSubs === 1 ? '' : 's'} this period (${growthPct}% growth). ${newSubs >= 10 ? 'Strong growth - set up a 3-email welcome sequence: (1) "Here\'s what to expect", (2) "Our 3 best articles", (3) "Reply and tell us what topics you care about".' : 'Steady trickle - boost signups by adding exit-intent popups on desktop and a floating signup bar on mobile.'}`);
         } else if (newSubs === 0 && active > 0) {
           tips.push(`3. No new subscribers this period. Re-audit your CTA placements: are they visible without scrolling? Test adding a full-width signup banner between articles on the homepage and at the end of each 3 Before 9 briefing.`);
         }

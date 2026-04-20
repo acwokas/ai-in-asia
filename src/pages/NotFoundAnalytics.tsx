@@ -194,7 +194,7 @@ const NotFoundAnalytics = () => {
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-1">404 Audit</h1>
-            <p className="text-muted-foreground">Broken URLs hitting your site — fix them with one-click redirects.</p>
+            <p className="text-muted-foreground">Broken URLs hitting your site - fix them with one-click redirects.</p>
           </div>
           {allPaths && allPaths.length > 0 && (
             <Button

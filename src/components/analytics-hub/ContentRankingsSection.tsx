@@ -66,8 +66,8 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
   }));
 
   const getCategoryName = (id: string | null) => {
-    if (!id) return "—";
-    return data.categories.find(c => c.id === id)?.name || "—";
+    if (!id) return "-";
+    return data.categories.find(c => c.id === id)?.name || "-";
   };
 
   const totalArticles = filtered.length;
@@ -127,10 +127,10 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
           const ratio = secondArticle && (secondArticle?.engagement ?? 0) > 0 ? ((topArticle?.engagement ?? 0) / (secondArticle?.engagement ?? 1)).toFixed(1) : null;
           tips.push(
             `1. #1 article "${title}" scores ${(topArticle?.engagement ?? 0).toLocaleString()} (${(topArticle?.view_count ?? 0).toLocaleString()} views, ${(topArticle?.like_count ?? 0).toLocaleString()} likes, ${(topArticle?.comment_count ?? 0).toLocaleString()} comments)` +
-            (catName !== "—" ? ` in ${catName}` : "") +
+            (catName !== "-" ? ` in ${catName}` : "") +
             (dayOfWeek ? `, published on a ${dayOfWeek}` : "") +
             (ratio ? `, ${ratio}x more than #2` : "") +
-            `. Study what makes it perform — headline style, topic angle, publish timing — and systematically replicate that formula across new content.`
+            `. Study what makes it perform - headline style, topic angle, publish timing - and systematically replicate that formula across new content.`
           );
         }
 
@@ -138,7 +138,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
         const catCounts: Record<string, { count: number; totalEng: number }> = {};
         data.articles.forEach(a => {
           const cat = getCategoryName(a.primary_category_id);
-          if (cat === "—") return;
+          if (cat === "-") return;
           if (!catCounts[cat]) catCounts[cat] = { count: 0, totalEng: 0 };
           catCounts[cat].count++;
           catCounts[cat].totalEng += a.engagement;
@@ -162,7 +162,7 @@ export const ContentRankingsSection = ({ startDate, range }: Props) => {
             tips.push(`3. Bottom 10 articles average only ${(avgBottomViews ?? 0).toLocaleString()} views. Three options: (a) add internal links from your top 10 articles to drive traffic, (b) consolidate thin articles into comprehensive pillar content, (c) set up 301 redirects from dead content to related high-performers.`);
           } else {
             const avgBottom = Math.round(bottom10.reduce((s, a) => s + a.engagement, 0) / bottom10.length);
-            tips.push(`3. Bottom 10 average ${(avgBottom ?? 0).toLocaleString()} engagement (${(avgBottomViews ?? 0).toLocaleString()} views). They're getting traffic but not sparking interaction — add discussion questions at the end, enable comments, or rewrite headlines to set clearer expectations.`);
+            tips.push(`3. Bottom 10 average ${(avgBottom ?? 0).toLocaleString()} engagement (${(avgBottomViews ?? 0).toLocaleString()} views). They're getting traffic but not sparking interaction - add discussion questions at the end, enable comments, or rewrite headlines to set clearer expectations.`);
           }
         }
 

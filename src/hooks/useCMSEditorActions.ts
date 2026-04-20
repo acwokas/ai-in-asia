@@ -148,7 +148,7 @@ export const useCMSEditorActions = ({ state, initialData, authors }: UseCMSEdito
           .from('article-images')
           .upload(ogPath, ogFile, { upsert: true });
       } catch (ogErr) {
-        // Non-critical — hero image still works, social preview may just be larger
+        // Non-critical - hero image still works, social preview may just be larger
         console.warn('OG image generation failed:', ogErr);
       }
 

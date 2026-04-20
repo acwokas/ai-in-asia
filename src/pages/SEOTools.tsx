@@ -684,7 +684,7 @@ const SEOTools = () => {
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     <li>Google Search Console: Submit both the main sitemap and the Google News sitemap as separate entries</li>
                     <li>Bing Webmaster Tools: Submit the main sitemap URL</li>
-                    <li>The Google News sitemap only includes articles from the last 48 hours — Google crawls it frequently for Discover and News tab eligibility</li>
+                    <li>The Google News sitemap only includes articles from the last 48 hours - Google crawls it frequently for Discover and News tab eligibility</li>
                     <li>Both sitemaps are automatically updated on every request</li>
                   </ul>
                 </div>

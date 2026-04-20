@@ -433,7 +433,7 @@ export default function AISalaryCompass() {
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-5 w-5 text-amber-500" />
               <h2 className="font-display text-lg font-bold text-foreground">
-                {selectedRole} {colAdjusted ? "(COL-Adjusted)" : ""} — {LEVEL_LABELS[level]}
+                {selectedRole} {colAdjusted ? "(COL-Adjusted)" : ""} - {LEVEL_LABELS[level]}
               </h2>
             </div>
             <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">

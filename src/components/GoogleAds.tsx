@@ -54,7 +54,7 @@ const GoogleAd = ({ slot, format = "auto", responsive = true, className }: Googl
 
 export default GoogleAd;
 
-/** In-article ad — between content sections */
+/** In-article ad - between content sections */
 export const InArticleAd = ({ className }: { className?: string }) => (
   <div className={cn("my-8 max-w-full overflow-hidden", className)}>
     <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>
@@ -62,7 +62,7 @@ export const InArticleAd = ({ className }: { className?: string }) => (
   </div>
 );
 
-/** Sidebar ad — desktop article rail */
+/** Sidebar ad - desktop article rail */
 export const SidebarAd = ({ className }: { className?: string }) => (
   <div className={cn("w-full overflow-hidden", className)}>
     <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>
@@ -70,7 +70,7 @@ export const SidebarAd = ({ className }: { className?: string }) => (
   </div>
 );
 
-/** Multiplex ad — below article content */
+/** Multiplex ad - below article content */
 export const MultiplexAd = ({ className }: { className?: string }) => (
   <div className={cn("my-8 max-w-full overflow-hidden", className)}>
     <p className="text-[10px] text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Advertisement</p>

@@ -160,7 +160,7 @@ export default function MostDiscussedSection({ excludeIds = [] }: MostDiscussedS
                       {article.latestComment.content.length > 80 ? "…" : ""}"
                     </p>
                     <p className="text-[12px] text-muted-foreground/50 mt-1">
-                      — {article.latestComment.author_name}
+                      - {article.latestComment.author_name}
                     </p>
                   </div>
                 )}

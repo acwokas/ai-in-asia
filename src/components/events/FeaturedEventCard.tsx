@@ -135,7 +135,7 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
           </Badge>
         </div>
 
-        {/* Event name — slightly larger than regular cards */}
+        {/* Event name - slightly larger than regular cards */}
         <h3 className="text-xl md:text-[1.35rem] font-extrabold mb-3 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           <Link
             to={`/events/${event.slug}`}
@@ -145,7 +145,7 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
           </Link>
         </h3>
 
-        {/* Metadata row — wider spacing */}
+        {/* Metadata row - wider spacing */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground mb-3">
           <span className="inline-flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -157,7 +157,7 @@ const FeaturedEventCard = ({ event }: FeaturedEventCardProps) => {
           </span>
         </div>
 
-        {/* Info pills row — with format pill */}
+        {/* Info pills row - with format pill */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <Badge className="bg-primary/15 text-primary border-primary/20 text-xs">{event.event_type}</Badge>
           <Badge className={`text-xs ${FORMAT_STYLES[eventFormat] || ""}`}>{eventFormat}</Badge>

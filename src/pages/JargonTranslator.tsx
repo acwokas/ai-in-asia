@@ -213,7 +213,7 @@ export default function JargonTranslator() {
       toast.success("Thanks! Your jargon has been submitted");
       setSubmissionText("");
     } catch {
-      toast.error("Submission failed — please try again");
+      toast.error("Submission failed - please try again");
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +221,7 @@ export default function JargonTranslator() {
 
   const shareUrl = "https://aiinasia.com/tools/jargon-translator";
   const scoreLabel = getScoreLabel(jargonScore);
-  const shareText = `I just translated a press release that scored ${jargonScore}% jargon — "${scoreLabel.label}" Try it:`;
+  const shareText = `I just translated a press release that scored ${jargonScore}% jargon - "${scoreLabel.label}" Try it:`;
   const modeColors = MODE_COLORS[mode];
 
   const schemaJson = {
@@ -239,7 +239,7 @@ export default function JargonTranslator() {
   return (
     <>
       <SEOHead
-        title="AI Jargon Translator — Decode the Buzzwords"
+        title="AI Jargon Translator - Decode the Buzzwords"
         description="Paste any AI press release and get a plain-English translation. Cut through the corporate jargon with AI in Asia's Jargon Translator."
         canonical={shareUrl}
         schemaJson={schemaJson}
@@ -298,7 +298,7 @@ export default function JargonTranslator() {
                 >
                   {m.icon}
                   <span>{m.label}</span>
-                  <span className="hidden sm:inline text-xs opacity-70">— {m.desc}</span>
+                  <span className="hidden sm:inline text-xs opacity-70">- {m.desc}</span>
                 </button>
               );
             })}
@@ -390,7 +390,7 @@ export default function JargonTranslator() {
                     <TypewriterText trigger={translationKey}>
                       <p className="text-foreground leading-relaxed">{translatedInput}</p>
                       <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <p className="text-green-400 font-medium text-sm">Refreshingly human — no jargon detected!</p>
+                        <p className="text-green-400 font-medium text-sm">Refreshingly human - no jargon detected!</p>
                       </div>
                     </TypewriterText>
                   </div>
@@ -439,7 +439,7 @@ export default function JargonTranslator() {
             </Card>
           </div>
 
-          {/* Jargon Score — prominent display between panels and rest */}
+          {/* Jargon Score - prominent display between panels and rest */}
           {hasTranslated && !isTranslating && matches.length > 0 && (
             <div ref={scoreRef} className="mb-12 animate-fade-in">
               <Card className="border-border bg-card overflow-hidden">

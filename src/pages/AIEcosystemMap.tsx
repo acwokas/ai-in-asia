@@ -208,7 +208,7 @@ const AIEcosystemMap = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead
-        title="AI Ecosystem Map: Asia-Pacific — Companies, Startups & Labs | AI in Asia"
+        title="AI Ecosystem Map: Asia-Pacific - Companies, Startups & Labs | AI in Asia"
         description="Explore the companies, labs, and investors shaping AI across the Asia-Pacific region. Interactive map of 100+ AI organisations."
         canonical="/ai-ecosystem-map"
       />
@@ -299,7 +299,7 @@ const AIEcosystemMap = () => {
 
         {/* Map + Sidebar */}
         <section className="flex flex-col md:flex-row" style={{ height: "calc(100vh - 220px)", minHeight: 500 }}>
-          {/* Sidebar — desktop */}
+          {/* Sidebar - desktop */}
           <aside className="hidden md:flex flex-col w-80 lg:w-96 border-r border-border bg-background overflow-hidden">
             <div className="p-4 border-b border-border space-y-3">
               <FilterPanel />
@@ -432,7 +432,7 @@ const AIEcosystemMap = () => {
               ))}
               {filteredCompanies.length > 20 && (
                 <p className="text-xs text-muted-foreground text-center py-2">
-                  Showing 20 of {filteredCompanies.length} — use filters to narrow down
+                  Showing 20 of {filteredCompanies.length} - use filters to narrow down
                 </p>
               )}
             </div>

@@ -186,7 +186,7 @@ const LearningPathDetail = () => {
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "Course",
-          "name": `${path.title} — ${cfg.label} Learning Path`,
+          "name": `${path.title} - ${cfg.label} Learning Path`,
           "description": path.longDesc,
           "url": `https://aiinasia.com/category/${categorySlug}/learn/${pathSlug}`,
           "inLanguage": "en-GB",

@@ -34,7 +34,7 @@ const FeaturedToolsCarousel = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="headline text-[22px] md:text-[28px] font-bold">Explore Our Latest Tools</h2>
-          <p className="text-muted-foreground text-sm mt-2">Interactive, data-driven tools — free, no signup needed</p>
+          <p className="text-muted-foreground text-sm mt-2">Interactive, data-driven tools - free, no signup needed</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
           {TOOLS.map((tool) => (

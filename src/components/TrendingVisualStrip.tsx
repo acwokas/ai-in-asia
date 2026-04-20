@@ -86,7 +86,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
   const filteredArticles = articles?.filter(a => !excludeSet.has(a.id)) || [];
   if (!filteredArticles.length) return null;
 
-  // Build combined 6-item array: articles at 0,2,3,5 — guides at 1,4
+  // Build combined 6-item array: articles at 0,2,3,5 - guides at 1,4
   const combined: CombinedItem[] = [];
   const arts = filteredArticles.slice(0, 4);
   const gds = [...(guides || [])];
@@ -110,7 +110,7 @@ const TrendingVisualStrip = memo(({ excludeIds = [] }: TrendingVisualStripProps)
         </span>
       </div>
 
-      {/* Cards row — horizontal scroll on mobile */}
+      {/* Cards row - horizontal scroll on mobile */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-6 md:overflow-visible md:pb-0">
         {combined.map((item, index) => {
           if (item.type === "guide") {

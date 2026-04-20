@@ -242,7 +242,7 @@ const Editor = () => {
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
 
-      // Ctrl+S → Save — click the Save Article button
+      // Ctrl+S → Save - click the Save Article button
       if (e.key === "s" && !e.shiftKey) {
         e.preventDefault();
         const saveBtn = document.querySelector('[data-editor-save]') as HTMLButtonElement | null;

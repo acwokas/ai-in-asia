@@ -89,7 +89,7 @@ export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSe
       sessions.forEach((s) => { const o = s?.os || "Unknown"; osCounts[o] = (osCounts[o] || 0) + 1; });
       const topOS = Object.entries(osCounts).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([os, count]) => ({ os, count }));
 
-      // Referrers — filter self-referrals, build ranked list + categories
+      // Referrers - filter self-referrals, build ranked list + categories
       const refCounts: Record<string, number> = {};
       const categoryCounts: Record<string, number> = { "Direct": 0, "Organic Search": 0, "Social Media": 0, "Other Sites": 0 };
       sessions.forEach((s) => {
@@ -220,11 +220,11 @@ export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSe
                 </BarChart>
               </ChartContainer>
               {(data?.countryDataCoverage ?? 0) < 80 && (
-                <EmptyDataNotice message={`Country data available for ${data?.countryDataCoverage ?? 0}% of sessions — coverage will improve over the next 24–48 hours as new sessions are geo-located`} />
+                <EmptyDataNotice message={`Country data available for ${data?.countryDataCoverage ?? 0}% of sessions - coverage will improve over the next 24-48 hours as new sessions are geo-located`} />
               )}
             </>
           ) : (
-            <EmptyDataNotice message="Country data is being collected via IP geolocation — it will populate as new sessions are created over the next 24–48 hours" />
+            <EmptyDataNotice message="Country data is being collected via IP geolocation - it will populate as new sessions are created over the next 24-48 hours" />
           )}
         </div>
 
@@ -291,7 +291,7 @@ export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSe
         const total = data?.filteredTotal ?? 0;
 
         if (total === 0) {
-          tips.push("1. No session data yet — set up analytics tracking by ensuring the AnalyticsProvider component wraps your app and useAnalyticsTracking fires on page load.");
+          tips.push("1. No session data yet - set up analytics tracking by ensuring the AnalyticsProvider component wraps your app and useAnalyticsTracking fires on page load.");
           tips.push("2. Once sessions flow, this section will show traffic sources, geographic breakdown, and device mix automatically.");
           return tips;
         }
@@ -305,18 +305,18 @@ export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSe
         const socialPct = social?.pct ?? 0;
 
         if (directPct > 70) {
-          tips.push(`1. Direct traffic is ${directPct}% of sessions (${(direct?.value ?? 0).toLocaleString()} visits) — heavy reliance on direct/bookmarked visits. Diversify acquisition: target 3-5 long-tail keywords for organic search, share articles on LinkedIn/X within 1 hour of publish, and add UTM tags to newsletter links to measure email-driven traffic.`);
+          tips.push(`1. Direct traffic is ${directPct}% of sessions (${(direct?.value ?? 0).toLocaleString()} visits) - heavy reliance on direct/bookmarked visits. Diversify acquisition: target 3-5 long-tail keywords for organic search, share articles on LinkedIn/X within 1 hour of publish, and add UTM tags to newsletter links to measure email-driven traffic.`);
         } else if (organicPct > 40) {
-          tips.push(`1. Organic search drives ${organicPct}% of traffic (${(organic?.value ?? 0).toLocaleString()} sessions) — strong SEO foundation. Double down by updating meta descriptions on your top 10 articles and targeting featured snippet formats (listicles, how-tos, comparison tables).`);
+          tips.push(`1. Organic search drives ${organicPct}% of traffic (${(organic?.value ?? 0).toLocaleString()} sessions) - strong SEO foundation. Double down by updating meta descriptions on your top 10 articles and targeting featured snippet formats (listicles, how-tos, comparison tables).`);
         } else {
-          tips.push(`1. Traffic mix: Direct ${directPct}%, Search ${organicPct}%, Social ${socialPct}%. ${organicPct < 15 ? 'Organic search is underperforming — audit your top 20 articles for missing focus keyphrases and internal linking gaps.' : 'Healthy distribution across channels.'}`);
+          tips.push(`1. Traffic mix: Direct ${directPct}%, Search ${organicPct}%, Social ${socialPct}%. ${organicPct < 15 ? 'Organic search is underperforming - audit your top 20 articles for missing focus keyphrases and internal linking gaps.' : 'Healthy distribution across channels.'}`);
         }
 
         // Top external referrer
         const topExtRef = (data?.topReferrers ?? []).find(r => r.domain !== "direct");
         if (topExtRef) {
           const ratio = topExtRef.count > 0 && total > 0 ? Math.round((topExtRef.count / total) * 100) : 0;
-          tips.push(`2. Top external referrer "${topExtRef.domain}" drives ${(topExtRef.count ?? 0).toLocaleString()} sessions (${ratio}% of traffic). ${ratio > 15 ? 'Strong channel — create content specifically for this audience and consider a partnership or guest posting exchange.' : 'Moderate contribution — test sharing more content on this platform to see if traffic scales linearly.'}`);
+          tips.push(`2. Top external referrer "${topExtRef.domain}" drives ${(topExtRef.count ?? 0).toLocaleString()} sessions (${ratio}% of traffic). ${ratio > 15 ? 'Strong channel - create content specifically for this audience and consider a partnership or guest posting exchange.' : 'Moderate contribution - test sharing more content on this platform to see if traffic scales linearly.'}`);
         } else {
           tips.push(`2. No significant external referrers detected. Start building backlinks: submit guest articles to industry publications, get listed on AI tool directories, and share on LinkedIn with a compelling hook (question or surprising stat).`);
         }
@@ -327,12 +327,12 @@ export const AudienceSection = ({ startDate, range, totalSessions: sharedTotalSe
         const mobilePct = mobile && total > 0 ? Math.round((mobile.value / total) * 100) : 0;
         const geoNote = topCountry
           ? `Top market: ${topCountry.country} (${Math.round((((topCountry?.count ?? 0)) / total) * 100)}%).`
-          : (hasCountryData ? "" : "Geo data populating — check back in 24-48h.");
+          : (hasCountryData ? "" : "Geo data populating - check back in 24-48h.");
         const deviceNote = mobilePct > 60
-          ? `${mobilePct}% mobile — ensure CTAs, newsletter forms, and article layouts are touch-optimised.`
+          ? `${mobilePct}% mobile - ensure CTAs, newsletter forms, and article layouts are touch-optimised.`
           : mobilePct < 30
-            ? `Only ${mobilePct}% mobile (desktop-heavy audience) — optimise for widescreen reading with sidebar content.`
-            : `${mobilePct}% mobile — balanced device mix.`;
+            ? `Only ${mobilePct}% mobile (desktop-heavy audience) - optimise for widescreen reading with sidebar content.`
+            : `${mobilePct}% mobile - balanced device mix.`;
         tips.push(`3. ${geoNote} ${deviceNote}`);
 
         return tips;

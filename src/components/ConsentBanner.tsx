@@ -16,7 +16,7 @@ const ConsentBanner = () => {
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
-    // declined — do nothing
+    // declined - do nothing
   }, []);
 
   const handleAccept = () => {

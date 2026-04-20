@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_NAME = "AI in ASIA";
 const SITE_URL = "https://aiinasia.com";
-// TODO: Create /public/icons/aiinasia-og-default.png at 1200Ã630 to replace the 512Ã512 icon fallback
 const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/aiinasia-og-default.png`;
 const TWITTER_HANDLE = "@AI_in_Asia";
 

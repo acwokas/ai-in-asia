@@ -182,7 +182,7 @@ const Article = () => {
   const ga4Title = article?.title;
   const ga4Category = (article as any)?.categories?.name;
 
-  // useEffect #1 — Scroll depth milestones
+  // useEffect #1 - Scroll depth milestones
   useEffect(() => {
     if (!ga4ArticleId) return;
     ga4StartTime.current = Date.now();
@@ -216,7 +216,7 @@ const Article = () => {
 
           if (m === 90) {
             const seconds = Math.round((Date.now() - ga4StartTime.current) / 1000);
-            if (seconds < 60) continue; // skip — too fast to be a real read
+            if (seconds < 60) continue; // skip - too fast to be a real read
             payload.time_on_page = seconds;
           }
 
@@ -231,7 +231,7 @@ const Article = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [ga4ArticleId, ga4Title, ga4Category]);
 
-  // useEffect #2 — Engagement score on exit
+  // useEffect #2 - Engagement score on exit
   useEffect(() => {
     if (!ga4ArticleId) return;
     const handleVis = () => {
@@ -244,7 +244,7 @@ const Article = () => {
     return () => document.removeEventListener("visibilitychange", handleVis);
   }, [ga4ArticleId, ga4Title, ga4Category]);
 
-  // useEffect #3 — Newsletter CTA tracking
+  // useEffect #3 - Newsletter CTA tracking
   useEffect(() => {
     if (!ga4ArticleId) return;
     const targets = document.querySelectorAll(".newsletter-cta");
@@ -283,7 +283,7 @@ const Article = () => {
   }, [article?.id]);
 
   // Signal to prerenderers (lovablehtml, prerender.io, etc.) that
-  // the page is ready to snapshot — i.e. article data has loaded and
+  // the page is ready to snapshot - i.e. article data has loaded and
   // react-helmet-async has injected the article-specific meta tags.
   useEffect(() => {
     if (!isLoading && fetchStatus !== 'fetching') {
@@ -437,7 +437,7 @@ const Article = () => {
     user?.id,
   );
 
-  // Loading state — don't show 404 while query could still be in flight
+  // Loading state - don't show 404 while query could still be in flight
   if (isLoading || fetchStatus === 'fetching') return <ArticleLoadingSkeleton />;
 
   // 404 state
@@ -544,7 +544,7 @@ const Article = () => {
         ) : null;
       })()}
 
-      {/* FAQ structured data — auto-parsed from Scout-generated FAQ sections */}
+      {/* FAQ structured data - auto-parsed from Scout-generated FAQ sections */}
       {(() => {
         const contentStr = typeof article.content === 'string' ? article.content : JSON.stringify(article.content || '');
         const faqMatches = [...contentStr.matchAll(/<h[34][^>]*>\s*([^<]+\?)\s*<\/h[34]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi)];
@@ -646,7 +646,7 @@ const Article = () => {
               )}
             </div>
           ) : (
-            /* No hero image — render title/meta in a standard block */
+            /* No hero image - render title/meta in a standard block */
             <div className="container mx-auto max-w-[1080px] px-4 pt-8">
               <ArticleBreadcrumbs
                 articleType={article.article_type}
@@ -766,7 +766,7 @@ const Article = () => {
                 <p className="text-sm text-muted-foreground mb-2" style={{ marginTop: '2rem' }}>What did you think?</p>
                 <ArticleReactions articleId={article.id} />
 
-                {/* Clickable topic tags — internal navigation */}
+                {/* Clickable topic tags - internal navigation */}
                 {(() => {
                   const allTags = [...(article.ai_tags || []), ...(article.topic_tags || [])]
                     .filter(Boolean)
@@ -795,7 +795,7 @@ const Article = () => {
                 {/* Author Bio */}
                 <ArticleAuthorBio authors={article.authors} />
 
-                {/* Inline related articles — shown mid-flow after content */}
+                {/* Inline related articles - shown mid-flow after content */}
                 {article.primary_category_id && article.article_type !== 'policy_article' && (
                   <div style={{ marginTop: '2.5rem' }}>
                     <InlineRelatedArticles
@@ -831,7 +831,7 @@ const Article = () => {
                 )}
               </article>
 
-              {/* Right sidebar rail — desktop only */}
+              {/* Right sidebar rail - desktop only */}
               <aside className="hidden min-[1200px]:block w-[300px] flex-shrink-0">
                 <div className="sticky top-[80px] w-[300px] flex flex-col gap-8 pb-8">
                   <TableOfContentsSidebar readingTime={article.reading_time_minutes || 0} categoryColor={getCategoryColor(article.categories?.slug)} />
@@ -872,19 +872,19 @@ const Article = () => {
           </div>
 
 
-          {/* Recommended Guides — cross-link to long-form content */}
+          {/* Recommended Guides - cross-link to long-form content */}
           {article.article_type !== 'policy_article' && (
             <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
               <RecommendedGuides />
             </div>
           )}
 
-          {/* Newsletter signup — shown before comments on all article types */}
+          {/* Newsletter signup - shown before comments on all article types */}
           <div className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2.5rem' }}>
             <EndOfContentNewsletter />
           </div>
 
-          {/* Comments — hidden on policy articles */}
+          {/* Comments - hidden on policy articles */}
           {article.article_type !== 'policy_article' && (
             <section id="comments-section" className="container mx-auto px-4 max-w-[1080px]" style={{ marginTop: '2rem' }}>
               <Suspense fallback={<div className="py-8 text-center text-muted-foreground">Loading comments...</div>}>

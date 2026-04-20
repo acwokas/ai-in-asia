@@ -582,7 +582,7 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       .replace(/<a[^>]*>\s*Tweet\s*<\/a>/gi, '')
       .replace(/\[Tweet\]\([^)]*\)/gi, '')
       .replace(/^\s*Tweet\s*$/gm, '')
-      // Convert markdown images — match URLs with image extensions as images, everything else as links
+      // Convert markdown images - match URLs with image extensions as images, everything else as links
       .replace(/!\[([^\]]*)\]\(([^)]+\.(?:png|jpg|jpeg|gif|webp|svg|avif)(?:\?[^)]*)?)\)/gi, '<div class="my-8"><img src="$2" alt="$1" class="w-full rounded-lg" loading="lazy" /></div>')
       // Strip stray ! before markdown links that aren't images (prevents ![text](non-image-url) rendering as !link)
       .replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '[$1]($2)')
@@ -679,8 +679,8 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
             .filter(line => line.length > 0);
           let quoteText = '';
           let attribution = '';
-          if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
-            attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
+          if (quoteLines.length > 1 && /^[---]/.test(quoteLines[quoteLines.length - 1])) {
+            attribution = quoteLines.pop()!.replace(/^[---]\s*/, '').trim();
             quoteText = stripWrappingQuotes(quoteLines.join(' '));
           } else {
             quoteText = stripWrappingQuotes(quoteLines.join(' '));
@@ -723,19 +723,19 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         '<div class="by-the-numbers">$1$2</div>'
       );
 
-      // Merge consecutive blockquotes where the second is an attribution (starts with — or ")
+      // Merge consecutive blockquotes where the second is an attribution (starts with - or ")
       sanitizedHtml = sanitizedHtml.replace(
-        /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[-—–][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
+        /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[---][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
         (_, attr) => {
-          const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[-—–]\s*/, '').trim();
+          const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[---]\s*/, '').trim();
           return `<footer>${cleanAttr}</footer></blockquote>`;
         }
       );
 
-      // Split single-paragraph blockquotes that contain an inline attribution after — / – / -
-      // e.g. <blockquote><p>"Quote text" — Author Name</p></blockquote>
+      // Split single-paragraph blockquotes that contain an inline attribution after - / - / -
+      // e.g. <blockquote><p>"Quote text" - Author Name</p></blockquote>
       sanitizedHtml = sanitizedHtml.replace(
-        /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)\s+[—–]\s+([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
+        /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)\s+[--]\s+([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
         (_, open, quoteText, attribution, close) => {
           const cleanQuote = stripWrappingQuotes(quoteText.trim());
           const cleanAttr = attribution.replace(/["\u201d]\s*$/, '').trim();
@@ -801,8 +801,8 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
           .filter(line => line.length > 0);
         let quoteText = '';
         let attribution = '';
-        if (quoteLines.length > 1 && /^[-—–]/.test(quoteLines[quoteLines.length - 1])) {
-          attribution = quoteLines.pop()!.replace(/^[-—–]\s*/, '').trim();
+        if (quoteLines.length > 1 && /^[---]/.test(quoteLines[quoteLines.length - 1])) {
+          attribution = quoteLines.pop()!.replace(/^[---]\s*/, '').trim();
           quoteText = stripWrappingQuotes(quoteLines.join(' '));
         } else {
           quoteText = stripWrappingQuotes(quoteLines.join(' '));
@@ -846,18 +846,18 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       '<div class="by-the-numbers">$1$2</div>'
     );
 
-    // Merge consecutive blockquotes where the second is an attribution (starts with — or ")
+    // Merge consecutive blockquotes where the second is an attribution (starts with - or ")
     joinedHtml = joinedHtml.replace(
-      /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[-—–][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
+      /<\/blockquote>\s*<blockquote[^>]*>\s*<p[^>]*>\s*(["\u201c]?\s*[---][\s\S]*?)\s*<\/p>\s*<\/blockquote>/gi,
       (_, attr) => {
-        const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[-—–]\s*/, '').trim();
+        const cleanAttr = attr.replace(/^["\u201c]\s*/, '').replace(/["\u201d]\s*$/, '').replace(/^[---]\s*/, '').trim();
         return `<footer>${cleanAttr}</footer></blockquote>`;
       }
     );
 
-    // Split single-paragraph blockquotes that contain an inline attribution after — / – / -
+    // Split single-paragraph blockquotes that contain an inline attribution after - / - / -
     joinedHtml = joinedHtml.replace(
-      /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)\s+[—–]\s+([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
+      /(<blockquote[^>]*>)\s*<p[^>]*>([\s\S]*?)\s+[--]\s+([\s\S]*?)<\/p>\s*(<\/blockquote>)/gi,
       (_, open, quoteText, attribution, close) => {
         const cleanQuote = stripWrappingQuotes(quoteText.trim());
         const cleanAttr = attribution.replace(/["\u201d]\s*$/, '').trim();

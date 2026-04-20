@@ -14,7 +14,7 @@ const QUESTIONS = [
       { label: "Never heard of them", score: 0 },
       { label: "Tried once or twice", score: 1 },
       { label: "Weekly", score: 2 },
-      { label: "Daily — can't live without them", score: 3 },
+      { label: "Daily - can't live without them", score: 3 },
     ],
   },
   {
@@ -50,7 +50,7 @@ const QUESTIONS = [
       { label: "Almost none", score: 0 },
       { label: "A few repetitive tasks", score: 1 },
       { label: "Significant portions", score: 2 },
-      { label: "Most of it — I'm mostly orchestrating AI", score: 3 },
+      { label: "Most of it - I'm mostly orchestrating AI", score: 3 },
     ],
   },
   {
@@ -83,7 +83,7 @@ const QUESTIONS = [
 ];
 
 const TIERS = [
-  { name: "AI Curious", min: 0, max: 6, icon: "Sprout", desc: "You're just getting started — and that's perfectly fine. The best time to explore AI is now." },
+  { name: "AI Curious", min: 0, max: 6, icon: "Sprout", desc: "You're just getting started - and that's perfectly fine. The best time to explore AI is now." },
   { name: "AI Explorer", min: 7, max: 12, icon: "Compass", desc: "You're actively exploring AI and building awareness. Keep experimenting and learning!" },
   { name: "AI Adopter", min: 13, max: 18, icon: "Rocket", desc: "You're integrating AI into real workflows. You're ahead of most people in the region." },
   { name: "AI Native", min: 19, max: 24, icon: "Zap", desc: "AI is woven into everything you do. You're leading the charge in Asia's AI transformation." },
@@ -149,7 +149,7 @@ const AIReadiness = () => {
     setFinished(false);
   };
 
-  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz — I'm an "${tier.name}"\n\nHow AI-ready are you?`;
+  const shareText = `I scored ${totalScore}/24 on the AI Readiness quiz - I'm an "${tier.name}"\n\nHow AI-ready are you?`;
   const shareUrl = "https://aiinasia.com/tools/ai-readiness";
 
   return (

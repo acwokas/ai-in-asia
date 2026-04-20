@@ -85,9 +85,9 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
   if (!data.hasData) {
     return (
       <div className="space-y-4">
-        <EmptyDataNotice message="Article read milestone events (25%, 50%, 75%, complete) will populate within 24–48 hours of tracking setup" />
+        <EmptyDataNotice message="Article read milestone events (25%, 50%, 75%, complete) will populate within 24-48 hours of tracking setup" />
         <InsightCard insights={[
-          "1. No read-depth events recorded yet. Verify the useGA4ContentTracking hook is mounted on Article.tsx — it should fire article_read_25 when scroll depth passes 25%.",
+          "1. No read-depth events recorded yet. Verify the useGA4ContentTracking hook is mounted on Article.tsx - it should fire article_read_25 when scroll depth passes 25%.",
           "2. Once events flow, you'll see a funnel from 25% → 50% → 75% → Complete with drop-off rates at each stage.",
           "3. Industry benchmark: well-structured articles under 1,200 words typically achieve 35-45% completion rates.",
         ]} />
@@ -131,7 +131,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
               <StatRow label="Avg Time on Guide" value={`${data.avgGuideTime}s`} />
             </div>
           ) : (
-            <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking — integration coming soon" />
+            <EmptyDataNotice variant="coming-soon" message="Guide scroll depth and time tracking - integration coming soon" />
           )}
         </div>
       </div>
@@ -143,11 +143,11 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         const totalComplete = data.milestones["article_complete"];
 
         if (total25 > 0 && rate < 25) {
-          tips.push(`1. ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers who reach 25% actually finish (${rate}% completion — below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
+          tips.push(`1. ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers who reach 25% actually finish (${rate}% completion - below the 35-45% industry benchmark). The biggest drop-off is 25→50% where ${data.dropoff25to50}% of readers leave. Fix: add a compelling stat, question, or bold claim in the first 2 paragraphs to hook readers past the fold.`);
         } else if (rate >= 25 && rate < 45) {
-          tips.push(`1. ${rate}% completion rate across ${(total25 ?? 0).toLocaleString()} readers — approaching the 35-45% industry benchmark. ${data.dropoff50to75}% drop off between 50-75%. Try breaking long-form content into scannable sections with subheadings, pull quotes, or mid-article "Key Takeaway" callouts.`);
+          tips.push(`1. ${rate}% completion rate across ${(total25 ?? 0).toLocaleString()} readers - approaching the 35-45% industry benchmark. ${data.dropoff50to75}% drop off between 50-75%. Try breaking long-form content into scannable sections with subheadings, pull quotes, or mid-article "Key Takeaway" callouts.`);
         } else if (rate >= 45) {
-          tips.push(`1. Excellent ${rate}% completion rate — ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers finish, well above the 35-45% industry benchmark. Your content structure is working. Document what's different about your top-completing articles and standardise that format.`);
+          tips.push(`1. Excellent ${rate}% completion rate - ${(totalComplete ?? 0).toLocaleString()} of ${(total25 ?? 0).toLocaleString()} readers finish, well above the 35-45% industry benchmark. Your content structure is working. Document what's different about your top-completing articles and standardise that format.`);
         }
 
         const topArticle = data?.topCompleted?.[0];
@@ -155,14 +155,14 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
         if (topArticle && secondArticle && secondArticle.count > 0) {
           const ratio = (((topArticle?.count ?? 0) / (secondArticle?.count ?? 1))).toFixed(1);
           const topName = topArticle?.fullName ?? "Untitled";
-          tips.push(`2. "${topName.length > 50 ? topName.slice(0, 47) + '…' : topName}" leads with ${(topArticle?.count ?? 0).toLocaleString()} completions (${ratio}x more than #2). Study what makes it sticky — headline style, topic, length, publish timing — and replicate that formula.`);
+          tips.push(`2. "${topName.length > 50 ? topName.slice(0, 47) + '…' : topName}" leads with ${(topArticle?.count ?? 0).toLocaleString()} completions (${ratio}x more than #2). Study what makes it sticky - headline style, topic, length, publish timing - and replicate that formula.`);
         } else if (topArticle) {
           const topName = topArticle?.fullName ?? "Untitled";
           tips.push(`2. "${topName.length > 50 ? topName.slice(0, 47) + '…' : topName}" leads with ${(topArticle?.count ?? 0).toLocaleString()} completions. Create more content in this topic/format to capitalise on proven reader interest.`);
         }
 
         if (data.guideViewCount === 0) {
-          tips.push("3. No guide completions tracked yet — verify the useGA4ContentTracking hook is active on guide pages to capture guide_section_view and guide_complete events.");
+          tips.push("3. No guide completions tracked yet - verify the useGA4ContentTracking hook is active on guide pages to capture guide_section_view and guide_complete events.");
         } else if (data.avgGuideScroll < 40) {
           tips.push(`3. Guides average only ${data.avgGuideScroll}% scroll depth across ${data.guideViewCount} views. Add a persistent table of contents sidebar and break guides into shorter, focused steps with clear progress indicators.`);
         } else {
@@ -177,7 +177,7 @@ export const CompletionsSection = ({ startDate, range }: Props) => {
 
 function topCompletedContent(data: any) {
   if (!(data?.topCompleted ?? []).length) {
-    return <EmptyDataNotice message="No article completions recorded yet — events will appear as readers finish articles" />;
+    return <EmptyDataNotice message="No article completions recorded yet - events will appear as readers finish articles" />;
   }
   return (
     <>

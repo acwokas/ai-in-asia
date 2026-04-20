@@ -49,7 +49,7 @@ const NextArticleProgress = ({ currentArticleId, categoryId }: NextArticleProgre
       const progress = Math.min((window.scrollY / scrollHeight) * 100, 100);
       setScrollProgress(progress);
       
-      // Show from 75% onwards — persist until navigation
+      // Show from 75% onwards - persist until navigation
       setIsVisible(progress >= 75);
     };
 

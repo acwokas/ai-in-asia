@@ -133,7 +133,7 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
   // Show bookmarks nudge even without interest-based articles
   const showBookmarksNudge = !bookmarksDismissed && !!unreadCount && unreadCount > 0;
 
-  // User has no interests set — show prompt (with optional bookmarks nudge)
+  // User has no interests set - show prompt (with optional bookmarks nudge)
   if (interests && interests.length === 0) {
     return (
       <section className="container mx-auto px-4 py-12 md:py-16">
@@ -168,7 +168,7 @@ const ForYouSection = memo(({ excludeIds = [] }: ForYouSectionProps) => {
     );
   }
 
-  // No matching articles — still show bookmarks nudge if applicable
+  // No matching articles - still show bookmarks nudge if applicable
   if (!articles || articles.length === 0) {
     if (!showBookmarksNudge) return null;
     return (

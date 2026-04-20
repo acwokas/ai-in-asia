@@ -1,19 +1,12 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createIDBPersister } from "@/lib/queryPersister";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { lazy, Suspense, useEffect } from "react";
-import { Loader2 } from "lucide-react";
-
-// External redirect helper for 301-style redirects in SPA
-const ExternalRedirect = ({ url }: { url: string }) => {
-  useEffect(() => { window.location.replace(url); }, [url]);
-  return null;
-};
+import { lazy, Suspense } from "react";
 
 // Eager load critical components
 import GoogleAnalytics from "./components/GoogleAnalytics";
@@ -82,7 +75,6 @@ const AIComments = lazy(() => import("./pages/AIComments"));
 const CommentModeration = lazy(() => import("./pages/CommentModeration"));
 const BulkOperations = lazy(() => import("./pages/BulkOperations"));
 const ContentAnalytics = lazy(() => import("./pages/ContentAnalytics"));
-const SEOTools = lazy(() => import("./pages/SEOTools"));
 const SEODashboard = lazy(() => import("./pages/SEODashboard"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
 const AuthorManagement = lazy(() => import("./pages/AuthorManagement"));
@@ -116,14 +108,12 @@ const AIFundingTracker = lazy(() => import("./pages/AIFundingTracker"));
 const AIEventsCalendar = lazy(() => import("./pages/AIEventsCalendar"));
 const EcosystemCountry = lazy(() => import("./pages/EcosystemCountry"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
-const NewsletterManager = lazy(() => import("./pages/NewsletterManager"));
 const NewsletterAdmin = lazy(() => import("./pages/NewsletterAdmin"));
 const NewsletterArchive = lazy(() => import("./pages/NewsletterArchive"));
- const NewsletterView = lazy(() => import("./pages/NewsletterView"));
- const NewsletterEmailPreview = lazy(() => import("./pages/NewsletterEmailPreview"));
+const NewsletterView = lazy(() => import("./pages/NewsletterView"));
+const NewsletterEmailPreview = lazy(() => import("./pages/NewsletterEmailPreview"));
 
 const ProcessPendingComments = lazy(() => import("./pages/ProcessPendingComments"));
-const BulkSEOGeneration = lazy(() => import("./pages/BulkSEOGeneration"));
 const CategorySponsorsManager = lazy(() => import("./pages/CategorySponsorsManager"));
 const InternalLinksManager = lazy(() => import("./pages/InternalLinksManager"));
 const LinkHealthMonitor = lazy(() => import("./pages/LinkHealthMonitor"));
@@ -143,8 +133,6 @@ const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 const GuideEditor = lazy(() => import("./pages/GuideEditor"));
 const GuideCategoryIndex = lazy(() => import("./pages/GuideCategoryIndex"));
 const AdminGuides = lazy(() => import("./pages/AdminGuides"));
-const NewsletterAnalytics = lazy(() => import("./pages/NewsletterAnalytics"));
-const NewsletterPerformance = lazy(() => import("./pages/NewsletterPerformance"));
 const SiteAnalytics = lazy(() => import("./pages/SiteAnalytics"));
 const AnalyticsAll = lazy(() => import("./pages/AnalyticsAll"));
 const ContentInsights = lazy(() => import("./pages/ContentInsights"));
@@ -160,12 +148,11 @@ const ThreeBeforeNineBriefing = lazy(() => import("./pages/ThreeBeforeNineBriefi
 const NewsletterWeeklyLatest = lazy(() => import("./pages/NewsletterWeeklyLatest"));
 const NewsletterForward = lazy(() => import("./pages/NewsletterForward"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
-const AdminUnsubscribes = lazy(() => import("./pages/AdminUnsubscribes"));
 const AdminEventSubmissionsPage = lazy(() => import("./components/admin/AdminEventSubmissions"));
 const AdminGlossary = lazy(() => import("./pages/AdminGlossary"));
 const AdminPartnerships = lazy(() => import("./pages/AdminPartnerships"));
 
-// Lightweight skeleton loader for instant display — matches homepage hero layout
+// Lightweight skeleton loader for instant display - matches homepage hero layout
 const HomepageSkeleton = () => (
   <div className="min-h-screen flex flex-col">
     {/* Header bar */}

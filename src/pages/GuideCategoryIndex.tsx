@@ -121,7 +121,7 @@ const GuideCategoryIndex = () => {
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": `${displayName} Guides — AI in Asia`,
+          "name": `${displayName} Guides - AI in Asia`,
           "description": isSpecial ? specialMeta.description : `Browse all ${displayName} AI guides`,
           "url": `https://aiinasia.com/guides/${slug}`,
           "inLanguage": "en-GB",

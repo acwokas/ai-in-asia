@@ -105,7 +105,7 @@ const EcosystemCountry = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead
-        title={`AI Ecosystem: ${country.name} — Companies & Startups | AI in Asia`}
+        title={`AI Ecosystem: ${country.name} - Companies & Startups | AI in Asia`}
         description={country.summary}
         canonical={`/ai-ecosystem-map/${country.slug}`}
       />

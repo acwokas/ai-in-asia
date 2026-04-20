@@ -225,7 +225,7 @@ const Header = memo(() => {
                 Newsletter
               </Link>
 
-              {/* Tools — main link goes to /tools, dropdown has sub-items */}
+              {/* Tools - main link goes to /tools, dropdown has sub-items */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button

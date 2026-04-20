@@ -260,13 +260,13 @@ export default function ThreeBeforeNineBriefing() {
   return (
     <>
       <SEOHead
-        title="3 Before 9 – Daily AI Briefing | AI in Asia"
+        title="3 Before 9 - Daily AI Briefing | AI in Asia"
         description="Three AI signals from across Asia, every weekday, before your 9am coffee. Free daily briefing covering the stories that matter."
         canonical="https://aiinasia.com/3-before-9-briefing"
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          name: "3 Before 9 – Daily AI Briefing",
+          name: "3 Before 9 - Daily AI Briefing",
           description:
             "Three AI signals from across Asia, every weekday, before your 9am coffee.",
           url: "https://aiinasia.com/3-before-9-briefing",
@@ -363,7 +363,7 @@ export default function ThreeBeforeNineBriefing() {
                 {
                   icon: Zap,
                   title: "3 curated signals",
-                  desc: "The AI stories that actually matter — no noise, no fluff. Hand-picked from across the Asia-Pacific region.",
+                  desc: "The AI stories that actually matter - no noise, no fluff. Hand-picked from across the Asia-Pacific region.",
                 },
                 {
                   icon: Clock,
@@ -373,7 +373,7 @@ export default function ThreeBeforeNineBriefing() {
                 {
                   icon: Globe,
                   title: "Asia-Pacific focus",
-                  desc: "From Tokyo to Sydney, Singapore to Mumbai — AI developments the Western press often misses.",
+                  desc: "From Tokyo to Sydney, Singapore to Mumbai - AI developments the Western press often misses.",
                 },
               ].map((item) => (
                 <Card
@@ -424,7 +424,7 @@ export default function ThreeBeforeNineBriefing() {
                     {
                       num: 1,
                       title: "Singapore launches $500M AI compute cluster",
-                      body: "The Smart Nation initiative's biggest infrastructure play yet — a sovereign GPU cluster designed to reduce reliance on foreign cloud providers.",
+                      body: "The Smart Nation initiative's biggest infrastructure play yet - a sovereign GPU cluster designed to reduce reliance on foreign cloud providers.",
                       context:
                         "Southeast Asia's AI compute race is heating up. This positions Singapore as the region's inference hub.",
                     },
@@ -434,7 +434,7 @@ export default function ThreeBeforeNineBriefing() {
                         "Japan's top 3 banks trial AI fraud detection consortium",
                       body: "MUFG, Mizuho and SMBC are sharing anonymised transaction patterns through a federated learning system.",
                       context:
-                        "Cross-institutional AI collaboration in regulated sectors — a model other APAC markets will watch closely.",
+                        "Cross-institutional AI collaboration in regulated sectors - a model other APAC markets will watch closely.",
                     },
                     {
                       num: 3,
@@ -571,7 +571,7 @@ export default function ThreeBeforeNineBriefing() {
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
                     The weekly newsletter is a longer, deeper dive sent every
-                    week. 3 Before 9 is a short, sharp daily briefing —
+                    week. 3 Before 9 is a short, sharp daily briefing -
                     three stories, two minutes, five days a week. Many
                     readers subscribe to both.
                   </AccordionContent>

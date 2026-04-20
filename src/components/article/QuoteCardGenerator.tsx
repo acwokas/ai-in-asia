@@ -134,7 +134,7 @@ export function QuoteCardGenerator({
     if (authorName) {
       ctx.font = `400 12px 'Inter', 'Segoe UI', system-ui, sans-serif`;
       ctx.fillStyle = "#6b7280"; // gray-500
-      ctx.fillText(`— ${authorName}`, padX, dividerY + 38);
+      ctx.fillText(`- ${authorName}`, padX, dividerY + 38);
     }
 
     // ── Branding: aiinasia.com ──
@@ -177,7 +177,7 @@ export function QuoteCardGenerator({
       setTimeout(() => setCopied(false), 2000);
       toast.success("Copied to clipboard!");
     } catch {
-      toast.error("Couldn't copy — try downloading instead");
+      toast.error("Couldn't copy - try downloading instead");
     }
   };
 

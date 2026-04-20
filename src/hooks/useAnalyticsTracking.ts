@@ -260,7 +260,7 @@ export const useAnalyticsTracking = () => {
     const markActive = () => {
       const now = Date.now();
       if (isIdleRef.current) {
-        // Resuming from idle — reset tick without accumulating idle gap
+        // Resuming from idle - reset tick without accumulating idle gap
         isIdleRef.current = false;
         lastActiveTickRef.current = now;
         if (!import.meta.env.PROD) console.log('[GA4] Timer resumed - active');
@@ -381,7 +381,7 @@ export const useAnalyticsTracking = () => {
       is_bounce: true, // Assume bounce until proven otherwise
     } as any);
 
-    // Geo lookup — once per session, fire-and-forget
+    // Geo lookup - once per session, fire-and-forget
     fetchGeoCountry(sessionId);
 
     return sessionId;
@@ -502,7 +502,7 @@ export const useAnalyticsTracking = () => {
     };
   }, [isInternalPath, getActiveSeconds]);
 
-  // Track page views on route change — skip internal pages
+  // Track page views on route change - skip internal pages
   // Deduplication: skip if the same path fires within 2 seconds
   const lastTrackedPathRef = useRef<string>('');
   const lastTrackedTimeRef = useRef<number>(0);
@@ -647,7 +647,7 @@ export const useAnalyticsTracking = () => {
           // Silent fail
         }
       }
-    }, 300_000); // Every 5 minutes — balances data freshness vs Supabase write volume
+    }, 300_000); // Every 5 minutes - balances data freshness vs Supabase write volume
 
     return () => clearInterval(intervalId);
   }, [updateSessionInDb]);

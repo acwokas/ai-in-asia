@@ -30,7 +30,7 @@ export default function ThreeBeforeNineArchive() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="3 Before 9 — All Editions | AI in Asia"
+        title="3 Before 9 - All Editions | AI in Asia"
         description="Browse every edition of 3 Before 9, your weekday morning AI briefing covering the stories that matter across Asia-Pacific."
       />
       <Header />
@@ -50,7 +50,7 @@ export default function ThreeBeforeNineArchive() {
             <span className="font-bold text-4xl tracking-tight" style={{ color: AMBER }}>9</span>
           </div>
           <p className="text-muted-foreground text-sm max-w-lg">
-            Your weekday morning AI briefing — 3 must-know stories before your 9am coffee.
+            Your weekday morning AI briefing - 3 must-know stories before your 9am coffee.
           </p>
         </div>
 

@@ -27,8 +27,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 const BUDGET_LABELS: Record<string, string> = {
   under_5k: "Under $5K",
-  "5k_15k": "$5K–$15K",
-  "15k_50k": "$15K–$50K",
+  "5k_15k": "$5K-$15K",
+  "15k_50k": "$15K-$50K",
   "50k_plus": "$50K+",
   discuss: "To discuss",
 };

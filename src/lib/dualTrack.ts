@@ -23,7 +23,7 @@ const getSessionId = (): string => {
 
 /**
  * Push an event to both dataLayer AND Supabase analytics_events.
- * Fire-and-forget — never throws.
+ * Fire-and-forget - never throws.
  */
 export const dualPush = (event: string, params?: Record<string, any>) => {
   // 1. dataLayer for GTM → GA4

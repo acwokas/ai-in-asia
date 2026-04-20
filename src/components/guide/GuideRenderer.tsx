@@ -182,7 +182,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
 
           {formData.worked_example.output && (
             <div className="mb-6">
-              <p className="text-sm italic text-muted-foreground mb-3">Example output — your results will vary based on your inputs</p>
+              <p className="text-sm italic text-muted-foreground mb-3">Example output - your results will vary based on your inputs</p>
               <div className="border-l-4 border-teal-500 bg-teal-500/5 rounded-r-lg p-4">
                 <MarkdownText text={formData.worked_example.output} className="text-base leading-relaxed text-foreground/90" />
               </div>
@@ -260,7 +260,7 @@ const GuideRenderer = ({ formData, fullPage = false }: GuideRendererProps) => {
                   <span className="font-semibold text-foreground">{stripMd(toolName)}</span>
                 )}
                 {tool.best_for && (
-                  <span className="text-sm text-muted-foreground ml-2">— {stripMd(tool.best_for)}</span>
+                  <span className="text-sm text-muted-foreground ml-2">- {stripMd(tool.best_for)}</span>
                 )}
                 {tool.pricing && (
                   <span className="text-xs text-muted-foreground ml-2">({stripMd(tool.pricing)})</span>

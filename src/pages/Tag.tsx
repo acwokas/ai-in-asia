@@ -82,7 +82,7 @@ const Tag = () => {
         schemaJson={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": `${tag?.name || 'Tag'} — AI in Asia`,
+          "name": `${tag?.name || 'Tag'} - AI in Asia`,
           "description": tag?.description || `Articles tagged with ${tag?.name} on AIinASIA`,
           "url": `https://aiinasia.com/tag/${tag?.slug}`,
           "inLanguage": "en-GB",
