@@ -3,7 +3,7 @@
 // Pass required values as props from .astro pages instead.
 
 const ANON_KEY_FALLBACK =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrYWNxbGpvZ3NzcmV5Y3Vtb2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MDU4ODIsImV4cCI6MjA5MjE4MTg4Mn0.placeholder';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBibXRudnh5d3BsZ3BsZG1seWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NjYwOTMsImV4cCI6MjA3NzA0MjA5M30.Xt29HhlYkz3BJW9VlMBzNF-_hqmfiqOLF8HmonOxfvg';
 
 const domain = import.meta.env.SITE_DOMAIN || 'aiinasia.com';
 
@@ -13,7 +13,7 @@ export const siteConfig = {
   tagline:         import.meta.env.SITE_TAGLINE     || 'Your guide to AI in Asia',
   description:     import.meta.env.SITE_DESC        || 'The definitive source for AI news, insights, and innovation across Asia. Daily briefings, analysis, and practical guides.',
   url:             import.meta.env.SITE_URL         || `https://${domain}`,
-  supabaseUrl:     import.meta.env.SUPABASE_URL     || 'https://ukacqljogssreycumocn.supabase.co',
+  supabaseUrl:     import.meta.env.SUPABASE_URL     || 'https://pbmtnvxywplgpldmlygv.supabase.co',
   supabaseAnonKey: import.meta.env.SUPABASE_ANON_KEY || ANON_KEY_FALLBACK,
   ga4Id:           import.meta.env.GA4_ID           || '',
   gtmId:           import.meta.env.GTM_ID           || 'GTM-NVSBJH7Q',
