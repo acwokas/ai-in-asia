@@ -1,0 +1,241 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { createServerClient } from '../../lib/supabase';
+import { siteConfig } from '../../site.config';
+import { getCategoryColor } from '../../lib/categoryColors';
+import { getOptimizedThumbnail } from '../../lib/imageOptimization';
+import { format } from 'date-fns';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import NewsletterIsland from '../../components/islands/NewsletterIsland';
+
+const VALID_CATEGORIES = ['news', 'business', 'life', 'learn', 'create', 'voices'];
+
+const { category } = Astro.params;
+
+if (!category || !VALID_CATEGORIES.includes(category)) {
+  return Astro.redirect('/404', 302);
+}
+
+const PAGE_SIZE = 24;
+const pageParam = Astro.url.searchParams.get('page');
+const page = Math.max(1, parseInt(pageParam || '1', 10));
+const offset = (page - 1) * PAGE_SIZE;
+
+const supabase = createServerClient(
+  siteConfig.supabaseUrl,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
+);
+
+const [catRes, articlesRes, countRes] = await Promise.all([
+  supabase
+    .from('categories')
+    .select('name, slug, description')
+    .eq('slug', category)
+    .maybeSingle(),
+
+  supabase
+    .from('articles')
+    .select(`
+      id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at,
+      authors:author_id (name, slug),
+      categories:primary_category_id (name, slug)
+    `)
+    .eq('status', 'published')
+    .eq('categories.slug', category)
+    .not('categories', 'is', null)
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .range(offset, offset + PAGE_SIZE - 1),
+
+  supabase
+    .from('articles')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'published')
+    .eq('categories.slug', category)
+    .not('categories', 'is', null),
+]);
+
+// Filter client-side to ensure slug matches (join filter may not work perfectly)
+const allFetched = (articlesRes.data || []) as any[];
+const articles = allFetched.filter((a: any) => a.categories?.slug === category);
+
+const catName = catRes.data?.name || category.charAt(0).toUpperCase() + category.slice(1);
+const catDescription = catRes.data?.description || `The latest AI ${catName.toLowerCase()} news and analysis from across Asia.`;
+const totalCount = countRes.count ?? articles.length;
+const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+const catColor = getCategoryColor(category);
+
+const pageTitle = page > 1 ? `${catName} — Page ${page} | ${siteConfig.name}` : `${catName} | ${siteConfig.name}`;
+const pageDescription = catDescription;
+const canonicalUrl = page > 1
+  ? `${siteConfig.url}/${category}?page=${page}`
+  : `${siteConfig.url}/${category}`;
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.url },
+    { '@type': 'ListItem', position: 2, name: catName, item: `${siteConfig.url}/${category}` },
+  ],
+};
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonicalUrl={canonicalUrl}
+  jsonLd={[breadcrumbJsonLd]}
+>
+  <SiteHeader />
+
+  <main id="main-content">
+    <!-- Category header -->
+    <div class="border-b border-border/40" style={`border-top:4px solid ${catColor}`}>
+      <div class="container mx-auto px-4 py-8">
+        <div class="flex items-end gap-4">
+          <div>
+            <span
+              class="inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide text-white mb-3"
+              style={`background-color:${catColor}`}
+            >
+              {catName}
+            </span>
+            <h1 class="text-3xl font-bold">{catName}</h1>
+            <p class="text-muted-foreground mt-1 max-w-xl">{catDescription}</p>
+          </div>
+          {totalCount > 0 && (
+            <div class="ml-auto text-right shrink-0">
+              <span class="text-2xl font-black text-foreground">{totalCount.toLocaleString()}</span>
+              <p class="text-xs text-muted-foreground">articles</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {articles.length === 0 ? (
+      <div class="container mx-auto px-4 py-16 text-center text-muted-foreground">
+        <p>No articles found in this category yet. Check back soon.</p>
+      </div>
+    ) : (
+      <section class="container mx-auto px-4 py-8">
+        <!-- Lead article (first on page 1) -->
+        {page === 1 && articles[0] && (() => {
+          const lead = articles[0] as any;
+          return (
+            <a
+              href={`/${category}/${lead.slug}`}
+              class="group block rounded-xl overflow-hidden border border-border mb-8 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+              style={`border-left:4px solid ${catColor}`}
+            >
+              <div class="grid grid-cols-1 md:grid-cols-2">
+                {lead.featured_image_url ? (
+                  <img
+                    src={getOptimizedThumbnail(lead.featured_image_url)}
+                    alt={lead.title}
+                    class="w-full h-56 md:h-72 object-cover"
+                    loading="eager"
+                    fetchpriority="high"
+                  />
+                ) : (
+                  <div class="w-full h-56 md:h-72" style={`background:${catColor}18`} />
+                )}
+                <div class="p-6 flex flex-col justify-center">
+                  <span
+                    class="text-[11px] font-bold uppercase tracking-wide mb-2"
+                    style={`color:${catColor}`}
+                  >
+                    {catName}
+                  </span>
+                  <h2 class="text-xl md:text-2xl font-bold leading-snug group-hover:underline mb-2">{lead.title}</h2>
+                  {lead.excerpt && (
+                    <p class="text-sm text-muted-foreground line-clamp-3 mb-4">{lead.excerpt}</p>
+                  )}
+                  <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                    {lead.authors && <span>{lead.authors.name}</span>}
+                    {lead.published_at && (
+                      <time datetime={lead.published_at}>{format(new Date(lead.published_at), 'MMM d, yyyy')}</time>
+                    )}
+                    {lead.reading_time_minutes && <span>{lead.reading_time_minutes} min read</span>}
+                  </div>
+                </div>
+              </div>
+            </a>
+          );
+        })()}
+
+        <!-- Article grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {(page === 1 ? articles.slice(1) : articles).map((article: any) => (
+            <a
+              href={`/${category}/${article.slug}`}
+              class="group block rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+              style={`border-top:3px solid ${catColor}`}
+            >
+              {article.featured_image_url ? (
+                <img
+                  src={getOptimizedThumbnail(article.featured_image_url)}
+                  alt={article.title}
+                  class="w-full h-44 object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
+              ) : (
+                <div class="w-full h-44" style={`background:${catColor}15`} />
+              )}
+              <div class="p-4">
+                <h3 class="font-semibold text-sm leading-snug line-clamp-3 group-hover:underline mb-2">{article.title}</h3>
+                {article.excerpt && (
+                  <p class="text-xs text-muted-foreground line-clamp-2 mb-3">{article.excerpt}</p>
+                )}
+                <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                  {article.authors && <span>{article.authors.name}</span>}
+                  {article.published_at && (
+                    <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
+                  )}
+                  {article.reading_time_minutes && <span>· {article.reading_time_minutes} min</span>}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <!-- Pagination -->
+        {totalPages > 1 && (
+          <nav class="flex items-center justify-center gap-2 mt-10" aria-label="Pagination">
+            {page > 1 && (
+              <a
+                href={page === 2 ? `/${category}` : `/${category}?page=${page - 1}`}
+                class="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                Previous
+              </a>
+            )}
+            <span class="text-sm text-muted-foreground px-2">
+              Page {page} of {totalPages}
+            </span>
+            {page < totalPages && (
+              <a
+                href={`/${category}?page=${page + 1}`}
+                class="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                Next
+              </a>
+            )}
+          </nav>
+        )}
+      </section>
+    )}
+
+    <!-- Newsletter -->
+    <section class="container mx-auto px-4 py-10 border-t border-border/30">
+      <NewsletterIsland
+        client:only="react"
+        supabaseUrl={siteConfig.supabaseUrl}
+        supabaseAnonKey={siteConfig.supabaseAnonKey}
+      />
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
