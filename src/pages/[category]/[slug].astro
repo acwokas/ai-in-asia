@@ -176,6 +176,22 @@ const faqJsonLd = faqs.length > 0 ? {
   })),
 } : null;
 
+// Table of Contents — extract h2/h3 from rendered content and inject IDs
+interface TocEntry { id: string; text: string; level: 2 | 3 }
+const tocEntries: TocEntry[] = [];
+if (contentHtml) {
+  let slugCounts: Record<string, number> = {};
+  contentHtml = contentHtml.replace(/<(h[23])([^>]*)>([\s\S]*?)<\/h[23]>/gi, (_match: string, tag: string, attrs: string, inner: string) => {
+    const level = parseInt(tag[1], 10) as 2 | 3;
+    const text = inner.replace(/<[^>]+>/g, '').trim();
+    const base = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 60);
+    slugCounts[base] = (slugCounts[base] || 0) + 1;
+    const id = slugCounts[base] > 1 ? `${base}-${slugCounts[base]}` : base;
+    tocEntries.push({ id, text, level });
+    return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
+  });
+}
+
 // Share URLs
 const shareUrl = encodeURIComponent(canonicalUrl);
 const shareTitle = encodeURIComponent(titleClean);
@@ -578,6 +594,25 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
         <!-- Sidebar / right rail -->
         <aside class="hidden lg:block">
           <div class="sticky top-20 space-y-6">
+
+            <!-- Table of Contents -->
+            {tocEntries.length >= 3 && (
+              <nav aria-label="Table of contents" class="rounded-lg border border-border/50 bg-muted/10 p-4">
+                <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">In this article</p>
+                <ol class="space-y-1.5">
+                  {tocEntries.map((entry) => (
+                    <li class={entry.level === 3 ? 'pl-3' : ''}>
+                      <a
+                        href={`#${entry.id}`}
+                        class="text-sm leading-snug text-muted-foreground hover:text-foreground transition-colors line-clamp-2"
+                      >
+                        {entry.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )}
 
             <!-- Newsletter CTA -->
             <NewsletterIsland
