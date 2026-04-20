@@ -307,7 +307,7 @@ const websiteJsonLd = {
       <NewsletterIsland
         client:only="react"
         supabaseUrl={siteConfig.supabaseUrl}
-        supabaseAnonKey={siteConfig.supabaseAnonKey}
+        supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
       />
     </section>
 
@@ -315,7 +315,7 @@ const websiteJsonLd = {
     <HomeSectionsIsland
       client:only="react"
       supabaseUrl={siteConfig.supabaseUrl}
-      supabaseAnonKey={siteConfig.supabaseAnonKey}
+      supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
     />
 
   </main>

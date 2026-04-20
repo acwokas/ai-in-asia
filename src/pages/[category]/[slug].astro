@@ -57,6 +57,17 @@ if (catSlug && catSlug !== category) {
 const author = (article as any).authors;
 const cat = (article as any).categories;
 const heroImage = article.og_image_url || article.featured_image_url;
+
+// Fetch related articles for right rail "More in [category]"
+const relatedArticles = cat?.id ? (await supabase
+  .from('articles')
+  .select('id, title, slug, featured_image_url, reading_time_minutes, published_at')
+  .eq('status', 'published')
+  .eq('primary_category_id', cat.id)
+  .neq('id', article.id)
+  .order('published_at', { ascending: false, nullsFirst: false })
+  .limit(5)
+).data || [] : [];
 const readingTime = article.reading_time_minutes || calculateReadingTime(article.content, article.title || '');
 const canonicalUrl = `${siteConfig.url}/${catSlug || category}/${slug}`;
 const titleClean = fixEncoding(article.title || '');
@@ -190,6 +201,7 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
 
   {isThreeBeforeNine ? (
     <main id="main-content">
+      {/* Full-bleed hero */}
       {heroImage && (
         <div class="relative w-full overflow-hidden bg-muted" style="height:520px;max-height:65vw">
           <img
@@ -199,15 +211,22 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
             loading="eager"
             fetchpriority="high"
           />
-          <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)"></div>
-          <div class="absolute bottom-5 left-5">
-            <span class="inline-block px-3 py-1 rounded text-xs font-bold uppercase tracking-wide text-white" style="background-color:#5F72FF">3 Before 9</span>
+          <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.7) 100%)"></div>
+          <div class="absolute bottom-0 left-0 right-0 px-6 pb-8 max-w-3xl mx-auto">
+            <span class="inline-block px-3 py-1 rounded text-xs font-bold uppercase tracking-wide text-white mb-3" style="background-color:#5F72FF">3 Before 9</span>
+            {article.published_at && (
+              <p class="text-sm font-semibold text-white/80 mb-2">
+                {format(new Date(article.published_at as string), 'EEEE, d MMMM yyyy')}
+              </p>
+            )}
+            <h1 class="text-3xl md:text-4xl font-display font-bold leading-tight text-white mb-2">{titleClean}</h1>
+            {article.excerpt && <p class="text-base text-white/80 leading-relaxed line-clamp-2">{article.excerpt}</p>}
           </div>
         </div>
       )}
 
       <div class="max-w-3xl mx-auto px-6 py-6">
-        <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground mb-6">
+        <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground mb-4">
           <a href="/" class="hover:text-foreground transition-colors">Home</a>
           <span aria-hidden="true">/</span>
           <a href="/news/3-before-9" class="hover:text-foreground transition-colors">3 Before 9</a>
@@ -215,19 +234,68 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
           <span class="truncate max-w-[240px]">{titleClean}</span>
         </nav>
 
-        <div class="mb-5">
-          {article.published_at && (
-            <p class="text-sm font-semibold mb-2" style="color:#5F72FF">
-              {format(new Date(article.published_at), 'EEEE, d MMMM yyyy')}
+        {/* Show title/strapline only if there was no hero (hero already shows them) */}
+        {!heroImage && (
+          <div class="mb-5">
+            {article.published_at && (
+              <p class="text-sm font-semibold mb-2" style="color:#5F72FF">
+                {format(new Date(article.published_at as string), 'EEEE, d MMMM yyyy')}
+              </p>
+            )}
+            <h1 class="text-3xl md:text-4xl font-display font-bold leading-tight mb-3">{titleClean}</h1>
+            {article.excerpt && <p class="text-lg text-muted-foreground leading-relaxed">{article.excerpt}</p>}
+          </div>
+        )}
+
+        <!-- Audio player -->
+        {showAudioPlayer && (
+          <div id="audio-player" class="mb-6 rounded-xl px-5 py-4 border border-border bg-card">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:#5F72FF">
+              Listen to today's briefing
             </p>
-          )}
-          <h1 class="text-3xl md:text-4xl font-display font-bold leading-tight mb-3">{titleClean}</h1>
-          {article.excerpt && <p class="text-lg text-muted-foreground leading-relaxed">{article.excerpt}</p>}
-        </div>
+            <audio controls class="w-full h-10" preload="metadata">
+              <source src={audioUrl!} type="audio/mpeg" />
+            </audio>
+            <a
+              href={siteConfig.spotifyShowUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-3"
+            >
+              <svg class="h-3.5 w-3.5 shrink-0" style="color:#1DB954" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+              Subscribe on Spotify
+            </a>
+          </div>
+        )}
+
+        <!-- Who / What sections from TL;DR snapshot -->
+        {(tldrWhoShouldPayAttention || tldrWhatChangesNext) && (
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {tldrWhoShouldPayAttention && (
+              <div class="rounded-xl border border-border/50 bg-card p-4">
+                <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#5F72FF">Who should pay attention</p>
+                <p class="text-sm leading-relaxed">{tldrWhoShouldPayAttention}</p>
+              </div>
+            )}
+            {tldrWhatChangesNext && (
+              <div class="rounded-xl border border-border/50 bg-card p-4">
+                <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#5F72FF">What changes next</p>
+                <p class="text-sm leading-relaxed">{tldrWhatChangesNext}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <!-- Article body content (editorial view, closing thoughts, etc.) -->
+        {contentHtml && (
+          <div class="prose prose-lg max-w-none article-content mb-6" set:html={contentHtml} />
+        )}
 
         <!-- Share -->
-        <div class="flex flex-wrap items-center gap-2 mb-8 pb-6 border-b border-border/40">
-          <span class="text-xs text-muted-foreground mr-1">Share:</span>
+        <div class="flex flex-wrap items-center gap-2 py-6 border-y border-border/40">
+          <span class="text-xs text-muted-foreground mr-1">Share this edition:</span>
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium hover:opacity-90 transition-opacity"
             style="background:#25D366;color:#fff">
@@ -253,31 +321,6 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
             Email
           </a>
         </div>
-
-        <!-- Audio player for 3B9 -->
-        {showAudioPlayer && (
-          <div id="audio-player" class="mb-6 rounded-xl px-5 py-4 border border-border bg-card">
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold uppercase tracking-wide" style="color:#5F72FF">
-                Listen to today's briefing
-              </p>
-            </div>
-            <audio controls class="w-full h-10" preload="metadata">
-              <source src={audioUrl!} type="audio/mpeg" />
-            </audio>
-            <a
-              href={siteConfig.spotifyShowUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-3"
-            >
-              <svg class="h-3.5 w-3.5 shrink-0" style="color:#1DB954" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-              </svg>
-              Subscribe on Spotify
-            </a>
-          </div>
-        )}
       </div>
 
       <!-- 3B9 island: signals, newsletter, recent editions -->
@@ -287,7 +330,7 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
         audioUrl={audioUrl}
         canonicalUrl={canonicalUrl}
         supabaseUrl={siteConfig.supabaseUrl}
-        supabaseAnonKey={siteConfig.supabaseAnonKey}
+        supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
       />
     </main>
   ) : (
@@ -507,7 +550,7 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
             client:only="react"
             articleId={article.id}
             supabaseUrl={siteConfig.supabaseUrl}
-            supabaseAnonKey={siteConfig.supabaseAnonKey}
+            supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
           />
 
           <!-- Comments -->
@@ -515,7 +558,7 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
             client:only="react"
             articleId={article.id}
             supabaseUrl={siteConfig.supabaseUrl}
-            supabaseAnonKey={siteConfig.supabaseAnonKey}
+            supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
           />
 
           <!-- Back to category -->
@@ -532,15 +575,65 @@ const emailUrl = `mailto:?subject=${shareTitle}&body=${shareUrl}`;
           )}
         </article>
 
-        <!-- Sidebar -->
+        <!-- Sidebar / right rail -->
         <aside class="hidden lg:block">
           <div class="sticky top-20 space-y-6">
+
+            <!-- Newsletter CTA -->
             <NewsletterIsland
               client:only="react"
               variant="compact"
               supabaseUrl={siteConfig.supabaseUrl}
-              supabaseAnonKey={siteConfig.supabaseAnonKey}
+              supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
             />
+
+            <!-- Ad slot -->
+            <div class="rounded-lg border border-dashed border-border/40 bg-muted/10 flex items-center justify-center min-h-[250px] text-xs text-muted-foreground/40 select-none">
+              <ins
+                class="adsbygoogle"
+                style="display:block"
+                data-ad-client={siteConfig.adsensePubId}
+                data-ad-slot="7654321"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
+              <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+
+            <!-- More in [category] -->
+            {cat && relatedArticles.length > 0 && (
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                  More in {cat.name}
+                </h3>
+                <div class="space-y-3">
+                  {(relatedArticles as any[]).map((rel) => (
+                    <a
+                      href={`/${cat.slug}/${rel.slug}`}
+                      class="group flex gap-3 items-start hover:bg-muted/30 rounded-lg p-2 -mx-2 transition-colors"
+                    >
+                      {rel.featured_image_url && (
+                        <img
+                          src={rel.featured_image_url}
+                          alt={rel.title}
+                          class="w-16 h-12 object-cover rounded shrink-0"
+                          loading="lazy"
+                        />
+                      )}
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium leading-snug line-clamp-2 group-hover:underline">{rel.title}</p>
+                        {rel.reading_time_minutes && (
+                          <p class="text-xs text-muted-foreground mt-0.5">{rel.reading_time_minutes} min read</p>
+                        )}
+                      </div>
+                    </a>
+                  ))}
+                  <a href={`/${cat.slug}`} class="block text-xs font-semibold hover:underline mt-2" style={`color:${getCategoryColor(cat.slug)}`}>
+                    View all {cat.name} →
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
       </div>

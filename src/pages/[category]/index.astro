@@ -9,11 +9,9 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import NewsletterIsland from '../../components/islands/NewsletterIsland';
 
-const VALID_CATEGORIES = ['news', 'business', 'life', 'learn', 'create', 'voices'];
-
 const { category } = Astro.params;
 
-if (!category || !VALID_CATEGORIES.includes(category)) {
+if (!category) {
   return Astro.redirect('/404', 302);
 }
 
@@ -27,13 +25,19 @@ const supabase = createServerClient(
   import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
 );
 
-const [catRes, articlesRes, countRes] = await Promise.all([
-  supabase
-    .from('categories')
-    .select('name, slug, description')
-    .eq('slug', category)
-    .maybeSingle(),
+// Step 1: get the category record (validates slug + gets ID)
+const { data: catData } = await supabase
+  .from('categories')
+  .select('id, name, slug, description')
+  .eq('slug', category)
+  .maybeSingle();
 
+if (!catData) {
+  return Astro.redirect('/404', 302);
+}
+
+// Step 2: fetch articles filtered by the FK directly — no embedded-resource filter quirks
+const [articlesRes, countRes] = await Promise.all([
   supabase
     .from('articles')
     .select(`
@@ -42,8 +46,7 @@ const [catRes, articlesRes, countRes] = await Promise.all([
       categories:primary_category_id (name, slug)
     `)
     .eq('status', 'published')
-    .eq('categories.slug', category)
-    .not('categories', 'is', null)
+    .eq('primary_category_id', catData.id)
     .order('published_at', { ascending: false, nullsFirst: false })
     .range(offset, offset + PAGE_SIZE - 1),
 
@@ -51,16 +54,13 @@ const [catRes, articlesRes, countRes] = await Promise.all([
     .from('articles')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'published')
-    .eq('categories.slug', category)
-    .not('categories', 'is', null),
+    .eq('primary_category_id', catData.id),
 ]);
 
-// Filter client-side to ensure slug matches (join filter may not work perfectly)
-const allFetched = (articlesRes.data || []) as any[];
-const articles = allFetched.filter((a: any) => a.categories?.slug === category);
+const articles = (articlesRes.data || []) as any[];
 
-const catName = catRes.data?.name || category.charAt(0).toUpperCase() + category.slice(1);
-const catDescription = catRes.data?.description || `The latest AI ${catName.toLowerCase()} news and analysis from across Asia.`;
+const catName = catData.name || category.charAt(0).toUpperCase() + category.slice(1);
+const catDescription = catData.description || `The latest AI ${catName.toLowerCase()} news and analysis from across Asia.`;
 const totalCount = countRes.count ?? articles.length;
 const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 const catColor = getCategoryColor(category);
@@ -232,7 +232,7 @@ const breadcrumbJsonLd = {
       <NewsletterIsland
         client:only="react"
         supabaseUrl={siteConfig.supabaseUrl}
-        supabaseAnonKey={siteConfig.supabaseAnonKey}
+        supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
       />
     </section>
   </main>
