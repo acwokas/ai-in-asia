@@ -55,6 +55,7 @@ const Articles = () => {
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [scheduledDateTime, setScheduledDateTime] = useState<{ [key: string]: { date: Date | undefined; time: string } }>({});
+  const [publishingAllDrafts, setPublishingAllDrafts] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -232,6 +233,29 @@ const Articles = () => {
     }
   };
 
+  const handlePublishAllDrafts = async () => {
+    try {
+      setPublishingAllDrafts(true);
+      const { data, error } = await supabase
+        .from("articles")
+        .update({ status: "published" as any, published_at: new Date().toISOString() })
+        .eq("status", "draft")
+        .select("id");
+
+      if (error) throw error;
+
+      const count = data?.length || 0;
+      toast.success("Drafts published", {
+        description: `${count} draft article${count !== 1 ? "s" : ""} published successfully.`,
+      });
+      refetch();
+    } catch (error: any) {
+      toast.error("Error", { description: error.message || "Failed to publish drafts" });
+    } finally {
+      setPublishingAllDrafts(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
       published: "default",
@@ -301,8 +325,8 @@ const Articles = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/admin/publish-all")}>
-              <Globe className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={handlePublishAllDrafts} disabled={publishingAllDrafts}>
+              {publishingAllDrafts ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Globe className="h-4 w-4 mr-2" />}
               Publish All Drafts
             </Button>
             <Button onClick={() => navigate("/editor")}>

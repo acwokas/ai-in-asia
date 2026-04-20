@@ -11,6 +11,82 @@ import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
 
+/**
+ * Extract FAQ content from inside editorial-view divs so it renders
+ * on the standard page background instead of inside the styled box.
+ */
+const extractFaqFromEditorialView = (html: string): string => {
+  // Match editorial-view divs that contain FAQ headings
+  return html.replace(
+    /(<div\s+class="editorial-view"[^>]*>)([\s\S]*?)<\/div>/gi,
+    (fullMatch, openTag, innerContent) => {
+      // Look for FAQ heading (h2-h6 containing "FAQ" or "Frequently Asked Questions")
+      const faqHeadingPattern = /(<h[2-6][^>]*>(?:[^<]*(?:FAQ|Frequently\s+Asked\s+Questions)[^<]*)<\/h[2-6]>)/i;
+      const faqIdx = innerContent.search(faqHeadingPattern);
+      if (faqIdx === -1) return fullMatch; // no FAQ found, leave as-is
+
+      // Split: everything before FAQ stays in editorial-view, FAQ onwards goes outside
+      const beforeFaq = innerContent.substring(0, faqIdx);
+      const faqAndAfter = innerContent.substring(faqIdx);
+
+      // If there's content before FAQ, keep the editorial-view div for it
+      const editorialPart = beforeFaq.trim()
+        ? `${openTag}${beforeFaq}</div>`
+        : '';
+
+      return `${editorialPart}\n${faqAndAfter}`;
+    }
+  );
+};
+
+/**
+ * Wrap "Closing Thoughts" headings and their following content in a styled callout box,
+ * mirroring the editorial-view appearance (dark box, teal left border).
+ */
+const wrapClosingThoughts = (html: string): string => {
+  // Match h2-h6 containing "Closing Thoughts" (case-insensitive)
+  return html.replace(
+    /(<h[2-6][^>]*>(?:[^<]*[Cc]losing\s+[Tt]houghts[^<]*)<\/h[2-6]>)([\s\S]*?)(?=<h[2-6]|<div\s+class="editorial-view"|<div\s+class="closing-thoughts"|$)/gi,
+    (fullMatch, heading, content) => {
+      // Replace the heading with a strong label inside the closing-thoughts div
+      return `<div class="closing-thoughts"><strong>Closing Thoughts</strong>${content}</div>`;
+    }
+  );
+};
+
+/**
+ * Wrap content that starts with "The AI in Asia View" into our standard
+ * editorial-view container, replacing any inline styling the CMS may have added.
+ */
+const wrapEditorialViewParagraphs = (html: string): string => {
+  // Skip if already using our editorial-view class
+  if (html.includes('class="editorial-view"')) return html;
+
+  // Pattern 1: A div with arbitrary classes wrapping a <strong> containing "THE AI IN ASIA VIEW"
+  // Replace the wrapper div's classes with our editorial-view class
+  html = html.replace(
+    /<div\s+class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+    (_, content) => {
+      return `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`;
+    }
+  );
+
+  // Pattern 2: Bare <strong>The AI in Asia View:</strong> text (not in a styled div)
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<div\s|<blockquote|<section|$)/gi,
+      (match) => {
+        const content = match
+          .replace(/^(?:<p[^>]*>\s*)?<strong>\s*The AI in Asia View[:\s]*<\/strong>\s*/i, '')
+          .trim();
+        return `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content}</p></div>`;
+      }
+    );
+  }
+
+  return html;
+};
+
 const IN_ARTICLE_AD_CLIENT = "ca-pub-4181437297386228";
 const IN_ARTICLE_AD_SLOT = "3478913062";
 const IN_ARTICLE_AD_SLOT_HORIZONTAL = "3478913062";
@@ -156,6 +232,49 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
       setPortalContainer(null);
     };
   }, [html, !!midArticleNode]);
+
+  // DOM-level: detect and wrap "THE AI IN ASIA VIEW" into editorial-view box
+  useEffect(() => {
+    if (!proseRef.current) return;
+    const el = proseRef.current;
+    // Find any <strong> containing editorial view text that isn't already inside .editorial-view
+    const strongs = el.querySelectorAll('strong');
+    strongs.forEach((strong) => {
+      const text = (strong.textContent || '').trim();
+      if (!/^THE\s+AI\s*IN\s*ASIA\s+VIEW|^The\s+AI\s+in\s+Asia\s+View/i.test(text)) return;
+      if (strong.closest('.editorial-view')) return;
+      
+      // Find the container (parent div or p)
+      const container = strong.parentElement;
+      if (!container) return;
+      
+      // Create editorial-view wrapper
+      const wrapper = document.createElement('div');
+      wrapper.className = 'editorial-view';
+      
+      // Create heading
+      const heading = document.createElement('strong');
+      heading.textContent = 'The AI in Asia View';
+      wrapper.appendChild(heading);
+      
+      // Move remaining content (after the strong) into a <p>
+      const p = document.createElement('p');
+      p.className = 'leading-relaxed';
+      
+      // Get text/HTML after the strong element
+      const clone = container.cloneNode(true) as HTMLElement;
+      const strongInClone = clone.querySelector('strong');
+      if (strongInClone) {
+        // Remove the strong and get remaining content
+        strongInClone.remove();
+        p.innerHTML = clone.innerHTML.replace(/^\s*:?\s*/, '').trim();
+      }
+      wrapper.appendChild(p);
+      
+      // Replace the container with the wrapper
+      container.parentNode?.replaceChild(wrapper, container);
+    });
+  }, [html]);
 
   // Activate AdSense on injected ad slots (production only)
   useEffect(() => {
@@ -328,6 +447,21 @@ export const generateHeadingId = (text: string): string => {
     .replace(/^-|-$/g, '');
 };
 
+/**
+ * Remove em dashes (—) from article HTML, except inside <blockquote> elements
+ * where they are used for attribution. Replaces with comma-space or colon as appropriate.
+ */
+const stripEmDashes = (html: string): string => {
+  // Split HTML by blockquote boundaries to preserve em dashes in quotes
+  const parts = html.split(/(<blockquote[\s\S]*?<\/blockquote>)/gi);
+  return parts.map((part, i) => {
+    // Odd indices are blockquote content — leave untouched
+    if (i % 2 === 1) return part;
+    // Replace em dashes and en dashes with comma or period context
+    return part
+      .replace(/\s*[—–]\s*/g, '; ');
+  }).join('');
+};
 
 /**
  * Strip external-link attributes (target="_blank", rel, external icon SVG, inline-flex class)
@@ -410,12 +544,35 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     // Consolidate numbered lists
     consolidated = consolidated.replace(/(\d+\.\s[^\n]+)\n\n(?=\d+\.\s)/g, '$1\n');
     
+    // Before stripping divs, convert any editorial-view styled divs to a placeholder
+    const EDITORIAL_PLACEHOLDER_START = '<!--EDITORIAL_VIEW_START-->';
+    const EDITORIAL_PLACEHOLDER_END = '<!--EDITORIAL_VIEW_END-->';
+    // Match div (with or without attrs) containing strong with editorial view heading
+    consolidated = consolidated.replace(
+      /<div[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      (_, content) => `${EDITORIAL_PLACEHOLDER_START}${content}${EDITORIAL_PLACEHOLDER_END}`
+    );
+
     // Clean up div wrappers (only when no prompt boxes)
     if (!hasPromptBoxes) {
       consolidated = consolidated
         .replace(/<div>\s*<\/div>/g, '\n\n')
         .replace(/<\/div>\s*<div>/g, '\n\n')
         .replace(/<\/?div>/g, '');
+    }
+
+    // Restore editorial view from placeholders
+    consolidated = consolidated
+      .replace(EDITORIAL_PLACEHOLDER_START, '<div class="editorial-view"><strong>The AI in Asia View</strong>')
+      .replace(EDITORIAL_PLACEHOLDER_END, '</div>');
+
+    // Fallback: if bare <strong>THE AI IN ASIA VIEW</strong> remains after div stripping,
+    // wrap it and following text into editorial-view
+    if (!consolidated.includes('editorial-view')) {
+      consolidated = consolidated.replace(
+        /<strong[^>]*>\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>\s*([\s\S]*?)(?=<h[2-6]|<hr|$)/gi,
+        (_, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong><p>${content.trim()}</p></div>`
+      );
     }
 
     consolidated = consolidated
@@ -493,7 +650,12 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
           return block;
         }
         
-      if (block.startsWith('### ')) {
+      if (block.startsWith('#### ')) {
+          const text = block.substring(5);
+          const id = generateHeadingId(text);
+          return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
+        }
+        if (block.startsWith('### ')) {
           const text = block.substring(4);
           const id = generateHeadingId(text);
           return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
@@ -578,6 +740,21 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
         }
       );
 
+      // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
+      sanitizedHtml = sanitizedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
+
+      // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+      sanitizedHtml = wrapEditorialViewParagraphs(sanitizedHtml);
+
+      // Extract FAQ from editorial-view boxes
+      sanitizedHtml = extractFaqFromEditorialView(sanitizedHtml);
+
+      // Wrap Closing Thoughts in styled callout
+      sanitizedHtml = wrapClosingThoughts(sanitizedHtml);
+
+      // Strip em dashes (except inside blockquotes)
+      sanitizedHtml = stripEmDashes(sanitizedHtml);
+
       // Clean internal links that were incorrectly marked as external
       sanitizedHtml = cleanInternalLinks(sanitizedHtml);
 
@@ -586,14 +763,19 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
     
     // Standard content processing (no prompt boxes)
     const blocks = consolidated.split('\n\n').map(block => block.trim()).filter(block => block.length > 0);
-    
-    
+
+
     const htmlBlocks = blocks.map((block, index) => {
       if (block.includes('twitter-tweet') || 
           block.includes('instagram-media') || 
           block.includes('tiktok-embed') ||
           block.includes('youtube.com/embed')) {
         return block;
+      }
+      if (block.startsWith('#### ')) {
+        const text = block.substring(5);
+        const id = generateHeadingId(text);
+        return `<h4 id="${id}" class="text-xl font-semibold mt-6 mb-3">${text}</h4>`;
       }
       if (block.startsWith('### ')) {
         const text = block.substring(4);
@@ -680,6 +862,21 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       }
     );
 
+    // Normalize "AIinASIA" → "AI in Asia" in editorial-view headings
+    joinedHtml = joinedHtml.replace(/THE\s+AIINASIA\s+VIEW/gi, 'The AI in Asia View');
+
+    // Wrap inline "The AI in Asia View:" paragraphs in editorial-view div if not already wrapped
+    joinedHtml = wrapEditorialViewParagraphs(joinedHtml);
+
+    // Extract FAQ from editorial-view boxes
+    joinedHtml = extractFaqFromEditorialView(joinedHtml);
+
+    // Wrap Closing Thoughts in styled callout
+    joinedHtml = wrapClosingThoughts(joinedHtml);
+
+    // Strip em dashes (except inside blockquotes)
+    joinedHtml = stripEmDashes(joinedHtml);
+
     // Clean internal links that were incorrectly marked as external
     joinedHtml = cleanInternalLinks(joinedHtml);
 
@@ -699,6 +896,25 @@ export const renderArticleContent = (content: any, midArticleNode?: ReactNode): 
       switch (block.type) {
         case 'paragraph':
           const contentText = fixEncoding(block.content || '');
+          
+          // Detect editorial view content ("THE AI IN ASIA VIEW" or "The AI in Asia View")
+          if (/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)/i.test(contentText)) {
+            // Strip the heading from the content text
+            const editorialBody = contentText
+              .replace(/^\s*(?:<strong[^>]*>)?\s*(?:THE\s+AI\s*IN\s*ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*(?:<\/strong>)?\s*/i, '')
+              .trim();
+            const sanitizedBody = DOMPurify.sanitize(processInlineFormatting(editorialBody), {
+              ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
+              ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+            });
+            return (
+              <div key={index} className="editorial-view">
+                <strong>The AI in Asia View</strong>
+                <p className="leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
+              </div>
+            );
+          }
+          
           const sanitizedContent = DOMPurify.sanitize(processInlineFormatting(contentText), {
             ALLOWED_TAGS: ['strong', 'em', 'b', 'i', 'a', 'br', 'span'],
             ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
