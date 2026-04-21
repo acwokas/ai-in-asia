@@ -297,6 +297,7 @@ All colors MUST be HSL.
   .prose s,
   .prose strike {
     text-decoration: line-through !important;
+    color: hsl(var(--foreground)) !important;
   }
 
   .article-content h2,
