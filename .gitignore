@@ -15,6 +15,9 @@ dist-ssr
 # Build / deploy artifacts
 .wrangler
 .astro
+*.zip
+bun.lockb
+package-lock.json
 
 # Claude Code working directory (worktrees, session state)
 .claude
