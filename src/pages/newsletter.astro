@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { createServerClient } from '../lib/supabase';
+import { siteConfig } from '../site.config';
+import NewsletterIsland from '../components/islands/NewsletterIsland';
+
+const supabase = createServerClient(
+  siteConfig.supabaseUrl,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
+);
+
+const [subscriberRes, briefingRes] = await Promise.all([
+  supabase.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).is('unsubscribed_at', null),
+  supabase.from('briefing_subscriptions').select('id', { count: 'exact', head: true }).eq('is_active', true),
+]);
+
+const totalReaders = (subscriberRes.count ?? 0) + (briefingRes.count ?? 0);
+const displayReaders = totalReaders > 100 ? `${Math.floor(totalReaders / 100) * 100}+` : `${totalReaders}+`;
+
+const sampleEditions = [
+  { date: "Apr 8, 2026", topics: ["Singapore launches $500M AI research fund", "Alibaba Cloud opens new data center in Malaysia", "Vietnam proposes national AI governance framework"] },
+  { date: "Apr 7, 2026", topics: ["Google DeepMind partners with Japan's RIKEN institute", "India's AI startup funding hits record $2.1B in Q1", "Thailand rolls out AI-powered healthcare diagnostics"] },
+  { date: "Apr 4, 2026", topics: ["South Korea unveils AI semiconductor strategy", "Grab integrates generative AI across ride-hailing platform", "Philippines trains 10,000 government workers on AI tools"] },
+  { date: "Apr 3, 2026", topics: ["NVIDIA announces new APAC AI research lab in Tokyo", "Indonesia's Bukalapak deploys AI for rural e-commerce", "Taiwan's TSMC reveals next-gen AI chip architecture"] },
+  { date: "Apr 2, 2026", topics: ["Hong Kong regulator issues AI trading guidelines", "Baidu launches autonomous driving service in Shenzhen", "Malaysia's MDEC partners with AWS on AI skills program"] },
+  { date: "Apr 1, 2026", topics: ["India mandates AI impact assessments for public sector", "SenseTime reports 40% revenue growth in Southeast Asia", "New Zealand publishes responsible AI guidelines"] },
+  { date: "Mar 31, 2026", topics: ["Japan's SoftBank invests $1.5B in Asian AI startups", "Singapore pilots AI-driven urban planning system", "Bangladesh launches first national AI strategy"] },
+  { date: "Mar 28, 2026", topics: ["Samsung unveils on-device AI processor for mobile", "Vietnam's VinAI publishes breakthrough NLP research", "Australia tightens AI export controls"] },
+  { date: "Mar 27, 2026", topics: ["China's Zhipu AI raises $400M in Series C funding", "Thai government launches AI chatbot for citizen services", "Hyundai deploys factory AI across Korean plants"] },
+  { date: "Mar 26, 2026", topics: ["AWS Summit Singapore draws record 15,000 attendees", "India's Infosys launches AI consulting practice for ASEAN", "Myanmar explores AI for disaster early warning"] },
+  { date: "Mar 25, 2026", topics: ["Tencent open-sources multilingual LLM for Asian languages", "South Korea AI ethics board publishes annual review", "Cambodia partners with UNICEF on AI education"] },
+  { date: "Mar 24, 2026", topics: ["Japanese robotics firms form AI safety consortium", "Pakistan launches AI innovation hub in Lahore", "Ant Group deploys AI fraud detection across Southeast Asia"] },
+];
+
+const pageTitle = "3 Before 9 — Asia's Daily AI Briefing";
+const pageDescription = "Get the 3 most important AI stories from Asia delivered to your inbox every morning, before 9am. Join thousands of readers across Asia-Pacific.";
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsletterContent',
+  name: pageTitle,
+  description: pageDescription,
+  publisher: { '@type': 'Organization', name: siteConfig.name, url: siteConfig.url },
+};
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  jsonLd={[jsonLd]}
+>
+  <SiteHeader currentPath="/newsletter" />
+
+  <main id="main-content">
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden border-b border-border">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background pointer-events-none" />
+      <div class="container mx-auto px-4 py-20 relative">
+        <div class="max-w-2xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Free daily briefing
+          </div>
+          <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+            3 Before 9
+          </h1>
+          <p class="text-xl text-muted-foreground mb-2 font-medium">Asia's Daily AI Briefing</p>
+          <p class="text-muted-foreground mb-8 max-w-lg mx-auto">
+            3 essential AI stories from across Asia, delivered before 9am. Cut through the noise — stay ahead of every shift.
+          </p>
+
+          <!-- Stats row -->
+          <div class="flex items-center justify-center gap-8 mb-10 text-sm text-muted-foreground">
+            <div class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span><strong class="text-foreground">{displayReaders}</strong> readers</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Every weekday</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Across Asia-Pacific</span>
+            </div>
+          </div>
+
+          <!-- Subscribe form (React island for interactivity) -->
+          <div class="max-w-md mx-auto">
+            <NewsletterIsland
+              client:only="react"
+              supabaseUrl={siteConfig.supabaseUrl}
+              supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- What you get -->
+    <section class="container mx-auto px-4 py-16 border-b border-border/30">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-8 text-center">What you get</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+        <div class="flex flex-col items-center text-center gap-3 p-6 rounded-xl border border-border bg-card">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <h3 class="font-semibold">3 Stories, Every Morning</h3>
+          <p class="text-sm text-muted-foreground">The 3 most important AI developments from across Asia — curated, not aggregated.</p>
+        </div>
+        <div class="flex flex-col items-center text-center gap-3 p-6 rounded-xl border border-border bg-card">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3 class="font-semibold">Before 9am</h3>
+          <p class="text-sm text-muted-foreground">In your inbox before your morning coffee. Start the day informed, not overwhelmed.</p>
+        </div>
+        <div class="flex flex-col items-center text-center gap-3 p-6 rounded-xl border border-border bg-card">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="font-semibold">Asia-Focused</h3>
+          <p class="text-sm text-muted-foreground">Coverage that matters for Asia-Pacific — not Silicon Valley reprints.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Past Editions -->
+    <section class="container mx-auto px-4 py-16">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Past Editions</h2>
+        <span class="text-xs text-muted-foreground">{sampleEditions.length} recent editions</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sampleEditions.map((edition) => (
+          <div class="article-card p-5 hover:-translate-y-px transition-all duration-300">
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="h-3.5 w-3.5 text-primary flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span class="text-xs font-semibold text-primary">{edition.date}</span>
+            </div>
+            <ul class="space-y-2">
+              {edition.topics.map((topic: string) => (
+                <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span class="text-primary mt-1 flex-shrink-0">·</span>
+                  {topic}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="border-t border-border bg-card">
+      <div class="container mx-auto px-4 py-16 text-center max-w-xl mx-auto">
+        <h2 class="text-2xl font-bold mb-3">Ready to stay ahead?</h2>
+        <p class="text-muted-foreground mb-8">Join {displayReaders} readers getting Asia's AI briefing every morning.</p>
+        <div class="max-w-sm mx-auto">
+          <NewsletterIsland
+            client:only="react"
+            supabaseUrl={siteConfig.supabaseUrl}
+            supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
+          />
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <SiteFooter />
+</BaseLayout>

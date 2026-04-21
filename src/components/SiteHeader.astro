@@ -9,13 +9,15 @@ const { currentPath = Astro.url.pathname } = Astro.props;
 
 const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
 
-const plainNav = [
-  { href: '/news',     label: 'News',     tip: 'Latest AI news from across Asia' },
-  { href: '/business', label: 'Business', tip: 'AI business strategy and enterprise' },
-  { href: '/life',     label: 'Life',     tip: "AI's impact on everyday life in Asia" },
-  { href: '/learn',    label: 'Learn',    tip: 'Guides, courses, and how-tos' },
-  { href: '/create',   label: 'Create',   tip: 'Generative AI tools and creativity' },
-  { href: '/voices',   label: 'Voices',   tip: 'Opinions, analysis, and perspectives' },
+const navItems = [
+  { href: '/news',     label: 'News' },
+  { href: '/business', label: 'Business' },
+  { href: '/life',     label: 'Life' },
+  { href: '/learn',    label: 'Learn' },
+  { href: '/create',   label: 'Create' },
+  { href: '/policy',   label: 'Policy' },
+  { href: '/voices',   label: 'Voices' },
+  { href: '/newsletter', label: 'Newsletter' },
 ];
 
 const toolsItems = [
@@ -24,166 +26,149 @@ const toolsItems = [
   { href: '/events',            label: 'Events',       desc: 'AI conferences and meetups across Asia' },
   { href: '/tools/ai-glossary', label: 'AI Glossary',  desc: '470+ AI terms explained in plain language' },
   { href: '/directory',         label: 'AI Companies', desc: 'Directory of AI companies across Asia' },
+  { href: '/prompts',           label: 'Prompts',      desc: 'Ready-to-use prompts for every platform' },
 ];
 ---
 
-<header class="site-header sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-  <div class="container mx-auto px-4 flex h-16 items-center gap-4">
+<header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <div class="container mx-auto px-4">
+    <div class="flex h-24 items-center justify-between">
 
-    <!-- Logo -->
-    <a href="/" class="flex shrink-0 items-center" aria-label={`${siteConfig.name} home`}>
-      <img src={siteConfig.logoUrl} alt={siteConfig.name} width="160" height="48" style="height:48px;width:auto;" />
-    </a>
+      <!-- Logo -->
+      <div class="flex items-center gap-8">
+        <a href="/" class="flex shrink-0 items-center group" aria-label={`${siteConfig.name} home`}>
+          <img src={siteConfig.logoUrl} alt={siteConfig.name} width="160" height="40" style="height:40px;width:auto;" class="transition-opacity duration-200 group-hover:opacity-80" />
+        </a>
 
-    <!-- Desktop nav -->
-    <nav class="hidden lg:flex items-center gap-0.5 text-sm font-medium flex-1" aria-label="Primary navigation">
-
-      {plainNav.map(({ href, label, tip }) => (
-        <div class="nav-tooltip-wrap relative">
-          <a
-            href={href}
-            class:list={['nav-link px-3 py-1.5 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground', isActive(href) && 'bg-accent text-accent-foreground']}
-          >
-            {label}
-          </a>
-          <span class="nav-tooltip">{tip}</span>
-        </div>
-      ))}
-
-      <!-- Tools dropdown -->
-      <div class="nav-dropdown relative" data-dropdown>
-        <button
-          class:list={['nav-link flex items-center gap-1 px-3 py-1.5 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer select-none', toolsItems.some(t => isActive(t.href)) && 'bg-accent text-accent-foreground']}
-          data-dropdown-trigger
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
-          Tools
-          <svg class="dropdown-chevron h-3.5 w-3.5 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown-panel absolute left-0 top-full mt-1.5 hidden w-56 rounded-lg border border-border bg-popover p-1.5 shadow-lg z-50">
-          {toolsItems.map(({ href, label, desc }) => (
-            <a href={href} class="dropdown-item block rounded-md px-3 py-2.5 hover:bg-accent transition-colors">
-              <div class="font-semibold text-sm">{label}</div>
-              <div class="text-xs text-muted-foreground mt-0.5">{desc}</div>
+        <!-- Desktop nav -->
+        <nav class="hidden md:flex items-center space-x-1" aria-label="Primary navigation">
+          {navItems.map(({ href, label }) => (
+            <a
+              href={href}
+              class:list={[
+                'text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary',
+                isActive(href) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+              ]}
+            >
+              {label}
             </a>
           ))}
-        </div>
+
+          <!-- Tools dropdown -->
+          <div class="nav-dropdown relative" data-dropdown>
+            <button
+              class:list={[
+                'text-sm font-medium tracking-wide uppercase px-3 py-1.5 border-b-2 transition-all duration-200 hover:text-primary hover:border-primary flex items-center gap-1 cursor-pointer select-none',
+                toolsItems.some(t => isActive(t.href)) ? 'text-primary border-primary' : 'border-transparent text-foreground/80'
+              ]}
+              data-dropdown-trigger
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Tools
+              <svg class="dropdown-chevron h-3 w-3 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel absolute left-0 top-full mt-1.5 hidden w-72 rounded-xl border border-border bg-background shadow-xl p-2 z-[60]">
+              {toolsItems.map(({ href, label, desc }) => (
+                <a href={href} class="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-foreground">{label}</span>
+                    <span class="text-xs text-muted-foreground leading-snug">{desc}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </nav>
       </div>
 
-    </nav>
+      <!-- Right side -->
+      <div class="flex items-center gap-1">
+        <a
+          href="/search"
+          aria-label="Search"
+          class="flex h-10 items-center gap-1.5 px-2 text-muted-foreground hover:text-foreground transition-colors rounded-md"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <kbd class="hidden lg:inline-flex text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5 font-mono">⌘K</kbd>
+        </a>
 
-    <!-- Right side: search + newsletter + mobile toggle -->
-    <div class="ml-auto flex items-center gap-2">
+        <a
+          href="/auth"
+          aria-label="Sign in / Account"
+          class="hidden md:flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </a>
 
-      <a
-        href="/search"
-        aria-label="Search"
-        class="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </a>
-
-      <a
-        href="/auth"
-        aria-label="Sign in / Account"
-        class="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      </a>
-
-      <a
-        href="/newsletter"
-        class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-      >
-        Newsletter
-      </a>
-
-      <!-- Mobile hamburger -->
-      <button
-        id="mobile-menu-toggle"
-        aria-label="Open menu"
-        aria-expanded="false"
-        aria-controls="mobile-nav"
-        class="lg:hidden flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      >
-        <svg id="hamburger-icon" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-        <svg id="close-icon" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+        <!-- Mobile hamburger -->
+        <button
+          id="mobile-menu-toggle"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          class="md:hidden flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <svg id="hamburger-icon" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <svg id="close-icon" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Mobile nav -->
   <nav
     id="mobile-nav"
-    class="hidden lg:hidden border-t border-border/40"
+    class="hidden md:hidden border-t border-border/40"
     aria-label="Mobile navigation"
   >
-    <div class="flex flex-col gap-0.5 p-3">
-      {plainNav.map(({ href, label }) => (
-        <a
-          href={href}
-          class:list={['block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent', isActive(href) && 'bg-accent text-accent-foreground']}
-        >
-          {label}
+    <div class="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-[70] overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out translate-x-full" id="mobile-panel">
+      <div class="flex flex-col p-5">
+        <div class="flex justify-between items-center mb-4">
+          <span class="font-semibold text-lg">Menu</span>
+          <button id="mobile-close" class="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+
+        <a href="/search" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors">
+          <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span>Search articles...</span>
+          <kbd class="ml-auto text-xs border border-border rounded px-1.5 py-0.5">⌘K</kbd>
         </a>
-      ))}
-      <div class="mt-1 mb-0.5 px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tools</div>
-      {toolsItems.map(({ href, label }) => (
-        <a
-          href={href}
-          class:list={['block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent', isActive(href) && 'bg-accent text-accent-foreground']}
-        >
-          {label}
-        </a>
-      ))}
-      <div class="mt-2 pt-2 border-t border-border/40">
-        <a href="/newsletter" class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-lg justify-center">
-          Subscribe to newsletter
+
+        <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
+        <div class="flex flex-col space-y-1 mb-4">
+          {navItems.map(({ href, label }) => (
+            <a
+              href={href}
+              class:list={[
+                'block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-primary',
+                isActive(href) ? 'text-primary' : 'text-foreground'
+              ]}
+            >
+              {label}
+            </a>
+          ))}
+          <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold pt-2 px-3">Tools</span>
+          {toolsItems.map(({ href, label }) => (
+            <a href={href} class="block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-primary pl-5 text-muted-foreground">
+              {label}
+            </a>
+          ))}
+        </div>
+
+        <div class="border-t border-border my-2" />
+        <a href="/auth" class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:text-primary transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Sign In
         </a>
       </div>
     </div>
+    <!-- Backdrop -->
+    <div id="mobile-backdrop" class="fixed inset-0 bg-background/60 backdrop-blur-sm z-[60] hidden"></div>
   </nav>
 </header>
-
-<style>
-  .nav-tooltip-wrap {
-    position: relative;
-  }
-  .nav-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: hsl(var(--popover));
-    border: 1px solid hsl(var(--border));
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 11px;
-    color: hsl(var(--muted-foreground));
-    white-space: nowrap;
-    z-index: 100;
-    pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-  .nav-tooltip-wrap:hover .nav-tooltip {
-    opacity: 1;
-  }
-  .nav-tooltip::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 8px;
-    height: 8px;
-    background: hsl(var(--popover));
-    border-top: 1px solid hsl(var(--border));
-    border-left: 1px solid hsl(var(--border));
-  }
-</style>
 
 <script>
   function initNav() {
@@ -196,11 +181,9 @@ const toolsItems = [
       trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = !panel.classList.contains('hidden');
-        // Close all others first
         document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
         document.querySelectorAll<SVGElement>('.dropdown-chevron').forEach(c => c.style.transform = '');
         document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach(t => t.setAttribute('aria-expanded', 'false'));
-
         if (!isOpen) {
           panel.classList.remove('hidden');
           const chevron = trigger.querySelector<SVGElement>('.dropdown-chevron');
@@ -210,39 +193,53 @@ const toolsItems = [
       });
     });
 
-    // Outside click closes dropdowns
     document.addEventListener('click', () => {
       document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
       document.querySelectorAll<SVGElement>('.dropdown-chevron').forEach(c => c.style.transform = '');
       document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach(t => t.setAttribute('aria-expanded', 'false'));
     });
 
-    // Escape closes dropdowns
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
-        document.querySelectorAll<SVGElement>('.dropdown-chevron').forEach(c => c.style.transform = '');
-        document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach(t => t.setAttribute('aria-expanded', 'false'));
+        closeMobile();
       }
     });
 
-    // Mobile menu toggle
+    // Mobile menu
     const mobileToggle = document.getElementById('mobile-menu-toggle');
     const mobileNav = document.getElementById('mobile-nav');
+    const mobilePanel = document.getElementById('mobile-panel');
+    const mobileBackdrop = document.getElementById('mobile-backdrop');
+    const mobileClose = document.getElementById('mobile-close');
     const hamburgerIcon = document.getElementById('hamburger-icon');
     const closeIconEl = document.getElementById('close-icon');
-    if (mobileToggle && mobileNav) {
-      mobileToggle.addEventListener('click', () => {
-        const isOpen = !mobileNav.classList.contains('hidden');
-        mobileNav.classList.toggle('hidden', isOpen);
-        mobileToggle.setAttribute('aria-expanded', String(!isOpen));
-        hamburgerIcon?.classList.toggle('hidden', !isOpen);
-        closeIconEl?.classList.toggle('hidden', isOpen);
-      });
+
+    function openMobile() {
+      mobileNav?.classList.remove('hidden');
+      mobileBackdrop?.classList.remove('hidden');
+      requestAnimationFrame(() => mobilePanel?.classList.replace('translate-x-full', 'translate-x-0'));
+      mobileToggle?.setAttribute('aria-expanded', 'true');
+      hamburgerIcon?.classList.add('hidden');
+      closeIconEl?.classList.remove('hidden');
     }
+
+    function closeMobile() {
+      mobilePanel?.classList.replace('translate-x-0', 'translate-x-full');
+      mobileBackdrop?.classList.add('hidden');
+      setTimeout(() => mobileNav?.classList.add('hidden'), 300);
+      mobileToggle?.setAttribute('aria-expanded', 'false');
+      hamburgerIcon?.classList.remove('hidden');
+      closeIconEl?.classList.add('hidden');
+    }
+
+    mobileToggle?.addEventListener('click', () => {
+      if (mobileNav?.classList.contains('hidden')) openMobile(); else closeMobile();
+    });
+    mobileClose?.addEventListener('click', closeMobile);
+    mobileBackdrop?.addEventListener('click', closeMobile);
   }
 
-  // Run on initial load and re-run after Astro View Transitions
   initNav();
   document.addEventListener('astro:after-swap', initNav);
 </script>
