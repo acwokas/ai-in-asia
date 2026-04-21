@@ -31,7 +31,7 @@ ADD COLUMN IF NOT EXISTS is_editors_pick boolean DEFAULT false,
 ADD COLUMN IF NOT EXISTS show_in_learning_paths boolean DEFAULT false,
 ADD COLUMN IF NOT EXISTS published_at timestamp with time zone,
 ADD COLUMN IF NOT EXISTS scheduled_for timestamp with time zone,
-ADD COLUMN IF NOT EXISTS preview_code text DEFAULT encode(gen_random_bytes(16), 'hex');
+ADD COLUMN IF NOT EXISTS preview_code text DEFAULT encode(gen_random_uuid()::text::bytea, 'hex');
 
 -- Create validation trigger for status instead of CHECK constraint
 CREATE OR REPLACE FUNCTION public.validate_guide_status()
