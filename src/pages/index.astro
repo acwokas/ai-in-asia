@@ -130,7 +130,7 @@ const websiteJsonLd = {
               {(featured as any).is_trending && (
                 <span class="inline-block ml-2 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide text-white mb-3" style="background-color:#E06050">Trending</span>
               )}
-              <h1 class="article-hero-title group-hover:underline">{featured.title}</h1>
+              <h1 class="article-hero-title transition-colors group-hover:text-amber-300">{featured.title}</h1>
               {featured.excerpt && (
                 <p class="article-hero-excerpt hidden sm:block line-clamp-2">{featured.excerpt}</p>
               )}
@@ -176,7 +176,7 @@ const websiteJsonLd = {
                       {article.categories.name}
                     </span>
                   )}
-                  <h3 class="text-xs font-semibold leading-tight line-clamp-3 group-hover:underline">{article.title}</h3>
+                  <h3 class="text-xs font-semibold leading-tight line-clamp-3 transition-colors group-hover:text-primary">{article.title}</h3>
                   <div class="flex items-center gap-1.5 mt-auto pt-1 text-[10px] text-muted-foreground flex-wrap">
                     {article.published_at && (
                       <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
@@ -257,7 +257,7 @@ const websiteJsonLd = {
                       {article.categories.name}
                     </span>
                   )}
-                  <h3 class={`font-bold leading-snug group-hover:underline ${isFeatured ? 'text-xl line-clamp-2' : 'text-sm line-clamp-3'}`}>
+                  <h3 class={`font-bold leading-snug transition-colors group-hover:text-primary ${isFeatured ? 'text-xl line-clamp-2' : 'text-sm line-clamp-3'}`}>
                     {article.title}
                   </h3>
                   {isFeatured && article.excerpt && (
@@ -299,7 +299,7 @@ const websiteJsonLd = {
                     {article.categories.name}
                   </span>
                 )}
-                <h3 class="text-sm font-semibold leading-snug group-hover:underline line-clamp-3">{article.title}</h3>
+                <h3 class="text-sm font-semibold leading-snug transition-colors group-hover:text-primary line-clamp-3">{article.title}</h3>
                 <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                   {article.published_at && (
                     <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
@@ -345,7 +345,7 @@ const websiteJsonLd = {
   .article-hero-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
+    background: linear-gradient(to top, rgba(4,4,5,0.95) 0%, rgba(4,4,5,0.7) 40%, rgba(4,4,5,0.2) 70%, transparent 100%);
     pointer-events: none;
   }
   .article-hero-content {
@@ -353,19 +353,21 @@ const websiteJsonLd = {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 1.5rem;
+    padding: 2rem;
   }
   .article-hero-title {
-    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
-    font-weight: 700;
-    line-height: 1.25;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.15;
     color: white;
     margin-bottom: 0.5rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   }
   .article-hero-excerpt {
-    font-size: 0.875rem;
-    color: rgba(255,255,255,0.7);
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
     line-height: 1.5;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
 </style>
