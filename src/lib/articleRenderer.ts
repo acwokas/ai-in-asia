@@ -27,8 +27,8 @@ const stripWrappingQuotes = (text: string): string =>
 
 const wrapFaqAnswers = (html: string): string =>
   html.replace(
-    /(<h[34][^>]*>[^<]*\?[^<]*<\/h[34]>)\s*(<p[^>]*>)([\s\S]*?)(<\/p>)/gi,
-    '$1<ul class="faq-answer-list"><li>$3</li></ul>'
+    /<h[34][^>]*>([^<]*\?[^<]*)<\/h[34]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,
+    '<details class="group border border-border rounded-lg overflow-hidden mb-2"><summary class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer font-semibold text-sm list-none select-none hover:bg-muted/40 transition-colors"><span>$1</span><svg class="w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></summary><div class="px-5 pb-5 pt-1 text-sm text-muted-foreground leading-relaxed border-t border-border/40">$2</div></details>'
   );
 
 const wrapBtnNumbers = (html: string): string =>
@@ -40,7 +40,7 @@ const wrapBtnNumbers = (html: string): string =>
     )
   );
 
-const addNofollowToExternalLinks = (html: string): string =>
+export const addNofollowToExternalLinks = (html: string): string =>
   html.replace(
     /(<a\s[^>]*href="https?:\/\/(?!(?:www\.)?aiinasia\.com)[^"]*"[^>]*)/gi,
     (match) => {
@@ -52,6 +52,73 @@ const addNofollowToExternalLinks = (html: string): string =>
       return match + ' rel="nofollow">';
     }
   );
+
+export const addTargetBlankToExternalLinks = (html: string): string =>
+  html.replace(
+    /(<a\s[^>]*href="https?:\/\/(?!(?:www\.)?aiinasia\.com)[^"]*"[^>]*)/gi,
+    (match) => {
+      let result = match;
+      if (!/\btarget=/.test(result)) result += ' target="_blank"';
+      if (/\brel="([^"]*)"/.test(result)) {
+        result = result.replace(/\brel="([^"]*)"/i, (_: string, rel: string) => {
+          const parts = rel.split(/\s+/).filter(Boolean);
+          if (!parts.includes('noopener')) parts.push('noopener');
+          if (!parts.includes('noreferrer')) parts.push('noreferrer');
+          return `rel="${parts.join(' ')}"`;
+        });
+      } else {
+        result += ' rel="noopener noreferrer"';
+      }
+      return result + '>';
+    }
+  );
+
+export interface GlossaryTerm {
+  term: string;
+  definition: string;
+}
+
+export function injectAiTermTooltips(html: string, terms: GlossaryTerm[]): string {
+  if (!terms.length) return html;
+
+  const sorted = [...terms].sort((a, b) => b.term.length - a.term.length);
+  const usedTerms = new Set<string>();
+  const skipTags = new Set(['a', 'code', 'pre', 'script', 'style', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em']);
+
+  const parts = html.split(/(<[^>]*>)/);
+  let skipDepth = 0;
+
+  return parts.map((part, i) => {
+    if (i % 2 === 1) {
+      const tagMatch = part.match(/^<\/?([a-zA-Z][a-zA-Z0-9-]*)/);
+      if (tagMatch) {
+        const tag = tagMatch[1].toLowerCase();
+        if (skipTags.has(tag)) {
+          if (part.startsWith('</')) skipDepth = Math.max(0, skipDepth - 1);
+          else if (!part.endsWith('/>')) skipDepth++;
+        }
+      }
+      return part;
+    }
+    if (skipDepth > 0 || !part.trim()) return part;
+    let text = part;
+    for (const { term, definition } of sorted) {
+      const key = term.toLowerCase();
+      if (usedTerms.has(key)) continue;
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b(${escaped})\\b`, 'i');
+      if (regex.test(text)) {
+        const safeDef = definition.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        text = text.replace(
+          regex,
+          `<span class="ai-term-tooltip" tabindex="0"><span class="ai-term-text">$1</span><span class="ai-term-popup" role="tooltip"><span class="ai-term-badge">✦ AI TERM</span><strong class="ai-term-name">${term}</strong><span class="ai-term-def">${safeDef}</span></span></span>`
+        );
+        usedTerms.add(key);
+      }
+    }
+    return text;
+  }).join('');
+}
 
 const generateHeadingId = (text: string): string =>
   text
@@ -147,6 +214,7 @@ const postProcess = (html: string, isSponsored: boolean): string => {
 
   html = wrapFaqAnswers(html);
 
+  html = addTargetBlankToExternalLinks(html);
   if (isSponsored) html = addNofollowToExternalLinks(html);
 
   return html;
