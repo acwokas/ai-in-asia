@@ -1,0 +1,26 @@
+name = "ai-in-asia-v2"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+main = "dist/_worker.js/index.js"
+assets = { directory = "dist/", binding = "ASSETS" }
+
+[vars]
+# Site identity
+SITE_NAME = "AI in Asia"
+SITE_DOMAIN = "aiinasia.com"
+SITE_URL = "https://aiinasia.com"
+SITE_TAGLINE = "Your guide to AI in Asia"
+SITE_LOCALE = "en-GB"
+SITE_HREFLANG = "en-GB"
+
+# Analytics / ads
+GTM_ID = "GTM-NVSBJH7Q"
+ADSENSE_PUB_ID = "ca-pub-4181437297386228"
+
+# Branding
+BRAND_COLOR = "#5F72FF"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "d4f64008e2c54a56bc736acd6178a3e5"
