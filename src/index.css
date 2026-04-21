@@ -290,6 +290,13 @@ All colors MUST be HSL.
     color: hsl(var(--foreground)) !important;
   }
 
+  .article-content del,
+  .article-content s,
+  .article-content strike {
+    text-decoration: line-through !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
   .article-content h2,
   .article-content h3,
   .article-content h4,
