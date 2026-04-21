@@ -19,7 +19,7 @@ export const siteConfig = {
   gtmId:           import.meta.env.GTM_ID           || 'GTM-NVSBJH7Q',
   adsensePubId:    import.meta.env.ADSENSE_PUB_ID   || 'ca-pub-4181437297386228',
   brandColor:      import.meta.env.BRAND_COLOR      || '#5F72FF',
-  logoUrl:         import.meta.env.LOGO_URL         || '/logos/aiinasia-logo.png',
+  logoUrl:         import.meta.env.LOGO_URL         || '/logos/aiinasia-wordmark.png',
   ogDefaultImage:  import.meta.env.OG_DEFAULT_IMAGE || '/icons/aiinasia-og-default.png',
   twitterHandle:   import.meta.env.TWITTER_HANDLE   || '',
   locale:          import.meta.env.SITE_LOCALE      || 'en-GB',
