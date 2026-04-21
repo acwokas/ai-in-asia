@@ -1,64 +1,72 @@
 ---
-// Catch-all: serves the React SPA shell for routes not yet handled by Astro pages.
-// As routes are migrated to Astro SSR, remove them from this fallback.
 export const prerender = false;
----
 
+Astro.response.status = 404;
+---
 <!doctype html>
 <html lang="en-GB">
   <head>
     <script is:inline>
       (function() {
         var stored = localStorage.getItem('aiia_theme') || localStorage.getItem('theme');
-        var isDark = stored ? stored !== 'light' : true;
-        if (isDark) document.documentElement.classList.add('dark');
-      })();
-    </script>
-    <script is:inline>
-      (function() {
-        var path = window.location.pathname.toLowerCase();
-        if (path.indexOf('/admin') !== -1) return;
-        document.addEventListener('visibilitychange', function() {
-          if (document.hidden) {
-            window._refreshTimer = setTimeout(function() { window.location.reload(); }, 3600000);
-          } else if (window._refreshTimer) {
-            clearTimeout(window._refreshTimer);
-          }
-        });
+        if (stored ? stored !== 'light' : true) document.documentElement.classList.add('dark');
       })();
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page Not Found — AI in ASIA</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=5" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=5" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/aiinasia-192.png?v=5" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="AIinASIA" />
-    <link rel="apple-touch-icon" href="/icons/aiinasia-ios-180.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-    <link rel="preconnect" href="https://pbmtnvxywplgpldmlygv.supabase.co" crossorigin="" />
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Poppins:wght@700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-    </script>
-    <script src="https://analytics.ahrefs.com/analytics.js" data-key="ehgmS75pUla8HpRhvnD/1w" async></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4181437297386228" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --background: 0 0% 100%; --foreground: 220 15% 15%; --primary: 188 85% 40%;
+        --muted-foreground: 220 10% 45%; --border: 220 13% 91%;
+      }
+      .dark {
+        --background: 222 47% 8%; --foreground: 0 0% 95%; --primary: 188 80% 50%;
+        --muted-foreground: 210 10% 88%; --border: 220 30% 22%;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+        gap: 1.5rem;
+      }
+      h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 6rem; font-weight: 800; color: hsl(var(--primary)); line-height: 1; }
+      h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 700; }
+      p { color: hsl(var(--muted-foreground)); max-width: 28rem; line-height: 1.6; }
+      a.btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.625rem 1.5rem; border-radius: 0.5rem;
+        background: hsl(var(--primary)); color: white; font-weight: 600;
+        font-size: 0.875rem; text-decoration: none;
+        transition: opacity 0.2s;
+      }
+      a.btn:hover { opacity: 0.85; }
+      .links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+      a.link { color: hsl(var(--primary)); text-decoration: none; font-size: 0.875rem; }
+      a.link:hover { text-decoration: underline; }
+    </style>
   </head>
   <body>
-    <noscript>
-      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NVSBJH7Q"
-        height="0" width="0" style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <h1>404</h1>
+    <h2>Page not found</h2>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <a href="/" class="btn">← Back to homepage</a>
+    <div class="links">
+      <a href="/news" class="link">News</a>
+      <a href="/newsletter" class="link">Newsletter</a>
+      <a href="/search" class="link">Search</a>
+      <a href="/guides" class="link">Guides</a>
+    </div>
   </body>
 </html>
