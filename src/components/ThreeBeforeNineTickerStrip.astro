@@ -1,0 +1,121 @@
+---
+import { createServerClient } from '../lib/supabase';
+import { siteConfig } from '../site.config';
+
+const supabase = createServerClient(siteConfig.supabaseUrl, siteConfig.supabaseAnonKey);
+
+const { data: edition } = await supabase
+  .from('articles')
+  .select('id, title, slug, published_at, tldr_snapshot, categories:primary_category_id(slug)')
+  .eq('article_type', 'three_before_nine')
+  .eq('status', 'published')
+  .order('published_at', { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+const tldr = edition?.tldr_snapshot as any;
+const bullets: string[] = edition?.published_at ? (tldr?.bullets || []).slice(0, 3) : [];
+const categorySlug = (edition as any)?.categories?.slug || 'news';
+const articleUrl = edition ? `/${categorySlug}/${edition.slug}` : '/news';
+const doubled = [...bullets, ...bullets];
+---
+
+{bullets.length > 0 && (
+  <a
+    href={articleUrl}
+    class="block overflow-hidden border-y group ticker-3b9-strip"
+    data-briefing-date={edition?.published_at ?? ''}
+    data-headline={bullets.join(' | ')}
+    onmousedown="if(window.dataLayer){window.dataLayer.push({event:'briefing_ticker_click',briefing_date:this.dataset.briefingDate,headline:this.dataset.headline,ticker_position:'homepage_top'})}"
+  >
+    <div class="container mx-auto px-4 py-[7px] flex flex-col gap-1 md:flex-row md:items-center md:gap-3 min-w-0">
+
+      <!-- Label + CTA -->
+      <div class="flex items-center justify-between md:contents">
+        <span class="flex items-center gap-1 font-bold shrink-0 text-[14px]">
+          <span class="ticker-3b9-amber">3</span>
+          <span class="ticker-3b9-text">Before</span>
+          <span class="ticker-3b9-amber">9</span>
+        </span>
+
+        <div class="hidden md:block h-4 w-px shrink-0 ticker-3b9-divider"></div>
+
+        <span class="text-[13px] font-medium flex items-center gap-1 shrink-0 group-hover:underline ticker-3b9-amber md:order-last">
+          <span class="hidden sm:inline">Read briefing</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </span>
+
+        <div class="hidden md:block h-4 w-px shrink-0 ticker-3b9-divider" style="order:4"></div>
+      </div>
+
+      <!-- Scrolling ticker -->
+      <div class="overflow-hidden relative flex-1 min-w-0">
+        <div class="ticker-3b9-fade-left"></div>
+        <div class="ticker-3b9-fade-right"></div>
+        <div class="inline-flex items-center gap-0 animate-ticker-3b9 whitespace-nowrap">
+          {doubled.map((bullet, i) => (
+            <span class="flex items-center shrink-0">
+              <span class="ticker-3b9-amber mx-3 text-sm">&bull;</span>
+              <span class="font-bold text-[13px] mr-1.5 ticker-3b9-amber">{(i % 3) + 1}</span>
+              <span class="text-[13px] ticker-3b9-bullet">{bullet}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </a>
+)}
+
+<style>
+  .ticker-3b9-strip {
+    background: linear-gradient(90deg, hsl(215 40% 9%) 0%, hsl(215 35% 12%) 100%);
+    border-color: hsl(0 0% 100% / 0.06);
+  }
+  .ticker-3b9-amber { color: #E5A54B; }
+  .ticker-3b9-text { color: #fff; }
+  .ticker-3b9-bullet { color: rgba(255,255,255,0.9); }
+  .ticker-3b9-divider { background-color: hsl(0 0% 100% / 0.12); }
+  .ticker-3b9-fade-left {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 2rem; z-index: 10; pointer-events: none;
+    background: linear-gradient(90deg, hsl(215 38% 10%), transparent);
+  }
+  .ticker-3b9-fade-right {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 2rem; z-index: 10; pointer-events: none;
+    background: linear-gradient(270deg, hsl(215 35% 11%), transparent);
+  }
+
+  :root:not(.dark) .ticker-3b9-strip,
+  .light .ticker-3b9-strip {
+    background: linear-gradient(90deg, hsl(37 40% 97%) 0%, hsl(37 30% 95%) 100%);
+    border-color: hsl(37 30% 85%);
+  }
+  :root:not(.dark) .ticker-3b9-amber,
+  .light .ticker-3b9-amber { color: #b07d2e; }
+  :root:not(.dark) .ticker-3b9-text,
+  .light .ticker-3b9-text { color: hsl(215 30% 20%); }
+  :root:not(.dark) .ticker-3b9-bullet,
+  .light .ticker-3b9-bullet { color: hsl(215 20% 30%); }
+  :root:not(.dark) .ticker-3b9-divider,
+  .light .ticker-3b9-divider { background-color: hsl(37 30% 80%); }
+  :root:not(.dark) .ticker-3b9-fade-left,
+  .light .ticker-3b9-fade-left {
+    background: linear-gradient(90deg, hsl(37 40% 97%), transparent);
+  }
+  :root:not(.dark) .ticker-3b9-fade-right,
+  .light .ticker-3b9-fade-right {
+    background: linear-gradient(270deg, hsl(37 30% 95%), transparent);
+  }
+
+  @keyframes ticker-3b9 {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-ticker-3b9 {
+    display: inline-flex;
+    animation: ticker-3b9 35s linear infinite;
+  }
+  .group:hover .animate-ticker-3b9 {
+    animation-play-state: paused;
+  }
+</style>
