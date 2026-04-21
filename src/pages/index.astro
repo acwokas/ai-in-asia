@@ -107,7 +107,6 @@ const websiteJsonLd = {
           <a
             href={`/${(featured as any).categories?.slug || 'news'}/${featured.slug}`}
             class="article-hero lg:col-span-8 group"
-            style={{ minHeight: '440px' }}
           >
             {featured.featured_image_url ? (
               <img
@@ -150,40 +149,38 @@ const websiteJsonLd = {
           </a>
 
           <!-- Secondary 2x2 cards -->
-          <div class="lg:col-span-4 grid grid-cols-2 gap-3 lg:h-[440px]">
+          <div class="lg:col-span-4 grid grid-cols-2 gap-3">
             {secondaryHero.map((article: any) => {
               const catColor = getCategoryColor(article.categories?.slug || '');
               return (
                 <a
                   href={`/${article.categories?.slug || 'news'}/${article.slug}`}
-                  class="article-card group flex flex-col hover:-translate-y-px hover:border-b-primary/50"
+                  class="group rounded-lg overflow-hidden border border-border/50 bg-card flex flex-col hover:shadow-lg transition-all duration-300"
+                  style={`border-left:4px solid ${catColor};box-shadow:var(--shadow-card)`}
                 >
-                  <div class="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-                    {article.featured_image_url ? (
-                      <img
-                        src={getOptimizedThumbnail(article.featured_image_url)}
-                        alt={article.title}
-                        class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div class="w-full h-full" style={`background:${catColor}20`} />
-                    )}
-                    <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                  </div>
-                  <div class="p-3 flex flex-col flex-1 gap-1">
+                  {article.featured_image_url ? (
+                    <img
+                      src={getOptimizedThumbnail(article.featured_image_url)}
+                      alt={article.title}
+                      class="w-full h-[120px] object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="w-full h-[120px]" style={`background:${catColor}20`} />
+                  )}
+                  <div class="p-2.5 flex flex-col flex-1 gap-1">
                     {article.categories && (
                       <span
-                        class="text-[10px] font-bold uppercase tracking-wider mb-1"
-                        style={`color:${catColor}`}
+                        class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide text-white w-fit"
+                        style={`background-color:${catColor}`}
                       >
                         {article.categories.name}
                       </span>
                     )}
-                    <h3 class="text-xs font-semibold leading-tight line-clamp-3 transition-colors duration-200 group-hover:text-primary">{article.title}</h3>
+                    <h3 class="text-[13px] font-semibold leading-[1.3] line-clamp-3 group-hover:text-primary transition-colors duration-200">{article.title}</h3>
                     <div class="flex items-center gap-1.5 mt-auto pt-1 text-[10px] text-muted-foreground">
                       {article.published_at && (
-                        <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
+                        <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d')}</time>
                       )}
                       {article.reading_time_minutes && <span>· {article.reading_time_minutes} min</span>}
                     </div>
@@ -210,67 +207,75 @@ const websiteJsonLd = {
     <!-- Latest Stories grid -->
     {gridArticles.length > 0 && (
       <section class="container mx-auto px-4 py-6 border-t border-border/30">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-bold text-muted-foreground uppercase tracking-widest">Latest Stories</h2>
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="font-display text-2xl font-bold">Latest Stories</h2>
+          <a href="/articles" class="text-sm text-muted-foreground hover:text-foreground transition-colors">View all →</a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
-          {gridArticles.map((article: any, i: number) => {
-            const isFeatured = i === 0 || i === 4;
-            const catColor = getCategoryColor(article.categories?.slug || '');
-            const catSlug = article.categories?.slug || 'news';
-            return (
-              <a
-                href={`/${catSlug}/${article.slug}`}
-                class={`article-card group flex flex-col hover:-translate-y-px hover:border-b-primary/50 transition-all duration-300 ${isFeatured ? 'md:col-span-2' : ''}`}
-              >
-                <div class="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-                  {article.featured_image_url ? (
-                    <img
-                      src={getOptimizedThumbnail(article.featured_image_url)}
-                      alt={article.title}
-                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div class="w-full h-full" style={`background:${catColor}15`} />
-                  )}
-                  <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                </div>
-                <div class="p-5 flex flex-col flex-1">
-                  {article.categories && (
-                    <span
-                      class="text-xs font-bold uppercase tracking-wider mb-2"
-                      style={`color:${catColor}`}
-                    >
-                      {article.categories.name}
-                    </span>
-                  )}
-                  <h3 class={`font-semibold leading-snug transition-colors duration-200 group-hover:text-primary ${isFeatured ? 'text-2xl md:text-3xl line-clamp-2' : 'text-lg line-clamp-2'}`}>
-                    {article.title}
-                  </h3>
-                  {isFeatured && article.excerpt && (
-                    <p class="text-base text-muted-foreground mt-2 line-clamp-2">{article.excerpt}</p>
-                  )}
-                  {!isFeatured && article.excerpt && (
-                    <p class="text-sm text-muted-foreground mt-2 line-clamp-2">{article.excerpt}</p>
-                  )}
-                  <div class="flex items-center gap-2 mt-auto pt-3 text-xs text-muted-foreground">
-                    {(article as any).authors && (
-                      <span class="flex items-center gap-1">
-                        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                        {(article as any).authors.name}
-                      </span>
+        <div class="flex flex-col lg:flex-row gap-8">
+          <!-- Article grid -->
+          <div class="flex-1 min-w-0">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+              {gridArticles.map((article: any, i: number) => {
+                const isFeatured = i === 0 || i === 6;
+                const catColor = getCategoryColor(article.categories?.slug || '');
+                const catSlug = article.categories?.slug || 'news';
+                return (
+                  <a
+                    href={`/${catSlug}/${article.slug}`}
+                    class={`group block rounded-lg overflow-hidden border border-border bg-card hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ${isFeatured ? 'md:col-span-2' : ''}`}
+                    style={`border-left:4px solid ${catColor};box-shadow:var(--shadow-card)`}
+                  >
+                    {article.featured_image_url ? (
+                      <img
+                        src={getOptimizedThumbnail(article.featured_image_url)}
+                        alt={article.title}
+                        class={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] ${isFeatured ? 'h-52' : 'h-40'}`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class={`w-full ${isFeatured ? 'h-52' : 'h-40'}`} style={`background:${catColor}15`} />
                     )}
-                    {article.published_at && (
-                      <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
-                    )}
-                    {article.reading_time_minutes && <span>· {article.reading_time_minutes} min read</span>}
-                  </div>
-                </div>
-              </a>
-            );
-          })}
+                    <div class="p-4">
+                      {article.categories && (
+                        <span
+                          class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white mb-2"
+                          style={`background-color:${catColor}`}
+                        >
+                          {article.categories.name}
+                        </span>
+                      )}
+                      <h3 class={`font-bold leading-snug group-hover:text-primary transition-colors duration-200 ${isFeatured ? 'text-[20px] line-clamp-2' : 'text-[15px] line-clamp-3'}`}>
+                        {article.title}
+                      </h3>
+                      {isFeatured && article.excerpt && (
+                        <p class="text-sm text-muted-foreground mt-1.5 line-clamp-2">{article.excerpt}</p>
+                      )}
+                      <div class="flex items-center gap-2 mt-3 text-xs text-muted-foreground flex-wrap">
+                        {(article as any).authors && <span class="font-medium">{(article as any).authors.name}</span>}
+                        {article.published_at && (
+                          <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d, yyyy')}</time>
+                        )}
+                        {article.reading_time_minutes && <span>· {article.reading_time_minutes} min read</span>}
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          <!-- Right rail: ad unit -->
+          <div class="lg:w-[300px] shrink-0 flex flex-col gap-4">
+            <div
+              class="w-full max-w-[300px] h-[250px] rounded-lg border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground"
+              data-ad-slot="homepage-latest-stories-300x250"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-40"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+              <span class="font-medium opacity-60">Advertisement</span>
+              <span class="opacity-40">300×250</span>
+            </div>
+          </div>
         </div>
       </section>
     )}
@@ -285,14 +290,14 @@ const websiteJsonLd = {
               href={`/${article.categories?.slug || 'news'}/${article.slug}`}
               class="group flex gap-3 items-start py-2 border-b border-border/20"
             >
-              <span class="text-4xl font-black text-muted-foreground/20 leading-none w-10 shrink-0 select-none tabular-nums">
+              <span class="text-4xl font-black leading-none w-10 shrink-0 select-none tabular-nums" style="color:hsl(var(--primary)/0.5)">
                 {i + 1}
               </span>
               <div>
                 {article.categories && (
                   <span
-                    class="text-[9px] font-bold uppercase tracking-wider mb-1 block"
-                    style={`color:${getCategoryColor(article.categories?.slug || '')}`}
+                    class="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide text-white mb-1"
+                    style={`background-color:${getCategoryColor(article.categories?.slug || '')}`}
                   >
                     {article.categories.name}
                   </span>
@@ -335,10 +340,17 @@ const websiteJsonLd = {
 <style>
   .article-hero {
     position: relative;
-    display: block;
-    border-radius: 0.5rem;
+    min-height: 65vh;
     overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    border-radius: 0.5rem;
     background: hsl(var(--muted));
+  }
+  @media (max-width: 768px) {
+    .article-hero {
+      min-height: 60vh;
+    }
   }
   .article-hero-gradient {
     position: absolute;
@@ -346,17 +358,28 @@ const websiteJsonLd = {
     background: linear-gradient(to top, rgba(4,4,5,0.95) 0%, rgba(4,4,5,0.7) 40%, rgba(4,4,5,0.2) 70%, transparent 100%);
     pointer-events: none;
   }
+  @media (max-width: 768px) {
+    .article-hero-gradient {
+      background: linear-gradient(to top, rgba(4,4,5,0.97) 0%, rgba(4,4,5,0.8) 50%, rgba(4,4,5,0.3) 75%, transparent 100%);
+    }
+  }
   .article-hero-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: relative;
+    z-index: 2;
+    width: 100%;
     padding: 2rem;
   }
+  @media (max-width: 768px) {
+    .article-hero-content {
+      padding: 1.25rem;
+    }
+  }
   .article-hero-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: clamp(2rem, 4vw, 2.75rem);
     font-weight: 800;
     line-height: 1.15;
+    letter-spacing: -0.025em;
     color: white;
     margin-bottom: 0.5rem;
     text-shadow: 0 2px 8px rgba(0,0,0,0.6);

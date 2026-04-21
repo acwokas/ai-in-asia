@@ -1,0 +1,73 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { siteConfig } from '../../site.config';
+
+const toolCategories = [
+  {
+    name: 'AI Glossary',
+    desc: '470+ AI and tech terms explained in plain language.',
+    href: '/tools/ai-glossary',
+    icon: '📖',
+  },
+  {
+    name: 'Guides',
+    desc: 'Step-by-step guides for using AI tools and platforms.',
+    href: '/guides',
+    icon: '🗺️',
+  },
+  {
+    name: 'Events',
+    desc: 'AI conferences, meetups, and workshops across Asia.',
+    href: '/events',
+    icon: '📅',
+  },
+  {
+    name: 'AI Companies',
+    desc: 'Directory of AI companies and startups across Asia.',
+    href: '/directory',
+    icon: '🏢',
+  },
+  {
+    name: 'Prompts',
+    desc: 'Ready-to-use prompts for ChatGPT, Claude, and more.',
+    href: '/prompts',
+    icon: '✍️',
+  },
+];
+---
+
+<BaseLayout
+  title={`AI Tools & Resources — ${siteConfig.name}`}
+  description="Discover AI tools, guides, events, and resources curated for Asia."
+  canonical={`${siteConfig.url}/tools`}
+>
+  <SiteHeader currentPath="/tools" />
+  <main id="main-content">
+    <div class="border-b border-border/40" style="border-top:4px solid hsl(var(--primary))">
+      <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold">AI Tools &amp; Resources</h1>
+        <p class="text-muted-foreground mt-1 max-w-xl">Everything you need to understand and use AI — curated for Asia.</p>
+      </div>
+    </div>
+
+    <section class="container mx-auto px-4 py-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {toolCategories.map(({ name, desc, href, icon }) => (
+          <a
+            href={href}
+            class="group block rounded-xl border border-border bg-card p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+            style="border-left:4px solid hsl(var(--primary));box-shadow:var(--shadow-card)"
+          >
+            <div class="text-3xl mb-3">{icon}</div>
+            <h2 class="text-lg font-bold group-hover:text-primary transition-colors duration-200 mb-1">{name}</h2>
+            <p class="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+  <SiteFooter />
+</BaseLayout>

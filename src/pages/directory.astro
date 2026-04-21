@@ -1,0 +1,44 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { siteConfig } from '../site.config';
+---
+
+<BaseLayout
+  title={`AI Companies Directory — ${siteConfig.name}`}
+  description="Directory of AI companies, startups, and labs across Asia."
+  canonical={`${siteConfig.url}/directory`}
+>
+  <SiteHeader currentPath="/directory" />
+  <main id="main-content">
+    <div class="border-b border-border/40" style="border-top:4px solid hsl(var(--primary))">
+      <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold">AI Companies Directory</h1>
+        <p class="text-muted-foreground mt-1 max-w-xl">Explore the AI companies, startups, and research labs shaping Asia's future.</p>
+      </div>
+    </div>
+
+    <section class="container mx-auto px-4 py-16">
+      <div class="max-w-lg mx-auto text-center">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background-color:hsl(var(--primary)/0.1)">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"><path d="M3 21h18M9 21V7l6-4v18M9 10h6"/><path d="M12 10v3"/></svg>
+        </div>
+        <h2 class="text-xl font-bold mb-3">Company directory coming soon</h2>
+        <p class="text-muted-foreground text-sm leading-relaxed mb-6">
+          We're compiling a comprehensive directory of AI companies across Asia.
+          Want to list your company? Get in touch.
+        </p>
+        <a
+          href="/newsletter"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
+          style="background-color:hsl(var(--primary))"
+        >
+          Get notified when it launches
+        </a>
+      </div>
+    </section>
+  </main>
+  <SiteFooter />
+</BaseLayout>

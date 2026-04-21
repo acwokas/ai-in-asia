@@ -149,7 +149,7 @@ const breadcrumbJsonLd = {
                   >
                     {catName}
                   </span>
-                  <h2 class="text-xl md:text-2xl font-bold leading-snug group-hover:underline mb-2">{lead.title}</h2>
+                  <h2 class="text-xl md:text-2xl font-bold leading-snug group-hover:text-primary transition-colors duration-200 mb-2">{lead.title}</h2>
                   {lead.excerpt && (
                     <p class="text-sm text-muted-foreground line-clamp-3 mb-4">{lead.excerpt}</p>
                   )}
@@ -171,8 +171,8 @@ const breadcrumbJsonLd = {
           {(page === 1 ? articles.slice(1) : articles).map((article: any) => (
             <a
               href={`/${category}/${article.slug}`}
-              class="group block rounded-lg overflow-hidden border border-border hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-              style={`border-top:3px solid ${catColor}`}
+              class="group block rounded-lg overflow-hidden border border-border bg-card hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+              style={`border-left:4px solid ${catColor};box-shadow:var(--shadow-card)`}
             >
               {article.featured_image_url ? (
                 <img
@@ -185,7 +185,7 @@ const breadcrumbJsonLd = {
                 <div class="w-full h-44" style={`background:${catColor}15`} />
               )}
               <div class="p-4">
-                <h3 class="font-semibold text-sm leading-snug line-clamp-3 group-hover:underline mb-2">{article.title}</h3>
+                <h3 class="font-semibold text-sm leading-snug line-clamp-3 group-hover:text-primary transition-colors duration-200 mb-2">{article.title}</h3>
                 {article.excerpt && (
                   <p class="text-xs text-muted-foreground line-clamp-2 mb-3">{article.excerpt}</p>
                 )}

@@ -1,7 +1,114 @@
 ---
-// Named page takes priority over [category]/[slug].astro for this route.
-// Hands off to the React SPA which renders the AIGlossary component.
-import { spaShellResponse } from '../../lib/spaShellResponse';
 export const prerender = false;
-return spaShellResponse();
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { createServerClient } from '../../lib/supabase';
+import { siteConfig } from '../../site.config';
+
+const supabase = createServerClient(
+  siteConfig.supabaseUrl,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
+);
+
+const { data: terms } = await supabase
+  .from('glossary_terms')
+  .select('id, term, definition, category, difficulty, asia_context')
+  .order('term', { ascending: true });
+
+const allTerms = (terms || []) as any[];
+
+// Group by first letter
+const grouped: Record<string, any[]> = {};
+for (const t of allTerms) {
+  const letter = t.term[0]?.toUpperCase() || '#';
+  if (!grouped[letter]) grouped[letter] = [];
+  grouped[letter].push(t);
+}
+const letters = Object.keys(grouped).sort();
+
+const difficultyColors: Record<string, string> = {
+  beginner: '#5F72FF',
+  intermediate: '#E5A54B',
+  advanced: '#E06050',
+};
 ---
+
+<BaseLayout
+  title={`AI Glossary — ${allTerms.length}+ Terms Explained | ${siteConfig.name}`}
+  description={`${allTerms.length}+ AI terms and concepts explained in plain language, with Asia-specific context.`}
+  canonical={`${siteConfig.url}/tools/ai-glossary`}
+>
+  <SiteHeader currentPath="/tools/ai-glossary" />
+  <main id="main-content">
+    <div class="border-b border-border/40" style="border-top:4px solid hsl(var(--primary))">
+      <div class="container mx-auto px-4 py-8">
+        <nav class="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
+          <a href="/" class="hover:text-foreground transition-colors">Home</a>
+          <span>/</span>
+          <a href="/tools" class="hover:text-foreground transition-colors">Tools</a>
+          <span>/</span>
+          <span>AI Glossary</span>
+        </nav>
+        <h1 class="text-3xl font-bold">AI Glossary</h1>
+        <p class="text-muted-foreground mt-1">{allTerms.length}+ AI terms explained in plain language — with context for Asia.</p>
+      </div>
+    </div>
+
+    <!-- Alphabet nav -->
+    <div class="sticky top-[97px] z-30 bg-background/95 backdrop-blur border-b border-border/40">
+      <div class="container mx-auto px-4 py-2 flex flex-wrap gap-1">
+        {letters.map(l => (
+          <a
+            href={`#letter-${l}`}
+            class="px-2 py-1 rounded text-xs font-bold hover:bg-primary hover:text-white transition-colors"
+            style="color:hsl(var(--primary))"
+          >
+            {l}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+      {letters.map(letter => (
+        <div id={`letter-${letter}`} class="mb-10 scroll-mt-36">
+          <h2 class="text-2xl font-black mb-4 pb-2 border-b border-border" style="color:hsl(var(--primary))">{letter}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {grouped[letter].map((term: any) => (
+              <div class="rounded-lg border border-border bg-card p-4" style="border-left:3px solid hsl(var(--primary)/0.5)">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <h3 class="font-bold text-base leading-snug">{term.term}</h3>
+                  {term.difficulty && (
+                    <span
+                      class="shrink-0 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide text-white"
+                      style={`background-color:${difficultyColors[term.difficulty] || '#888'}`}
+                    >
+                      {term.difficulty}
+                    </span>
+                  )}
+                </div>
+                <p class="text-sm text-muted-foreground leading-relaxed">{term.definition}</p>
+                {term.asia_context && (
+                  <p class="text-xs text-primary/80 mt-2 leading-relaxed border-t border-border/40 pt-2">
+                    <strong>Asia context:</strong> {term.asia_context}
+                  </p>
+                )}
+                {term.category && (
+                  <span class="inline-block mt-2 px-1.5 py-0.5 rounded text-[9px] font-semibold text-muted-foreground bg-muted">
+                    {term.category}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {allTerms.length === 0 && (
+        <p class="text-center text-muted-foreground py-16">Glossary terms loading — check back soon.</p>
+      )}
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>

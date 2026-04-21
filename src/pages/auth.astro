@@ -1,0 +1,102 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { siteConfig } from '../site.config';
+---
+
+<BaseLayout
+  title={`Sign In — ${siteConfig.name}`}
+  description={`Sign in to your ${siteConfig.name} account.`}
+  canonical={`${siteConfig.url}/auth`}
+>
+  <SiteHeader />
+  <main id="main-content">
+    <div class="container mx-auto px-4 py-16 flex flex-col items-center">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <img src={siteConfig.logoUrl} alt={siteConfig.name} class="h-10 w-auto mx-auto mb-6" />
+          <h1 class="text-2xl font-bold">Welcome back</h1>
+          <p class="text-muted-foreground mt-2 text-sm">Sign in to save articles, manage subscriptions, and more.</p>
+        </div>
+
+        <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <form id="auth-form" class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label for="email" class="text-sm font-medium">Email address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="you@example.com"
+                class="px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-2.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
+              style="background-color:hsl(var(--primary))"
+            >
+              Send Magic Link
+            </button>
+
+            <p id="auth-message" class="text-sm text-center text-muted-foreground hidden"></p>
+          </form>
+
+          <div class="mt-6 pt-5 border-t border-border text-center">
+            <p class="text-xs text-muted-foreground">
+              Don't have an account? Signing in will create one automatically.
+            </p>
+          </div>
+        </div>
+
+        <p class="text-center text-xs text-muted-foreground mt-6">
+          By signing in you agree to our <a href="/about" class="underline hover:text-foreground">Terms of Service</a>.
+        </p>
+      </div>
+    </div>
+  </main>
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const form = document.getElementById('auth-form') as HTMLFormElement;
+  const message = document.getElementById('auth-message') as HTMLElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (form.querySelector('#email') as HTMLInputElement).value;
+    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    try {
+      const supabase = createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL || '',
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '',
+        { auth: { persistSession: true } }
+      );
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+      message.classList.remove('hidden');
+      if (error) {
+        message.textContent = error.message;
+        message.classList.add('text-destructive');
+      } else {
+        message.textContent = 'Check your inbox — we sent you a magic link!';
+        message.classList.remove('text-destructive');
+        form.querySelector('#email')?.setAttribute('disabled', 'true');
+        btn.textContent = 'Email sent';
+      }
+    } catch {
+      message.classList.remove('hidden');
+      message.textContent = 'Something went wrong. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Send Magic Link';
+    }
+  });
+</script>

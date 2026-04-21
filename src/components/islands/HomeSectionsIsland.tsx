@@ -50,11 +50,11 @@ export default function HomeSectionsIsland({ supabaseUrl, supabaseAnonKey }: Pro
             href={`/${article.categories?.slug || 'news'}/${article.slug}`}
             className="group flex gap-3 items-start py-2 border-b border-border/20"
           >
-            <span className="text-4xl font-black text-muted-foreground/20 leading-none w-10 shrink-0 select-none tabular-nums">
+            <span className="text-4xl font-black leading-none w-10 shrink-0 select-none tabular-nums" style={{color:'hsl(var(--primary)/0.5)'}}>
               {i + 1}
             </span>
             <div>
-              <h3 className="text-sm font-semibold leading-snug group-hover:underline line-clamp-3">{article.title}</h3>
+              <h3 className="text-sm font-semibold leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-3">{article.title}</h3>
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 {article.categories && <span>{article.categories.name}</span>}
                 {article.reading_time_minutes && <span>· {article.reading_time_minutes} min</span>}

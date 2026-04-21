@@ -17,7 +17,6 @@ const navItems = [
   { href: '/create',   label: 'Create' },
   { href: '/policy',   label: 'Policy' },
   { href: '/voices',   label: 'Voices' },
-  { href: '/newsletter', label: 'Newsletter' },
 ];
 
 const toolsItems = [
@@ -87,10 +86,9 @@ const toolsItems = [
         <a
           href="/search"
           aria-label="Search"
-          class="flex h-10 items-center gap-1.5 px-2 text-muted-foreground hover:text-foreground transition-colors rounded-md"
+          class="flex h-10 w-10 items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <kbd class="hidden lg:inline-flex text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5 font-mono">⌘K</kbd>
         </a>
 
         <a
@@ -99,6 +97,14 @@ const toolsItems = [
           class="hidden md:flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </a>
+
+        <a
+          href="/newsletter"
+          class="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style="background-color:hsl(var(--primary))"
+        >
+          Newsletter
         </a>
 
         <!-- Mobile hamburger -->
@@ -134,7 +140,6 @@ const toolsItems = [
         <a href="/search" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors">
           <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <span>Search articles...</span>
-          <kbd class="ml-auto text-xs border border-border rounded px-1.5 py-0.5">⌘K</kbd>
         </a>
 
         <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
@@ -162,6 +167,9 @@ const toolsItems = [
         <a href="/auth" class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:text-primary transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           Sign In
+        </a>
+        <a href="/newsletter" class="mt-2 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90" style="background-color:hsl(var(--primary))">
+          Subscribe to Newsletter
         </a>
       </div>
     </div>
