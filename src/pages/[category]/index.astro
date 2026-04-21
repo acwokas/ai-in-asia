@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { createServerClient } from '../../lib/supabase';
 import { siteConfig } from '../../site.config';
+import { spaShellResponse } from '../../lib/spaShellResponse';
 import { getCategoryColor } from '../../lib/categoryColors';
 import { getOptimizedThumbnail } from '../../lib/imageOptimization';
 import { format } from 'date-fns';
@@ -33,7 +34,7 @@ const { data: catData } = await supabase
   .maybeSingle();
 
 if (!catData) {
-  return Astro.redirect('/404', 302);
+  return spaShellResponse();
 }
 
 // Step 2: fetch articles filtered by the FK directly — no embedded-resource filter quirks

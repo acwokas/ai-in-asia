@@ -1,0 +1,7 @@
+---
+// Named page takes priority over [category]/[slug].astro for this route.
+// Hands off to the React SPA which renders the AIGlossary component.
+import { spaShellResponse } from '../../lib/spaShellResponse';
+export const prerender = false;
+return spaShellResponse();
+---
