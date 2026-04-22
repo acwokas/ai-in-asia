@@ -32,12 +32,12 @@ const toolsItems = [
 
 <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
   <div class="container mx-auto px-4">
-    <div class="flex h-24 items-center justify-between">
+    <div class="flex h-16 items-center justify-between">
 
       <!-- Logo -->
       <div class="flex items-center gap-8">
         <a href="/" class="flex shrink-0 items-center group" aria-label={`${siteConfig.name} home`}>
-          <img src={siteConfig.logoUrl} alt={siteConfig.name} width="192" height="48" style="height:48px;width:auto;" class="transition-opacity duration-200 group-hover:opacity-80" />
+          <img src={siteConfig.logoUrl} alt={siteConfig.name} width="192" height="36" style="height:36px;width:auto;" class="transition-opacity duration-200 group-hover:opacity-80" />
         </a>
 
         <!-- Desktop nav -->
@@ -84,13 +84,13 @@ const toolsItems = [
 
       <!-- Right side -->
       <div class="flex items-center gap-1">
-        <a
-          href="/search"
+        <button
+          id="search-toggle"
           aria-label="Search"
           class="flex h-10 w-10 items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-md"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        </a>
+        </button>
 
         <a
           href="/auth"
@@ -105,6 +105,7 @@ const toolsItems = [
           class="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style="background-color:hsl(var(--primary))"
         >
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
           Newsletter
         </a>
 
@@ -138,10 +139,10 @@ const toolsItems = [
           </button>
         </div>
 
-        <a href="/search" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors">
+        <button id="mobile-search-btn" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg bg-muted/50 text-muted-foreground text-sm mb-5 hover:bg-muted transition-colors text-left">
           <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <span>Search articles...</span>
-        </a>
+        </button>
 
         <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
         <div class="flex flex-col space-y-1 mb-4">
@@ -179,9 +180,48 @@ const toolsItems = [
   </nav>
 </header>
 
+<!-- Search overlay -->
+<div id="search-overlay" class="fixed inset-0 z-[200] hidden" role="dialog" aria-modal="true" aria-label="Search">
+  <div id="search-backdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+  <div class="relative mx-auto mt-12 max-w-2xl px-4">
+    <div class="rounded-xl border border-border bg-background shadow-2xl overflow-hidden">
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+        <svg class="h-5 w-5 text-muted-foreground shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search AI in Asia..."
+          autocomplete="off"
+          class="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-base"
+        />
+        <button id="search-close" class="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Close search">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div id="search-body" class="p-4 max-h-[60vh] overflow-y-auto">
+        <div id="search-recent" class="hidden mb-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Recent</p>
+          <div id="search-recent-list" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div id="search-popular">
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Popular</p>
+          <div class="flex flex-wrap gap-2">
+            {['ChatGPT', 'AI regulation', 'China AI', 'Singapore AI', 'LLM', 'AI jobs Asia', 'Japan AI', 'India AI'].map(term => (
+              <button class="search-popular-chip px-3 py-1 rounded-full text-sm bg-muted hover:bg-primary hover:text-primary-foreground transition-colors" data-term={term}>{term}</button>
+            ))}
+          </div>
+        </div>
+        <div id="search-results" class="hidden space-y-1"></div>
+        <div id="search-empty" class="hidden text-center py-8 text-muted-foreground text-sm">No results found for your search.</div>
+      </div>
+    </div>
+    <p class="text-center text-xs text-white/50 mt-3">Press ESC to close</p>
+  </div>
+</div>
+<div id="search-config" class="hidden" data-supabase-url={siteConfig.supabaseUrl} data-supabase-anon-key={siteConfig.supabaseAnonKey}></div>
+
 <script>
   function initNav() {
-    // Dropdown toggles
     document.querySelectorAll<HTMLElement>('[data-dropdown]').forEach((dropdown) => {
       const trigger = dropdown.querySelector<HTMLButtonElement>('[data-dropdown-trigger]');
       const panel = dropdown.querySelector<HTMLElement>('.dropdown-panel');
@@ -208,14 +248,6 @@ const toolsItems = [
       document.querySelectorAll<HTMLButtonElement>('[data-dropdown-trigger]').forEach(t => t.setAttribute('aria-expanded', 'false'));
     });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
-        closeMobile();
-      }
-    });
-
-    // Mobile menu
     const mobileToggle = document.getElementById('mobile-menu-toggle');
     const mobileNav = document.getElementById('mobile-nav');
     const mobilePanel = document.getElementById('mobile-panel');
@@ -247,8 +279,156 @@ const toolsItems = [
     });
     mobileClose?.addEventListener('click', closeMobile);
     mobileBackdrop?.addEventListener('click', closeMobile);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
+        closeMobile();
+      }
+    });
+  }
+
+  function initSearch() {
+    const overlay = document.getElementById('search-overlay');
+    const backdrop = document.getElementById('search-backdrop');
+    const input = document.getElementById('search-input') as HTMLInputElement | null;
+    const closeBtn = document.getElementById('search-close');
+    const toggleBtn = document.getElementById('search-toggle');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const resultsEl = document.getElementById('search-results');
+    const popularEl = document.getElementById('search-popular');
+    const recentEl = document.getElementById('search-recent');
+    const recentListEl = document.getElementById('search-recent-list');
+    const emptyEl = document.getElementById('search-empty');
+    const configEl = document.getElementById('search-config');
+
+    const STORAGE_KEY = 'asia_recent_searches';
+    const supabaseUrl = configEl?.dataset.supabaseUrl;
+    const supabaseKey = configEl?.dataset.supabaseAnonKey;
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function getRecent(): string[] {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+    }
+
+    function saveRecent(term: string) {
+      const arr = getRecent().filter(s => s !== term);
+      arr.unshift(term);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 5)));
+    }
+
+    function renderRecent() {
+      const recent = getRecent();
+      if (!recent.length || !recentEl || !recentListEl) { recentEl?.classList.add('hidden'); return; }
+      recentListEl.innerHTML = '';
+      recent.forEach(term => {
+        const btn = document.createElement('button');
+        btn.textContent = term;
+        btn.className = 'px-3 py-1 rounded-full text-sm bg-muted hover:bg-muted/80 transition-colors';
+        btn.addEventListener('click', () => { if (input) { input.value = term; doSearch(term); } });
+        recentListEl.appendChild(btn);
+      });
+      recentEl.classList.remove('hidden');
+    }
+
+    function showIdle() {
+      renderRecent();
+      popularEl?.classList.remove('hidden');
+      resultsEl?.classList.add('hidden');
+      emptyEl?.classList.add('hidden');
+    }
+
+    function openSearch() {
+      overlay?.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => input?.focus(), 50);
+      showIdle();
+    }
+
+    function closeSearch() {
+      overlay?.classList.add('hidden');
+      document.body.style.overflow = '';
+      if (input) input.value = '';
+      if (debounceTimer) clearTimeout(debounceTimer);
+      showIdle();
+    }
+
+    async function doSearch(term: string) {
+      const q = term.trim();
+      if (!q || !supabaseUrl || !supabaseKey) { showIdle(); return; }
+      popularEl?.classList.add('hidden');
+      recentEl?.classList.add('hidden');
+      emptyEl?.classList.add('hidden');
+      resultsEl?.classList.remove('hidden');
+      if (resultsEl) resultsEl.innerHTML = '<p class="text-sm text-muted-foreground py-4 text-center">Searching…</p>';
+
+      try {
+        const encodedQ = encodeURIComponent(`%${q}%`);
+        const url = `${supabaseUrl}/rest/v1/articles?select=title,slug,featured_image_url,categories:primary_category_id(name,slug)&status=eq.published&or=(title.ilike.${encodedQ},excerpt.ilike.${encodedQ})&limit=8&order=published_at.desc`;
+        const res = await fetch(url, {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+        });
+        const data = await res.json();
+        if (!resultsEl) return;
+        if (!Array.isArray(data) || data.length === 0) {
+          resultsEl.classList.add('hidden');
+          emptyEl?.classList.remove('hidden');
+          return;
+        }
+        resultsEl.innerHTML = '';
+        data.forEach((article: any) => {
+          const catSlug = article.categories?.slug || 'news';
+          const a = document.createElement('a');
+          a.href = `/${catSlug}/${article.slug}`;
+          a.className = 'flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors';
+          a.addEventListener('click', () => saveRecent(q));
+          const imgHtml = article.featured_image_url
+            ? `<img src="${article.featured_image_url}" alt="" class="w-14 h-10 object-cover rounded shrink-0" />`
+            : `<div class="w-14 h-10 rounded bg-muted shrink-0"></div>`;
+          a.innerHTML = `
+            ${imgHtml}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold leading-snug line-clamp-2">${article.title}</p>
+              ${article.categories ? `<span class="text-xs text-muted-foreground">${article.categories.name}</span>` : ''}
+            </div>
+          `;
+          resultsEl.appendChild(a);
+        });
+      } catch {
+        if (resultsEl) resultsEl.innerHTML = '<p class="text-sm text-muted-foreground py-4 text-center">Search unavailable</p>';
+      }
+    }
+
+    toggleBtn?.addEventListener('click', openSearch);
+    mobileSearchBtn?.addEventListener('click', openSearch);
+    closeBtn?.addEventListener('click', closeSearch);
+    backdrop?.addEventListener('click', closeSearch);
+
+    input?.addEventListener('input', () => {
+      const val = input.value;
+      if (!val.trim()) { showIdle(); return; }
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => doSearch(val), 350);
+    });
+
+    input?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { closeSearch(); return; }
+      if (e.key === 'Enter') {
+        const val = input.value.trim();
+        if (val) { saveRecent(val); doSearch(val); }
+      }
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('.search-popular-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const term = chip.dataset.term || '';
+        if (input && term) { input.value = term; doSearch(term); }
+      });
+    });
   }
 
   initNav();
-  document.addEventListener('astro:after-swap', initNav);
+  initSearch();
+  document.addEventListener('astro:after-swap', () => { initNav(); initSearch(); });
 </script>

@@ -4,6 +4,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { siteConfig } from '../site.config';
+
+const interests = [
+  { id: 'news',       label: 'News' },
+  { id: 'business',   label: 'Business' },
+  { id: 'life',       label: 'Life & Culture' },
+  { id: 'learn',      label: 'Learn AI' },
+  { id: 'create',     label: 'Create' },
+  { id: 'policy',     label: 'AI Policy' },
+  { id: 'voices',     label: 'Voices & Opinion' },
+  { id: 'startups',   label: 'Startups' },
+  { id: 'ml',         label: 'Machine Learning' },
+  { id: 'future-work',label: 'Future of Work' },
+  { id: 'healthcare', label: 'Healthcare AI' },
+  { id: 'tools',      label: 'AI Tools' },
+];
 ---
 
 <BaseLayout
@@ -15,26 +30,42 @@ import { siteConfig } from '../site.config';
   <main id="main-content">
     <div class="container mx-auto px-4 py-16 flex flex-col items-center">
       <div class="w-full max-w-md">
+
         <div class="text-center mb-8">
-          <img src={siteConfig.logoUrl} alt={siteConfig.name} class="h-10 w-auto mx-auto mb-6" />
-          <h1 class="text-2xl font-bold">Welcome back</h1>
-          <p class="text-muted-foreground mt-2 text-sm">Sign in to save articles, manage subscriptions, and more.</p>
+          <img src={siteConfig.logoUrl} alt={siteConfig.name} style="height:36px;width:auto;" class="mx-auto mb-6" />
+          <h1 class="text-2xl font-bold" id="auth-heading">Welcome back</h1>
+          <p class="text-muted-foreground mt-2 text-sm" id="auth-subheading">Sign in to save articles, manage subscriptions, and more.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex rounded-lg border border-border bg-muted/40 p-1 mb-6">
+          <button
+            id="tab-signin"
+            class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 bg-background shadow-sm text-foreground"
+            data-tab="signin"
+          >Sign In</button>
+          <button
+            id="tab-signup"
+            class="flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground"
+            data-tab="signup"
+          >Sign Up</button>
         </div>
 
         <div class="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <form id="auth-form" class="flex flex-col gap-4">
+
+          <!-- Sign In Form -->
+          <form id="signin-form" class="flex flex-col gap-4">
             <div class="flex flex-col gap-1.5">
-              <label for="email" class="text-sm font-medium">Email address</label>
+              <label for="signin-email" class="text-sm font-medium">Email address</label>
               <input
                 type="email"
-                id="email"
+                id="signin-email"
                 name="email"
                 required
                 placeholder="you@example.com"
                 class="px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
               />
             </div>
-
             <button
               type="submit"
               class="w-full py-2.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
@@ -42,19 +73,52 @@ import { siteConfig } from '../site.config';
             >
               Send Magic Link
             </button>
-
-            <p id="auth-message" class="text-sm text-center text-muted-foreground hidden"></p>
+            <p id="signin-message" class="text-sm text-center text-muted-foreground hidden"></p>
           </form>
 
-          <div class="mt-6 pt-5 border-t border-border text-center">
-            <p class="text-xs text-muted-foreground">
-              Don't have an account? Signing in will create one automatically.
-            </p>
-          </div>
+          <!-- Sign Up Form -->
+          <form id="signup-form" class="flex flex-col gap-4 hidden">
+            <div class="flex flex-col gap-1.5">
+              <label for="signup-email" class="text-sm font-medium">Email address</label>
+              <input
+                type="email"
+                id="signup-email"
+                name="email"
+                required
+                placeholder="you@example.com"
+                class="px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
+              />
+            </div>
+
+            <!-- Interests -->
+            <div class="flex flex-col gap-2.5 pt-1">
+              <label class="text-sm font-medium">Choose your interests <span class="text-muted-foreground font-normal">(optional)</span></label>
+              <div class="flex flex-wrap gap-2">
+                {interests.map(({ id, label }) => (
+                  <label class="cursor-pointer select-none">
+                    <input type="checkbox" name="interests" value={id} class="sr-only peer" />
+                    <span class="inline-block px-3 py-1.5 rounded-full text-sm border border-border bg-muted/40 text-muted-foreground peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all duration-150 hover:border-primary/60">
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-2.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90 mt-1"
+              style="background-color:hsl(var(--primary))"
+            >
+              Create Account
+            </button>
+            <p id="signup-message" class="text-sm text-center text-muted-foreground hidden"></p>
+          </form>
+
         </div>
 
         <p class="text-center text-xs text-muted-foreground mt-6">
-          By signing in you agree to our <a href="/about" class="underline hover:text-foreground">Terms of Service</a>.
+          By continuing you agree to our <a href="/privacy" class="underline hover:text-foreground">Privacy Policy</a> and <a href="/terms" class="underline hover:text-foreground">Terms of Service</a>.
         </p>
       </div>
     </div>
@@ -62,41 +126,83 @@ import { siteConfig } from '../site.config';
   <SiteFooter />
 </BaseLayout>
 
-<script>
-  import { createClient } from '@supabase/supabase-js';
+<script define:vars={{ supabaseUrl: siteConfig.supabaseUrl, supabaseAnonKey: siteConfig.supabaseAnonKey }}>
+  // Tab switching
+  const tabSignin = document.getElementById('tab-signin');
+  const tabSignup = document.getElementById('tab-signup');
+  const signinForm = document.getElementById('signin-form');
+  const signupForm = document.getElementById('signup-form');
+  const heading = document.getElementById('auth-heading');
+  const subheading = document.getElementById('auth-subheading');
 
-  const form = document.getElementById('auth-form') as HTMLFormElement;
-  const message = document.getElementById('auth-message') as HTMLElement;
+  function activateTab(tab) {
+    const isSignin = tab === 'signin';
+    tabSignin.className = `flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${isSignin ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`;
+    tabSignup.className = `flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${!isSignin ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`;
+    signinForm.classList.toggle('hidden', !isSignin);
+    signupForm.classList.toggle('hidden', isSignin);
+    heading.textContent = isSignin ? 'Welcome back' : 'Join AI in Asia';
+    subheading.textContent = isSignin
+      ? 'Sign in to save articles, manage subscriptions, and more.'
+      : 'Create a free account to personalise your feed and get the newsletter.';
+  }
 
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = (form.querySelector('#email') as HTMLInputElement).value;
-    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
+  tabSignin.addEventListener('click', () => activateTab('signin'));
+  tabSignup.addEventListener('click', () => activateTab('signup'));
 
+  // Auth helper
+  async function sendMagicLink(email, messageEl, btnEl, metadata) {
+    btnEl.disabled = true;
+    const origText = btnEl.textContent;
+    btnEl.textContent = 'Sending…';
+    messageEl.classList.add('hidden');
     try {
-      const supabase = createClient(
-        import.meta.env.PUBLIC_SUPABASE_URL || '',
-        import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '',
-        { auth: { persistSession: true } }
-      );
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-      message.classList.remove('hidden');
-      if (error) {
-        message.textContent = error.message;
-        message.classList.add('text-destructive');
+      const res = await fetch(`${supabaseUrl}/auth/v1/otp`, {
+        method: 'POST',
+        headers: { apikey: supabaseAnonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          create_user: true,
+          options: { emailRedirectTo: window.location.origin, data: metadata },
+        }),
+      });
+      messageEl.classList.remove('hidden');
+      if (res.ok || res.status === 200) {
+        messageEl.textContent = 'Check your inbox — we sent you a magic link!';
+        messageEl.className = 'text-sm text-center text-green-600 mt-1';
+        btnEl.textContent = 'Email sent ✓';
       } else {
-        message.textContent = 'Check your inbox — we sent you a magic link!';
-        message.classList.remove('text-destructive');
-        form.querySelector('#email')?.setAttribute('disabled', 'true');
-        btn.textContent = 'Email sent';
+        const err = await res.json();
+        messageEl.textContent = err.msg || err.message || 'Something went wrong.';
+        messageEl.className = 'text-sm text-center text-destructive mt-1';
+        btnEl.disabled = false;
+        btnEl.textContent = origText;
       }
     } catch {
-      message.classList.remove('hidden');
-      message.textContent = 'Something went wrong. Please try again.';
-      btn.disabled = false;
-      btn.textContent = 'Send Magic Link';
+      messageEl.classList.remove('hidden');
+      messageEl.textContent = 'Something went wrong. Please try again.';
+      messageEl.className = 'text-sm text-center text-destructive mt-1';
+      btnEl.disabled = false;
+      btnEl.textContent = origText;
     }
+  }
+
+  // Sign In
+  signinForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = signinForm.querySelector('#signin-email').value;
+    const btn = signinForm.querySelector('button[type="submit"]');
+    const msg = document.getElementById('signin-message');
+    await sendMagicLink(email, msg, btn, {});
+  });
+
+  // Sign Up
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = signupForm.querySelector('#signup-email').value;
+    const btn = signupForm.querySelector('button[type="submit"]');
+    const msg = document.getElementById('signup-message');
+    const selected = [...signupForm.querySelectorAll('input[name="interests"]:checked')].map(el => el.value);
+    await sendMagicLink(email, msg, btn, { interests: selected });
   });
 </script>
