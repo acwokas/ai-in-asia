@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const baseUrl = "https://aiinasia.com";
-const storagePrefix = "https://pbmtnvxywplgpldmlygv.supabase.co/storage/v1/object/public/article-images/";
+const storagePrefix = "https://ukacqljogssreycumocn.supabase.co/storage/v1/object/public/article-images/";
 const imageProxyPrefix = "https://aiinasia.com/images/";
 
 const sanitizePathSegment = (value: string | null | undefined) =>

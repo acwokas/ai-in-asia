@@ -184,9 +184,9 @@ serve(async (req) => {
             </span>
           </td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
-            <a href="${supabaseUrl.replace('https://pbmtnvxywplgpldmlygv.supabase.co', 'https://aiinasia.com')}/article/${article.slug}" 
-               style="color: #3b82f6; text-decoration: none;">View</a> | 
-            <a href="${supabaseUrl.replace('https://pbmtnvxywplgpldmlygv.supabase.co', 'https://aiinasia.com')}/editor?id=${article.id}" 
+            <a href="${supabaseUrl.replace('https://ukacqljogssreycumocn.supabase.co', 'https://aiinasia.com')}/article/${article.slug}"
+               style="color: #3b82f6; text-decoration: none;">View</a> |
+            <a href="${supabaseUrl.replace('https://ukacqljogssreycumocn.supabase.co', 'https://aiinasia.com')}/editor?id=${article.id}" 
                style="color: #10b981; text-decoration: none;">Edit</a>
           </td>
         </tr>
@@ -239,7 +239,7 @@ serve(async (req) => {
             </div>
 
             <div style="text-align: center; margin-top: 32px;">
-              <a href="${supabaseUrl.replace('https://pbmtnvxywplgpldmlygv.supabase.co', 'https://aiinasia.com')}/admin/content-freshness" 
+              <a href="${supabaseUrl.replace('https://ukacqljogssreycumocn.supabase.co', 'https://aiinasia.com')}/admin/content-freshness" 
                  style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                 View Full Freshness Report
               </a>
