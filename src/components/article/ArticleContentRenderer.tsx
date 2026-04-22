@@ -10,6 +10,10 @@ import DOMPurify from "dompurify";
 import { useGlossaryAnnotation, annotateGlossaryHtml } from "./GlossaryTooltip";
 
 import { fixEncoding } from "@/lib/textUtils";
+import { trackEvent } from "@/components/GoogleAnalytics";
+
+const HOUSE_AD_URL = "https://open.spotify.com/show/3aHz4AvuZTHjiKJaZ9FUdW?si=XsoU_jpdTOWJHZtGxYkiJw";
+const HOUSE_AD_IMG = "/ads/3b9-spotify-300x250.png";
 
 /**
  * Extract FAQ content from inside editorial-view divs so it renders
@@ -300,7 +304,28 @@ const ProseHtml = ({ html, className, injectInArticleAds = false, midArticleNode
     const t2 = setTimeout(pushAds, 2000);
     const t3 = setTimeout(pushAds, 5000);
 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // Fallback: replace unfilled in-article slots with house ad after 4s
+    const tFallback = setTimeout(() => {
+      const adWrappers = proseRef.current?.querySelectorAll('.in-article-ad-wrapper');
+      adWrappers?.forEach((wrapper, i) => {
+        const ins = wrapper.querySelector('ins.adsbygoogle') as HTMLElement | null;
+        if (!ins) return;
+        const status = ins.getAttribute('data-ad-status');
+        const hasIframe = !!ins.querySelector('iframe');
+        if (status !== 'unfilled' && (hasIframe || ins.offsetHeight > 0)) return;
+        const position = `in-article-${i}`;
+        wrapper.innerHTML = `
+          <p style="font-size:10px;text-align:center;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;color:hsl(var(--muted-foreground));opacity:.5">Advertisement</p>
+          <a href="${HOUSE_AD_URL}" target="_blank" rel="noopener noreferrer" style="display:block;width:300px;margin:0 auto" data-house-ad-pos="${position}">
+            <img src="${HOUSE_AD_IMG}" alt="3 Before 9 — Daily Asian AI news on Spotify" width="300" height="250" style="display:block" />
+          </a>`;
+        wrapper.querySelector(`[data-house-ad-pos="${position}"]`)?.addEventListener('click', () => {
+          trackEvent('house_ad_click', { ad_name: '3b9-spotify', ad_position: position });
+        });
+      });
+    }, 4000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(tFallback); };
   }, [processedHtml, injectInArticleAds]);
 
   // FAQ visual styling via DOM manipulation
