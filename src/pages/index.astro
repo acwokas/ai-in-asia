@@ -284,7 +284,7 @@ const websiteJsonLd = {
             🔥 <span>Trending</span>
           </h2>
         </div>
-        <div class="flex gap-4 overflow-x-auto px-4 md:px-6 pb-4 snap-x snap-mandatory" style="scroll-padding-left:1rem;-ms-overflow-style:none;scrollbar-width:none;">
+        <div class="flex gap-4 overflow-x-auto pr-4 pb-4 snap-x snap-mandatory" style="padding-left:max(1rem, calc((100vw - 1400px) / 2 + 1rem));scroll-padding-left:max(1rem, calc((100vw - 1400px) / 2 + 1rem));-ms-overflow-style:none;scrollbar-width:none;">
           {trendingArticles.map((article: any) => {
             const catColor = getCategoryColor(article.categories?.slug || '');
             return (
