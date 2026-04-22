@@ -421,17 +421,15 @@ All colors MUST be HSL.
   .article-content .editorial-view,
   .prose .editorial-view {
     background: hsl(225 22% 8%) !important;
-    border-left: 4px solid #5F72FF !important;
-    border-right: none !important;
-    border-top: none !important;
-    border-bottom: none !important;
-    border-radius: 0 12px 12px 0 !important;
-    padding: 1.75rem 2rem !important;
+    border: 1px solid rgba(26, 184, 214, 0.25) !important;
+    border-left: 4px solid #1AB8D6 !important;
+    border-radius: 0 16px 16px 0 !important;
+    padding: 2rem 2.5rem !important;
     margin: 2.5rem 0 1rem 0 !important;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
     line-height: 1.75;
-    color: hsl(220 20% 90%) !important;
+    color: hsl(220 15% 82%) !important;
   }
 
   /* Body text inside editorial view — override generic !important rules for high contrast */
@@ -441,7 +439,7 @@ All colors MUST be HSL.
   .prose .editorial-view p,
   .prose .editorial-view li,
   .prose .editorial-view span {
-    color: hsl(220 20% 90%) !important;
+    color: hsl(220 15% 82%) !important;
   }
 
   /* Subsection headers inside the callout (e.g. "WHAT TO WATCH:") — direct children only */
@@ -452,7 +450,7 @@ All colors MUST be HSL.
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #5F72FF !important;
+    color: #1AB8D6 !important;
     margin-bottom: 0.25rem;
     margin-top: 1rem;
   }
@@ -508,7 +506,7 @@ All colors MUST be HSL.
   .article-content .by-the-numbers h4,
   .prose .by-the-numbers h3,
   .prose .by-the-numbers h4 {
-    color: #F59E0B;
+    color: #1AB8D6;
     font-size: 0.75rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.12em !important;
@@ -531,8 +529,8 @@ All colors MUST be HSL.
   .prose .by-the-numbers li {
     display: flex !important;
     flex-direction: column !important;
-    background: rgba(245, 158, 11, 0.06) !important;
-    border: 1.5px dashed rgba(245, 158, 11, 0.45) !important;
+    background: rgba(26, 184, 214, 0.06) !important;
+    border: 1.5px dashed rgba(26, 184, 214, 0.45) !important;
     border-radius: 10px !important;
     padding: 1.125rem 1rem !important;
     font-size: 0.875rem !important;
@@ -546,7 +544,7 @@ All colors MUST be HSL.
     display: block !important;
     font-size: 2.25rem !important;
     font-weight: 800 !important;
-    color: #F59E0B !important;
+    color: #1AB8D6 !important;
     line-height: 1.1 !important;
     margin-bottom: 0.375rem !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
