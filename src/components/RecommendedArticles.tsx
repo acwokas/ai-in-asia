@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import ArticleCard from "./ArticleCard";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
 import { BusinessInAByteAd } from "./BusinessInAByteAd";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -76,8 +75,8 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Featured recommended pick - wider first card */}
         <div className="lg:col-span-5 lg:sticky lg:top-20 lg:self-start">
-          <Link
-            to={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
+          <a
+            href={`/${featuredArticle.categories?.slug || 'news'}/${featuredArticle.slug}`}
             className="group block border border-border rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-card h-full"
             onMouseDown={() => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "related_article_click", article_title: featuredArticle.title, article_slug: featuredArticle.slug }); }}
           >
@@ -114,7 +113,7 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
                 <span>{featuredArticle.reading_time_minutes || 5} min read</span>
               </div>
             </div>
-          </Link>
+          </a>
         </div>
 
         {/* Remaining articles */}

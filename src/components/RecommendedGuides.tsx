@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
@@ -95,21 +94,21 @@ const RecommendedGuides = () => {
               Master AI tools with step-by-step learning resources
             </p>
           </div>
-          <Link
-            to="/guides"
+          <a
+            href="/guides"
             className="text-primary text-[15px] font-medium flex items-center gap-1.5 hover:underline shrink-0 group"
           >
             View All Guides
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          </a>
         </div>
 
         {/* Guides Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {guides.map((guide) => (
-            <Link
+            <a
               key={guide.id}
-              to={`/guides/${(guide.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${guide.slug}`}
+              href={`/guides/${(guide.topic_category || "general").toLowerCase().replace(/\s+/g, "-")}/${guide.slug}`}
               className="group flex flex-col border border-border/50 bg-card rounded-lg overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               {/* Image */}
@@ -150,7 +149,7 @@ const RecommendedGuides = () => {
                   </div>
                 )}
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       </div>

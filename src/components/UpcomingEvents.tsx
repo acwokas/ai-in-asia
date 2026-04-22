@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, ExternalLink, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { memo } from "react";
 
@@ -114,11 +113,11 @@ const UpcomingEventsComponent = () => {
               Join the latest AI conferences, workshops, and meetups across the globe
             </p>
           </div>
-          <Link to="/events">
+          <a href="/events">
             <Button variant="outline" className="gap-2">
               View All Events <ArrowRight className="h-4 w-4" />
             </Button>
-          </Link>
+          </a>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -182,11 +181,11 @@ const UpcomingEventsComponent = () => {
                     </Button>
                   )}
                   {!event.website_url && !event.registration_url && (
-                    <Link to={`/events`} className="flex-1">
+                    <a href="/events" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         View Details
                       </Button>
-                    </Link>
+                    </a>
                   )}
                 </div>
               </div>
