@@ -108,7 +108,9 @@ const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : null;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
     <link rel="preconnect" href={siteConfig.supabaseUrl} />
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
 
     <!-- Fonts -->
     <link
@@ -150,6 +152,44 @@ const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : null;
 
     <!-- Ahrefs -->
     <script src="https://analytics.ahrefs.com/analytics.js" data-key="ehgmS75pUla8HpRhvnD/1w" async></script>
+
+    <!-- Core Web Vitals → GTM dataLayer -->
+    <script>
+      import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
+      function reportVital({ name, value, id, rating }: { name: string; value: number; id: string; rating: string }) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'core_web_vital',
+          metric_name: name,
+          metric_value: Math.round(name === 'CLS' ? value * 1000 : value),
+          metric_id: id,
+          metric_rating: rating,
+          page_path: window.location.pathname,
+        });
+      }
+      onCLS(reportVital);
+      onFCP(reportVital);
+      onINP(reportVital);
+      onLCP(reportVital);
+      onTTFB(reportVital);
+    </script>
+
+    <!-- Astro ViewTransitions page-view tracking → GTM dataLayer -->
+    <script is:inline>
+      document.addEventListener('astro:page-load', function() {
+        try {
+          var internalPrefixes = ['/admin', '/editor', '/auth', '/profile'];
+          var path = window.location.pathname;
+          if (internalPrefixes.some(function(p) { return path.startsWith(p); })) return;
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'virtualPageview',
+            pagePath: path + window.location.search,
+            pageTitle: document.title,
+          });
+        } catch(e) {}
+      });
+    </script>
 
     <!-- JSON-LD structured data -->
     {jsonLdArray && (

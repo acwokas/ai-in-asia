@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap</loc>
+    <loc>https://aiinasia.com/sitemap-articles.xml</loc>
   </sitemap>
   <sitemap>
-    <loc>https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-sitemap?type=news</loc>
-  </sitemap>
-  <sitemap>
-    <loc>https://pbmtnvxywplgpldmlygv.supabase.co/functions/v1/generate-news-sitemap</loc>
+    <loc>https://aiinasia.com/sitemap-news.xml</loc>
   </sitemap>
 </sitemapindex>
