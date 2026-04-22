@@ -1,0 +1,53 @@
+---
+export const prerender = false;
+import { siteConfig } from '../../site.config';
+---
+<!DOCTYPE html>
+<html
+  lang="en"
+  data-supabase-url={siteConfig.supabaseUrl}
+  data-supabase-key={siteConfig.supabaseAnonKey}
+  data-site-url={siteConfig.url}
+>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="noindex" />
+  <title>Signing you in… — {siteConfig.name}</title>
+</head>
+<body>
+  <p style="font-family:sans-serif;text-align:center;margin-top:4rem;color:#666">Signing you in…</p>
+
+  <script>
+    import { createClient } from '@supabase/supabase-js';
+
+    const root = document.documentElement;
+    const supabaseUrl = root.dataset.supabaseUrl as string;
+    const supabaseAnonKey = root.dataset.supabaseKey as string;
+    const siteUrl = root.dataset.siteUrl as string;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
+
+    (async () => {
+      // PKCE flow: code in query string
+      const code = new URLSearchParams(window.location.search).get('code');
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+        window.location.replace(siteUrl + '/');
+        return;
+      }
+
+      // Implicit flow: access_token in hash — Supabase client detects it via getSession()
+      if (window.location.hash.includes('access_token')) {
+        await supabase.auth.getSession();
+        window.location.replace(siteUrl + '/');
+        return;
+      }
+
+      // No tokens — back to auth page
+      window.location.replace(siteUrl + '/auth');
+    })();
+  </script>
+</body>
+</html>

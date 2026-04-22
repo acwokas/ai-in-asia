@@ -126,7 +126,7 @@ const interests = [
   <SiteFooter />
 </BaseLayout>
 
-<script define:vars={{ supabaseUrl: siteConfig.supabaseUrl, supabaseAnonKey: siteConfig.supabaseAnonKey }}>
+<script define:vars={{ supabaseUrl: siteConfig.supabaseUrl, supabaseAnonKey: siteConfig.supabaseAnonKey, siteUrl: siteConfig.url }}>
   // Tab switching
   const tabSignin = document.getElementById('tab-signin');
   const tabSignup = document.getElementById('tab-signup');
@@ -163,7 +163,7 @@ const interests = [
         body: JSON.stringify({
           email,
           create_user: true,
-          options: { emailRedirectTo: window.location.origin, data: metadata },
+          options: { emailRedirectTo: siteUrl + '/auth/callback', data: metadata },
         }),
       });
       messageEl.classList.remove('hidden');
