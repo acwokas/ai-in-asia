@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { createServerClient } from '../lib/supabase';
 import { siteConfig } from '../site.config';
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async () => {
   const supabase = createServerClient(
     siteConfig.supabaseUrl,
     import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
@@ -35,7 +35,10 @@ export const GET: APIRoute = async ({ locals }) => {
     <priority>0.9</priority>
   </url>`).join('');
 
-  const staticPages = ['', '/guides', '/events', '/newsletter', '/about', '/tools', '/search'].map(p => `
+  const staticPages = [
+    '', '/guides', '/events', '/newsletter', '/about', '/tools', '/search',
+    '/news/3-before-9', '/news/3-before-9/editions',
+  ].map(p => `
   <url>
     <loc>${siteConfig.url}${p}</loc>
     <changefreq>daily</changefreq>

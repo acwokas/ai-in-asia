@@ -1,68 +1,15 @@
-import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getConsent } from "@/lib/cookieConsent";
 import type { Json } from "@/integrations/supabase/types";
 
-// GA4 is loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
-// Previously, events were also sent via gtag("config"/event") which caused double-counting
-// because gtag() just pushes to dataLayer anyway (see the stub in index.html).
+// GA4 loaded via GTM (GTM-NVSBJH7Q). All tracking goes through dataLayer only.
+// Page-view tracking for Astro ViewTransitions is handled in BaseLayout.astro.
 
 declare global {
   interface Window {
     dataLayer?: any[];
   }
 }
-
-const GoogleAnalytics = () => {
-  const location = useLocation();
-  const prevPathRef = useRef<string>('');
-  const lastPushTimeRef = useRef<number>(0);
-
-  // Track page views on route change via dataLayer for GTM
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (getConsent() !== 'accepted') return;
-
-    const prevPath = prevPathRef.current;
-    const currentPath = location.pathname + location.search;
-
-    // Skip tracking on internal/admin pages
-    const internalPrefixes = ['/admin', '/editor', '/auth', '/profile', '/connection-test'];
-    if (internalPrefixes.some(prefix => location.pathname.startsWith(prefix))) {
-      prevPathRef.current = currentPath;
-      return;
-    }
-
-    // Delay to allow react-helmet-async to update document.title before we read it
-    const timer = setTimeout(() => {
-      // Deduplicate: skip if the same path was pushed within 2 seconds
-      const now = Date.now();
-      if (currentPath === prevPathRef.current && now - lastPushTimeRef.current < 2000) {
-        return;
-      }
-
-      const pageTitle = document.title;
-
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'virtualPageview',
-        pagePath: currentPath,
-        pageTitle,
-        pageReferrer: prevPath ? window.location.origin + prevPath : document.referrer,
-      });
-
-      prevPathRef.current = currentPath;
-      lastPushTimeRef.current = now;
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [location]);
-
-  return null;
-};
-
-export default GoogleAnalytics;
 
 // Custom event tracking helper - pushes to dataLayer for GTM → GA4
 // AND writes to Supabase analytics_events for the internal dashboard
@@ -72,7 +19,6 @@ export const trackEvent = (
 ) => {
   if (typeof window === 'undefined') return;
 
-  // Only push to GTM/GA4 if consent was given
   if (getConsent() === 'accepted') {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -81,7 +27,6 @@ export const trackEvent = (
     });
   }
 
-  // Dual-write to Supabase
   const SESSION_KEY = "aiia_session_id";
   let sessionId = "unknown";
   try {
@@ -101,12 +46,19 @@ export const trackEvent = (
     .then(() => {});
 };
 
-// Common events
-export const trackArticleView = (articleId: string, title: string, category?: string) => {
+export const trackArticleView = (
+  articleId: string,
+  title: string,
+  category?: string,
+  articleType?: 'three_before_nine' | 'standard',
+  author?: string,
+) => {
   trackEvent("article_view", {
     article_id: articleId,
     article_title: title,
     article_category: category,
+    article_type: articleType || 'standard',
+    author,
   });
 };
 
@@ -123,13 +75,10 @@ export const trackSearch = (searchTerm: string, resultCount: number) => {
   });
 };
 
-export const trackShareClick = (
-  articleId: string,
-  platform: string
-) => {
-  trackEvent("share", {
+export const trackShareClick = (articleId: string, platform: string) => {
+  trackEvent("social_share", {
     article_id: articleId,
-    platform: platform,
+    platform,
   });
 };
 
@@ -148,7 +97,7 @@ export const trackSocialClick = (network: string, url: string) => {
 };
 
 export const trackOutboundClick = (url: string, text: string) => {
-  trackEvent("outbound_click", {
+  trackEvent("outbound_link_click", {
     click_url: url,
     click_text: text,
     page_path: window.location.pathname,
@@ -156,10 +105,54 @@ export const trackOutboundClick = (url: string, text: string) => {
 };
 
 export const trackArticleReadDepth = (articleId: string, depth: number, title: string) => {
-  trackEvent("article_read_depth", {
+  trackEvent("scroll_depth", {
     article_id: articleId,
     scroll_threshold: depth,
     article_title: title,
+    page_path: window.location.pathname,
+  });
+};
+
+export const trackAudioPlay = (
+  articleId: string,
+  platform: 'spotify' | 'other',
+  episodeTitle?: string,
+) => {
+  trackEvent("audio_play", {
+    article_id: articleId,
+    audio_platform: platform,
+    episode_title: episodeTitle,
+    page_path: window.location.pathname,
+  });
+};
+
+export const track3B9EditionView = (articleId: string, title: string, editionDate?: string) => {
+  trackEvent("3b9_edition_view", {
+    article_id: articleId,
+    article_title: title,
+    edition_date: editionDate,
+    page_path: window.location.pathname,
+  });
+};
+
+export const trackCtaClick = (
+  ctaName: string,
+  ctaPosition: 'header' | 'inline' | 'sidebar' | 'footer' | 'modal' | string,
+  ctaDestination?: string,
+) => {
+  trackEvent("cta_click", {
+    cta_name: ctaName,
+    cta_position: ctaPosition,
+    cta_destination: ctaDestination,
+    page_path: window.location.pathname,
+  });
+};
+
+export const trackGuideView = (guideId: string, guideCategory: string, guideTitle?: string) => {
+  trackEvent("guide_view", {
+    guide_id: guideId,
+    guide_category: guideCategory,
+    guide_title: guideTitle,
     page_path: window.location.pathname,
   });
 };
