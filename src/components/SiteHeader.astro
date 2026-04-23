@@ -70,9 +70,9 @@ const toolsItems = [
             </button>
             <div class="dropdown-panel absolute left-0 top-full mt-1.5 hidden w-72 rounded-xl border border-border bg-background shadow-xl p-2 z-[60]">
               {toolsItems.map(({ href, label, desc }) => (
-                <a href={href} class="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                <a href={href} class="group flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
                   <div class="flex flex-col">
-                    <span class="text-sm font-semibold text-foreground">{label}</span>
+                    <span class="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{label}</span>
                     <span class="text-xs text-muted-foreground leading-snug">{desc}</span>
                   </div>
                 </a>
