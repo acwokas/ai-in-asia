@@ -14,7 +14,13 @@ const supabase = createServerClient(
   import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
 );
 
-// Fetch policy-related articles
+// Fetch articles from the Policy category
+const { data: policyCategory } = await supabase
+  .from('categories')
+  .select('id')
+  .eq('slug', 'policy')
+  .maybeSingle();
+
 const { data: articles } = await supabase
   .from('articles')
   .select(`
@@ -23,11 +29,12 @@ const { data: articles } = await supabase
     categories:primary_category_id (name, slug)
   `)
   .eq('status', 'published')
+  .eq('primary_category_id', policyCategory?.id || '07c78bbe-d56f-4698-8bdd-8444364551da')
   .order('published_at', { ascending: false })
-  .limit(24);
+  .limit(48);
 
 const policyArticles = (articles || []) as any[];
-const catColor = '#5F72FF';
+const catColor = 'hsl(var(--primary))';
 ---
 
 <BaseLayout
@@ -54,35 +61,52 @@ const catColor = '#5F72FF';
       </div>
     </div>
 
-    <!-- Region overview -->
+    <!-- Region filter -->
     <section class="container mx-auto px-4 py-8 border-b border-border/30">
-      <h2 class="font-display text-xl font-bold mb-5">Asia-Pacific Regions</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {['China', 'Japan', 'South Korea', 'Singapore', 'India', 'ASEAN', 'Australia', 'Taiwan', 'Hong Kong', 'Rest of Asia'].map((region) => (
-          <div
-            class="rounded-lg border border-border bg-card p-3 text-center hover:border-primary/40 transition-colors cursor-default"
-            style={`border-left:3px solid ${catColor}`}
+      <h2 class="font-display text-xl font-bold mb-5">Filter by Country / Region</h2>
+      <div class="flex flex-wrap gap-2">
+        {(['All', 'China', 'Japan', 'South Korea', 'Singapore', 'India', 'ASEAN', 'Australia', 'Taiwan', 'Hong Kong'] as string[]).map((region) => (
+          <button
+            class="region-filter px-3 py-1.5 rounded-lg border text-sm font-medium transition-all"
+            data-region={region}
+            style={region === 'All' ? `background-color:${catColor};border-color:${catColor};color:white` : 'border-color:hsl(var(--border));color:hsl(var(--muted-foreground))'}
           >
-            <p class="text-sm font-semibold">{region}</p>
-          </div>
+            {region}
+          </button>
         ))}
       </div>
     </section>
 
-    <!-- Latest policy articles -->
+    <!-- Policy articles -->
     <section class="container mx-auto px-4 py-8">
-      <h2 class="font-display text-xl font-bold mb-5">Latest Policy News</h2>
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-display text-xl font-bold">Latest Policy News</h2>
+        <span id="article-count" class="text-sm text-muted-foreground">{policyArticles.length} articles</span>
+      </div>
       {policyArticles.length === 0 ? (
-        <p class="text-center text-muted-foreground py-12">No articles yet — check back soon.</p>
+        <p class="text-center text-muted-foreground py-12">No policy articles yet — check back soon.</p>
       ) : (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="articles-grid">
           {policyArticles.map((article: any) => {
             const color = getCategoryColor(article.categories?.slug || '');
+            const titleLower = article.title.toLowerCase() + ' ' + (article.excerpt || '').toLowerCase();
+            const regionTags = [
+              titleLower.includes('china') || titleLower.includes('beijing') || titleLower.includes('chinese') ? 'China' : '',
+              titleLower.includes('japan') || titleLower.includes('tokyo') || titleLower.includes('japanese') ? 'Japan' : '',
+              titleLower.includes('south korea') || titleLower.includes('korea') || titleLower.includes('seoul') ? 'South Korea' : '',
+              titleLower.includes('singapore') ? 'Singapore' : '',
+              titleLower.includes('india') || titleLower.includes('delhi') || titleLower.includes('mumbai') ? 'India' : '',
+              titleLower.includes('asean') || titleLower.includes('southeast asia') ? 'ASEAN' : '',
+              titleLower.includes('australia') || titleLower.includes('sydney') || titleLower.includes('canberra') ? 'Australia' : '',
+              titleLower.includes('taiwan') ? 'Taiwan' : '',
+              titleLower.includes('hong kong') ? 'Hong Kong' : '',
+            ].filter(Boolean).join(',');
             return (
               <a
                 href={`/${article.categories?.slug || 'news'}/${article.slug}`}
-                class="group block rounded-lg overflow-hidden border border-border bg-card hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                class="policy-article group block rounded-lg overflow-hidden border border-border bg-card hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                 style={`border-left:4px solid ${color};box-shadow:var(--shadow-card)`}
+                data-regions={regionTags || 'All'}
               >
                 {article.featured_image_url ? (
                   <img
@@ -95,14 +119,6 @@ const catColor = '#5F72FF';
                   <div class="w-full h-44" style={`background:${color}15`} />
                 )}
                 <div class="p-4">
-                  {article.categories && (
-                    <span
-                      class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white mb-2"
-                      style={`background-color:${color}`}
-                    >
-                      {article.categories.name}
-                    </span>
-                  )}
                   <h3 class="font-semibold text-sm leading-snug line-clamp-3 group-hover:text-primary transition-colors duration-200 mb-2">{article.title}</h3>
                   {article.excerpt && (
                     <p class="text-xs text-muted-foreground line-clamp-2 mb-3">{article.excerpt}</p>
@@ -124,3 +140,29 @@ const catColor = '#5F72FF';
   </main>
   <SiteFooter />
 </BaseLayout>
+
+<script>
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.region-filter');
+  const articles = document.querySelectorAll<HTMLElement>('.policy-article');
+  const countEl = document.getElementById('article-count');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const region = btn.dataset.region || 'All';
+      filterBtns.forEach(b => {
+        const active = b.dataset.region === region;
+        b.style.cssText = active
+          ? 'background-color:hsl(var(--primary));border-color:hsl(var(--primary));color:white'
+          : 'border-color:hsl(var(--border));color:hsl(var(--muted-foreground));background:';
+      });
+      let visible = 0;
+      articles.forEach(card => {
+        const regions = card.dataset.regions || '';
+        const show = region === 'All' || regions.includes(region);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (countEl) countEl.textContent = `${visible} articles`;
+    });
+  });
+</script>
