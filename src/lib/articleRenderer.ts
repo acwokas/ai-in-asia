@@ -295,7 +295,7 @@ export function renderArticleContentHtml(content: any, isSponsored = false): str
     consolidated = consolidated
       .replace(/<div>\s*<\/div>/g, '\n\n')
       .replace(/<\/div>\s*<div>/g, '\n\n')
-      .replace(/<\/?div>/g, '');
+      .replace(/<div>/g, '');
   }
 
   consolidated = consolidated
