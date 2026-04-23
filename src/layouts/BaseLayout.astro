@@ -1,6 +1,7 @@
 ---
 import { siteConfig } from '../site.config';
 import SpotifyMiniPlayer from '../components/SpotifyMiniPlayer';
+import NotificationPrompt from '../components/NotificationPrompt';
 import { ViewTransitions } from 'astro:transitions';
 import '../index.css';
 
@@ -219,5 +220,15 @@ const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : null;
     <slot />
 
     <SpotifyMiniPlayer client:only="react" transition:persist transition:name="spotify-player" />
+    <NotificationPrompt client:only="react" />
+
+    <!-- Service worker registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
   </body>
 </html>

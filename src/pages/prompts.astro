@@ -4,41 +4,257 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { siteConfig } from '../site.config';
+
+const categories = [
+  {
+    id: 'business',
+    label: 'Business & Strategy',
+    icon: '💼',
+    color: 'hsl(188 85% 40%)',
+    description: 'Market analysis, competitive strategy, and planning for Asian markets.',
+    prompts: [
+      { title: 'Asia Market Entry Analysis', text: 'Analyse the market opportunity for [product/service] in [country]. Cover: market size, key competitors, regulatory environment, cultural considerations, recommended go-to-market approach, and the top 3 risks. Be specific and actionable.' },
+      { title: 'Competitive Positioning', text: 'Compare [Company A] and [Company B] across: product offerings, pricing, target customer, distribution channels, and AI capability. Conclude with a positioning recommendation for a new entrant in [market].' },
+      { title: 'Business Pivot Assessment', text: 'My company currently does [current business]. Given advances in AI, identify 3 pivot opportunities, rank them by potential and feasibility, and outline a 90-day plan for the most promising one.' },
+      { title: 'OKR Framework', text: 'Write quarterly OKRs for a [team/company] focused on [goal]. Include 1 company objective, 3 key results per objective, and suggested leading indicators to track progress weekly.' },
+    ],
+  },
+  {
+    id: 'content',
+    label: 'Content & Writing',
+    icon: '✍️',
+    color: '#7c3aed',
+    description: 'Create engaging content tailored to Asian audiences and platforms.',
+    prompts: [
+      { title: 'LinkedIn Thought Leadership', text: 'Write a LinkedIn post about [topic] for senior professionals in [country]. Use a personal story hook, share a counterintuitive insight, and end with a question that drives comments. Under 300 words.' },
+      { title: 'Newsletter Hook', text: 'Write 3 alternative opening paragraphs for a newsletter about [topic]. Each uses a different hook: (1) a surprising statistic, (2) a short story, (3) a provocative question. Audience: tech-savvy professionals in Southeast Asia.' },
+      { title: 'Press Release', text: 'Write a press release announcing [news]. Include: headline, dateline, 3 paragraphs, a spokesperson quote, and boilerplate. Optimise for [TechCrunch / Nikkei / The Business Times].' },
+      { title: 'Twitter/X Thread', text: 'Turn this article summary into a 6-post X thread: [paste summary]. Each post should stand alone but be part of a story. Use numbers, line breaks, and end with a strong CTA.' },
+    ],
+  },
+  {
+    id: 'data',
+    label: 'Data & Analytics',
+    icon: '📊',
+    color: '#059669',
+    description: 'Extract insights, build analytical frameworks, and interpret results.',
+    prompts: [
+      { title: 'Data Interpretation', text: 'Here is a dataset summary: [paste data]. Identify the top 3 insights, flag anomalies, suggest 2 follow-up questions worth investigating, and recommend what decision this data should inform.' },
+      { title: 'KPI Dashboard Design', text: 'Design a KPI dashboard for a [e-commerce / fintech / SaaS] company in Southeast Asia. List the 10 most important metrics grouped by category (growth, retention, unit economics), and explain why each matters.' },
+      { title: 'SQL Query', text: 'Write a SQL query that [describe what you need]. Table schema: [paste schema]. Optimise for readability and explain each clause so I can adapt it for similar queries.' },
+      { title: 'Survey Analysis', text: 'Analyse these survey responses from [N] respondents: [paste responses]. Identify themes, contradictions, and surprising findings. Suggest 3 actions the business should take based on the data.' },
+    ],
+  },
+  {
+    id: 'product',
+    label: 'Product & Engineering',
+    icon: '⚙️',
+    color: '#d97706',
+    description: 'Spec features, review code, and accelerate technical workflows.',
+    prompts: [
+      { title: 'Feature PRD', text: 'Write a product requirements document for [feature name]. Include: problem statement, user stories (3 personas), acceptance criteria, out-of-scope items, and success metrics. Format for a Notion doc.' },
+      { title: 'Code Review', text: 'Review this code for: (1) bugs, (2) security issues, (3) performance, (4) readability. Suggest specific improvements with code examples.\n\n[paste code]' },
+      { title: 'Architecture Decision', text: 'Help me choose between [Option A] and [Option B] for [technical decision]. Constraints: team size [N], traffic [N req/day], budget [$], timeline [X weeks]. Give a recommendation with trade-offs.' },
+      { title: 'User Story Refinement', text: 'Refine this rough user story: "[story]". Add acceptance criteria in Given/When/Then format, edge cases to handle, and a definition of done suitable for a sprint board.' },
+    ],
+  },
+  {
+    id: 'finance',
+    label: 'Finance & Fintech',
+    icon: '💰',
+    color: '#dc2626',
+    description: 'Financial modelling, investment analysis, and fintech strategy.',
+    prompts: [
+      { title: 'Investment Thesis', text: 'Build a concise investment thesis for [company/sector] in [country]. Cover: market opportunity, moat, key risks, comparable valuations, and bull/base/bear case in 3 bullet points each.' },
+      { title: 'Financial Model Assumptions', text: 'I am building a 3-year financial model for a [type of business] in [country]. Suggest realistic assumptions for: revenue growth, gross margin, CAC, LTV, churn, and headcount growth. Cite benchmarks where possible.' },
+      { title: 'Regulatory Impact Assessment', text: 'Explain how [regulation/policy] affects [type of fintech company] operating in [country]. List: compliance requirements, operational impacts, cost implications, and the adaptation timeline.' },
+      { title: 'Pitch Deck Narrative', text: 'Structure the narrative for a [Series A / Seed] pitch deck for [company description]. Give the slide order, the key message for each slide, and the emotional arc to take investors on.' },
+    ],
+  },
+  {
+    id: 'learning',
+    label: 'Learning & Development',
+    icon: '🎓',
+    color: '#0284c7',
+    description: 'Accelerate skill-building, training design, and knowledge transfer.',
+    prompts: [
+      { title: 'Learning Path', text: 'Create a 4-week learning plan to go from [current level] to [target level] in [skill]. Include daily time commitment, resources (free and paid), hands-on projects, and how to measure progress.' },
+      { title: 'Explain It Simply', text: 'Explain [complex concept] to someone with no background in [field]. Use a simple analogy, avoid jargon, and end with 3 questions I should be able to answer if I understood it.' },
+      { title: 'Workshop Design', text: 'Design a 2-hour workshop on [topic] for [audience]. Include: learning objectives, agenda with timings, 3 interactive activities, discussion questions, and a takeaway action item.' },
+      { title: 'Interview Prep', text: 'I have an interview for [role] at [type of company]. Give me the 10 most likely technical and behavioural questions, model answers using STAR format, and 3 questions I should ask the interviewer.' },
+    ],
+  },
+  {
+    id: 'localization',
+    label: 'Translation & Localisation',
+    icon: '🌏',
+    color: '#ea580c',
+    description: "Bridge language and cultural gaps across Asia's diverse markets.",
+    prompts: [
+      { title: 'Cultural Adaptation Review', text: 'Review this marketing copy for cultural appropriateness in [country]: "[paste copy]". Flag anything that might land badly, suggest alternatives, and rate overall cultural fit 1–10 with reasoning.' },
+      { title: 'Localisation Brief', text: 'Write a localisation brief for translating [product name] into [language] for [market]. Cover: tone of voice, words to avoid, preferred terminology, UX copy nuances, and 5 example translations to set the standard.' },
+      { title: 'Cross-Cultural Email', text: 'Rewrite this email for a [Japanese / Korean / Chinese / Thai / Indonesian] business context: "[paste email]". Adjust formality, directness, and structure to match business communication norms in that culture.' },
+      { title: 'Multilingual SEO', text: 'Generate 20 SEO keywords for [topic] targeting [country] in [language]. Include search volume estimate (high/medium/low), intent classification, and a suggested meta title for each keyword.' },
+    ],
+  },
+  {
+    id: 'policy',
+    label: 'AI Policy & Governance',
+    icon: '⚖️',
+    color: '#4f46e5',
+    description: 'Navigate AI regulation, compliance, and governance across Asia-Pacific.',
+    prompts: [
+      { title: 'Regulatory Gap Analysis', text: 'Compare the AI regulatory frameworks of [Country A] and [Country B]. Highlight: key differences in obligations, sector-specific rules, enforcement mechanisms, and what a company operating in both must do to stay compliant.' },
+      { title: 'AI Risk Assessment', text: "Assess the risks of deploying [AI system] for [use case] under [country]'s current AI framework. Cover: prohibited uses, high-risk classifications, data localisation requirements, and recommended mitigations." },
+      { title: 'Policy Brief Summary', text: 'Summarise this government AI policy document in plain English: [paste document]. Structure as: intent, key requirements, who it affects, timeline, and what businesses should do now.' },
+      { title: 'Responsible AI Checklist', text: 'Create a responsible AI checklist for [company type] deploying [AI feature]. Cover fairness, transparency, accountability, data privacy, and human oversight. Format as a table with red/amber/green risk levels.' },
+    ],
+  },
+];
+
+const totalPrompts = categories.reduce((n, c) => n + c.prompts.length, 0);
 ---
 
 <BaseLayout
-  title={`AI Prompts — ${siteConfig.name}`}
-  description="Ready-to-use AI prompts for ChatGPT, Claude, Gemini, and more — curated for Asia."
+  title={`AI Prompt Library — ${siteConfig.name}`}
+  description="Ready-to-use AI prompts for ChatGPT, Claude, Gemini, and more — curated for professionals across Asia."
   canonical={`${siteConfig.url}/prompts`}
 >
   <SiteHeader currentPath="/prompts" />
+
   <main id="main-content">
+    <!-- Hero -->
     <div class="border-b border-border/40" style="border-top:4px solid hsl(var(--primary))">
-      <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold">AI Prompts</h1>
-        <p class="text-muted-foreground mt-1 max-w-xl">Ready-to-use prompts for ChatGPT, Claude, Gemini, and more — built for professionals in Asia.</p>
+      <div class="container mx-auto px-4 py-10">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">AI Prompt Library</h1>
+            <p class="text-muted-foreground max-w-xl">
+              Ready-to-use prompts for ChatGPT, Claude, Gemini, and more — built for professionals across Asia.
+              Click any card to copy.
+            </p>
+          </div>
+          <div class="flex items-center gap-6 shrink-0 text-center">
+            <div>
+              <p class="text-2xl font-black text-foreground">{totalPrompts}</p>
+              <p class="text-xs text-muted-foreground">prompts</p>
+            </div>
+            <div>
+              <p class="text-2xl font-black text-foreground">{categories.length}</p>
+              <p class="text-xs text-muted-foreground">categories</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <section class="container mx-auto px-4 py-16">
-      <div class="max-w-lg mx-auto text-center">
-        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background-color:hsl(var(--primary)/0.1)">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    <!-- Category quick-jump -->
+    <div class="sticky top-[96px] z-30 bg-background/90 backdrop-blur border-b border-border/40">
+      <div class="container mx-auto px-4">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide py-3">
+          {categories.map(cat => (
+            <a
+              href={`#${cat.id}`}
+              class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors hover:text-white hover:opacity-90"
+              style={`border-color:${cat.color};color:${cat.color}`}
+            >
+              {cat.icon} {cat.label}
+            </a>
+          ))}
         </div>
-        <h2 class="text-xl font-bold mb-3">Prompts library coming soon</h2>
-        <p class="text-muted-foreground text-sm leading-relaxed mb-6">
-          We're curating a library of high-quality prompts for business, creativity, research, and more.
-          Subscribe to be notified when it launches.
-        </p>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="container mx-auto px-4 py-10 space-y-14">
+      {categories.map(cat => (
+        <section id={cat.id} class="scroll-mt-40">
+          <div class="flex items-center gap-3 mb-1">
+            <span class="text-2xl" aria-hidden="true">{cat.icon}</span>
+            <h2 class="text-xl font-bold">{cat.label}</h2>
+            <span
+              class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+              style={`background:${cat.color}`}
+            >{cat.prompts.length}</span>
+          </div>
+          <p class="text-sm text-muted-foreground mb-5 ml-10">{cat.description}</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {cat.prompts.map(prompt => (
+              <div
+                class="prompt-card group relative flex flex-col rounded-xl border bg-card p-5 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style={`border-left:3px solid ${cat.color}`}
+                role="button"
+                tabindex="0"
+              >
+                <div class="flex items-start justify-between gap-2 mb-3">
+                  <h3 class="font-semibold text-sm leading-snug">{prompt.title}</h3>
+                  <button
+                    class="copy-btn shrink-0 px-2.5 py-1 rounded-md text-[11px] font-semibold text-white transition-opacity opacity-60 group-hover:opacity-100"
+                    style={`background:${cat.color}`}
+                    data-prompt={prompt.text}
+                    aria-label={`Copy: ${prompt.title}`}
+                  >Copy</button>
+                </div>
+                <p class="prompt-text text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap flex-1">{prompt.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Newsletter CTA -->
+    <section class="border-t border-border/30">
+      <div class="container mx-auto px-4 py-12 text-center max-w-lg">
+        <p class="text-sm font-semibold mb-1">Want a curated prompt every week?</p>
+        <p class="text-xs text-muted-foreground mb-5">We include one hand-picked prompt in every AI in Asia Brief.</p>
         <a
           href="/newsletter"
-          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm text-white transition-opacity hover:opacity-90"
           style="background-color:hsl(var(--primary))"
         >
-          Get notified when it launches
+          Subscribe to the newsletter
         </a>
       </div>
     </section>
   </main>
+
   <SiteFooter />
 </BaseLayout>
+
+<script>
+  function initPrompts() {
+    document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async (e: Event) => {
+        e.stopPropagation();
+        const text = btn.dataset.prompt || '';
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;opacity:0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.opacity = '1';
+        setTimeout(() => { btn.textContent = orig; btn.style.opacity = ''; }, 2000);
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('.prompt-card').forEach(card => {
+      card.addEventListener('click', () => card.querySelector<HTMLButtonElement>('.copy-btn')?.click());
+      card.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.querySelector<HTMLButtonElement>('.copy-btn')?.click(); }
+      });
+    });
+  }
+
+  initPrompts();
+  document.addEventListener('astro:after-swap', initPrompts);
+</script>
