@@ -420,16 +420,16 @@ All colors MUST be HSL.
   /* Editorial view callout — AI in Asia View blockquote-style section */
   .article-content .editorial-view,
   .prose .editorial-view {
-    background: hsl(225 22% 8%) !important;
-    border: 1px solid rgba(26, 184, 214, 0.25) !important;
-    border-left: 4px solid #1AB8D6 !important;
+    background: hsl(var(--primary) / 0.12) !important;
+    border: 1px solid hsl(var(--primary) / 0.3) !important;
+    border-left: 5px solid hsl(var(--primary)) !important;
     border-radius: 0 16px 16px 0 !important;
     padding: 2rem 2.5rem !important;
     margin: 2.5rem 0 1rem 0 !important;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
     line-height: 1.75;
-    color: hsl(220 15% 82%) !important;
+    color: hsl(var(--foreground)) !important;
   }
 
   /* Body text inside editorial view — override generic !important rules for high contrast */
@@ -439,7 +439,7 @@ All colors MUST be HSL.
   .prose .editorial-view p,
   .prose .editorial-view li,
   .prose .editorial-view span {
-    color: hsl(220 15% 82%) !important;
+    color: hsl(var(--foreground)) !important;
   }
 
   /* Subsection headers inside the callout (e.g. "WHAT TO WATCH:") — direct children only */
@@ -450,18 +450,18 @@ All colors MUST be HSL.
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #1AB8D6 !important;
+    color: hsl(var(--primary)) !important;
     margin-bottom: 0.25rem;
     margin-top: 1rem;
   }
 
-  /* Title: first direct-child <strong> = "THE AI IN ASIA VIEW" — large white */
+  /* Title: first direct-child <strong> = "THE AI IN ASIA VIEW" — teal label */
   .article-content .editorial-view > strong:first-child,
   .prose .editorial-view > strong:first-child {
     font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: 0.04em;
-    color: #ffffff !important;
+    color: hsl(var(--primary)) !important;
     margin-top: 0;
     margin-bottom: 1rem;
   }
