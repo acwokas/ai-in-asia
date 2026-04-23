@@ -150,12 +150,12 @@ const Header = memo(() => {
       >
         {items.map(({ to, label: itemLabel, description, icon: Icon }) => (
           <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
-            <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+            <Link to={to} className="group flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
               <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-foreground">{itemLabel}</span>
+                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{itemLabel}</span>
                 <span className="text-xs text-muted-foreground leading-snug">{description}</span>
               </div>
             </Link>
@@ -241,24 +241,24 @@ const Header = memo(() => {
                   className="w-72 bg-background border border-border rounded-xl shadow-xl p-2 z-[60] animate-in fade-in-0 zoom-in-95 duration-150"
                 >
                   <DropdownMenuItem asChild className="p-0 focus:bg-transparent">
-                    <Link to="/tools" className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                    <Link to="/tools" className="group flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
                       <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
                         <Wrench className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-foreground">All Tools</span>
+                        <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">All Tools</span>
                         <span className="text-xs text-muted-foreground leading-snug">Browse all interactive AI tools</span>
                       </div>
                     </Link>
                   </DropdownMenuItem>
                   {TOOLS_ITEMS.map(({ to, label: itemLabel, description, icon: Icon }) => (
                     <DropdownMenuItem key={to} asChild className="p-0 focus:bg-transparent">
-                      <Link to={to} className="flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
+                      <Link to={to} className="group flex items-start gap-3 w-full rounded-lg px-3 py-2.5 hover:bg-muted/80 transition-colors">
                         <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary flex-shrink-0">
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{itemLabel}</span>
+                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{itemLabel}</span>
                           <span className="text-xs text-muted-foreground leading-snug">{description}</span>
                         </div>
                       </Link>
