@@ -567,12 +567,17 @@ export default function ThreeBeforeNineIsland({ article, enAudioUrl, supabaseUrl
                       {format(date, 'EEEE')}
                     </p>
                     <p className="text-foreground font-semibold text-sm mb-3">{format(date, 'd MMMM yyyy')}</p>
-                    {edition.excerpt ? (
+                    {bullets.length > 0 ? (
+                      <ul className="space-y-1.5 mb-3">
+                        {bullets.slice(0, 3).map((bullet, i) => (
+                          <li key={i} className="flex gap-2 text-xs text-muted-foreground leading-relaxed">
+                            <span className="font-bold shrink-0" style={{ color: TEAL }}>{i + 1}.</span>
+                            <span className="line-clamp-2">{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : edition.excerpt ? (
                       <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 mb-3">{edition.excerpt}</p>
-                    ) : bullets.length > 0 ? (
-                      <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 mb-3">
-                        {bullets.slice(0, 3).join('. ').replace(/\.+$/, '')}.
-                      </p>
                     ) : null}
                     <span className="text-xs font-medium group-hover:underline flex items-center gap-1" style={{ color: TEAL }}>
                       Read edition{' '}
