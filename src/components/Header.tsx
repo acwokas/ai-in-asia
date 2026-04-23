@@ -82,6 +82,7 @@ const DROPDOWN_SECTIONS = [
 
 const Header = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -165,16 +166,30 @@ const Header = memo(() => {
     </DropdownMenu>
   );
 
-  const renderMobileSection = (label: string, items: NavDropdownItem[]) => (
-    <div key={label}>
-      <span className="font-medium py-1.5 text-foreground/80 mt-1 block">{label}</span>
-      {items.map(({ to, label: itemLabel, icon: Icon }) => (
-        <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-3 py-1 text-sm text-muted-foreground hover:text-primary transition-colors">
-          <Icon className="h-3.5 w-3.5" /> {itemLabel}
-        </Link>
-      ))}
-    </div>
-  );
+  const renderMobileSection = (label: string, items: NavDropdownItem[]) => {
+    const isExpanded = expandedSection === label;
+    return (
+      <div key={label}>
+        <button
+          onClick={() => setExpandedSection(isExpanded ? null : label)}
+          className="flex items-center justify-between w-full font-medium py-1.5 text-foreground/80 mt-1 hover:text-primary transition-colors"
+          aria-expanded={isExpanded}
+        >
+          <span>{label}</span>
+          <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+        </button>
+        {isExpanded && (
+          <div className="pb-1">
+            {items.map(({ to, label: itemLabel, icon: Icon }) => (
+              <Link key={to} to={to} onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 pl-4 py-1.5 text-sm text-muted-foreground hover:text-primary transition-colors rounded-md hover:bg-muted/40">
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" /> {itemLabel}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
