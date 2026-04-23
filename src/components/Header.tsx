@@ -423,7 +423,7 @@ const Header = memo(() => {
         {/* Mobile slide-in menu */}
           <nav
             aria-label="Mobile navigation"
-            className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-background border-l border-border z-[70] md:hidden overflow-y-auto pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+            className={`fixed top-0 right-0 h-screen max-h-screen w-[85%] max-w-sm bg-background border-l border-border z-[70] md:hidden overflow-y-auto overscroll-contain scroll-smooth pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex flex-col p-5">
             <div className="flex justify-between items-center mb-4">
