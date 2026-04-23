@@ -212,6 +212,28 @@ const postProcess = (html: string, isSponsored: boolean): string => {
     ''
   );
 
+  // Rename scout-view → editorial-view so the CSS .editorial-view rules apply
+  html = html.replace(
+    /<div([^>]*)\bclass="scout-view"([^>]*)>/gi,
+    '<div$1class="editorial-view"$2>'
+  );
+
+  // Wrap divs with arbitrary CMS classes containing "The AI in Asia View" strong
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /<div\s+class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      (_, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`
+    );
+  }
+
+  // Wrap bare <p><strong>THE AI IN ASIA VIEW…</strong></p> + following paragraphs
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /(<p[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>\s*<\/p>)((?:\s*<p[^>]*>[\s\S]*?<\/p>)+)/gi,
+      (_, header, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`
+    );
+  }
+
   html = wrapFaqAnswers(html);
 
   html = addTargetBlankToExternalLinks(html);
