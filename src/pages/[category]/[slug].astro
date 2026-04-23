@@ -24,7 +24,7 @@ import { ImageFigure } from '../../components/tiptap/extensions/ImageFigure';
 import { YouTubeEmbed } from '../../components/tiptap/extensions/YouTubeEmbed';
 import { PromptBox } from '../../components/tiptap/extensions/PromptBox';
 import { SocialEmbed } from '../../components/tiptap/extensions/SocialEmbed';
-import { renderArticleContentHtml, addTargetBlankToExternalLinks, addNofollowToExternalLinks, injectAiTermTooltips, type GlossaryTerm } from '../../lib/articleRenderer';
+import { renderArticleContentHtml, normaliseEditorialView, addTargetBlankToExternalLinks, addNofollowToExternalLinks, injectAiTermTooltips, type GlossaryTerm } from '../../lib/articleRenderer';
 
 export const prerender = false;
 
@@ -141,6 +141,7 @@ try {
     contentHtml = renderArticleContentHtml(article.content, isSponsored);
   } else if (article.content && typeof article.content === 'object') {
     contentHtml = generateHTML(article.content as any, tiptapExtensions);
+    contentHtml = normaliseEditorialView(contentHtml);
     contentHtml = addTargetBlankToExternalLinks(contentHtml);
     if (isSponsored) contentHtml = addNofollowToExternalLinks(contentHtml);
   }

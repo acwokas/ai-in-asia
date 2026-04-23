@@ -242,6 +242,34 @@ const postProcess = (html: string, isSponsored: boolean): string => {
   return html;
 };
 
+export function normaliseEditorialView(html: string): string {
+  // Promote heading inside scout-view to <strong> before renaming
+  html = html.replace(
+    /(<div[^>]*class="scout-view"[^>]*>)\s*<h[1-6][^>]*>([^<]*(?:AI\s+IN\s+ASIA\s+VIEW|AIINASIA\s+VIEW)[^<]*)<\/h[1-6]>\s*/gi,
+    '$1<strong>$2</strong>'
+  );
+  // Rename scout-view → editorial-view
+  html = html.replace(
+    /<div([^>]*)\bclass="scout-view"([^>]*)>/gi,
+    '<div$1class="editorial-view"$2>'
+  );
+  // Wrap divs with arbitrary CMS classes containing "The AI in Asia View" strong
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /<div\s+class="[^"]*"[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>([\s\S]*?)<\/div>/gi,
+      (_, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`
+    );
+  }
+  // Wrap bare <p><strong>THE AI IN ASIA VIEW…</strong></p> + following paragraphs
+  if (!html.includes('class="editorial-view"')) {
+    html = html.replace(
+      /(<p[^>]*>\s*<strong[^>]*>\s*(?:THE\s+AI\s+IN\s+ASIA\s+VIEW|The\s+AI\s+in\s+Asia\s+View)[:\s]*<\/strong>\s*<\/p>)((?:\s*<p[^>]*>[\s\S]*?<\/p>)+)/gi,
+      (_, _header, content) => `<div class="editorial-view"><strong>The AI in Asia View</strong>${content}</div>`
+    );
+  }
+  return html;
+}
+
 export function renderArticleContentHtml(content: any, isSponsored = false): string {
   if (!content) return '';
 
