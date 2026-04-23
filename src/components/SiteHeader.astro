@@ -145,7 +145,7 @@ const toolsItems = [
         </button>
 
         <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Categories</span>
-        <div class="flex flex-col space-y-1 mb-4">
+        <div class="flex flex-col space-y-1 mb-2">
           {navItems.map(({ href, label }) => (
             <a
               href={href}
@@ -157,7 +157,17 @@ const toolsItems = [
               {label}
             </a>
           ))}
-          <span class="text-xs uppercase tracking-wider text-muted-foreground font-semibold pt-2 px-3">Tools</span>
+        </div>
+        <button
+          data-accordion-trigger
+          data-accordion-target="mobile-tools-panel"
+          aria-expanded="false"
+          class="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors"
+        >
+          <span>Tools</span>
+          <svg data-chevron class="h-4 w-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="mobile-tools-panel" class="flex-col space-y-1 mb-4" style="display:none">
           {toolsItems.map(({ href, label }) => (
             <a href={href} class="block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-primary pl-5 text-muted-foreground">
               {label}
@@ -285,6 +295,25 @@ const toolsItems = [
         document.querySelectorAll<HTMLElement>('.dropdown-panel').forEach(p => p.classList.add('hidden'));
         closeMobile();
       }
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-accordion-trigger]').forEach((trigger) => {
+      const targetId = trigger.getAttribute('data-accordion-target');
+      const target = targetId ? document.getElementById(targetId) : null;
+      const chevron = trigger.querySelector<SVGElement>('[data-chevron]');
+      if (!target) return;
+      trigger.addEventListener('click', () => {
+        const isOpen = target.style.display !== 'none';
+        if (isOpen) {
+          target.style.display = 'none';
+          chevron?.classList.remove('rotate-180');
+          trigger.setAttribute('aria-expanded', 'false');
+        } else {
+          target.style.display = 'flex';
+          chevron?.classList.add('rotate-180');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
     });
   }
 
