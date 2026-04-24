@@ -8,9 +8,7 @@ import { format } from 'date-fns';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import ThreeBeforeNineTickerStrip from '../components/ThreeBeforeNineTickerStrip.astro';
-import CollapsibleStatsBar from '../components/CollapsibleStatsBar.astro';
 import HomeSectionsIsland from '../components/islands/HomeSectionsIsland';
-import NewsletterIsland from '../components/islands/NewsletterIsland';
 
 const supabase = createServerClient(
   siteConfig.supabaseUrl,
@@ -26,6 +24,8 @@ oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 const [
   { data: featuredArticles },
   { data: trendingArticles },
+  { data: editorsPick },
+  { data: latestStories },
   totalRes,
   weekRes,
 ] = await Promise.all([
@@ -56,6 +56,33 @@ const [
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(6),
 
+  // Editor's pick for homepage
+  supabase
+    .from('editors_picks')
+    .select(`
+      article_id,
+      articles (
+        id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at,
+        authors:author_id (name),
+        categories:primary_category_id (name, slug)
+      )
+    `)
+    .eq('location', 'homepage')
+    .limit(1)
+    .maybeSingle(),
+
+  // Latest stories - recent articles regardless of featured flag
+  supabase
+    .from('articles')
+    .select(`
+      id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at,
+      authors:author_id (name),
+      categories:primary_category_id (name, slug)
+    `)
+    .eq('status', 'published')
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(9),
+
   supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published'),
   supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published').gte('published_at', oneWeekAgo.toISOString()),
 ]);
@@ -67,6 +94,8 @@ const featured = featuredArticles?.[0];
 const latestArticles = featuredArticles?.slice(1, 16) || [];
 const secondaryHero = latestArticles.slice(0, 4);
 const gridArticles = latestArticles.slice(4);
+
+const editorArticle = (editorsPick as any)?.articles || null;
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
@@ -201,11 +230,26 @@ const websiteJsonLd = {
       </section>
     )}
 
-    <!-- Collapsible stats bar -->
-    <CollapsibleStatsBar totalArticles={totalArticles} thisWeekCount={thisWeekCount} />
+    <!-- Stats bar - always visible -->
+    {totalArticles > 0 && (
+      <div class="container mx-auto px-4 py-3 border-t border-border/30">
+        <div class="flex items-center gap-6 md:gap-10">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 shrink-0"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            <span class="font-display text-lg font-bold text-foreground">{totalArticles.toLocaleString()}</span>
+            <span class="text-xs text-muted-foreground">Total Articles</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 shrink-0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            <span class="font-display text-lg font-bold text-foreground">+{thisWeekCount}</span>
+            <span class="text-xs text-muted-foreground">This Week</span>
+          </div>
+        </div>
+      </div>
+    )}
 
     <!-- Latest Stories -->
-    {gridArticles.length > 0 && (
+    {latestStories && latestStories.length > 0 && (
       <section class="container mx-auto px-4 py-8 border-t border-border/30">
         <div class="flex items-center justify-between mb-5">
           <div class="flex items-center gap-3">
@@ -218,7 +262,7 @@ const websiteJsonLd = {
         <div class="flex flex-col lg:flex-row gap-8">
           <!-- 3 large cards -->
           <div class="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-5">
-            {gridArticles.slice(0, 3).map((article: any) => {
+            {latestStories.slice(0, 3).map((article: any) => {
               const catColor = getCategoryColor(article.categories?.slug || '');
               const catSlug = article.categories?.slug || 'news';
               return (
@@ -276,6 +320,52 @@ const websiteJsonLd = {
       </section>
     )}
 
+    <!-- Editor's Pick (SSR) -->
+    {editorArticle && (
+      <section class="border-t border-border/30 bg-muted/20">
+        <div class="container mx-auto px-4 py-10">
+          <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Editor's Pick</p>
+          <a
+            href={`/${(editorArticle as any).categories?.slug || 'news'}/${(editorArticle as any).slug}`}
+            class="group flex flex-col md:flex-row gap-6 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-all duration-300"
+            style="box-shadow:var(--shadow-card)"
+          >
+            {(editorArticle as any).featured_image_url && (
+              <img
+                src={getOptimizedThumbnail((editorArticle as any).featured_image_url)}
+                alt={(editorArticle as any).title}
+                class="w-full md:w-80 h-52 md:h-auto object-cover shrink-0 transition-transform duration-500 group-hover:scale-[1.01]"
+                loading="lazy"
+              />
+            )}
+            <div class="p-4 md:p-6 flex flex-col justify-center">
+              {(editorArticle as any).categories && (
+                <span
+                  class="text-xs font-bold uppercase tracking-wide mb-2"
+                  style={`color:${getCategoryColor((editorArticle as any).categories.slug)}`}
+                >
+                  {(editorArticle as any).categories.name}
+                </span>
+              )}
+              <h3 class="text-2xl font-bold leading-snug group-hover:text-primary transition-colors duration-200 mb-2">{(editorArticle as any).title}</h3>
+              {(editorArticle as any).excerpt && (
+                <p class="text-muted-foreground text-sm leading-relaxed line-clamp-3">{(editorArticle as any).excerpt}</p>
+              )}
+              <div class="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
+                {(editorArticle as any).authors && <span>{(editorArticle as any).authors.name}</span>}
+                {(editorArticle as any).published_at && (
+                  <time datetime={(editorArticle as any).published_at}>
+                    {format(new Date((editorArticle as any).published_at), 'MMM d, yyyy')}
+                  </time>
+                )}
+                {(editorArticle as any).reading_time_minutes && <span>{(editorArticle as any).reading_time_minutes} min read</span>}
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    )}
+
     <!-- Trending -->
     {trendingArticles && trendingArticles.length > 0 && (
       <section class="py-8 border-t border-border/30">
@@ -324,16 +414,7 @@ const websiteJsonLd = {
       </section>
     )}
 
-    <!-- Newsletter CTA -->
-    <section class="container mx-auto px-4 py-10 border-t border-border/30">
-      <NewsletterIsland
-        client:only="react"
-        supabaseUrl={siteConfig.supabaseUrl}
-        supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
-      />
-    </section>
-
-    <!-- Below-fold: more stories -->
+    <!-- Below-fold interactive sections (Recommended, Events, Newsletter CTA) -->
     <HomeSectionsIsland
       client:only="react"
       supabaseUrl={siteConfig.supabaseUrl}
