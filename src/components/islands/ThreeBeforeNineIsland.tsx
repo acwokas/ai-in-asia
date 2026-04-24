@@ -358,6 +358,7 @@ export default function ThreeBeforeNineIsland({ article, enAudioUrl, supabaseUrl
       {/* Spotify player — always shown for 3B9 */}
       {!hideTopSection && (
         <div id="audio-player" className="max-w-3xl mx-auto px-6 pt-6">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: TEAL }}>Listen to the latest episode</p>
           <iframe
             src={`${tldr?.spotifyEpisodeUrl || 'https://open.spotify.com/embed/show/3aHz4AvuZTHjiKJaZ9FUdW'}?utm_source=generator&theme=0`}
             width="100%"
