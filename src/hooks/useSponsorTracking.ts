@@ -3,7 +3,6 @@ import { trackAnalyticsEvent } from './useAnalyticsTracking';
 export type SponsorPlacement = 
   | 'prompt_and_go_banner'
   | 'prompt_and_go_sidebar'
-  | 'business_in_a_byte_mpu'
   | 'perplexity_comet_homepage'
   | 'perplexity_comet_tools'
   | 'elevenlabs_homepage'

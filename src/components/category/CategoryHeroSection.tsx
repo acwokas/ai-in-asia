@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GlowBadge } from "@/components/ui/GlowBadge";
 import { CategoryIcon } from "@/components/category/CategoryIcon";
 import { ArticleFallbackImage } from "@/components/ui/ArticleFallbackImage";
-import { BusinessInAByteAd } from "@/components/BusinessInAByteAd";
 import { TOKENS } from "@/constants/categoryTokens";
 import { decodeHtml } from "@/lib/textUtils";
 import { getOptimizedHeroImage, getOptimizedThumbnail } from "@/lib/imageOptimization";
@@ -154,7 +153,23 @@ export function CategoryHeroSection({ featuredArticle, latestArticles, cfg, slug
               </div>
             </Link>
           ))}
-          <div className="hidden md:block"><BusinessInAByteAd /></div>
+          <div className="hidden md:block">
+            <a
+              href="https://open.spotify.com/show/0K7PwEgfBQn38UrhcOGojf?si=kR9TFMOzQiOTCbvDKlMKGw"
+              target="_blank"
+              rel="noopener"
+              className="block w-[300px] mx-auto"
+              aria-label="3 Before 9 - Daily Asia-Pacific AI News on Spotify"
+            >
+              <img
+                src="/ads/3b9-spotify-300x250.png"
+                alt="3 Before 9 - Daily Asia-Pacific AI News on Spotify"
+                width={300}
+                height={250}
+                loading="lazy"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </section>

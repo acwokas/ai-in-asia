@@ -5,7 +5,6 @@ import ArticleCard from "./ArticleCard";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getOptimizedThumbnail } from "@/lib/imageOptimization";
-import { BusinessInAByteAd } from "./BusinessInAByteAd";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { dualPush } from "@/lib/dualTrack";
 
@@ -138,7 +137,21 @@ const RecommendedArticles = ({ excludeIds = [] }: RecommendedArticlesProps) => {
               {idx === 2 && (
                 <div className="border border-border rounded-lg overflow-hidden bg-card flex flex-col items-center justify-center p-4">
                   <span className="text-[11px] text-muted-foreground uppercase tracking-wider mb-3">Advertisement</span>
-                  <BusinessInAByteAd />
+                  <a
+                    href="https://open.spotify.com/show/0K7PwEgfBQn38UrhcOGojf?si=kR9TFMOzQiOTCbvDKlMKGw"
+                    target="_blank"
+                    rel="noopener"
+                    className="block w-[300px] mx-auto"
+                    aria-label="3 Before 9 - Daily Asia-Pacific AI News on Spotify"
+                  >
+                    <img
+                      src="/ads/3b9-spotify-300x250.png"
+                      alt="3 Before 9 - Daily Asia-Pacific AI News on Spotify"
+                      width={300}
+                      height={250}
+                      loading="lazy"
+                    />
+                  </a>
                 </div>
               )}
             </React.Fragment>

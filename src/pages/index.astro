@@ -8,10 +8,14 @@ import { format } from 'date-fns';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import ThreeBeforeNineTickerStrip from '../components/ThreeBeforeNineTickerStrip.astro';
+import CollapsibleStatsBar from '../components/CollapsibleStatsBar.astro';
 import HomeSectionsIsland from '../components/islands/HomeSectionsIsland';
-import AdSlotWithFallback from '../components/AdSlotWithFallback.astro';
+import NewsletterIsland from '../components/islands/NewsletterIsland';
 
-const supabase = createServerClient(siteConfig.supabaseUrl, siteConfig.supabaseAnonKey);
+const supabase = createServerClient(
+  siteConfig.supabaseUrl,
+  import.meta.env.SUPABASE_SERVICE_ROLE_KEY || siteConfig.supabaseAnonKey,
+);
 
 const oneMonthAgo = new Date();
 oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -22,8 +26,6 @@ oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 const [
   { data: featuredArticles },
   { data: trendingArticles },
-  { data: editorsPick },
-  { data: latestStories },
   totalRes,
   weekRes,
 ] = await Promise.all([
@@ -54,33 +56,6 @@ const [
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(6),
 
-  // Editor's pick for homepage
-  supabase
-    .from('editors_picks')
-    .select(`
-      article_id,
-      articles (
-        id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at,
-        authors:author_id (name),
-        categories:primary_category_id (name, slug)
-      )
-    `)
-    .eq('location', 'homepage')
-    .limit(1)
-    .maybeSingle(),
-
-  // Latest stories - recent articles regardless of featured flag
-  supabase
-    .from('articles')
-    .select(`
-      id, title, slug, excerpt, featured_image_url, reading_time_minutes, published_at,
-      authors:author_id (name),
-      categories:primary_category_id (name, slug)
-    `)
-    .eq('status', 'published')
-    .order('published_at', { ascending: false, nullsFirst: false })
-    .limit(9),
-
   supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published'),
   supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published').gte('published_at', oneWeekAgo.toISOString()),
 ]);
@@ -92,8 +67,6 @@ const featured = featuredArticles?.[0];
 const latestArticles = featuredArticles?.slice(1, 16) || [];
 const secondaryHero = latestArticles.slice(0, 4);
 const gridArticles = latestArticles.slice(4);
-
-const editorArticle = (editorsPick as any)?.articles || null;
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
@@ -139,7 +112,7 @@ const websiteJsonLd = {
               <img
                 src={getOptimizedHeroImage(featured.featured_image_url)}
                 alt={featured.title}
-                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 loading="eager"
                 fetchpriority="high"
               />
@@ -150,16 +123,16 @@ const websiteJsonLd = {
             <div class="article-hero-content">
               {(featured as any).categories && (
                 <span
-                  class="inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide text-white mb-3"
+                  class="inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider text-white mb-3"
                   style={`background-color:${getCategoryColor((featured as any).categories.slug)}`}
                 >
                   {(featured as any).categories.name}
                 </span>
               )}
               {(featured as any).is_trending && (
-                <span class="inline-block ml-2 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide text-white mb-3" style="background-color:#E06050">Trending</span>
+                <span class="inline-block ml-2 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider text-white mb-3" style="background-color:#E06050">Trending</span>
               )}
-              <h1 class="article-hero-title group-hover:text-primary transition-colors duration-200">{featured.title}</h1>
+              <h1 class="article-hero-title transition-colors group-hover:text-amber-300">{featured.title}</h1>
               {featured.excerpt && (
                 <p class="article-hero-excerpt hidden sm:block line-clamp-2">{featured.excerpt}</p>
               )}
@@ -189,11 +162,11 @@ const websiteJsonLd = {
                     <img
                       src={getOptimizedThumbnail(article.featured_image_url)}
                       alt={article.title}
-                      class="w-full h-[150px] object-cover transition-transform duration-500 group-hover:scale-105"
+                      class="w-full h-[120px] object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
                   ) : (
-                    <div class="w-full h-[150px]" style={`background:${catColor}20`} />
+                    <div class="w-full h-[120px]" style={`background:${catColor}20`} />
                   )}
                   <div class="p-2.5 flex flex-col flex-1 gap-1">
                     {article.categories && (
@@ -204,12 +177,12 @@ const websiteJsonLd = {
                         {article.categories.name}
                       </span>
                     )}
-                    <h3 class="text-[14px] font-semibold leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors duration-200">{article.title}</h3>
-                    <div class="flex items-center gap-2 mt-auto pt-1 text-[10px] text-muted-foreground">
+                    <h3 class="text-[13px] font-semibold leading-[1.3] line-clamp-3 group-hover:text-primary transition-colors duration-200">{article.title}</h3>
+                    <div class="flex items-center gap-1.5 mt-auto pt-1 text-[10px] text-muted-foreground">
                       {article.published_at && (
                         <time datetime={article.published_at}>{format(new Date(article.published_at), 'MMM d')}</time>
                       )}
-                      {article.reading_time_minutes && <span>· {article.reading_time_minutes} min read</span>}
+                      {article.reading_time_minutes && <span>· {article.reading_time_minutes} min</span>}
                     </div>
                   </div>
                 </a>
@@ -218,7 +191,7 @@ const websiteJsonLd = {
           </div>
 
           <div class="lg:col-span-12 flex justify-end">
-            <a href="/articles" class="text-sm font-medium text-primary hover:text-primary/80 transition-colors">View all latest articles →</a>
+            <a href="/articles" class="text-sm font-medium text-primary hover:text-primary/80 transition-colors">View all latest articles</a>
           </div>
         </div>
       </section>
@@ -228,26 +201,11 @@ const websiteJsonLd = {
       </section>
     )}
 
-    <!-- Stats bar - always visible -->
-    {totalArticles > 0 && (
-      <div class="container mx-auto px-4 py-3 border-t border-border/30">
-        <div class="flex items-center gap-6 md:gap-10">
-          <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 shrink-0"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-            <span class="font-display text-lg font-bold text-foreground">{totalArticles.toLocaleString()}</span>
-            <span class="text-xs text-muted-foreground">Total Articles</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 shrink-0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            <span class="font-display text-lg font-bold text-foreground">+{thisWeekCount}</span>
-            <span class="text-xs text-muted-foreground">This Week</span>
-          </div>
-        </div>
-      </div>
-    )}
+    <!-- Collapsible stats bar -->
+    <CollapsibleStatsBar totalArticles={totalArticles} thisWeekCount={thisWeekCount} />
 
     <!-- Latest Stories -->
-    {latestStories && latestStories.length > 0 && (
+    {gridArticles.length > 0 && (
       <section class="container mx-auto px-4 py-8 border-t border-border/30">
         <div class="flex items-center justify-between mb-5">
           <div class="flex items-center gap-3">
@@ -260,7 +218,7 @@ const websiteJsonLd = {
         <div class="flex flex-col lg:flex-row gap-8">
           <!-- 3 large cards -->
           <div class="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-5">
-            {latestStories.slice(0, 3).map((article: any) => {
+            {gridArticles.slice(0, 3).map((article: any) => {
               const catColor = getCategoryColor(article.categories?.slug || '');
               const catSlug = article.categories?.slug || 'news';
               return (
@@ -303,62 +261,17 @@ const websiteJsonLd = {
             })}
           </div>
 
-          <!-- Right sidebar: 300x250 ad unit -->
-          <aside class="w-full lg:w-[300px] shrink-0 lg:sticky lg:top-24">
-            <AdSlotWithFallback
-              client={siteConfig.adsensePubId}
-              slot="auto"
-              format="rectangle"
-              position="homepage-sidebar"
-              minHeight="250px"
-            />
-          </aside>
-        </div>
-      </section>
-    )}
-
-    <!-- Editor's Pick (SSR) -->
-    {editorArticle && (
-      <section class="border-t border-border/30 bg-muted/20">
-        <div class="container mx-auto px-4 py-10">
-          <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Editor's Pick</p>
-          <a
-            href={`/${(editorArticle as any).categories?.slug || 'news'}/${(editorArticle as any).slug}`}
-            class="group flex flex-col md:flex-row gap-6 rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-all duration-300"
-            style="box-shadow:var(--shadow-card)"
-          >
-            {(editorArticle as any).featured_image_url && (
-              <img
-                src={getOptimizedThumbnail((editorArticle as any).featured_image_url)}
-                alt={(editorArticle as any).title}
-                class="w-full md:w-80 h-52 md:h-auto object-cover shrink-0 transition-transform duration-500 group-hover:scale-[1.01]"
-                loading="lazy"
-              />
-            )}
-            <div class="p-4 md:p-6 flex flex-col justify-center">
-              {(editorArticle as any).categories && (
-                <span
-                  class="text-xs font-bold uppercase tracking-wide mb-2"
-                  style={`color:${getCategoryColor((editorArticle as any).categories.slug)}`}
-                >
-                  {(editorArticle as any).categories.name}
-                </span>
-              )}
-              <h3 class="text-2xl font-bold leading-snug group-hover:text-primary transition-colors duration-200 mb-2">{(editorArticle as any).title}</h3>
-              {(editorArticle as any).excerpt && (
-                <p class="text-muted-foreground text-sm leading-relaxed line-clamp-3">{(editorArticle as any).excerpt}</p>
-              )}
-              <div class="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
-                {(editorArticle as any).authors && <span>{(editorArticle as any).authors.name}</span>}
-                {(editorArticle as any).published_at && (
-                  <time datetime={(editorArticle as any).published_at}>
-                    {format(new Date((editorArticle as any).published_at), 'MMM d, yyyy')}
-                  </time>
-                )}
-                {(editorArticle as any).reading_time_minutes && <span>{(editorArticle as any).reading_time_minutes} min read</span>}
-              </div>
+          <!-- Right rail: ad unit -->
+          <div class="lg:w-[300px] shrink-0">
+            <div
+              class="w-full max-w-[300px] h-[250px] rounded-lg border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground"
+              data-ad-slot="homepage-latest-stories-300x250"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-40"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+              <span class="font-medium opacity-60">Advertisement</span>
+              <span class="opacity-40">300×250</span>
             </div>
-          </a>
+          </div>
         </div>
       </section>
     )}
@@ -411,8 +324,21 @@ const websiteJsonLd = {
       </section>
     )}
 
-    <!-- Below-fold interactive sections (Most Discussed, For You, Recommended, Events, Newsletter CTA) -->
-    <HomeSectionsIsland client:only="react" />
+    <!-- Newsletter CTA -->
+    <section class="container mx-auto px-4 py-10 border-t border-border/30">
+      <NewsletterIsland
+        client:only="react"
+        supabaseUrl={siteConfig.supabaseUrl}
+        supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
+      />
+    </section>
+
+    <!-- Below-fold: more stories -->
+    <HomeSectionsIsland
+      client:only="react"
+      supabaseUrl={siteConfig.supabaseUrl}
+      supabaseAnonKey={import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey}
+    />
 
   </main>
 

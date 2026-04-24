@@ -27,7 +27,6 @@ interface SponsorAnalyticsProps {
 const PLACEMENT_LABELS: Record<string, string> = {
   'prompt_and_go_banner': 'Prompt & Go Banner',
   'prompt_and_go_sidebar': 'Prompt & Go Sidebar',
-  'business_in_a_byte_mpu': 'Business in a Byte MPU',
   'perplexity_comet_homepage': 'Perplexity Comet (Home)',
   'perplexity_comet_tools': 'Perplexity Comet (Tools)',
   'category_sponsor': 'Category Sponsor',
