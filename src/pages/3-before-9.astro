@@ -1,0 +1,59 @@
+---
+export const prerender = false;
+import { createServerClient } from '../lib/supabase';
+import { siteConfig } from '../site.config';
+
+const supabase = createServerClient(
+  siteConfig.supabaseUrl,
+  import.meta.env.SUPABASE_ANON_KEY || siteConfig.supabaseAnonKey,
+);
+
+const { data: latest } = await supabase
+  .from('articles')
+  .select('slug, categories:primary_category_id(slug)')
+  .eq('article_type', 'three_before_nine')
+  .eq('status', 'published')
+  .order('published_at', { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+if (latest?.slug) {
+  const catSlug = (latest as any).categories?.slug || 'news';
+  return Astro.redirect(`/${catSlug}/${latest.slug}`, 302);
+}
+---
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <script is:inline>
+      (function() {
+        var stored = localStorage.getItem('aiia_theme') || localStorage.getItem('theme');
+        if (stored ? stored !== 'light' : true) document.documentElement.classList.add('dark');
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3 Before 9 — AI in ASIA</title>
+    <meta name="description" content="3 AI signals from Asia, served fresh every weekday before 9am." />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=5" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root { --background: 0 0% 100%; --foreground: 220 15% 15%; --primary: 188 85% 40%; --muted-foreground: 220 10% 45%; --border: 220 13% 91%; }
+      .dark { --background: 222 47% 8%; --foreground: 0 0% 95%; --primary: 188 80% 50%; --muted-foreground: 210 10% 88%; --border: 220 30% 22%; }
+      body { font-family: 'Inter', sans-serif; background: hsl(var(--background)); color: hsl(var(--foreground)); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; gap: 1.5rem; }
+      h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; color: hsl(var(--primary)); line-height: 1; }
+      h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; font-weight: 600; }
+      p { color: hsl(var(--muted-foreground)); max-width: 28rem; line-height: 1.6; }
+      a.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.5rem; border-radius: 0.5rem; background: hsl(var(--primary)); color: white; font-weight: 600; font-size: 0.875rem; text-decoration: none; transition: opacity 0.2s; }
+      a.btn:hover { opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <h1>3 Before 9</h1>
+    <h2>3 AI signals from Asia, fresh every weekday</h2>
+    <p>No editions published yet — check back soon.</p>
+    <a href="/" class="btn">← Back to homepage</a>
+  </body>
+</html>
