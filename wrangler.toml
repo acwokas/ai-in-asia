@@ -8,6 +8,7 @@ assets = { directory = "dist/", binding = "ASSETS" }
 [vars]
 # Supabase
 SUPABASE_URL = "https://ukacqljogssreycumocn.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrYWNxbGpvZ3NzcmV5Y3Vtb2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MDU4ODIsImV4cCI6MjA5MjE4MTg4Mn0.1Ru2w_4NG1a7koKYPmr4uQUACYE34YBsKkPwZIhMWBE"
 
 # Site identity
 SITE_NAME = "AI in Asia"
