@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && printf '_worker.js\\n_worker.js.bak\\n_worker.js.vite-backup\\n' > dist/.assetsignore",
+    "build:dev": "astro build",
     "preview": "astro preview",
     "dev:vite": "vite",
     "build:vite": "vite build",
